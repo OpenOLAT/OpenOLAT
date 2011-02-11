@@ -1,0 +1,73 @@
+#if ($insideManager)
+  <div id="o_cal_manage_config">
+#else
+  <div id="o_cal_config">
+#end
+  <fieldset>
+	  <legend>$r.translate("cal.import.list")</legend>
+
+#if (!$insideManager)
+    <div class="b_float_right">
+       $r.render("cal.managecalendars")
+    </div>
+#end
+
+#if ($calendars.size() > 5)
+	<div class="o_cal_config_scrollwrapper">
+#end
+
+#foreach ($calendarWrapper in $calendars)
+
+  <div class="o_cal_config_row">
+
+  #if (!$insideManager)
+	  #if ($calendarWrapper.getKalendarConfig().isVis())
+		  <a class="o_cal_config_enabled" 
+			  href="$r.commandURIbg("tglvis", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
+  			$r.bgTarget() 
+	  		title="$r.translateInAttribute("cal.disable")"></a>
+	  #else
+		  <a class="o_cal_config_disabled" 
+			  href="$r.commandURIbg("tglvis", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
+  			$r.bgTarget() 
+	  		title="$r.translateInAttribute("cal.enable")"></a>
+    #end
+  #end
+
+
+	<div class="o_cal_config_calendar $calendarWrapper.getKalendarConfig().getCss()">
+		$calendarWrapper.getKalendarConfig().getDisplayName()
+	</div>
+
+  #if (!$insideManager)
+	  <a class="o_cal_config_chosecolor" 
+		  href="$r.commandURIbg("cc", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
+  		$r.bgTarget() 
+	  	title="$r.translateInAttribute("cal.color.choose")"></a>
+
+    #if ($calendarWrapper.getAccess() == 0)
+	    <a class="o_cal_config_addevent" 
+		    href="$r.commandURIbg("add", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
+  		  $r.bgTarget() 
+	  	  title="$r.translateInAttribute("cal.add.event")"></a>
+    #else
+	    <div class="o_cal_config_readonly" 		    
+	  	  title="$r.translateInAttribute("cal.add.readonly")"></div>
+    #end
+  #else
+	<a class="o_cal_config_remove_cal" 
+    href="$r.commandURIbg("rm", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
+  	$r.bgTarget() 
+	  title="$r.translateInAttribute("cal.import.remove")"></a>
+	</div>
+  #end
+#end
+
+#if ($calendars.size() > 5)
+	</div>
+#end
+
+  
+  </fieldset>
+  </div>
+

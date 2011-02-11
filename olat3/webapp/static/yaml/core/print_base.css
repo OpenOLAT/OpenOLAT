@@ -1,0 +1,123 @@
+@charset "UTF-8";
+/**
+ * "Yet Another Multicolumn Layout" - (X)HTML/CSS Framework
+ *
+ * (en) YAML core stylesheet - print layout
+ * (de) YAML Core-Stylesheet - Druck Layout
+ *
+ * Don't make any changes in this file!
+ * Your changes should be added to 'print_xyz_draft.css' drafts from 'yaml/print/' folder.
+ *
+ * @copyright       Copyright 2005-2007, Dirk Jesse
+ * @license         CC-A 2.0 (http://creativecommons.org/licenses/by/2.0/),
+ *                  YAML-C (http://www.yaml.de/en/license/license-conditions.html)
+ * @link            http://www.yaml.de
+ * @package         yaml
+ * @version         3.0.4
+ */
+
+@media print
+{
+  /*------------------------------------------------------------------------------------------------------*/
+
+  /**
+   * @section layout preparation
+   * @see     http://www.yaml.de/en/documentation/css-components/layout-for-print-media.html
+   */
+
+  /* (en) Preparing base layout for print */
+  /* (de) Basislayout für Druck aufbereiten */
+  body, #b_page_margins, #b_page, #b_main {margin:0; padding: 0; border: 0;}
+  #b_page_margins, #b_page {width: 100% !important; min-width:0; max-width: none}
+  #b_header {height: auto}
+  #b_footer {display: none}
+
+  /* (en) Hide unneeded container of the screenlayout in print layout */
+  /* (de) Für den Druck nicht benötigte Container des Layouts abschalten */
+  #b_topnav {display: none}
+  #b_nav {display:none}
+  #search {display: none}
+
+  /* (en) Linearising subtemplates */
+  /* (de) Linearisierung der Subtemplates */
+  .b_c25l, .b_c33l, .b_c38l, .b_c50l, .b_c62l, .b_c66l, .b_c75l,
+  .b_c25r, .b_c33r, .b_c38r, .b_c50r, .b_c62r, .b_c66r, .b_c75r {
+    width: 100%; margin:0; float:none; overflow:visible; display:table;
+  }
+  .b_subc, .b_subcl, .b_subcr  {margin: 0; padding: 0;}
+
+  /*------------------------------------------------------------------------------------------------------*/
+
+  /**
+   * @section content preparation
+   * @see     http://www.yaml.de/en/documentation/css-components/layout-for-print-media.html
+   */
+
+  /* (en) Change font to serif */
+  /* (de) Zeichensatz auf Serifen umstellen */
+  body * {font-family: "Times New Roman", Times, serif}
+  code, pre { font-family:"Courier New", Courier, mono}
+  body {font-size: 12pt}
+
+  /* (en) Avoid page breaks right after headings */
+  /* (de) Vermeidung von Seitenumbrüchen direkt nach einer Überschrift */
+  h1,h2,h3,h4,h5,h6 { page-break-after:avoid; }
+
+  /* (en) Format acronyms and abbreviations for print*/
+  /* (de) Auszeichnung von Abkürzungen */
+  abbr[title]:after, acronym[title]:after {content: '(' attr(title) ')'}
+
+  /* (en) Disable background graphics of links  */
+  /* (de) Abschalten evlt. vorhandener Hintergrundgrafiken zur Linkkennzeichnung */
+  #b_page a[href^="http:"], #b_page a[href^="https:"]
+  {
+    padding-left: 0;
+    background-image: none;
+  }
+
+  /* (en) Enable URL output in print layout */
+  /* (de) Sichtbare Auszeichnung der URLs von Links */
+  a[href]:after {
+    content:" <URL: "attr(href)">";
+    color:#444;
+    background:inherit;
+    font-style:italic;
+  }
+
+  /* (en) Preparation for optional column labels */
+  /* (de) Vorbereitung für optionale Spaltenauszeichnung */
+  #b_col1_content:before, #b_col2_content:before, #b_col3_content:before {
+    content: "";
+    color:#888;
+    background:inherit;
+    display:block;
+    font-weight:bold;
+    font-size:1.5em;
+  }
+
+  /*------------------------------------------------------------------------------------------------------*/
+
+  /**
+   * @section browser fixes for print layouts
+   * @see     http://www.yaml.de/en/documentation/css-components/layout-for-print-media.html
+   */
+
+  /**
+   * (en) overflow:hidden Bug in print layouts
+   * (de) overflow:hidden Bug in Drucklayouts
+   *
+   * @bugfix
+   * @since     3.0
+   * @affected  FF2.0, IE7
+   * @css-for   all browsers
+   * @valid     yes
+   */
+  
+  .b_floatbox,
+  .b_subcolumns, 
+  .b_subcolums_oldgecko { 
+    overflow:visible; 
+    display: table; 
+  }
+
+}

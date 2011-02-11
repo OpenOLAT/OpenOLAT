@@ -1,0 +1,32 @@
+	#if ($isEnrolledView)
+	<div class="o_course_run_groupinfo">	
+		<p>
+			<strong>$r.translate("enrolled.group.name"):</strong> 
+			<br />
+			$groupName
+		</p>		
+		#if ($groupDesc != "")
+		<p>
+			<strong>$r.translate("enrolled.group.desc"): </strong>
+			<br />
+			$r.formatLatexFormulas($groupDesc)
+		</p>
+		#end
+	</div>
+	#end
+	
+	<div class="o_course_run_statusinfo">	
+	#if ($isEnrolledView)
+		<p>
+		#if($isWaitingList)
+		  $r.translate("waitinglist.explain")
+		#else
+		  $r.translate("enrolled.explain")
+		#end		
+		</p>		
+	#else
+		$r.translate("enroll.explain")
+	#end
+	</div>
+	
+	$r.render("grouplisttable")

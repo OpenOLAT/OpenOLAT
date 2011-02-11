@@ -1,0 +1,30 @@
+#if($hasInstitution) 
+   <div class="o_institution">	
+	<h4 class="o_institution_header">
+  	  <a href="$iurl" target="_blank"><img src='$r.staticLink("images/institution/$ilogo")' alt="$iname" /></a>
+	  <p>$iname</p>
+	</h4>
+	<div class="b_toolbox"><ul>
+	#if($hasPolymorphLink)
+	   #foreach($polyLink in $polyLinks)
+	       <li>$r.render("$polyLink")</li>
+       #end
+	#end
+	</ul></div>
+	<p class="o_clearthefloat">$r.translate("stextintro")<br />$sperson</p>
+	#if($showphone)
+		<p>$r.translate("phone"): $sphone</p>
+	#end
+	#if($showemail)
+		<p>$r.translate("email"): $semail</p>
+	#end
+	#if($showurl)
+		<p>$r.translate("url"): <a href="$surl" target="_blank">$surl</a></p>
+	#end
+	#if($showblog)
+		<p>$r.translate("blog"): <a href="$sblog" target="_blank">$sblog</a></p>
+	#end
+   </div>
+#else
+	<p><strong>$r.translate("noinstitution")</strong></p>
+#end

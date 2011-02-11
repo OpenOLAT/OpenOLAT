@@ -1,0 +1,15 @@
+<project name="OLAT">
+  <bannerLeft>
+	<name>OLAT Generated Documentation</name>
+	<src>images/olat_logo2_72.png</src>
+	<href>http://www.olat.org/</href>
+</bannerLeft>
+  <body>
+    <menu ref="reports"/>
+    <menu name="Selenium">
+      <item name="Functional #1" href="selenium/functional_tests/index.html"/>      
+      <item name="Functional #2" href="selenium/functional2_tests/index.html"/>      
+      <item name="OLAT TEST" href="selenium/olattest/index.html"/>      
+    </menu>
+</body>
+</project>

@@ -1,0 +1,14 @@
+<div class="o_ll_container">
+	<ul>
+	#foreach($link in $linkList)
+		<li>
+			<a href="$link.getTarget()" target="$link.getHtmlTarget()" class="b_link_extern">$link.getDescription()</a>
+			#if($showLinkComments)
+			<div>
+				$link.getComment()
+			</div>
+			#end
+		</li>
+	#end
+	</ul>
+</div>

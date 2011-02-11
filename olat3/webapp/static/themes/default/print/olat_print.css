@@ -1,0 +1,16 @@
+@charset "UTF-8";
+@media print
+{
+
+	/* don't print wiki navigation menu */
+	div.o_wiki_wrapper div.b_subcolumns div.b_c20l { display: none; }
+	div.o_wiki_wrapper div.b_subcolumns div.b_c80r div.b_tabbedpane_tabs {display: none;}
+	
+	/* login site background image */
+	#b_main.o_loginscreen { background-image: none; }
+	/* home site background image */
+	#b_main.o_home { background-image: none; }
+	/* editor background */
+	#b_main.o_editor { background-image: none; }
+	
+}

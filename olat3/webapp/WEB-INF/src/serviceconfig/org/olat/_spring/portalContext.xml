@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+	<!-- Portlets are no longer added to a list but searched on the whole classpath. This means that you can add you own portlets packed
+		as a jar file or disable existing portlets over external properties files. Every portlet instance has a field enabeld which is true by default
+		an you can override like this:
+		<property name="enabled" value="${portlet.links.enabled}" />
+	 -->
+	
+	<!-- Portlet factory -->
+	<bean id="portletfactory" class="org.olat.core.gui.control.generic.portal.PortletFactory" />
+	
+	<!-- Portlets  -->
+	<bean id="SystemEvents" class="org.olat.core.commons.portlets.iframe.IframePortlet" scope="prototype">
+		<property name="name" value="SystemEvents" />
+		<property name="enabled" value="${portlet.system.events.enabled}" />
+		<property name="configuration">
+			<map>
+				<entry key="title_de" value="OLAT Systemausfälle" />
+				<entry key="description_de" value="Informationen zu OLAT Systemausfällen" />
+				<entry key="title_en" value="OLAT system breakdown" />
+				<entry key="description_en" value="Information on OLAT system breakdown" />
+				<entry key="title_fr" value="Défaillances du système OLAT" />
+				<entry key="description_fr" value="Informations sur les défaillances du système OLAT" />
+				<entry key="title_it" value="Disfunzioni del sistema OLAT" />
+				<entry key="description_it" value="Informazioni sulle disfunzioni del sistema OLAT" />
+				<entry key="title_es" value="Fallo del sistema OLAT" />
+				<entry key="description_es" value="Información de fallo del sistema OLAT" />
+				<entry key="title_gr" value="OLAT system breakdown" />
+				<entry key="description_gr" value="Information on OLAT system breakdown" />		
+				<!-- absolute or relative URI to a HTML page that is displayed in iframe -->							
+				<entry key="uri" value="${portlet.sysinfo.url}" />
+				<!-- optional parameter editFilePath: if configures it must contain an -->
+				<!-- absolute path on to the same file on the local filesystem         -->
+				<entry key="editFilePath" value="${portlet.sysinfo.filepath}" />
+				<entry key="height" value="250" />
+				<entry key="cssWrapperClass" value="b_portlet_sysinfo" />
+			</map>
+		</property>
+	</bean>
+	<bean id="Macartney" class="org.olat.portal.macartney.MacartneyPortlet" scope="prototype">
+		<property name="name" value="Macartney" />
+		<property name="enabled" value="${portlet.macartney.enabled}" />
+		<property name="configuration">
+			<map>
+				<!-- use protocol relativ URL to support http and https -->
+				<entry key="imageBaseUri" value="${portlet.macartney.baseUri}" />
+			</map>		
+		</property>
+	</bean>
+	<bean id="DidYouKnow" class="org.olat.core.commons.portlets.didYouKnow.DidYouKnowPortlet" scope="prototype">
+		<property name="name" value="DidYouKnow" />
+		<property name="enabled" value="${portlet.didYouKnow.enabled}" />
+	</bean>
+	<bean id="Groups" class="org.olat.group.ui.portlet.GroupsPortlet" scope="prototype">
+		<property name="name" value="Groups" />
+		<property name="enabled" value="${portlet.groups.enabled}" />
+	</bean>
+	<bean id="Bookmarks" class="org.olat.bookmark.BookmarksPortlet" scope="prototype">
+		<property name="name" value="Bookmarks" />
+		<property name="enabled" value="${portlet.bookmarks.enabled}" />
+	</bean>
+	<bean id="Notes" class="org.olat.note.NotesPortlet" scope="prototype">
+		<property name="name" value="Notes" />
+		<property name="enabled" value="${portlet.notes.enabled}" />
+	</bean>
+	<bean id="Notifications" class="org.olat.notifications.NotificationsPortlet" scope="prototype">
+		<property name="name" value="Notifications" />
+		<property name="enabled" value="${portlet.notifications.enabled}" />
+	</bean>
+	<bean id="EfficiencyStatements" class="org.olat.course.assessment.EfficiencyStatementsPortlet" scope="prototype">
+		<property name="name" value="EfficiencyStatements" />
+		<property name="enabled" value="${portlet.efficiencyStatements.enabled}" />
+	</bean>
+	<bean id="Quickstart" class="org.olat.portal.quickstart.QuickstartPortlet" scope="prototype">
+		<property name="name" value="Quickstart" />
+		<property name="enabled" value="${portlet.quickstart.enabled}" />
+	</bean>
+	<bean id="Calendar" class="org.olat.portal.calendar.CalendarPortlet" scope="prototype">
+		<property name="name" value="Calendar" />
+		<property name="enabled" value="${portlet.calendar.enabled}" />
+	</bean>
+	<bean id="Zsuz" class="ch.unizh.portal.zsuz.ZentralstellePortlet" scope="prototype">
+		<property name="name" value="Zentralstelle" />
+		<property name="enabled" value="${portlet.zentralstelle.enabled}" />
+	</bean>
+	<bean id="Information" class="org.olat.portal.infomsg.InfoMsgPortlet" scope="prototype">
+		<property name="name" value="Information" />
+		<property name="enabled" value="${portlet.infomsg.enabled}" />
+	</bean>
+	<bean id="ShibLogin" class="org.olat.portal.shiblogin.ShibLoginPortlet" scope="prototype">
+		<constructor-arg ref="switchShibbolethAuthenticationConfigurator" />
+		<property name="name" value="ShibLogin" />
+		<property name="enabled" value="${portlet.shiblogin.enabled}" />
+		<property name="configuration">
+			<map>
+				<entry key="title_de" value="Login" />
+				<entry key="description_de" value="Möglichkeit zur direkten Anmeldung an der Lernplattform" />
+				<entry key="title_en" value="Login" />
+				<entry key="description_en" value="Quick possibility to log on directly" />
+			</map>
+		</property>
+	</bean>
+	<bean id="Links" class="de.bps.olat.portal.links.LinksPortlet" scope="prototype">
+		<property name="name" value="Links" />
+		<property name="enabled" value="${portlet.links.enabled}" />
+		<property name="configuration">
+			<map>
+				<entry key="refreshSeconds" value="3600" />
+			</map>
+		</property>
+	</bean>
+	<bean id="Institution" class="de.bps.olat.portal.institution.InstitutionPortlet" scope="prototype">
+		<property name="name" value="Institution" />
+		<property name="enabled" value="${portlet.institution.enabled}" />
+	</bean>
+	<!-- Repository Portlet showing courses of a user / author. Portlet developed by frentix GmbH, www.frentix.com.  -->
+	<!-- Its not recommended to enable this on large installations ( >1000 users / many groups) as it leads to heavy db-load! -->
+	<bean id="RepositoryPortletStudent" class="org.olat.repository.portlet.RepositoryPortlet" scope="prototype">
+		<property name="name" value="RepositoryPortletStudent" />
+		<property name="enabled" value="${portlet.repository.student.enabled}" />
+		<property name="configuration">
+			<map>
+				<entry key="role" value="student" />
+			</map>
+		</property>
+	</bean> 
+
+	<bean id="RepositoryPortletTeacher" class="org.olat.repository.portlet.RepositoryPortlet" scope="prototype">
+		<property name="name" value="RepositoryPortletTeacher" />
+		<property name="enabled" value="${portlet.repository.teacher.enabled}" />
+		<property name="configuration">
+			<map>
+				<entry key="role" value="teacher" />
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="InfoMessages" class="org.olat.commons.info.portlet.InfoMessagePortlet">
+		<property name="name" value="InfoMessages" />
+		<property name="enabled" value="${portlet.infomessages.enabled}" />
+	</bean>
+
+	<!-- the users home portal -->
+	<bean id="homeportal" class="org.olat.core.gui.control.generic.portal.PortalImpl" scope="prototype">
+		<property name="name" value="homeportal" />
+		<property name="portalColumns">
+		<!-- this is the default configuration, used when user has no own configuration -->
+			<list>
+				<list>
+					<value>Information</value>
+					<value>Zsuz</value>
+					<value>Quickstart</value>
+					<value>DidYouKnow</value>
+					<value>Macartney</value>								
+				</list>
+				<list>
+					<value>RepositoryPortletStudent</value>
+					<value>InfoMessages</value>
+					<value>Calendar</value> 
+					<value>Bookmarks</value>
+					<value>Groups</value>
+					<value>Notifications</value>
+					<value>EfficiencyStatements</value>
+					<value>Notes</value>
+				</list>
+			</list>
+		</property>
+	</bean>
+
+	<!-- the guests home portal -->
+	<bean id="guestportal" class="org.olat.core.gui.control.generic.portal.PortalImpl" scope="prototype">
+		<property name="name" value="guestportal" />
+		<property name="portalColumns">
+		<!-- this is the default configuration, used when user has no own configuration -->
+			<list>
+				<list>
+					<value>Quickstart</value>
+					<value>SystemEvents</value>
+					<value>ShibLogin</value>
+				</list>
+				<list>
+					<value>Information</value>
+					<value>DidYouKnow</value>
+					<value>Macartney</value>
+				</list>
+			</list>
+		</property>
+	</bean>
+	
+</beans>

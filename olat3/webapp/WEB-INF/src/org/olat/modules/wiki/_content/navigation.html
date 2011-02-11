@@ -1,0 +1,39 @@
+<div class="o_wikimod_nav b_floatbox" >
+	#if($r.available("search_article"))
+	<fieldset>
+		<legend>$r.translate("navigation.search.article")</legend>
+		$r.render("search_article")
+	</fieldset>
+	#end
+	<fieldset>
+		<legend>$r.translate("navigation.navigation")</legend>
+		<ul>
+			<li>$r.render("navigation.mainpage")</li>
+			<li>$r.render("navigation.a-z")</li>
+			<li>$r.render("navigation.changes")</li>
+		</ul>
+ 	</fieldset>	
+	<fieldset >
+		<legend>$r.translate("navigation.menu")</legend>
+		$r.render("wikiMenu")
+		<div class="b_button_group">
+		#if($r.available("edit.menu"))
+			$r.render("edit.menu")
+		#end
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend>$r.translate("navigation.history")</legend>
+		$r.render("breadcrumb")
+	</fieldset>
+	<fieldset>
+		<legend>$r.translate("navigation.create")</legend>
+		$r.render("searchArticleForm")
+	</fieldset>
+	<fieldset>
+		<legend>$r.translate("navigation.tools")</legend>
+		<ul>
+			<li>$r.render("archive.wiki")</li>
+		</ul>
+	</fieldset>
+</div>

@@ -1,0 +1,123 @@
+/*
+* todo, create in file for color replacement
+* may change namespace to o_****
+*/
+
+	html * { font-size: 100.01% } 
+	/* (en) reset monospaced elements to font size 16px in Gecko browsers */
+  	textarea, pre, tt, code { font-family:"Courier New", Courier, monospace;  }	
+	/* Base layout gets standard font size 12px */
+	body { font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; }
+
+	/* HEADERS */
+	h1,h2,h3,h4,h5,h6 { font-weight:bold; margin: 0 0 0.25em 0; }
+	h1 { font-size: 200% }                        /* 24px */
+	h2 { font-size: 166.67% }                     /* 20px */
+	h3 { font-size: 150% }                        /* 18px */
+	h4 { font-size: 133.33% }                     /* 16px */
+	h5 { font-size: 116.67% }                     /* 14px */
+	h6 { font-size: 116.67%; font-style:italic }  /* 14px */
+		
+	/* LISTS */
+	ul, ol, dl { line-height: 1.5em; margin: 0 0 1em 1em }
+	li { margin-left: 1.5em; line-height: 1.5em }
+	
+	dt { font-weight: bold }
+	dd { margin: 0 0 1em 2em }
+	
+	/* TEXT FORMATTING */
+	cite, blockquote { font-style:italic }
+	blockquote { margin: 0 0 1em 1.5em }
+	
+	strong,b { font-weight: bold }
+	em,i { font-style:italic }
+	
+	textarea, pre, tt, code { font-family: monospace; font-size: 1.3em; }
+	
+	acronym, abbr {letter-spacing: .07em; border-bottom: .1em dashed #c00; cursor: help; }
+	
+	/* FIELDSET */
+	fieldset { border: solid #ACAAAA 1px; position: relative; padding: 1em; margin: 0.5em 0 1em 0; }
+	legend {padding: 0 5px; color: #504D4E; }
+	
+	/* OTHER ELEMENTS */
+	p { line-height: 1.5em; margin: 0 0 1em 0; }
+	hr { color: #fff; background:transparent; margin: 0 0 0.5em 0;padding: 0 0 0.5em 0;border:0;border-bottom: 1px #000 solid;}
+
+
+img.wikiimg { border: 0px;}
+
+a.wikiimg {
+	text-decoration: none;
+	color: inherit;
+	font-weight: inherit;
+}
+
+div.imgcaption {
+	padding: 0.3em 0em 0.2em 0.3em;
+}
+
+div.imgleft {
+	clear:left;
+	float: left;
+	margin: 0.3em 0.3em 0.3em 0em;
+}
+
+div.imgright {
+	clear:right;
+	float: right;
+	margin: 0.3em 0em 0.3em 0.3em;
+}
+
+div.imgcenter {
+	clear: both;
+	overflow:hidden;
+	text-align: center;
+	margin: 0.3em 0em 0.3em 0em;
+}
+
+div.imgthumb {
+	border: 1px solid #bbbbbb;
+	padding: 0.3em;
+}
+
+table.gallery {
+	border: 1px solid #ccc;
+	margin: 2px;
+	padding: 2px;
+	background-color: white;
+}
+
+table.gallery tr {
+	vertical-align: middle;
+}
+
+table.gallery td {
+	background-color: #f9f9f9;
+	border: solid 2px white;
+	text-align: center;
+	vertical-align: middle;
+	width:  150px;
+}
+
+img.gallery {
+	border: 1px solid #bbbbbb;
+	padding: 0.3em;
+}
+
+a.edit {
+	font-style: italic;
+	color: red;
+}
+a.externallink:before {
+	content:url("externalLink.gif");
+	padding-right: 2px;
+}
+
+pre {
+	padding: 1em;
+	border: 1px dashed #2f6fab;
+	color: black;
+	background-color: #f9f9f9;
+	line-height: 1.1em;
+}

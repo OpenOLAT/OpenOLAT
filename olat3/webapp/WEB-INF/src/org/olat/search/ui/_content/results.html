@@ -1,0 +1,44 @@
+#if($hasResult)
+	#if ($emptyResult)
+		<div id="o_search_results_header" class="o_search_no_results">
+	  	$r.translate("search.empty.result",$searchResults.getNumberOfIndexDocuments())
+		</div>
+  	#else
+	  	<div id="o_search_results_header" class="b_clearfix">
+			<div class="o_search_results_stats">
+			      $r.translate("search.result.numberofdocuments",$searchResults.getNumberOfIndexDocuments())
+			      $r.translate("search.result.querytime",$searchResults.getQueryTime())
+		    </div>
+		    $resultTitle
+			#if ($numOfPages != 1)
+				<div id="o_search_pageing">
+					<strong>$r.render("previous.page")</strong>
+					$currentPage
+					<strong>$r.render("next.page")</strong>
+				</div>	      
+			#end
+		    <span class="o_search_highlight">
+		    	#if($highlight)
+		    		$r.render("dishighlight.page")
+		    	#else
+		    		$r.render("highlight.page")
+		    	#end
+			</span>
+		</div>
+	  	#if ($searchResults.hasTooManyResults())
+			<div id="o_search_results_toomany">$r.translate("too.many.results",$searchResults.getMaxHits())</div>
+			#end
+		#foreach ($result in $results)
+			$r.render("result_$velocityCount")
+		#end
+		
+		#if ($numOfPages != 1)
+			<div id="o_search_pageing_bottom">
+				<strong>$r.render("previous.page")</strong>
+				$currentPage
+				<strong>$r.render("next.page")</strong>
+			</div>	      
+		#end
+		
+	#end
+#end

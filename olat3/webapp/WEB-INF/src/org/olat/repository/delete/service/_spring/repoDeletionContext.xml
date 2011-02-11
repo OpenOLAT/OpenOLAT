@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder
+		location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+
+	<bean id="deletionModule" class="org.olat.repository.delete.service.DeletionModule"
+		 depends-on="userManager">
+		<property name="baseSecurityManager" ref="baseSecurityManager" />
+		<property name="persistedProperties">
+			<bean class="org.olat.core.configuration.PersistedProperties"
+				scope="prototype" init-method="init" destroy-method="destroy">
+				<constructor-arg index="0" ref="coordinatorManager" />
+				<constructor-arg index="1" ref="deletionModule" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="deletionModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				archiveRootPath=${archive.dir}
+				deleteEmailResponseToUserName=administrator
+				adminUserName=administrator
+	                </value>
+		</property>
+	</bean>
+
+	<bean id="repositoryDeletionManager"
+		class="org.olat.repository.delete.service.RepositoryDeletionManager">
+		<constructor-arg index="0" ref="userDeletionManager" />
+		<constructor-arg index="1" ref="deletionModule" />
+	</bean>
+
+	<bean id="groupDeletionManager" class="org.olat.group.delete.service.GroupDeletionManager">
+		<constructor-arg index="0" ref="deletionModule" />
+	</bean>
+
+	<bean id="userDeletionManager" class="org.olat.admin.user.delete.service.UserDeletionManager">
+		<constructor-arg index="0" ref="deletionModule" />
+		<constructor-arg index="1" ref="coordinatorManager" />
+		<property name="keepUserLoginAfterDeletion" value="${keepUserLoginAfterDeletion}" />
+		<property name="keepUserEmailAfterDeletion" value="${keepUserEmailAfterDeletion}" />
+	</bean>
+
+</beans>

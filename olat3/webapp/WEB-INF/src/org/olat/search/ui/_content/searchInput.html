@@ -1,0 +1,43 @@
+<div id="o_search_form">
+	<h4 id="o_search_form_toggler" class="b_with_small_icon_left">$r.translate('search.title')</h4>
+	<div id="o_search_form_content"><div>
+		#if($advancedSearchFlag)
+			$r.contextHelpWithWrapper('org.olat.search.ui','advanced-search.html','help.hover.search')
+			$r.render("switch.simple.search")
+			<div id="o_local_fulltextsearch">
+				$r.render("ext_search_form")
+			</div>
+		#else
+			$r.contextHelpWithWrapper('org.olat.search.ui','simple-search.html','help.hover.search')
+			$r.render("switch.advanced.search")
+			<div id="o_local_fulltextsearch">
+				$r.render("search_form")
+			</div>
+			$r.render("context")
+		#end
+	</div></div>
+	## toggle the form on/off on click to the form title
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		Ext.onReady(function() {  Ext.get('o_search_form_toggler').on('click', function() { Effect.toggle('o_search_form_content', 'slide', {duration: 0.3});}); });
+	/* ]]> */
+	</script>
+</div>
+
+<div id="o_search_results">
+	#if ($hasDidYouMean)
+		<div id="o_search_results_header" class="o_search_did_you_mean">
+	  		$r.translate("search.did.you.mean")
+	      	#set ($wordCounter = 0)
+	      	<span class="o_search_did_you_mean_words">
+			  	#foreach( $link in $didYouMeanLinks )
+			    	#set ($linkname = "didYouMeanLink-$wordCounter")
+			    	$r.render($linkname)
+			    	#set ($wordCounter = $wordCounter + 1)
+			  	#end
+	      	</span>
+		</div>
+	#else
+		$r.render("resultList")
+	#end
+</div>

@@ -1,0 +1,66 @@
+<fieldset>
+	<legend>$repEntryTitle</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-append.html","help.iq.file.name")
+	#if ($dontRenderRepositoryButton)
+		<p>		
+		<strong>$r.translate("file.name"):</strong>&nbsp;
+		#if ($isOnyx)
+			$onyxDisplayName
+		#else
+			$r.render("command.preview")
+		#end
+		</p>
+		$r.render("command.changeRepFile")
+		#if($r.available("command.editRepFile"))
+			$r.render("command.editRepFile")
+		#end
+		## 
+		<p>
+		#if ($showOutcomes)
+				#b_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
+				<table>
+					#foreach($key in $outcomes.keySet())
+		        	 <tr>
+			    	 <td>$key:</td>
+			    	  <td>$outcomes.get($key)</td>
+		        	  </tr>
+		            #end
+		            </table>
+				#b_togglebox_end()
+		#end
+		</p>
+		## 
+		<table>
+			<tbody>			
+			#if ($minscore)
+				<tr><td>$r.translate("score.min"):</td><td>  $minscore</td></tr>
+			#end
+			#if ($maxscore)
+				<tr><td>$r.translate("score.max"):</td><td>  $maxscore</td></tr>
+			#end			
+			#if ($cutvalue)
+				<tr><td>$r.translate("score.cut"):</td><td>  $cutvalue</td></tr>
+			#end
+			</tbody>
+		</table>		
+	#else
+		<p>
+		<strong>$r.translate("file.name"):</strong>  $!chosentest
+		</p>
+		$r.render("command.chooseRepFile")		
+	#end
+</fieldset>
+			
+$r.render("filechoosecreateedit")
+
+<fieldset>
+	<legend>$r.translate("choosenlayout")</legend>
+	#if ($type == "Assessment")
+		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-test.html","help.iq.layout")
+	#elseif ($type == "Self-Assessment")
+		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-self.html","help.iq.layout")
+	#else
+		$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-config-surv.html","help.iq.layout")
+	#end
+	$r.render("iqeditform")
+</fieldset>

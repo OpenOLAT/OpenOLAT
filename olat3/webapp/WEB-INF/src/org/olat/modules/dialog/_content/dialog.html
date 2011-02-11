@@ -1,0 +1,20 @@
+<div class="b_clearfix">
+    #if ($r.available("subscription"))
+		<div style="b_float_right">$r.render("subscription")</div>	
+    #end
+	#if ($security.mayOpenNewThread())
+		$r.render("dialog.upload.file")
+	#end
+</div>
+<hr />
+<div>
+	$r.render("dialogElementsTable")	
+</div>
+#if($hasSelectedElement && $hasInlineForum)
+	<fieldset>
+		<legend>$r.translate("dialog.selected.element"): <b>$selectedElement.getFilename()</b></legend>
+		#if($hasInlineForum)
+			$r.render("forum")
+		#end
+	</fieldset>
+#end

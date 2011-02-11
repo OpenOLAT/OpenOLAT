@@ -1,0 +1,56 @@
+<div class="b_form #if ($off_css_class) $off_css_class #end b_clearfix">
+#if ($off_title) <fieldset><legend>$off_title</legend> #end
+#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
+#if ($off_desc) <div class="b_form_desc">$off_desc</div> #end
+
+#foreach ($item in $formitemnames)
+	#if ($userPropertyNames.contains($item))
+		#if ($f.isVisible($item))
+			#if($f.hasError($item))
+			<div class="b_form_element_wrapper b_form_error b_clearfix">		
+			#else
+			<div class="b_form_element_wrapper b_clearfix">
+			#end
+				#if ($f.hasLabel($item))
+				<div class="b_form_element_label">
+					$r.render("${item}_LABEL", "$f.getItemId($item)", "$f.isMandatory($item)")
+					#if($f.isMandatory($item))
+						<span class="b_form_mandatory" title="$r.translateInAttribute("form.mandatory.hover")">&nbsp;</span>
+					#end
+				</div>
+				#end
+				#if ($f.isSpacerElement($item))
+					$r.render(${item})		
+				#else
+				<div class="b_form_element">
+				    #if ($r.available("checkbox_${item}"))
+					    <div class="b_form_element_wrapper b_form_horizontal">
+						    <div class="b_form_element b_form_horizontal">
+						        $r.render("checkbox_${item}")
+						    </div>
+						</div>
+					#end
+					<div class="b_form_element_wrapper b_form_horizontal">
+					    <div class="b_form_element b_form_horizontal">
+							$r.render(${item})
+							#if($f.hasError($item))
+								$r.render("${item}_ERROR")
+							#end
+				         </div>
+				      </div>
+						#if($f.hasExample($item))
+				            <div class="b_form_element_wrapper b_form_horizontal">
+						       <div class="b_form_element b_form_horizontal">
+							       $r.render("${item}_EXAMPLE")
+				    		</div>
+					       </div>
+						#end
+				</div>
+				#end
+			</div>
+		#end
+	#end
+#end
+
+#if ($off_title) </fieldset> #end
+</div>

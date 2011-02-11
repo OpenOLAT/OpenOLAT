@@ -1,0 +1,5 @@
+/* override css style, add preview background image */
+div.b_window div.b_window_content_inner {
+	background-image: url(images/prevbg.gif);
+	background-repeat: repeat;
+}

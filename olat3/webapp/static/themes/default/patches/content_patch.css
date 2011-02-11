@@ -1,0 +1,24 @@
+@charset "UTF-8";
+
+@media screen
+{
+
+	fieldset { padding-top: 1.5em;}
+	legend { position:absolute; top: -.5em; left: .5em;}
+	
+	/* IE6 min-height bugfix */
+	* html .b_with_small_icon_left { height: 18px; }
+	
+	/* IE6 can't handle table border properly on row level */
+	* html table.b_grid_row { border: 1px solid #ACAAAA; }
+	* html table.b_grid_row td { border-top: 1px solid #ACAAAA; border-bottom: 1px solid #ACAAAA; }
+	
+	/* make IE render images nicely, default rendering is ugly */
+	img { -ms-interpolation-mode:bicubic; }
+	
+		
+}
+
+
+
+

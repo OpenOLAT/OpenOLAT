@@ -1,0 +1,9 @@
+@charset "UTF-8";
+
+@media all
+{
+	/* IE6 can't display the shadows left and right because they use alpha transparency - remove also top margin */
+  	* html #b_page_margins { margin: auto;  }
+  
+  }
+}

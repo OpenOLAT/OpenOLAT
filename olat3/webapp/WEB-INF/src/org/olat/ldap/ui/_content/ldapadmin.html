@@ -1,0 +1,34 @@
+<h2>$r.translate("admin.title")</h2>
+
+<fieldset>
+	<legend>$r.translate("admin.deleteUser.title")</legend>
+	<p>
+		$r.translate("admin.deleteUser.intro")
+	</p>
+	<p> 
+		$r.render("delete.button.start")
+	</p>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("admin.synchronize.title")</legend>
+	<p>
+		$r.translate("admin.synchronize.intro")
+	</p>
+	<p>
+		$r.translate("admin.synchronize.last"): 
+		#if ($lastSyncDate)
+			$lastSyncDate
+		#else
+			<i>$r.translate("admin.synchronize.last.unknown")</i>
+		#end
+	</p>
+	<p>
+		$r.render("sync.button.start")
+	</p>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("admin.logview.title")</legend>
+	$r.render("logViewController")
+</fieldset>

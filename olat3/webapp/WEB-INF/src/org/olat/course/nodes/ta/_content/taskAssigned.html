@@ -1,0 +1,20 @@
+<div class="o_course_run_task">
+	<h4>$r.translate("task.title")</h4>		
+#if ($taskText)
+	<p>
+		$r.formatLatexFormulas($taskText)
+	</p>
+#end
+#if ($nomoretasks)
+	<p>
+		<i>$nomoretasks</i>
+	</p>
+#else
+	<p>
+		$r.translate("task.assigned")
+	</p>
+	<p>
+		<strong>$assignedtask</strong>&nbsp;&nbsp; $r.render("task.launch")
+	</p>
+#end
+</div>

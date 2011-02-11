@@ -1,0 +1,8 @@
+#if ($showBack)
+	$r.render("backLink")
+#end
+#if ($iframeOK && $onyxReportLink != '')
+	<iframe name="onyxReportLink" id="onyxReportLink" src="$onyxReportLink" frameborder="0" width="100%" height="600px"></iframe>
+#else
+	$message
+#end

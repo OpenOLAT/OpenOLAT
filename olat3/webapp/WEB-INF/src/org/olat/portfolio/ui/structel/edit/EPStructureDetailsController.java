@@ -1,0 +1,342 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+* <p>
+*/
+package org.olat.portfolio.ui.structel.edit;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.util.StringHelper;
+import org.olat.portfolio.EPArtefactHandler;
+import org.olat.portfolio.PortfolioModule;
+import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.restriction.CollectRestriction;
+import org.olat.portfolio.model.restriction.RestrictionsConstants;
+import org.olat.portfolio.model.structel.EPStructureElement;
+import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
+import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.ui.filter.PortfolioFilterController;
+import org.olat.portfolio.ui.structel.EPMapViewController;
+import org.olat.portfolio.ui.structel.EPStructureEvent;
+
+/**
+ * Description:<br>
+ * edit the title and details/description of a PortfolioStructure
+ * 
+ * <P>
+ * Initial Date:  07.10.2010 <br>
+ * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
+ */
+public class EPStructureDetailsController extends FormBasicController {
+
+	private final EPFrontendManager ePFMgr;
+	private final PortfolioModule portfolioModule;
+	private PortfolioStructure rootStructure;
+	private PortfolioStructure editStructure;
+	public static final String VIEWMODE_TABLE = "table";
+	public static final String VIEWMODE_MINI = "miniview";
+	
+	private TextElement titleEl;
+	private RichTextElement descriptionEl;
+	private StaticTextElement noEditInfo;
+	private List<SingleSelection> restrictionElements;
+	private List<SingleSelection> restrictToArtefactElements;
+	private List<TextElement> amountElements;
+	private List<CollectRestriction> collectRestrictions;
+	private SingleSelection viewRadio;
+
+	public EPStructureDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm, PortfolioStructure rootStructure) {
+		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
+		
+		PackageTranslator pt = new PackageTranslator(EPMapViewController.class.getPackage().getName(), ureq.getLocale(), getTranslator());
+		this.flc.setTranslator(pt);
+		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		this.rootStructure = rootStructure;
+		this.editStructure = rootStructure;
+		//work on a copy of the list in case of cancel
+		collectRestrictions = new ArrayList<CollectRestriction>(editStructure.getCollectRestrictions());
+
+		initForm(ureq);
+	}
+	
+	public void setNewStructure(UserRequest ureq, PortfolioStructure struct){
+		editStructure = struct;
+		collectRestrictions = new ArrayList<CollectRestriction>(editStructure.getCollectRestrictions());
+		updateUI(ureq);
+	}
+	
+	protected void updateUI(UserRequest ureq) {
+		initForm(ureq);
+	}
+
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
+	 */
+	@SuppressWarnings("unused")
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		if (formLayout.getFormComponent("struct.title")!=null) formLayout.remove("struct.title");
+		titleEl = uifactory.addTextElement("struct.title", "struct.title", 512, editStructure.getTitle(), formLayout);
+		titleEl.setNotEmptyCheck("map.title.not.empty");
+		titleEl.setMandatory(true);
+		
+		// choose representation mode (table or minimized artefact-view)
+		if (formLayout.getFormComponent("view.mode")!=null) formLayout.remove("view.mode");
+		String[] theKeys = new String[]{VIEWMODE_TABLE, VIEWMODE_MINI};
+		String[] theValues = new String[]{translate("view.mode." + VIEWMODE_TABLE), translate("view.mode." + VIEWMODE_MINI)};
+		viewRadio = uifactory.addRadiosHorizontal("view.mode", formLayout, theKeys, theValues);
+		String artRepMode = editStructure.getArtefactRepresentationMode();
+		if (artRepMode != null) viewRadio.select(artRepMode, true);
+		else viewRadio.select(VIEWMODE_MINI, true);
+
+		if (formLayout.getFormComponent("struct.description")!=null) formLayout.remove("struct.description");
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("struct.description", "struct.description", editStructure.getDescription(), -1, -1, false,
+				formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.setMaxLength(2047);
+		descriptionEl.setNotLongerThanCheck(2047, "map.description.too.long");
+
+		// hint for no edit options
+		if (formLayout.getFormComponent("noEditInfo")!=null) formLayout.remove("noEditInfo");
+		noEditInfo = uifactory.addStaticTextElement("noEditInfo", "no.edit.info.label", translate("no.edit.info"), formLayout);
+		noEditInfo.setVisible(false);
+
+		if (formLayout.getFormComponent("collect.restriction") != null) {
+			formLayout.remove("collect.restriction");
+		}
+		// show restrictions only for templates and on page/structure-level, as artefacts are not linkable on maps itself
+		if(editStructure instanceof EPStructureElement && rootStructure instanceof EPStructuredMapTemplate && editStructure.getRoot() != null) {
+			FormLayoutContainer collectContainer = FormLayoutContainer.createCustomFormLayout("collect.restriction", getTranslator(), velocity_root + "/restrictions.html");
+			collectContainer.setRootForm(mainForm);
+			collectContainer.setLabel("collect.restriction", null);
+			formLayout.add(collectContainer);
+			
+			String[] restrictionKeys = new String[]{ "", RestrictionsConstants.MAX, RestrictionsConstants.EQUAL, RestrictionsConstants.MIN };
+			String[] restrictionValues = new String[ restrictionKeys.length ];
+			restrictionValues[0] = "";
+			for(int i=1; i<restrictionKeys.length; i++) {
+				restrictionValues[i] = translate("restriction." + restrictionKeys[i]);
+			}
+			
+			List<EPArtefactHandler<?>> handlers = portfolioModule.getArtefactHandlers(); // allow only to use enabled handlers
+			String[] artefactKeys = new String[handlers.size() + 1];
+			String[] artefactValues = new String[artefactKeys.length];
+			artefactValues[0] = artefactKeys[0] = "";
+			for(int i=0; i<handlers.size(); i++) {
+				EPArtefactHandler<?> handler = handlers.get(i);
+				artefactKeys[i+1] = handler.getType();
+				String handlerClass = PortfolioFilterController.HANDLER_PREFIX + handler.getClass().getSimpleName() + PortfolioFilterController.HANDLER_TITLE_SUFFIX;
+				artefactValues[i+1] = handler.getHandlerTranslator(getTranslator()).translate(handlerClass);
+			}
+			
+			if(collectRestrictions.isEmpty()) {
+				collectRestrictions.add(new CollectRestriction());
+			}
+			
+			restrictionElements = new ArrayList<SingleSelection>();
+			restrictToArtefactElements = new ArrayList<SingleSelection>();
+			amountElements = new ArrayList<TextElement>();
+
+			List<String> counts = new ArrayList<String>();
+			for(CollectRestriction restriction:collectRestrictions) {
+				int count = restrictionElements.size();
+				
+				SingleSelection restrictionElement = 
+					uifactory.addDropdownSingleselect("collect.restriction.restriction." + count, "", collectContainer, restrictionKeys, restrictionValues, null);
+				restrictionElement.setMandatory(true);
+				if(restriction != null && StringHelper.containsNonWhitespace(restriction.getRestriction())) {
+					restrictionElement.select(restriction.getRestriction(), true);
+				}
+				restrictionElement.setUserObject(restriction);
+	
+				SingleSelection restrictToArtefactElement =
+					uifactory.addDropdownSingleselect("collect.restriction.artefacts." + count, "", collectContainer, artefactKeys, artefactValues, null);
+				restrictToArtefactElement.setMandatory(true);
+				if(restriction != null && StringHelper.containsNonWhitespace(restriction.getArtefactType())) {
+					restrictToArtefactElement.select(restriction.getArtefactType(), true);
+				}
+				
+				String amountStr = "";
+				if(restriction != null && restriction.getAmount() > 0) {
+					amountStr = Integer.toString(restriction.getAmount());
+				}
+				TextElement amountElement = uifactory.addTextElement("collect.restriction.amount." + count, "", 2, amountStr, collectContainer);
+				amountElement.setDisplaySize(3);
+				
+				restrictionElements.add(restrictionElement);
+				restrictToArtefactElements.add(restrictToArtefactElement);
+				amountElements.add(amountElement);
+				
+				FormLink addLink = uifactory.addFormLink("collect.restriction.add." + count, "collect.restriction.add", "collect.restriction.add",
+						collectContainer, Link.BUTTON_SMALL);
+				addLink.setUserObject(restriction);
+				FormLink delLink = uifactory.addFormLink("collect.restriction.del." + count, "collect.restriction.delete", "collect.restriction.delete",
+						collectContainer, Link.BUTTON_SMALL);
+				delLink.setUserObject(restriction);
+				
+				counts.add(Integer.toString(count));
+			}
+			collectContainer.contextPut("counts", counts);
+		}
+
+		if (formLayout.getFormComponent("save")!=null) formLayout.remove("save");
+		uifactory.addFormSubmitButton("save", formLayout);
+	}
+	
+	public FormItem getInitialFormItem() {
+		return flc;
+	}
+
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
+	 */
+	@Override
+	protected void formOK(UserRequest ureq) {
+		editStructure = ePFMgr.loadPortfolioStructureByKey(editStructure.getKey());
+		editStructure.setTitle(titleEl.getValue());
+		editStructure.setDescription(descriptionEl.getValue());
+		editStructure.setArtefactRepresentationMode(viewRadio.getSelectedKey());
+		
+		if(rootStructure instanceof EPStructuredMapTemplate && restrictionElements != null) {
+			editStructure.getCollectRestrictions().clear();
+			setCollectRestrictions();
+			for(SingleSelection restrictionElement:restrictionElements) {
+				CollectRestriction restriction = (CollectRestriction)restrictionElement.getUserObject();
+				if(StringHelper.containsNonWhitespace(restriction.getRestriction()) &&
+					 StringHelper.containsNonWhitespace(restriction.getArtefactType()) &&
+					 restriction.getAmount() >= 0) {
+					
+					CollectRestriction cr = new CollectRestriction(restriction);
+					editStructure.getCollectRestrictions().add(cr);
+				}
+			}
+		}
+		
+		ePFMgr.savePortfolioStructure(editStructure);
+		fireEvent(ureq, new EPStructureEvent(EPStructureEvent.CHANGE, editStructure));
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof FormLink && source.getUserObject() instanceof CollectRestriction) {
+			CollectRestriction restriction = (CollectRestriction)source.getUserObject();
+			if(source.getName().startsWith("collect.restriction.add.")) {
+				addCollectRestriction(restriction);
+			} else if(source.getName().startsWith("collect.restriction.del.")) {
+				deleteCollectRestriction(restriction);
+			}
+			// secure title and description before redraw UI
+			editStructure.setTitle(titleEl.getValue());
+			editStructure.setDescription(descriptionEl.getValue());
+			editStructure.setArtefactRepresentationMode(viewRadio.getSelectedKey());
+			setCollectRestrictions();
+			updateUI(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	protected void setCollectRestrictions() {
+		if(restrictionElements == null || restrictionElements.isEmpty()) {
+			return;
+		}
+		
+		for(int i=0; i<restrictionElements.size(); i++) {
+			SingleSelection restrictionElement = restrictionElements.get(i);
+			SingleSelection restrictToArtefactElement = restrictToArtefactElements.get(i);
+			
+			if(restrictionElement.getSelected() > 0 || restrictToArtefactElement.getSelected() > 0) {
+				TextElement amountElement = amountElements.get(i);
+				CollectRestriction cr = (CollectRestriction)restrictionElement.getUserObject();
+				String restriction = restrictionElement.getSelectedKey();
+				String artefactType = restrictToArtefactElement.getSelectedKey();
+				String amount = amountElement.getValue();
+				if(StringHelper.containsNonWhitespace(restriction)) {
+					cr.setRestriction(restriction);
+				}
+				if(StringHelper.containsNonWhitespace(artefactType)) {
+					cr.setArtefactType(artefactType);
+				}
+				if(StringHelper.containsNonWhitespace(amount)) {
+					try {
+						cr.setAmount(Integer.parseInt(amount));
+					} catch (NumberFormatException e) {
+						logWarn("Wrong format for number", e);
+					}
+				}
+			}
+		}
+	}
+	
+	protected void addCollectRestriction(CollectRestriction restriction) {
+		int index = collectRestrictions.indexOf(restriction);
+		if(index + 1 < collectRestrictions.size()) {
+			collectRestrictions.add(index+1, new CollectRestriction());
+		} else {
+			collectRestrictions.add(new CollectRestriction());
+		}
+	}
+	
+	protected void deleteCollectRestriction(CollectRestriction restriction) {
+		collectRestrictions.remove(restriction);
+	}
+
+	/**
+	 * @see org.olat.core.gui.control.DefaultController#doDispose()
+	 */
+	@Override
+	protected void doDispose() {
+		// nothing to dispose
+
+	}
+
+	// disable all formitems expect a hint, when nothing was selected or an artefact was selected
+	public void setNoStructure() {
+		editStructure = null;
+		Map<String, FormItem> comps = flc.getFormComponents();
+		for (Iterator<Entry<String, FormItem>> iterator = comps.entrySet().iterator(); iterator.hasNext();) {
+			Entry<String, FormItem> entry = iterator.next();
+			entry.getValue().setVisible(false);			
+		}
+		noEditInfo.setVisible(true);
+		flc.setDirty(true);
+	}
+}

@@ -1,0 +1,41 @@
+#if($isParticipant)
+#* TODO: cg 28.01.2010 no assessment-tool in V1.0
+	#if($hasObjectives)
+		<fieldset class="b_clearfix">
+		$r.render("learningObjectives")
+		</fieldset>
+	#end
+*#
+	
+	#if ($hasDropbox)
+		$r.render("dropboxController")
+	#end
+	#if ($DropboxIsNotAccessible)
+		<fieldset class="b_clearfix">
+			$r.translate("dropbox.is.not.accessible")
+		</fieldset>
+	#end	
+	
+	#if ($hasReturnbox)
+		$r.render("returnboxController")
+	#end
+	
+#* TODO: cg 28.01.2010 no assessment-tool in V1.0
+	#if ($hasScoring)
+		<fieldset class="b_clearfix">
+		$r.render("scoringController")
+		</fieldset>
+	#end
+*#
+	#if ($noFolder)
+		<fieldset class="b_clearfix">
+		$r.translate("no.folder.available")
+		</fieldset>
+	#end
+
+	
+#else
+	<fieldset class="b_clearfix">
+	$r.translate("project.folder.not.participant")
+	</fieldset>
+#end

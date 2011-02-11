@@ -1,0 +1,34 @@
+<h4>$r.translate("title.hibernate.statistics")</h4>
+#if ($isStatisticsEnabled)
+  $r.render("disable.hibernate.statistics")  ,  $r.render("clear.hibernate.statistics")
+#else
+  $r.render("enable.hibernate.statistics")
+#end
+<br>
+<br>
+Hibernate.ConnectCount : $hibernateStatistics.connectCount<br>
+Hibernate.FlushCount : $hibernateStatistics.flushCount<br>
+Hibernate.SessionOpenCount : $hibernateStatistics.sessionOpenCount<br>
+Hibernate.SessionCloseCount : $hibernateStatistics.sessionCloseCount<br>
+Hibernate.QueryExecutionCount : $hibernateStatistics.queryExecutionCount<br>
+Hibernate.QueryExecutionMaxTime : $hibernateStatistics.queryExecutionMaxTime<br>
+#if ($hibernateStatistics.queryExecutionMaxTimeQueryString)
+Hibernate.QueryExecutionMaxTimeQueryString : $hibernateStatistics.queryExecutionMaxTimeQueryString<br>
+#end
+Hibernate.QueryCacheHitCount : $hibernateStatistics.queryCacheHitCount<br>
+Hibernate.QueryCacheMissCount : $hibernateStatistics.queryCacheMissCount<br>
+Hibernate.TransactionCount : $hibernateStatistics.transactionCount<br>
+Hibernate.SuccessfulTransactionCount : $hibernateStatistics.successfulTransactionCount<br>
+<br>
+<h4>List all queries</h4>
+#foreach ($query in $hibernateStatistics.queries)
+  <b>$query</b><br>
+  $hibernateStatistics.getQueryStatistics($query)<br>
+#end
+<br>
+<h4>List all entities </h4>
+#foreach ($entity in $hibernateStatistics.entityNames)
+  <b>$entity</b><br>
+  $hibernateStatistics.getEntityStatistics($entity)<br>
+#end
+

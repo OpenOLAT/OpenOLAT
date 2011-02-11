@@ -1,0 +1,63 @@
+<fieldset>
+	<legend>$r.translate("fieldset.legend.question")</legend>
+	
+		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-quest-surv-4.html","help.hover.qti-quest-4")
+	
+	
+	
+		<table class="b_table b_grid_row  b_full">
+			<thead>
+				<tr>
+					<th>$r.translate("fieldset.legend.question")</th>
+					<th  width="15%">$r.translate("questionform_actions")</th>
+				</tr>
+			</thead>
+			<tbody>		
+				<tr class="b_table_odd">
+					<td>
+						$r.formatLatexFormulas($question.getQuestion().renderAsHtml($mediaBaseURL))
+					</td>
+					<td align="center">
+						<a title="$r.translateInAttribute("mat.edit.question")" href="$r.commandURIbg('editq')" $r.bgTarget()><img alt="$r.translateInAttribute("mat.edit.question")" src="$r.staticLink("images/qti/page_edit.png")"></a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("fieldset.legend.answers")</legend>
+		
+		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-4.html","help.hover.qti-answer-4")
+	
+		<form action="$r.formURIbg("sessay")" id="ofo_tab_essavitem" $r.bgTarget() method="post">
+		<table class="b_table b_grid_row  b_full">
+		<thead>
+			<tr>
+				<th>$r.translate("essay.dimension.header")</th>
+				<th width="15%">$r.translate("essay.dimension")</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr class="b_table_odd">
+				<td>
+					$r.translate("essay.columns")
+				</td>
+				<td align="center">
+					<input type="text" name="columns_q" value="$response.getColumns()" size="3" maxlength="3" onchange="return setFormDirty('ofo_tab_essavitem')" onclick="return setFormDirty('ofo_tab_essavitem')"/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					$r.translate("essay.rows")
+				</td>
+				<td align="center">
+					<input type="text" name="rows_q" value="$response.getRows()" size="3" maxlength="3" onchange="return setFormDirty('ofo_tab_essavitem')" onclick="return setFormDirty('ofo_tab_essavitem')"/>
+				</td>
+			</tr>
+		</tbody>
+		</table>
+		<br><br>
+<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
+</form>
+</fieldset>

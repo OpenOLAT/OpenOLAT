@@ -1,0 +1,22 @@
+<form name="ulform" action="$r.formURIbg("pul")" enctype="multipart/form-data" method="post" $r.bgTarget()>
+  <div class="b_form">
+    <div class="b_form_element_wrapper b_clearfix">
+      <div class="b_form_element_label"><label>$r.translate("cal.import.form.prompt"):</label>
+      </div>
+			<div class="b_form_element">
+		    <div class="b_fileinput">
+			    <input type="file" onkeydown='return false;' name="Browse" class="b_fileinput_realchooser" onchange="b_handleFileUploadFormChange(this, this.form.fake, this.form.upload)" title="$r.translateInAttribute("ul.select")"/>
+					<div class="b_fileinput_fakechooser">
+				    <input name="fake" />
+						<a href="#" class="b_with_small_icon_left b_fileinput_icon"><span>...</span></a>
+					</div>
+					<div class="b_button_group">
+            <input type="submit" class="b_button" value="$r.translateInAttribute("cal.import.form.submit")" name="upload" onclick="return o2cl()" />&nbsp;&nbsp;&nbsp;&nbsp;
+            $r.render("cancel")
+			  	</div>
+		  	</div>
+			</div>
+		</div>
+	</div>
+</form>
+

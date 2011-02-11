@@ -1,0 +1,197 @@
+<div class="o_login_form">
+	<fieldset>
+		<legend>$r.translate("login.form")</legend>
+		<p>
+			$r.translate("wayf.intro")
+		</p>		
+		<!-- EMBEDDED-WAYF-START -->
+<script type="text/javascript"><!--
+// To use this JavaScript, please access:
+// https://wayf.switch.ch/SWITCHaai/WAYF/embedded-wayf.js/snippet.html
+// and copy/paste the resulting HTML snippet to an unprotected web page that 
+// you want the embedded WAYF to be displayed
+
+// Technical contact for this Resource: developers@olat.uzh.ch
+
+// Parameters to influence look & feel of WAYF
+// ===========================================
+
+// Whether or not the new SAML2/Shibboleth 2 flow shall be used that
+// sends the user from the discovery service back to the the Service Provider
+// Set this to true if you are using a Shibboleth Service Provider 2.x
+// [Optional, default: true]
+wayf_use_discovery_service = true;
+
+// EntityID of the Service Provider that protects this Resource
+// Examples: "https://econf.switch.ch/shibboleth", "https://dokeos.unige.ch/shibboleth"
+// [Mandatory]
+wayf_sp_entityID = $wayfSPEntityID;
+
+// Assertion consumer URL of the Service Provider
+// Examples: "https://econf.switch.ch/Shibboleth.sso/SAML/POST", "https://dokeos.unige.ch/Shibboleth.sso/SAML/POST"
+// [Mandatory, when wayf_use_discovery_service = false]
+wayf_sp_handlerURL = $wayfSPHandlerURL;
+
+// Assertion consumer URL of the Service Provider
+// Examples: "https://econf.switch.ch/Shibboleth.sso/DS", "https://dokeos.unige.ch/Shibboleth.sso/DS"
+// [Mandatory, when wayf_use_discovery_service = true]
+wayf_sp_samlDSURL = $wayfSPSamlDSURL;
+
+// URL of the WAYF to use
+// Examples: "https://wayf.switch.ch/SWITCHaai/WAYF", "https://wayf-test.switch.ch/aaitest/WAYF";
+// [Mandatory]
+wayf_URL = "https://wayf.switch.ch/SWITCHaai/WAYF";
+
+// URL on this resource that the user shall be returned to after authentication
+// Examples: "https://econf.switch.ch/aai/home", "https://olat.uzh.ch/my/courses"
+// [Mandatory]
+wayf_return_url = $wayfReturnUrl;
+
+// Default IdP to preselect when central WAYF couldn't guess IdP either
+// This is usually the case the first time ever a user accesses a resource
+// [Optional, default: commented out]
+wayf_default_idp = "urn:mace:switch.ch:SWITCHaai:unizh.ch";
+
+// Font size
+// [Optional, default: 12]
+wayf_font_size = 12;
+
+// Font color
+// [Optional, default: #000000]
+wayf_font_color = '#000000';
+
+// Border color
+// [Optional, default: #00247D]
+wayf_border_color = '#FFFFFF';
+
+// Background color
+// [Optional, default: #F4F7F7]
+wayf_background_color = '#FFFFFF';
+
+// Logo size
+// [Optional, default: false]
+wayf_use_small_logo = true;
+
+// Width of the embedded WAYF in pixels or "auto"
+// [Optional, default: 200]
+wayf_width = 400;
+
+// Height of the embedded WAYF in pixels or "auto"
+// [Optional, default: "auto"]
+wayf_height = "auto";
+
+// Whether to show the checkbox to remember settings for this session
+// [optional, default: true]
+wayf_show_remember_checkbox = false;
+
+// Whether to automatically log in user if he has a session/permanent redirect
+// cookie set at central wayf
+// [optional, default: true]
+wayf_auto_login = true;
+
+// Whether to hide the WAYF after the user was logged in
+// This requires that the _shib_session_* cookie is set when a user 
+// could be authenticated
+// [optional, default: true]
+wayf_hide_after_login = false;
+
+// Whether to hide the WAYF after the user was logged in
+// This requires that the _shib_session_* cookie is set when a user 
+// could be authenticated
+// If you want to hide the embedded WAYF completely, uncomment
+// the property and set it to "". This then won't draw anything
+// [optional, default commented out: You are already logged in]
+//wayf_logged_in_messsage = "";
+
+// Whether or not to show the categories in the drop-down list
+// Possible values are: true or false
+// [Optional, default: true]
+wayf_show_categories =  true;
+
+// Categories of Identity Provider that shall not be shown
+// Possible values are: "university","uas","hospital","library","vho","others","all"
+// [Optional, default: none]
+//wayf_hide_categories =  new Array("university","uas","hospital","library","vho","others");
+
+// EntityIDs of Identity Provider whose category is hidden but that shall be shown anyway
+// Examples: "urn:mace:switch.ch:SWITCHaai:ethz.ch", "https://aai-logon.switch.ch/idp/shibboleth"
+// [Optional, default: none]
+wayf_unhide_idps = new Array();
+
+// Example of how to unhide certain Identity Providers
+// wayf_unhide_idps = new Array("urn:mace:switch.ch:aaitest:dukono.switch.ch");
+
+// EntityIDs of Identity Provider that shall not be shown at all
+// Examples: "urn:mace:switch.ch:SWITCHaai:ethz.ch", "https://aai-logon.switch.ch/idp/shibboleth"
+// [Optional, default: none]
+wayf_hide_idps = new Array();
+
+// Example of how to hide certain Identity Providers
+//wayf_hide_idps = new Array("https://aai.example.ch/idp/shibboleth", "urn:mace:switch.ch:aaitest:test-idp.org");
+
+//////////////////// ADVANCED SETTINGS ////////////////////
+wayf_hide_logo = true;
+
+// Overwrites the text of the submit button
+// [Optional, commented out by default]
+// TODO: LD: change label with a property read string
+wayf_overwrite_submit_button_text = 'Login';
+
+// Overwrites the intro text above the drop-down list
+// [Optional, commented out by default]
+// wayf_overwrite_intro_text = 'Select your Home Organisation to log in';
+wayf_overwrite_intro_text = '';
+
+
+// EntityIDs, Names and SSO URLs of Identity Providers from other federations that shall be added to the drop-down list
+// Examples: "urn:mace:switch.ch:SWITCHaai:ethz.ch", "https://aai-logon.switch.ch/idp/shibboleth"
+// [Optional, default: none]
+wayf_additional_idps = [$additionalIDPs];
+
+// Example of how to add Identity Providers from other federations
+// wayf_additional_idps = [ 
+//         
+//         {name:"ETH Z&uuml;rich",
+//         entityID:"urn:mace:switch.ch:SWITCHaai:ethz.ch",
+//         SAML1SSOurl:"https://aai-logon.ethz.ch/shibboleth-idp/SSO"},
+// 
+//         {name:"SWITCH",
+//         entityID:"https://aai.switch.ch/idp/shibboleth",
+//         SAML1SSOurl:"https://aai-logon.switch.ch/shibboleth-idp/SSO"},
+// ];
+
+//-->
+
+// Override ugly shibboleth default style form buttons to match OLAT style
+function o_overrideShibSubmitButtonStyle() {
+       Ext.onReady( function() {              
+               try {
+                       $('wayf_submit_button').addClassName('b_button').setStyle('float:left');
+                       $('user_idp').observe('change',function(){$('wayf_submit_button').addClassName('b_dirty')});
+               } catch (e) {
+                       // ignore, only style, not important
+               }
+       });
+}
+
+</script>
+
+<script type="text/javascript" src="https://wayf.switch.ch/SWITCHaai/WAYF/embedded-wayf.js" onload="o_overrideShibSubmitButtonStyle();"></script>
+
+
+<noscript>
+	<!-- Fallback to Shibboleth DS session initiator for non-JavaScript users -->
+	<p>
+	<strong>Login:</strong> Since Javascript is not activated or not available in your web browser, you have to <a href="/Shibboleth.sso/DS">proceed manually</a>.
+	</p>
+</noscript>
+
+<!-- EMBEDDED-WAYF-END -->
+
+	</fieldset>
+	<ul>
+		#if ($r.available("menu.guest"))
+			<li>$r.render("menu.guest")</li>
+		#end
+	</ul>
+</div>

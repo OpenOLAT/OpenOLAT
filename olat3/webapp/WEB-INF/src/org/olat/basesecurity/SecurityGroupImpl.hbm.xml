@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+ <class proxy = "org.olat.basesecurity.SecurityGroup" name="org.olat.basesecurity.SecurityGroupImpl" table="o_bs_secgroup">
+     <!-- the default columns -->
+    <id name="key" column="id" type="long" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+    
+    <version name="version" access="field" column="version" type="int"/>
+    <property  name="creationDate" column="creationdate" type="timestamp" />   
+ 
+	</class>
+</hibernate-mapping>
+

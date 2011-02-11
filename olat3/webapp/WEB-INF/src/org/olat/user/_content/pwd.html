@@ -1,0 +1,20 @@
+#if ($provider_Shib)
+<fieldset>
+	<legend>$r.translate("title.password.aai")</legend>
+	$r.translate("info.password.aai")
+</fieldset>
+#end
+
+#if($provider_OLAT)
+<fieldset>
+	<legend>$r.translate("title.password.olat")</legend>
+	$r.translate("info.password.olat")<br><br>
+	$r.render("chpwdform")
+</fieldset>
+#elseif($provider_LDAP and $provider_LDAP_pwdchange)
+<fieldset>
+	<legend>$r.translate("title.password.olat")</legend>
+	$r.translate("info.password.olat")<br><br>
+	$r.render("chpwdform")
+</fieldset>
+#end

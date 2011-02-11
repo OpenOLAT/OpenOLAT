@@ -1,0 +1,82 @@
+<div class="o_blog_posts b_clearfix">
+#if ($callback.mayCreateItems() && $feed.isInternal())
+	<div class="b_float_right">
+		$r.render("feed.add.item")
+	</div>
+#end
+<h4 class="o_blog_posts">$r.translate("blog.posts") ($helper.itemsCount($callback))</h4>
+#if (!$feed.hasItems() )
+	$r.contextHelpWithWrapper("org.olat.modules.webFeed.ui.blog","internal-external.html","chelp.hover")
+	<p>$r.translate("blog.has.no.episodes")</p>
+#end
+#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal"))
+	<div class="o_blog_no_posts b_msg_dialog b_important">
+		<p>$r.translate("blog.internal.or.external")</p>
+		$r.render("feed.make.internal")
+		$r.render("feed.make.external")
+	</div>
+#else
+
+	<!-- loop over episodes -->
+	#foreach( $post in $helper.getItems($callback) ) 	
+		<div class="o_post b_clearfix $!post.extraCSSClass()">
+			#if (( $helper.isAuthor($post) && !$post.isDraft()) && $feed.isInternal() && $r.available("feed.artefact.item.$post.getGuid()"))
+				<div class="b_float_right">
+					<span class="o_post_artefact_collector">$r.render("feed.artefact.item.$post.getGuid()")</span>
+				</div>
+			#end
+			#if($r.available("date.$post.getGuid()"))
+				$r.render("date.$post.getGuid()")
+			#end
+			<h5>$r.escapeHtml($post.getTitle())</h5>
+			#set ( $info = $helper.getInfo($post) )
+			#if ( $info )
+				<p class="o_item_info">
+				$info#if($helper.isModified($post)), <span class="o_item_info_mod">$helper.getModifierInfo($post)</span>#end
+				</p>
+			#end
+			<p />
+			$!helper.getItemDescriptionForBrowser($post) 
+			#if ( $post.getContent() && $post.getContent() != "" )
+				$r.render("link.to.$post.getGuid()")
+			#end
+			#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $post.isDraft())) && $feed.isInternal())
+				#if ($r.available("feed.edit.item.$post.getGuid()"))
+				<div class="b_clearfix">
+					<div class="o_post_edit b_float_right">
+						## special case: this item has been added by another user and thus we 
+						## don't yet have links for this item. But we can still display the content
+						$r.render("feed.edit.item.$post.getGuid()")
+						#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $post.isDraft()))
+							$r.render("delete.$post.getGuid()")
+						#end
+					</div>
+				</div>
+				#end
+			#end
+			#if ($feed.isExternal() && $post.getExternalLink())
+				<a href="$!post.getExternalLink()" target="_blank" class="b_with_tiny_icon_left b_ext_tiny_link">$r.translate("feed.item.original")</a>
+			#end
+			#if ($r.available("commentsAndRating.${post.getGuid()}"))
+				$r.render("commentsAndRating.${post.getGuid()}")
+			#end
+		</div>
+	#end
+	
+	<div id="o_link_container">
+	#if ( $helper.hasOlderItems() )
+		<div class="o_older_items">
+			$r.render("feed.older.items")
+		</div>
+	#end
+	#if ( $helper.hasNewerItems() )
+		<div class="o_newer_items">
+			$r.render("feed.newer.items")
+		</div>
+		<div class="o_home">
+			$r.render("feed.startpage")
+		</div>
+	#end
+	</div>
+#end
+</div>

@@ -1,0 +1,25 @@
+<!-- Custom Layout for Response-Level Feedback -->
+
+	<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_label">
+			<span class="qti_response_level_feedback_label">$r.translate("questionform_answer")</span>
+		</div>
+		<div class="b_form_element">
+			<span class="qti_response_level_feedback_label">$r.translate("answer_feedback")</span>
+		</div>
+	</div>
+#foreach( $response in $responses )
+	<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_label">
+			$r.formatLatexFormulas($response.renderAsHtml($mediaBaseUrl))
+		</div>
+		<div class="b_form_element">
+			<div class="qti_edit_layout">
+				$r.render("feedback_$velocityCount")
+				<div class="edit_link">				
+					$r.render("link_$velocityCount")
+				</div>
+			</div>
+		</div>
+	</div>
+#end

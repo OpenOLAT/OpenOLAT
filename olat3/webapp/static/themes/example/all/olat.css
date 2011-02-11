@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+/**
+  * layouting for ALL medium and all layouts
+  */ 
+
+@media all
+{	
+	/* LOGIN */
+	div.o_login div.o_login_form fieldset { margin: 2em 0 0 0; background: #fff url(../images/osi-certified-120x100.png) no-repeat 90% 50%; padding-right: 30%; min-height: 130px; }
+	
+	#b_topnav #o_topnav_imclient #o_topnav_imclient_summary a {color: #000B63; }
+	#b_topnav #o_topnav_imclient #o_topnav_imclient_summary a:hover, #b_topnav #o_topnav_imclient #o_topnav_imclient_summary a:focus {color: #2E3463; }
+	#b_topnav #o_topnav_langchooser label { color: #666; }
+	
+}
+

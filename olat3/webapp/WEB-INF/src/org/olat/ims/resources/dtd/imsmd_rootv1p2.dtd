@@ -1,0 +1,81 @@
+<!-- imsmd_rootv1p2.dtd -->
+<!-- extension: The extension element is used to create extensions at anyplace in the XML instantiation.  If the extension contains only elements from this DTD, maintaining those content models, then additional elements do not need to be declared.  It is encouraged that extensions be created from the exisiting library of elements whenever possible.  -->
+
+<!ELEMENT extension ANY>
+
+<!ELEMENT lom (general?, lifecycle?, metametadata?, technical?, educational?, rights?, relation*, annotation*, classification*)>
+  <!ELEMENT general (identifier?, title?, catalogentry*, language*, description*, keyword*, coverage*, structure?, aggregationlevel?, extension?)>
+    <!ELEMENT identifier (#PCDATA)>
+    <!ELEMENT title (langstring+)>
+      <!ELEMENT langstring (#PCDATA)>
+      <!ATTLIST langstring
+        xml:lang NMTOKEN #IMPLIED>
+    <!ELEMENT catalogentry (catalog, entry, extension?)>
+      <!ELEMENT catalog (#PCDATA)>
+      <!ELEMENT entry (langstring+)>
+    <!ELEMENT language (#PCDATA)>
+    <!ELEMENT description (langstring+)>
+    <!ELEMENT keyword (langstring+)>
+    <!ELEMENT coverage (langstring+)>
+    <!ELEMENT structure (source, value)>
+      <!ELEMENT source (langstring+)>
+      <!ELEMENT value (langstring+)>
+    <!ELEMENT aggregationlevel (source, value)>
+
+  <!ELEMENT lifecycle (version?, status?, contribute*, extension?)>
+    <!ELEMENT version (langstring+)>
+    <!ELEMENT status (source, value)>
+    <!ELEMENT contribute (role, centity*, date?, extension?)>
+      <!ELEMENT role (source, value)>
+      <!-- centity: The is the ENTITY element.  The word ENTITY is reserved within XML, so the name has been changed to centity to stand for "Contributing Entity".   -->
+      <!ELEMENT centity (vcard)>
+        <!ELEMENT vcard (#PCDATA)>
+      <!ELEMENT date (datetime?, description?)>
+        <!ELEMENT datetime (#PCDATA)>
+
+  <!ELEMENT metametadata (identifier?, catalogentry*, contribute*, metadatascheme*, language?, extension?)>
+    <!ELEMENT metadatascheme (#PCDATA)>
+
+  <!ELEMENT technical (format*, size?, location*, requirement*, installationremarks?, otherplatformrequirements?, duration?, extension?)>
+    <!ELEMENT format (#PCDATA)>
+    <!ELEMENT size (#PCDATA)>
+    <!ELEMENT location (#PCDATA)>
+      <!ATTLIST location
+	type (URI | TEXT) #IMPLIED>
+
+    <!ELEMENT requirement (type?, name?, minimumversion?, maximumversion?, extension?)>
+      <!ELEMENT type (source, value)>
+      <!ELEMENT name (source, value)>
+      <!ELEMENT minimumversion (#PCDATA)>
+      <!ELEMENT maximumversion (#PCDATA)>
+    <!ELEMENT installationremarks (langstring+)>
+    <!ELEMENT otherplatformrequirements (langstring+)>
+    <!ELEMENT duration (datetime?, description?)>
+
+  <!ELEMENT educational (interactivitytype?, learningresourcetype*, interactivitylevel?, semanticdensity?, intendedenduserrole*, context*, typicalagerange*, difficulty?, typicallearningtime?, description?, language*, extension?)>
+    <!ELEMENT interactivitytype (source, value)>
+    <!ELEMENT learningresourcetype (source, value)>
+    <!ELEMENT interactivitylevel (source, value)>
+    <!ELEMENT semanticdensity (source, value)>
+    <!ELEMENT intendedenduserrole (source, value)>
+    <!ELEMENT context (source, value)>
+    <!ELEMENT typicalagerange (langstring+)>
+    <!ELEMENT difficulty (source, value)>
+    <!ELEMENT typicallearningtime (datetime?, description?)>
+
+  <!ELEMENT rights (cost?, copyrightandotherrestrictions?, description?, extension?)>
+    <!ELEMENT cost (source, value)>
+    <!ELEMENT copyrightandotherrestrictions (source, value)>
+
+  <!ELEMENT relation (kind?, resource?, extension?)>
+    <!ELEMENT kind (source, value)>
+    <!ELEMENT resource (identifier?, description?, catalogentry*, extension?)>
+
+  <!ELEMENT annotation (person?, date?, description, extension?)>
+    <!ELEMENT person (vcard)>
+
+  <!ELEMENT classification (purpose?, taxonpath*, description?, keyword*, extension?)>
+    <!ELEMENT purpose (source, value)>
+    <!ELEMENT taxonpath (source?, taxon?)>
+      <!ELEMENT taxon (id?, entry?, taxon?)>
+        <!ELEMENT id (#PCDATA)>

@@ -1,0 +1,14 @@
+<div class="o_feed_peekview $wrapperCssClass b_clearfix">
+#foreach( $post in $items ) 	
+	<div class="o_feed_peekview_item">
+		<h5>
+			$r.render("nodeLink_${post.getGuid()}")
+		</h5>
+		<div class="o_peekview_author">
+			$!post.getAuthor() ($formatter.formatDateAndTime($post.getPublishDate()))
+		</div>
+		$!helper.getItemDescriptionForBrowser($post)
+	</div>
+#end
+	$r.render("peekview.allItemsLink")
+</div>

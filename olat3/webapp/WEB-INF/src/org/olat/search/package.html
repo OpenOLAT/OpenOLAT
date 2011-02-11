@@ -1,0 +1,204 @@
+<html>
+<head>
+</head>
+
+<body>
+
+Overview description of full text search package.
+
+<h3>Use Cases</h3>
+<p>
+<img src="doc-files/UseCases.png"/>
+
+<!-- ### Use Case 1: BUILD FULL INDEX ### -->
+<table border="1" width="700">
+ <tr>
+   <td>Use Case</td>
+   <td><b>Build Full Index</b></td>
+ </tr>
+ <tr>
+   <td>Description</td>
+   <td>Build new full search index of all searchable OLAT resources.</td>
+ </tr>
+ <tr>
+   <td>Trigger</td>
+   <td>At startup if no index exist.<br>
+       OLAT Administrator can trigger a build through admin gui.
+   </td>
+ </tr>
+  <tr>
+   <td>Input</td>
+   <td>Configuration :<br>
+       Build Index-Directory<br>
+       Index-Directory
+   </td>
+ </tr>
+ <tr>
+   <td>Output</td>
+   <td>Lucene Index-Dir with new index
+   </td>
+ </tr>
+ <tr>
+   <td>Sequence</td>
+   <td>Loop over all searchable OLAT resources
+       Create for each OLAT resource a Lucene Document with OLAT attributes
+       Final : copy new index files to index-directory 
+   </td>
+ </tr>
+ <tr>
+   <td>Notes</td>
+   <td>Performance : Can the index build with 100% CPU or shoud it run in backround with low CPU load ?
+   </td>
+ </tr>
+</table>
+<br>
+<!-- ### Use Case 2: SEARCH ### -->
+<table border="1" width="700">
+ <tr>
+   <td>Use Case</td>
+   <td><b>Search</b></td>
+ </tr>
+ <tr>
+   <td>Description</td>
+   <td>Search with query in all indexed OLAT resources.</td>
+ </tr>
+ <tr>
+   <td>Trigger</td>
+   <td>OLAT User press search button 
+   </td>
+ </tr>
+ <tr>
+   <td>Input</td>
+   <td>Query (Query fields : lastChange, title, description, document-type, author,content)
+   </td>
+ </tr>
+ <tr>
+   <td>Output</td>
+   <td>List with search result. Show for each result in text-block :<br>
+        - Title<br>
+        - Description<br>
+        - Author<br>
+        - Type [Forum, Forum-Message, Visitcard etc]<br>
+        - Link to OLAT resource
+   </td>
+ </tr>
+ <tr>
+   <td>Sequence</td>
+   <td>1.	Search for resources match with query<br>
+       2.	loop over result to check visibility (access) for the user<br>
+       3.	return list with all allowed resources 
+   </td>
+ </tr>
+ <tr>
+   <td>Notes</td>
+   <td>Ev. Gefundener Text highliten
+   </td>
+ </tr>
+</table>
+<br>
+<!-- ### Use Case 3: OPEN OLAT RESOURCE ### -->
+<table border="1" width="700">
+ <tr>
+   <td>Use Case</td>
+   <td><b>Open OLAT resource</b></td>
+ </tr>
+ <tr>
+   <td>Description</td>
+   <td>After a search, user can open the OLAT resource for a item in result list.</td>
+ </tr>
+ <tr>
+   <td>Trigger</td>
+   <td>OLAT User press more link in result list 
+   </td>
+ </tr>
+ <tr>
+   <td>Input</td>
+   <td>Link Parameter Resource-URL 
+   </td>
+ </tr>
+ <tr>
+   <td>Output</td>
+   <td>OLAT Resource will be open
+   </td>
+ </tr>
+ <tr>
+   <td>Sequence</td>
+   <td>1. Security check if resource can be open.<br>
+       2. Open resource in new tab. 
+   </td>
+ </tr>
+ <tr>
+   <td>Notes</td>
+   <td>-
+   </td>
+ </tr>
+</table>
+<br>
+<!-- ### Use Case 3: UPDATE INDEX ### -->
+<table border="1" width="700">
+ <tr>
+   <td>Use Case</td>
+   <td><b>Update OLAT Resource / Upate index</b></td>
+ </tr>
+ <tr>
+   <td>Description</td>
+   <td>The index date will be updated because a OLAT user changed something.</td>
+ </tr>
+ <tr>
+   <td>Trigger</td>
+   <td>A OLAT user updated a searchable resource. 
+   </td>
+ </tr>
+ <tr>
+   <td>Input</td>
+   <td>documentId of the changed document.<br>
+       New documents has no documentId. 
+   </td>
+ </tr>
+ <tr>
+   <td>Output</td>
+   <td>Index will be updated in backgroud.
+   </td>
+ </tr>
+ <tr>
+   <td>Sequence</td>
+   <td>The index will not be updated immediately, update goes into q asynchron queue. 
+   </td>
+ </tr>
+ <tr>
+   <td>Notes</td>
+   <td>-
+   </td>
+ </tr>
+</table>
+
+</p>
+
+<h3>Search Component Overview Diagram</h3>
+The search-service has four main components :<br>
+<b>Full-Indexer Component</b><br>
+The full-indexer generates a new index. The full-indexer runs in seperate thread. 
+It can be startet scheduled via config or manually via Admin. see : {@link org.olat.search.service.indexer}<br>
+<b>Index Component</b><br>
+Controls the live index file. Copy new index file from full-indexer.<br>
+<b>Search Component</b><br>
+Handles all search queries.<br>
+<b>Updater Component</b><br>
+Update current live index. The updater runs in a own thread scheduled in the config.<br>
+<br>
+The <a href="http://lucene.apache.org">Apache-Lucene</a> is used as full text search engine library .   
+The index data will be stored in a file on the filesystem. 
+<br>
+<br>
+<img src="doc-files/ComponentDiagram.png"/>
+<br>
+<h3>Class Diagram</h3>
+<img src="doc-files/ClassDiagram.jpg"/>
+<h3>JumpIn Handling</h3>
+Each search-result has a link to the resource in OLAT. The user can jump from the search-result-entry 
+to the correspending resource in OLAT. The indexer stores for each indexed element a resource-URL e.g.
+'[BusinessGroup:435678][Forum:456789]'. In this example the BusinessGroup with ID '435678' will be open
+and afterwards the Forum with ID '456789' will be open (in context of BusinessGroup 435678).
+<img src="doc-files/JumpIn.png"/>
+</body>
+</html>

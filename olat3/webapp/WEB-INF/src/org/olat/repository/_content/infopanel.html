@@ -1,0 +1,48 @@
+#if ($isOwner || $isAuthor)
+	#if($iscourse)
+			$r.render("CourseInfoForm")
+	#else
+		<fieldset>
+			<legend>$r.translate("details.typeinfoheader")</legend>
+			$r.contextHelpWithWrapper("org.olat.repository",'rep-meta-info.html','help.hover.rep.detail')
+			#if ($hasHandlerDetails)
+				$r.render("handlerDetails")
+			#else
+			<i>$r.translate("details.notypeinfo")</i>
+			#end
+		</fieldset>
+	#end	
+	<fieldset>
+		<legend>$r.translate("details.referenceinfoheader")</legend>
+		$r.contextHelpWithWrapper("org.olat.repository",'rep-meta-info-reference.html','help.hover.rep.detail')
+		## simulate form view to match styling of fieldset above
+		<div class="b_form">
+			<div class="b_form_element_wrapper b_clearfix">
+				<div class="b_form_element_label"><label>$r.translate("details.referenceinfo")</label></div>
+				<div class="b_form_element">
+					#if ($referenceDetails)
+						$referenceDetails
+					#else
+						<i>$r.translate("details.noreferenceinfo")</i>
+					#end
+				</div>
+			</div>
+			<div class="b_form_element_wrapper b_clearfix">
+				<div class="b_form_element_label"><label>$r.translate("cif.downloaded")</label></div>
+				<div class="b_form_element">$numDownloads</div>
+			</div>
+			<div class="b_form_element_wrapper b_clearfix">
+				<div class="b_form_element_label"><label>$r.translate("cif.launched")</label></div>
+				<div class="b_form_element">$numLaunches</div>
+			</div>
+			<div class="b_form_element_wrapper b_clearfix">
+				<div class="b_form_element_label"><label>$r.translate("cif.lastusage")</label></div>
+				<div class="b_form_element">$lastUsage</div>
+			</div>
+			<div class="b_form_element_wrapper b_clearfix">
+				<div class="b_form_element_label"><label>$r.translate("cif.usedbycnt")</label></div>
+				<div class="b_form_element">$numUsers</div>
+			</div>	
+		</div>
+	</fieldset>
+#end

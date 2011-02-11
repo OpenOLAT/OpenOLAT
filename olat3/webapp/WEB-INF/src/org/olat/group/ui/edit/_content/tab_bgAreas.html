@@ -1,0 +1,13 @@
+<fieldset>
+	<legend>$r.translate("fieldset.legend.areas")</legend>
+	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-${type}-select-area.html","help.hover.bgArea-${type}")
+#if ($noAreasFound)
+	#if ($isGmAdmin)
+		$r.translate("areachoice.no.areas.admin")
+	#else
+		$r.translate("areachoice.no.areas.owner")	
+	#end
+#else
+	$r.render("areasChoice")
+#end
+</fieldset>

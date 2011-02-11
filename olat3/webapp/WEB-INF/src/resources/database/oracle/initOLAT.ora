@@ -1,0 +1,47 @@
+###################################################
+# Basic Oracle parameter settings                 #
+#                                                 #
+# These settings are intended for evaluation or   #
+# small site operations and are unlikely to be    #
+# appropriate for a production environment!       #
+#                                                 #
+# Parameters cited here are compatible with 10g   #
+# (incl. XE) instances.                           #
+#                                                 #
+# Please ensure that consult Oracle documentation #
+# when configuring a production site              #
+#                                                 #
+###################################################
+
+db_name=${db.name}
+db_block_size=8192
+open_cursors=150
+processes=50
+sessions=50
+control_files=("${db.oracle.common.data.dir}/${db.name}/control01.ctl", "${db.oracle.common.data.dir}/${db.name}/control02.ctl")
+sga_target = 500M
+local_listner='(address=(protocol=tcp)(host=localhost)(port=1521))'
+
+###################################################
+# UNDO tablespace management                      #
+# Tablespace cited here must be consistent with   #
+# the CREATE DATABASE statement                   #
+###################################################
+undo_tablespace=undotbs
+undo_management=auto
+
+###################################################
+# Dump directories used for logfiles (e.g., alert #
+# trace etc.) These directories must exist before #
+# the database is created!                        #
+###################################################
+background_dump_dest=${db.oracle.common.data.dir}/${db.name}/bdump
+user_dump_dest=${db.oracle.common.data.dir}/${db.name}/udump
+audit_file_dest=${db.oracle.common.data.dir}/${db.name}/adump
+
+###################################################
+# Enable the use of the OLATDBA account           #
+###################################################
+remote_login_passwordfile=exclusive
+
+ 

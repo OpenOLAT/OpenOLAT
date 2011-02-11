@@ -1,0 +1,15 @@
+<fieldset>
+	<legend>$title</legend>
+#if ($hasChoices)
+	$r.render("stringChoice")
+#else
+	<p>
+	$noChoicesText
+	</p>
+	<p align="center">
+		<a class="b_button" href="#" onclick="javascript:window.close()" onkeypress="javascript:window.close()"/>
+			<span>$r.translate("close")</span>
+		</a>
+	</p>
+#end
+</fieldset>

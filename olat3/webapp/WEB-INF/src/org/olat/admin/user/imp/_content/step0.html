@@ -1,0 +1,20 @@
+$r.translate("formatexplanation.part1")
+$r.translate("formatexplanation.part2a") 
+#if($canCreateOLATPassword)
+	$r.translate("formatexplanation.part2.cancreatepassword","$mandatoryProperties")
+#else
+	$r.translate("formatexplanation.part2.cannotcreatepassword","$mandatoryProperties")
+#end	
+
+$r.translate("formatexplanation.part3")
+<p />	
+
+#b_togglebox_start("o_usermanagement_importexample" "$r.translate('import.example')")
+	#if($canCreateOLATPassword)
+		<img alt="$r.translateInAttribute("import.example")" src='$r.staticLink('images/screen/userimport.png')' />
+	#else
+		<img alt="$r.translateInAttribute("import.example")" src='$r.staticLink('images/screen/userimport_nopwd.png')' />
+	#end
+#b_togglebox_end()
+<a href="$mapperURI/UserImportSample.xls" target="_blank" class="b_with_small_icon_left b_filetype_xls">$r.translate("download.example")</a>
+

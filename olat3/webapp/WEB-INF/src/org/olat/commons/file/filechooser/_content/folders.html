@@ -1,0 +1,20 @@
+<form method="post" action="$r.formURIbg('select')" $r.bgTarget()>
+<fieldset>
+	<legend>$r.translate("folders")</legend>
+	<p>
+		$r.translate("chooseFolder.description")
+	</p>
+	#set ($count = 1)
+		<input type="radio" class="b_radio" name="sel" value="0" checked="checked"/>$r.translate("personalFolder")<br />
+	#foreach ($folder in $folderList)
+		<input type="radio" class="b_radio" name="sel" value="$count" />$folder<br />
+		#set ($count = $count + 1)
+	#end
+	<div class="b_button_group">	
+		<input class="b_button" type="submit" name="submit" value="$r.translateInAttribute('chooseFolder')" />
+	#if($showcancelbutton)
+		<input class="b_button" type="submit" name="cancel" value="$r.translateInAttribute('cancel')" />
+	#end
+	</div>
+</fieldset>
+</form>

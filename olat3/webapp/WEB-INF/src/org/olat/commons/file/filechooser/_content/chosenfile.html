@@ -1,0 +1,41 @@
+<fieldset class="b_clearfix">
+	<legend>$fieldSetLegend</legend>
+		#if ($target == "Assessment")
+			$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-start-test.html", "help.choose.file")
+		#elseif ($target == "Self-Assessment")
+			$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-start-self.html", "help.choose.file")
+		#elseif ($target == "Survey")
+			$r.contextHelpWithWrapper("org.olat.course.nodes.iq","ced-qti-start-surv.html", "help.choose.file")
+		#elseif ($target == "default")
+			$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-choose.html", "help.choose.file")
+		#end
+	
+		#if ($fileIsChoosen)			
+			<p>
+				<strong>$r.translate("file"):</strong>&nbsp;$r.render("command.preview")
+			</p>
+			#if ($enableEdit || ($enableDelete && $target != "default"))
+				#if ($enableEdit)
+					$r.render("command.edit")
+				#end
+				#if ($enableDelete && $target != "default")
+					$r.render("command.delete")
+				#end
+			#end
+			$r.render("command.changefile")
+		#else
+			<p>
+				$r.translate("no.file.chosen")
+			</p>
+			$r.render("command.choosecreatefile")
+		#end
+		
+		<br>
+</fieldset class="b_clearfix">
+#if ($fileIsChoosen)
+<fieldset>
+	<legend>$r.translate("fieldset.allowRelativeLinksForm")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-secur.html", "help.link.file")
+	$r.render("allowRelativeLinksForm")
+</fieldset>
+#end

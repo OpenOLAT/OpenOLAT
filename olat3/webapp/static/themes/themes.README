@@ -1,0 +1,130 @@
+About themes
+============
+OLAT uses a CSS based theming mechanism. A theme is set for the entire OLAT installation, users
+can only choose different fon't sizes. In courses, course authors can override the installed theme
+with custom CSS rules to create a course layout. This document describes how you can create a
+custom theme.
+
+The OLAT layout layer is based on the YAML framework (http://www.yaml.de). It is mandatory to 
+understand the YAML framework before your start writing your own theme. CSS is a very complex 
+world, if you are not an expert in this field, learn CSS before you start working on an OLAT 
+theme.
+
+When you have created a new high-quality theme, why not share it with the OLAT community?
+Please contact us via the developer mailinglist (http://lists.olat.org)
+
+----
+Credits:	frentix GmbH - professional services for the Open Source LMS OLAT
+Info:		http://www.frentix.com
+Date:		Zürich, 7. Mai 2008
+
+
+Theme structure
+===============
+The OLAT themes follow the YAML terminology, but to not create conflicts with other YAML based
+CSS we use a "b_" prefix before all YAML classes. In the default theme, the CSS rules are splitted
+up in the following pieces:
+
+- yaml_basemod.css	
+CSS rules that override the YAML default rules and defined the basic layout. Here you define the
+page background, page with and height, the elements top nav, nav using the sliding door technique, 
+main with col1, col2 and col3 and the footer. We added some elements to the YAML framework in this 
+area, they are also in this file.
+All classes in this file use the "b_" prefix
+
+- brasato.css			
+CSS rules needed by components and containers from the brasato framework. These are generic container
+like the menu tree, table, tabbed pane, buttons, forms etc. All those classes use the "b_" prefix.
+
+- olat.css			
+CSS rules needed by the OLAT web application. These are OLAT and e-learning specific elements. In some
+cases some classes from the brasato.css are overriden, usually with in a specific context. Generally we
+try to be very specific which class should match to make the rules more precise and to help you 
+understand our thoughts. The OLAT specific classes use the "o_" prefix.
+
+- content.css			
+CSS rules to format content elements. These are mostly normal HTML elements definitions without any
+specific class names or id descriptor.
+
+Note that the sequence of the files is important to achieve the correct cascading of the CSS rules.
+
+The CSS files are stored in folder named after the CSS media to which it applies:
+
+- all 		CSS rules for all media types
+- aural 	CSS rules for aural media types
+- print		CSS rules for print media types (override all styles)
+- patches	CSS rules that are only applied to IE browsers to fix IE specific issues. Mixed media types
+
+The media files are stored in the images and the sounds directory. The images are furthermore splitted 
+up in images that belong to the yaml_basemod.css, the brasato.css or the olat.css. They are referenced 
+from within the CSS files using relative url parameters.
+
+
+Creating a custom theme
+=======================
+1) Define a name for your theme. The name must consist of a-z characters only, 
+no other characters please (untested). In this example our custom theme will be "mytheme".
+
+2) Create a directory in the webapp/static/themes directory that is labled after your theme. 
+Example:
+mkdir webapp/static/themes/mytheme
+
+3) Create the following files in your theme folder:
+
+- layout.css		
+This file contains the include commands for the entire layout. Normally, you include in the 
+first line the layout.css from the default layout using the following line:
+@import url(../default/layout.css);
+After that, you include all your special includes. See the example theme for an example.
+
+- all/content.css	
+This file contains the special styling for general HTML elements. It is used by the HTML editor
+to format all content. Best is to copy the file from the default theme and override every 
+CSS rule:
+cp ../default/all/content.css all/content.css
+
+- patches.css		
+This file contains bugfixes for IE browser family. It will only be read by IE browsers.
+Normally, you include in the first line the patches.css from the default layout using the 
+following line:
+@import url(../default/patches.css);
+After that, you include all your special patches that are necessary because of your layout. 
+See the example theme for an example.
+
+- screenreader.css		
+This file contains styles that override the normal layout styles when in web2a mode. This
+is normally the case for screenreaders. The web2a mode has to be enabled in the user preferences.
+Unless you do fancy things in your theme you can import the screenreader file from the default
+theme:
+@import url(../default/screenreader.css);
+
+- favicon.ico		
+This is the favicon for your website. It will show up in your browser next to the URL and 
+is usually used in the browser bookmarks as well. Search on the web for online converters 
+if you don't have an icon in the required .ico format
+
+Note that these four file must exist to form a valid theme. 
+
+
+Testing a custom theme
+======================
+Once you have created the new theme you can log in as administrator and selec the 
+Administration site in the main navigation. Choose 'layout' from the menu. You new theme
+will appear in the themes list. Select your theme to apply it. 
+
+Note that the theme will be applied to the whole OLAT installation. All users that log into
+the system will work with the selected right away.
+
+In the current implementation the theme will be reset to the default theme whenever tomcat is
+restarted. To permanently use the new theme, follow the next steps.
+
+
+Configuring a custom theme for permanent usage
+==============================================
+To set your custom theme as the theme to be used for your OLAT installation you must configure
+it in your olat.properties file. Modify the following parameter in your olat/olat.properties
+file:
+layout.theme = mytheme
+
+Restart tomcat to permanently activate your new theme.
+

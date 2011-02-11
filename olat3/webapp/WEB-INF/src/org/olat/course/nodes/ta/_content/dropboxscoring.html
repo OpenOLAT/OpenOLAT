@@ -1,0 +1,38 @@
+#if ($hasTask)
+<div class="o_course_run_task">
+	<h4>$r.translate("task.title")</h4>
+	#if ($assignedtask)
+		<p>
+			$r.translate("task.scoring.assigned")
+		</p>
+		<p>
+			<strong>$assignedtask</strong>&nbsp;&nbsp;&nbsp;
+			$r.render("task.launch")
+			$r.render("task.cancel")
+		</p>
+	#else
+		$r.translate("task.scoring.notassigned")
+	#end
+</div>
+#end
+
+#if ($hasDropbox)
+<div class="o_course_run_dropbox">
+	<h4>$r.translate("dropbox.title")</h4>
+	$r.render("dropbox")
+</div>
+#end
+
+#if ($hasReturnbox)
+<div class="o_course_run_returnbox">
+	<h4>$r.translate("returnbox.title")</h4>
+	$r.render("returnbox")
+</div>
+#end
+
+#if ($hasStatusPullDown)
+<fieldset>
+	<legend>$r.translate("status.title")</legend>
+	$r.render("statusForm")
+</fieldset>
+#end

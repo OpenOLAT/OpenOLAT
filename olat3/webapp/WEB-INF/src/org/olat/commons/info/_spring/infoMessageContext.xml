@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+                        
+	<bean id="infoMessageFrontendManager" class="org.olat.commons.info.manager.InfoMessageFrontendManagerImpl">
+		<property name="coordinatorManager" ref="coordinatorManager"/>
+	  <property name="infoMessageManager" ref="infoMessageManager"/>
+	  <property name="infoSubscriptionManager" ref="infoSubscriptionManager"/>
+	</bean>
+
+	<bean id="infoMessageManager" class="org.olat.commons.info.manager.InfoMessageManagerImpl">
+	  <property name="dbInstance" ref="database"/>
+	</bean>
+	
+	<bean id="infoSubscriptionManager" class="org.olat.commons.info.notification.InfoSubscriptionManagerImpl">
+	  <property name="notificationsManager" ref="org.olat.core.util.notifications.NotificationsManager"/>
+	</bean>
+	
+</beans>

@@ -1,0 +1,3 @@
+According to the Apache License the license should be in a file named NOTICE.TXT
+
+Please have a look at the NOTICE.TXT

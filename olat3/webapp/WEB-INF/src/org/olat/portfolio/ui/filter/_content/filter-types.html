@@ -1,0 +1,5 @@
+$r.render("filter.all") 
+#foreach($typeLink in $typeCmpList)
+	$r.render($typeLink.getName())	
+#end
+$r.render("filter.edit")

@@ -1,0 +1,10 @@
+<div class="o_course_run">
+	<h3 class="b_with_small_icon_left o_cp_icon">$!menuTitle</h3>
+	<div class="o_course_run_displaytitle">$!displayTitle</div>
+	#if($hasObjectives)
+		$r.render("learningObjectives")
+	#end
+	<div class="b_button_group">
+		$r.render("command.showcp")
+	</div>
+</div>

@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<!-- module -->
+<bean id="shibbolethModule" class="org.olat.shibboleth.ShibbolethModule">
+<property name="attributeTranslator" ref="attributeTranslator" />
+<property name="operators">
+	<list>
+		<value>isin</value>
+		<value>isnotin</value>
+		<value>has</value>
+		<value>hasnot</value>
+		<value>startswith</value>
+		<value>endswith</value>
+	</list>
+</property>
+<property name="userMapping">
+	<map>
+		<entry key="FirstName" value="Shib-InetOrgPerson-givenName" />
+		<entry key="LastName" value="Shib-Person-surname" />
+		<entry key="EMail" value="Shib-InetOrgPerson-mail" />
+		<entry key="InstitutionalName" value="Shib-SwissEP-HomeOrganization" />
+		<entry key="InstitutionalEMail" value="Shib-InetOrgPerson-mail" />
+		<entry key="InstitutionalUserIdentifier" value="Shib-InetOrgPerson-employeeNumber" />
+		<!--  <entry key="PreferedLanguage" value="" />-->
+	</map>
+</property>
+
+<property name="persistedProperties">
+  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+    <constructor-arg index="0" ref="coordinatorManager"/>
+    <constructor-arg index="1" ref="shibbolethModule" />
+  </bean>
+</property>
+</bean>
+                       
+       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="shibbolethModule" />
+        <property name="targetMethod" value="init" />
+        <property name="arguments">
+        			<value>
+                    <!-- Enable/disable shibboleth logins. Make sure to enable/disable the Shibboleth authentication provider aswell. -->
+					EnableShibbolethLogins=${shibboleth.enable}
+					
+					<!-- 
+						enable sending language with specified parameter name in the AAI get request.
+						Used to display a localized AAI login page, where the language is taken from the olats login page.
+					-->
+					UseLanguageInRequest=${language.enable}
+					LanguageParamName=${language.param}
+					defaultUIDAttribute=${shibboleth.defaultUID}
+                    </value>
+         </property>
+</bean>
+
+
+<bean id="attributeTranslator" class="org.olat.shibboleth.util.AttributeTranslator" >
+	<property name="attributeTranslations">
+		<map>
+		<!--
+				Attributes to translate for easier reading/handling within OLAT.
+				Attributes will be available by their translated name (value) within OLAT.
+				
+				As an option, for each attribute predefined selectable values can be added as 
+				in the example below. These are used in the course editors easy mode to display
+				a list of items to choose from instead of a text input field.
+				
+				All attributes value and all selectableValue can be translated in the 
+				ShibbolethModule package or the default package. When not translation is found, 
+				the keys defined in this file will be displayed.
+				
+				Example:
+				To make a GUI translation of the attribute "urn:mace:switch.ch:attribute-def:swissEduPersonHomeOrganization"
+				you must define an value="swissEduPersonHomeOrganization" and add some selectable values. Now in the i18n
+				file of the ShibbolethModule you can add the following lines:
+				swissEduPersonHomeOrganization= Home organization
+				swissEduPersonHomeOrganization.uzh.ch= University of Zuerich
+				swissEduPersonHomeOrganization.ethz.ch= ETH Zuerich
+				...
+			 -->
+			<entry key="Shib-EP-Entitlement" value="eduPersonEntitlement" />
+			<entry key="Shib-SwissEP-UniqueID" value="swissEduPersonUniqueID" />
+			<entry key="Shib-Person-surname" value="surname" />
+			<entry key="Shib-InetOrgPerson-givenName" value="givenName" />
+			<entry key="Shib-InetOrgPerson-mail" value="mail" />
+			<entry key="Shib-SwissEP-HomeOrganization" value="swissEduPersonHomeOrganization" />
+			<entry key="Shib-SwissEP-HomeOrganizationType" value="swissEduPersonHomeOrganizationType" />
+			<entry key="Shib-EP-Affiliation" value="eduPersonAffiliation" />
+			<entry key="Shib-SwissEP-StudyBranch1" value="swissEduPersonStudyBranch1" />
+			<entry key="Shib-SwissEP-StudyBranch2" value="swissEduPersonStudyBranch2" />
+			<entry key="Shib-SwissEP-StudyBranch3" value="swissEduPersonStudyBranch3" />
+			<entry key="Shib-SwissEP-StudyLevel" value="swissEduPersonStudyLevel" />
+			<entry key="Shib-SwissEP-StaffCategory" value="swissEduPersonStaffCategory" />
+			<!-- Is anyone using these attributes? it's not in the attribute-map.xml
+			<entry key="urn:mace:switch.ch:attribute-def:eduPersonOrgUnitDN" value="eduPersonOrgUnitDN" />		
+			<entry key="urn:mace:dir:attribute-def:eduPersonScopedAffiliation" value="eduPersonScopedAffiliation" /> 
+			<entry key="urn:mace:dir:attribute-def:swissEduPersonGender" value="swissEduPersonGender" />
+			-->
+			<entry key="Shib-OrgPerson-postalAddress" value="postalAddress" />			
+			<entry key="Shib-InetOrgPerson-employeeNumber" value="employeeNumber" />
+			<entry key="Shib-Person-ou" value="organizationalUnit" />
+			<entry key="Shib-InetOrgPerson-preferredLanguage" value="PreferedLanguage" />
+		</map>
+	</property>
+	<property name="attributeSelectableValues">
+		<map>
+			<entry key="swissEduPersonHomeOrganization">
+				<list>
+					<value>bfh.ch</value>
+					<value>cscs.ch</value>
+					<value>epfl.ch</value>
+					<value>ethz.ch</value>
+					<value>fhnw.ch</value>
+					<value>fhsg.ch</value>
+					<value>hes-so.ch</value>
+					<value>ntb.ch</value>
+					<value>hslu.ch</value>
+					<value>hsr.ch</value>
+					<value>fh-htwchur.ch</value>
+					<value>hcuge.ch</value>
+					<value>insel.ch</value>
+					<value>phbern.ch</value>
+					<value>ph-gr.ch</value>
+					<value>phz.ch</value>
+					<value>psi.ch</value>
+					<value>phsg.ch</value>
+					<value>supsi.ch</value>
+					<value>switch.ch</value>
+					<value>unisi.ch</value>
+					<value>unibas.ch</value>
+					<value>unibe.ch</value>
+					<value>unilu.ch</value>
+					<value>unisg.ch</value>
+					<value>uzh.ch</value>
+					<value>usz.ch</value>
+					<value>unifr.ch</value>
+					<value>unige.ch</value>
+					<value>unil.ch</value>
+					<value>unine.ch</value>
+					<value>vho-switchaai.ch</value>
+					<value>zhbluzern.ch</value>
+					<value>zhdk.ch</value>
+					<value>zhwin.ch</value>
+				</list>
+			</entry>
+			<entry key="swissEduPersonHomeOrganizationType">
+				<list>
+					<value>university</value>
+					<value>uas</value>
+					<value>hospital</value>
+					<value>library</value>
+					<value>vho</value>
+					<value>others</value>
+				</list>
+			</entry>
+			<entry key="eduPersonAffiliation">
+				<list>
+					<value>faculty</value>
+					<value>student</value>
+					<value>staff</value>
+					<value>alum</value>
+					<value>member</value>
+					<value>affiliate</value>
+				</list>
+			</entry>
+			<entry key="swissEduPersonStudyBranch1">
+				<list>
+					<!-- University -->
+					<value>1</value>
+					<value>2</value>
+					<value>3</value>
+					<value>4</value>
+					<value>5</value>
+					<value>6</value>
+					<value>7</value>
+					<value>8</value>
+					<!-- University of Applied Sciences -->
+					<value>10000</value>
+					<value>20000</value>
+					<value>30000</value>
+					<value>40000</value>
+					<value>50000</value>
+					<value>60000</value>
+					<value>70000</value>
+					<value>80000</value>
+					<value>110000</value>
+					<value>120000</value>
+					<value>130000</value>
+					<value>140000</value>
+					<value>150000</value>
+					<value>990000</value>
+					<value>999000</value>
+				</list>
+			</entry>
+			<entry key="swissEduPersonStudyBranch2">
+				<list>
+					<!-- University -->
+				<value>11</value>
+				<value>12</value>
+				<value>13</value>
+				<value>14</value>
+				<value>15</value>
+				<value>41</value>
+				<value>42</value>
+				<value>43</value>
+				<value>51</value>
+				<value>52</value>
+				<value>53</value>
+				<value>54</value>
+				<value>55</value>
+				<value>61</value>
+				<value>62</value>
+				<value>63</value>
+				<value>64</value>
+				<value>81</value>
+				<value>82</value>
+				<value>83</value>
+				<value>84</value>			
+				<!-- University of Applied Sciences -->
+				<value>10101</value>
+				<value>10102</value>
+				<value>10103</value>
+				<value>10104</value>
+				<value>10105</value>
+				<value>10106</value>
+				<value>10107</value>
+				<value>10999</value>
+				<value>20201</value>
+				<value>20202</value>
+				<value>20203</value>
+				<value>20204</value>
+				<value>20205</value>
+				<value>20206</value>
+				<value>20207</value>
+				<value>20208</value>
+				<value>20209</value>
+				<value>20210</value>
+				<value>20211</value>
+				<value>20212</value>
+				<value>20213</value>
+				<value>20214</value>
+				<value>20999</value>
+				<value>30301</value>
+				<value>30302</value>
+				<value>30303</value>
+				<value>30304</value>
+				<value>30305</value>
+				<value>30308</value>
+				<value>30309</value>
+				<value>30310</value>
+				<value>30999</value>
+				<value>40401</value>
+				<value>40402</value>
+				<value>40999</value>
+				<value>50501</value>
+				<value>50502</value>
+				<value>50503</value>
+				<value>50504</value>
+				<value>50505</value>
+				<value>50506</value>
+				<value>50507</value>
+				<value>50508</value>
+				<value>50509</value>
+				<value>50510</value>
+				<value>50999</value>
+				<value>60601</value>
+				<value>60602</value>
+				<value>60603</value>
+				<value>60604</value>
+				<value>60605</value>
+				<value>60606</value>
+				<value>60607</value>
+				<value>60999</value>
+				<value>70701</value>
+				<value>80199</value>
+				<value>80201</value>
+				<value>80202</value>
+				<value>80203</value>
+				<value>80299</value>
+				<value>80301</value>
+				<value>90101</value>
+				<value>90201</value>
+				<value>90301</value>
+				<value>90401</value>
+				<value>90501</value>
+				<value>90999</value>
+				<value>100101</value>
+				<value>100201</value>
+				<value>100301</value>
+				<value>100401</value>
+				<value>100999</value>
+				<value>110199</value>
+				<value>110299</value>
+				<value>110999</value>
+				<value>120199</value>
+				<value>120299</value>
+				<value>120399</value>
+				<value>120999</value>
+				<value>130101</value>
+				<value>130102</value>
+				<value>130103</value>
+				<value>130999</value>
+				<value>140101</value>
+				<value>140102</value>
+				<value>140199</value>
+				<value>140201</value>
+				<value>140202</value>
+				<value>140203</value>
+				<value>140204</value>
+				<value>140299</value>
+				<value>140301</value>
+				<value>140399</value>
+				<value>140999</value>
+				<value>150101</value>
+				<value>150201</value>
+				<value>150301</value>
+				<value>150302</value>
+				<value>150401</value>
+				<value>150402</value>
+				<value>150499</value>
+				<value>150999</value>
+				<value>999000</value>
+				<value>999999</value>
+				</list>
+			</entry>
+			<entry key="swissEduPersonStudyBranch3">
+				<list>
+					<!-- University -->
+				<value>1430</value>
+				<value>1431</value>
+				<value>1435</value>
+				<value>1440</value>
+				<value>1445</value>
+				<value>1449</value>
+				<value>1450</value>
+				<value>1454</value>
+				<value>1455</value>
+				<value>1460</value>
+				<value>1465</value>
+				<value>1470</value>
+				<value>1300</value>
+				<value>1500</value>
+				<value>1600</value>
+				<value>1700</value>
+				<value>1800</value>
+				<value>1850</value>
+				<value>1900</value>
+				<value>1990</value>
+				<value>2000</value>
+				<value>2100</value>
+				<value>2120</value>
+				<value>2200</value>
+				<value>2205</value>
+				<value>2300</value>
+				<value>2400</value>
+				<value>2450</value>
+				<value>4905</value>
+				<value>1100</value>
+				<value>1190</value>
+				<value>3701</value>
+				<value>2505</value>
+				<value>2520</value>
+				<value>2530</value>
+				<value>2540</value>
+				<value>2600</value>
+				<value>4200</value>
+				<value>4300</value>
+				<value>4400</value>
+				<value>4500</value>
+				<value>4590</value>
+				<value>4600</value>
+				<value>4700</value>
+				<value>4800</value>
+				<value>4900</value>
+				<value>4990</value>
+				<value>4100</value>
+				<value>4103</value>
+				<value>6200</value>
+				<value>6300</value>
+				<value>6400</value>
+				<value>6500</value>
+				<value>6100</value>
+				<value>6150</value>
+				<value>7200</value>
+				<value>7300</value>
+				<value>7800</value>
+				<value>7450</value>
+				<value>7500</value>
+				<value>7550</value>
+				<value>7600</value>
+				<value>7650</value>
+				<value>7700</value>
+				<value>7905</value>
+				<value>7910</value>
+				<value>7915</value>
+				<value>7100</value>
+				<value>7400</value>
+				<value>1000</value>
+				<value>2130</value>
+				<value>8000</value>
+				<value>9000</value>
+				<value>9001</value>
+				<value>9002</value>
+				<value>850</value>
+				<value>650</value>
+				<value>660</value>
+				<value>750</value>
+				<!-- University of Applied Sciences -->
+				<value>3099</value>
+				<value>3801</value>
+				<value>3802</value>
+				<value>3803</value>
+				<value>3804</value>
+				<value>3805</value>
+				<value>3806</value>
+				<value>3807</value>
+				<value>3200</value>
+				<value>3808</value>
+				<value>3809</value>
+				<value>3810</value>
+				<value>3811</value>
+				<value>3812</value>
+				<value>3813</value>
+				<value>3814</value>
+				<value>3815</value>
+				<value>3816</value>
+				<value>3817</value>
+				<value>3818</value>
+				<value>3843</value>
+				<value>3844</value>
+				<value>3845</value>
+				<value>3229</value>
+				<value>3819</value>
+				<value>3820</value>
+				<value>3821</value>
+				<value>3822</value>
+				<value>3823</value>
+				<value>3826</value>
+				<value>3846</value>
+				<value>3847</value>
+				<value>3299</value>
+				<value>3824</value>
+				<value>3825</value>
+				<value>3399</value>
+				<value>3827</value>
+				<value>3828</value>
+				<value>3829</value>
+				<value>3830</value>
+				<value>3831</value>
+				<value>3832</value>
+				<value>3833</value>
+				<value>3834</value>
+				<value>3835</value>
+				<value>3842</value>
+				<value>3500</value>
+				<value>3836</value>
+				<value>3837</value>
+				<value>3838</value>
+				<value>3839</value>
+				<value>3840</value>
+				<value>3848</value>
+				<value>3849</value>
+				<value>3841</value>
+				<value>3529</value>
+				<value>3531</value>
+				<value>3532</value>
+				<value>3533</value>
+				<value>3539</value>
+				<value>3540</value>
+				<value>3551</value>
+				<value>3552</value>
+				<value>3553</value>
+				<value>3554</value>
+				<value>3555</value>
+				<value>3569</value>
+				<value>3571</value>
+				<value>3572</value>
+				<value>3573</value>
+				<value>3574</value>
+				<value>3579</value>
+				<value>3589</value>
+				<value>3599</value>
+				<value>3600</value>
+				<value>3609</value>
+				<value>3619</value>
+				<value>3629</value>
+				<value>3639</value>
+				<value>3651</value>
+				<value>3652</value>
+				<value>3653</value>
+				<value>3659</value>
+				<value>3661</value>
+				<value>3662</value>
+				<value>3669</value>
+				<value>3671</value>
+				<value>3672</value>
+				<value>3673</value>
+				<value>3674</value>
+				<value>3679</value>
+				<value>3681</value>
+				<value>3689</value>
+				<value>3699</value>
+				<value>3701</value>
+				<value>3710</value>
+				<value>3720</value>
+				<value>3725</value>
+				<value>3730</value>
+				<value>3731</value>
+				<value>3739</value>
+				<value>3799</value>
+				<value>3999</value>
+				<value>9999</value>
+				</list>
+			</entry>
+			<entry key="swissEduPersonStudyLevel">
+				<list>
+					<value>00</value>
+				<value>15</value>
+				<value>15</value>
+				<value>20</value>
+				<value>25</value>
+				<value>26</value>
+				<value>31</value>
+				<value>32</value>
+				<value>33</value>
+				<value>34</value>
+				<value>35</value>
+				<value>39</value>
+				</list>
+			</entry>
+			<entry key="swissEduPersonStaffCategory">
+				<list>
+					<value>101</value>
+				<value>102</value>
+				<value>103</value>
+				<value>201</value>
+				<value>202</value>
+				<value>203</value>
+				<value>301</value>
+				<value>303</value>
+				<value>304</value>
+				<value>305</value>
+				<value>306</value>
+				<value>307</value>			
+				<value>308</value>	
+				</list>
+			</entry>
+		</map>
+	</property>
+</bean>
+
+<bean id="switchShibbolethAuthenticationConfigurator" class="org.olat.shibboleth.SwitchShibbolethAuthenticationConfigurator">		
+		<property name="wayfSPEntityID" value="${shibboleth.wayfSPEntityID}" />	
+		<property name="wayfSPHandlerURL" value="${shibboleth.wayfSPHandlerURL}" />
+		<property name="wayfSPSamlDSURL" value="${shibboleth.wayfSPSamlDSURL}" />
+		<property name="wayfReturnUrl" value="${shibboleth.wayfReturnUrl}" />
+		<property name="additionalIdentityProviders" value="${shibboleth.wayf.additionalIDPs}" />	
+</bean>	
+
+<bean id="registrationPresetUsername.byShibbolethAttribute"
+	class="org.olat.shibboleth.ShibbolethUserNameFromAttributeUserNameCreationInterceptor" lazy-init="true">
+		<property name="allowChangeOfUsername" value="${registration.preset.username.allowChanges}"/>
+		<property name="shibUsernameAttr" value="${registration.preset.username.shibbolethAttribute}"/>
+		<property name="regexp">
+			<list>
+				<value>^[^@]*</value>
+			</list>
+		</property>
+</bean>
+
+</beans>

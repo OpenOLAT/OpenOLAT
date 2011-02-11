@@ -1,0 +1,175 @@
+<script type="text/javascript">
+	function hideSwitches() {
+		document.getElementById('hswitch').style.display = 'none';
+		document.getElementById('sswitch').style.display = 'none';
+		document.getElementById('fswitch').style.display = 'none';
+	}
+
+	function showSwitches() {
+		document.getElementById('hswitch').style.display = '';
+		document.getElementById('sswitch').style.display = '';
+		document.getElementById('fswitch').style.display = '';
+	}
+</script>
+<fieldset>
+	<legend>$r.translate("fieldset.legend.assessmentglobalsettings")</legend>
+	#if ($isRestrictedEdit)
+		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv.html","help.hover.survey")
+	#else
+		#if($isSurveyMode.equals("false"))
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-test.html","help.hover.assess")
+		#else
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv.html","help.hover.survey")
+		#end
+	#end	
+	
+<form action="$r.formURIbg('sao')" id="ofo_assessform" name="assessform" $r.bgTarget() method="post">
+<table border="0" width="100%">
+
+	<tr>
+		<td>$r.translate("form.metadata.title")</td>
+		<td><input type="text" size="30" name="title" value="$r.escapeHtml($!assessment.title)" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" /></td>
+	</tr>
+
+	<tr>
+		<td valign="top">$r.translate("form.metadata.objectives")</td>
+		<td>
+			<textarea name="objectives" cols="35" rows="8" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" >$!assessment.objectives</textarea>
+			<br>
+		</td>
+	</tr>
+
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+
+	<tr>
+		#set ($yeschecked = "")
+		#set ($nochecked = "")
+		#set ($readonly = "")
+		#if($duration)	
+			#set ($yeschecked = 'checked="checked"')
+			#set ($minval = $duration.getMin())
+			#set ($secval = $duration.getSec())
+			#set ($css = "")
+		#else
+			#set ($nochecked = 'checked="checked"')		
+			#set ($minval = "0")
+			#set ($secval = "0")
+			#set ($readonly = 'readonly="readonly"')
+			#set ($css = "b_disabled")
+		#end		
+		<td>$r.translate("form.metadata.duration")</td>
+		<td nowrap="true">
+			<input type="radio" name="duration" value="Yes" $yeschecked onclick="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			&nbsp;
+			<input type="radio" name="duration" value="No" $nochecked onclick="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+			&nbsp;
+			<input id="min" type="text" name="duration_min" value="$minval"  size="3" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css"/>:
+			<input id="sec" type="text" name="duration_sec" value="$secval"  size="3" maxlength="2" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css"/>			
+			&nbsp;<i>($r.translate("form.metadata.minutes"):$r.translate("form.metadata.seconds"))</i>
+		</td>	
+	</tr>	
+
+
+	#set ($yeschecked = "")
+	#set ($nochecked = "")
+	#if ($assessment.isInheritControls())
+		#set ($yeschecked = 'checked="checked"')
+	#else
+		#set ($nochecked = 'checked="checked"')
+	#end
+	<tr>
+		<td>$r.translate("form.metadata.globalfeedbackNsolution")</td>
+		<td>
+			<input type="radio" name="inheritswitch" value="Yes" $!yeschecked onclick="return setFormDirty('ofo_assessform');showSwitches();" onkeypress="return setFormDirty('ofo_assessform');showSwitches();" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			&nbsp;
+			<input type="radio" name="inheritswitch" value="No" $!nochecked onclick="return setFormDirty('ofo_assessform');hideSwitches();" onkeypress="return setFormDirty('ofo_assessform');hideSwitches();" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+		</td>
+	</tr>
+
+	<tr id="fswitch">
+		#set ($yeschecked = "")
+		#set ($nochecked = "")
+		#set ($readonly = 'readonly="readonly"')
+		#set ($css = "b_disabled")
+		#if ($control.getFeedback() == 1)
+			#set ($yeschecked = 'checked="checked"')
+			#set ($readonly = "")
+			#set ($css = "")
+		#elseif ($control.getFeedback() == 2)
+			#set ($nochecked = 'checked="checked"')		
+			#set ($readonly = 'readonly="readonly"')
+			#set ($css = "b_disabled")
+		#end
+		<td>&nbsp;&nbsp;&nbsp;<i>$r.translate("form.metadata.show.feedback")</i></td>
+		<td>
+			<input type="radio" name="feedbackswitch" value="Yes" $!yeschecked onchange="return setFormDirty('ofo_assessform');" class="b_radio"/>$r.translate("yes")
+			&nbsp;
+			<input type="radio" name="feedbackswitch" value="No" $!nochecked onchange="return setFormDirty('ofo_assessform');" class="b_radio"/>$r.translate("no")
+		</td>
+	</tr>
+
+	<tr id="sswitch">
+		#set ($yeschecked = "")
+		#set ($nochecked = "")
+		#set ($readonly = 'readonly="readonly"')
+		#set ($css = "b_disabled")
+		#if ($control.getHint() == 1)
+			#set ($yeschecked = 'checked="checked"')
+			#set ($readonly = "")
+			#set ($css = "")
+		#elseif ($control.getHint() == 2)
+			#set ($nochecked = 'checked="checked"')		
+			#set ($readonly = 'readonly="readonly"')
+			#set ($css = "b_disabled")
+		#end		
+		<td>&nbsp;&nbsp;&nbsp;<i>$r.translate("form.metadata.show.hints")</i></td>
+		<td>
+			<input type="radio" name="hintswitch" value="Yes" $yeschecked onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			&nbsp;
+			<input type="radio" name="hintswitch" value="No" $nochecked onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+		</td>
+	</tr>
+	<tr id="hswitch">
+		#set ($yeschecked = "")
+		#set ($nochecked = "")
+		#set ($readonly = 'readonly="readonly"')
+		#set ($css = "b_disabled")
+		#if ($control.getSolution() == 1)
+			#set ($yeschecked = 'checked="checked"')
+			#set ($readonly = "")
+			#set ($css = "")
+		#elseif ($control.getSolution() == 2)
+			#set ($nochecked = 'checked="checked"')		
+			#set ($readonly = 'readonly="readonly"')
+			#set ($css = "b_disabled")
+		#end		
+		<td>&nbsp;&nbsp;&nbsp;<i>$r.translate("form.metadata.show.solution")</i></td>
+		<td>
+			<input type="radio" name="solutionswitch" value="Yes" $yeschecked onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			&nbsp;
+			<input type="radio" name="solutionswitch" value="No" $nochecked onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+		</td>
+	</tr>
+#if ($assessment.isInheritControls() && !$isRestrictedEdit)
+<script type="text/javascript">showSwitches();</script>
+#else
+<script type="text/javascript">hideSwitches();</script>
+#end
+
+#end 
+
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+	<tr>
+		<td>$r.translate("form.metadata.cutvalue")</td>
+		<td>
+			<input type="text" name="cutvalue" value="$!cutvalue" size="4" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')"/>
+		</td>
+	</tr>
+#end
+
+  </table>
+
+<br>
+<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
+</form>
+</fieldset>

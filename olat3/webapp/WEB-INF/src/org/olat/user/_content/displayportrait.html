@@ -1,0 +1,18 @@
+#if ($hasPortrait)
+	#if ($canLinkToHomePage)
+		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
+			$r.render("image")
+		</a>
+	#else
+		$r.render("image")
+	#end
+#else
+	#if ($canLinkToHomePage)
+		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
+		    <img src="$r.staticLink("images/transparent.gif")" alt="user portrait" class="$portraitCssClass"/>
+		</a>
+	#else
+		<img src="$r.staticLink("images/transparent.gif")" alt="user portrait" class="$portraitCssClass"/>
+	#end
+#end
+ 

@@ -1,0 +1,93 @@
+<h1 class="o_wikimod_heading">$page.getPageName().replace("_"," ")</h1>
+
+$r.render("versions")
+
+#if($diffs.size())
+	#if($diffs.size() > 0)
+		<div>
+		#set($oldVersion = $page.getVersion() - 1)
+		#set($versionFromTo = ["$oldVersion", "$page.getVersion()"])
+		<h3 class="o_wikimod_heading">$r.translate("diff.comparing", $versionFromTo)</h3>
+		#foreach($diff in $diffs)
+			##Size: $diff.getSize()<br />
+			##From: $diff.getFrom()<br />
+			##To: $diff.getTo()<br />
+			##Type: $diff.getType()<br />
+			
+			#if($diff.getType() == "CHANGE")
+				#if($diff.getFrom() == $diff.getTo())
+					#set ($fromTo = $diff.getFrom()+$diff.getTo())
+					#set($fromTo = ["$diff.getFrom()", "$fromTo"]) 
+					$r.translate("$diff.getType()", $fromTo)
+				#end
+				#if($diff.getFrom() != $diff.getTo())
+					#set ($fromTo = $diff.getFrom()+$diff.getTo())
+					#set($fromTo = ["$diff.getFrom()", "$fromTo"]) 
+					$r.translate("CHANGE", $fromTo)
+				#end
+			#elseif($diff.getType() == "INSERT")
+				$r.translate("$diff.getType()", "$diff.getSize()")
+			#elseif($diff.getType() == "DELETE")
+				$r.translate("$diff.getType()", "$diff.getSize()")
+			#elseif($diff.getType() == "MOVE")
+				$r.translate("$diff.getType()", "$diff.getSize()")
+			#end
+			<br />
+			
+			#set ($lines = $diff.getLines())
+			
+				#if($diff.getType() == "CHANGE")
+					<table border="0"><tr>
+					<td valign="top" class="o_wikimod_diff">
+						$r.translate("old.version")<br />
+						<div class="o_wikimod_old">
+						#foreach($line in $lines)
+							#if($velocityCount <= $diff.getSize() / 2)
+								$line<br>
+							#end
+						#end
+						</div>
+					</td>
+					<td valign="top" class="o_wikimod_diff"">
+						$r.translate("new.version")<br />
+						<div class="o_wikimod_new">
+						#foreach($line in $lines)
+							#if($velocityCount > $diff.getSize() / 2)
+								$line<br />
+							#end
+						#end
+						</div>
+					</td></tr></table>
+				#elseif($diff.getType() == "INSERT")
+					<div class="o_wikimod_diff"><div class="o_wikimod_ins">
+						#foreach($line in $lines)
+							+  $line<br />
+						#end
+					</div></div>
+				#elseif($diff.getType() == "DELETE")
+					<div class="o_wikimod_diff"><div class="o_wikimod_del">
+						#foreach($line in $lines)
+							-  $line<br />
+						#end
+					</div></div>
+				#else
+					#foreach($line in $lines)
+						line: $line<br />
+					#end
+				#end
+				<br />
+		#end
+		</div>
+	#end
+#end
+
+#if ($r.available("versionDisplay"))
+	<br />
+	$r.translate("historic.version", "$page.getVersion()")
+	#if($r.available("revert.old.version"))
+		$r.render("revert.old.version")
+	#end
+	<div class="o_wikimod_version">
+		$r.render("versionDisplay")
+	</div>
+#end

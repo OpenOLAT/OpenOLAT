@@ -1,0 +1,8 @@
+#if ($showBackButton)
+$r.render("backLink")
+<p />
+#end
+#if ($showTitle)
+<h4>$r.translate("title.userlist")</h4>
+#end
+$r.render("userlist")

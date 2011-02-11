@@ -1,0 +1,95 @@
+	<div class="o_course_run_scoreinfo">
+	#if ($hasScoreField)
+		<h4>$r.translate("score.title")</h4>
+		<table>
+			<tbody>
+				<tr>
+					<td>
+						$r.translate("score.min"):
+					</td>
+					<td>
+						$scoreMin
+					</td>
+				</tr>
+				<tr>
+					<td>
+						$r.translate("score.max"): 
+					</td>
+					<td>
+						$scoreMax
+					</td>
+				</tr>
+				<tr>
+					<td>			
+						$r.translate("score.yourscore"): 
+					</td>
+					<td>
+						#if($score)		
+							$score
+						#else
+							<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscore")</div>
+						#end
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	#end
+
+	#if ($hasPassedField)
+		<h4>$r.translate("passed.title")</h4>
+		<table>
+			<tbody>	
+			#if ($passedCutValue)
+				<tr>
+					<td>
+						$r.translate("passed.cut"):
+					</td>
+					<td>
+						$passedCutValue
+					</td>
+				</tr>
+			#end
+				<tr>
+					<td>			
+						$r.translate("passed.yourpassed"):
+					</td>
+					<td>
+						#if($hasPassedValue && $passed == true)		
+							<span class="o_passed">$r.translate("passed.yes")</span>
+						#elseif($hasPassedValue && $passed == false)		
+							<span class="o_notpassed">$r.translate("passed.no")</span>
+						#else
+							<div class="o_course_run_scoreinfo_noinfo">$r.translate("passed.nopassed")</div>
+						#end
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	#end
+
+	#if ($hasCommentField)
+		<h4>$r.translate("comment.title")</h4>
+		#if ($comment)
+			$comment
+		#else
+			<div class="o_course_run_scoreinfo_noinfo">$r.translate("comment.nocomment")</div>
+		#end
+	#end
+	</div>
+
+#if ($infoTextUser != "")
+	<div class="o_course_run_disclaimer">
+		<h4>$r.translate("info.title")</h4>
+		$r.formatLatexFormulas($infoTextUser)
+	</div>
+#end
+
+
+	#if ($log)
+		<p />	
+		#b_togglebox_start("o_course_run_log" $r.translate("log.title"))
+		<pre>
+$log
+		</pre>
+		#b_togglebox_end()
+	#end

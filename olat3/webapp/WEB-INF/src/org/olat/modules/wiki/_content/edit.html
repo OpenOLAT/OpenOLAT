@@ -1,0 +1,97 @@
+<div class="b_floatbox">
+#if($isGuest)
+	<div class="b_warning">$r.translate("guest.no.edit")</div>
+#elseif(!$lockEntry.isSuccess())
+	<div class="b_warning">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getName()])</div>
+#else
+	## normal edit workflow
+	#if ($r.available("versionDisplay"))
+		<br />
+		<div style="text-align:right;" class="o_wikimod_warn">
+			#if($isDirty)
+				$r.translate("preview.edit",$page.getPageName())
+			#end
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$r.render("preview.close")
+		</div>
+		<div class="o_wikimod_version">
+			$r.render("versionDisplay")
+		</div>
+		<br />
+	#end
+	
+	#if($mayDeleteArticle)
+		<div class="b_float_right">
+			$r.render("delete.page")
+		</div>
+	#end
+	<h1 class="o_wikimod_heading">
+		$r.translate("edit"):$page.getPageName().replace("_"," ")
+	</h1>
+	<div class="o_wikimod_btn">
+		$r.contextHelpWithWrapper("org.olat.course.nodes.wiki","ced-wiked.html","help.hover.wikisyntax") 
+		<a href="#" title="$r.translateInAttribute("button.bold")" class="o_wikimod_btn_bold" onclick="insertTags('\'\'\'','\'\'\'','$r.translate("enter.bold")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.italic")" class="o_wikimod_btn_italic" onclick="insertTags('\'\'','\'\'','$r.translate("enter.italic")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.headline")" class="o_wikimod_btn_headline" onclick="insertTags('\n==','==\n','$r.translate("enter.headline")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.list")" class="o_wikimod_btn_list" onclick="insertTags('\n* ','\n','$r.translate("enter.list")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.numlist")" class="o_wikimod_btn_numlist" onclick="insertTags('\n# ','\n','$r.translate("enter.numlist")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.image")" class="o_wikimod_btn_image" onclick="insertTags('[[Image:',']]','$r.translate("enter.image")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.media")" class="o_wikimod_btn_media" onclick="insertTags('[[Media:',']]','$r.translate("enter.media")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.math")" class="o_wikimod_btn_math" onclick="insertTags('<math>','<\/math>','$r.translate("enter.math")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.link")" class="o_wikimod_btn_link" onclick="insertTags('[[',']]','$r.translate("enter.link")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.extlink")" class="o_wikimod_btn_extlink" onclick="insertTags('[',']','$r.translate("enter.extlink")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.nowiki")" class="o_wikimod_btn_nowiki" onclick="insertTags('<nowiki>','<\/nowiki>','$r.translate("enter.nowiki")')"></a>
+		<a href="#" title="$r.translateInAttribute("button.hr")" class="o_wikimod_btn_hr" onclick="insertTags('\n----\n','','')"></a>
+	</div>
+	#if($linkList.size() > 0)	
+		<div class="o_wikimod_linkchooser">
+			<select style="position:relative" id="wikiLinkChooser" size="1">
+				#foreach($link in $linkList)
+					<option value="$link">$link</option>
+				#end
+			</select>
+			<input type="submit" onclick="javascript:insertTags('[[',']]',document.getElementById('wikiLinkChooser').value)" value="$r.translateInAttribute("link.insert")" class="b_button b_small" />
+		</div>
+	#end
+	#if($fileList.size() > 0)
+		<div class="o_wikimod_filechooser">
+			<select style="position:relative" id="mediaFileChooser" size="1">
+				#foreach($file in $fileList)
+					<option value="$r.escapeHtml($file.getName())">$file.getName()</option>
+				#end
+			</select>
+			<input type="submit" onclick="javascript:insertMediaTag(document.getElementById('mediaFileChooser').value)" value="$r.translateInAttribute("media.insert")" class="b_button b_small" />
+		</div>
+	#end
+
+	## EDIT FORM
+	<div class="o_wikimod_editform_wrapper">
+		$r.render('editForm')
+	</div>
+	
+	#b_togglebox_start("o_wikimod_uploader" $r.translate("media.upload"))
+		<span class='b_xsmall'>
+			$r.translate('upload.example')
+		</span>
+		$r.render('fileUplCtr')
+		<br />
+		<span class='emphasis'>
+			$r.translate('media.insert.hint')
+		</span>
+		<br /><br />
+		$r.render('manage.media')
+		<br />
+	#b_togglebox_end()
+	<br />
+#end
+
+#if (!$r.available("versionDisplay"))
+	## set the form dirty if the user closed the preview button
+	#if($isDirty)
+	<script type="text/javascript">
+	/* <![CDATA[ */
+	setFormDirty('${editformid}');
+	/* ]]> */
+	</script>
+	#end
+#end
+</div>

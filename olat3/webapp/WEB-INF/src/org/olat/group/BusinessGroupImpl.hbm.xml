@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.group.BusinessGroupImpl" table="o_gp_business">
+		<cache usage="read-write" />
+		<!--
+		key (see Interface org.olat.core.commons.persistence.Persistable),
+		lastModified (see Interface org.olat.core.commons.persistence.Auditable)
+		and creationDate (see Interface org.olat.core.commons.persistence.Auditable)
+		are attributes inherited from the abstract class
+		org.olat.core.commons.persistence.PersistentObject
+		-->
+		<id name="key" 
+			type="long" 
+			column="group_id" 
+			unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		<version name="version" access="field" column="version" type="int"/>
+		<property  name="lastModified" column="lastmodified" type="timestamp" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />
+  		
+  		<!--
+  		lastUsage helps the SYSTEMADMIN to find the BusinessGroups
+  		which were idle for some time.
+  		-->
+  		<property  name="lastUsage" column="lastusage" type="timestamp" />   
+ 		
+		<property name="type">
+			<column name="businessgrouptype" unique="false" length="15" not-null="true" index="gp_type_idx"/>	
+		</property>
+			 		
+		<property name="name" type="string">
+			<column name="groupname" unique="false" length="128" index="gp_name_idx"/>	
+		</property>
+			
+		<property name="description" type="string">
+			<column name="descr" length="16777210" not-null="false"/>
+		</property>
+
+		<property name="minParticipants">
+			<column name="minparticipants" not-null="false"/>
+		</property>
+
+		<property name="maxParticipants">
+			<column name="maxparticipants" not-null="false"/>
+		</property>
+		
+		<property name="waitingListEnabled" type="boolean">
+			<column name="waitinglist_enabled" unique="false" not-null="false"/>	
+		</property>
+
+		<property name="autoCloseRanksEnabled" type="boolean">
+			<column name="autocloseranks_enabled" unique="false" not-null="false"/>	
+		</property>
+		
+		<many-to-one 
+ 		   	name="groupContext" 
+    		class="org.olat.group.context.BGContextImpl"
+    		outer-join="true" 
+    		cascade="none">  
+			<column 
+				name="groupcontext_fk" 
+				not-null="false" 
+				unique="false" />    	
+    	</many-to-one> 
+
+		<!--
+		Implementation Note:
+		********************
+		In fact these many-to-one relations are one-to-one relations,
+		but as hibernate requires primary-key or unique-foreign-key associations,
+		this one-to-one feature is not applicable within the OLAT framework.
+		********************
+		References:
+		********************
+		go to http://www.hibernate.org/... and follow to
+		...hib_docs/reference/en/html/mapping.html#mapping-declaration-onetoone
+		********************
+		-->
+		<many-to-one 
+ 		   	name="ownerGroup" 
+    		class="org.olat.basesecurity.SecurityGroupImpl"
+    		outer-join="true" 
+    		cascade="none">  
+			<column 
+				name="fk_ownergroup" 
+				not-null="false" 
+				unique="true" />    	
+    	</many-to-one> 
+    	
+		<many-to-one 
+ 		   	name="partipiciantGroup" 
+    		class="org.olat.basesecurity.SecurityGroupImpl"
+    		outer-join="true" 
+    		cascade="none">  
+			<column 
+				name="fk_partipiciantgroup" 
+				not-null="false" 
+				unique="true" />    	
+    	</many-to-one> 
+
+		<many-to-one 
+ 		   	name="waitingGroup" 
+    		class="org.olat.basesecurity.SecurityGroupImpl"
+    		outer-join="true" 
+    		cascade="none">  
+			<column 
+				name="fk_waitinggroup" 
+				not-null="false" 
+				unique="true" />    	
+    	</many-to-one> 
+    			  	
+	</class>
+</hibernate-mapping>

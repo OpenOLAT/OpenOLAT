@@ -1,0 +1,75 @@
+@charset "UTF-8";
+/**
+ * "Yet Another Multicolumn Layout" - (X)HTML/CSS Framework
+ *
+ * (en) YAML debugging stylesheet
+ * (de) YAML Stylesheet zur Fehlersuche
+ *
+ * Don't make any changes in this file!
+ * Your changes should be placed in any css-file in your own stylesheet folder.
+ *
+ * @copyright       Copyright 2005-2007, Dirk Jesse
+ * @license         CC-A 2.0 (http://creativecommons.org/licenses/by/2.0/),
+ *                  YAML-C (http://www.yaml.de/en/license/license-conditions.html)
+ * @link            http://www.yaml.de
+ * @package         yaml
+ * @version         3.0.4
+ */
+
+@media all
+{
+  /*------------------------------------------------------------------------------------------------------*/
+
+  /**
+   * @section layout preparation for debugging
+   * @see http://www.yaml.de/en/documentation/practice/drafting-and-debugging.html
+   */
+
+  /* Adding debugging background */
+  body {
+    background-image: url("images/yaml_debug.gif") !important;
+    background-position: top left;
+  }
+
+  /* CSS-Warning, if core stylesheet 'iehacks.css' is missing in the layout */
+  *:first-child+html #ie_clearing { display:block }
+  * html #ie_clearing { display:block }
+
+  #ie_clearing {
+    width: 500px;
+    font-size: 25px;
+    position:absolute;
+    top: -2px;
+    left:0px;
+    background: url("images/warning_iehacks.gif") top left no-repeat;
+  }
+
+  /**
+   * @section pixel grid
+   */
+
+  .bg_grid {
+    background-image:url(images/grid_pattern.png) !important;
+    background-repeat:no-repeat;
+    background-position:top left !important;
+  }
+
+  /**
+   * @section transparency
+   */
+
+  .transOFF { -moz-opacity: 1.0; opacity: 1.0; filter: alpha(Opacity=100);}
+  .trans50,
+  .transON { -moz-opacity: 0.5; opacity: 0.5; filter: alpha(Opacity=50);}
+  .trans25 { -moz-opacity: 0.25; opacity: 0.25; filter: alpha(Opacity=25);}
+  .trans75 { -moz-opacity: 0.75; opacity: 0.75; filter: alpha(Opacity=75);}
+
+  /**
+   * @section colors
+   */
+
+  .bg_red { background-color: #f00 !important;}
+  .bg_blue { background-color: #00f !important;}
+  .bg_green { background-color: #0f0 !important;}
+
+}

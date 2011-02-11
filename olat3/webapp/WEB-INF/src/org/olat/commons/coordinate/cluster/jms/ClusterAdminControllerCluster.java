@@ -1,0 +1,363 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <p>
+*/
+package org.olat.commons.coordinate.cluster.jms;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.olat.admin.user.UserSearchController;
+import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.commons.coordinate.cluster.ClusterCoordinator;
+import org.olat.commons.coordinate.cluster.lock.ClusterLockManager;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.OncePanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowBackOffice;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.cache.n.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
+
+/**
+ * Description:<br>
+ * provides a control panel for the olat system administrator.
+ * displays the status of all running olat cluster nodes and also displays the latest sent messages.
+ *  
+ * 
+ * <P>
+ * Initial Date:  29.10.2007 <br>
+ * @author Felix Jost, http://www.goodsolutions.ch
+ */
+public class ClusterAdminControllerCluster extends BasicController {
+	private static final OLATResourceable ORES_TEST = OresHelper.createOLATResourceableInstanceWithoutCheck(ClusterAdminControllerCluster.class.getName(), new Long(123));
+	private static final OLATResourceable ORES_CACHE_TEST = OresHelper.createOLATResourceableInstance("subcachetypetest", new Long(123));
+	
+	ClusterEventBus clusBus;
+
+	private VelocityContainer mainVc;
+	boolean disposed = false;
+
+	private VelocityContainer nodeInfoVc;
+
+	private VelocityContainer perfInfoVc;
+	private Link toggleStartStop;
+	private Link resetStats;
+
+	private Link syncLong;
+	private Link syncShort;
+	private Link testPerf;
+
+	private Link testCachePut;
+	private Link testCachePut2;
+	
+	private Link testSFUPerf;
+	
+	private Link releaseAllLocksFor;
+
+	private VelocityContainer cachetest;
+	
+	private UserSearchController usc;
+	
+	/**
+	 * @param ureq
+	 * @param wControl
+	 */
+	public ClusterAdminControllerCluster(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl);
+		CoordinatorManager clustercoord = (CoordinatorManager) CoreSpringFactory.getBean("coordinatorManager");
+		ClusterCoordinator cCord = (ClusterCoordinator) clustercoord.getCoordinator();
+		clusBus = cCord.getClusterEventBus();
+		
+		mainVc = createVelocityContainer("cluster");
+		
+		
+		// information about the cluster nodes
+		mainVc.contextPut("own_nodeid", "This node is node: '"+clusBus.clusterConfig.getNodeId()+"'");
+		
+		nodeInfoVc = createVelocityContainer("nodeinfos");
+		Formatter f = Formatter.getInstance(ureq.getLocale());
+		nodeInfoVc.contextPut("f", f);
+		mainVc.put("nodeinfos", nodeInfoVc);
+		updateNodeInfos();
+		
+		toggleStartStop = LinkFactory.createButtonSmall("toggleStartStop", mainVc, this);
+		resetStats = LinkFactory.createButtonSmall("resetStats", mainVc, this);
+
+		perfInfoVc = createVelocityContainer("performanceinfos");
+		Formatter f2 = Formatter.getInstance(ureq.getLocale());
+		perfInfoVc.contextPut("f", f2);
+		mainVc.put("performanceinfos", perfInfoVc);
+		updatePerfInfos();
+		
+		// test for the distributed cache
+		cachetest = createVelocityContainer("cachetest");
+		testCachePut = LinkFactory.createButtonSmall("testCachePut", cachetest, this);
+		testCachePut2= LinkFactory.createButtonSmall("testCachePut2", cachetest, this);
+		mainVc.put("cachetest", cachetest);
+		updateCacheInfo();
+		
+		final VelocityContainer busMsgs = createVelocityContainer("busmsgs");
+		busMsgs.contextPut("time", Formatter.formatDatetime(new Date()));
+		
+		mainVc.put("busmsgs", busMsgs);
+		// let a thread repeatively dump all messages
+		//final Formatter f = Formatter.getInstance(ureq.getLocale());
+		final WindowBackOffice wbo = getWindowControl().getWindowBackOffice();
+		Thread pollThread = new Thread(new Runnable(){
+			public void run() {
+				while (!disposed) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// ignore
+					}
+					wbo.invokeLater(new Runnable() {
+						public void run() {
+							// simple reput the new lists into the velocity container.
+							// the container is then dirty and automatically rerendered since polling has been turned on here.
+							busMsgs.contextPut("time", Formatter.formatDatetime(new Date()));
+							busMsgs.contextPut("recmsgs", clusBus.getListOfReceivedMsgs());
+							busMsgs.contextPut("sentmsgs", clusBus.getListOfSentMsgs());
+							// also let node infos refresh
+							updateNodeInfos();
+							// also let perf infos refresh
+							updatePerfInfos();
+							// update cache info
+							updateCacheInfo();
+						}
+					});
+				}
+			}});
+		pollThread.setDaemon(true);
+		pollThread.start();
+		
+		// activate polling
+		mainVc.put("updatecontrol", new JSAndCSSComponent("intervall", this.getClass(), null, null, false, null, 3000));
+		
+		// add a few buttons
+		syncLong = LinkFactory.createButtonSmall("sync.long", mainVc, this);
+		syncShort = LinkFactory.createButtonSmall("sync.short", mainVc, this);
+		testPerf  = LinkFactory.createButtonSmall("testPerf", mainVc, this);
+		testSFUPerf = LinkFactory.createButtonSmall("testSFUPerf", mainVc, this);
+		releaseAllLocksFor = LinkFactory.createButtonSmall("releaseAllLocksFor", mainVc, this);
+		
+		mainVc.contextPut("eventBusListener", clusBus.toString());
+		mainVc.contextPut("busListenerInfos", clusBus.busInfos.getAsString());
+		
+		putInitialPanel(mainVc);
+	}
+	
+	void updateNodeInfos() {
+		Map<Integer, NodeInfo> stats = clusBus.getNodeInfos();
+		List<NodeInfo> li = new ArrayList<NodeInfo>(stats.values());
+		Collections.sort(li, new Comparator<NodeInfo>(){
+			public int compare(NodeInfo o1, NodeInfo o2) {
+				return o1.getNodeId().compareTo(o2.getNodeId());
+			}});
+		nodeInfoVc.contextPut("stats",li);
+		nodeInfoVc.contextPut("thisNodeId", clusBus.clusterConfig.getNodeId());
+		mainVc.contextPut("eventBusListener", clusBus.toString());
+		mainVc.contextPut("busListenerInfos", clusBus.busInfos.getAsString());
+	}
+	
+	void updatePerfInfos() {
+		// collect performance information
+		
+		List<PerfItem> li = PerformanceMonitorHelper.getPerfItems();
+		li.addAll(clusBus.getPerfItems());
+		perfInfoVc.contextPut("perfs", li);
+		if (PerformanceMonitorHelper.isStarted()) {
+			perfInfoVc.contextPut("started", "started");
+		} else {
+			perfInfoVc.contextPut("started", "notstarted");
+		}
+	}
+	
+	@Override
+	protected void doDispose() {
+		disposed  = true;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if (source == syncLong) {
+			// sync on a olatresourceable and hold the lock for 5 seconds.
+			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ORES_TEST, new SyncerExecutor(){
+				public void execute() {
+					sleep(5000);
+				}});
+			// the runnable is executed within the same thread->
+			getWindowControl().setInfo("done syncing on the test olatresourceable for 5 seconds");
+		} else if (source == syncShort) {
+			// sync on a olatresourceable and hold the lock for 1 second.
+			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ORES_TEST, new SyncerExecutor(){
+				public void execute() {
+					sleep(1000);
+				}});
+			// the runnable is executed within the same thread->
+			getWindowControl().setInfo("done syncing on the test olatresourceable for 1 second");
+		} else if (source == testPerf) {
+			// send 1000 (short) messages over the cluster bus
+			int cnt = 1000;
+			long start = System.nanoTime();
+			for (int i = 0; i < cnt; i++) {
+				clusBus.fireEventToListenersOf(new MultiUserEvent("jms-perf-test-"+i+" of "+cnt),ORES_TEST);
+			}
+			long stop = System.nanoTime();
+			long dur = stop-start;
+			double inmilis = dur / 1000000;
+			double avg = dur / cnt;
+			double avgmilis = avg / 1000000;
+			getWindowControl().setInfo("sending "+cnt+" messages took "+inmilis+" ms, avg per messages was "+avg+" ns = "+avgmilis+" ms");
+		} else if (source == testCachePut) {
+			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
+				getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes. 
+			cw.update("akey", "hello");
+			updateCacheInfo();
+		} else if (source == testCachePut2) {
+			// we explicitly use put and not putSilent to show that a put invalidates (and thus removes) this key of this cache in all other cluster nodes.
+			CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
+				getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+			cw.update("akey", "world");
+			updateCacheInfo();
+		} else if (source == testSFUPerf) {
+			// acquire a sync 1000x times (does internally a select-for-update on the database)
+			int cnt = 1000;
+			long start = System.nanoTime();
+			for (int i = 0; i < cnt; i++) {
+				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ORES_TEST, new SyncerExecutor(){
+					public void execute() {
+						// empty
+					}});
+			}
+			long stop = System.nanoTime();
+			long dur = stop-start;
+			double inmilis = dur / 1000000;
+			double avg = dur / cnt;
+			double avgmilis = avg / 1000000;
+			getWindowControl().setInfo("acquiring "+cnt+" locks for syncing (using db's \"select for update\") took "+inmilis+" ms, avg per messages was "+avg+" ns = "+avgmilis+" ms");
+		} else if (source == releaseAllLocksFor) {
+			// let a user search pop up
+			usc = new UserSearchController(ureq, getWindowControl(), true);
+			listenTo(usc);
+			getWindowControl().pushAsModalDialog(usc.getInitialComponent());
+		} else if ((source == nodeInfoVc) && (event.getCommand().equals("switchToNode"))) {
+			String nodeIdStr = ureq.getHttpReq().getParameter("nodeId");
+			if (nodeIdStr.length()==1) {
+				nodeIdStr = "0"+nodeIdStr;
+			}
+			Cookie[] cookies = ureq.getHttpReq().getCookies();
+			for (int i = 0; i < cookies.length; i++) {
+				Cookie cookie = cookies[i];
+				if ("JSESSIONID".equals(cookie.getName())) {
+					String redirectedButInvalidSessionId = cookie.getValue();
+					redirectedButInvalidSessionId = redirectedButInvalidSessionId.substring(0, redirectedButInvalidSessionId.length()-2) + nodeIdStr;
+					Tracing.logInfo("redirecting session to node "+nodeIdStr+", new sessionid="+redirectedButInvalidSessionId, getClass());
+					cookie.setValue(redirectedButInvalidSessionId);
+					replaceCookie(ureq.getHttpReq(), ureq.getHttpResp(), cookie);
+
+					// OLAT-5165: make sure we can always bypass the dmz reject mechanism (for 5min that is)
+					Cookie newCookie = new Cookie("bypassdmzreject", String.valueOf(System.currentTimeMillis()));
+					newCookie.setMaxAge(5 * 60); // 5min lifetime
+					newCookie.setPath(WebappHelper.getServletContextPath());
+					newCookie.setSecure(ureq.getHttpReq().isSecure());
+					newCookie.setComment("cookie allowing olat admin users to bypass dmz rejects");
+					ureq.getHttpResp().addCookie(newCookie);
+
+					OncePanel oncePanel = new OncePanel("refresh");
+					oncePanel.setContent(createVelocityContainer("refresh"));
+					mainVc.put("refresh", oncePanel);
+					break;
+				}
+			}
+		} else if (source == toggleStartStop) {
+			if (!PerformanceMonitorHelper.toggleStartStop()) {
+				getWindowControl().setInfo("Could not start PerformanceMonitor. CodepointServer not enabled in VM?");
+			} else {
+				clusBus.resetStats();
+				updatePerfInfos();
+			}
+		} else if (source == resetStats) {
+			PerformanceMonitorHelper.resetStats();
+			clusBus.resetStats();
+			updatePerfInfos();
+		}
+	}
+
+  private void replaceCookie(HttpServletRequest request, HttpServletResponse response, Cookie cookie) {
+  	// for a generalized version of this, use org/apache/tomcat/util/http/ServerCookie.java
+  	response.setHeader("Set-Cookie", cookie.getName()+"="+cookie.getValue()+"; Path="+request.getContextPath()+(request.isSecure()?"":"; Secure"));
+  }
+  
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (source == usc) {
+			getWindowControl().pop();
+			if (event != Event.CANCELLED_EVENT) {
+				// we configured usc to either cancel or to only accept single user selection.
+				SingleIdentityChosenEvent sce = (SingleIdentityChosenEvent)event;
+				Identity ident = sce.getChosenIdentity();
+				ClusterLockManager.getInstance().releaseAllLocksFor(ident.getName());
+				showInfo("locks.released", ident.getName());
+			}
+		}
+	}
+	
+	void sleep (int milis) {
+		try {
+			Thread.sleep(milis);
+		} catch (InterruptedException e) {
+			// ignore
+		}
+	}
+	
+	void updateCacheInfo() {
+		CacheWrapper cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "cachetest").
+		getOrCreateChildCacheWrapper(ORES_CACHE_TEST);
+		Object val = cw.get("akey");
+		cachetest.contextPut("cacheval", val==null? "-null-": val);
+		// org.olat.commons.coordinate.cluster.jms.ClusterAdminController:cachetest::0@subcachetypetest::123
+	}
+
+}

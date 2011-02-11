@@ -1,0 +1,9 @@
+#if ($courseNode)
+	<span class="b_with_small_icon_left $courseNodeCss"><strong>$courseNode.getShortTitle()</strong></span>
+	#if ($courseNode.getLongTitle() && $courseNode.getLongTitle() != "")
+		($courseNode.getLongTitle())
+	#end
+	<br />
+	<hr />
+#end
+$r.render("content")

@@ -1,0 +1,35 @@
+#if ($r.available("restrictLink")) <p>$r.render("restrictLink") </p>#end
+#if(!$noMaps)
+<ul class="b_eportfolio_maps">
+	#foreach($map in $userMaps)
+	#set($viewLink = "viewLink$velocityCount")
+	#set($delLink = "deleteLink$velocityCount")
+	#set($copyLink = "copyLink$velocityCount")
+	#set($shareLink = "shareLink$velocityCount")
+	#set($courseLink = "courseLink$velocityCount")
+	#set($courseName = "courseName$velocityCount")
+	#set($index = ($velocityCount - 1))
+	#if($map.getClass().getSimpleName() == "EPStructuredMapTemplate") #set($addTempStamp = "template") #end
+	<li class="$!mapStyles.get($index) $!addTempStamp">	 
+		<h4>$map.title</h4> 
+		$map.shortenedDescription
+		<div class="b_map_info">
+		#if ($owners.get($index)) <p>$r.translate("map.owners", $owners.get($index)) </p> #end
+		<p>$amounts.get($index)
+		#if ($deadLines.get($index)) <br/> $r.translate("map.deadline", "$r.formatDate($deadLines.get($index))")  #end
+		</p>
+		#if($r.available($viewLink))  $r.render($viewLink) </br>#end
+		#if($r.get($courseLink))
+			$r.translate("course.link.intro.small"): <a href="$r.get($courseLink)">$r.get($!courseName)</a><br/>
+		#end
+		#if($r.available($shareLink)) $r.render($shareLink) <br/> #end
+		#if($r.available($delLink))   $r.render($delLink) <br/> #end
+		#if($r.available($copyLink))  $r.render($copyLink) #end
+		</div>
+	</li>
+	#end
+</ul>
+#else
+	<br/>
+	$r.translate("no.maps.found")
+#end

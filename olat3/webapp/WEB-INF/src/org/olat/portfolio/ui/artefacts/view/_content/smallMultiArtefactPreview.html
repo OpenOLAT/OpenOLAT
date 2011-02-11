@@ -1,0 +1,20 @@
+<div class="b_subcolumns">
+	#foreach($artefactCtrlCompLine in $artefactCtrlCompLines)
+		<div class="b_clearfix">
+			#foreach($artefactCtrlPanel in $artefactCtrlCompLine)
+				#set($specialCtrlName = "special$artefactCtrlPanel.componentName")
+				#if($r.available($specialCtrlName))
+					<div class="b_eportfolio_preview_c100l">
+						<div class="b_artefact">
+							$r.render($artefactCtrlPanel.componentName)
+						</div>
+					</div>
+				#else
+					<div class="b_eportfolio_preview_c33l b_c33l">
+						$r.render($artefactCtrlPanel.componentName)
+					</div>
+				#end
+			#end
+		</div>
+	#end
+</div>

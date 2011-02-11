@@ -1,0 +1,17 @@
+<div class="o_login_form">
+	<fieldset>
+		<legend>$r.translate("login.form")</legend>
+		<p>
+			$r.translate("default.shib.intro")
+		</p>		
+		
+		#if ($r.available("shib.redirect"))
+			<li>$r.render("shib.redirect")</li>
+		#end
+	</fieldset>
+	<ul>
+		#if ($r.available("menu.guest"))
+			<li>$r.render("menu.guest")</li>
+		#end
+	</ul>
+</div>

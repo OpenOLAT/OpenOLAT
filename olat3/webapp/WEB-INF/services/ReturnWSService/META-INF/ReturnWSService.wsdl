@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="ReturnWSService" targetNamespace="http://test.plugin.bps.de/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://test.plugin.bps.de/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <types>
+  </types>
+  <message name="saveResultResponse">
+  </message>
+  <message name="saveResult">
+    <part name="uniqueId" type="xsd:string">
+    </part>
+    <part name="resultFile" type="xsd:base64Binary">
+    </part>
+  </message>
+  <message name="saveResultLocalResponse">
+  </message>
+  <message name="saveResultLocal">
+    <part name="uniqueId" type="xsd:string">
+    </part>
+    <part name="resultLocalFile" type="xsd:string">
+    </part>
+  </message>
+  <portType name="RenderServices">
+    <operation name="saveResult" parameterOrder="uniqueId resultFile">
+      <input message="tns:saveResult">
+    </input>
+      <output message="tns:saveResultResponse">
+    </output>
+    </operation>
+    <operation name="saveResultLocal" parameterOrder="uniqueId resultLocalFile">
+      <input message="tns:saveResultLocal">
+    </input>
+      <output message="tns:saveResultLocalResponse">
+    </output>
+    </operation>
+  </portType>
+  <binding name="RenderServicesPortBinding" type="tns:RenderServices">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="saveResult">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal" namespace="http://test.plugin.bps.de/"/>
+      </input>
+      <output>
+        <soap:body use="literal" namespace="http://test.plugin.bps.de/"/>
+      </output>
+    </operation>
+    <operation name="saveResultLocal">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal" namespace="http://test.plugin.bps.de/"/>
+      </input>
+      <output>
+        <soap:body use="literal" namespace="http://test.plugin.bps.de/"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="ReturnWSService">
+    <port name="RenderServicesPort" binding="tns:RenderServicesPortBinding">
+      <soap:address location="http://localhost:8080/olat/services/ReturnWSService/"/>
+    </port>
+  </service>
+</definitions>

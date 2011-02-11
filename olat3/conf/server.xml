@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- OLAT Tomcat Server Configuration File -->
+<Server port="8005" shutdown="SHUTDOWN" debug="0">
+  <Service name="Catalina">
+  
+	<!-- Define a SSL Coyote HTTP/1.1 Connector on port 8443 -->
+	<!-- Uncomment to enable SSL on Tomcat level
+	<Connector port="8443"
+		scheme="https" 
+		secure="true" 
+		clientAuth="false" 
+		sslProtocol="TLS"
+		keystoreFile="${tomcat.home}/conf/keystore.p12"
+		keystorePass="changeit"
+		keystoreType="PKCS12" 
+		URIEncoding="utf-8"/>
+	-->
+
+	<!-- Define a non-SSL Coyote HTTP/1.1 Connector on port 8080 -->
+	<Connector port="8080"
+		maxThreads="100"
+		URIEncoding="utf-8" />
+
+  	<!-- The OLAT application context -->      
+    <Engine name="Catalina" defaultHost="localhost" >
+      	<Host name="localhost" appBase="webapps">
+			
+			<!-- EDIT docBase to the directory where you have deployed olat -->
+			
+			<Context path="/olat" 
+				docBase="/home/guido/workspace/olat3/olat/target/olat" 
+				reloadable="false" />
+		</Host>
+    </Engine>
+	
+  </Service>
+</Server>

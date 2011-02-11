@@ -1,0 +1,21 @@
+#set($pageName = $page.getPageName())
+<h1 class="o_wikimod_heading">
+#if($pageName == "Index")
+	$r.translate("navigation.mainpage")
+#elseif($pageName == "O_a_to_z")
+	$r.translate("navigation.a-z")
+#elseif($pageName == "O_recent_changes")
+	$r.translate("navigation.changes")
+#elseif($pageName == "O_new_page")
+	$r.translate("navigation.new.page")
+#elseif($pageName == "O_error")
+	$r.translate("O_error")
+#else
+	$pageName.replace("_"," ")
+#end
+</h1>
+<div class="o_wikimod-article-box">
+	#if ($r.available("wikiArticle"))
+		$r.render("wikiArticle")
+	#end
+</div>

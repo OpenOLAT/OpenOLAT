@@ -1,0 +1,13 @@
+@charset "UTF-8";
+/* use the grey ext theme */
+@import url(../../js/ext/resources/css/xtheme-gray.css);
+
+/* import default theme and overide some styles */
+@import url(../default/layout.css);
+
+/* import files to override basic theme styles */
+@import url(all/yaml_basemod.css);
+@import url(all/brasato.css);
+@import url(all/olat.css);
+@import url(all/content.css);
+

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file was auto-generated from WSDL -->
+<!-- by the Apache Axis2 version: 1.5  Built on : Apr 30, 2009 (06:07:24 EDT) -->
+<serviceGroup>
+    <service name="ReturnWSService">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="de.bps.onyx.plugin.wsserver.ReturnWSServiceMessageReceiverInOut"/>
+        </messageReceivers>
+        <parameter name="ServiceClass">de.bps.onyx.plugin.wsserver.ReturnWSServiceSkeleton</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <operation name="saveResultLocal" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://test.plugin.bps.de/">
+            <actionMapping>http://test.plugin.bps.de/RenderServices/saveResultLocalRequest</actionMapping>
+            <outputActionMapping>http://test.plugin.bps.de/RenderServices/saveResultLocalResponse</outputActionMapping>
+        </operation>
+        <operation name="saveResult" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://test.plugin.bps.de/">
+            <actionMapping>http://test.plugin.bps.de/RenderServices/saveResultRequest</actionMapping>
+            <outputActionMapping>http://test.plugin.bps.de/RenderServices/saveResultResponse</outputActionMapping>
+        </operation>
+    </service>
+</serviceGroup>

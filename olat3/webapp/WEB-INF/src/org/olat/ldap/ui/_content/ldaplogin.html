@@ -1,0 +1,13 @@
+<div class="o_login_form o_login_ldap">		
+	
+	$r.render("ldapForm")
+	
+	<ul>
+	#if ($r.available("menu.pw"))
+		<li>$r.render("menu.pw")</li>
+	#end
+	#if ($r.available("menu.guest"))
+		<li>$r.render("menu.guest")</li>
+	#end
+	</ul>
+</div>

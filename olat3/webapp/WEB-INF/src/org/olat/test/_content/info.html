@@ -1,0 +1,37 @@
+<p>
+<h3>Attention</h3>
+This is a testing environment. This has nothing to do with online tests, 
+it is just a playground to test various controllers and system components.
+</p>
+<br><br>
+This is a demo for a context sensitive help link: $r.contextHelp("org.olat.test","homeinfo.html","help.hoverdemo")
+<br><br>
+now some UTF-8 tests:
+<p>
+$r.translate("utftest")
+
+<p>
+<br>
+
+#b_togglebox_start("testdomid" "check me out, I got some stuff in me")
+	<strong>aöksldfjasjd</strong>
+	<p>
+		föasldkj aösdfskld
+	</p> 
+	<ul>
+		<li>ö</li>
+		<li>ösdkja</li>
+		<li>kjösdfaasj ald ads</li>
+	</ul>
+#b_togglebox_end()
+
+#b_togglebox_start("infoContent" "Here are some additional details")
+	Welcome, you found the cool hidden stuff...
+	Click again to close this
+#b_togglebox_end()
+
+#b_togglebox_start("secondContent" "And click here to get the other details")
+	Trallala, jepee this is such a cool framework this OLAT thing, really, it rocks so much!
+	<p>
+	And again, some other text...
+#b_togglebox_end()

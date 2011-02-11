@@ -1,0 +1,6 @@
+$r.render("filter.all") 
+$r.render("filter.notag")
+#foreach($tagLink in $tagCmpList)
+	$r.render($tagLink.getName())	
+#end
+$r.render("filter.edit")

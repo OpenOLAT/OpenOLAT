@@ -1,0 +1,43 @@
+<h4 class="b_with_small_icon_left b_group_icon">
+	$r.translate("overview.title")
+	#if (!$isDefaultContext)
+		"$contextName"
+	#end
+</h4>
+#if (!$isDefaultContext)
+	<p>
+		<i>$r.formatLatexFormulas($contextDesc)</i>
+	</p>
+#end
+<p>
+	$r.translate("overview.intro")
+</p>
+<hr />
+<h5>$r.translate("overview.overview")</h5>
+<p>
+	<table class="b_table">
+		<tr><td>$r.translate("overview.numb.groups"): 		</td><td>$numbGroups</td></tr>
+	#if ($flags.isEnabled("group_owners"))
+		<tr><td>$r.translate("overview.numb.total"): 		</td><td>$numbTotal</td></tr>
+		<tr><td>$r.translate("overview.numb.owners"): 		</td><td>$numbOwners</td></tr>
+	#end
+		<tr><td>$r.translate("overview.numb.participants"): </td><td>$numbParticipants</td></tr>
+	#if ($flags.isEnabled("areas"))
+		<tr><td>$r.translate("overview.numb.areas"): 		</td><td>$numbAreas</td></tr>
+	#end
+	</table>
+</p>
+<hr />
+#if(!$isDefaultContext)
+	#if ($usedByOtherResources)
+	<p class="b_important">
+		<strong>$r.translate("overview.otherResources")</strong>
+		<br />
+		$r.translate("overview.otherResources.info")
+	</p>
+	<p>
+		$r.render("otherResources")
+	</p>
+	<hr />
+	#end
+#end

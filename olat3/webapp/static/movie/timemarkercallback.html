@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>Timemarker Callback</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta http-equiv="pragma-directive" content="no-cache">
+<meta http-equiv="cache-directive" content="no-cache">
+<script type="text/javascript">
+	// Parse request attributes. This file is called from
+	// a) popup.html without any parameters to init the callback iframe
+	// b) viewer.mov with the parameters below. It then calls the o_playButton 
+	//    method on the parent window go generate a wiki-syntax play button 
+	//    from the given attributes. Due to QuickTime security constraint no 
+	//    direct calling of JS code is allowed from within the movie file.
+	//
+	// This file is loaded into an invisible iframe
+	
+	var is_input = document.URL.indexOf('?');
+	if (is_input != -1) { 
+		addr_str = document.URL.substring(is_input+1, document.URL.length);
+	
+		var nameValuePairs = addr_str.split("&");
+		var mname, starttime, endtime, displayname, displayduration, tmp;
+		if (nameValuePairs[0].indexOf("mname") != -1){
+			tmp = nameValuePairs[0].split("=");
+			mname = tmp[1];
+		} else {
+			alert("Error in url GET param mname!");
+		}
+		if (nameValuePairs[1].indexOf("starttime") != -1){
+			tmp = nameValuePairs[1].split("=");
+			starttime = tmp[1];
+		} else {
+			alert("Error in url GET param starttime!");
+		}
+		if (nameValuePairs[2].indexOf("endtime") != -1){
+			tmp = nameValuePairs[2].split("=");
+			endtime = tmp[1];
+		} else {
+			alert("Error in url GET param endtime!");
+		}
+		if (nameValuePairs[3].indexOf("displayname") != -1){
+			tmp = nameValuePairs[3].split("=");
+			displayname = tmp[1];
+		} else {
+			alert("Error in url GET param displayname!");
+		}
+		if (nameValuePairs[4].indexOf("displayduration") != -1){
+			tmp = nameValuePairs[4].split("=");
+			displayduration = tmp[1];
+		} else {
+			alert("Error in url GET param displayduration!");
+		}
+		// call play button tag method on parent window
+		parent.o_playButtonTag(mname, starttime, endtime, displayname, displayduration);
+		
+	} else {
+		document.write("No values detected");
+	}
+	
+</script>
+</head>
+<body>
+	<!-- empty -->
+</body>
+</html>

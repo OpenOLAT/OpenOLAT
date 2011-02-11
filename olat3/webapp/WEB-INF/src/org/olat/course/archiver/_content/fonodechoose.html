@@ -1,0 +1,13 @@
+<h4>$r.translate("course.forums")</h4>
+#if($hasForumNodes)
+	<p>
+		$r.translate("fonodechoose.intro")
+	</p>
+	<p>
+		$r.render("fonodeTable")
+	</p>
+#else
+	<p>
+		$r.translate("fonodesoverview.nonodes")
+	</p>
+#end

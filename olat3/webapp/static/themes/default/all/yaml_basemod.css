@@ -1,0 +1,133 @@
+@charset "UTF-8";
+
+/**
+  * layouting for ALL medium and all layouts
+  */ 
+
+@media all
+{
+	/* Reset font size for all elements to standard (16 Pixel). This is done here to not get in conflict with content that contains font tags */
+	html * { font-size: 100.01% } 
+	
+	/* Adding layouting elements that are not part of YAML but use the same terminology */
+	.b_c15r,.b_c20r,.b_c80r,.b_c85r{float:right;margin-left:-5px;}
+	.b_c15l,.b_c15r{width:15%}
+	.b_c20l,.b_c20r{width:20%}
+	.b_c80l,.b_c80r{width:80%}
+	.b_c85l,.b_c85r{width:85%}
+	.b_subcolumns_oldgecko,.b_c20l,.b_c15l,.b_c80l,.b_c85l{float:left}		
+	#b_page_wrapper {position: relative;} /* additional wrapper element: b_page_wrapper wrappes b_page
+	
+	/*------------------------------------------------------------------------------------------------------*/
+	/* Patching of existing YAML layouting elements */
+
+	/* PAGE MARGINS AND PAGE */
+	body { background: #636B75 url(../images/yaml/bg_blue.png) repeat-x top left; padding: 0; }
+	/* Centering layout in old IE-versions */
+	body { text-align: center }
+	/* set text flow to left-to-right */
+	#b_page_margins, body div.x-window, body div.x-tip, div.b_modal_area, div.b_msg_dialog, #b_msg_sticky, #b_msg_info, #b_msg_warn, #b_msg_error { text-align: left;}  
+	/* layout: width, background, borders */
+	#b_page_margins { min-width: 740px; max-width: 120em; margin: 0 auto;  }
+	#b_page { background: #96A4BA url(../images/yaml/bg_header.gif) repeat-x top; border: 1px #889 solid; border-top: 0; position: relative; }
+	
+	/* EDGES layout wrapper classes to style page shadows or oder page border effects */
+	/* see YAML book chapter 4.5.7 for more information on how to use them. to activate, remove display:none and add a background image */	
+	/*
+	#b_border-top { display: none; overflow: hidden; width: auto; height: 20px; font-size: 0; margin-bottom: -15px; background: repeat-x top left;}
+	#b_edge-lt {display: none; float: left; width: 20px; height: 20px; font-size: 0; background: top left;}
+	#b_edge-rt {display: none; float: right; width: 20px; height: 20px; font-size: 0; background: top right; position: relative;}
+	#b_border-bottom {display: none; overflow: hidden; width: auto; height: 20px; font-size: 0; margin-top: -15px; background: repeat-x bottom left;}
+	#b_edge-lb {display: none; float: left; width: 20px; height: 20px; font-size: 0; background: bottom left;}
+	#b_edge-rb {display: none; float: right; width: 20px; height: 20px; font-size: 0; background: bottom right; position: relative;}	
+	*/	
+	/* page shadow effect */
+	#b_page_margins { background: url(../images/yaml/shadow-left.png) repeat-y top left; padding-left: 10px; }	
+	#b_page_wrapper { background: url(../images/yaml/shadow-right.png) repeat-y top right; padding-right: 10px; }	
+	
+	/* HEADER */
+	/* #b_header { color: #000; background: #1F457F; height: 3em; } */
+	#b_header { height: 3em; }
+	#b_logo { }
+
+	/* TOP NAV */
+	#b_topnav { color: #aaa; background: transparent; font-size: 90%; white-space: nowrap;}
+	#b_topnav ul { list-style: none; margin: 0; padding: 0;  }
+	#b_topnav ul li { float: left; display: inline; margin: 0 0 0 1em; padding: 0 0 0 3px; position: relative; }
+ 	#b_topnav li a {color: #DFE3EA; text-decoration: none; }
+ 	#b_topnav li a span {padding: 2px 0; } /* safari fix */
+	#b_topnav li a:focus, #b_topnav li a:hover { color: #fff; text-decoration: none; }
+	#b_topnav #b_topnav_close a {background: url(../images/brasato/close_inverse.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; }
+	#b_topnav #b_topnav_close a:hover, #b_topnav #b_topnav_close a:focus {background-image: url(../images/brasato/close_inverse_over.png); }
+	#b_topnav #b_topnav_printview a { background: url(../images/brasato/print.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; }
+	#b_topnav #b_topnav_printview a:hover, #b_topnav #b_topnav_printview a:focus { background-image: url(../images/brasato/print_over.png); }
+	
+	/* NAV */
+	#b_nav ul { margin-left: 5px; }
+	#b_nav_main { }
+	/* This horizontal navigation for sites and tabs is based on the article of 
+	 * http://www.alistapart.com/articles/slidingdoors/
+	 * and
+	 * http://www.yaml.de/en/documentation/css-components/components-for-navigation.html
+	 * Please read those article and make sure you understand everything before you
+	 * change things in here. 
+	 * In contrast to the original concept we have some div and span tags inside the 
+	 * the li element. Be aware of that!
+	 */
+	/* Bottom border of nav element: must be an image, no css border! */
+	#b_nav_main { background: transparent url(../images/yaml/bottom_border.gif) repeat-x bottom; float: left; width: 100%; }	
+	#b_nav_main ul { line-height: 1em; list-style: none; margin: 0; padding: 0 0 0 0;white-space: nowrap; }
+	/* left corner of passive site or tab */
+	#b_nav_main li { background: #e0ecf8 url(../images/yaml/round/left.gif) no-repeat top left; border-bottom: 1px solid #000; float: left; margin: 0; padding: 0 0 0 3px; }	
+	/* empty spacer between sites and tabs */
+	#b_nav_main li#b_nav_spacer { background: none; border-bottom: 0px; float: left; margin: 0; padding: 0; width: 20px; height: 1px; /* height mandatory for FF */ }
+	#b_nav_main li.b_nav_tab { margin-left: 2px; }	
+	/* Right border of passive site or tab */
+	#b_nav_main a, #b_nav_main strong { background: transparent url(../images/yaml/round/right.gif) no-repeat top right; color: #667; display: block; font-weight: normal; padding: 3px 9px 3px 6px; text-decoration: none; text-transform: none; }
+	/*  > mandatory to not apply it to IE browsers */
+	#b_nav_main > ul a,	#b_nav_main > ul strong { width: auto;  }  
+	/* change image when hoovering over the passive site or tab */
+	#b_nav_main li:hover { background-color: #c4d0dc; background-position: 0 -150px;}
+	 /* change image when hoovering over the passive site or tab */
+	#b_nav_main li:hover a { background-position: 100% -150px; }
+	#b_nav_main a:focus, #b_nav_main a:hover, #b_nav_main a:active { color: #223; background-color: transparent; }
+	/* Left border of active site or tab, override hoovering rule from above */
+	#b_nav_main li.b_nav_active { background: white url(../images/yaml/round/left_on.gif) no-repeat top left; border: 0; }
+	/* right border of active site or tab, override hoovering rule from above */
+	/* bleed to bottom border effect: padding = normal padding + bottom border height */
+	#b_nav_main li.b_nav_active a, #b_nav_main li.b_nav_active strong { background: transparent url(../images/yaml/round/right_on.gif) no-repeat top right; color: #000; font-weight: normal; padding-bottom: 4px; }
+	/* brasato extensions to sliding door concept: clos icon on tabs */
+	/* sites icon in nav: overriden by specific icons in the web app */
+	/* default image */
+	#b_nav_main li.b_nav_site div, #b_nav_main li.b_nav_tab div { background: url(../images/olat/application.png) no-repeat left 50%; padding-left: 12px;	}					
+	/* tabs closing icons needs more space on right side */
+	#b_nav_main li.b_nav_tab a, #b_nav_main li.b_nav_tab strong { padding-right: 16px; }
+	/* following close icon will be positioned relative to the div container */
+	#b_nav_main li div { position: relative;}
+	#b_nav_main li div a.b_nav_tab_close { position: absolute; top: 1px; right: 1px;	width: 13px; height: 13px; line-height: 0;	padding: 0; margin: 0; background: transparent url(../images/yaml/closetab_dis.png) no-repeat; }
+	#b_nav_main li.b_nav_active div a.b_nav_tab_close { background-image: url(../images/yaml/closetab.png); }
+	#b_nav_main li div a.b_nav_tab_close:focus, #b_nav_main ul li div a.b_nav_tab_close:hover, #b_nav_main li div a.b_nav_tab_close:active {  background: transparent url(../images/yaml/closetab_over.png) no-repeat;}
+
+	/* MAIN */	
+	#b_main { background: #fff; padding:0; }
+	/* #b_col1 becomes the left column | #col1 wird zur linken Spalte */
+	#b_col1 { width: 14em; overflow: hidden;}
+	#b_col1_content { padding: 20px 10px 10px 0; } /* padding left = 0 to have space for menu level icons */	
+	/* #b_col2 becomes the right column | #col2 wird zur rechten Spalte */
+	#b_col2 { width: 12em; overflow: hidden;}
+	#b_col2_content { padding: 20px 10px 10px 10px; }
+	/* #b_col3 becomes the middle column | #col3 wird zur mittleren Spalte */
+	#b_col3 { margin-left: 14em; margin-right: 12em; border-left: 1px #ddd dotted; border-right: 1px #ddd dotted; }  
+	#b_col3_content { min-height: 450px; padding: 20px 20px 0 20px; }	
+	#b_col3_content_inner { padding: 0 0 20px 0; }	
+	.b_hideboth #b_col3 {margin-left: 0 ! important; margin-right: 0 ! important; border-left: 0; border-right: 0}
+	.b_hidecol1 #b_col3 {margin-left: 0 ! important; border-left: 0;}
+	.b_hidecol2 #b_col3 {margin-right: 0 ! important; border-right: 0;}  
+	
+	/* FOOTER */
+	#b_footer { color:#666; background: #F7F8F8 url(../images/yaml/footer.gif) repeat-x bottom; padding: 15px; border-top: 1px #E9E9E9 solid; font-size: 90%; z-index: 5; position: relative; /* positioning of top link */ }
+	#b_footer a { color: #666; background: transparent; font-weight: normal;}
+	#b_footer a:focus,
+	#b_footer a:hover,
+	#b_footer a:active { text-decoration:underline;}  
+}

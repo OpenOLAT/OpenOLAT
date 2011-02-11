@@ -1,0 +1,60 @@
+$r.render("sourceview")
+<script type="text/javascript">
+Ext.apply(Ext.QuickTips.getQuickTip(), {
+    //autoWidth:true,
+    //autoHeight:true,
+    maxWidth:500,
+    monitorResize:true
+});
+</script>
+
+$r.render("tooltipContent")
+
+
+<div style="float:right" class="b_clearfix">$r.render("button")</div>
+<p>$r.render("linkT")</p>
+<p>$r.render("link1")</p>
+<p>$r.render("link2")</p>
+<p>$r.render("link3")</p>
+
+<p><div ext:qtip="this div has an tooltipIf you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.If you do not like the html namespace extensions do it with an id reference.">Any element can have a tooltip, see source for details...</div></p>
+
+
+<p><div id="test1234">If you do not like the html namespace extensions do it with an id reference.</div></p>
+
+<p><div id="test1235">If you do not like the html namespace extensions do it with an id reference. And grab the content from an other div</div></p>
+
+<div id="test3333" class="x-hidden">This <span style="color:red">content</span> is from a div <b>somewhere</b> in the content</div>
+<!-- note the x-hidden css class, you have to use this one when refering to an external content element for a tooltip -->
+
+<p><div ext:qtip="This tooltip will disapear when you click the close button or somewhere else in the body" ext:hide="user" ext:qtitle="asdf asdf" ext:qwidth="400">Tooltips have many config options, they can e.g. be sticky.</div></p>
+
+<script type="text/javascript">
+new Ext.ToolTip({
+	target: 'test1234',
+	html: "The body of <b>my</b> tip. It also can ' which ext handles", //nice ext handles the escaping itself
+	width: 200,
+	title: 'My tip',
+	autoHide: true,
+	hideDelay: 1000
+});
+
+new Ext.ToolTip({
+    target: 'test1235',
+    contentEl: 'test3333',
+    title: 'My Tip Title',
+    autoHide: false,
+    closable: true,
+    draggable:true
+});
+
+//see http://extjs.com/deploy/ext/docs/index.html for API documentation
+
+</script>
+
+<!-- 
+Ext.QuickTips.register({title: 'Play', target: playId, autoHide:true});
+
+When setting it on a DOM node that you have a reference to (not through markup) you can/should use
+el.qtip = 'blah'; (or el.dom.qtip) to set an expando.
+-->

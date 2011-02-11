@@ -1,0 +1,25 @@
+<fieldset>
+	<legend>$r.translate("fieldset.legend.metadata")</legend>
+	#if ($isRestrictedEdit)
+		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv-fibess.html","help.hover.qti-meta-fibess")
+	#else
+		## Fill in the Blank or Essay or Kprim
+		#if (($questionType == "3") || ($questionType == "4") || ($questionType == "5"))
+			#if ($isSurveyMode == "true")
+				$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv-fibess.html","help.hover.qti-meta-fibess")
+			#else
+				$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-test-fib.html","help.hover.qti-meta-fib")
+			#end
+		
+		## Single Choice or Multiple Choice
+		#else
+			#if ($isSurveyMode == "true")
+				$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv-mcsc.html","help.hover.qti-meta-scmc")
+			#else
+				$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-test-mcsc.html","help.hover.qti-meta-scmc")
+			#end
+		#end
+	#end
+	
+	$r.render("itemMetaDataForm")
+</fieldset>

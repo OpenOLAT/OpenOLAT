@@ -1,0 +1,25 @@
+#foreach($stat in $stats)
+<fieldset>
+
+#if ($thisNodeId==$stat.nodeId)
+	<legend><b>Node: $stat.nodeId (you are on this node)</b></legend>
+#else
+	<legend>Node: $stat.nodeId</legend>
+#end
+	
+	<table class="b_table b_grid">
+		<tr>
+			<td>Startup:</td><td>$!stat.config.startupTime</td>
+			<td>Messages received: </td><td>$stat.numOfReceivedMessages</td>
+			<td>Latest received Id: </td><td>$stat.latestReceivedMsgId</td>
+			<td>Count of missed messages: </td><td>$stat.numOfMissedMsgs</td>
+
+#if ($thisNodeId==$stat.nodeId)
+			<td>$r.translate("you.are.on.this.node")</td>
+#else
+			<td class="b_align_normal"><a href="$r.commandURIbg("switchToNode")?nodeId=$stat.nodeId" $r.bgTarget()>$r.translate("switch.to.node")</a></td>
+#end
+		</tr>
+	</table>
+</fieldset>
+#end

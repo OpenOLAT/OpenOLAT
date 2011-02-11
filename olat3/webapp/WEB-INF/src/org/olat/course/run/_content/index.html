@@ -1,0 +1,17 @@
+<script type="text/javascript">
+/* <![CDATA[ */
+o_info.course_id="$courserepokey";
+## o_activateCourseNode is called from functions.js gotonode() method and implements 
+## the activation of the given node id in the course run structure
+function o_activateCourseNode(nodeid) {
+	if (!o_info.linkbusy) { 
+		o_beforeserver();
+		window.focus();
+		${r.javaScriptBgCommand("activateCourseNode")} + nodeid;
+		## Go to top of page (OLAT-5675)
+		Effect.ScrollTo('b_top');
+	}
+}
+/* ]]> */ 
+</script>
+$r.render("coursemain")

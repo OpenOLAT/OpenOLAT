@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+@media aural
+{
+	h1, h2, h3, h4, h5 ,h6 {
+		pause-before:600ms;
+	    stress: 20;
+    	richness: 90;
+	}
+}

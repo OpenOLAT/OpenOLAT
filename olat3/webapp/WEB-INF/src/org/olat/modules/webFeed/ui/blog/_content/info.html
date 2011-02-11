@@ -1,0 +1,20 @@
+<div class="o_blog_info">
+	#if ($callback.mayEditMetadata())
+		<div class="o_feed_edit">$r.render("feed.edit")</div>
+	#end		
+	<h3>$r.escapeHtml($feed.getTitle())</h3>
+	<p>$!helper.getFeedDescriptionForBrowser()</p>
+	#if ($helper.getImageUrl() && $helper.getImageUrl() != "")
+		<img class="icon" src="$helper.getImageUrl()" alt="Blog Image" />
+	#end
+	#if ( !$feed.isUndefined() )
+		<p>
+			<div class="o_blog_subscription">
+				<a href="$!helper.getFeedUrl()" class="o_blog_rss_link" target="_blank">$r.translate("blog.subscribe.to.this.feed")</a>
+			</div>
+		</p>
+	#end	
+	#if ($feed.getAuthor() && $feed.getAuthor() != "")
+		<p class="o_author">$r.translate("feed.author") $feed.getAuthor(). $r.translate("feed.last.change") $!helper.getLastModified()</p>
+	#end
+</div>

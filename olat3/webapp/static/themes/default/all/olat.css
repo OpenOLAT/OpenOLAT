@@ -1,0 +1,898 @@
+@charset "UTF-8";
+
+/**
+  * layouting for ALL medium and all layouts
+  */ 
+
+@media all
+{
+	
+	/* LOGIN */
+	div.o_login {}
+	div.o_login div.o_infomessage_wrapper {border: 1px solid #ACAAAA; background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left;}
+	div.o_login div.o_infomessage {padding: 10px 10px 10px 50px; text-align: left; background: url(../images/brasato/icon_warning.png) no-repeat 10px 10px;}
+	div.o_login div.o_infomessage_inner { }	
+	
+	div.o_login div.o_login_form { }
+	div.o_login div.o_login_form fieldset { margin: 2em 0 0 0; background: #fff url(../images/olat/olat_logo.png) no-repeat 90% 50%; padding-right: 30%; min-height: 140px}
+	div.o_login div.o_login_form input { width: 13em;} /* set width to format login and pwd filed the same */
+	div.o_login div.o_login_form input.b_button { width: auto;} /* reset rule from above for button */
+	div.o_login div.o_login_form ul {padding: 0 0 0 1em; margin: 2em 0 0 0; list-style: none; }
+	div.o_login div.o_login_form li {padding: 0; margin: 0; }
+	div.o_login div.o_login_form li a { background: transparent left 50% no-repeat; padding-left: 20px;}
+	div.o_login div.o_login_form a.o_login_guests { background-image: url(../images/olat/alien.png); }
+	div.o_login div.o_login_form a.o_login_guests:hover { background-image: url(../images/olat/alien_over.png); }
+	div.o_login div.o_login_form a.o_login_register { background-image: url(../images/olat/register.png); }
+	div.o_login div.o_login_form a.o_login_register:hover { background-image: url(../images/olat/register_over.png); }
+	div.o_login div.o_login_form a.o_login_pwd { background-image: url(../images/olat/password.png); }
+	div.o_login div.o_login_form a.o_login_pwd:hover { background-image: url(../images/olat/password_over.png); }
+	div.o_login_providers { margin: 2em 0;}
+	div.o_login_providers ul li {}
+
+	/* site icons in nav */
+	#b_nav_main li.o_site_home div { background-image: url(../images/brasato/home.png) }
+	#b_nav_main li.o_site_home:hover div { background-image: url(../images/brasato/home_over.png) }
+	#b_nav_main li.o_site_groups div { background-image: url(../images/brasato/group.png) }
+	#b_nav_main li.o_site_groups:hover div { background-image: url(../images/brasato/group_over.png) }
+	#b_nav_main li.o_site_groupsmanagement div { background-image: url(../images/olat/group_gear.png) }
+	#b_nav_main li.o_site_groupsmanagement:hover div { background-image: url(../images/olat/group_gear_over.png) }
+	#b_nav_main li.o_site_repository div { background-image: url(../images/olat/repository.png) }
+	#b_nav_main li.o_site_repository:hover div { background-image: url(../images/olat/repository_over.png) }
+	#b_nav_main li.o_site_useradmin div { background-image: url(../images/brasato/user_gear.png) }
+	#b_nav_main li.o_site_useradmin:hover div { background-image: url(../images/brasato/user_gear_over.png) }
+	#b_nav_main li.o_site_admin div { background-image: url(../images/olat/admin.png) }
+	#b_nav_main li.o_site_admin:hover div { background-image: url(../images/olat/admin_over.png) }
+	#b_nav_main li.o_site_guidemo div { background-image: url(../images/olat/lightbulb.png) }
+	#b_nav_main li.o_site_testing div { background-image: url(../images/brasato/bug.png) }
+	
+	/* Specific changes for olat.org layout */
+	/*
+	#b_nav_main li.o_site_about div { background-image: url(../images/olat/logo_small.png) }
+	#b_nav_main li.o_site_about:hover div { background-image: url(../images/olat/logo_small_over.png) }
+	#b_nav_main li.o_site_download div { background-image: url(../images/brasato/download.png) }
+	#b_nav_main li.o_site_download:hover div { background-image: url(../images/brasato/download_over.png) }
+	#b_nav_main li.o_site_development div { background-image: url(../images/brasato/preferences.png) }
+	#b_nav_main li.o_site_development:hover div { background-image: url(../images/brasato/preferences_over.png) }
+	*/
+	
+	/* optionally you can customize any site */
+	/*
+	#b_page .o_home        		{}
+	#b_page .o_groups      		{}
+	#b_page .o_groupsmanagement {}
+	#b_page .o_repository  		{}
+	#b_page .o_useradmin 		{}
+	#b_page .o_admin			{}
+	*/
+	
+
+	/* tab icons in nav */
+	#b_nav_main li.b_resource_BusinessGroup div, .o_BusinessGroup_icon  { background-image: url(../images/brasato/group.png) }
+	#b_nav_main li.b_resource_BusinessGroup:hover div  { background-image: url(../images/brasato/group_over.png) }	
+	#b_nav_main li.b_resource_CourseModule div, .o_CourseModule_icon  { background-image: url(../images/olat/course.png) }
+	#b_nav_main li.b_resource_CourseModule:hover div { background-image: url(../images/olat/course_over.png) }
+	#b_nav_main li.b_resource_HOMEPAGECONFIG div, .o_HOMEPAGECONFIG_icon, #b_nav_main li.b_resource_Identity div { background-image: url(../images/olat/vcard.png) }
+	#b_nav_main li.b_resource_HOMEPAGECONFIG:hover div, #b_nav_main li.b_resource_Identity:hover div { background-image: url(../images/olat/vcard_over.png) }
+			
+	#b_nav_main li.b_resource_FileResource-SHAREDFOLDER div, .o_FileResource-SHAREDFOLDER_icon  { background-image: url(../images/olat/sharedfolder.png) }
+	a.o_FileResource-SHAREDFOLDER_icon:hover  { background-image: url(../images/olat/sharedfolder_over.png) }
+	#b_nav_main li.b_resource_FileResource-SHAREDFOLDER:hover div { background-image: url(../images/olat/sharedfolder_over.png) }
+	#b_nav_main li.b_resource_FileResource-WIKI div, .o_FileResource-WIKI_icon  { background-image: url(../images/olat/wiki.png) }
+	#b_nav_main li.b_resource_FileResource-WIKI:hover div  { background-image: url(../images/olat/wiki_over.png) }
+	#b_nav_main li.b_resource_FileResource-PODCAST div, .o_FileResource-PODCAST_icon  { background-image: url(../images/olat/podcast.png) }
+	#b_nav_main li.b_resource_FileResource-PODCAST:hover div  { background-image: url(../images/olat/podcast_over.png) }
+	#b_nav_main li.b_resource_FileResource-BLOG div, .o_FileResource-BLOG_icon  { background-image: url(../images/olat/blog.png) }
+	#b_nav_main li.b_resource_FileResource-BLOG div  { background-image: url(../images/olat/blog_over.png) }
+	#b_nav_main li.b_resource_FileResource-MOVIE div, .o_FileResource-MOVIE_icon  { background-image: url(../images/brasato/movie.png) }
+	#b_nav_main li.b_resource_FileResource-PDF div, .o_FileResource-PDF_icon  { background-image: url(../images/brasato/pdf.png) }
+	#b_nav_main li.b_resource_FileResource-PPT div, .o_FileResource-PPT_icon  { background-image: url(../images/brasato/ppt.png) }
+	#b_nav_main li.b_resource_FileResource-DOC div, .o_FileResource-DOC_icon  { background-image: url(../images/brasato/word.png) }
+	#b_nav_main li.b_resource_FileResource-IMSCP div, .o_FileResource-IMSCP_icon  { background-image: url(../images/olat/content.png) }
+	#b_nav_main li.b_resource_FileResource-IMSCP:hover div  { background-image: url(../images/olat/content_over.png) }
+	#b_nav_main li.b_resource_FileResource-SCORMCP div, .o_FileResource-SCORMCP_icon  { background-image: url(../images/olat/scorm.png) }
+	#b_nav_main li.b_resource_FileResource-SCORMCP:hover div  { background-image: url(../images/olat/scorm_over.png) }
+	#b_nav_main li.b_resource_FileResource-FILE div, .o_FileResource-FILE_icon  { background-image: url(../images/brasato/doc.png) }
+	#b_nav_main li.b_resource_FileResource-IMAGE div, .o_FileResource-IMAGE_icon  { background-image: url(../images/brasato/image.png) }
+	#b_nav_main li.b_resource_FileResource-SOUND div, .o_FileResource-SOUND_icon  { background-image: url(../images/brasato/music.png) }
+	#b_nav_main li.b_resource_FileResource-XLS div, .o_FileResource-XLS_icon  { background-image: url(../images/brasato/excel.png) }
+	#b_nav_main li.b_resource_FileResource-ANIM div, .o_FileResource-ANIM_icon  { background-image: url(../images/brasato/animation.png) }
+	#b_nav_main li.b_resource_FileResource-SURVEY div, .o_FileResource-SURVEY_icon  { background-image: url(../images/olat/questionnaire.png) }
+	#b_nav_main li.b_resource_FileResource-SURVEY:hover div  { background-image: url(../images/olat/questionnaire_over.png) }
+	#b_nav_main li.b_resource_FileResource-TEST div, .o_FileResource-TEST_icon  { background-image: url(../images/olat/test.png) }	
+	#b_nav_main li.b_resource_FileResource-TEST:hover div  { background-image: url(../images/olat/test_over.png) }
+	#b_nav_main li.b_resource_FileResource-GLOSSARY div, .o_FileResource-GLOSSARY_icon  { background-image: url(../images/olat/glossary.png) }
+	a.o_FileResource-GLOSSARY_icon:hover  { background-image: url(../images/olat/glossary_over.png) }
+	#b_nav_main li.b_resource_FileResource-GLOSSARY:hover div { background-image: url(../images/olat/glossary_over.png) }
+	#b_nav_main li.b_resource_org-olat-search-ui-SearchController div, .o_org-olat-search-ui-SearchController_icon  { background-image: url(../images/brasato/search.png) }		
+	#b_nav_main li.b_resource_org-olat-search-ui-SearchController:hover div { background-image: url(../images/brasato/search_over.png) }
+	#b_nav_main li.b_resource_EPStructuredMapTemplate div { background-image: url(../images/brasato/eportfolio/ep_icon.png) }
+	#b_nav_main li.b_resource_EPStructuredMapTemplate:hover div { background-image: url(../images/brasato/eportfolio/ep_icon_over.png) }	
+	
+	/* top nav */
+	#b_topnav #o_topnav_search input { line-height: 1.3em; margin: 0; width: 10em;}
+	#b_topnav #o_topnav_search input:focus { border: 1px solid #504D4E; }
+	#b_topnav #o_topnav_search div.b_form_element_wrapper { float: none; margin: 0; }
+	#b_topnav #o_topnav_search div.b_form_element_wrapper .b_form_element { margin: 0; padding: 0; }/* IE 6 */
+	#b_topnav #o_topnav_search div.b_form_element_wrapper .b_form_horizontal { margin: 0; padding: 0; }/* IE 6 */
+	#b_topnav #o_topnav_search { width:13em; }/* IE 6 */
+	
+	#b_topnav #o_topnav_help a { background: url(../images/brasato/help.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; }
+	#b_topnav #o_topnav_help a:hover, #b_topnav #o_topnav_help a:focus { background-image: url(../images/brasato/help_over.png); }
+	#b_topnav #o_topnav_logout a { background: url(../images/brasato/logout_inverse.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; font-weight: bold;}
+	#b_topnav #o_topnav_logout a:hover, #b_topnav #o_topnav_logout a:focus { background-image: url(../images/brasato/logout_inverse_over.png); }
+	#b_topnav #o_topnav_login a { background: url(../images/olat/login.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; font-weight: bold;}
+	#b_topnav #o_topnav_login a:hover, #b_topnav #o_topnav_login a:focus { background-image: url(../images/olat/login_over.png); }
+	#b_topnav #o_topnav_langchooser label { color: #CCCCCC; }
+	#b_topnav #o_topnav_langchooser select { line-height: 1em; margin: 0; font-size: 95%}
+	#b_topnav #o_topnav_langchooser option { line-height: 1em; margin: 0; }
+	#b_topnav #o_topnav_imclient #o_topnav_imclient_message a span { padding:0;}
+	#b_topnav #o_topnav_imclient #o_topnav_imclient_status a span {padding:0; }
+	#b_topnav #o_topnav_imclient #o_topnav_imclient_summary a {color: #CCCCCC; }
+	#b_topnav #o_topnav_imclient #o_topnav_imclient_summary a:hover, #b_topnav #o_topnav_imclient #o_topnav_imclient_summary a:focus {color: #ffffff; }
+	#b_topnav #o_topnav_close a {background: url(../images/brasato/close_inverse.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; }
+	#b_topnav #o_topnav_close a:hover, #b_topnav #o_topnav_close a:focus {background-image: url(../images/brasato/close_inverse_over.png); }
+	#b_topnav #o_topnav_printview a { background: url(../images/brasato/print.png) no-repeat top right; padding: 2px 20px 2px 0; margin: 0; }
+	#b_topnav #o_topnav_printview a:hover, #b_topnav #o_topnav_printview a:focus { background-image: url(../images/brasato/print_over.png); }
+	
+	/* INSTANT MESSAGING */
+	#o_instantmessaging_status_changer a.b_contexthelp { margin-top:5px; padding-right: 5px; }
+	#o_instantmessages_buddieslist a.b_contexthelp { margin-top:5px; padding-right: 5px; }
+	#o_instantmessaging_status_changer { padding: 1em 0 0 0; margin: 0}
+	#o_instantmessaging_status_changer ul { list-style-type: none; padding: 0; margin: 0}
+	#o_instantmessaging_status_changer li { padding: 0; margin: 0; }
+	#o_instantmessaging_status_changer li a { padding: 0.1em 0 0.1em 20px; background-repeat: no-repeat; background-position: 0 50%;}
+	.o_instantmessaging_chat_history, .o_groupchat_history { border: 1px solid #ACAAAA; overflow: scroll; margin: 0 0 1em 0; overflow-x:auto; height:170px; background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left;}
+	.o_instantmessaging_chat_history div, .o_groupchat_history div { border-top: 1px solid #eee; padding: 0.3em 0;}	
+	.o_instantmessaging_chat_form input, .o_groupchat_chat_form input { width: 99%}
+	.o_instantmessaging_chat_form div.b_button_group, .o_groupchat_chat_form div.b_button_group {margin-top: 1em;}
+	#o_instantmessages_buddieslist { padding: 1em 0 0 0; margin: 0}
+	#o_instantmessages_buddieslist ul {list-style-type: none; padding: 0; margin: 0} 
+	#o_instantmessages_buddieslist li { margin: 0; padding: 0;}
+	#o_instantmessages_buddieslist li.o_instantmessaging_groupname {padding: 0 0 0 20px; background: url(../images/brasato/group.png) no-repeat 0 0;} 
+	#o_instantmessages_buddieslist li a { padding: 2px 0 2px 20px; background-repeat: no-repeat; background-position: 0 0; }
+	#o_instantmessages_buddieslist a.o_instantmessaging_showgroupswitch {padding: 2px 0 2px 20px; background: url(../images/olat/group_gear.png) no-repeat 0 0;} 
+	#o_instantmessages_buddieslist a.o_instantmessaging_showofflineswitch {padding: 2px 0 2px 20px; background: url(../images/olat/instantmessaging/unavailable.png) no-repeat 0 0;} 
+	div.o_groupchat_roster { margin: 0;}
+	div.o_groupchat_roster ul { list-style-type: disc;margin: 0; padding: 0;}
+	div.o_groupchat_roster li { font-size: 95%}
+	/* im icons */
+	.o_instantmessaging_available_icon { background-image: url(../images/olat/instantmessaging/available.png); }
+	a.o_instantmessaging_available_icon:hover { background-image: url(../images/olat/instantmessaging/available_over.png); }	
+	.o_instantmessaging_chat_icon {	background-image: url(../images/olat/instantmessaging/chat.png); }
+	a.o_instantmessaging_chat_icon:hover {	background-image: url(../images/olat/instantmessaging/chat_over.png); }
+	.o_instantmessaging_away_icon {	background-image: url(../images/olat/instantmessaging/away.png); }
+	.o_instantmessaging_away_icon:hover {	background-image: url(../images/olat/instantmessaging/away_over.png); }
+	.o_instantmessaging_dnd_icon { background-image: url(../images/olat/instantmessaging/dnd.png); }
+	a.o_instantmessaging_dnd_icon:hover { background-image: url(../images/olat/instantmessaging/dnd_over.png); }
+	.o_instantmessaging_unavailable_icon { background-image: url(../images/olat/instantmessaging/unavailable.png); }
+	a.o_instantmessaging_unavailable_icon:hover { background-image: url(../images/olat/instantmessaging/unavailable_over.png); }
+	.o_instantmessaging_xa_icon { background-image: url(../images/olat/instantmessaging/xa.png); }
+	a.o_instantmessaging_xa_icon:hover { background-image: url(../images/olat/instantmessaging/xa_over.png); }
+	.o_instantmessaging_offline_icon { background-image: url(../images/olat/instantmessaging/unavailable.png);}
+	a.o_instantmessaging_offline_icon:hover { background-image: url(../images/olat/instantmessaging/unavailable_over.png);}
+	.o_instantmessaging_new_msg_icon { background-image: url(../images/olat/new_message.gif);}
+	a.o_instantmessaging_new_msg_icon:hover { background-image: url(../images/olat/new_message.gif);}
+	.o_instantmessaging_error_icon { background-image: url(../images/brasato/cross.png);}	
+	.o_instantmessaging_refresh_icon {background-image: url(../images/olat/arrow_refresh.png);} 
+		
+	/* FULLTEXT SEARCH */
+	#o_search_form {margin: 5px; position: relative;}
+	#o_search_form_toggler {background-image: url(../images/brasato/search.png); cursor: pointer;}
+	#o_search_form_toggler:hover {background-image: url(../images/brasato/search_over.png);}
+	#o_search_form_content div.b_form div.b_form_element_wrapper div.b_form_element_wrapper { margin: 0.5em 0; }
+	#o_search_form div.b_contexthelp_wrapper a.b_contexthelp { right: 0;}	
+	#o_search_results {border-top: 1px solid #eee; margin: 5px;}
+	#o_search_results_header { line-height: 16px; vertical-align: middle; background: url(../images/olat/search.png) no-repeat center left #F8F8F8; padding:2px 2px 2px 20px; margin-bottom: 5px;} 
+	#o_search_results_header.o_search_did_you_mean,
+	#o_search_results_header.o_search_no_results { background-image: url(../images/brasato/warn.png); color: #990000; }
+	#o_search_results_header.o_search_did_you_mean span.o_search_did_you_mean_words{ color: #000; font-weight: bold;}
+	#o_search_results_header div.o_search_results_stats { float: right; display: inline; font-size: 90%;}
+	#o_search_results_header span.o_search_highlight { padding-left: 2em;}
+	#o_search_results_header #o_search_pageing { padding-left: 2em; display: inline; }
+	#o_search_pageing_bottom { text-align: center; background: #F8F8F8; border-bottom: 1px solid #eee; padding: 3px;}
+	#o_search_results_toomany { background: url(../images/brasato/warn.png) no-repeat center left #F8F8F8; color: #990000; padding: 5px 0 3px 20px; position: relative; top: -5px; margin-bottom: 5px;} 
+	div.o_search_result {margin: 0 0 1em 0; padding: 1em 0 0 0; }
+	div.o_search_result_title a {font-weight: bold; } 
+	div.o_search_result_title a.o_search_result_details_link { margin-left: 1em; font-weight: normal; font-size: 90%; vertical-align: bottom;}
+	div.o_search_result_excerpt { padding: 2px 0 1px 0; font-size: 95%; max-width: 60em;}
+	div.o_search_result_excerpt span.o_search_result_highlight { font-weight: bold; background-color: #FFFF80;}
+	div.o_search_result_context, 
+	div.o_search_result_author,
+	div.o_search_result_lastmod,
+	div.o_search_result_type,
+	div.o_search_result_desc { padding: 1px 0; font-size: 90%; color: #667;}
+	a.o_fulltext_search_button { background:url(../images/brasato/search.png) top left no-repeat; }
+	a.o_fulltext_search_button:hover { background-image:url(../images/brasato/search_over.png); }
+
+	/* other icons */
+	.o_news_icon { background-image: url(../images/olat/information.png); }
+	a.o_news_icon:hover { background-image: url(../images/olat/information_over.png); }
+	.o_course_icon { background-image: url(../images/olat/course.png); }
+	a.o_course_icon:hover { background-image: url(../images/olat/course_over.png); }
+	.o_chat_icon { background-image: url(../images/olat/chat_icon.png); }
+	a.o_chat_icon:hover { background-image: url(../images/olat/chat_icon_over.png); }
+	.o_admin_icon { background-image: url(../images/olat/admin.png); }
+	a.o_admin_icon:hover { background-image: url(../images/olat/admin_over.png); }
+	.o_calendar_icon { background-image: url(../images/olat/calendar.png); }
+	a.o_calendar_icon:hover { background-image: url(../images/olat/calendar_over.png); }
+	
+	/* COURSE */
+	div.o_course_run {}
+	div.o_course_run h3 {}
+	div.o_course_run_displaytitle { font-style: italic;}
+	div.o_course_run_objectives { background-color: #E9EAEF; padding: 5px 5px 5px 25px; margin:0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.o_course_run_scoreinfo {background: #E9EAEF url(../images/brasato/seal.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;} 
+	div.o_course_run_disclaimer {background: #E9EAEF url(../images/brasato/information.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}  
+	div.o_course_run_groupinfo{ background: #E9EAEF url(../images/brasato/group.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;} 
+	div.o_course_run_statusinfo {background: url(../images/brasato/bullet_go.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}  
+	div.o_course_run_returnbox { background: #E9EAEF url(../images/olat/return_box.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.o_course_run_dropbox { background: #E9EAEF url(../images/olat/drop_box.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.o_course_run_solutionbox { background: #E9EAEF url(../images/olat/solution_box.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.o_course_run_task { background: #E9EAEF url(../images/olat/assign.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.o_course_run_disclaimer h4,
+	div.o_course_run_objectives h4,	
+	div.o_course_run_scoreinfo h4,
+	div.o_course_run_returnbox h4,
+	div.o_course_run_dropbox h4, 
+	div.o_course_run_solutionbox h4,
+	div.o_course_run_task h4,
+	div.o_course_run_log h4 { font-size: 100%; margin: 0 0 1em 0;}
+	div.o_course_run_scoreinfo_noinfo { font-style: italic; font-weight: bold} 
+	div.o_course_run_toc { margin: 1em 0 0 0; } 
+	div.o_course_run_toc_one_columns { } 
+	div.o_course_run_toc_two_columns { }
+	div.o_course_run_toc div.o_course_run_toc_entry { margin: 0 0 1em 0; padding: 1em 20px 0 0; } 
+	div.o_course_run_toc div.o_course_run_shorttitle { border-bottom: 1px solid #ACAAAA; } 
+	div.o_course_run_toc div.o_course_run_displaytitle { margin-top: 0.5em; color: #aaaaaa } 
+	div.o_course_run_toc div.o_course_run_objectives { margin: 1em 0 1em 0; border: 0; background: none;} 
+	div.o_course_run_toc div.o_course_run_toc_entry { background: #FBFBFB; padding: 5px; border:1px solid #eee; -moz-border-radius: 4px; -webkit-border-radius: 4px; } 
+	div.o_course_run #b_content_popup { position:absolute; top:0; right:0; }
+	
+	div.o_st_peekview ul { list-style: none; }
+	div.o_st_peekview li { margin-top: 0.5em;}
+	div.o_st_peekview a { position: relative; left: -20px; }
+	
+	div.o_sp_peekview { margin: 1em 0 1em 0;}
+	
+	div.o_peekview_author { padding: 3px 0 5px 0; font-style: italic; color: #aaaaaa; font-size: 90%;}
+	
+	#o_course_editor_errorbox {font-size: 90%; background: #ebcccc url(../images/olat/decorator_error.png) no-repeat 5px 4px; padding: 3px 2px 2px 25px; margin: 0 0 1em 0;; }  
+	#o_course_editor_error { padding-left: 10px}  
+	#o_course_editor_warningbox {font-size: 90%;background: #fff5cc url(../images/olat/decorator_warn.png) no-repeat 5px 4px; padding: 3px 2px 2px 25px; margin: 0 0 1em 0; }
+	#o_course_editor_warning { padding-left: 10px}  
+	#o_course_editor_okbox {font-size: 90%;background: url(../images/olat/decorator_ok.png) no-repeat 5px 2px; padding: 3px 2px 2px 25px; margin: 0 0 1em 0;}
+	#o_course_editor_ok { padding-left: 10px}  
+	#o_course_editor_errorbox ul, #o_course_editor_warningbox ul { padding: 0; margin: 0;}  
+	
+	
+	span.o_passed { background: url(../images/olat/tick.png) no-repeat right 50%; padding: 0 25px 0 0; color: #009900 }
+	span.o_notpassed { background: url(../images/olat/cross.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000 }
+	
+	.o_efficiencystatement_icon {background-image: url(../images/brasato/seal.png)!important;} 
+	.o_dropbox_icon { background-image: url(../images/olat/drop_box.png); }
+	.o_returnbox_icon { background-image: url(../images/olat/return_box.png); }
+	.o_solution_icon { background-image: url(../images/olat/solution_box.png); }
+	
+	/* course building block icons */
+	.o_bc_icon { background-image: url(../images/olat/folder.png) ! important; }
+	a.o_bc_icon:hover { background-image: url(../images/olat/folder_over.png)!important; }
+	.o_co_icon { background-image: url(../images/olat/contact.png)!important}
+	a.o_co_icon:hover { background-image: url(../images/olat/contact_over.png)!important}
+	.o_cp_icon { background-image: url(../images/olat/content.png)!important}
+	a.o_cp_icon:hover { background-image: url(../images/olat/content_over.png)!important}
+	.o_cp_org { background-image: url(../images/olat/content.png)!important}
+	a.o_cp_org:hover { background-image: url(../images/olat/content_over.png)!important}
+	.o_cp_item { background-image: url(../images/olat/single_page.png)!important}
+	a.o_cp_item:hover { background-image: url(../images/olat/single_page_over.png)!important}
+	.o_dialog_icon { background-image: url(../images/olat/file_discussion.png)!important} 
+	a.o_dialog_icon:hover { background-image: url(../images/olat/file_discussion_over.png)!important} 
+	.o_en_icon { background-image: url(../images/olat/enrolment.png)!important}
+	a.o_en_icon:hover { background-image: url(../images/olat/enrolment_over.png)!important}
+	.o_fo_icon { background-image: url(../images/olat/forum.png)!important}
+	a.o_fo_icon:hover { background-image: url(../images/olat/forum_over.png)!important}
+	.o_iqself_icon { background-image: url(../images/olat/selftest.png)!important}
+	a.o_iqself_icon:hover { background-image: url(../images/olat/selftest_over.png)!important}
+	.o_iqsurv_icon { background-image: url(../images/olat/questionnaire.png)!important}
+	a.o_iqsurv_icon:hover { background-image: url(../images/olat/questionnaire_over.png)!important}
+	.o_iqtest_icon { background-image: url(../images/olat/test.png)!important}
+	a.o_iqtest_icon:hover { background-image: url(../images/olat/test_over.png)!important}
+	.o_ms_icon { background-image: url(../images/olat/manual_score.png)!important}
+	a.o_ms_icon:hover { background-image: url(../images/olat/manual_score_over.png)!important}
+	.o_scorm_icon { background-image: url(../images/olat/scorm.png)!important}
+	a.o_scorm_icon:hover { background-image: url(../images/olat/scorm_over.png)!important}
+	.o_scorm_org { background-image: url(../images/olat/scorm.png)!important}
+	a.o_scorm_org:hover { background-image: url(../images/olat/scorm_over.png)!important}
+	.o_scorm_item { background-image: url(../images/olat/single_page.png)!important}
+	a.o_scorm_item:hover { background-image: url(../images/olat/single_page_over.png)!important}
+	.o_scorm_asset { background-image: url(../images/olat/scorm.png)!important}
+	a.o_scorm_asset:hover { background-image: url(../images/olat/scorm_over.png)!important}
+	.o_sp_icon { background-image: url(../images/olat/single_page.png)!important}
+	a.o_sp_icon:hover { background-image: url(../images/olat/single_page_over.png)!important}
+	.o_st_icon { background-image: url(../images/olat/structure.png)!important}
+	a.o_st_icon:hover { background-image: url(../images/olat/structure_over.png)!important}
+	.o_ta_icon { background-image: url(../images/olat/task.png)!important}
+	a.o_ta_icon:hover { background-image: url(../images/olat/task_over.png)!important}
+	.o_tu_icon { background-image: url(../images/olat/external_page.png)!important}
+	a.o_tu_icon:hover { background-image: url(../images/olat/external_page_over.png)!important}
+	.o_wiki_icon { background-image: url(../images/olat/wiki.png)!important}
+	a.o_wiki_icon:hover { background-image: url(../images/olat/wiki_over.png)!important}
+	.o_ll_icon { background-image: url(../images/olat/ll.png)!important}
+	a.o_ll_icon:hover { background-image: url(../images/olat/ll_over.png)!important}
+	.o_cl_icon { background-image: url(../images/olat/cl.png)!important}
+	a.o_cl_icon:hover { background-image: url(../images/olat/cl_over.png)!important}
+	.o_den_icon { background-image: url(../images/olat/den.png)!important}
+	a.o_den_icon:hover { background-image: url(../images/olat/den_over.png)!important}
+	.o_projectbroker_icon { background-image: url(../images/olat/projectbroker.png)!important}
+	a.o_projectbroker_icon:hover { background-image: url(../images/olat/projectbroker_over.png)!important}
+	.o_podcast_icon { background-image: url(../images/olat/podcast.png)!important}
+	a.o_podcast_icon:hover { background-image: url(../images/olat/podcast_over.png)!important}
+	.o_blog_icon { background-image: url(../images/olat/blog.png)!important}
+	a.o_blog_icon:hover { background-image: url(../images/olat/blog_over.png)!important}	
+	.o_cal_icon { background-image: url(../images/olat/calendar.png)!important}
+	a.o_cal_icon:hover { background-image: url(../images/olat/calendar_over.png)!important}	
+	.o_lti_icon { background-image: url(../images/olat/basiclti.png)!important}
+	a.o_lti_icon:hover { background-image: url(../images/olat/basiclti_over.png)!important}	
+	.o_ep_icon, .o_EPStructuredMapTemplate_icon { background-image: url(../images/brasato/eportfolio/ep_icon.png)!important}
+	a.o_ep_icon:hover { background-image: url(../images/brasato/eportfolio/ep_icon_over.png)!important}
+	.o_infomsg_icon { background-image: url(../images/olat/infomessage.png)!important}
+	a.o_infomsg_icon:hover { background-image: url(../images/olat/infomessage_over.png)!important}
+	body#b_body .o_CourseModule_icon_closed {background-image:url(../images/olat/course_closed.png);}
+	
+	/* menu tree positioning */
+	div.b_tree span.b_tree_icon_decorator {width: 12px; height: 12px; float: right; display: inline; position: static; -moz-opacity: 0.5; opacity:0.5; filter: alpha(opacity:50);}
+	div.b_tree a:hover span.b_tree_icon_decorator, div.b_tree a.b_tree_selected span.b_tree_icon_decorator {-moz-opacity: 1; opacity:1; filter: alpha(opacity:100); }
+	
+	
+	/* menu icon decorators */
+	.o_midlock{ top: 9px; left: 9px; background-image: url(../images/olat/decorator_condition.png); }
+	.o_miderr{ top: 8px; left: -2px; background-image: url(../images/olat/decorator_error.png); }
+	.o_midwarn{	top: 8px; left: -2px; background-image: url(../images/olat/decorator_warn.png);}
+	.o_midpub{ top: -2px; left: 9px; background-image: url(../images/olat/decorator_ok.png); }
+	div.o_courseeditor_legend { margin-top: 3em;}
+	div.o_courseeditor_legend strong { font-weight: bold; }
+	div.o_courseeditor_legend div { top: 0; left: 0; padding-left: 12px; background-repeat: no-repeat; background-position: 0 50%; }	
+	
+	/* REPOSITORY */
+	div.o_repository_resource_image { float: right; display: inline; margin: 0 0 10px 10px;}
+	div.o_repository_import ul { list-style-image: url(../images/brasato/arrow_right.png);}
+	div.o_repository_import li { padding-bottom: 2em;}
+	
+	/* MODULES */
+	div.o_module_cp_wrapper{}
+	div.o_module_cp_wrapper a.b_content_download {background: url(../images/brasato/download.png) no-repeat top left; padding-left: 20px; margin: 3px; display:block; min-height: 16px;}
+	div.o_module_cp_wrapper a.b_content_download:hover { background-image: url(../images/brasato/download_over.png);}
+	div.o_module_cp_wrapper div#o_local_fulltextsearch { position:absolute; top:0; right:0; z-index:10; }
+	div.o_module_cp_wrapper div#o_local_fulltextsearch div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+	div.o_module_tu_wrapper {}
+
+	/* FORUM */
+	div.o_forum {}
+	div.o_forum div.o_forum_switch { border: 1px solid #8F99AD; padding: 3px; font-size: 95% }
+	div.o_forum div.o_forum_message { margin: 1em 0 1em 0; }
+	div.o_forum div.o_forum_message_header_wrapper { background: #9BA3B5 url(../images/olat/forum/forum_head.png) repeat-x top left; min-height: 24px;}
+	div.o_forum div.o_forum_message_header { background: url(../images/olat/forum/forum_head_right.png) no-repeat top right; min-height: 24px;}
+	div.o_forum div.o_forum_message_title { background: url(../images/olat/forum/forum_head_left.png) no-repeat top left; vertical-align: middle; padding: 2px 5px 2px 5px;  color: #4F576A; min-height: 24px;}
+	div.o_forum div.o_forum_message_title strong { font-weight: bold;}
+	div.o_forum div.o_forum_message_new div.o_forum_message_title strong {background: url(../images/brasato/new.png) no-repeat top right; padding-right: 20px;}
+
+	div.o_forum div.o_forum_message_content_wrapper { border-right: 1px solid #9BA3B5; border-left: 1px solid #9BA3B5; }
+	div.o_forum div.o_forum_message_content { background: #fff url(../images/olat/forum/forum_bg.png) repeat-x bottom left; border: 3px solid #C7CCD6; }
+	div.o_forum div.o_forum_message_creator { width: 100px; padding: 0.5em 0px 0px 0px; font-size: 95%; color: #4F576A;}
+	div.o_forum div.o_forum_message_creator strong { font-weight: normal; }
+	div.o_forum div.o_forum_message_creator img { border: 1px solid #4F576A; }
+	div.o_forum div.o_forum_message_body { padding: 0.5em; border-left: 106px solid #C7CCD6; } 
+	div.o_forum div.o_forum_message_attachments { margin: 2em 0 0.5em 0; border-top: 1px solid #506D90; font-size: 95%; }
+	div.o_forum div.o_forum_message_attachments strong { display: block; margin: 0.5em 0; font-weight: normal; font-style: italic; }
+	div.o_forum div.o_forum_message_attachments ul { list-style: none; margin: 0; padding: 0;}
+	div.o_forum div.o_forum_message_attachments li { margin: 0; padding: 0; }
+	
+	div.o_forum div.o_forum_message_attachments a { background-repeat: no-repeat; background-position: 0 50%; padding-left: 20px; }
+	div.o_forum div.o_forum_message_modified { clear: both; border-top: 1px solid #506D90; padding: 0.5em 0 0 0; font-size: 95%; font-style: italic; text-align: center; color: #98221F}
+
+	div.o_forum div.o_forum_message_footer_wrapper { background-color: #C7CCD6; border-left: 1px solid #9BA3B5; border-right: 1px solid #9BA3B5; border-bottom: 1px solid #4F576A;}
+	div.o_forum div.o_forum_message_actions { text-align: center; padding: 0.2em 1em;}
+	
+	span.o_forum_thread_sticky { font-weight: bold; }
+	span.o_forum_status_thread_icon {background-image: url(../images/olat/comments.png)}
+	span.o_forum_status_sticky_closed_icon {background-image: url(../images/olat/eye_lock.png)}
+	span.o_forum_status_sticky_icon {background-image: url(../images/olat/eye.png)}
+	span.o_forum_status_closed_icon {background-image: url(../images/olat/comments_lock.png)}
+	
+	div.o_forum_peekview { margin: 1em 0 1em 0;}
+	div.o_forum_peekview h5 { font-size: 1em; position: relative; left: -20px;}
+	div.o_forum_peekview div.o_forum_peekview_message { padding-left: 20px; padding-bottom: 15px; }
+	.o_forum_message_icon {background-image: url(../images/brasato/comment.png); }
+	div.o_forum_peekview div.b_quote_wrapper { display: none;}
+	
+	div.o_forum_toolbar { float:left; display:inline; width:75%; }
+	div#o_forum_fulltextsearch { float:right; display:inline; }
+	div#o_forum_fulltextsearch input { width:10em; }
+	div#o_forum_fulltextsearch div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+	
+	/* BRIEFCASE */
+	div.o_briefcase_peekview { margin: 1em 0 1em 0;}
+	div.o_briefcase_peekview_file {}
+		
+
+	/* WIKI */
+	/* wrapper container for the wiki tabbed pane */
+	div.o_wiki_wrapper { clear: both; }
+	/* override default styles from tabbed pane */
+	div.o_wiki_wrapper div.b_tabbedpane_wrapper div.b_tabbedpane_tabs { background-image: none ! important; border-bottom: 1px solid #504D4E; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs ul li { border: 0; line-height: 1.5em;  padding: 0 10px 0 12px;}
+	div.o_wiki_wrapper div.b_tabbedpane_tabs a, 
+	div.o_wiki_wrapper div.b_tabbedpane_tabs strong { background: transparent; color: #667; }		
+	div.o_wiki_wrapper div.b_tabbedpane_tabs ul li:focus, 
+	div.o_wiki_wrapper div.b_tabbedpane_tabs ul li:hover, 
+	div.o_wiki_wrapper div.b_tabbedpane_tabs ul li:active {  background-color: transparent; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs a:focus, 
+	div.o_wiki_wrapper div.b_tabbedpane_tabs a:hover,
+	div.o_wiki_wrapper div.b_tabbedpane_tabs a:active {	color: #223; background-color: transparent; text-decoration: none; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_active a, 
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_active strong { background: transparent ! important; color: #000; font-weight: bold; padding-bottom: 4px; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_disabled a,
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_disabled strong { color:#DCDCDC;  background: transparent ! important; font-weight: normal; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_disabled a:focus, 
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_disabled a:hover,
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_disabled a:active { color: #667; }
+	div.o_wiki_wrapper div.b_tabbedpane_wrapper div.b_tabbedpane_content {  background: transparent; border:0; }
+	div.o_wiki_wrapper div.b_tabbedpane_content div.b_tabbedpane_content_inner { position: relative; padding: 0; min-height: 30em; }
+	div.o_wiki_wrapper div.b_tabbedpane_content div.b_tabbedpane_content_inner fieldset { background: transparent; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_1 { background: transparent url(../images/olat/wiki.png) no-repeat left 50% ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_1:hover { background-image: url(../images/olat/wiki_over.png) ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_2 { background: transparent url(../images/olat/forum.png) no-repeat left 50% ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_2:hover { background-image: url(../images/olat/forum_over.png) ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_3 { background-repeat: no-repeat  ! important; background-color: transparent; background-position: left 50% ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_3, .o_edit_icon { background-image: url(../images/olat/page_edit.png) ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_3:hover { background-image: url(../images/olat/page_edit_over.png) ! important; }
+	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_4 { background: transparent url(../images/olat/page_white_copy.png) no-repeat left 50% ! important; }
+	/* portfolio */
+	div.o_wiki_wrapper .b_eportfolio_add { position:absolute; top:28px; right:3px; z-index:99; }
+	/* override default styles to have smaller title and header on wiki pages */
+	div.o_wiki_wrapper h1 	{ font-size: 1.0em;}
+	div.o_wiki_wrapper h2 	{ font-size: 1.0em;}
+	div.o_wiki_wrapper h3 	{ font-size: 1.0em;}
+	/* wiki edit helper buttons */
+	div.o_wikimod_btn { position: relative; }
+	div.o_wikimod_btn div.b_contexthelp_wrapper a.b_contexthelp {position: absolute; top: 0; right: 0;}
+	div.o_wikimod_btn a, div.o_wikimod_btn a:hover { background-repeat: no-repeat;	width:23px;	height:22px; border-style:none; float:left; display: inline; padding-left:2px; }
+	a.o_wikimod_btn_bold { background: url(../images/olat/wiki/btn_bold.png) }
+	a.o_wikimod_btn_bold:hover { background: url(../images/olat/wiki/btn_bold_over.png) }	
+	a.o_wikimod_btn_italic { background: url(../images/olat/wiki/btn_italic.png) }
+	a.o_wikimod_btn_italic:hover { background: url(../images/olat/wiki/btn_italic_over.png) }
+	a.o_wikimod_btn_link { background: url(../images/olat/wiki/btn_link.png) }
+	a.o_wikimod_btn_link:hover { background: url(../images/olat/wiki/btn_link_over.png) }
+	a.o_wikimod_btn_extlink { background: url(../images/olat/wiki/btn_extlink.png) }
+	a.o_wikimod_btn_extlink:hover { background: url(../images/olat/wiki/btn_extlink_over.png) }
+	a.o_wikimod_btn_headline { background: url(../images/olat/wiki/btn_headline.png) }
+	a.o_wikimod_btn_headline:hover { background: url(../images/olat/wiki/btn_headline_over.png) }
+	a.o_wikimod_btn_image { background: url(../images/olat/wiki/btn_image.png) }
+	a.o_wikimod_btn_image:hover { background: url(../images/olat/wiki/btn_image_over.png) }
+	a.o_wikimod_btn_media { background: url(../images/olat/wiki/btn_media.png) }
+	a.o_wikimod_btn_media:hover { background: url(../images/olat/wiki/btn_media_over.png) }
+	a.o_wikimod_btn_math { background: url(../images/olat/wiki/btn_math.png) }
+	a.o_wikimod_btn_math:hover { background: url(../images/olat/wiki/btn_math_over.png) }
+	a.o_wikimod_btn_nowiki { background: url(../images/olat/wiki/btn_nowiki.png) }
+	a.o_wikimod_btn_nowiki:hover { background: url(../images/olat/wiki/btn_nowiki_over.png) }
+	a.o_wikimod_btn_hr { background: url(../images/olat/wiki/btn_hr.png) }
+	a.o_wikimod_btn_hr:hover { background: url(../images/olat/wiki/btn_hr_over.png) }
+	a.o_wikimod_btn_list { background: url(../images/olat/wiki/btn_list.png) }
+	a.o_wikimod_btn_list:hover { background: url(../images/olat/wiki/btn_list_over.png) }
+	a.o_wikimod_btn_numlist { background: url(../images/olat/wiki/btn_numlist.png) }
+	a.o_wikimod_btn_numlist:hover { background: url(../images/olat/wiki/btn_numlist_over.png) }
+	/* wiki chooser for file and links */
+	div.o_wikimod_linkchooser { clear: both; float: left; display: inline; }
+	div.o_wikimod_filechooser {margin: 0 2em; float: left; display: inline;}
+	/* wiki left side navigation */
+	div.o_wikimod_nav { font-size: 90%; padding-top: 1.5em; }
+	div.o_wikimod_nav legend { font-size: 95%;}
+	div.o_wikimod_nav fieldset { padding: 0.5em; }
+	div.o_wikimod_nav input { width: 99%;}
+	div.o_wikimod_nav ul { margin: 0; padding: 0}
+	div.o_wikimod_nav div.b_button_group { margin:0.5em 0; text-align: left;}	
+	div.o_wikimod_nav div.b_form div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+	div.o_wikimod_nav .b_form_element_wrapper .b_form_element { padding:0; }
+	div.o_wikimod_nav div.b_form_element_wrapper div.b_form_element.b_form_horizontal .b_button { padding:0.5em 0; }
+	/* wiki edit form */
+	div.o_wikimod_editform_wrapper { clear: both; padding: 0.5em 0 0 0;}
+	div.o_wikimod_editform_wrapper div.b_form div.b_form_element_wrapper div.b_form_element_label { display: none;}
+	div.o_wikimod_editform_wrapper div.b_form div.b_form_element_wrapper div.b_form_element { clear: both; margin-left: 0; padding: 0 5px 0 0 }
+	div.o_wikimod_editform_wrapper div.b_form div.b_button_group { margin-left: 0; text-align: center;}
+	/* wiki run view of article */
+	div.o_wikimod-article-box { }	
+	h1.o_wikimod_heading, h3.o_wikimod_heading  { margin: 0 0 1em 0; padding: .5em 0 .17em 0; border-bottom: 1px solid #BFBFBF; }
+	#o_wikimod_uploader { margin: 1em 0 0 0;}	
+	.o_wikimod_version { border:1px solid #BFBFBF; padding:4px; margin-top:5px; }
+	.o_wikimod_diff { border:1px solid #BFBFBF; padding:4px; margin:0px;}
+	.o_wikimod_warn {color:#DF9719;}
+	.o_wiki_error {background-color: #DF9719;}
+	.o_wikimod_ins { background-color:#A4DCA4; }
+	.o_wikimod_old { background-color:#FFCCCC; }
+	.o_wikimod_new { background-color:#A4DCA4; }
+	.o_wikimod_del { background-color:#FFCCCC; }
+	.wiki-image { float:right; padding:10px; clear:right; }
+	.wiki-file-deleted { text-decoration:line-through; }	
+	
+	/* SCORM */
+	div.o_scorm {}
+	div.o_scorm a.b_link_close { padding-right:20px; }
+	div.o_scorm div.o_scorm_navigation { float: right; display: inline; padding: 3px; background: #272727 url(../images/brasato/resizer_bg.gif) repeat-x center; border: 1px solid #504D4E; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;}
+	div.o_scorm div.o_scorm_navigation a { margin: 0 2px; }
+	div.o_scorm div.o_scorm_navigation a.o_scorm_previous_icon{ background-image: url(../images/brasato/move_left.png); }
+	div.o_scorm div.o_scorm_navigation a.o_scorm_previous_icon:hover{ background-image: url(../images/brasato/move_left_over.png); }
+	div.o_scorm div.o_scorm_navigation a.o_scorm_next_icon{	background-image: url(../images/brasato/move_right.png); }
+	div.o_scorm div.o_scorm_navigation a.o_scorm_next_icon:hover{	background-image: url(../images/brasato/move_right_over.png); }
+	div.o_scorm div.o_scorm_navigation a.hover { background-color: none;}
+	div.o_scorm div.o_scorm_content { }
+	div.o_scorm div.o_scorm_content iframe { }
+	/* menu icon decorators */
+	.o_scorm_completed { top: 6px; left: 6px; background-image: url(../images/olat/scorm/completed.png); }
+	.o_scorm_failed { top: 6px; left: 6px ! important; background-image: url(../images/olat/scorm/failed.png); }
+	.o_scorm_incomplete { top: 6px; left: 6px; background-image: url(../images/olat/scorm/incomplete.png); }
+	.o_scorm_not_attempted { top: 6px; left: 6px; background-image: url(../images/olat/scorm/not_attempted.png); }
+	.o_scorm_passed { top: 6px; left: 6px; background-image: url(../images/olat/scorm/passed.png); }
+		
+	/* FEED general */	
+	#o_feed { }
+	#o_feed .o_box { border:1px solid #eee; padding: 0.8em; margin-bottom: 2em; background: #fbfbfb url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; -moz-border-radius: 4px; -webkit-border-radius: 4px; }
+	#o_feed div.o_feed_edit { float: right; position:relative; top:0.2em; margin-right:0 }
+	#o_feed #o_link_container { margin-bottom: 0.8em; }
+	#o_feed #o_link_container div.o_home { text-align: center; }
+	#o_feed #o_link_container div.o_older_items { float: left; display: inline;}
+	#o_feed #o_link_container div.o_newer_items { float: right; display: inline;}
+	div.o_feed_peekview { margin: 1em 0 1em 0;}
+	div.o_feed_peekview h5 { font-size: 1em; position: relative; left: -20px;}
+	div.o_feed_peekview div.o_feed_peekview_item { padding-left: 20px; }
+	#o_feed div.b_datecomp{ top: 2px; float: left; display: inline; }
+	
+	/* PODCAST */	
+	#o_feed p.o_podcast_date { font-size:80%; color:#aaaaaa; }
+	#o_feed div.o_podcast_info img.icon { float: left; margin: 0 1.5em 1.5em 0; max-width:120px; max-height:120px; }	
+	#o_feed div.o_podcast_no_image { float:left; margin: 0 1em 1em 0; width:100px; height:100px; color:#dfdfdf; background:white; text-align:center; padding:20px; border: 2px dashed #dfdfdf; -moz-border-radius: 5px; -webkit-border-radius: 5px;}
+	#o_feed div.o_podcast_no_image span { vertical-align:middle; }
+	#o_feed div.o_podcast_subscription { clear:both; }
+	#o_feed div.o_podcast_subscription a.o_podcast_rss_link { display:block; float:right; width:16px; height:16px; background: url(../images/olat/feed.png) no-repeat; }	
+	#o_feed div.o_podcast_episode { padding:10px; margin-bottom:20px; border: 1px solid #dfdfdf; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #fdfdfd; }
+	#o_feed div.o_podcast_episode div.o_podcast_audio embed { width: 200px; height:24px; }
+	#o_feed div.o_podcast_episode div.o_podcast_video embed { width: 200px; height:157px; }
+	#o_feed div.o_podcast_episode div.o_podcast_video, #o_feed div.o_podcast_episode div.o_podcast_audio { margin-bottom:3px; }
+	#o_feed div.o_podcast_episode div.b_ratings_and_comments { margin: 2em 0 0 0; padding-bottom: 0; border-bottom: 0;}
+	#o_feed .back_link.o_podcast { margin-bottom: 1.5em; }
+	div.o_podcast_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-image: url(../images/olat/sound.png); }
+	
+	/* BLOG */
+	#o_feed .o_blog_posts .o_post, #o_feed .o_blog_post .o_post {  margin-bottom:1em; padding:10px 0; }
+	#o_feed .o_blog_posts .o_draft { padding: 0.8em; background-color: #fcf7ac; border: 1px solid #fddc55; }
+	#o_feed .o_blog_posts .o_scheduled { padding: 0.8em; background-color: #d9ffd0; border: 1px solid #beffae; }
+	#o_feed div.o_blog_info div.o_blog_subscription { min-height:16px; padding-left:20px; background: url(../images/olat/feed.png) no-repeat; }	
+	#o_feed .o_blog_info .o_author, #o_feed .o_blog_posts .o_item_info { color: #7D7D7D; font-size: 90%; margin: 0;}
+	#o_feed .o_blog_posts p.o_item_info span.o_item_info_mod { color:#98221F; }
+	#o_feed .o_blog_post .back_link { margin-bottom: 1.5em; }
+	div.o_blog_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-image: url(../images/brasato/comment.png); }
+	
+	/* INFO MESSAGES */
+	div.o_infomsgs { padding-top:5px; }
+	div.o_infomsgs div.b_datecomp { top: 2px; float: left; display: inline; }
+	div.o_infomsgs div.o_infomsg {  margin-bottom:1em; padding:10px 0 0 0; }
+	div.o_infomsg .b_year { display: none; }
+	div.o_infomsgs .o_item_info { color: #7D7D7D; font-size: 90%; }
+	div.o_infomsgs .o_item_info .o_item_info_mod { color:#98221F; }
+	div.b_table_wrapper td a.o_peekview_infomsg_link { display:inline; }
+	div.o_infomsgs_config { padding-bottom:5px; }
+	div.o_infomsgs_config div { display:inline; }
+	.o_infomsg_icon { background-image: url(../../../infomessage_icon.png); }
+	.o_infomsg_create_button { position:absolute; top:0; right:250px; }
+	
+	/* LINK LIST */
+	div.o_ll_container ul li { list-style: none; margin: 1em; }
+	div.o_ll_container ul li div { font-style: italic;}
+	
+	/* The portal */ 	
+	/* calendar start portlet */	
+	div.o_portlet_calendar.o_day_1  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_1.png); }
+	div.o_portlet_calendar.o_day_2  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_2.png); }
+	div.o_portlet_calendar.o_day_3  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_3.png); }
+	div.o_portlet_calendar.o_day_4  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_4.png); }
+	div.o_portlet_calendar.o_day_5  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_5.png); }
+	div.o_portlet_calendar.o_day_6  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_6.png); }
+	div.o_portlet_calendar.o_day_7  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_7.png); }
+	div.o_portlet_calendar.o_day_8  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_8.png); }
+	div.o_portlet_calendar.o_day_9  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_9.png); }
+	div.o_portlet_calendar.o_day_10  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_10.png); }
+	div.o_portlet_calendar.o_day_11  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_11.png); }
+	div.o_portlet_calendar.o_day_12  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_12.png); }
+	div.o_portlet_calendar.o_day_13  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_13.png); }
+	div.o_portlet_calendar.o_day_14  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_14.png); }
+	div.o_portlet_calendar.o_day_15  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_15.png); }
+	div.o_portlet_calendar.o_day_16  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_16.png); }
+	div.o_portlet_calendar.o_day_17  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_17.png); }
+	div.o_portlet_calendar.o_day_18  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_18.png); }
+	div.o_portlet_calendar.o_day_19  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_19.png); }
+	div.o_portlet_calendar.o_day_20  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_20.png); }
+	div.o_portlet_calendar.o_day_21  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_21.png); }
+	div.o_portlet_calendar.o_day_22  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_22.png); }
+	div.o_portlet_calendar.o_day_23  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_23.png); }
+	div.o_portlet_calendar.o_day_24  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_24.png); }
+	div.o_portlet_calendar.o_day_25  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_25.png); }
+	div.o_portlet_calendar.o_day_26  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_26.png); }
+	div.o_portlet_calendar.o_day_27  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_27.png); }
+	div.o_portlet_calendar.o_day_28  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_28.png); }
+	div.o_portlet_calendar.o_day_29  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_29.png); }
+	div.o_portlet_calendar.o_day_30  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_30.png); }
+	div.o_portlet_calendar.o_day_31  div.b_portlet_header { background-image: url(../images/olat/portal/calendar_31.png); }
+		
+	/* info message portlet */
+	div.o_portlet_infomsg  div.b_portlet_header { background-image: url(../images/brasato/portal/sysinfo.png); }
+	/* macartney portlet */
+	div.o_portlet_macartney  div.b_portlet_header { background-image: url(../images/olat/portal/macartney.png); }
+	/* The macartney comic strip in the portal: positioning of large comic version */
+	#o_macartney_large { position: fixed; top: 10%; left: 10%; width: 80%; z-index: 10; border: 1px solid #000; background: #fff; padding: 5px; }
+	#o_macartney_large img { width: 100%; }
+	#o_macartney_close {position: absolute; width: 16px; top: 0; right: 0; height: 16px; border-left: 1px solid #000; border-bottom: 1px solid #000; background: #fff url(../images/brasato/close.png)}
+	#o_macartney_open {width: 20px; bottom: 0; left: 0; height: 16px; background: #fff url(../images/brasato/zoom.png) no-repeat 4px 0;}
+	/* quick start portlet */
+	div.o_portlet_quickstart  div.b_portlet_header { background-image: url(../images/olat/portal/quickstart.png); }
+	/* bookmark table portlet */
+	div.o_portlet_bookmark  div.b_portlet_header { background-image: url(../images/olat/portal/bookmarks.png); }	
+	/* group table portlet */
+	div.o_portlet_groups  div.b_portlet_header { background-image: url(../images/olat/portal/groups.png); }
+	/* notes table portlet */
+	div.o_portlet_notes  div.b_portlet_header { background-image: url(../images/olat/portal/notes.png); }
+	/* notificatons table portlet */
+	div.o_portlet_noti  div.b_portlet_header{ background-image: url(../images/olat/portal/notifications.png); }
+	/* efficiency statements table portlet */
+	div.o_portlet_eff  div.b_portlet_header { background-image: url(../images/olat/portal/efficiencyStatements.png); }
+	/* zentralstelle portlet */
+	div.o_portlet_zsuz div.b_portlet_header { background-image: url(../images/olat/portal/zsuz.png); }
+	/* repository entires portlet */
+	div.o_portlet_repository_student div.b_portlet_header { background-image: url(../images/olat/portal/repository_student.png); }
+	div.o_portlet_repository_teacher div.b_portlet_header { background-image: url(../images/olat/portal/repository_teacher.png); }
+	div.o_portlet_repository_student td.b_first_child { width: 18px;}
+	div.o_portlet_repository_teacher td.b_first_child { width: 18px;}
+	/* info messages */
+	div.o_portlet_infomessages  div.b_portlet_header { background-image: url(../images/olat/portal/infomessage_portal.png); }
+	div.b_table_wrapper table td a.o_portlet_infomessage_link { display:inline; }
+	
+	/* Notification */
+	div.o_notifications_news_wrapper {}
+	div.o_notifications_news_datechooser { border-bottom: 1px solid #bbb; padding:1em 0 1em 0;}
+	div.o_notifications_news_datechooser label { padding-right:1em;}
+	div.o_notifications_news_subscription { margin: 1.5em 0 2em 0;}
+	div.o_notifications_news_subscription h4 { font-size: 110%; }
+	div.o_notifications_news_context { color: #7D7D7D; font-size: 90%; }
+	div.o_notifications_news_content {margin: 0.5em 0 0.5em 0;}
+	div.o_notifications_news_content ul { list-style-type: none; margin: 0;}
+	div.o_notifications_news_url { }
+	
+	/* The home site */
+	div.o_home_main { text-align:center;}
+	div.o_home_portaleditlink {position: absolute; top:0; right:0 }
+	div.o_home_rsslink { clear: both; float: right; display:inline; margin: 10px 0;}
+	div.o_home_rsslink a { float: right; display: inline; }
+	div.o_home_rsslink a.o_home_rsslink { width: 16px; height: 16px; margin-right: 5px;}
+	div.o_home_rsslink a.o_home_rsslink, .o_rss_icon { background: url(../images/olat/feed.png) no-repeat; }
+	
+	/* visiting card: space for user icon */
+	div.o_visitingcard { margin: 1em;}
+	div.o_visitingcard div.o_visitingcard_content { position: relative; padding: 1em 0 0 120px; min-height: 200px;}
+	div.o_visitingcard div.o_visitingcard_image { position: absolute; left: 0px;}
+	div.o_visitingcard table td {vertical-align:top; margin: 0; padding: 0.2em 1em 0.2em 0}
+	div.o_visitingcard div.o_visitingcard_about { margin-left: 0; margin-top: 2em; padding: 0; }
+	div.o_visitingcard label {  }
+	
+	/* IMS CP Editor */
+	#o_cpeditor_menu div.o_cpeditor_menu_tree { padding: 10px 0 0 0;}
+	#b_col1 div.b_menu_toolbar a, #b_col3 div.b_menu_toolbar a {width: 16px; height: 16px; margin: 3px; float: right; display: inline; background-repeat: no-repeat;}
+	a.o_cpeditor_import { background-image: url(../images/brasato/upload.png); }
+	a.o_cpeditor_import:hover {background-image: url(../images/brasato/upload_over.png) }	
+	a.o_cpeditor_new { background-image: url(../images/brasato/file_new.png);  }
+	a.o_cpeditor_new:hover {background-image: url(../images/brasato/file_new_over.png) }	
+	a.o_cpeditor_copy { background-image: url(../images/brasato/copy.png); }
+	a.o_cpeditor_copy:hover {background-image: url(../images/brasato/copy_over.png) }	
+	a.o_cpeditor_delete { background-image: url(../images/brasato/delete.png); }
+	a.o_cpeditor_delete:hover {background-image: url(../images/brasato/delete_over.png) }	
+	a.o_cpeditor_edit { background-image: url(../images/brasato/edit_metadata.png);}
+	a.o_cpeditor_edit:hover {background-image: url(../images/brasato/edit_metadata_over.png) }
+	a.o_cpeditor_preview { background-image: url(../images/brasato/preview.png); }
+	a.o_cpeditor_preview:hover {background-image: url(../images/brasato/preview_over.png); }
+	#o_cpeditor_content div.o_cpeditor_message { padding: 20px;}	
+	
+	/* QTI legacy styles */
+	#o_qti_run {}
+	#o_qti_run div.b_button_group { text-align: left;}
+	#o_qti_run_title { text-align: right;}
+	#o_qti_run_title strong { float: left; display: inline;}
+	#o_qti_run.o_qti_survey #o_qti_run_title strong { background: url(../images/olat/questionnaire.png) no-repeat left 50%; padding-left: 20px;}
+	#o_qti_run.o_qti_test #o_qti_run_title strong { background: url(../images/olat/test.png) no-repeat left 50%; padding-left: 20px;}
+	#o_qti_scoreinfo{float: left; display: inline; padding: .3em; border: 1px solid silver; margin-right: 1em;}
+	#o_qti_run_score { clear: both; margin: 1em 0; padding: 0 0 1.5em 0; font-size: 90%;}
+	#o_qti_run_scoreinfo {float: left; display: inline;} 
+	#o_qti_run_scoreprogress { float: left; display: inline; margin-left:1em;}
+	#o_qti_questioninfo{float: left; display: inline; padding: .3em; border: 1px solid silver;}
+	#o_qti_run_questioninfo {float: left; display: inline; margin-left:1em;}
+	#o_qti_run_questionprogress	{float: left; display: inline; margin-left:1em;}
+	#o_qti_run_status {clear: both; }
+	#o_qti_run_main { clear:both; border-top: 1px solid #504D4E;  margin: 0.5em 0; padding: 1em 0;}
+	#o_qti_run_menu_inner h4 {font-size: 100%;}
+	#o_qti_run_menu_inner ul { padding: 0; margin: 0; list-style: none;}
+	#o_qti_run_menu_inner li { clear: both; padding: 0; margin: 0; white-space: normal;}
+	#o_qti_run_menu_inner li.o_qti_menu_section { padding: 1em 0;}
+	#o_qti_run_menu_inner li div.o_qti_menu_item, #o_qti_run_menu li div.o_qti_menu_section {float: left; display: inline; margin-right: 10px;}		
+	#o_qti_run_content_inner { }
+	#o_qti_results td { padding: 0; }  /* fixes problem with truncated testresults, see OLAT-3416 */	
+	#b_main.o_editor_qti_correct {background-image: url(../images/olat/qti/correct_bg.png); background-position: top left; }
+	#b_main.o_editor_qti {background-image: url(../images/olat/editor/edit_bg.png); background-position: top left; }
+	#o_qti_hints, #o_qti_solutions { margin: 1em 0;}
+	#o_qti_hints a { background: url(../images/olat/lightbulb.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
+	#o_qti_hints a:focus, #o_qti_hints a:hover{ background-image: url(../images/olat/lightbulb_hover.png); }	
+	#o_qti_solutions a { background: url(../images/olat/magnifyer.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
+	#o_qti_solutions a:focus, #o_qti_solutions a:hover{ background-image: url(../images/olat/magnifyer_hover.png); }	
+	.qti_response_level_feedback_label { margin-top: 1em; font-style:italic }
+	.qti_edit_layout { position:relative; padding-right:30px; margin-bottom:0.6em; }
+	.qti_edit_layout .edit_link { position:absolute; top:10px; right:0px; }
+	
+	/* QTI item styles */
+	div.o_qti_item {margin-bottom: 2em; margin-top: 2em; line-height:2em;}
+	div.o_qti_item input.b_radio, div.o_qti_item input.b_checkbox { margin-left: 1em;}
+	div.o_qti_item textarea { width: 99%;} /* prevent scrollbars */
+	strong.o_qti_item_matemtext {}
+	span.o_qti_item_mattext {}
+	table.o_qti_item_kprim {}
+	img.o_qti_item_matimage { vertical-align: middle;}
+
+	div.o_qti_item_choice {display:table; margin: 1em 0;}
+	div.o_qti_item_choice_option {display:table; padding: .5em; border: 1px solid transparent;}
+	div.o_qti_item_choice_option_flow {display:table-cell; padding: .5em; border: 1px solid transparent;}
+	div.o_qti_item_choice_option:hover {border: 1px solid silver;}
+	div.o_qti_item_choice_option_flow:hover {border: 1px solid silver;}
+	div.o_qti_item_choice_option_input {display:table-cell; vertical-align:middle; padding-right:.5em;}
+	div.o_qti_item_choice_option_input input {vertical-align:middle;}
+	div.o_qti_item_choice_option_value {display:table-cell;}
+	div.o_qti_item_choice_option_value span {line-height:1.5em; margin-right:1em;}
+	div.o_qti_item_choice_option_autoenum{display:table-cell;line-height:1.5em;width:1em;overflow:hidden;vertical-align:middle;color:silver;border:0;padding:0;margin:0;}
+	
+	#o_qti_menu td {}
+    #o_qti_menu a {text-decoration: none;}
+
+    .o_qti_menu_section{padding:.3em;}
+    .o_qti_menu_section_clickable {padding:.3em; border: 1px solid transparent; display:inline-block;}
+    .o_qti_menu_section_clickable:hover {padding:.3em; border: 1px solid silver; display:inline-block;}
+    .o_qti_menu_section_active {padding:.3em; border: 1px dashed silver; display:inline-block;}
+
+    .o_qti_menu_item {padding:.3em;border: 1px solid transparent; display:inline-block;}
+    .o_qti_menu_item_active {padding:.3em; border: 1px dashed silver; display:inline-block;}
+    .o_qti_menu_item_active:hover {border: 1px solid silver;}
+    .o_qti_menu_item_inactive {padding:.3em; border: 1px solid transparent;}
+    .o_qti_menu_item:hover {border: 1px solid silver;}
+    .o_qti_menu_item_closed {padding:.3em; border: 1px solid transparent;}
+
+    .o_qti_menu_item_attempts {color: silver; padding: .2em .4em .2em .4em; display:inline-block; border: 1px solid transparent; background: url(../images/olat/qti/flag_qti_dis.png) center right no-repeat; display:block; width:20px; height:12px; }
+    .o_qti_menu_item_attempts:hover, .o_qti_menu_item_attempts_marked:hover {color: silver; border: 1px solid silver; padding: .2em .4em .2em .4em; display:inline-block;  display:block; width:20px; height:12px; }
+	.o_qti_menu_item_attempts_marked {color: silver; padding: .2em .4em .2em .4em; display:inline-block; background: url(../images/olat/qti/flag.png) center right no-repeat; display:block; width:20px; height:12px; }
+	
+    #o_qti_item_note {padding:0;margin:0;border:0;color:silver;font-family:inherit;font-size:1em;background:inherit;overflow:hidden;}
+	.o_qti_item_note_box {border: 1px dashed silver; padding:.1em;margin:0;padding-left:.5em;}
+	div.o_qti_item_note_box_title{color: silver;}
+	
+	div.o_qti_item_itemfeedback, div.o_qti_item_assessfeedback, div.o_qti_item_o_qti_item_sectionfeedback{margin: 1em 0; background: url(../images/olat/lightning.png) no-repeat left 50%; padding-left: 20px;}
+	div.o_qti_item_objectives {margin: 1em 0; background: url(../images/images/brasato/information.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
+	/* qti menu items */
+	.o_qti_timelimit_icon {background-image: url(../images/olat/qti/time.png); }
+	a.o_qti_timelimit_icon:hover {background-image: url(../images/olat/qti/time_over.png); }
+	.o_qti_attemptslimit_icon {background-image: url(../images/olat/qti/tries.png); }
+	a.o_qti_attemptslimit_icon:hover {background-image: url(../images/olat/qti/tries_over.png); }
+	.o_qti_closed_icon {background-image: url(../images/olat/qti/closed.png); }
+	a.o_qti_closed_icon:hover {background-image: url(../images/olat/qti/closed_over.png); }
+	.o_mi_qtialientitem { background-image: url(../images/olat/qti/alientItem.png); }
+	.o_mi_qtisc { background-image: url(../images/olat/qti/scItem.png); }
+	a.o_mi_qtisc:hover { background-image: url(../images/olat/qti/scItem_over.png); }
+	.o_mi_qtimc { background-image: url(../images/olat/qti/mcItem.png); }
+	a.o_mi_qtimc:hover { background-image: url(../images/olat/qti/mcItem_over.png); }
+	.o_mi_qtikprim {background-image: url(../images/olat/qti/kprimItem.png); }
+	a.o_mi_qtikprim:hover {background-image: url(../images/olat/qti/kprimItem_over.png); }
+	.o_mi_qtifib { background-image: url(../images/olat/qti/fibItem.png); }
+	a.o_mi_qtifib:hover { background-image: url(../images/olat/qti/fibItem_over.png); }
+	.o_mi_qtiessay {background-image: url(../images/olat/qti/essayItem.png); }
+	a.o_mi_qtiessay:hover {background-image: url(../images/olat/qti/essayItem_over.png); }
+	.o_mi_qtisection { background-image: url(../images/olat/qti/section.png); }
+	a.o_mi_qtisection:hover { background-image: url(../images/olat/qti/section_over.png); }
+	.o_mi_iqtest { background-image: url(../images/olat/test.png); }
+	a.o_mi_iqtest:hover { background-image: url(../images/olat/test_over.png); }
+	.o_mi_iqsurv { background-image: url(../images/olat/questionnaire.png); }
+	a.o_mi_iqsurv:hover { background-image: url(../images/olat/questionnaire_over.png); }
+	
+	/* OLAT catalog */
+	div.o_catalog div.o_catalog_nav { font-size: 95%; padding: 0 0 0 20px; border-bottom: 1px solid #eee; background: url(../images/olat/folder_open.png) 0 50% no-repeat;}
+	div.o_catalog div.o_catalog_links {margin-top: 1em; padding-top: 1em; border-top: 1px solid #eee;}
+    div.o_catalog div.o_catalog_title { display: none; }
+	div.o_catalog div.o_catalog_desc { margin: 0.5em 0 0.5em 0; padding-left: 20px; font-size: 95%; font-style: italic;}
+	div.o_catalog div.o_catalog_itemlist ul { list-style-type: none; margin: 0; padding: 0;}      
+	div.o_catalog div.o_catalog_itemlist li { margin: 0; padding: 0 0 0 0.5em;;overflow: hidden;}      
+	div.o_catalog div.o_catalog_itemlist a { display: block; }	
+	div.o_catalog .o_catalog_cat_icon { background-image: url(../images/olat/folder_small_open.png); }
+    div.o_catalog .o_catalog_sub_icon { background-image: url(../images/olat/folder_small.png); }
+    div.o_catalog div.o_catalog_link { margin: 1em 0 1em 0;}
+    div.o_catalog div.o_catalog_link_title { background: #D6D7E0; line-height: 1.5em; padding: 0 0 0 0.5em; margin: 2em 0 0 0;}
+	div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_icon,
+	div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_icon  { background-image: url(../images/olat/folder_small.png); }
+	div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_noaccess_icon,
+	div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../images/olat/lock.png); }
+	div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_icon { background-image: url(../images/olat/folder_open.png); }
+	div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../images/olat/lock.png); }
+	div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_entry_icon { background-image: url(../images/olat/course.png); }
+	div.b_table_wrapper.o_catalog_categories_table table { background: none; }
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr { background: transparent; }	
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr.b_table_odd { background: transparent; }
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr td { border: 0 ! important; font-size: 90%}
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr td.b_last_child { text-align: right;}
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr td.b_first_child { text-align: left;}
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr:hover,
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr:focus { background: #c4d0dc;}	
+    
+    
+    
+    /* NOTES */
+	div.o_notes {}
+	div.o_notes fieldset { background-image: url(../images/olat/notes_bg.gif);}
+	div.o_notes.b_form div.b_form_element .b_form_element_disabled {	background: transparent; border:none; color:#000;}
+	.o_notes_icon { background-image: url(../images/olat/page_white.png); }
+	
+	/* TOOLBOX - olat related. see also in brasato.css for general toolbox icons */
+	div.b_toolbox li a.o_toolbox_course { background-image: url(../images/olat/course.png); }
+	div.b_toolbox li a.o_toolbox_course:hover { background-image: url(../images/olat/course_over.png); }	
+	div.b_toolbox li a.o_toolbox_content { background-image: url(../images/olat/content.png); }
+	div.b_toolbox li a.o_toolbox_content:hover { background-image: url(../images/olat/content_over.png); }
+	div.b_toolbox li a.o_toolbox_scorm { background-image: url(../images/olat/scorm.png); }
+	div.b_toolbox li a.o_toolbox_scorm:hover { background-image: url(../images/olat/scorm_over.png); }		
+	div.b_toolbox li a.o_toolbox_test { background-image: url(../images/olat/test.png); }
+	div.b_toolbox li a.o_toolbox_test:hover { background-image: url(../images/olat/test_over.png); }
+	div.b_toolbox li a.o_toolbox_questionnaire { background-image: url(../images/olat/questionnaire.png); }
+	div.b_toolbox li a.o_toolbox_questionnaire:hover { background-image: url(../images/olat/questionnaire_over.png); }
+	div.b_toolbox li a.o_toolbox_wiki { background-image: url(../images/olat/wiki.png); }
+	div.b_toolbox li a.o_toolbox_wiki:hover { background-image: url(../images/olat/wiki_over.png); }	
+	div.b_toolbox li a.o_toolbox_podcast { background-image: url(../images/olat/podcast.png); }
+	div.b_toolbox li a.o_toolbox_podcast:hover { background-image: url(../images/olat/podcast_over.png); }
+	div.b_toolbox li a.o_toolbox_blog { background-image: url(../images/olat/blog.png); }
+	div.b_toolbox li a.o_toolbox_blog:hover { background-image: url(../images/olat/blog_over.png); }
+	div.b_toolbox li a.o_toolbox_glossary { background-image: url(../images/olat/glossary.png); }
+	div.b_toolbox li a.o_toolbox_glossary:hover { background-image: url(../images/olat/glossary_over.png); }	
+	div.b_toolbox li a.o_toolbox_sharedfolder { background-image: url(../images/olat/sharedfolder.png); }
+	div.b_toolbox li a.o_toolbox_sharedfolder:hover { background-image: url(../images/olat/sharedfolder_over.png); }	
+	div.b_toolbox li a.o_toolbox_coursefolder { background-image: url(../images/olat/coursefolder.png); }
+	div.b_toolbox li a.o_toolbox_coursefolder:hover { background-image: url(../images/olat/coursefolder_over.png); }
+	div.b_toolbox li a.o_toolbox_portfolio { background-image: url(../images/brasato/eportfolio/ep_icon.png); }
+	div.b_toolbox li a.o_toolbox_portfolio:hover { background-image: url(../images/brasato/eportfolio/ep_icon_over.png); }	
+	
+	/* GENERIC COLOR STYLES */
+	.o_red 		{ color: #E98F8F }
+	.o_green 	{ color: #A4DCA4 }
+	.o_blue 	{ color: #86B9EC }
+	.o_ochre 	{ color: #B9790A }
+
+
+	/* CONTEXT HELP */
+	body.o_help_body #b_page_margins { min-width: 530px; max-width: 100em; }
+	body.o_help_body #b_main { background-image: url(../images/olat/home/background.gif); background-position: top left; }
+	body.o_help_body h4.o_context_help_titel { margin-top: 0.5em;}
+	body.o_help_body legend { color: black; }
+	body.o_help_body td.empty_cell { border: 1px dotted #eee; }
+
+	/* login site background image */
+	#b_main.o_loginscreen { background-image: url(../images/olat/home/background.gif); background-position: top left; }
+	/* home site background image */
+	#b_main.o_home { background-image: url(../images/olat/home/background.gif); background-position: top left; }
+	/* editor background */
+	#b_main.o_editor { background-image: url(../images/olat/editor/edit_bg.png); background-position: top left; }
+
+	/* Session Administration */
+	div.sessionadmin div.b_form_element_wrapper div.b_form_element { margin-left: 0%; padding: 0 2px 0 5px; } /* keep 2px space for 100% + border of textarea */
+	
+	/* Dummy user portrait (avatar) display */
+    img.o_portrait_dummy                {background-image: url(../images/olat/user/dummy.png); width: 100px; height: 100px;}
+    img.o_portrait_dummy_small          {background-image: url(../images/olat/user/dummy_small.png); width: 50px; height: 50px;}
+    img.o_portrait_dummy_female_big     {background-image: url(../images/olat/user/dummy_female_big.png); width: 100px; height: 100px;}
+    img.o_portrait_dummy_female_small   {background-image: url(../images/olat/user/dummy_female_small.png); width: 50px; height: 50px;}
+    img.o_portrait_dummy_male_big       {background-image: url(../images/olat/user/dummy_male_big.png); width: 100px; height: 100px;}
+    img.o_portrait_dummy_male_small     {background-image: url(../images/olat/user/dummy_male_small.png); width: 50px; height: 50px;}
+	
+}

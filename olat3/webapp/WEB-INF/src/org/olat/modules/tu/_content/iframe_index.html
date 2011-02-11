@@ -1,0 +1,10 @@
+<div class="b_iframe_wrapper o_module_tu_wrapper">
+	<iframe name="$frameId" id="$frameId" src="$url" frameborder="0" title="$r.translateInAttribute("iframe.content")"></iframe>
+</div>
+
+<script type="text/javascript">	
+	/* <![CDATA[ */
+	## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
+	Ext.onReady(function() {b_resizeIframeToMainMaxHeight("$frameId");});		
+	/* ]]> */ 
+</script>

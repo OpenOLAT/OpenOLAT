@@ -1,0 +1,10 @@
+<fieldset>
+	<legend>$r.translate("form.accountmanagement.title")</legend>
+	#if ($r.available("accountManagementController"))
+		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-accountmgmt.html","help.hover.projectbroker-accountmgmt")
+		$r.render("accountManagementController")
+	#else
+		$r.translate("form.accountmanagement.no.account.manager.group")
+	#end
+	
+</fieldset>

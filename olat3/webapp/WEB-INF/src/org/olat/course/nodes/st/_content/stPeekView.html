@@ -1,0 +1,16 @@
+<div class="o_st_peekview">
+#if($childNodes.size() > 0)
+	<ul>
+	#foreach ($coursenode in $childNodes)
+		<li>
+			$r.render("nodeLink_${coursenode.getIdent()}")
+		#if ($coursenode.getLongTitle() &&  $coursenode.getLongTitle() != "")
+			<br />	
+			$r.formatLatexFormulas("$coursenode.getLongTitle()")
+		#end	
+		</li>	
+	#end
+	</ul>
+#end
+</div>
+

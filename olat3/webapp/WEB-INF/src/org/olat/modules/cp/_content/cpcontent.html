@@ -1,0 +1,10 @@
+<div class="o_module_cp_wrapper b_clearfix">
+	#if($r.available("search_input"))
+  		<div id="o_local_fulltextsearch">$r.render("search_input")</div>		
+    #end
+	
+	<div class="b_floatscrollbox">
+	$r.render("cpContent")
+	</div>
+</div>
+

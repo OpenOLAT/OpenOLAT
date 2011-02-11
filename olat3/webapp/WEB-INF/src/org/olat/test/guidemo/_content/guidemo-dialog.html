@@ -1,0 +1,39 @@
+$r.render("sourceview")
+In the BasicController you will find methods to create easily a modal
+dialog in your code, but you can also use the
+DialogBoxControllerFactory. For more information see the
+<code>org.olat.core.gui.control.generic.modal</code> package.
+
+<pre><code>
+// define class variable
+private DialogBoxController dialogBoxOne;
+...
+...
+// somewhen later, create a dialog and activate it
+<b>dialogBoxOne = activateYesNoDialog(ureq, "Hello World",	"Lorem ipsum dolor sit amet...", dialogBoxOne);</b>
+...
+...
+// in the controller event method catch the event and do something
+if (source == dialogBoxOne) {
+	if (event == Event.CANCELLED_EVENT) {
+		feedbackMessage = "close icon clicked";
+	} else {
+		if (DialogBoxUIFactory.isYesEvent(event)) {
+			feedbackMessage = "yes clicked";
+		} else {
+			feedbackMessage = "no clicked";
+		}
+	}
+}
+</code></pre>
+
+<p>
+</p>
+<ul>
+	<li>$r.render("guidemo.dialog.yesno")</li>
+	<li>$r.render("guidemo.dialog.okcancel")</li>
+	<li>$r.render("guidemo.dialog.generic")</li>
+	<li>$r.render("guidemo.dialog.noclose")</li>
+	<li>$r.render("guidemo.dialog.customcss")</li>
+	<li>$r.render("guidemo.dialog.guimsg")</li>
+</ul>

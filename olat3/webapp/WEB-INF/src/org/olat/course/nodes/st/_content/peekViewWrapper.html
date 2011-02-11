@@ -1,0 +1,20 @@
+<div class="o_course_run_toc_entry $coursenode.getType()">
+	<div class="o_course_run_shorttitle">
+		<h5>
+			$r.render("nodeLink")
+		</h5>
+	</div>
+#if ($coursenode.getLongTitle() &&  $coursenode.getLongTitle() != "")
+	<div class="o_course_run_displaytitle">$coursenode.getLongTitle()</div>
+#end
+#if ($coursenode.getLearningObjectives() &&  $coursenode.getLearningObjectives() != "")
+	<div class="o_course_run_objectives">
+		$r.formatLatexFormulas("$coursenode.getLearningObjectives()")
+	</div>
+#end
+#if ($r.available("peekViewController"))
+	<div class="o_course_run_peekview">
+		$r.render("peekViewController")
+	</div>
+#end
+</div>

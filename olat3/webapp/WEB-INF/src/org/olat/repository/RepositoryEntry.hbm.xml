@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.repository.RepositoryEntry" table="o_repositoryentry">
+	
+		<cache usage="read-write" />
+
+		<id name="key" column="repositoryentry_id" type="long" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		
+		<version name="version" access="field" column="version" type="int"/>
+		<property  name="lastModified" column="lastmodified" type="timestamp" />
+	  	<property  name="creationDate"    column="creationdate"    type="timestamp" /> 
+	  	<property  name="lastUsage"       column="lastusage"       type="timestamp" />  
+ 
+		<property name="softkey">
+			<!-- softkey takes globalForeverUniqueID which has a max size of 30 characters -->
+			<column name="softkey" unique="true" not-null="true" length="30" index="softkey_idx"/>
+		</property>
+
+		<property name="displayname">
+			<column name="displayname" unique="false" not-null="true" length="100" index="displayname_idx"/>
+		</property>
+
+		<property name="resourcename">
+			<column name="resourcename" unique="false" not-null="true" length="100" index="resource_idx"/>
+		</property>
+
+		<many-to-one name="olatResource"
+                     column="fk_olatresource"
+                     class="org.olat.resource.OLATResourceImpl" 
+                     outer-join="true"   
+                     unique="true" 
+                     cascade="none"/>
+
+		<many-to-one name="ownerGroup"
+                     column="fk_ownergroup"
+                     class="org.olat.basesecurity.SecurityGroupImpl" 
+                     outer-join="true"   
+                     unique="true" 
+                     cascade="none"/>
+
+		<property name="description" type="string">
+			<column name="description" length="16777210" unique="false" not-null="false" />
+		</property>
+
+		<property name="initialAuthor">
+			<column name="initialauthor" unique="false" not-null="true" length="128" index="initialAuthor_idx"/>
+		</property>
+		
+		<property name="access">
+			<column name="accesscode" unique="false" not-null="true" index="access_idx"/>
+		</property>
+		
+		<property name="canLaunch">
+			<column name="canlaunch" unique="false" not-null="true"/>
+		</property>
+		
+		<property name="canDownload">
+			<column name="candownload" unique="false" not-null="true"/>
+		</property>
+		
+		<property name="canCopy">
+			<column name="cancopy" unique="false" not-null="true"/>
+		</property>
+		
+		<property name="canReference">
+			<column name="canreference" unique="false" not-null="true"/>
+		</property>
+
+		<property name="launchCounter">
+			<column name="launchcounter" unique="false" not-null="true"/>
+		</property>
+	
+		<property name="downloadCounter">
+			<column name="downloadcounter" unique="false" not-null="true"/>
+		</property>
+		
+		<property name="statusCode" column="statuscode" unique="false" type="int"/>
+		
+		<list name="metaDataElements" table="o_repositorymetadata" lazy="true">
+	   	    <key column="fk_repositoryentry"/>
+	   	    <index column="metadataelement_id"/>
+	    	<composite-element class="org.olat.repository.MetaDataElement">
+	    		<property  name="version" column="version" type="int" not-null="true" access="field"/>
+	    		<property  name="creationDate">
+	    			<column name="creationdate" sql-type="timestamp" unique="false" />
+	    		</property>
+				<property name="name" unique="false" not-null="true" />
+				<property name="value" type="string">
+					<column name="value" length="16777210" unique="false" not-null="true"/>
+				</property>
+   	 	    </composite-element>
+		</list>
+		
+	</class>
+</hibernate-mapping>

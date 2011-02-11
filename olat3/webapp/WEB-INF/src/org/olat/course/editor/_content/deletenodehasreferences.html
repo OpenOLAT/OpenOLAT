@@ -1,0 +1,11 @@
+<h4>$r.translate("deletenode.hasreferences.header")</h4>
+<p>
+$r.translate("deletenode.hasreferences.explain",$nodeident)
+</p>
+#if($entries.size()>0)
+<ol>
+	#foreach ($entry in $entries)
+	<li>$entry</li>	
+	#end
+</ol>
+#end

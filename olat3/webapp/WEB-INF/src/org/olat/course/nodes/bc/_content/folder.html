@@ -1,0 +1,11 @@
+<fieldset>
+	<legend>$r.translate("info.folder")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.bc","ced-bc.html","help.hover.bc")
+	$r.render("folder.view")
+ </fieldset>
+#if($editQuota)
+<fieldset>
+	<legend>$r.translate("info.quota")</legend>
+	$r.render("quota")
+</fieldset>
+#end

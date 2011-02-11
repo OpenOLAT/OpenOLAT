@@ -1,0 +1,198 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <p>
+*/ 
+
+package org.olat.ims.qti.container.qtielements;
+
+import java.util.List;
+
+import org.dom4j.Element;
+import org.olat.core.logging.AssertException;
+import org.olat.ims.qti.container.ItemInput;
+
+/**
+ *    Initial Date:  25.11.2004
+ *   
+ *    @author Mike Stock
+ */
+public class Response_label extends GenericQTIElement {
+
+	/**
+	 * Comment for <code>xmlClass</code>
+	 */
+	public static final String xmlClass = "response_label";
+	private static String PARA = "§";
+	/**
+	 * @param el_element
+	 */
+	public Response_label(Element el_element) {
+		super(el_element);
+
+	}
+
+	/**
+	 * @see org.olat.ims.qti.container.qtielements.QTIElement#render(StringBuilder,
+	 *      RenderInstructions)
+	 */
+	public void render(StringBuilder buffer, RenderInstructions ri) {
+		ItemInput iinput = (ItemInput) ri.get(RenderInstructions.KEY_ITEM_INPUT);
+		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
+		// find parent render_xxx element
+		String renderClass = (String) ri.get(RenderInstructions.KEY_RENDER_CLASS);
+		if (ri == null) throw new AssertException("Render class must be set previousely to call respnse_label.render.");
+		
+		if (renderClass.equals("choice")) {
+			// render multiple/single choice
+			buffer.append("<div class=\"o_qti_item_choice_option");
+			if (!wantBr(ri)) buffer.append("_flow");
+			buffer.append("\">");
+			
+			
+			Object o = ri.get(RenderInstructions.KEY_RENDER_AUTOENUM_LIST);
+			if (o != null) {
+					String[] s = o.toString().split(",");
+					o = ri.get(RenderInstructions.KEY_RENDER_AUTOENUM_IDX);
+					
+					int i = o == null ? 0 : Integer.valueOf(o.toString());
+					buffer.append("<div class=\"o_qti_item_choice_option_autoenum\">");
+					if (s.length > i) {
+						buffer.append("<span>").append(s[i]).append("</span>");
+						ri.put(RenderInstructions.KEY_RENDER_AUTOENUM_IDX, Integer.toString(i+1));
+					}
+					buffer.append("</div>");
+			}
+			
+			
+			Integer rCardinality = (Integer) ri.get(RenderInstructions.KEY_RESPONSE_RCARDINALITY);
+			if (rCardinality == null) throw new AssertException(
+					"Cardinality must be set previousely to call respnse_label.render for a render_choice class.");
+			
+			buffer.append("<div class=\"o_qti_item_choice_option_input\">");
+			if (rCardinality.intValue() == Response_lid.RCARDINALITY_SINGLE) {
+				
+				// single choice
+				buffer.append("<input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
+				buffer.append("qti").append(PARA).append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(PARA).append(
+						ri.get(RenderInstructions.KEY_RESPONSE_IDENT)).append(PARA).append("choice");
+				buffer.append("\" value=\"").append(getQTIIdent());
+				if (iinput != null && !iinput.isEmpty()) {
+					String response = iinput.getSingle(responseIdent);
+					if (response.equals(getQTIIdent())) buffer.append("\" checked=\"checked");
+				}
+				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />");
+				
+			} else if (rCardinality.intValue() == Response_lid.RCARDINALITY_MULTIPLE) {
+				// multiple choice
+				
+				buffer.append("<input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"checkbox\" class=\"b_checkbox\" name=\"");
+				appendParameterIdent(buffer, ri);
+				buffer.append("\" value=\"").append(getQTIIdent());
+				if (iinput != null) {
+					List responses = iinput.getAsList(responseIdent);
+					if (responses != null && responses.contains(getQTIIdent())) buffer.append("\" checked=\"checked");
+				}
+				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />");
+			}
+			buffer.append("</div>");
+			
+			
+			//support accessibility that plain HTML provides
+			buffer.append("<div class=\"o_qti_item_choice_option_value\">");
+			buffer.append("<label for=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\">");
+			
+			super.render(buffer, ri);
+			
+			buffer.append("</label>");
+			buffer.append("</div>");
+			
+			buffer.append("</div>");
+
+		} else if (renderClass.equals("kprim")) {
+			buffer.append("<tr><td align=\"center\"><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
+			appendParameterIdent(buffer, ri);
+			buffer.append("\" value=\"" + getQTIIdent() + ":correct\"");
+			if (iinput != null && !iinput.isEmpty()) {
+				List responses = iinput.getAsList(responseIdent);
+				if (responses != null && responses.contains(getQTIIdent() + ":correct")) buffer.append("\" checked=\"checked");
+			}
+			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
+			buffer.append("</td><td align=\"center\"><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
+			appendParameterIdent(buffer, ri);
+			buffer.append("\" value=\"" + getQTIIdent() + ":wrong\"");
+			if (iinput != null && !iinput.isEmpty()) {
+				List responses = iinput.getAsList(responseIdent);
+				if (responses != null && responses.contains(getQTIIdent() + ":wrong")) buffer.append("\" checked=\"checked");
+			}
+			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
+			buffer.append("</td><td>");
+			super.render(buffer, ri);
+			buffer.append("</td></tr>");
+			ri.put(RenderInstructions.KEY_FLOW_LABEL, new Integer(RenderInstructions.RENDER_FLOW_BLOCK));
+			addBr(ri, buffer);
+
+		} else if (renderClass.equals("fib")) {
+			Integer rows = (Integer) ri.get(RenderInstructions.KEY_FIB_ROWS);
+			Integer columns = (Integer) ri.get(RenderInstructions.KEY_FIB_COLUMNS);
+			Integer maxlength = (Integer) ri.get(RenderInstructions.KEY_FIB_MAXLENGTH);
+			if (rows == null || columns == null || maxlength == null) throw new AssertException(
+					"Rows and/or columns attribute not specified for render_fib.");
+			if (rows.intValue() > 1) {
+				// render as textarea
+				buffer.append("<textarea id=\"QTI_").append(getQTIIdent()).append("\" name=\"");
+				appendParameterIdent(buffer, ri);
+				buffer.append("\" rows=\"").append(rows).append("\" cols=\"").append(columns)
+						.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\">");
+				if (iinput != null && !iinput.isEmpty() && iinput.getSingle(responseIdent) != null) {
+					buffer.append(iinput.getSingle(getQTIIdent()));
+				}
+				buffer.append("</textarea>");
+				
+			} else {
+				// render as input string
+				buffer.append("&nbsp;<input id=\"QTI_").append(getQTIIdent()).append("\" name=\"");
+				appendParameterIdent(buffer, ri);
+				buffer.append("\" type=\"text\" size=\"").append(columns).append("\" maxlength=\"").append(maxlength);
+				if (iinput != null && !iinput.isEmpty() && iinput.getSingle(responseIdent) != null) {
+					buffer.append("\" value=\"").append(iinput.getSingle(getQTIIdent())); //TODO: LD: must this value be escapeHtml?					
+				}
+				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />&nbsp;");
+			}
+			addBr(ri, buffer);
+		}
+	}
+	
+	private void addBr (RenderInstructions ri, StringBuilder buffer) {
+			if (wantBr(ri)) buffer.append("<br />");
+	}
+	
+	private boolean wantBr (RenderInstructions ri) {
+		Integer flowLabelClass = (Integer) ri.get(RenderInstructions.KEY_FLOW_LABEL);
+		if (flowLabelClass != null) {
+			return flowLabelClass.intValue() == RenderInstructions.RENDER_FLOW_LIST;
+		} else {
+			return true;
+		}
+	}
+
+	private void appendParameterIdent(StringBuilder buffer, RenderInstructions ri) {
+		buffer.append("qti").append(PARA).append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(PARA).append(
+				ri.get(RenderInstructions.KEY_RESPONSE_IDENT)).append(PARA).append(getQTIIdent());
+	}
+}

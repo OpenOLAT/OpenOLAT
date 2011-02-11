@@ -1,0 +1,50 @@
+## the attribute config rows are rendered in separate form. show them only when the attribute connector element is also shown
+<div class="b_overflowscrollbox">
+<table class="b_table_nobackground">
+	<thead>
+		<tr>
+			<th>$r.translate("institution.attribute")</th>
+    		<th>$r.translate("easy.operator")</th>
+    		<th>$r.translate("easy.value")</th>
+    		<th></th> ## space for add button
+    		<th></th> ## space for delete button
+    	</tr>
+	</thead>	
+	<tbody>		
+     	#foreach ($c1entry in $columnAttribute)
+		<tr>
+	      	#set ($i = $velocityCount - 1)
+	      	<td valign="top">
+		      	## attribute
+		      	$r.render(${c1entry}) 
+		     </td>
+	      	<td valign="top">
+		      	## operator
+		      	$r.render(${columnOperator.get($i)})
+		     </td>
+	      	<td valign="top">
+   			#if ($f.isVisible(${columnValueText.get($i)}))
+   				## input field
+   				$r.render(${columnValueText.get($i)})
+   				$r.render("${columnValueText.get($i)}_ERROR") 
+   			#end
+   			#if ($f.isVisible(${columnValueSelection.get($i)}))
+   				## selection drop down
+   				$r.render(${columnValueSelection.get($i)})
+   			#end
+		    </td>
+			<td valign="top">	      			
+				## add button
+	      		$r.render(${columnAddRow.get($i)}) 
+		     </td>
+			<td valign="top">	      			
+	      	#if ($columnAttribute.size() > 1)
+				## delete button
+	      		$r.render(${columnRemoveRow.get($i)})
+	      	#end
+		     </td>
+		</tr>
+		#end
+	</tbody>
+</table>
+</div>

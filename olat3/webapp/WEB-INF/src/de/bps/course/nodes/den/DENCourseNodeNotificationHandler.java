@@ -1,0 +1,163 @@
+/**
+ * 
+ * BPS Bildungsportal Sachsen GmbH<br>
+ * Bahnhofstrasse 6<br>
+ * 09111 Chemnitz<br>
+ * Germany<br>
+ * 
+ * Copyright (c) 2005-2009 by BPS Bildungsportal Sachsen GmbH<br>
+ * http://www.bps-system.de<br>
+ * 
+ * All rights reserved.
+ */
+package de.bps.course.nodes.den;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.notifications.NotificationsHandler;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.Publisher;
+import org.olat.core.util.notifications.Subscriber;
+import org.olat.core.util.notifications.SubscriptionInfo;
+import org.olat.core.util.notifications.items.SubscriptionListItem;
+import org.olat.core.util.notifications.items.TitleItem;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.Structure;
+import org.olat.course.nodes.CourseNode;
+import org.olat.notifications.NotificationsUpgradeHelper;
+import org.olat.repository.RepositoryManager;
+
+import de.bps.course.nodes.DENCourseNode;
+
+/**
+ * 
+ * Description:<br>
+ * Notification handler for date enrollment
+ * 
+ * <P>
+ * Initial Date: 25.08.2008 <br>
+ * 
+ * @author bja
+ */
+public class DENCourseNodeNotificationHandler implements NotificationsHandler {
+	private static final OLog log = Tracing.createLoggerFor(DENCourseNodeNotificationHandler.class);
+
+	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
+		SubscriptionInfo si = null;
+		Publisher p = subscriber.getPublisher();
+
+		Date latestNews = p.getLatestNewsDate();
+
+		// do not try to create a subscription info if state is deleted - results in
+		// exceptions, course
+		// can't be loaded when already deleted
+		try {
+			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
+				Long courseId = new Long(p.getData());
+				final ICourse course = loadCourseFromId(courseId);
+				if (course != null) {
+					final List<DENCourseNode> denNodes = getCourseDENNodes(course);
+					final Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
+
+					String cssClass = new DENCourseNodeConfiguration().getIconCSSClass();
+					si = new SubscriptionInfo(new TitleItem(trans.translate("notifications.header", new String[]{course.getCourseTitle()}), cssClass), null);
+					SubscriptionListItem subListItem;
+
+					for (DENCourseNode denNode : denNodes) {
+						String changer = "";
+						String desc = trans.translate("notifications.entry", new String[] { denNode.getLongTitle(), changer });
+
+						Date modDate = new Date();
+						subListItem = new SubscriptionListItem(desc, null, modDate, cssClass);
+						si.addSubscriptionListItem(subListItem);
+					}
+				}
+			} else {
+				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			}
+		} catch (Exception e) {
+			log.error("Error creating enrollment notifications for subscriber: " + subscriber.getKey(), e);
+			checkPublisher(p);
+			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+		}
+
+		return si;
+	}
+	
+	private void checkPublisher(Publisher p) {
+		try {
+			if(!NotificationsUpgradeHelper.checkCourse(p)) {
+				log.info("deactivating publisher with key; " + p.getKey(), null);
+				NotificationsManager.getInstance().deactivate(p);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+	/**
+	 * 
+	 * @param courseId
+	 * @return
+	 */
+	private ICourse loadCourseFromId(Long courseId) {
+		return CourseFactory.loadCourse(courseId);
+	}
+
+	/**
+	 * 
+	 * @param course
+	 * @return
+	 */
+	private List<DENCourseNode> getCourseDENNodes(ICourse course) {
+		List<DENCourseNode> denNodes = new ArrayList<DENCourseNode>(10);
+
+		Structure courseStruct = course.getRunStructure();
+		CourseNode rootNode = courseStruct.getRootNode();
+
+		getCourseDENNodes(rootNode, denNodes);
+		return denNodes;
+	}
+
+	/**
+	 * 
+	 * @param node
+	 * @param result
+	 */
+	private void getCourseDENNodes(INode node, List<DENCourseNode> result) {
+		if (node != null) {
+			if (node instanceof DENCourseNode) result.add((DENCourseNode) node);
+
+			for (int i = 0; i < node.getChildCount(); i++) {
+				getCourseDENNodes(node.getChildAt(i), result);
+			}
+		}
+	}
+
+	@Override
+	public String createTitleInfo(Subscriber subscriber, Locale locale) {
+		try {
+			Long resId = subscriber.getPublisher().getResId();
+			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+			Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
+			return trans.translate("notifications.header", new String[]{displayName});
+		} catch (Exception e) {
+			log.error("Error while creating assessment notifications for subscriber: " + subscriber.getKey(), e);
+			checkPublisher(subscriber.getPublisher());
+			return "-";
+		}
+	}
+
+	public String getType() {
+		return "DENCourseNode";
+	}
+}

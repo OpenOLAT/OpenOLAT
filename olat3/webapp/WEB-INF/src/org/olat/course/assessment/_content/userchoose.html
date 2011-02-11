@@ -1,0 +1,26 @@
+<h5>
+#if($showGroup)
+	$r.translate("userchoose.withGroups.title", ["$groupName"])
+#else
+	$r.translate("userchoose.title")
+#end
+</h5>
+
+#if ($showBack)
+	$r.render("backLink")
+	#if ($showFilterButton)
+		<p />
+		<div class="b_float_right">
+			#if ($isFiltering)
+				$r.render("cmd.showAllCourseNodes")
+			#else
+			    $r.render("cmd.filterCourseNodes")
+			#end
+		</div>
+		<br />
+	#end
+#end
+<div style="clear:right">
+$r.render("userlisttable")
+</div>
+ 

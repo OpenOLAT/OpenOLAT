@@ -1,0 +1,8 @@
+<span class="b_toolbox_toggle_wrapper">
+#if($r.available("command.glossary.on"))
+$r.render("command.glossary.on") / $r.translate("command.glossary.off")
+#else
+$r.translate("command.glossary.on") / $r.render("command.glossary.off")
+#end
+</span>
+<a href="$r.commandURI("command.glossary")" target="o_glossary" onclick="return o2cl()" class="b_toolbox_link">$r.translate("command.glossary")</a>

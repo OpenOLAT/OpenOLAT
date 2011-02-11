@@ -1,0 +1,13 @@
+<div class="o_groupchat_history" id="$id">
+	$groupChatMessages
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+	//setTimeout used because otherwise it would not work the first time the chatwindow is displayed
+	setTimeout(function() {
+		var d = $("$id");
+		if (d && d.offsetHeight < d.scrollHeight) d.scrollTop = d.scrollHeight + 13;
+	}, 42);
+/* ]]> */ 
+</script>

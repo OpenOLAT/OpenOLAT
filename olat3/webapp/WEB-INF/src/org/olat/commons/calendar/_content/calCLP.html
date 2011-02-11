@@ -1,0 +1,7 @@
+#if ($displayOnly)
+#foreach ($link in $links)
+<a href="javascript:top.o_openUriInMainWindow('$link.getURI()')">$link.getDisplayName()</a><br>
+#end
+#else
+$r.render("tree")
+#end

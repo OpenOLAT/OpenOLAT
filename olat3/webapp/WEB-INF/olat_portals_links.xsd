@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="https://bildungsportal.sachsen.de/portlets/LinksPortlet" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="https://bildungsportal.sachsen.de/portlets/LinksPortlet">
+
+
+    <xsd:complexType name="Link">
+    	<xsd:sequence>
+    		<xsd:element name="Title" type="xsd:string" maxOccurs="1"
+    			minOccurs="1">
+    			<xsd:annotation>
+    				<xsd:documentation>
+    					Titel des Links, wird angezeigt
+    				</xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:element>
+    		<xsd:element name="URL" maxOccurs="1" minOccurs="1"
+    			type="URLType">
+    			<xsd:annotation>
+    				<xsd:documentation>Valide URL</xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:element>
+    		<xsd:element name="Target" maxOccurs="1" minOccurs="1"
+    			type="TargetType">
+    			<xsd:annotation>
+    				<xsd:documentation>
+    					Wo soll der Link geöffnet werden: "blank" neues
+    					Fenster, "self" dieses Fenster
+    				</xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:element>
+    		<xsd:element name="Language" maxOccurs="1" minOccurs="1"
+    			type="LanguageType">
+    			<xsd:annotation>
+    				<xsd:documentation>
+    					"*" keine Lokalisierung, "de" Deutsch, "en"
+    					Englisch
+    				</xsd:documentation>
+    			</xsd:annotation>
+    		</xsd:element>
+    		<xsd:element name="Description" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+
+    
+
+
+
+    <xsd:group name="LinkGroup">
+    	<xsd:sequence>
+    		<xsd:element name="Link" type="Link" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    </xsd:group>
+
+    <xsd:simpleType name="URLType">
+    	<xsd:restriction base="xsd:anyURI"></xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="TargetType">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:pattern value="blank"></xsd:pattern>
+    		<xsd:pattern value="self"></xsd:pattern>
+    	</xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="LanguageType">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:pattern value="\*"></xsd:pattern>
+    		<xsd:pattern value="en"></xsd:pattern>
+    		<xsd:pattern value="de"></xsd:pattern>
+    	</xsd:restriction>
+    </xsd:simpleType>
+
+
+    <xsd:complexType name="Links">
+    	<xsd:sequence>
+    		<xsd:element name="University" type="University" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+
+
+
+
+    <xsd:complexType name="University">
+    	<xsd:sequence>
+    		<xsd:element name="Link" type="Link" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="name">
+            <xsd:annotation>
+            	<xsd:documentation>
+            		Sichtbarkeit in Abhängigkeit von Hochschulname oder
+            		Symbol festlegen: "-" nur Gäste, "+" angemeldete
+            		Benutzer, "*" Gäste und angemeldete Benutzer
+            	</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+    			<xsd:restriction base="xsd:string">
+    				<xsd:pattern value=".*"></xsd:pattern>
+    				<xsd:pattern value="\*"></xsd:pattern>
+    				<xsd:pattern value="\+"></xsd:pattern>
+    				<xsd:pattern value="-"></xsd:pattern>
+    			</xsd:restriction>
+    		</xsd:simpleType>
+    	</xsd:attribute>
+    </xsd:complexType>
+
+
+    <xsd:attribute name="NewAttribute" type="xsd:string"></xsd:attribute>
+
+
+    <xsd:element name="LinksPortlet" type="Links"></xsd:element>
+</xsd:schema>

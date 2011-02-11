@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.commons.info.model.InfoMessageImpl" table="o_info_message">
+		<cache usage="read-write" />
+	
+		<id name="key" type="long" column="info_id"	unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+	
+		<version name="version" access="field" column="version"/>
+		<property  name="creationDate" column="creationdate" type="timestamp" />
+		<property  name="modificationDate" column="modificationdate" type="timestamp" />
+		
+		<property name="title" column="title" type="string" length="2048" not-null="false"/>
+		<property name="message" column="message" type="string" length="2048" not-null="false"/>
+	 	
+		<property name="resName" column="resname" type="string"  not-null="true" length="50" index="mark_name_idx"/>
+		<property name="resId" column="resid" type="long" not-null="true" index="mark_id_idx" />
+		<property name="resSubPath" column="ressubpath" type="string"  length="2048" index="mark_subpath_idx"  not-null="false"/>
+		<property name="businessPath" column="businesspath" type="string" length="2048" index="mark_businesspath_idx"  not-null="false"/>
+		
+		<many-to-one name="author" class="org.olat.basesecurity.IdentityImpl" column="fk_author_id" outer-join="true" cascade="none" not-null="true"/>
+		<many-to-one name="modifier" class="org.olat.basesecurity.IdentityImpl" column="fk_modifier_id" outer-join="true" cascade="none" not-null="false"/>
+  </class>
+</hibernate-mapping>

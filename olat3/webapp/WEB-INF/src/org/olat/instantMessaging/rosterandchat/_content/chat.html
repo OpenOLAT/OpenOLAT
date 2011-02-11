@@ -1,0 +1,39 @@
+<div class="o_instantmessaging_chat">
+	$r.render("chatMsgFieldPanel")
+	<div class="o_instantmessaging_chat_form">
+		$r.render("sendMessageForm")
+	</div>
+	#if(!$isAjaxMode)
+		<div class="b_float_right">$r.render("refresh")</div>
+	#end
+</div>
+
+<script type="text/javascript">
+	/* <![CDATA[ */ 
+
+function tweak_${panelName}() {
+	try {		
+		var win = Ext.getCmp('${panelName}');
+		var el = win.body.dom.getElementsByClassName('o_instantmessaging_chat_history');
+		if (el.length == 1) {
+			el[0].style.height=win.getSize().height-150 + 'px';
+			el[0].scrollTop = el[0].scrollHeight;
+		}
+	} catch (e) {/**/}
+}
+
+function focus_${panelName}() {
+	try {
+		var win = Ext.getCmp('${panelName}');
+		var el = win.body.dom.getElementsByTagName('input');
+		for (var i=0; i<el.length; i++) {
+			if (el[i].type == 'text') {
+				el[i].focus();
+				el[i].focus(); //stupid IE needs an extra focus call to work
+			}
+		}
+	} catch (e) {/**/}
+}
+
+/* ]]> */
+</script>

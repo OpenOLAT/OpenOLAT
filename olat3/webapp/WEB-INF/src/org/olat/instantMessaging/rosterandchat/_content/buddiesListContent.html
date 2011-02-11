@@ -1,0 +1,31 @@
+#set($atLeastOne = false)
+#if ($imclient.isShowGroupsInRoster())
+	<ul>
+	#foreach ($rosterGroup in $imclient.getRoster())
+		<li class='o_instantmessaging_groupname'>
+			$rosterGroup.getName()&nbsp;$imclient.buddyCountOnlineForGroup($rosterGroup.getName())
+			<ul>
+			#foreach($entry in $imclient.getRosterGroupEntries($rosterGroup.getName()))
+				##renders the link
+				#set ($entryAppendix = $imclient.createAppendixFromGroupName($rosterGroup.getName()))
+				#set ($entryName = "$entry$entryAppendix")
+				<li>$r.render($entryName)</li>
+				#set($atLeastOne = true)
+			#end
+			</ul>
+		</li>
+	#end
+	</ul>
+#else
+	## show only distinct users without group
+	<ul>
+	#foreach ($entry in $imclient.getDistinctRoster())
+		##renders the link
+		<li>$r.render($entry)</li>
+		#set($atLeastOne = true)
+	#end
+	</ul>
+#end
+#if ($atLeastOne)
+	<hr />
+#end

@@ -1,0 +1,118 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <p>
+*/ 
+
+package org.olat.search.service.document.file;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+
+import org.apache.lucene.document.Document;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.search.service.SearchResourceContext;
+
+/**
+ * Lucene document mapper.
+ * 
+ * @author Christian Guretzki
+ */
+public class ExcelDocument extends FileDocument {
+	private static final OLog log = Tracing.createLoggerFor(ExcelDocument.class);
+
+	public final static String FILE_TYPE = "type.file.excel";
+
+	public ExcelDocument() {
+		super();
+	}
+
+	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,
+			DocumentAccessException {
+		ExcelDocument excelDocument = new ExcelDocument();
+		excelDocument.init(leafResourceContext, leaf);
+		excelDocument.setFileType(FILE_TYPE);
+		excelDocument.setCssIcon("b_filetype_xls");
+		if (log.isDebug()) log.debug(excelDocument.toString());
+		return excelDocument.getLuceneDocument();
+	}
+
+	protected String readContent(VFSLeaf leaf) throws IOException, DocumentException {
+		BufferedInputStream bis = null;
+		int cellNullCounter = 0;
+		int rowNullCounter = 0;
+		int sheetNullCounter = 0;
+
+		try {
+			bis = new BufferedInputStream(leaf.getInputStream());
+			StringBuilder content = new StringBuilder(bis.available());
+			POIFSFileSystem fs = new POIFSFileSystem(bis);
+			HSSFWorkbook workbook = new HSSFWorkbook(fs);
+
+			for (int sheetNumber = 0; sheetNumber < workbook.getNumberOfSheets(); sheetNumber++) {
+				HSSFSheet sheet = workbook.getSheetAt(sheetNumber);
+				if (sheet != null) {
+					for (int rowNumber = sheet.getFirstRowNum(); rowNumber <= sheet.getLastRowNum(); rowNumber++) {
+						HSSFRow row = sheet.getRow(rowNumber);
+						if (row != null) {
+							for (int cellNumber = row.getFirstCellNum(); cellNumber <= row.getLastCellNum(); cellNumber++) {
+								HSSFCell cell = row.getCell(cellNumber);
+								if (cell != null) {
+									// if (cell.getCellStyle().equals(HSSFCell.CELL_TYPE_NUMERIC))
+									if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+										content.append(cell.getStringCellValue()).append(' ');
+									}
+								} else {
+									// throw new DocumentException();
+									cellNullCounter++;
+								}
+							}
+						} else {
+							rowNullCounter++;
+						}
+					}
+				} else {
+					sheetNullCounter++;
+				}
+			}
+			if (log.isDebug()) {
+				if ((cellNullCounter > 0) || (rowNullCounter > 0) || (sheetNullCounter > 0)) {
+					log.debug("Read Excel content cell=null #:" + cellNullCounter + ", row=null #:" + rowNullCounter + ", sheet=null #:"
+							+ sheetNullCounter);
+				}
+			}
+			return content.toString();
+		} catch (Exception ex) {
+			throw new DocumentException("Can not read XLS Content. File=" + leaf.getName());
+		} finally {
+			if (bis != null) {
+				bis.close();
+			}
+
+		}
+	}
+
+}

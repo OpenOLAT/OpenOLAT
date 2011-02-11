@@ -1,0 +1,140 @@
+<div class="o_catalog">
+	## first render bread-crumb category navigation
+	#set ($lastIndex = $history.size() - 1)
+	#set ($ri = 0)
+	<div class="o_catalog_nav">
+		#foreach($child in $history)
+			#if($ri < $lastIndex)
+				<a href="$r.commandURIbg("history$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$child.getName()</a> &gt; 
+			#else
+				<strong>$child.getName()</strong>
+			#end
+			#set ($ri = $ri +1)
+		#end
+	</div>
+	
+	## render category description
+	<div class="o_catalog_title b_with_small_icon_left o_catalog_cat_icon">
+		$r.translate("category") <strong>$currentCatalogEntry.getName()</strong>			
+	</div>
+	#if ($currentCatalogEntry.getDescription())
+		<div class="o_catalog_desc">$currentCatalogEntry.getDescription()</div>
+	#end
+		
+	## calculate some temporary variables
+	#set($hasChildren = false)
+	#set($hasSubcats = false)
+	#foreach($child in $children)
+		#if ($child.getType()==$leaf)
+			#if($RepoAccessVal.intValue() <= $child.getRepositoryEntry().getAccess())
+				#set($hasChildren = true)
+			#end
+		#else
+			#set($hasSubcats = true)
+		#end
+	#end	
+	
+	## render subcatecories of current category
+	#if ($hasSubcats)
+		<div class="o_catalog_itemlist">
+			<ul>
+			#set ($ri = 0)
+			#foreach($child in $children)
+				#if ($child.getType()==$node)
+					<li><a href="$r.commandURIbg("child$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>
+						<span class="b_with_small_icon_left o_catalog_sub_icon">$child.getName()</span>
+					</a></li>
+				#end
+				#set ($ri = $ri +1)
+			#end
+			</ul>
+		</div>
+	#end
+	
+	## the hint that the list entries may not be complete due to guest access restrictions
+	#if ($isGuest)
+		<div class="b_warning">${r.translate("filtered.first")}${r.render("cat.login")}${r.translate("filtered.second")}</div>
+	#end
+	
+	## render list of children items: repository entries in this category
+	#set ($ri = 0)
+	#set ($i = 0)
+	#if ($hasChildren)
+		<div class="o_catalog_link_title">
+			$r.translate("title.leaves")
+		</div>
+		<table class="b_table b_full">
+		#foreach($child in $children)
+			#if ($child.getType()==$leaf)
+				#if($RepoAccessVal.intValue() <= $child.getRepositoryEntry().getAccess())
+					#if($i%2==0)
+						<tr>
+					#else
+						<tr class="b_table_odd">
+					#end	
+						<td>
+							<div class="b_clearfix">
+								#if ($canRemoveAllLinks || $hasOwnedLinks)
+									#if($canRemoveAllLinks || $ownedLinks.contains($child))
+									  <a href="$r.commandURIbg("edit.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("edit")</a>
+									  <a href="$r.commandURIbg("remove.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("delete")</a>
+									  <a href="$r.commandURIbg("move.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("move")</a>
+									#end
+								#end
+								<a href="$r.commandURIbg("detail.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("details.header")</a>
+								<script type="text/javascript">
+								Ext.onReady(function(){
+									Ext.QuickTips.init();
+									Ext.apply(Ext.QuickTips.getQuickTip(), {
+										dismissDelay: 0
+									});
+								});
+									
+								</script>
+								<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_with_small_icon_left ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}">
+								<span id="leaf$ri">$child.getRepositoryEntry().getDisplayname()								
+								</span>
+								<div id="o_tooltip_$ri" class="x-hidden">
+								#if($r.available("image$ri"))
+									<div class="o_repository_resource_image">$r.render("image$ri")</div>
+									<div class="b_ext_tooltip_wrapper" style="min-height:110px">$child.getRepositoryEntry().getFormattedDescription()</div>
+								#else
+									<div class="b_ext_tooltip_wrapper">$child.getRepositoryEntry().getFormattedDescription()</div>
+								#end								
+								</div>								
+								</a>
+<script type="text/javascript">
+new Ext.ToolTip({
+	target: 'leaf$ri',
+	contentEl: 'o_tooltip_$ri',		
+	width: 500,
+	title: '$r.escapeJavaScript($child.getRepositoryEntry().getDisplayname())',
+	autoHide: true,
+	hideDelay: 1000
+});
+</script>
+							</div>
+						</td>				
+					</tr>
+					#set ($i = $i +1)	
+				#end
+			#end
+			#set ($ri = $ri +1)
+		#end
+		</table>
+	#else
+		#if (!$hasSubcats)
+			<i>$r.translate("no.leaves")</i>
+		#end
+	#end
+	
+	<div class="o_catalog_links">
+	#b_togglebox_start("o_catalog_extlink" $r.translate("cat.externalLink"))
+		#if($extLink)
+			<pre>$extLink</pre>
+		#end
+		<pre>$guestExtLink</pre>
+	#b_togglebox_end()
+	</div>
+	
+</div>

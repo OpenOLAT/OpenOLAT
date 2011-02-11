@@ -1,0 +1,18 @@
+<div style="padding:0px">
+	#set ( $entryId = $weblogEntry.get("id") )
+	<div style="border:none; margin: 0px 0px 30px 0px;">
+		<div style="border-bottom: dotted black 1px; margin-bottom:15px;">
+			<div style="float:right">$r.render("ed_$entryId")</div>
+			<h3>$weblogEntry.get("title")</h3>
+			<span style="font-size:0.9em; font-style:italic; color:#396095;">$r.translate("entry.mod.date"): $weblogEntry.get("modDate")</span>
+		</div>
+		<div  style="margin-top:15px;">
+			$r.render("content")
+		</div>
+		#if ($displayComments)
+		<div style="margin-top:20px">
+			$r.render("comments")
+		</div>
+		#end
+	</div>
+</div>

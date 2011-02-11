@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+	<!--
+		************************************************
+		*** Configuration for core.dispatcher.jumpin ***
+		************************************************
+		repo/go for jumping to repository entries
+		subs/go for jumping to subscribed resources
+	-->
+	<bean id="jumpinConfig" class="org.olat.core.dispatcher.jumpin.JumpinConfig" >
+			<property name="jumpinhandlers">
+	  			<map>
+	  				<entry key="repo/go">
+	  					<ref bean="repohandlerbean" />
+	  				</entry>
+	  				<entry key="subs/go">
+	  					<!--  FIXME:FG:6.4 Delete, deprecated since 6.3 release -->
+	  					<ref bean="subshandlerbean" />
+	  				</entry>
+	  				<entry key="cata/go">
+	  					<ref bean="catahandlerbean" />
+	  				</entry>
+	  				<entry key="user/go">
+	  					<ref bean="userhandlerbean" />
+	  				</entry>
+	  			</map>
+	  		</property>
+	</bean>
+	<bean id ="repohandlerbean" class = "org.olat.repository.RepoJumpInHandlerFactory" />
+	<bean id ="subshandlerbean" class = "org.olat.notifications.SubscriptionJumpInHandlerFactory" />
+	<bean id ="catahandlerbean" class = "org.olat.catalog.CatalogJumpInHandlerFactory" />
+	<bean id ="userhandlerbean" class = "org.olat.user.notification.UserJumpInHandlerFactory" />
+	
+
+	<!-- OLAT specific popup windows default layout, which is also applied to 
+	popupwindows opened within core controllers, e.g. html editor or thelike -->
+	<bean id="org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator" 
+		class="org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutCreator" >
+	</bean>
+
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** header part, e.g. for a logo       ***
+		******************************************
+	-->
+	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
+	</bean>
+	<!-- use the following header controller instead if you want a logo header header or configure you own
+	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.commons.fullWebApp.LogoWithLinkHeaderControllerCreator" scope="prototype">
+		<property name="linkURI" value="http://www.brasatoframework.org" />	
+		<property name="imgURI" value="http://www.brasatoframework.org/images/logo.png" />	
+		<property name="imgAltText" value="Brasato Open Source WebApp Framework" />					
+	</bean> 		
+	-->
+	<!-- in case a Guest uses OLAT, see GuestBFWCParts -->
+	<!-- <bean id="fullWebApp.GuestHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
+	</bean> -->
+	<!-- Header for DMZ, see DmzBFWCParts -->
+    <!-- <bean  id="fullWebApp.DMZHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
+	</bean> --> 
+
+	
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** right upper corner.                ***
+		******************************************
+	-->
+	<bean id="fullWebApp.DMZTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatDmzTopNavController"/>
+	</bean>
+	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatTopNavController"/>
+	</bean>
+	<!-- uncomment this and comment above line if automatic guest login should be enabled 
+	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatGuestTopNavController"/>
+	</bean>
+	 -->
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** right upper corner in pop ups      ***
+		******************************************
+	-->
+	<bean id="fullWebApp.MinimalTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatMinimalTopNavController"/>
+	</bean>
+
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** Footer.                            ***
+		******************************************
+	-->
+	<bean  id="fullWebApp.FooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
+	</bean>
+    <!-- uncomment this and comment above line if automatic guest login should be enabled:  
+	<bean  id="fullWebApp.FooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
+	</bean>
+    -->
+	<!-- in case a Guest uses OLAT, see GuestBFWCParts -->
+    <bean  id="fullWebApp.GuestFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
+	</bean>   	
+	<!-- Footer for DMZ, see DmzBFWCParts -->
+    <bean  id="fullWebApp.DMZFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
+	</bean>   		
+
+		
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** header part, in context help       ***
+		******************************************
+	-->
+	<bean id="fullWebApp.ContextHelpHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
+	</bean>
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** right upper corner inin context help**
+		******************************************
+	-->
+	<bean id="fullWebApp.ContextHelpTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.core.commons.contextHelp.ContextHelpTopNavController" />
+	</bean>
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** Footer in in context help.         ***
+		******************************************
+	-->
+	<bean id="fullWebApp.ContextHelpFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
+	</bean>
+
+
+	<!--
+		**************************************************************************
+		*** Configure the controller-workflow which should be presented		   ***
+		*** right after a user logged in.                                      ***
+		*** See comment in AfterLoginInterceptorController                     ***
+		**************************************************************************
+	-->
+	<bean id="fullWebApp.AfterLoginInterceptionControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.login.AfterLoginInterceptionController"/>
+	</bean>
+
+		
+	
+      
+    <!--
+		*****************************************
+		*** Define the persistent lock manager    ***
+		*****************************************
+	-->
+	<bean id="persistentLockManager" class="org.olat.util.locks.DBPersistentLockManager"  >
+		<constructor-arg index="0" ref="userDeletionManager" />
+	</bean>  
+	
+          
+      
+    <!--
+		*****************************************
+		*** Define the Notifications Manager  ***
+		*****************************************
+	-->
+	
+	<bean id="org.olat.modules.fo.ForumNotificationsHandler" class="org.olat.modules.fo.ForumNotificationsHandler" />
+	<bean id="org.olat.course.assessment.AssessmentNotificationsHandler" class="org.olat.course.assessment.AssessmentNotificationsHandler" />
+	<bean id="org.olat.core.commons.modules.bc.FolderNotificationsHandler" class="org.olat.notifications.bc.FolderNotificationsHandler" />
+	<bean id="org.olat.modules.dialog.FileUploadNotificationHandler" class="org.olat.modules.dialog.FileUploadNotificationHandler" />
+	<bean id="org.olat.course.nodes.ta.DropboxFileUploadNotificationHandler" class="org.olat.course.nodes.ta.DropboxFileUploadNotificationHandler" />
+	<bean id="org.olat.course.nodes.ta.ReturnboxFileUploadNotificationHandler" class="org.olat.course.nodes.ta.ReturnboxFileUploadNotificationHandler"/>
+	<bean id="org.olat.course.nodes.ta.SolutionFileUploadNotificationHandler" class="org.olat.course.nodes.ta.SolutionFileUploadNotificationHandler"/>
+	<bean id="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" class="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" />
+	<bean id="org.olat.commons.calendar.CalendarNotificationHandler" class="org.olat.commons.calendar.CalendarNotificationHandler" />
+	<bean id="org.olat.user.notification.NewUsersNotificationHandler" class="org.olat.user.notification.NewUsersNotificationHandler" />
+	<bean id="org.olat.commons.info.notification.InfoMessageNotificationHandler" class="org.olat.commons.info.notification.InfoMessageNotificationHandler" />
+	
+	<bean id="org.olat.core.util.notifications.NotificationsManager" class="org.olat.notifications.NotificationsManagerImpl" >
+		<constructor-arg index="0" ref="userDeletionManager" />
+		<!-- 
+			Configure which notification intervals you want the user to choose from. 
+			Don't add other intervals unless you also implement them. But you can surely
+			remove the ones you don't want to offer 
+		-->
+		<property name="notificationIntervals">
+			<map>
+				<entry value="${notification.interval.never}" key="never" />
+				<entry value="${notification.interval.monthly}" key="monthly" />
+				<entry value="${notification.interval.weekly}" key="weekly" />
+				<entry value="${notification.interval.daily}" key="daily" />
+				<entry value="${notification.interval.half-daily}" key="half-daily" />
+				<entry value="${notification.interval.four-hourly}" key="four-hourly" />
+				<entry value="${notification.interval.two-hourly}" key="two-hourly" />
+			</map>
+		</property>
+		<!-- 
+			The default interval that is used when no specific interval is configured for the user.
+			Must also be in the list of notificationIntervals above. 
+		-->
+		<property name="defaultNotificationInterval">
+			<value>daily</value>
+		</property>
+	</bean>	
+	
+    <!--
+		*****************************************
+		*** New user created notifications    ***
+		*****************************************
+	-->
+	<bean
+		id="org.olat.user.notification.UsersSubscriptionManager" class="org.olat.user.notification.UsersSubscriptionManagerImpl"
+		 depends-on="coordinatorManager">
+		<property name="autoSubscribe" value="false" />
+		<property name="coordinator">
+			<ref bean="coordinatorManager" />
+		</property>
+	</bean>
+      
+    <!--
+		*****************************************
+		*** Define the Quota Manager          ***
+		*****************************************
+	-->
+	<bean id="org.olat.core.util.vfs.QuotaManager" class="org.olat.admin.quota.QuotaManagerImpl"  init-method="init" >
+		<constructor-arg index="0" ref="resourceManager" />
+		<constructor-arg index="1" ref="propertyManager" />
+	</bean> 
+  
+    <!--
+		*****************************************
+		*** Define the Identity Manager       ***
+		*****************************************
+	-->
+	<bean id="core.id.IdentityManager" class="org.olat.basesecurity.IdentityManagerImpl"  >
+		<constructor-arg type="org.olat.basesecurity.BaseSecurity" ref="baseSecurityManager"/>
+	</bean>  
+
+   
+    <!--
+		*****************************************
+		*** IMS Content Packaging  Manager    ***
+		*****************************************
+	-->
+    <bean id="org.olat.ims.cp.CPManager" class="org.olat.ims.cp.CPManagerImpl"  /> 
+	<!-- 
+		*****************
+		*** JMX       ***
+		*****************
+	-->
+	<!--
+		Export your Beans via JMX, to enable start you JVM with "-Dcom.sun.management.jmxremote=true".
+		This only enables JMX locally and allows you to connect with the same user. To connect via remote read:
+		http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
+	-->
+	<!-- this bean must not be lazily initialized if the exporting is to happen -->
+	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false" >
+    	<property name="beans">
+			<map>
+				<entry key="org.olat.admin.jmx.datasources:name=ThreadAndControllerInfo">
+					<bean class="org.olat.admin.jmx.datasources.ThreadAndControllerInfo" />
+				</entry>
+				<entry key="org.olat.admin:name=AdminModule" value-ref="adminModule" />
+				<entry key="org.olat.core.commons.modules.bc:name=FilesInfoMBean" >
+					<ref bean="org.olat.core.commons.modules.bc.FilesInfoMBean"/>
+				</entry>
+      			<entry key="bean:name=changePresence" value-ref="changePresenceJob"/>
+			</map>
+		</property>
+		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+	</bean>
+	<!-- CacheInitMBean register ehcache jmx components at mbean-server -->
+	<!--<bean class="org.olat.admin.jmx.CacheInitMBean">
+		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+	</bean>
+	 --> 
+	<bean id="org.olat.core.commons.modules.bc.FilesInfoMBean" class="org.olat.core.commons.modules.bc.FilesInfoMBean" />
+	<!-- JBossTreeCacheJmxRegistrationManager register JBoss Tree Cache jmx components at mbean-server -->
+<!-- DISABLE JBoss Tree Cache JMX Registration, already done by starting tree cache ???
+	<bean id="org.olat.admin.jmx.JBossTreeCacheJmxRegistrationManager" class="org.olat.admin.jmx.JBossTreeCacheJmxRegistrationManager" >
+
+		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+    </bean>
+-->
+    
+</beans>

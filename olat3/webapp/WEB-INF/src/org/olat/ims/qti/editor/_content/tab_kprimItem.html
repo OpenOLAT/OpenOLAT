@@ -1,0 +1,127 @@
+<fieldset>
+	<legend>$r.translate("fieldset.legend.question")</legend>
+	
+		#if ($isSurveyMode == "true")
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-quest-surv-mcsc.html","help.hover.qti-quest-5")
+		#else	
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-quest-test-5.html","help.hover.qti-quest-5")
+		#end
+	
+		<table class="b_table b_grid_row  b_full">
+		<thead>
+			<tr>
+				<th>$r.translate("fieldset.legend.question")</th>
+				<th width="15%">$r.translate("questionform_actions")</th>
+			</tr>
+		</thead>
+		<tbody>		
+			<tr class="b_table_odd">
+				<td>
+					$r.formatLatexFormulas($question.getQuestion().renderAsHtml($mediaBaseURL))
+				</td>
+				<td align="center">
+					<a title="$r.translateInAttribute("mat.edit.question")" href="$r.commandURIbg('editq')" $r.bgTarget() onclick="return o2cl()"><img alt="$r.translateInAttribute("mat.edit.question")" src="$r.staticLink("images/qti/page_edit.png")"></a>
+				</td>
+			</tr>
+		</tbody>
+		</table>
+
+  </fieldset>
+  
+  <fieldset>
+	<legend>$r.translate("fieldset.legend.answers")</legend>
+		
+		#if ($isSurveyMode == "true")
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-2.html","help.hover.qti-quest-5")
+		#else	
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-test-5.html","help.hover.qti-answer-5")
+		#end
+	
+		<form action="$r.formURIbg("skprim")" id="ofo_tab_kprimitem" $r.bgTarget() method="post">
+#if ($question.getResponses().size() > 0)
+		<table class="b_table b_grid_row  b_full" style="position:relative">
+		<thead>
+			<tr>
+				<th width="5">Pos</th>
+				<th>$r.translate("fieldset.legend.answers")</th>
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+				<th width="15%" align="center">$r.translate("questionform_correct_kprim")</th>
+				<th width="15%" align="center">$r.translate("questionform_wrong_kprim")</th>
+#else
+				<th >&nbsp;</th>			
+#end
+				<th width="15%">$r.translate("questionform_actions")</th>
+			</tr>
+			</thead>
+			<tbody>
+#foreach($content in $question.getResponses())
+				#if ($velocityCount % 2 == 0)
+					#set ($rowclass="")
+				#else
+					#set ($rowclass="b_table_odd")				
+				#end
+				#set ($count = ($velocityCount - 1))
+			<tr class="$rowclass">			
+				<td>
+				#if(!$isRestrictedEdit)
+					<a href="$r.commandURI("up", "posid", "$count")" onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.move_up")"><img src="$r.staticLink("images/qti/move_up.png")" alt="$r.translateInAttribute("mat.move_up")" border="0"></a>
+					<br />
+					<a href="$r.commandURI("down", "posid", "$count")" onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.move_down")"><img src="$r.staticLink("images/qti/move_down.png")" alt="$r.translateInAttribute("mat.move_down")" border="0"></a>
+				#end
+				</td>
+				<td>
+					$r.formatLatexFormulas($content.getContent().renderAsHtml($mediaBaseURL))
+				</td>
+				
+				
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+
+				<td valign="middle" align="center">
+					#if($content.isCorrect())
+					<input type="radio" class="b_radio" name="correctChoice_q$count" value="correct" checked onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+					#else
+					<input type="radio" class="b_radio" name="correctChoice_q$count" value="correct" onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+					#end					
+				</td>
+				<td valign="middle" align="center">
+					#if($content.isCorrect())
+					<input type="radio" class="b_radio" name="correctChoice_q$count" value="wrong" onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+					#else
+					<input type="radio" class="b_radio" name="correctChoice_q$count" value="wrong" checked onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+					#end					
+				</td>
+#else
+				<td >&nbsp;</td>				
+#end
+				<td valign="middle" align="center">
+					<a href="$r.commandURI("editr", "posid", "$count")" onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.edit.response")">
+						<img src="$r.staticLink("images/qti/page_edit.png")" alt="$r.translateInAttribute("mat.edit.response")" border="0"></a>
+				</td>
+			</tr>
+#end
+		</tbody>
+		</table>
+#end
+
+
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+		<table style="position:relative">
+			<tr>
+				<td>$r.translate("kprim_info")</td>
+			</tr>
+
+			<tr>
+				<td>$r.translate("max_value")</td>
+				<td>
+					<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+				</td>
+			</tr>
+		</table>
+#end
+
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+<br />
+<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
+#end
+		</form>
+</fieldset>

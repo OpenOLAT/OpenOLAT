@@ -1,0 +1,158 @@
+#if($r.available("backLinkLT"))
+<p>
+	$r.render("backLinkLT")
+</p>
+#end
+<div class="o_forum b_floatbox">
+	<div class="b_floatbox">
+		#if($r.available("threadViewSwitch"))
+			$r.render("threadViewSwitch")
+		#end
+		#if($filteredForLastName)
+		<h4>$r.translate("filter.results.title") $filteredForFirstName $filteredForLastName</h4>
+		#else
+		<h4>$r.translate("header.msgdetails")</h4>
+		#end
+	</div>
+	#if ($security.mayArchiveForum())
+		$r.render("archive.thread")
+	#end
+	
+	#if ($messages.isEmpty())
+		<div class="b_table_empty b_clearfix">
+			#if ($mode == "marked")
+			<p>$r.translate("msg.no_marked_message")</p>
+			#elseif ($mode == "new")
+			<p>$r.translate("msg.no_new_message")</p>
+			#end
+		</div>
+	#end
+	
+#foreach ($message in $messages)
+
+	#if($threadMode)
+		#set ( $deepnessFromMap = $msgDeepMap.get($message.get("id")) )
+	#end
+	
+
+	#if(!$isClosed && $security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
+		$r.render("close.thread")
+	#elseif($security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
+		$r.render("open.thread")
+	#end
+	
+	#if(!$isHidden && $security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
+		$r.render("hide.thread")
+	#elseif($security.mayEditMessageAsModerator() && $message.get("isThreadtop")) 
+		$r.render("show.thread")
+	#end
+	
+	#set( $count = $velocityCount - 1)
+	<div #if($threadMode) style="padding-left: ${deepnessFromMap}em" #end class="o_forum_message #if($message.get("newMessage")) o_forum_message_new #end b_clearfix" id="o_forum_message_${message.get("id")}">
+		<div class="o_forum_message_header_wrapper" >
+			<div class="o_forum_message_header b_clearfix">
+				<div class="o_forum_message_title">
+					#if($r.available($message.get("ePFAddComponentName")))<div class="b_float_right">$r.render($message.get("ePFAddComponentName"))</div>#end
+					<div class="b_float_right b_mark">$r.render("mark_${count}")</div>
+					<div class="b_float_right b_small" #if($message.get("newMessage")) title="$r.translateInAttribute("message.unread")" #end>
+						$r.translate("msg.creationdate") $message.get("date")
+					</div>
+					<strong>
+						$r.escapeHtml($message.get("title"))
+					</strong>
+				</div>
+			</div>
+		</div>
+
+		<div class="o_forum_message_content_wrapper ">
+			<div class="o_forum_message_content b_clearfix ">
+				<div class="o_forum_message_creator b_float_left">
+					<strong>$message.get("firstname") $message.get("lastname")</strong>
+					<br />
+					<br />
+					#if($r.available($message.get("portraitComponentVCName")))
+						$r.render($message.get("portraitComponentVCName"))
+					#end
+				</div>
+				
+				<div class="o_forum_message_body">
+					<div class="b_clearfix b_floatscrollbox">
+						$r.formatLatexFormulas($message.get("body"))						
+					</div>
+					#if ($message.get("hasAttachments"))
+						<div class="o_forum_message_attachments">
+							<strong>$r.translate("attachments"):</strong>
+							<ul>
+							#foreach( $attachment in $message.get("attachments") )
+								#set($fname = $attachment.getName())
+								#set( $fsize = $attachment.getSize() / 1024 )
+								<li><a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank" class="b_filetype_file $myself.renderFileIconCssClass($fname)">$fname ($fsize KB)</a></li>
+							#end 
+							</ul>
+						</div>
+					#end
+			
+					#if(($message.get("isModified")) || ($message.get("isMoved")))
+						<div class="o_forum_message_modified">
+							#if($message.get("isModified"))
+					   			$r.translate("msg.modified"): $message.get("modfname") $message.get("modlname") $message.get("modified")
+					   		#end
+					   		#if($message.get("isMoved"))
+					   			$r.translate("msg.moved")
+				   			#end
+					   	</div>
+				   	#else
+						<div style="clear:both; height: 1px">&nbsp;</div>	   	
+					#end
+				</div>
+			</div>
+		</div>
+
+		<div class="o_forum_message_footer_wrapper b_clearfix">
+			<div class="o_forum_message_footer">
+				<div class="o_forum_message_actions">
+					#if($r.available("open_in_thread_${count}"))
+					$r.render("open_in_thread_${count}")
+					#end
+
+					#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayDeleteMessageAsModerator())) && !$message.get("isThreadClosed"))
+					$r.render("dl_${count}")
+					#end
+					#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayEditMessageAsModerator())) && !$message.get("isThreadClosed"))
+					$r.render("ed_${count}")
+					#end
+					
+					#if ($security.mayReplyMessage() && !$message.get("isThreadClosed"))
+						$r.render("qt_${count}")
+						$r.render("rp_${count}")
+					#end
+					#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
+						$r.render("split_${count}")
+					#end
+					#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
+						$r.render("move_${count}")
+					#end
+				</div>
+			</div>
+		</div>
+	</div>
+#end
+	
+#if($showThreadTable)
+	$r.render("singleThreadTable")
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		Effect.ScrollTo('b_top');
+	/* ]]> */
+	</script> 
+#end
+#if($goToMessage)
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		Effect.ScrollTo('o_forum_message_$goToMessageId');
+		Effect.Pulsate('o_forum_message_$goToMessageId', { pulses: 2, duration: 1, from: 0.7 });
+	/* ]]> */
+	</script> 
+#end
+
+</div> ## END of o_forum

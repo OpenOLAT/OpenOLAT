@@ -1,0 +1,48 @@
+<div style="padding:15px 0 0 0;">
+#foreach ($weblogEntry in $entries)
+	<!-- <div class="o_weblog_entry_header_wrapper" >
+			<div class="o_weblog_entry_header b_clearfix">
+				<div class="o_weblog_entry_title">
+					$weblogEntry.getTitle()
+				</div>
+			</div>
+		</div>
+
+		<div class="o_weblog_entry_content_wrapper ">
+			<div class="o_weblog_entry_content b_clearfix ">
+				<div class="o_weblog_entry_body">
+					<div class="b_clearfix b_floatscrollbox">
+						$r.render("entry_$weblogEntry.getId()")						
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="o_weblog_entry_footer_wrapper b_clearfix">
+			<div class="o_weblog_entry_footer">
+				<div class="o_weblog_entry_actions">
+					$r.render("ed_$weblogEntry.getId()")
+					$r.render("ar_$weblogEntry.getId()")
+					$r.render("dl_$weblogEntry.getId()")
+					$r.render("dl_$weblogEntry.getId()")
+				</div>
+			</div>
+		</div>
+	</div> -->
+	#set ( $entryId = $weblogEntry.get("id") )
+	<div style="border:none; margin: 0px 0px 30px 0px;">
+		<div style="border-bottom: dotted black 1px; margin-bottom:15px;">
+			<div style="float:right">$r.render("ed_$entryId")</div>
+			<h3>$weblogEntry.get("title")</h3>
+			<span style="font-size:0.9em; font-style:italic; color:#396095;">$r.translate("entry.mod.date"): $weblogEntry.get("modDate")</span>
+		</div>
+		<div  style="margin-top:15px;">
+			$r.render("$entryId")
+			##$weblogEntry.get("content")
+		</div>
+		<div>
+			$r.render("op_$entryId")
+		</div>
+	</div>
+#end
+</div>

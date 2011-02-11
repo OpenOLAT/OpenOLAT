@@ -1,0 +1,43 @@
+<div class="o_login">
+	<h3>$r.translate("login.header")</h3>
+	#if ($infomsg)
+		<div class="o_infomessage_wrapper">
+			<div class="o_infomessage">
+				<div class="o_infomessage_inner">
+					<div class="b_floatscrollbox">
+						$infomsg
+					</div>
+				</div>
+			</div>
+		</div>
+	#end
+	#if ($infomsgNode)
+		<div class="o_infomessage_wrapper">
+			<div class="o_infomessage">
+				<div class="o_infomessage_inner">
+					<div class="b_floatscrollbox">
+						$infomsgNode
+					</div>
+				</div>
+			</div>
+		</div>
+	#end
+	#if($browserWarningOn)
+		<div class="b_warning">
+			$r.translate("login.browserswitch")
+		</div>
+	#end
+	$r.render("loginComp")
+	
+
+	#if (!$providerSet.isEmpty())
+		<div class="o_login_providers">
+			<h4>$r.translate("login.altprovider")</h4>
+			<ul>
+			#foreach ($authProvider in $providerSet)
+				<li>$authProvider.getDescription($locale) <a href="$r.commandURI("login")?lp=$authProvider.getName()">$authProvider.getLinktext($locale)</a></li>
+			#end
+			</ul>
+		</div>
+	#end
+</div>

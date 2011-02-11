@@ -1,0 +1,88 @@
+/*
+* todo, create in file for color replacement
+* may change namespace to o_****
+*/
+
+
+img.wikiimg { border: 0px;}
+
+a.wikiimg {
+	text-decoration: none;
+	color: inherit;
+	font-weight: inherit;
+}
+
+div.imgcaption {
+	padding: 0.3em 0em 0.2em 0.3em;
+}
+
+div.imgleft {
+	clear:left;
+	float: left;
+	margin: 0.3em 0.3em 0.3em 0em;
+	text-align:left;
+}
+
+div.imgright {
+	clear:right;
+	float: right;
+	margin: 0.3em 0em 0.3em 0.3em;
+	text-align:right;
+}
+
+div.o_wikimod-article-box div{
+	width:auto !important;
+	}
+
+div.imgcenter {
+	clear: both;
+	overflow:hidden;
+	text-align: center;
+	margin: 0.3em 0em 0.3em 0em;
+}
+
+div.imgthumb {
+	border: 1px solid #bbbbbb;
+	padding: 0.3em;
+}
+
+table.gallery {
+	border: 1px solid #B8B8DB;
+	margin: 2px;
+	padding: 2px;
+	background-color: white;
+}
+
+table.gallery tr {
+	vertical-align: middle;
+}
+
+table.gallery td {
+	background-color: #EEEEEE;
+	border: solid 2px #B8B8DB;
+	text-align: center;
+	vertical-align: middle;
+	width:  150px;
+}
+
+img.gallery {
+	border: 1px solid #B8B8DB;
+	padding: 0.3em;
+}
+
+a.edit {
+	font-style: italic;
+	color: #E98F8F;
+}
+a.externallink:before {
+	content:url("img/externalLink.gif");
+	padding-right: 2px;
+}
+
+pre {
+	padding: 1em;
+	border: 1px dashed #B8B8DB;
+	color: black;
+	background-color: #EEEEEE;
+	line-height: 1.1em;
+}

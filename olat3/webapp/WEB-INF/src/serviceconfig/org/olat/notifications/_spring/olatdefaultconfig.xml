@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- Notification config:
+		If you want to disable notificaition please comment out the corresponding entry in scheduler
+		spring file in serviceconfig/org/olat/core/commons/scheduler/_spring/olatextconfig.xml
+		and delete or comment this *entire* file.
+		
+		later in this file you can also adjust the time the notification is scheduled. Default 
+		is 10min after midnight.
+	 -->
+
+	<bean id="sendNotificationsEmailTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	    <property name="jobDetail" ref="org.olat.notifications.job.${cluster.singleton.services}" />
+	    <!-- adjust cron style syntax for your notification needs 
+	    	"0 10 0 * *"  e.g. 10 minutes after midnight
+	    	
+	    	A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+			Field Name 	  	Allowed Values 	  	Allowed Special Characters
+			Seconds 	  	0-59 	  			, - * /
+			Minutes 	  	0-59 	  			, - * /
+			Hours 	  		0-23 	  			, - * /
+			Day-of-month 	1-31 	  			, - * ? / L W C
+			Month 	  		1-12 or JAN-DEC 	, - * /
+			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+			Year (Optional)	empty, 1970-2099 	, - * /
+
+			As of OLAT 6.3 it's best to let the cronjob run every two hours since users can now choose how often 
+			they will get notified. The shortest interval is set to two hours. 	    	
+	    -->
+	    <property name="cronExpression" value="0 10 */2 * * ?" />
+
+		<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
+	    <property name="startDelay" value="300000" />
+	</bean>
+	
+	<bean id="org.olat.notifications.job.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	  <property name="jobClass" value="org.olat.notifications.EmailNotificationJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="org.olat.notifications.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
+	</bean>
+
+</beans>

@@ -1,0 +1,9 @@
+#foreach($count in $counts)
+	<div class="b_eportfolio_collect_restriction b_clearfix">
+		<div class="b_eportfolio_collect_restriction_el">$r.render("collect.restriction.restriction.$count")</div>
+		<div class="b_eportfolio_collect_restriction_el">$r.render("collect.restriction.amount.$count")</div>
+		<div class="b_eportfolio_collect_restriction_el">$r.render("collect.restriction.artefacts.$count")</div>
+		<div class="b_eportfolio_collect_restriction_link">$r.render("collect.restriction.add.$count")</div>
+		<div class="b_eportfolio_collect_restriction_link">$r.render("collect.restriction.del.$count")</div>
+	</div>
+#end

@@ -1,0 +1,10 @@
+$r.render("choiceOfTools")
+#if ($newsToolEnabled)
+	$r.render("newsform")
+#end
+#if ($calendarToolEnabled)
+	$r.render("calendarform")
+#end
+#if ($folderToolEnabled && $isOlatAdmin)
+	$r.render("quota")
+#end

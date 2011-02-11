@@ -1,0 +1,36 @@
+<ul>
+#if ($r.available("groupchatcontroller"))
+	<li id="o_topnav_imgroupclient">
+		$r.render("groupchatcontroller")
+	</li>
+#end
+#if ($r.available("imclient"))
+	<li id="o_topnav_imclient">
+		$r.render("imclient")
+	</li>
+#end
+#if (!$inAssessment)
+	<li id="o_topnav_search">
+		$r.render("search_input")
+	</li>
+#end
+	<li id="o_topnav_printview">
+		<a href="javascript:b_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" >$r.translate("topnav.printview")</a>
+	</li>
+
+	<li id="o_topnav_help">
+		$r.render("topnav.help")
+	</li>
+	
+#if (!$isGuest)
+	<li id="o_topnav_logout">
+		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
+		## must be on one line to work with inline translation tool
+		<a id="b_logout" href="$r.commandURI("logout")" title="$r.translateInAttribute("topnav.logout.alt")"><span class="b_logout_icon">$r.translate("topnav.logout")</span></a>
+	</li>
+#else
+	<li id="o_topnav_login">
+		$r.render("topnav.login")
+	</li>
+#end
+</ul>

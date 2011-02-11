@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+<!-- SSL/TLS communication properties -->
+	<bean id="sslConfigurationModule" class="de.bps.security.SSLConfigurationModule" init-method="init">
+		<property name="keyStoreFile" value="${onyx.keystore.file}" />
+		<property name="keyStorePass" value="${onyx.keystore.pass}" />
+		<property name="keyStoreType" value="${onyx.keystore.type}" />
+		<property name="trustStoreFile" value="${onyx.truststore.file}" />
+		<property name="trustStorePass" value="${onyx.truststore.pass}" />
+		<property name="trustStoreType" value="${onyx.truststore.type}" />
+	</bean>
+</beans>

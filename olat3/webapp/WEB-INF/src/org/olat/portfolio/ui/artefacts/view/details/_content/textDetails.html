@@ -1,0 +1,7 @@
+$r.translate("text.fullcontent") 
+	<br/>
+#if ($r.available("text.edit.link")) 
+	$r.render("text.edit.link") 
+#else
+	$r.formatLatexFormulas($!text)
+#end 

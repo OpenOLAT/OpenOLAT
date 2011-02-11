@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+<context:annotation-config />
+
+<!-- manager -->
+<bean id="baseSecurityManager" class="org.olat.basesecurity.BaseSecurityManager" init-method="init" 
+depends-on="database, i18nModule, triggerI18nModuleInit">
+<property name="resourceManager" ref="resourceManager"/>
+<property name="dbVendor" value="${db.vendor}" />
+</bean>
+
+<!-- module -->
+<bean id="baseSecurityModule" class="org.olat.basesecurity.BaseSecurityModule">
+	<constructor-arg type="java.lang.String" value="${default.auth.provider.identifier}" />
+	<property name="persistedProperties">
+	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+	    <constructor-arg index="0" ref="coordinatorManager"/>
+	    <constructor-arg index="1" ref="baseSecurityModule" />
+	  </bean>
+	</property>
+	
+</bean>
+                       
+       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="baseSecurityModule" />
+        <property name="targetMethod" value="init" />
+        <property name="arguments">
+        			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
+                    <value>
+	                    sysGroupUsermanager.canCreateUser=true
+						sysGroupUsermanager.canDeleteUser=false
+						sysGroupUsermanager.canCreatePassword=true
+						sysGroupUsermanager.canModifyPassword=true
+						sysGroupUsermanager.canStartGroups=true
+						sysGroupUsermanager.accessToQuota=true
+						sysGroupUsermanager.accessToProperties=false
+						sysGroupUsermanager.accessToPolicies=false
+						sysGroupUsermanager.accessToAuthentications=false
+						sysGroupUsermanager.canManageGroupmanagers=true
+						sysGroupUsermanager.canManageInstitutionalResourceManager=true
+						sysGroupUsermanager.canManageAuthors=true
+						sysGroupUsermanager.canManageGuests=false
+						sysGroupUsermanager.canBypassEmailverification=true
+						sysGroupUsermanager.canEditAllProfileFields=true
+	         <!--
+				User manager configuration
+				Users from the system group 'userManager' can be configured to have the following 
+				rights within the user management. Currently the rights are applied to all members
+				of the user management. Individual rights on a per user base are not possible. The
+				configuration below does not apply to system administrators, those always have full
+				access to the user management. 
+				- canCreateUser: Allows the user to create new system users. The users are automatically
+				  put into the system group users.
+				- canDeleteUser: Allows the user to delete users. 
+				- canCreatePassword: Allows the user to create new OLAT passwords when no such password
+				  exists. If set to false, the usermanager has a limited user creation form that has no 
+				  option to add a password. In addition, the user import workflow does not feature
+				  a password column.
+				- canModifyPassword: Allows the user to modify the password of all users that he has 
+				  the right to manage (see canManageXXX configuration below)
+				- canStartGroups: Allows the user to start every group a user is in. If disabled, the groups
+				  are only listed and have no link to start.
+				- accessToQuota: Allows the user to modify the personal quota of users he can manage
+				- accessToProperties: Allows the user to see all properties of for users he can manage
+				  including the course properties. This is usually not very interresting for user 
+				  managers, it is commonly used by system administrators for debugging.
+				- accessToPolicies: Allows the user to see system security policies for all users he
+				  can manage. This is usually not very interresting for user managers.
+				- accessToAuthentications: Allows the user to see and delete authentication tokens for
+				  user he can manage. This is used e.g. to reset the RSS or Jabber password or to remove
+				  a shibboleth or OLAT authentication. In most cases this is a power feature used only
+				  by system administrators.
+				- canManageGroupmanagers: Allows the user to add a user to the system group 
+				  groupmanagers. Groupmanagers can manage course comprehensive groups using the top
+				  navigation site Groupmanagement. When set to false, the user manager is not allowed 
+				  to modify any profile information or password from a user that is within such a group.
+				- canManageAuthors: Allows the user to add a user to the system group authors. Authors
+				  are allowed to create new learning resources in the learning resources repository. Note
+				  that beeing added as a co-author to a learning resource grants also the right to create
+				  new learning resources, however the user is not automatically put into the system group
+				  authors! When set to false, the user manager is not allowed to modify any profile 
+				  information or password from a user that is within such a group.
+				- canManageGuests: Allows the user to add a user to the system group guests. Guests are
+				  anonymous users that must not be in any other system group. Guests have limited access
+				  to OLAT. When set to false, the user manager is not allowed to modify any profile 
+				  information or password from a user that is within such a group. Usually it is a good 
+				  idea to let only system administrators manage guests.
+				- canBypassEmailverification: True allows a user admin to bypass the email verification workflow, 
+				  i.e. change emails directly without having a user to do verification.
+				- canEditAllProfileFields: True allowes the user admin to edit all fields in user
+				  profile form. Be careful when enabling this feature since the user admin will be able
+				  to change fields which contain validated data from shibboleth login process.
+				-->
+	                </value>
+                </property>
+</bean>
+
+<bean id="invitationCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<property name="jobDetail" ref="invitationCleanupJob.${cluster.singleton.services}" />
+  <!-- adjust cron style syntax for your notification needs 
+   	"0 10 0 * *"  e.g. 10 minutes after midnight
+   	
+   	A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+	Field Name 	  	Allowed Values 	  	Allowed Special Characters
+	Seconds 	  	0-59 	  			, - * /
+	Minutes 	  	0-59 	  			, - * /
+	Hours 	  		0-23 	  			, - * /
+	Day-of-month 	1-31 	  			, - * ? / L W C
+	Month 	  		1-12 or JAN-DEC 	, - * /
+	Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+	Year (Optional)	empty, 1970-2099 	, - * /
+
+	As of OLAT 6.3 it's best to let the cronjob run every two hours since users can now choose how often 
+	they will get notified. The shortest interval is set to two hours. 	    	
+   -->
+	<property name="cronExpression" value="0 2 */12 * * ?" />
+	<property name="startDelay" value="150000" />
+</bean>
+
+<bean id="invitationCleanupJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<property name="jobClass" value="org.olat.basesecurity.InvitationCleanupJob" />
+</bean>
+	
+<!-- dummy bean -->
+<bean id="invitationCleanupJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<property name="jobClass" value="org.olat.core.commons.scheduler.DummyJob" />
+</bean>
+
+</beans>

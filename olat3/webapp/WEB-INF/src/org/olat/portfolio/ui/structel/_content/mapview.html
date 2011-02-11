@@ -1,0 +1,47 @@
+<div class="b_clearfix">	
+#if($r.available("map.editButton"))
+		<div class="b_float_right">	
+			$r.render("map.editButton")
+		</div>
+#end
+
+#if($r.available("backLink"))
+	$r.render("backLink")
+#end
+</div>
+
+<div class="b_eportfolio_map $!style">
+	<div class="b_ep_relative"> ## needed for positioning
+		<div class="b_map_header">
+		<div class="b_struct_edit_btn">
+			#if(!$r.available("editor") && $r.available("addButton"))
+				<div class="b_eportfolio_add_link">$r.render("addButton")</div>
+			#end
+			#if($r.available("map.submit.assess"))
+				<div class="b_struct_submit_assess_btn">$r.render("map.submit.assess")</div>
+			#end
+			#if($closed) 
+				<div class="b_artefact_closed"><span title=" $r.translate("map.is.closed.hint") ">&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+			#end
+			<br/>
+		</div>
+		<h4>$map.title</h4>
+		<div style="clear: right;"></div>
+	
+		#if(!$r.available("editor"))
+			$map.description
+			<div class="b_clearfix"></div>
+		
+			## show av. artefacts here...
+			#if ($r.available("artefactTable")) $r.render("artefactTable") #end
+		
+		</div> ## end b_map_header
+		
+			## multiple page(s) contains instances of page-ctrl
+			#if ($r.available("pagesCtrl")) $r.render("pagesCtrl") #end	
+		#else
+		</div> ## end b_map_header
+			$r.render("editor")
+		#end
+	</div>
+</div>

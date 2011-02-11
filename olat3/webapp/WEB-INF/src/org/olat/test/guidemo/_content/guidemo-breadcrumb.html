@@ -1,0 +1,23 @@
+<p>
+Bla, bla, some content of a workflow here. Open a subworkflow that uses the whole content without loosing the user context... Open another page... This one is on level <b>$level</b>.
+</p>
+<p />
+$r.render("GuiDemoBreadCrumbController.button.add")
+
+#if ($r.available("GuiDemoBreadCrumbController.button.remove"))
+	<p>
+	Click link below to remove this crumb
+	<p>
+	<p />
+	$r.render("GuiDemoBreadCrumbController.button.remove")
+#end
+
+#if ($level == 0)
+## example on how to use the javascript translator
+<script type='text/javascript'>
+/* <![CDATA[ */
+	var trans = b_jsTranslatorFactory.getTranslator('de', 'org.olat.core');
+	alert(trans.translate('warn.beta.feature'));
+/* ]]> */ 
+</script>
+#end

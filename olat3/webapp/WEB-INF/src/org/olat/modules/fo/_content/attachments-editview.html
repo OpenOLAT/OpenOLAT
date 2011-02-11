@@ -1,0 +1,14 @@
+<table>
+	<tbody>		
+		#foreach ($attachment in $attachments)
+			#set( $fname = $attachment.getName() )
+			#set( $fsize = $attachment.getSize() / 1024 )
+			<tr>
+				<td class="b_filetype_file $myself.renderFileIconCssClass($fname)" style="padding-left:20px; background-repeat: no-repeat;">	</td>
+				<td>$fname ($fsize KB)</td>
+				<td>$r.render("delete.attachment.$velocityCount")</td>
+			</tr>
+		#end
+	</tbody>
+</table>
+

@@ -1,0 +1,7 @@
+#if ($r.available("subscription"))
+	$r.render("subscription")
+#end
+#if($showAuthorBtns)
+	$r.render("authorOptions")
+#end
+$r.render("datesTable")

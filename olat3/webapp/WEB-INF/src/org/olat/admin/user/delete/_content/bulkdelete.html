@@ -1,0 +1,23 @@
+<h3>$r.translate("table.users.found")</h3>
+<div>
+	#if($r.available("table.users.found"))
+		$r.render("table.users.found")
+	#else
+		$r.translate("no.users")
+	#end
+</div>
+<br />
+#if($r.available("table.users.notfound"))
+<h3>$r.translate("table.users.notfound")</h3>
+<div>
+		$r.render("table.users.notfound")
+</div>
+#end
+<div>
+	<h3>$r.translate("delete.reason")</h3>
+	<p>$reason</p>
+</div>
+#if($r.available("next"))
+	<br />
+	$r.render("next")
+#end

@@ -1,0 +1,23 @@
+The example theme is a very simple theme based on the default theme. 
+You can use it to build your own theme so you don't have to start 
+from scratch. 
+
+The example theme does modify only little things, most elements are 
+defined in the default theme, which is included in the first lines of 
+the theme. Make sure you read the themes.README provided in the 
+themes directory before you start modifying any files or writing your
+own theme. 
+
+A last piece of advice: keept it simple, don't change too much :-)
+
+If you need help, post your questions on the developers mailinglist 
+at http://lists.olat.org or ask for commercial support at
+contact@frentix.com
+
+----
+Credits:	frentix GmbH - professional services for the Open Source LMS OLAT
+Info:		http://www.frentix.com
+Date:		Zürich, 2. Juni 2008
+
+
+

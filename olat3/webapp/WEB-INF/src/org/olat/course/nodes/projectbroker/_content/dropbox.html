@@ -1,0 +1,26 @@
+<div class="o_course_run_dropbox">
+	#if($hasNotification == true)
+		$r.render("subscription")
+	#end
+	<h4>$r.translate("dropbox.title")</h4>		
+	<p>
+		$r.translate("dropbox.intro")
+	</p>
+	<p>
+	</p>
+	<p>
+	#if($numfiles)
+		<i>$r.translate("dropbox.files", $numfiles)</i>
+	#else
+		<i>$r.translate("dropbox.nofiles")</i>
+	#end
+	</p>
+	<p>
+	#if ($previewMode == false)
+		$r.render("dropbox.upload")
+	#end
+	</p>
+</div>
+
+
+

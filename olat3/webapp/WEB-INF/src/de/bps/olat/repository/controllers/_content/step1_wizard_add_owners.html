@@ -1,0 +1,14 @@
+<h3>$r.translate("wizard.add.owners.step1.header")</h3>
+<p>	
+	|&nbsp;$r.render("myEntriesLink")&nbsp;|
+	#if($r.available("allEntriesLink"))
+		$r.render("allEntriesLink")&nbsp;|
+	#end
+	#if($r.available("searchEntriesLink"))
+		$r.render("searchEntriesLink")&nbsp;|
+	#end
+</p>
+<p>
+	<h4>$subtitle</h4>
+	$r.render("searchCtr")
+</p>

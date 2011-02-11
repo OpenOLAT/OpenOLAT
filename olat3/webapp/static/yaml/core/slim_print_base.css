@@ -1,0 +1,19 @@
+@charset "UTF-8";
+/* "Yet Another Multicolumn Layout" v3.0.4 (c) by Dirk Jesse (http://www.yaml.de) */
+@media print {
+body,#b_page_margins,#b_page,#b_main {margin:0;padding:0;border:0;}
+#b_page_margins,#b_page{width:100% !important;min-width:0;max-width:none}
+#b_header{height:auto}
+#b_footer,#b_topnav,#b_nav,#search{display:none}
+.b_c25l,.b_c33l,.b_c38l,.b_c50l,.b_c62l,.b_c66l,.b_c75l,.b_c25r,.b_c33r,.b_c38r,.b_c50r,.b_c62r,.b_c66r,.b_c75r {width:100%;margin:0;float:none;overflow:visible;display:table}
+.b_subc,.b_subcl,.b_subcr {margin:0;padding:0}
+body *{font-family:"Times New Roman", Times, serif}
+code,pre{font-family:"Courier New", Courier, mono}
+body{font-size:12pt}
+h1,h2,h3,h4,h5,h6{page-break-after:avoid}
+abbr[title]:after,acronym[title]:after{content:'(' attr(title) ')'}
+#b_page a[href^="http:"],#b_page a[href^="https:"]{padding-left:0;background-image:none}
+a[href]:after{content:" <URL: "attr(href)">";color:#444;background:inherit;font-style:italic}
+#b_col1_content:before,#b_col2_content:before,#b_col3_content:before{content:"";color:#888;background:inherit;display:block;font-weight:700;font-size:1.5em}
+.b_floatbox,.b_subcolumns,.b_subcolums_oldgecko{overflow:visible;display:table}
+}

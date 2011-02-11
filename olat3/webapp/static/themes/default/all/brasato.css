@@ -1,0 +1,1243 @@
+@charset "UTF-8";
+
+/**
+  * layouting for ALL medium and all layouts
+  */ 
+
+@media all
+{
+	/* #b_nav elements */
+	/* see dedicated nav_slidingdoor.css */
+	
+	/* #b_main elements */
+	
+	/* BUTTONS: link buttons and form buttons should look the same */
+	a.b_button, input.b_button, button.b_button { white-space: nowrap; cursor:pointer; margin: 0 0.5em 0 0; padding: 0; border: 0; color: #2C2B2B; background: transparent; display: inline-block; line-height: 1.5em; vertical-align: middle; text-align: left; } /* left align for IE */
+	/* special treatment to make the link buttons and the button buttons look almost the same. */
+	/* the problem is that a and span are inline elements and inline-block is not supported by FF yet */
+	/* inner button wrapper */
+	a.b_button span, input.b_button, button.b_button span  { color: #2C2B2B; background: #eee url(../images/brasato/button3d_bg.gif) repeat-x top;  border: 1px solid #7D7D7D; -webkit-border-radius: 4px; border-radius: 4px; display: inline-block; padding: 0 0.8em; width: auto; line-height: 1.5em; text-align: center;} 
+	/* focused buttons */
+	a.b_button:focus, a.b_button:hover {text-decoration: none; }
+	a.b_button:focus span, a.b_button:hover span, 
+	input.b_button:focus, input.b_button:hover,  
+	button.b_button:focus span, button.b_button:hover span { background: #FEFEFE url(../images/brasato/button3d_bg_over.gif) repeat-x top; border: 1px solid #6E6E6E;}
+	/* buttons to hint at a dirty forms with unsaved values */
+	a.b_button_dirty span, input.b_button_dirty, button.b_button_dirty span { background: #FFF7E0 url(../images/brasato/button3d_bg_dirty.gif) repeat-x top; border: 1px solid #ff9900;}
+	a.b_button_dirty:focus span, a.b_button_dirty:hover span, 
+	input.b_button_dirty:focus, input.b_button_dirty:hover,  
+	button.b_button_dirty:focus span, button.b_button_dirty:hover span { background: #FFF7E0 url(../images/brasato/button3d_bg_dirty_over.gif) repeat-x top; border: 1px solid #FFC20E;}
+	/* disabled buttons */
+	span.b_disabled.b_button, button.b_button.b_disabled span {	white-space: nowrap; margin: 0 0.5em 0 0; padding: 0 0.8em; display: inline-block; line-height: 1.5em; vertical-align: middle; 	color: #667; background: #FFFFFF url(../images/brasato/button3d_bg_disabled.gif) repeat-x center; border: 1px solid #ACAAAA; -webkit-border-radius: 4px; border-radius: 4px;  width: auto; }
+	/* multiple buttons groups below a form */
+	div.b_button_group { text-align: center; margin: 2em 0 1em 0;}
+	div.b_button_group div { display: inline;}
+	
+	/* TOGGLE Buttons */
+	a.b_toggle { white-space: nowrap; margin: 0 0.5em 0.2em 0; cursor: default; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 10px; -moz-border-radius: 10px;  border-radius: 10px; display: inline-block; line-height: 1.5em; text-align: center; background: url(../images/brasato/toggle_off.png) top left repeat-x; }
+	a.b_toggle span { padding: 0 0.8em; } 
+	a.b_toggle:hover { background: #ddd; text-decoration: none; } 
+	a.b_toggle.b_on:hover { background: #747474; }
+	a.b_toggle.b_on, a.b_toggle:active, a.b_toggle.b_on:active { color: white; border: none; padding: 1px; -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); -moz-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+	a.b_toggle:focus, a.b_toggle.b_on:focus { text-decoration: none; }
+	a.b_toggle:active, a.b_toggle.b_on:active { background: url(../images/brasato/toggle_active.png) top left repeat-x; } 
+	a.b_toggle.b_on { background: url(../images/brasato/toggle_on.png) top left repeat-x; }
+	span.b_toggle.b_disabled { white-space: nowrap; margin: 0 0.5em 0.2em 0; padding: 0 0.8em; color: #667; border: 1px solid #DDD; -webkit-border-radius: 10px; -moz-border-radius: 10px;  border-radius: 10px; display: inline-block; line-height: 1.5em; text-align: center; background: url(../images/brasato/toggle_dis.png) top left repeat-x; }
+	/* TOGGLE SLIDERS */
+	a.b_toggle_slide { background: url(../images/brasato/handle.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.2em 0.2em 0.2em; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 4px; -moz-border-radius: 4px;  border-radius:4px; display: inline-block; text-align: center; vertical-align: middle; position: relative;}
+	a.b_toggle_slide span { position: absolute; top: -25px; left:0;} 
+	a.b_toggle_slide:hover, a.b_toggle_slide:focus, a.b_toggle_slide:active,
+	a.b_toggle_slide.b_on:hover, a.b_toggle_slide.b_on:focus, a.b_toggle_slide.b_on:active { border: 1px solid #868686; text-decoration: none; } 	
+	a.b_toggle_slide.b_on { background-position: -16px 0px; }
+	span.b_toggle_slide.b_disabled { background: url(../images/brasato/handle_dis.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 4px; -moz-border-radius: 4px;  border-radius:4px; display: inline-block; text-align: center; vertical-align: middle;}
+	/* TOGGLE SLIDERS SMALL */
+	a.b_toggle_slide.b_small { background: url(../images/brasato/handle_small.png) -41px 0px no-repeat; height: 16px; width: 55px; -webkit-border-radius: 2px; -moz-border-radius: 2px;  border-radius:2px; }
+	a.b_toggle_slide span { position: absolute; top: -16px; } 
+	a.b_toggle_slide.b_small.b_on { background-position: -9px 0px; }
+	span.b_toggle_slide.b_disabled { background: url(../images/brasato/handle_small_dis.png) -41px 0px no-repeat; height: 16px; width: 55px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 3px; -moz-border-radius: 3px;  border-radius:3px; display: inline-block; text-align: center; vertical-align: middle;}
+	span.b_toggle_slide_legend {font-size: 90%; }
+	
+	/* HELP, context sensitive */
+	div.b_contexthelp_wrapper { position: relative; }
+	a.b_contexthelp { display: block; width: 16px; height: 16px; background: url(../images/brasato/help.png) no-repeat; line-height: 0; cursor: help; }
+	a.b_contexthelp:focus, a.b_contexthelp:hover{ background-image: url(../images/brasato/help_over.png); }	
+	div.b_contexthelp_wrapper a.b_contexthelp { position: absolute; top: 0; right: 0; }
+	fieldset a.b_contexthelp, fieldset div.b_contexthelp_wrapper a.b_contexthelp { position: absolute; top: -1.5em; right: -0.8em; }
+	#b_contexthelp {}
+	#b_contexthelp_content { padding: 0;}
+	#b_ch_topnav_search div.b_form_element_wrapper.b_form_horizontal { margin:2px 0 0 0; }
+	#b_contexthelp_rating{ text-align: center; margin-top: 20px; padding: 10px; border-top: 1px #ACAAAA solid;  }
+	#b_contexthelp_rating h4{ font-size: 90%; margin: 0; font-style: italic; }
+	#b_contexthelp_rating table { display: inline-block; }
+	#b_contexthelp_rating table td { width: 50%; }
+	.b_contexthelp_icon {background-image: url(../images/brasato/help.png); }
+	a.b_contexthelp_icon:hover {background-image: url(../images/brasato/help_over.png); }
+	
+	/* MODAL OVERLAY: transparent background that covers the whole content */
+	div.b_modal_overlay { position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1; }	
+	/* modal overlay color */
+	div.b_modal_overlay, div.ext-el-mask { background: #fff; -moz-opacity: 0.4; opacity:0.4; filter: alpha(opacity:40);} 
+	/* content area in a modal dialog - no gui specific rendering, only a container */
+	div.b_modal_area { position: absolute; top: 0; left: 0; width: 90%; margin: 5%; }
+	div.b_layer_1 div.b_modal_area {width: 82%; margin: 9%;}
+	div.b_layer_2 div.b_modal_area {width: 76%; margin: 12%;}
+	div.b_layer_3 div.b_modal_area {width: 70%; margin: 15%;}
+	div.b_layer_5 div.b_modal_area {width: 64%; margin: 18%;}
+	/* modal callout windows. Patch min length issue in Ext QuickTip */
+	div.b_callout_content { max-width: 60em; overflow: hidden;}
+	div.x-tip-tc, div.x-tip-bc { background-repeat: repeat ! important;}
+	div.x-tip-mc {background: #e9f2ff ! important;}
+	/* ajax busy icon*/
+	body.b_ajax_busy { cursor: wait; }
+	div.b_ajax_busy {background: url(../images/brasato/ajax-loader.gif) no-repeat; position: absolute; left:50% ; top: 10px; width:28px; height: 28px; z-index:5001;}
+	/* dimmed elements (disabled) */
+	.b_dimmed { -moz-opacity: 0.4; opacity:0.4; filter: alpha(opacity:40);}
+	
+	/* WINDOW (modal) */
+	div.b_window { text-align: left; }
+	div.b_window div.b_window_header_wrapper { background: #C7CCD6 url(../images/brasato/generic/window_head.png) repeat-x top left; }
+	div.b_window div.b_window_header { background: url(../images/brasato/generic/window_head_right.png) no-repeat top right; position: relative; }
+	div.b_window div.b_window_header_title { background: url(../images/brasato/generic/window_head_left.png) no-repeat top left; min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px; color: #4F576A; }
+	div.b_window div.b_window_header_title a.b_link_close { top:4px; right: 4px; background: url(../images/brasato/close.png); background-repeat: no-repeat; }
+	div.b_window div.b_window_header_title a.b_link_close:hover { top:4px; right: 4px; background: url(../images/brasato/close_over.png); background-repeat: no-repeat; }
+	div.b_window div.b_window_header_title strong { font-weight: bold; }	
+	div.b_window div.b_window_content_wrapper { border-left: 1px solid #9BA3B5; border-right: 1px solid #9BA3B5; clear:both; width:auto; padding: 0 4px 0 4px; background: #C7CCD6;}
+	div.b_window div.b_window_content { padding: 1em; background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; border-bottom: 1px solid #fff; border-top: 1px solid #9BA3B5; }
+	div.b_window div.b_window_content_inner { min-height: 200px; position: relative; }	
+	div.b_window div.b_window_footer_wrapper { height: 4px; background: #C7CCD6; border-left: 1px solid #9BA3B5; border-right: 1px solid #9BA3B5; border-bottom: 1px solid #4F576A; }
+	
+	/* DIALOG */
+	div.b_window.b_dialogbox { width: 60%; margin-left: 20%;}
+	
+	/* GUI MESSAGES: dialog, warn, error */
+	div.b_msg_dialog { padding: 10px 10px 10px 50px; min-height: 32px; background: url(../images/brasato/icon_question.png) no-repeat 10px 10px; }
+	div.b_msg_dialog .b_msg_title { font-weight: bold; }
+	div.b_msg_dialog .b_msg_content { }
+	/* sticky info */
+	#b_msg_sticky { clear:both; padding: 10px 10px 10px 50px; min-height: 32px; background: #ebcccc url(../images/brasato/icon_warning.png) no-repeat 10px 10px; border-bottom: 1px #bdb dotted;  border-top: 1px #bdb dotted;}
+	/* info message */
+	div.b_msg-div { left: 35%; position:absolute; top:10px; width:30%; z-index:20000; }	
+	#b_msg_info { padding: 10px 10px 10px 50px; min-height: 32px; background: url(../images/brasato/icon_info.png) no-repeat 10px 10px; }
+	#b_msg_info .b_msg_title { font-weight: bold; }
+	#b_msg_info { } 
+	div.b_msg_info_content { padding: 10px 10px 10px 50px; }
+	div.b_msg_info_winicon { background: url(../images/brasato/icon_info.png) no-repeat 10px 10px;}
+	/* warn message */
+	#b_msg_warn { padding: 10px 10px 10px 50px; min-height: 32px; background: url(../images/brasato/icon_warning.png) no-repeat 10px 10px; }
+	#b_msg_warn .b_msg_title { font-weight: bold; }
+	#b_msg_warn .b_msg_content { }
+	div.b_msg_warn_winicon { background: url(../images/brasato/icon_warning.png) no-repeat }
+	/* error message */
+	#b_msg_error { padding: 10px 10px 10px 50px; min-height: 32px; background: url(../images/brasato/icon_error.png) no-repeat 10px 10px; }
+	#b_msg_error .b_msg_title { font-weight: bold; }
+	#b_msg_error .b_msg_content { }
+	div.b_msg_error_winicon { background: url(../images/brasato/icon_error.png) no-repeat }
+	
+	/* OPEN / CLOSE BOX TOGGLER */
+	a.b_togglebox_closed {background: url(../images/brasato/bullet_toggle_plus.png) no-repeat 0 50%; padding: 1px 0 1px 10px; vertical-align: middle;}
+	a.b_togglebox_opened {background: url(../images/brasato/bullet_toggle_minus.png) no-repeat 0 50%; padding: 1px 0 1px 10px; vertical-align: middle;}
+	div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAAA; background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; }
+	
+	/* FORM: old school form and flexi form! */
+	div.b_form { }
+	div.b_form div.b_form_desc { padding-bottom: 1em; font-style: italic;}
+	div.b_form fieldset{ }
+	div.b_form div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../images/brasato/icon_error.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid #990000; color: #990000; font-style: italic;}
+	div.b_form div.b_form_spacer { margin: 10px 0; }
+	div.b_form hr.b_form_spacer { margin: 10px 0; border-bottom: 1px solid #ACAAAA; padding: 0;}
+	div.b_form hr.b_form_spacer.b_form_vertical { }
+	div.b_form hr.b_form_spacer.b_form_horizontal { display: inline-block; width: 2em;}
+	div.b_form hr.b_form_spacer.b_form_spacer_noline { margin: 10px 0; border-bottom: 0; padding: 0;}
+	/* form element wrapper: label and element */
+	div.b_form div.b_form_element_wrapper { vertical-align: middle; margin: 0.5em 0; }
+	div.b_form div.b_form_element_wrapper div.b_form_element_wrapper { margin: 0; }
+	div.b_form div.b_form_element_wrapper.b_form_horizontal { vertical-align: middle; margin: 0.5em 1em 0.5em 0; float: left; display: inline;}
+	div.b_form div.b_form_element_wrapper.b_form_vertical { vertical-align: middle; margin: 0.5em 0; float: none; display: block;}
+	/* div.b_form div.b_form_element:focus, div.b_form div.b_form_element:hover { background-color: #c4d0dc; }	*/
+	div.b_form_element_wrapper div.b_form_element_label{ width: 20%; float: left; display: inline; } 
+	div.b_form_element_wrapper div.b_form_element_label label {  float: left; display: inline; line-height: 1.3em;}
+	div.b_form_element_wrapper div.b_form_element_label span.b_form_mandatory { background: url(../images/brasato/bullet_star.png) no-repeat; padding-left: 16px; height: 16px;}
+	div.b_form_element_wrapper div.b_form_element_label.b_form_horizontal { width: auto; float: left; display: inline;} 
+	div.b_form_element_wrapper div.b_form_element_label.b_form_vertical { width: auto; float: none; display: block; } 
+	/* form element */
+	div.b_form_element_wrapper div.b_form_element { margin-left: 20%; padding: 0 2px 0 5px; } /* keep 2px space for 100% + border of textarea */
+	div.b_form_element_wrapper div.b_form_element.b_form_horizontal { margin-left: 0; padding-left: 0; float: left; display: inline; }
+	div.b_form_element_wrapper div.b_form_element.b_form_horizontal .b_button { float: left; display: inline;}
+	div.b_form_element_wrapper div.b_form_element.b_form_vertical { margin-left: 0; margin-top: 0.5em; padding-left: 0; float: none; display: block; clear: both;}
+	/* form button groups */
+	div.b_form div.b_button_group { margin-left: 0%; padding-left: 0px; text-align: left; } /* make buttons aligned left within element */
+	div.b_form.b_form_vertical div.b_button_group{ text-align: left; }
+	div.b_button_group div.b_form_element_wrapper { vertical-align: middle; margin: 0.5em 0; float: none; display: block;}
+	div.b_button_group div.b_form_element_wrapper div.b_form_element_label{ width: auto; float: none; display: block; } 
+	div.b_button_group div.b_form_element_wrapper div.b_form_element { margin-left: 0; }
+	/*	div.b_form div.b_form_element_wrapper_textarea div.b_form_element { clear: both; margin-left: 0; padding: 5px }  style to display textarea box always on new line*/
+	/* general form elements */
+	input, select, textarea { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0;}
+	textarea { font-family: inherit; width: 100%; } /* FF changes font to monospace otherwhise */
+	input:focus, select:focus, textarea:focus { background: #fff; border: 1px solid #504D4E; }
+	input.b_checkbox, input.b_radio { height: 1em; width: 1em; border: 0; margin: 0 2px 0 0;}
+	label.b_checkbox_label, label.b_radio_label { padding-left: 0.5em; }
+	div.b_form div.b_form_element div.b_form_example{ display: inline; font-size: 80%; color: #504D4E;}
+	.b_inline_editable { padding: 1px 20px 1px 0; vertical-align: middle; min-height: 16px; }
+	.b_inline_editable:hover { background-position: 100% 50%; background-repeat: no-repeat; background-image: url(../images/brasato/page_edit_tiny.png);}
+	/* disabled form elements */
+	div.b_form div.b_form_element.b_form_element_disponly { }
+	div.b_form div.b_form_element div.b_form_disabled { color: #504D4E; }
+	div.b_form div.b_form_element .b_form_element_disabled { color: #9E9C9C; background: #EEEEEE; border: 1px solid #CDCBCB;}
+	/* date and generic chooser icon*/
+	div.b_form div.b_form_element span.b_form_datechooser { background: url(../images/brasato/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px;}
+	div.b_form div.b_form_element span.b_form_datechooser:hover { background-image: url(../images/brasato/calendar_over.png)}
+	div.b_form div.b_form_element a.b_form_groupchooser { background: url(../images/brasato/group.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}
+	div.b_form div.b_form_element a.b_form_groupchooser:hover { background-image: url(../images/brasato/group_over.png) }
+	div.b_form div.b_form_element a.b_form_genericchooser { background: url(../images/brasato/group.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}	
+	div.b_form div.b_form_element a.b_form_genericchooser:hover { background-image: url(../images/brasato/group_over.png) }		
+    div.b_form div.b_form_element a.b_form_wikitext { background-repeat: no-repeat; padding-left: 12px; line-height: 1.5em; font-style: italic;}
+	div.b_form div.b_form_element a.b_form_wikitext, .b_wiki_icon { background-image: url(../images/brasato/wiki_format.png);}
+	div.b_form div.b_form_element a.b_form_wikitext:hover { background-image: url(../images/brasato/wiki_format_over.png) }
+	div.calendar { z-index:10000 !important; }
+	/* form error handling on element */ 
+	div.b_form div.b_form_element_wrapper.b_form_error input,
+	div.b_form div.b_form_element_wrapper.b_form_error select { border: 1px solid #990000; background: #ebcccc; }
+	div.b_form div.b_form_element_wrapper div.b_form_error_msg { clear: both; color: #990000; font-style: italic; display: block;}	
+	div.b_form_error_msg { clear: both; color: #990000; font-style: italic; display: block;}
+	/* form element switches: checkbox left, lable right: override styles from above */
+	div.b_form div.b_form_element_wrapper.b_form_element_switch div.b_form_element { margin: 0; float: left;}
+	div.b_form div.b_form_element_wrapper.b_form_element_switch div.b_form_element_label {float: none; width: auto; display: block; padding-left: 2.5em;}
+	div.b_form div.b_form_element_wrapper.b_form_element_switch div.b_form_element_label label { float: none; }
+	div.b_form_subform { padding-left: 2.5em; }
+	/* selection lists */
+	div.b_form_selection_vertical div.b_form_selection_element{ vertical-align: middle; line-height: 1.3em; position: relative;}
+	div.b_form_selection_vertical div.b_form_selection_element input{ vertical-align: middle; line-height: 1.3em;}
+	div.b_form_selection_horizontal div.b_form_selection_element{ float: left; display: inline; padding-right: 1em;	}
+	div.b_form_selection_horizontal div.b_form_selection_element input { vertical-align: middle;}
+	/* toggle on / off */
+	div.b_form div.b_form_element div.b_form_togglecheck { font-size: 95%; display: block; vertical-align: middle; line-height: 16px; margin-top: 0.5em;}
+	div.b_form div.b_form_element div.b_form_togglecheck input { height: 1em; width: 1em; }
+	/* link list */
+	div.o_form_wrapper fieldset {min-width:60em;}
+	div.form_shift_left {position:inherit; left: -20%;}
+	
+	/* FORM RICHTEXT ELEMENT */
+	div.mceExternalToolbar {background: #F0F0EE ! important; overflow: auto;} 
+	
+	/* CHOICE */
+	table.b_choice { padding: 0; margin: 0;}
+	table.b_choice td { padding: 0.1em; margin: 0;}
+	table.b_choice td.b_choice_checkrow	{}
+	table.b_choice td.b_choice_textrow {}
+	table.b_choice td.b_togglecheck { padding-top: 1em;}
+	table.b_choice td.b_togglecheck div.b_togglecheck { display: inline; border-top: 1px solid #eee; }
+	table.b_choice td.b_togglecheck input { margin: 0 7px 0 2px;}
+	
+    /* FILE CHOOSER : real file chooser is transparent on layer 2 to hide ugliy browser button, below the visible fake file chooser on layer 1 */
+    div.b_fileinput { position: relative; }
+	div.b_fileinput div.b_fileinput_fakechooser { position: absolute; top: 0px; left: 0px; z-index: 1; display: inline; white-space: nowrap; }
+	div.b_fileinput div.b_fileinput_fakechooser a { margin-left: 5px; }
+	div.b_fileinput span.b_fileinput_maxsize { padding: 1px 0 1px 1em; font-style: italic; min-height: 16px; vertical-align: middle;} /* same as mall icon left */
+	.b_fileinput_icon { background-image: url(../images/brasato/hard_disk.png); }
+    div.b_fileinput:hover a { background-image: url(../images/brasato/hard_disk_over.png); text-decoration: underline;}
+    div.b_fileinput input.b_fileinput_realchooser { position: relative; top: 0; left: 0; z-index: 2; -moz-opacity:0; opacity: 0; filter: alpha(opacity:0);}
+	div.b_fileinput div.b_button_group { text-align: left; padding-left: 0; margin-left: 0;}
+	
+	/* PROGRESSBAR */
+	div.b_progress {}
+	div.b_progress div.b_progress_bar { height: 12px; border: 1px solid #bfbfbf; background: #B0C4DE; }
+	div.b_progress div.b_progress_bar div { height: 12px; background: url(../images/brasato/scale.gif);}
+	div.b_progress div.b_progress_label {}
+	
+	/* USER COMMENTS */
+	div.b_ratings_and_comments { margin: 4em 0 1.5em 0; padding-bottom: 0.5em; border-bottom: 1px solid #eee; font-size: 0.9em; position: relative; }
+	div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments { background: url(../images/brasato/comment.png) 3px 50% no-repeat; padding: 3px 0 1px 23px; vertical-align: middle; min-height: 18px;}
+	div.b_ratings_and_comments div.b_rating_wrapper { position: absolute; right: 0; bottom: 0; width: 150px; height: 4em; }
+	div.b_ratings_and_comments div.b_rating { background: none; border: none;  padding: 0; margin: 0; position: absolute; left: 0; bottom: 2px; width: 100%}
+	div.b_ratings_and_comments div.b_rating_personal { background: #fff; z-index: 5; }
+	div.b_comments { font-size: 0.9em;}
+	div.b_comments div.b_comment_wrapper { border:1px solid #eee; padding: 10px 10px 5px 10px; margin-bottom: 2em; background: #fbfbfb; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.b_comments div.b_comment_wrapper div.b_avatar img { border: 1px solid #aaa; }
+	div.b_comments div.b_comment_wrapper h5 { font-size: 1em; background: url(../images/brasato/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
+	div.b_comments div.b_comment_wrapper span.b_date { color: #aaaaaa; font-weight: normal; display: block; margin-top: 5px;}
+	div.b_comments blockquote.b_comment { padding: 3px 0 0 0px; margin: 0;}
+	div.b_comments div.b_form { padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; background: #fbfbfb url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+	div.b_comments div.b_form h5 { font-size: 1em; margin-bottom: 0.5em;}
+	div.b_comments div.b_form div.b_button_group { text-align: center; }
+	div.b_comment_wrapper div.b_comment_wrapper { margin-left: 7px; background: #fff;}
+	div.b_comment_wrapper div.b_comment_wrapper div.b_comment_wrapper { background: #fbfbfb;}
+	div.b_comment_wrapper div.b_comment_wrapper div.b_comment_wrapper div.b_comment_wrapper { background: #fff;}
+	.b_comment_icon {background-image: url(../images/brasato/comment.png);}
+	#b_comment_form_link {font-size: 0.9em; position: relative; top: -15px; left: 23px;}
+	
+	/* DATE COMPONENT */
+	div.b_datecomp {width: 2.5em; height: 3em; position: relative; margin-right: 5px;  font-weight: normal; color: white; text-align: center; vertical-align: middle; border: 1px solid #000; font-size: 85%}
+	div.b_datecomp div {width: 100%;  position: absolute; left: 0;}
+	div.b_datecomp div.b_year {height: 1em; top: -1.5em; font-size: 80%; font-weight: normal; color: #000; }
+	div.b_datecomp div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
+	div.b_datecomp div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
+	
+	/* MARK */
+	div.b_mark { width:20px; height:20px; }
+	div.b_mark div.b_form div.b_form_element_wrapper { margin:0; }
+	div.b_mark div.b_form_element_wrapper div.b_form_element { margin:0; padding:0; }
+	a.b_mark_set span, a.b_mark_not_set span { display:block; width:19px; height:19px; }
+	a.b_mark_set { background: url(../images/brasato/flag.png) center right no-repeat; display:block; width:20px; height:20px; }
+	a.b_mark_set:hover, a.b_mark_not_set:hover { background: url(../images/brasato/flag_over.png) center right no-repeat; display:block; width:20px; height:20px; }
+	a.b_mark_not_set { background: url(../images/brasato/flag_dis.png) center right no-repeat; display:block; width:20px; height:20px; }
+	
+	/* RATING */
+	div.b_rating { margin: 10px; padding: 5px; font-size: 80%; white-space: nowrap; text-align: left; background: #EEE; border: 1px solid #ACAAAA; -webkit-border-radius: 4px; border-radius: 4px; -moz-border-radius: 4px; }
+	div.b_rating_title { font-weight: bold; }
+	div.b_rating_items { vertical-align: middle; line-height: 18px; }
+	div.b_rating_items a { float: left; display: inline; width: 16px; height: 16px; background-repeat: no-repeat; background-position: 0 0; margin: 1px 4px 1px 0}
+	div.b_rating_items a:hover {cursor: default;}
+	div.b_rating_items.b_enabled a:hover {cursor: pointer;}
+	div.b_rating_items a.b_rating_item_on { background-image: url(../images/brasato/star.png); }
+	div.b_rating_items.b_enabled a.b_rating_item_on:hover { background-image: url(../images/brasato/star_over.png); }
+	div.b_rating_items a.b_rating_item_off { background-image: url(../images/brasato/star_grey.png); }
+	div.b_rating_items.b_enabled a.b_rating_item_off:hover { background-image: url(../images/brasato/star_grey_over.png); }
+	div.b_rating_explanation { clear: both; font-size: 90%; }
+
+	/* AJAX AUTOCOMPLETER only color styles override */
+	div.b_form_auto_completer input { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0px; padding: 0; }
+	div.b_form_auto_completer input:focus { border: 1px solid #504D4E; background: #FFF; }
+	div.b_form_auto_completer_item { background-color:#FFF; text-align: left; padding-top: 2px; padding-bottom: 2px;}
+	div.b_form_auto_completer_item.x-combo-selected { background-color: #c4d0dc; border-left:0 ! important; border-right:0 ! important;}
+	div.b_form_auto_completer_item span.b_key { color: #999; margin-right: 2px; }
+	div.b_form_auto_completer_item span.b_value { }
+	div.b_form_auto_completer_item.b_error_icon { color: #990000; font-style: italic;}
+		
+	/* MENU TREE */
+	div.b_tree { font-size: 95%; padding-left: 12px;} /* padding to make space for level open/close icons */
+	div.b_tree ul { position: relative; padding: 0; margin: 0 0 0 1em; list-style: none; white-space: nowrap;}
+	/* level specific formatting: skip indent of level 0  (root node) as title 	*/
+	/* also on level 1, skip indent. The levels are generated automatically on the ul and the a element */
+	div.b_tree ul.b_tree_l0 { margin: 0 0 0 0; border-bottom: 1px dotted #bbb; }
+	div.b_tree ul.b_tree_l1 { margin: 0 0 0 0; border-top: 1px dotted #bbb; }
+	/* formatting for all items in the tree */
+	div.b_tree li { position: relative; padding: 0; margin: 0; border-top: 1px dotted #eee}
+	div.b_tree li a { color: #667; display: block;}
+	div.b_tree li a:focus,
+	div.b_tree li a:hover,
+	div.b_tree li a:active { color: #504D4E; text-decoration: underline; }	
+	/* active item and all parent items with special color and bold */
+	div.b_tree li a.b_tree_selected,
+	div.b_tree li a.b_tree_selected_parents,
+	div.b_tree li a.b_tree_l0,
+	div.b_tree li strong { color: #504D4E; font-weight: bold; display: block;}
+	/* base for icons in menu tree */
+	div.b_tree li a.b_tree_icon {padding-left: 20px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}	
+	/* menu icon decorators */
+	div.b_tree span.b_tree_icon_decorator {position: absolute; background-repeat: no-repeat; }
+	/* level open and close icons */
+	span.b_tree_level_close { position: absolute; top: 0.5em; left: -9px; width: 9px; height: 9px; background: url(../images/brasato/bullet_toggle_minus.png) no-repeat; }
+	span.b_tree_level_open { position: absolute; top: 0.5em; left: -9px; width: 9px; height: 9px; background: url(../images/brasato/bullet_toggle_plus.png) no-repeat; }
+
+	/* MENU TOOLBAR */
+	#b_main.b_menu_toolbar #b_col1_content { padding-top: 0; padding-right: 0; }
+	#b_main.b_menu_toolbar #b_col3_content { padding:0; }
+	div.b_menu_toolbar { background: #C3C3C3 url(../images/brasato/toolbar_bg.png) repeat-x top;  border-bottom: 1px solid #7D7D7D; border-right: 1px solid #7D7D7D; padding: 5px 5px 2px 0}
+	
+
+	/* BREAD CRUMB */
+	div.b_breadcumb {}
+	div.b_breadcumb_path { padding: 0; margin: 0; float:left; display: inline; background: url(../images/brasato/bread-crumb-bg.png) repeat top;}
+	div.b_breadcumb_path ul { padding: 0; margin: 0; list-style: none; float:left;  display: inline; background: url(../images/brasato/bread-crumb-last.png) no-repeat top right;}
+	div.b_breadcumb_path ul li { padding: 0 0 0 10px; margin: 0; list-style: none; float:left;  display: inline; background: url(../images/brasato/bread-crumb-separator.png) no-repeat top left;}
+	div.b_breadcumb_path ul li.b_first { background: url(../images/brasato/bread-crumb-home.png) no-repeat top left; padding-left: 25px;}
+	div.b_breadcumb_path ul li a { color: #464444; }
+	div.b_breadcumb_path ul li span.b_disabled { color: #000; padding: 0 10px 0 0; margin: 0;}
+	div.b_breadcumb_content { clear: both;  margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;}
+	
+	/* TOOLBOX */
+	div.b_toolboxes { font-size: 95%; }
+	div.b_toolbox { margin-bottom: 20px;}
+	/* toolbox head */
+	div.b_toolbox_head_wrapper { background: #9BA3B5 url(../images/brasato/toolbox/toolbox_right.png) no-repeat top right; }
+	div.b_toolbox_head { background: url(../images/brasato/toolbox/toolbox_left.png) no-repeat top left;  vertical-align: top; }
+	div.b_toolbox_head_icon { background: transparent no-repeat 3px 50%; padding-left: 19px; color: #fff; line-height: 1.2em; }
+	div.b_toolbox_head strong { font-weight: bold}
+	/* toolbox content */
+	div.b_toolbox_content { border-left: 1px dotted #bbb; border-right: 1px dotted #bbb; border-bottom: 1px solid #bbb; background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left;}
+	div.b_toolbox ul { padding: 0; margin: 0; list-style: none; }
+	div.b_toolbox li { padding: 0; margin: 0; line-height: 1.5em; white-space: nowrap;}
+	div.b_toolbox li a { color: #667; background-repeat: no-repeat; background-position:  0 50%; padding-left: 18px; display: block;}
+	div.b_toolbox li a:focus,
+	div.b_toolbox li a:hover,
+	div.b_toolbox li a:active { color: #504D4E; text-decoration: underline; }	
+	/* toolbox content icons: see your application css for application specific toolbox icons */
+	div.b_toolbox li a.b_toolbox_link { background-image: url(../images/brasato/bullet_black.png); }
+	div.b_toolbox li a.b_toolbox_doc { background-image: url(../images/brasato/doc.png); }
+	div.b_toolbox li a.b_toolbox_doc:hover { background-image: url(../images/brasato/doc_over.png); }	
+	div.b_toolbox li a.b_toolbox_preview { background-image: url(../images/brasato/preview.png); }
+	div.b_toolbox li a.b_toolbox_preview:hover { background-image: url(../images/brasato/preview_over.png); }
+	div.b_toolbox li a.b_toolbox_publish { background-image: url(../images/brasato/publish.png); }
+	div.b_toolbox li a.b_toolbox_publish:hover { background-image: url(../images/brasato/publish_over.png); }
+	div.b_toolbox li a.b_toolbox_move { background-image: url(../images/brasato/move.png); }
+	div.b_toolbox li a.b_toolbox_move:hover { background-image: url(../images/brasato/move_over.png); }
+	div.b_toolbox li a.b_toolbox_close { background-image: url(../images/brasato/close.png); }
+	div.b_toolbox li a.b_toolbox_close:hover { background-image: url(../images/brasato/close_over.png); }	
+	div.b_toolbox li a.b_toolbox_delete { background-image: url(../images/brasato/delete.png); }
+	div.b_toolbox li a.b_toolbox_delete:hover { background-image: url(../images/brasato/delete_over.png); }
+	div.b_toolbox li a.b_toolbox_copy, .b_copy_icon { background-image: url(../images/brasato/copy.png); }
+	div.b_toolbox li a.b_toolbox_copy:hover, a.b_copy_icon:hover { background-image: url(../images/brasato/copy_over.png); }
+	/* special styles */
+	div.b_toolbox li div.b_note, div.b_toolbox li div.b_important, div.b_toolbox li div.b_warning { padding: 0 0 0 18px; margin: 0; border-bottom: 0; }
+	div.b_toolbox li a.b_toolbox_toggle { padding-left: 0; display: inline;}
+	div.b_toolbox li span.b_toolbox_toggle_wrapper {float: right; font-size: 90%;}
+	/* disabled toolbox items */
+	div.b_toolbox li span.b_toolbox_link.b_disabled, div.b_toolbox li span.b_toolbox_disabled { color: #999; background: no-repeat 0 50% url(../images/brasato/bullet_white.png); padding-left: 18px; display: block;}
+	
+	/* TABBED PANE */
+	div.b_tabbedpane_wrapper { } 
+	div.b_tabbedpane_wrapper div.b_tabbedpane_tabs { float: left; display: inline; width: 100%; background: transparent url(../images/brasato/tabbedpane/bottom_border.png) repeat-x bottom; }
+	div.b_tabbedpane_tabs ul { line-height: 1em; list-style: none; margin: 0; padding: 0; white-space: nowrap;}
+	/* tabs without style are passive tabs */
+	div.b_tabbedpane_tabs ul li { background: #fff url(../images/brasato/tabbedpane/left.png) no-repeat top left; border-bottom: 1px solid #9BA3B5; float: left; display: inline; margin: 0; padding: 0 0 0 1px; position: relative; }
+	/* Right border of passive site or tab */
+	div.b_tabbedpane_tabs a, div.b_tabbedpane_tabs strong {	background: transparent url(../images/brasato/tabbedpane/right.png) no-repeat top right; color: #667; display: block; font-weight: normal; padding: 1px 6px 1px 5px; text-decoration: none; text-transform: none;	 }		
+	/*  > mandatory to not apply it to IE browsers */
+	div.b_tabbedpane_tabs > ul a, div.b_tabbedpane_tabs > ul strong {  width: auto; }  
+	/* change image when hoovering over the passive site or tab */
+	div.b_tabbedpane_tabs ul li:focus, div.b_tabbedpane_tabs ul li:hover,  div.b_tabbedpane_tabs ul li:active { background-color: #c4d0dc; background-position: 0 -48px; }
+	 /* change image when hoovering over the passive site or tab */
+	div.b_tabbedpane_tabs li:focus a, div.b_tabbedpane_tabs li:hover a, div.b_tabbedpane_tabs li:active a { background-position: 100% -48px; }
+	div.b_tabbedpane_tabs a:focus, div.b_tabbedpane_tabs a:hover, div.b_tabbedpane_tabs a:active { color: #000; background-color: transparent; text-decoration: none; }
+	/* active tabs */	
+	/* Left border of active site or tab, override hoovering rule from above */
+	div.b_tabbedpane_tabs li.b_active { background: white url(../images/brasato/tabbedpane/left_active.png) no-repeat top left ! important; border: 0;}
+	/* right border of active site or tab, override hoovering rule from above */
+ 	/* bleed to bottom border effect: padding = normal padding + bottom border height */
+ 	div.b_tabbedpane_tabs li.b_active a, div.b_tabbedpane_tabs li.b_active strong { background: transparent url(../images/brasato/tabbedpane/right_active.png) no-repeat top right ! important; color: #000; font-weight: normal; padding-bottom: 2px; }
+	/* disbled tabs */
+	/* Left border of active site or tab, override hoovering rule from above */
+	div.b_tabbedpane_tabs li.b_disabled { background: white url(../images/brasato/tabbedpane/left_disabled.png) no-repeat top left ! important; }
+	/* right border of active site or tab, override hoovering rule from above */
+	div.b_tabbedpane_tabs li.b_disabled a, div.b_tabbedpane_tabs li.b_disabled strong { color:#8994A9; background: transparent url(../images/brasato/tabbedpane/right_disabled.png) no-repeat top right ! important; font-weight: normal;}
+	
+	/* special style for first tab */
+	div.b_tabbedpane_tabs li.b_first {}
+	/* special style for last tab */
+	div.b_tabbedpane_tabs li.b_last {}
+	/* special style for tab at position 3 */
+	div.b_tabbedpane_tabs li.b_item_3 {}
+	/* tabbed pane content area */
+	div.b_tabbedpane_wrapper div.b_tabbedpane_content {  clear: both; padding: 5px 15px;  background: #E9EAEE; border-left: 1px solid #9BA3B5; border-right: 1px solid #9BA3B5; border-bottom: 1px solid #4F576A; }
+	div.b_tabbedpane_content div.b_tabbedpane_content_inner { position: relative; min-height: 30em; }
+	
+	/* TABLE component */
+	div.b_table_wrapper {position: relative; }
+	div.b_table_wrapper table { width: 99.5%; background: #C7CCD6 url(../images/brasato/table/table_bg.png); border-collapse: collapse; margin-left: 1px; } /* 1px margin and 99.5% width fix for FF border issue
+	/* table header */
+	div.b_table_wrapper table thead tr th.b_first_child { background: url(../images/brasato/table/table_left.png) no-repeat top left; }
+	div.b_table_wrapper table thead tr th.b_last_child { background: url(../images/brasato/table/table_right.png) no-repeat top right; }
+	div.b_table_wrapper table th { font-size:90%; text-align:left; white-space: nowrap; background: transparent;  padding: 2px 2px; color:#4F576A }	
+	div.b_table_wrapper table th a { color: #4F576A; font-weight: bold;}
+	div.b_table_wrapper table th a:hover,
+	div.b_table_wrapper table th a:focus { color: #000000; text-decoration:none; background-color: transparent; }
+	div.b_table_wrapper table th a.b_table_move_left { margin: 0 3px; }
+	div.b_table_wrapper table th a.b_table_move_right { margin: 0 3px  }
+	/* table rows */	
+	div.b_table_wrapper table tbody tr { background: #fff; }	
+	div.b_table_wrapper table tbody tr.b_table_odd { background: #F3F4F5; }
+	div.b_table_wrapper table tbody tr:hover,
+	div.b_table_wrapper table tbody tr:focus { background: #E0E2E8;}
+	div.b_table_wrapper table tbody tr a:hover,
+	div.b_table_wrapper table tbody tr a:focus { background-color: none} 
+	div.b_table_wrapper table tbody tr td { border-left: 1px solid #C7CCD6; border-right: 1px solid #C7CCD6; padding: 2px 3px; }
+	div.b_table_wrapper table tbody tr td.b_first_child { border-left: 1px solid #8F99AD; } /* first column */
+	div.b_table_wrapper table tbody tr td.b_last_child { border-right: 1px solid #8F99AD; } /* last column */
+	div.b_table_wrapper table tbody tr.b_first_child td { border-top: 1px solid #8F99AD;   } /* first row */
+	div.b_table_wrapper table tbody tr.b_last_child td { border-bottom: 1px solid #4F576A;   } /* last row */
+	/* table cell formatting */
+	div.b_table_wrapper table td a { display: block; background-color: transparent;}
+	div.b_table_wrapper table input { height: 1em; width: 1em;}
+	div.b_table_wrapper table td.b_table_marked { background: #c4d0dc; }	
+	/* table add-ons */
+	div.b_table_wrapper div.b_table_filter { float: right; display: inline; font-size: 95%; margin: 2px 0;}
+	div.b_table_wrapper div.b_table_filter label { font-style: italic;}
+	div.b_table_wrapper div.b_table_filter select { border: 1px solid #ACAAAA	; }
+	div.b_table_wrapper div.b_table_filter option { }
+	div.b_table_wrapper div.b_table_count { font-size: 95%; float: left; line-height: 16px; vertical-align: bottom; margin: 3px; font-size: 95%;}
+	div.b_table_wrapper a.b_table_prefs, div.b_table_wrapper a.b_table_download {float: right; display: block; background-repeat: no-repeat; background-position: top left; width: 16px; height: 16px; margin: 3px;}
+	div.b_table_wrapper a.b_table_prefs {background-image: url(../images/brasato/table/table_manage.png);}
+	div.b_table_wrapper a.b_table_prefs:hover, div.b_table_wrapper a.b_table_prefs:focus { background-image: url(../images/brasato/table/table_manage_over.png); text-decoration: none; }
+	div.b_table_wrapper a.b_table_download {background-image: url(../images/brasato/table/table_download.png);}
+	div.b_table_wrapper a.b_table_download:hover, div.b_table_wrapper a.b_table_download:focus { text-decoration: none; background-image: url(../images/brasato/table/table_download_over.png); }
+	div.b_table_wrapper div.b_table_buttons { text-align: center; margin: 1.5em 0 1em 0; }	/* bottom-margin to fix IE6 overflow issue */
+	/* (table) pageing */
+	div.b_table_page { font-size: 95%; text-align: center; }
+	div.b_table_page_all { font-size: 95%; text-align: center; }
+	.b_table_page a { margin: 0 ; padding: 2px;}
+	a.b_table_backward {background: url(../images/brasato/resultset_previous.png) no-repeat center left; padding-left: 16px;}
+	a.b_table_backward:hover {background-image: url(../images/brasato/resultset_previous_over.png) }
+	a.b_table_forward {background: url(../images/brasato/resultset_next.png) no-repeat center right; padding-right: 16px;}
+	a.b_table_forward:hover {background-image: url(../images/brasato/resultset_next_over.png) }
+	a.b_table_first_page {background: url(../images/brasato/home.png) no-repeat center left; padding-left: 18px;}
+	a.b_table_first_page:hover {background-image: url(../images/brasato/home_over.png) }
+	div.b_table_page a.b_table_page_active { font-weight: bold; color: #000;}
+	
+	/* YEAR NAVIGATION CONTROLLER */
+	div.b_year_navigation { text-align: center;}	
+	div.b_year_navigation ul.b_months { text-align: left; list-style: none; margin-left:0; margin-top:0.5em; }
+	div.b_year_navigation ul li { margin-left:0.5em; }
+	div.b_year_navigation .b_year {  }
+	div.b_year_navigation .b_backward_icon {background-image: url(../images/brasato/resultset_previous.png);}
+	div.b_year_navigation .b_backward_icon:hover {background-image: url(../images/brasato/resultset_previous_over.png);}
+	div.b_year_navigation .b_backward_icon.b_disabled {background-image: url(../images/brasato/resultset_previous_dis.png);}
+	div.b_year_navigation .b_forward_icon {background-image: url(../images/brasato/resultset_next.png);}
+	div.b_year_navigation .b_forward_icon:hover {background-image: url(../images/brasato/resultset_next_over.png);}
+	div.b_year_navigation .b_forward_icon.b_disabled {background-image: url(../images/brasato/resultset_next_dis.png);}
+
+	/* TOGGLE CHECK (table, briefcase, selectiontree)*/
+	div.b_togglecheck { font-size: 95%; display: block; vertical-align: middle; line-height: 1em;}
+	div.b_togglecheck input { height: 1em; width: 1em; margin: 0 5px;}	
+	
+	/* NOTIFICATIONS */
+	div.b_noti { border: 1px solid #E9EAEF; padding: 3px 23px 3px 3px; float: right; display: inline; position: relative; right: 0; font-size: 95%; }
+	div.b_noti a.b_contexthelp { position: absolute; top: 2px; right: 2px; }
+	a.b_noti_unsubscribe_link { background: url(../images/olat/notification_remove.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
+	a.b_noti_unsubscribe_link:hover { background-image: url(../images/olat/notification_remove_over.png) }
+	a.b_noti_subscribe_link { background: url(../images/olat/notification_add.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
+	a.b_noti_subscribe_link:hover { background-image: url(../images/olat/notification_add_over.png) }
+	a.b_noti_markedread_link { background: url(../images/olat/tick.png)  no-repeat left 50%; padding: 1px 0 1px 20px;}	
+	
+	/* BRIEFCASE */
+	div.b_briefcase { }
+	div.b_briefcase div.b_briefcase_foldercomp { margin-top: 0.5em; border-top: 1px solid #bbb;}
+	div.b_briefcase_foldercomp div.b_briefcase_createactions { margin: 0.5em 0; }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul { list-style: none; margin: 0; padding: 0; white-space: nowrap; font-size: 95%; }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul li { float: right; display: inline; margin: 0 0 0 1em; padding: 0 0 0 3px; position: relative; }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul li a { background-position: 0 50%; background-repeat: no-repeat; padding: 2px 0 2px 20px;}
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_upload { background-image: url(../images/brasato/upload.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_upload:hover { background-image: url(../images/brasato/upload_over.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_newfolder { background-image: url(../images/brasato/folder_new.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_newfolder:hover { background-image: url(../images/brasato/folder_new_over.png); }	
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_newfile { background-image: url(../images/brasato/file_new.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_newfile:hover { background-image: url(../images/brasato/file_new_over.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_deletedfiles { background-image: url(../images/brasato/deleted_files.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_deletedfiles:hover { background-image: url(../images/brasato/deleted_files_hover.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_breadcrumb { clear:both; padding: 1px 0 1px 20px; margin: 0.5em 0 0 0; border-bottom: 1px solid #bbb; background: url(../images/brasato/folder_open.png) no-repeat 0 50%; }
+	div.b_briefcase_foldercomp div.b_briefcase_empty {clear: both; margin-top: 0.5em; font-style: italic;} 
+	div.b_briefcase_foldercomp table.b_briefcase_filetable { clear: both; border-collapse:collapse; margin-bottom: 0.5em; border-bottom: 1px solid #4F576A; background: #fff; width: 99.9%; } /* 99.9% width fix for FF border overflow issue*/
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead { color:#000; background: #E0E2E8; border-bottom: 1px solid #8F99AD;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead a, div.b_briefcase_foldercomp table.b_briefcase_filetable thead span { color: #4F576A; font-weight: bold;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead a:hover,
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead a:focus { color: #000000; text-decoration:none; background-color: transparent; }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr.b_table_odd { background: #F3F4F5; }	
+	div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr:hover, div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr:focus { background: #E0E2E8;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable th, div.b_briefcase_foldercomp table.b_briefcase_filetable td  { white-space: nowrap; text-align: right; padding-right: 1em;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable th.b_last_child, div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_last_child  { padding-right: 0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable th.b_first_child, div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_first_child  { width: 60%; text-align: left; }	
+	div.b_briefcase_foldercomp table.b_briefcase_filetable td input.b_checkbox { margin: 0 4px 0 0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable td a:hover, div.b_briefcase_foldercomp table.b_briefcase_filetable td a:focus { background-color: transparent;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_last_child  { padding-left: 0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon { float: left; margin-right: 3px; background-image: url(../images/brasato/page_edit.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon:hover { float: left; background-image: url(../images/brasato/page_edit_over.png); }	
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon { float: right; background-image: url(../images/brasato/edit_metadata.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon:hover { float: right; background-image: url(../images/brasato/edit_metadata_over.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_edit_meta_dis_icon { float: right; background-image: url(../images/brasato/edit_metadata_dis.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon { float: right; margin-right:3px; background-image: url(../images/brasato/versions.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon:hover { float: right; margin-right:3px; background-image: url(../images/brasato/versions_hover.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon { float: right; margin-right:3px; background-image: url(../images/brasato/versions_dis.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon { float: left; margin-right:3px; background-image: url(../images/brasato/locked.png); }
+	div.b_briefcase_preview { background-color:white; width:200px; height:200px; border:1px solid #8EAACE; margin-top: 2px; }
+	
+	div.b_briefcase div.b_briefcase_searchcomp { float:left; display:inline; margin:0.5em 0; width:14em; }
+	div.b_briefcase div.b_briefcase_searchcomp input { width:10em; }
+	div.b_briefcase div.b_briefcase_searchcomp div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+	
+	div.b_briefcase div.b_briefcase_commandbuttons { margin: 1em 0; }
+	div.b_briefcase div.b_briefcase_webdav {margin: 0.5em 0;}
+	div.b_briefcase div.b_briefcase_quota { clear: both; margin-top: 1em; padding-top: 1em;border-top: 1px solid #000;}
+	div.b_briefcase_meta { size: 0.8em; }
+	div.b_briefcase_meta p { font-style: italic; margin: 0; padding-top: 2px;}
+	
+ 	/* TinyMCE WYSIWYG HTML EDITOR */
+	div.b_htmleditor_wrapper { overflow: hidden; }
+	div.b_htmleditor_editor { padding-right: 5px; }
+	div.b_htmleditor_wrapper div.b_htmleditor_metadata { border: 1px solid #BBBBBB; border-bottom: 0; background-color: #F0F0EE; padding: 2px; margin-right: -1px; vertical-align: middle; }
+	div.b_htmleditor_wrapper div.b_htmleditor_lastmodified { float: right; display:inline; font-style: italic; font-size: 95%; padding: 3px 6px;  }
+	div.b_htmleditor_wrapper #b_htmleditor_filename { font-weight: bold; float:left;}
+			
+	/* PLAIN TEXT EDITOR */
+	div.b_plaintext_editor div.b_form div.b_form_element_wrapper { vertical-align: middle; margin: 0.5em 0; float: none; display: block;}
+	div.b_plaintext_editor div.b_form_element_wrapper div.b_form_element_label { width: auto; float: none; display: block;} 
+	div.b_plaintext_editor div.b_form_element_wrapper div.b_form_element { margin-left: 0; padding-left: 0; float: none; display: block; clear: both;}
+	
+			
+	/* TITLE Wrapper */
+	h1.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
+	h2.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
+	h3.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
+	h4.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
+	h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
+	div.b_titled_wrapper div.b_togglebox div.b_togglebox_content { background:#fff; border:0px; padding:0px; }
+	div.b_titled_wrapper_desc a.b_togglebox_opened { z-index:10; display:block; width:16px; height:16px; position:absolute; top:5px; left:5px; background: url(../images/brasato/information.png) no-repeat 0 50%; padding:0; }
+	div.b_titled_wrapper_desc a.b_togglebox_opened:hover { background: url(../images/brasato/information_over.png) no-repeat 0 50%; padding:0; }
+	div.b_titled_wrapper_desc a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../images/brasato/information_discreet.png) no-repeat top left; padding:0; }
+	div.b_titled_wrapper_desc a.b_togglebox_closed:hover { background: url(../images/brasato/information.png) no-repeat top left; }
+	div.b_titled_wrapper_desc div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
+	div.b_titled_wrapper_desc a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
+	div.b_titled_wrapper_desc a.b_togglebox_hide:hover { text-decoration:underline; }
+	/* Needed for IE6 */
+	div.b_titled_wrapper div.b_togglebox div.b_togglebox_content div.o_course_run_objectives { position:relative; }
+	div.b_titled_wrapper div.b_noti { position:absolute; top:0; right:25px; }
+    div.o_course_run_dropbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
+    div.o_course_run_returnbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
+    div.o_course_run_solutionbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
+	
+	
+	/* PORTAL and portlets */
+	div.b_portal_wrapper { }
+	div.b_portal_wrapper div.b_portal {}
+	div.b_portal_wrapper div.b_portal_inactive {}
+	/* the portlets */
+	div.b_portlet { position: relative; font-size: 95%;  margin: 10px; min-height: 13em; }
+	div.b_portlet.b_portlet_edit { background: #FFE793; border: 1px solid #FF9E3E; padding: 2px;}
+	/* portlet toolbox */
+	div.b_portlet_toolbox { position: absolute; top:0; right:0; padding: 2px; height: 20px; overflow-y: hidden ! important; overflow-x: hidden ! important; }
+	div.b_portlet_toolbox a, div.b_portlet_toolbox span.b_disabled { background-repeat: no-repeat; background-position: 1px 1px; float: right; width: 18px; height: 18px; overflow: hidden; }
+	div.b_portlet_toolbox div { display: inline; } /* fix problem with brasato component wrapper */
+	a.b_portlet_edit_left { background-image: url(../images/brasato/move_left.png); }
+	a.b_portlet_edit_left:hover { background-image: url(../images/brasato/move_left_over.png); }
+	a.b_portlet_edit_right { background-image: url(../images/brasato/move_right.png);}
+	a.b_portlet_edit_right:hover { background-image: url(../images/brasato/move_right_over.png);}
+	a.b_portlet_edit_down { background-image: url(../images/brasato/move_down.png); }
+	a.b_portlet_edit_down:hover { background-image: url(../images/brasato/move_down_over.png); }	
+	a.b_portlet_edit_up { background-image: url(../images/brasato/move_up.png); }
+	a.b_portlet_edit_up:hover { background-image: url(../images/brasato/move_up_over.png); }
+	a.b_portlet_edit_delete { background-image: url(../images/brasato/delete.png); }
+	a.b_portlet_edit_delete:hover { background-image: url(../images/brasato/delete_over.png); }
+	a.b_portlet_edit_sort_auto { background-image: url(../images/brasato/table/table_sort.png); }
+	a.b_portlet_edit_sort_auto:hover { background-image: url(../images/brasato/table/table_sort_over.png); }
+	a.b_portlet_edit_sort_manual { background-image: url(../images/brasato/table/table_manage.png); }
+	a.b_portlet_edit_sort_manual:hover { background-image: url(../images/brasato/table/table_manage_over.png); }	
+	span.b_portlet_edit_left_disabled { background-image: url(../images/brasato/move_left_dis.png); }
+	span.b_portlet_edit_right_disabled { background-image: url(../images/brasato/move_right_dis.png);}
+	span.b_portlet_edit_down_disabled { background-image: url(../images/brasato/move_down_dis.png); }
+	span.b_portlet_edit_up_disabled { background-image: url(../images/brasato/move_up_dis.png); }	
+	span.b_portlet_edit_sort_auto_disabled { background-image: url(../images/brasato/table/table_sort_dis.png); }
+	span.b_portlet_edit_sort_manual_disabled { background-image: url(../images/brasato/table/table_manage_dis.png); }
+	/* text alined to bottom by adding unnecessary padding-top */
+	div.b_portlet_header { background: transparent no-repeat bottom left; border-bottom: 1px solid #666699; white-space: nowrap; overflow-y: hidden ! important; overflow-x: hidden ! important; padding-left: 54px; padding-top: 40px; }
+	/* content section */
+	div.b_portlet_content {	position: relative;	padding: 1em 0 0 0; }
+	/* inactive porlets section */
+	div.b_portlet_incactive { }
+	div.b_portlet_incactive div.b_portlet_add { margin-top: 10px;}
+	
+	/* Standard Portlets */	
+	/* iframe generic portlet */
+	div.b_portlet_iframe iframe { margin-top: 5px; position: relative; top: 0; left: 0; border: 0; }
+	div.b_portlet_iframe div.b_portlet_header { background-image: url(../images/brasato/portal/iframe.png); }
+	/* iframe sysinfo portlet */
+	div.b_portlet_sysinfo iframe { margin-top: 5px; position: relative; top: 0; left: 0; border: 0; width: 100%; }
+	div.b_portlet_sysinfo div.b_portlet_header { background-image: url(../images/brasato/portal/sysinfo.png); }
+	/* did you know portlet */
+	div.b_portlet_dyk div.b_portlet_header { background-image: url(../images/brasato/portal/didYouKnow.png); }
+	div.b_portlet_dyk_q { font-weight: bold;}
+	div.b_portlet_dyk_a { padding-top: 5px;}
+	div.b_portlet_dyk_next { text-align: right; }	
+	/* generic styles for portlets that have a table (set to table controller)*/
+	div.b_portlet_showall {	font-size: 95%; position: absolute;	right: 0; top: 0; }
+	/* generic table in portlets: override styles from b_table definition */	
+	div.b_table_wrapper.b_portlet_table table { background: none; }
+	div.b_table_wrapper.b_portlet_table table tbody tr { background: transparent; }	
+	div.b_table_wrapper.b_portlet_table table tbody tr.b_table_odd { background: transparent; }
+	div.b_table_wrapper.b_portlet_table table tbody tr td { border: 0 ! important}
+	div.b_table_wrapper.b_portlet_table table tbody tr:hover,
+	div.b_table_wrapper.b_portlet_table table tbody tr:focus { background: #c4d0dc;}	
+	
+	/* PREVIEW wrapper above #b_main panel*/
+	#b_preview_wrapper { clear: both; background: #fff; padding:0 10px; }
+	#b_preview_wrapper div.b_preview_link { padding: 10px 0; border-bottom: 1px solid #000}
+	
+	/* IFRAME */
+	div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; border:none; margin: 0; padding: 0; background: transparent;}
+	
+	
+	/* MAIN. inner part of col3: the main content area */
+	#b_col3_content_inner {	position:relative; } 
+
+	/* LINKS */
+	a.b_link_back { background:url(../images/brasato/arrow_left.png); background-repeat: no-repeat; background-position: center left; padding-left: 10px; }	
+	a.b_link_back:hover { background-image:url(../images/brasato/arrow_left_over.png); }	
+	a.b_link_close { position: absolute; top:0; right: 0; width: 16px; height: 16px; background: url(../images/brasato/close.png); background-repeat: no-repeat; }
+	a.b_link_forward { background:url(../images/brasato/arrow_right.png); background-repeat: no-repeat; background-position: center right; padding-right: 12px; }	
+	a.b_link_forward:hover { background-image:url(../images/brasato/arrow_right_over.png); }	
+	
+	/* MODULES: SINGLEPAGE */
+	a.b_preview { background-image: url(../images/brasato/preview.png); background-repeat: no-repeat; background-position: left; padding-left:18px;}
+	a.b_preview:focus, a.b_preview:hover{ background-image: url(../images/brasato/preview_over.png); }	
+	fieldset a.b_preview, div.b_tabbedpane_wrapper a.b_preview { position: absolute;}
+	
+/*	div.b_tabbedpane_wrapper a.b_preview {background:url(../images/brasato/preview.png); background-repeat: no-repeat; background-position: center left; padding-left: 16px;}*/
+/*	div.b_tabbedpane_wrapper a.b_preview:hover {background:url(../images/brasato/preview_over.png); background-repeat: no-repeat; background-position: center left; padding-left: 16px;}*/
+	div.b_module_singlepage_wrapper a.b_content_edit {position:absolute; top:0; right:20px; display: inline; background: url(../images/brasato/page_edit.png) no-repeat top left; width: 16px; height: 16px; margin: 3px; }
+	div.b_module_singlepage_wrapper a.b_content_edit:hover {background-image: url(../images/brasato/page_edit_over.png) }
+	div.b_module_singlepage_wrapper a.b_content_download { position:absolute; top:0; z-index:10; background: url(../images/brasato/download.png) no-repeat top left; padding-left: 20px; margin-top:3px; min-height:19px; height:19px; }
+	div.b_module_singlepage_wrapper a.b_content_download:hover { background-image: url(../images/brasato/download_over.png);}
+	div.b_titled_wrapper div.b_module_singlepage_wrapper a.b_content_download { position:relative; padding-bottom:3px;}
+	div.b_titled_wrapper div.b_module_singlepage_wrapper div.b_iframe_wrapper { margin-top:3px; }
+	/* CONTENT POPUP */
+	#b_content_popup {float: right; background: url(../images/brasato/undock.png) no-repeat top left; width: 16px; height: 16px; margin: 3px;}
+	#b_content_popup:hover { background-image: url(../images/brasato/undock_over.png); }
+	
+	/* FOOTER elements */	
+	/* top link */
+	#b_footer a#b_toplink {	position: absolute; top: -2em; right: 5px; background: transparent url(../images/brasato/arrow_up.png) 0 50% no-repeat; padding-left: 10px; z-index: 5;}
+	#b_footer a#b_toplink:focus,
+	#b_footer a#b_toplink:hover,
+	#b_footer a#b_toplink:active { background-image: url(../images/brasato/arrow_up_over.png); text-decoration:underline;}
+	/* the footer content */
+	#b_footer_user { float: left; line-height: 16px; }
+	#b_footer_user a.b_ajax {background: url(../images/brasato/ajax.png) no-repeat; width: 20px; height: 16px; display: block; float: left; }
+	#b_footer_user a.b_ajax:hover {background-image: url(../images/brasato/ajax_over.png); }
+	#b_footer_version {float: right; display: block;}
+	#b_footer_powered { text-align: center; }
+	
+	/* DEVELOPMENT TOOL */
+	a.b_dev { position: absolute; left: 0; top: 0; z-index:4000; background: red url(../images/brasato/bug.png) no-repeat; width: 16px; height: 16px; border: 1px solid #000;}
+	#b_devcon_main { background-color: #ccddff; position:absolute; z-index:4000; top:10px; left: 5%; width:90%; text-align: left; border: 1px solid #000}
+	#b_devcon_handle { cursor:move; background: blue url(../images/brasato/bug.png) no-repeat 4px 50%; line-height: 2em; padding-left: 24px; color:white; }
+	a#b_devcon_handle_collapse {cursor:pointer; background: url(../images/brasato/collapse.gif) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+	a#b_devcon_handle_expand {cursor:pointer; background: url(../images/brasato/expand.gif) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+	a.b_devcon_handle_close {cursor:pointer; background: url(../images/brasato/close.gif) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+	#b_devcon_content {font-size: 90%;  padding: 5px; border-top: 1px solid #000; background-color: #ccddff;}
+	#b_devcon_content ul { float: left; margin: 0; padding: 0; list-style: none; white-space: nowrap;}
+	#b_devcon_content li { margin: 0; padding: 0 10px 0 0; float: left}
+	#b_devcon_content fieldset {border: 1px dotted #000; margin: 10px 0 0 0; padding: 5px; }
+	#b_devcon_mode { width: 1em; height: 1em; float: left; border:1px solid #000; margin-right: 5px;} /* bgcolor defined programatically */
+	#b_js_log textarea#o_debug_cons { width: 99%; height: 15em; font-family: monospace; font-size: 110%; margin: 5px 0 5px 0;}
+	#b_devcon_compdump {}
+	
+	/* WIZARD */
+	div.b_wizard { }
+	div.b_wizard div.b_wizard_header_wrapper { background: #C7CCD6 url(../images/brasato/generic/window_head.png) repeat-x top left; }
+	div.b_wizard div.b_wizard_header { background: url(../images/brasato/generic/window_head_right.png) no-repeat top right; position: relative; }
+	div.b_wizard div.b_wizard_header_title {background: url(../images/brasato/generic/window_head_left.png) no-repeat top left; min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px; color: #4F576A; }
+	div.b_wizard div.b_wizard_header_title a.b_link_close { top:4px; right: 4px; background: url(../images/brasato/close.png); background-repeat: no-repeat; }
+	div.b_wizard div.b_wizard_header_title a.b_link_close:hover { top:4px; right: 4px; background: url(../images/brasato/close_over.png); background-repeat: no-repeat; }	
+	div.b_wizard div.b_wizard_header_title strong { font-weight: bold; }	
+	div.b_wizard div.b_wizard_steps_wrapper {border-left: 1px solid #9BA3B5; border-right: 1px solid #9BA3B5; clear:both; width:auto; padding: 0 4px 0 4px; background: #C7CCD6;}
+	div.b_wizard div.b_wizard_steps_content { background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; }
+	div.b_wizard div.b_wizard_steps_list { width: 20em; padding: 0; color: #4F576A;}
+	div.b_wizard div.b_wizard_steps_list ol { list-style-type: decimal; z-index: 14; font-size: 95%; padding: 1em 5px 5px;}
+	div.b_wizard div.b_wizard_steps_list li { line-height: 1.5em; white-space: normal;}
+	div.b_wizard div.b_wizard_steps_list li.b_wizard_steps_current { font-weight: bold; }		
+	div.b_wizard div.b_wizard_steps_list li a { color: #4F576A;}
+	div.b_wizard div.b_wizard_steps_list li a:hover { color: #4F576A; background: transparent; text-decoration: underline}
+	div.b_wizard div.b_wizard_steps_list li .b_disabled { color: #4F576A; border: 0; background: transparent; padding:0; margin:0; white-space: normal; font-style: italic;}
+	div.b_wizard div.b_wizard_steps_list li.b_wizard_steps_current .b_disabled { font-style: normal; }		
+	div.b_wizard div.b_wizard_steps_current { border-left: 20em solid #C7CCD6; } 
+	div.b_wizard div.b_wizard_steps_current_inner { border-bottom: 1px solid #fff; border-top: 1px solid #9BA3B5; padding: 1em;  }		
+	div.b_wizard div.b_wizard_steps_current_content {min-height: 300px; position: relative; }		
+	div.b_wizard div.b_wizard_footer_wrapper { background: #C7CCD6; border-left: 1px solid #9BA3B5; border-right: 1px solid #9BA3B5; border-bottom: 1px solid #4F576A; }
+	div.b_wizard div.b_wizard_footer div.b_button_group { text-align: left; padding: 0.5em 1em 0.5em 20em; margin: 0; }	
+	span.b_wizard_button_prev:before, a.b_wizard_button_prev span:before { content: "< ";}
+	span.b_wizard_button_next:after, a.b_wizard_button_next span:after { content: " >";}
+	a.b_wizard_button_finish, span.b_wizard_button_finish {margin-left: 3em;}
+	a.b_wizard_button_cancel, span.b_wizard_button_cancel { margin-left: 3em; }
+	.b_wizard_table_changedcell { font-style: italic; font-weight: bold; background: url(../images/brasato/new.png) no-repeat; padding-left: 18px;}
+	/* OLD WIZARD */
+	div.b_legacy_wizard { }
+	div.b_legacy_wizard_steps { float: right; display:inline; }
+	/* the following classes are used together with b_legacy_wizard_step_icon */
+	.b_legacy_wizard_step_a1 {	background-image: url(../images/brasato/wizard/1a.png); }
+	.b_legacy_wizard_step_a2 {	background-image: url(../images/brasato/wizard/2a.png);}
+	.b_legacy_wizard_step_a3 {	background-image: url(../images/brasato/wizard/3a.png);}
+	.b_legacy_wizard_step_a4 {	background-image: url(../images/brasato/wizard/4a.png);}
+	.b_legacy_wizard_step_a5 {	background-image: url(../images/brasato/wizard/5a.png);}
+	.b_legacy_wizard_step_a6 {	background-image: url(../images/brasato/wizard/6a.png);}
+	.b_legacy_wizard_step_a7 {	background-image: url(../images/brasato/wizard/7a.png);}
+	.b_legacy_wizard_step_a8 {	background-image: url(../images/brasato/wizard/8a.png);}
+	.b_legacy_wizard_step_a9 {	background-image: url(../images/brasato/wizard/9a.png);}
+	.b_legacy_wizard_step_p1 {	background-image: url(../images/brasato/wizard/1p.png);}
+	.b_legacy_wizard_step_p2 {	background-image: url(../images/brasato/wizard/2p.png);}
+	.b_legacy_wizard_step_p3 {	background-image: url(../images/brasato/wizard/3p.png);}
+	.b_legacy_wizard_step_p4 {	background-image: url(../images/brasato/wizard/4p.png);}
+	.b_legacy_wizard_step_p5 {	background-image: url(../images/brasato/wizard/5p.png);}
+	.b_legacy_wizard_step_p6 {	background-image: url(../images/brasato/wizard/6p.png);}
+	.b_legacy_wizard_step_p7 {	background-image: url(../images/brasato/wizard/7p.png);}
+	.b_legacy_wizard_step_p8 {	background-image: url(../images/brasato/wizard/8p.png);}
+	.b_legacy_wizard_step_p9 {	background-image: url(../images/brasato/wizard/9p.png);}
+	
+	/* FILE TYPES */
+	/* first the default that is used as base class. will be overriden by following classes */
+	.b_filetype_file { 	background-image: url(../images/brasato/doc.png) ! important; }
+	a.b_filetype_file:hover { background-image: url(../images/brasato/doc_over.png) ! important; }	
+	/* filesystem icons, mark important to override ext definitions */
+	.b_filetype_avi_icon { background-image: url(../images/brasato/movie.png) ! important; }
+	a.filetype_avi_icon:hover { background-image: url(../images/brasato/movie_over.png) ! important; }
+	.b_filetype_bat_icon, a.b_filetype_bat_icon:hover { background-image: url(../images/brasato/gear.png) ! important; }
+	.b_filetype_bmp { background-image: url(../images/brasato/image.png) ! important; }
+	a.b_filetype_bmp:hover { background-image: url(../images/brasato/image_over.png) ! important; }
+	.b_filetype_css, a.b_filetype_css:hover { background-image: url(../images/brasato/css.png) ! important; }
+	.b_filetype_doc, .b_filetype_docx { background-image: url(../images/brasato/word.png) ! important; }
+	a.b_filetype_doc:hover, a.b_filetype_docx:hover { background-image: url(../images/brasato/word_over.png) ! important; }
+	.b_filetype_dvi { background-image: url(../images/brasato/movie.png) ! important; }
+	a.b_filetype_dvi:hover { background-image: url(../images/brasato/movie_over.png) ! important; }
+	.b_filetype_exe, a.b_filetype_exe:hover { background-image: url(../images/brasato/gear.png) ! important; }
+	div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_filetype_folder_open { background-image: url(../images/brasato/folder_open.png)  ! important; }	
+	.b_filetype_folder, a.b_filetype_folder:hover  { background-image: url(../images/olat/folder_small.png)  ! important; }
+	.b_filetype_gif { background-image: url(../images/brasato/image.png) ! important; }
+	a.b_filetype_gif:hover { background-image: url(../images/brasato/image_over.png) ! important; }
+	.b_filetype_gz, a.b_filetype_gz:hover { background-image: url(../images/brasato/zip.png) ! important; }
+	.b_filetype_htm, .b_filetype_html, a.b_filetype_htm:hover, a.b_filetype_html:hover { background-image: url(../images/brasato/html.png) ! important; }
+	.b_filetype_jpeg, .b_filetype_jpg { background-image: url(../images/brasato/image.png) ! important; }
+	a.b_filetype_jpeg:hover, a.b_filetype_jpg:hover { background-image: url(../images/brasato/image_over.png) ! important; }
+	.b_filetype_log { background-image: url(../images/brasato/doc.png) ! important; }
+	.b_filetype_midi { background-image: url(../images/brasato/music.png) ! important; }
+	a.b_filetype_midi:hover { background-image: url(../images/brasato/music_over.png) ! important; }
+	.b_filetype_mov { background-image: url(../images/brasato/movie.png) ! important; }
+	a.b_filetype_mov:hover { background-image: url(../images/brasato/movie_over.png) ! important; }
+	.b_filetype_mp3,.b_filetype_m3u { background-image: url(../images/brasato/music.png) ! important; }
+	a.b_filetype_mp3:hover,a.b_filetype_m3u:hover { background-image: url(../images/brasato/music_over.png) ! important; }
+	.b_filetype_mpeg,.b_filetype_mpg { background-image: url(../images/brasato/movie.png) ! important; }
+	a.b_filetype_mpeg:hover,a.b_filetype_mpg:hover { background-image: url(../images/brasato/movie_over.png) ! important; }
+	.b_filetype_odp { background-image: url(../images/brasato/opendoc_pres.png) ! important; }
+	a.b_filetype_odp:hover { background-image: url(../images/brasato/opendoc_pres_over.png) ! important; }
+	.b_filetype_ods { background-image: url(../images/brasato/opendoc_sheet.png) ! important; }
+	a.b_filetype_ods:hover { background-image: url(../images/brasato/opendoc_sheet_over.png) ! important; }
+	.b_filetype_odt { background-image: url(../images/brasato/opendoc_text.png) ! important; }
+	a.b_filetype_odt:hover { background-image: url(../images/brasato/opendoc_text_over.png) ! important; }
+	.b_filetype_odg { background-image: url(../images/brasato/opendoc_graphic.png) ! important; }
+	a.b_filetype_odg:hover { background-image: url(../images/brasato/opendoc_graphic_over.png) ! important; }
+	.b_filetype_odf { background-image: url(../images/brasato/opendoc_math.png) ! important; }
+	a.b_filetype_odf:hover { background-image: url(../images/brasato/opendoc_math_over.png) ! important; }
+	.b_filetype_pdf { background-image: url(../images/brasato/pdf.png) ! important; }
+	a.b_filetype_pdf:hover { background-image: url(../images/brasato/pdf_over.png) ! important; }
+	.b_filetype_png { background-image: url(../images/brasato/image.png) ! important; }
+	a.b_filetype_png:hover { background-image: url(../images/brasato/image_over.png) ! important; }
+	.b_filetype_ppt { background-image: url(../images/brasato/ppt.png) ! important; }
+	a.b_filetype_ppt:hover { background-image: url(../images/brasato/ppt_over.png) ! important; }
+	.b_filetype_pptx { background-image: url(../images/brasato/ppt.png) ! important; }
+	a.b_filetype_pptx:hover { background-image: url(../images/brasato/ppt_over.png) ! important; }
+	.b_filetype_ps { background-image: url(../images/brasato/pdf.png) ! important; }
+	a.b_filetype_ps:hover { background-image: url(../images/brasato/pdf_over.png) ! important; }
+	.b_filetype_qt,.b_filetype_ra,.b_filetype_ram { background-image: url(../images/brasato/movie.png) ! important; }
+	a.b_filetype_qt:hover,a.b_filetype_ra:hover,a.b_filetype_ram:hover { background-image: url(../images/brasato/movie_over.png) ! important; }
+	.b_filetype_readme { background-image: url(../images/brasato/doc.png) ! important; }
+	.b_filetype_rtf { background-image: url(../images/brasato/word.png) ! important; }
+	a.b_filetype_rtf:hover { background-image: url(../images/brasato/word_over.png) ! important; }
+	.b_filetype_tar,.b_filetype_tgz,a.b_filetype_tar:hover,a.b_filetype_tgz:hover { background-image: url(../images/brasato/zip.png) ! important; }
+	.b_filetype_tiff { background-image: url(../images/brasato/image.png) ! important; }
+	a.b_filetype_tiff:hover { background-image: url(../images/brasato/image_over.png) ! important; }
+	.b_filetype_txt { background-image: url(../images/brasato/doc.png) ! important; }
+	.b_filetype_wav { background-image: url(../images/brasato/music.png) ! important; }
+	a.b_filetype_wav:hover { background-image: url(../images/brasato/music_over.png) ! important; }
+	.b_filetype_xls, .b_filetype_xlsx { background-image: url(../images/brasato/excel.png) ! important; }
+	a.b_filetype_xls:hover, a.b_filetype_xlsx:hover { background-image: url(../images/brasato/excel_over.png) ! important; }
+	.b_filetype_xml,a.b_filetype_xml:hover { background-image: url(../images/brasato/xml.png) ! important; }
+	.b_filetype_xsl,a.b_filetype_xsl:hover { background-image: url(../images/brasato/xsl.png) ! important; }
+	.b_filetype_zip,a.b_filetype_zip:hover { background-image: url(../images/brasato/zip.png) ! important; }	
+	
+	/* GENERAL ICONS */
+	/* icon containers. small:16x16px */
+	.b_with_small_icon_left { padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px; background-position: 0 50%; background-repeat: no-repeat; }
+	.b_with_small_icon_right { padding: 1px 20px 1px 0; vertical-align: middle; min-height: 16px; background-position: 100% 50%; background-repeat: no-repeat; }
+	option.b_with_small_icon_left { padding: 0 0 0 20px; vertical-align: middle; min-height: 11px; background-position: 0 50%; background-repeat: no-repeat; }
+	.b_small_icon { float: left; display: inline; width: 16px; height: 16px; background-position: 0 50%; background-repeat: no-repeat; }
+	a.b_small_icon:hover { background-color: transparent; }
+	/* icons */
+	.b_info_icon { background-image: url(../images/brasato/comment.png)}
+	.b_warn_icon { background-image: url(../images/brasato/warn.png)}
+	.b_error_icon { background-image: url(../images/brasato/error.png)}
+	.b_new_icon { background-image: url(../images/brasato/new.png)}
+	.b_institution_icon { background-image: url(../images/brasato/home.png) }
+	a.b_institution_icon:hover { background-image: url(../images/brasato/home_over.png) }
+	.b_group_icon { background-image: url(../images/brasato/group.png) }
+	a.b_group_icon:hover { background-image: url(../images/brasato/group_over.png) }
+	.b_user_icon { background-image: url(../images/brasato/user.png) }
+	a.b_user_icon:hover { background-image: url(../images/brasato/user_over.png) }	
+	.b_move_left_icon { background-image: url(../images/brasato/move_left.png); }
+	a.b_move_left_icon:hover { background-image: url(../images/brasato/move_left_over.png); }
+	.b_move_right_icon { background-image: url(../images/brasato/move_right.png);}
+	a.b_move_right_icon:hover { background-image: url(../images/brasato/move_right_over.png);}
+	.b_move_down_icon { background-image: url(../images/brasato/move_down.png); }
+	a.b_move_down_icon:hover { background-image: url(../images/brasato/move_down_over.png); }	
+	.b_move_up_icon { background-image: url(../images/brasato/move_up.png); }
+	a.b_move_up_icon:hover { background-image: url(../images/brasato/move_up_over.png); }
+	.b_delete_icon { background-image: url(../images/brasato/delete.png); }
+	a.b_delete_icon:hover { background-image: url(../images/brasato/delete_over.png); }
+	.b_share_icon { background-image: url(../images/brasato/share.png); }
+	a.b_share_icon:hover { background-image: url(../images/brasato/share_over.png); }
+	.b_status_enabled_icon { background-image: url(../images/olat/tick.png) }	
+	.b_status_disabled_icon { background-image: url(../images/olat/cross.png) }	
+	.b_edit_icon{ background-image: url(../images/brasato/page_edit.png); }
+	.b_add_icon { background-image: url(../images/brasato/plus-circle.png); }
+	.b_open_icon { background-image: url(../images/brasato/resultset_next.png); }
+	.b_open_icon:hover { background-image: url(../images/brasato/resultset_next_over.png); }
+	
+	/* tiny (12x12 px) icons */
+	.b_with_tiny_icon_left { padding-left: 14px; background-position: center left; background-repeat: no-repeat; }
+	/* the tiny icons */
+	.b_ext_tiny_link { background-image: url(../images/brasato/external_page_tiny.png)!important}
+	a.b_ext_tiny_link { background-image: url(../images/brasato/external_page_tiny_over.png)!important}		
+	
+	/* FLOTING STYLES */
+	.b_float_left { float: left; display:inline; margin-right: 1em; margin-bottom: 0.15em;  }
+	.b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
+	.b_center { text-align:center; margin: 0.5em auto }
+	/* CLEAR container: additonal to b_floatbox */
+	.b_floatscrollbox { overflow-x: auto; overflow-y: hidden;}
+	.b_overflowscrollbox { overflow: auto;}	
+	
+	/* SELECTION TREE*/
+	div.b_selectiontree { font-size: 95%; }
+    div.b_selectiontree div.b_selectiontree_item { clear: both; position: relative; top: 0; left: 0; vertical-align:middle; height: 16px; width: auto; }
+    div.b_selectiontree div.b_selectiontree_item:hover { background: #c4d0dc;}
+	div.b_selectiontree div.b_selectiontree_item div {width: 16px;	height: 16px; float: left; display: inline;	background-repeat: no-repeat; }    
+    div.b_selectiontree div.b_selectiontree_item div.b_selectiontree_content { float: left; display: inline; margin-left: 0.5em; width: auto; white-space: nowrap;}     
+    div.b_selectiontree div.b_selectiontree_content { width: auto;}
+	div.b_selectiontree div.b_selectiontree_content div { width: auto;}
+    div.b_selectiontree div.b_selectiontree_content input { width: 1em; height: 1em; padding: 0; margin: 0 0.5em; vertical-align: middle;}
+    div.b_selectiontree div.b_selectiontree_content input.b_radio { margin: 0;}
+	div.b_selectiontree .b_selectiontree_line {background-image: url(../images/brasato/tree/dots.gif); }
+    div.b_selectiontree .b_selectiontree_space {background-image: url(../images/brasato/tree/dots_spacer.gif); }
+    div.b_selectiontree .b_selectiontree_junction {background-image: url(../images/brasato/tree/dots_nt.gif); }
+    div.b_selectiontree .b_selectiontree_end {background-image: url(../images/brasato/tree/dots_nl.gif); }
+      			
+  	/* EXCEPTION */
+	#b_main.b_exception #b_col3_content { padding: 20px 10%;}	
+  	#b_nav_main li.b_exception div { background-image: url(../images/brasato/error.png) }
+  	#b_nav_main li.b_exception:hover div { background-image: url(../images/brasato/error_over.png) }
+  	div.b_exception #b_stacktrace { border: 1px solid #ACAAAA; overflow: scroll; margin: 0; padding: 1em; background: #fff url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left;}
+	div.b_exception a.b_exception_stacktrace_icon { background-image: url(../images/brasato/bug.png);}
+	div.b_exception .b_exception_mailform_icon { background-image: url(../images/brasato/email_go.png);}
+	#b_main.b_exception { background-image: url(../images/brasato/error_bg.png); background-position: top left; }
+	
+	/* RADEOX WIKI STYLES */
+	span.b_wiki_nobr { white-space: nowrap; }
+	hr.b_wiki_hr { border: 0; border-bottom: 1px solid #000000; }
+	/* TIMEMARKER */
+	span.b_wiki_timemarker_play { padding: 2px; }
+	span.b_wiki_timemarker_viewer{ padding: 2px; }
+	span.b_wiki_timemarker_viewer a { background: url(../images/brasato/movie.png) no-repeat left bottom; padding-left: 18px; }
+	/* override default body background */
+	body.b_timemarker { padding-top: 10px; background: white}
+	body.b_timemarker h3 { display: inline;  }
+	#b_timemarker { display: inline; text-align: left; background: white; }
+	#b_timemarker object { background: transparent;}
+	#b_timemarker embed { background: transparent;}
+	#b_timemarker input { padding: 2px 0; font-size: 90%; overflow: hidden;}
+	
+	/* preview background */
+	#b_main.b_preview { background-image: url(../images/brasato/editor/prevbg.png); background-position: top left; }
+	
+	/* EXT JS LIBRARY PATCHES */
+	div.b_ext_elem ol, div.b_ext_elem ul, div.b_ext_elem li {list-style: none; padding: 0; margin: 0}
+	div.b_ext_elem.x-tree .x-panel-body { background: transparent;}
+	div.b_ext_tooltip_wrapper {padding: 1px;}
+	.x-window-mc {font-size: 100%;}
+	/* EXT TREE */
+	div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url(../images/brasato/bullet_toggle_minus.png); background-position: 50% 50%;}
+	div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url(../images/brasato/bullet_toggle_plus.png);background-position: 50% 50%;}
+	div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url(../images/brasato/bullet_toggle_minus.png);background-position: 50% 50%;}
+	div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url(../images/brasato/bullet_toggle_plus.png);background-position: 50% 50%;}
+	div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../images/brasato/folder_small.png); }
+	div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../images/brasato/folder_open.png); }
+	div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../images/brasato/doc.png); }
+	div.b_ext_elem .x-tree-selected a.x-tree-node-anchor { border: 1px dotted #444; text-decoration: none; }
+	div.b_ext_elem .x-tree-node .x-tree-selected { background-color:#FFC266; }
+	/* GUI DEMO */
+	.div.b_ext_elem x-tree-node-icon.b_filetype_doc { background-image: url(../images/brasato/word.png); }	
+
+	/* LIVE LOG VIEWER */
+	#b_logviewer #b_logviewer_log { height: 25em; clear: both;}
+	#b_logviewer #b_logviewer_log div { white-space:nowrap; }
+
+	/* TRANSLATION TOOL */
+	div.b_translation_start div.b_translation_start_body, div.b_translation_edit div.b_translation_edit_body {margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA; }
+	div.b_translation_list div.b_translation_list_package {margin-bottom: 0.5em; padding: 1em 0 0.5em 0; border-bottom: 1px solid #ACAAAA; }
+	div.b_translation_list div.b_translation_list_package div.b_translation_package_icon {margin-bottom: 0.5em; border-bottom: 1px solid #ACAAAA; }
+	div.b_translation_edit div.b_button_group {text-align: center; margin: 1em 0 0 0;}
+	div.b_translation_edit div.b_translation_edit_head div.b_progress div.b_progress_bar { float: left; display: inline; }
+	div.b_translation_edit div.b_translation_edit_head div.b_progress div.b_progress_label { float: left; display: inline; padding: 0 0 0 1em; font-size: 90%; font-style: italic;}
+	div.b_translation_edit div.b_translation_edit_body textarea {width: 99% }
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_reference {} 
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_annotation {margin-top: 1em;} 
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_compare {margin-top: 1em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;} 
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_target {margin-top: 1em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;} 
+	div.b_translation_edit div.b_form_element textarea.b_form_element_disabled { color: #000; background: #EEEEEE; border: 1px solid #CDCBCB;}
+	div.b_translation_edit div.b_translation_edit_annotation h5 {font-weight: normal; font-size: 100%; font-style: italic;}
+	div.b_translation_edit div.b_translation_edit_annotation textarea {font-style: italic;}
+	div.b_translation_edit div.b_translation_refKey { background-image: url(../images/brasato/find.png); vertical-align: middle; background-color: #eee; border:1px solid #ACAAAA; margin-right: 1%; }
+	div.b_translation_edit div.b_translation_refKey  code { line-height: 1em; vertical-align: middle;}
+	div.b_translation_edit div.b_translation_refKey  span { line-height: 1em; font-style: italic;}
+	div.b_translation_config span.b_translation_status, ul.b_translation_status span.b_translation_status { position: absolute; right:1em; }
+	ul.b_translation_status { column-count:2; -moz-column-count:2; list-style: none;}
+	ul.b_translation_status li { position: relative;}	
+
+	.b_translation_package_icon { background-image: url(../images/brasato/folder_open.png)  ! important; }
+	.b_translation_item_icon { background-image: url(../images/brasato/doc.png)  ! important; }
+	.b_translation_search_icon { background-image: url(../images/brasato/search.png)  ! important; }
+	/* inline translation tool */	
+	span.b_translation_i18nitem { position: relative ! important; }
+	span.b_translation_i18nitem a.b_translation_i18nitem_launcher { position: absolute ! important; z-index: 100 ! important; width: 16px ! important; height: 16px ! important; top: 0 ! important; left: 5px ! important; background: #eee url(../images/brasato/edit_metadata.png) no-repeat ! important; border: 1px solid #6E6E6E ! important;	-moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; padding: 0 ! important}
+	/* lang selector: make sure you match the country flag, not always the same as the lang code */
+	option.b_translation_overlay { }
+	.b_flag_en {background-image: url(../images/flags/gb.png)} 	
+	.b_flag_de {background-image: url(../images/flags/de.png)} 	
+	.b_flag_fr {background-image: url(../images/flags/fr.png)} 	
+	.b_flag_it {background-image: url(../images/flags/it.png)} 	
+	.b_flag_es {background-image: url(../images/flags/es.png)} 	
+	.b_flag_da {background-image: url(../images/flags/dk.png)} 	
+	.b_flag_cs {background-image: url(../images/flags/cz.png)} 	
+	.b_flag_el {background-image: url(../images/flags/gr.png)} 	
+	.b_flag_ru {background-image: url(../images/flags/ru.png)} 	
+	.b_flag_pl {background-image: url(../images/flags/pl.png)} 	
+	.b_flag_zh_CN {background-image: url(../images/flags/cn.png)} 	
+	.b_flag_zh_TW {background-image: url(../images/flags/tw.png)} 	
+	.b_flag_lt {background-image: url(../images/flags/lt.png)} 	
+	.b_flag_fa {background-image: url(../images/flags/ir.png)} 	
+	.b_flag_pt_PT {background-image: url(../images/flags/pt.png)} 	
+	.b_flag_pt_BR {background-image: url(../images/flags/br.png)} 	
+	.b_flag_tr {background-image: url(../images/flags/tr.png)} 	
+	.b_flag_hu {background-image: url(../images/flags/hu.png)} 	
+	.b_flag_sq {background-image: url(../images/flags/al.png)} 	
+	.b_flag_in {background-image: url(../images/flags/id.png)} 	
+	.b_flag_ar {background-image: url(../images/flags/eg.png)} 	
+	.b_flag_rm {background-image: url(../images/flags/rm.png)} 	
+	.b_flag_af {background-image: url(../images/flags/za.png)} 	
+	.b_flag_iw {background-image: url(../images/flags/iw.png)} 	
+	.b_flag_vi {background-image: url(../images/flags/vn.png)} 
+	.b_flag_mn {background-image: url(../images/flags/mn.png)} 
+	.b_flag_iw {background-image: url(../images/flags/il.png)} 
+	.b_flag_ko {background-image: url(../images/flags/kr.png)} 
+	.b_flag_nl_NL {background-image: url(../images/flags/nl.png)}
+	.b_flag_jp {background-image: url(../images/flags/jp.png)}
+	.b_flag_nb_NO {background-image: url(../images/flags/no.png)}
+	.b_flag_et_EE {background-image: url(../images/flags/ee.png)}
+    .b_flag_bg {background-image: url(../images/flags/bg.png)}
+    .b_flag_hi_IN_ASIA {background-image: url(../images/flags/in.png)}
+  	.b_flag_ar_LB {background-image: url(../images/flags/lb.png)}     
+	/* frentix footer */
+	#b_footer_powered a { display: inline; }
+	#b_footer_powered { width: auto; background: none; }
+	
+
+	/* ePortfolio */
+	.b_artefact { margin: 5px; border: 1px solid #ddd; padding: 1em; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 1px 2px lightGrey; -moz-box-shadow: 0 1px 2px lightGrey; -o-box-shadow: 0 1px 2px lightGrey; box-shadow: 0 1px 2px lightGrey; background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; }
+	.b_artefact div.b_actions { margin-top: 2em;}
+	.b_artefact div.b_desc { font-style: italic; margin: 1em 0; }
+	.b_ep_artAttribLink { background-image: url(../images/brasato/table/table_manage.png); }
+	.b_ep_artAttribLink:hover { background-image: url(../images/brasato/table/table_manage_over.png); }
+	div.b_artefact_closed { font-size:25px; float:right; background: url(../images/brasato/locked.png) top right no-repeat; }
+	div.b_eportfolio_preview_c100l .b_artefact { margin:3px; }
+	div.b_eportfolio_preview_c33l .b_artefact { font-size:85%; margin:3px; }
+	.b_ep_nolink { color: #000000; }
+	.b_ep_nolink:hover { color: #000000; text-decoration: none;  }
+	.b_ep_multiartefacts div.b_ep_add_message_with_arrow { position: relative; top: -50px; }
+	.b_ep_multiartefacts div.b_artefact_count { margin: 1em 0 1em 0;}
+	
+	div.b_portfolio_toc ul { margin: 0; }
+	div.b_portfolio_toc li { list-style-type: none; }
+	div.b_portfolio_toc li.level1 { font-size: 1.2em; margin: 1.2em 0 0.2em 0; border-bottom: 1px solid #ddd; }
+	div.b_portfolio_toc li.level2 { padding-left: 20px; font-size: 1.1em; border-bottom: 1px dotted #ddd; }
+	div.b_portfolio_toc li.level3 { padding-left: 40px; }
+	div.b_portfolio_toc li a  { font-size: 0.8em; text-decoration: none; }
+	div.b_portfolio_toc .link { float: right; margin-right: 0px; }
+	div.b_portfolio_toc .commentlink { float: right; margin-right: 10%; }
+	div.b_portfolio_toc .type_artefact { font-style: italic; }	
+	.b_portfolio_toc .type_map, .b_portfolio_toc .type_page, .b_portfolio_toc .type_struct, .b_portfolio_toc .type_artefact { background-position: center left; background-repeat: no-repeat; padding-left: 20px; } 
+	
+	 a.b_eportfolio_add { background: url(../images/brasato/eportfolio/ep_add_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
+	 a.b_eportfolio_add:hover { background: url(../images/brasato/eportfolio/ep_add_icon_over.png) top left no-repeat; display:block; width:16px; height:16px; }
+	 a.b_eportfolio_add_again, span.b_eportfolio_add_again { background: url(../images/brasato/eportfolio/ep_add_again_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
+	 a.b_eportfolio_add_again:hover, span.b_eportfolio_add_again:hover { background: url(../images/brasato/eportfolio/ep_add_again_icon_over.png) top left no-repeat; display:block; width:16px; height:16px; }
+	 a.b_eportfolio_link { background: url(../images/brasato/eportfolio/ep_link_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
+	 a.b_eportfolio_link:hover { background: url(../images/brasato/eportfolio/ep_link_icon_over.png) top left no-repeat; display:block; width:16px; height:16px; }
+	ul.b_eportfolio_maps { margin: 0; padding: 0; }
+	ul.b_eportfolio_maps li { display: block; float: left; position: relative; width: 195px; height: 320px; padding: 60px 60px 40px 65px; margin: 0.5em; background: url(../images/brasato/eportfolio/eportfolio_map_default.png) top left no-repeat; -moz-border-radius: 4px 10px 10px 4px; -webkit-border-radius: 4px 10px 10px 4px; -o-border-radius: 4px 10px 10px 4px; border-radius: 4px 10px 10px 4px; -webkit-box-shadow: 0 1px 3px lightGray; -moz-box-shadow: 0 1px 3px lightGray; -o-box-shadow: 0 1px 3px lightGray; box-shadow: 0 1px 3px lightGray; }
+	ul.b_eportfolio_maps li .b_map_info { position: absolute; bottom: 40px; width: inherit; font-size: 0.9em; }
+	li.default .b_map_info p { color: #bbb; }
+	li.comic .b_map_info p { color: #88a5c4; }
+	li.leather .b_map_info p { color: #C2A074; }
+	ul.b_eportfolio_maps li .b_map_info a.b_open_icon { font-size: 1.2em; position: absolute; bottom: 170px; right: -10px; }
+	ul.b_eportfolio_maps li.leather { background: url(../images/brasato/eportfolio/eportfolio_map_leather.png) top left no-repeat; border: none; }
+	ul.b_eportfolio_maps li.leather a { color: #fad9a4; }
+	ul.b_eportfolio_maps li.comic { background: url(../images/brasato/eportfolio/eportfolio_map_comic.png) top left no-repeat; border: none; }
+	ul.b_eportfolio_maps li.template.default { background-image: url(../images/brasato/eportfolio/eportfolio_map_default_template.png); }	
+	ul.b_eportfolio_maps li.template.comic { background-image: url(../images/brasato/eportfolio/eportfolio_map_comic_template.png); }	
+	ul.b_eportfolio_maps li.template.leather { background-image: url(../images/brasato/eportfolio/eportfolio_map_leather_template.png); }	
+		
+	.b_eportfolio_map { background: white; padding: 1.5em; min-height: 30em;}
+	.b_eportfolio_map .b_ep_relative { position: relative; }
+	.b_eportfolio_map a.b_eportfolio_add_link { float: right; display:inline; background-repeat:no-repeat; margin-left: 0.5em; width: 16px; height: 16px; }
+	.b_eportfolio_map div.b_eportfolio_add_link { float:left; display:inline; margin-top:2px; }
+	.o_ep_toc_editor .b_eportfolio_add_link { float: left; }
+	.b_eportfolio_map .b_eportfolio_add_link:hover { text-decoration: none; }
+	.b_eportfolio_map .b_eportfolio_comment_link { float: right; display:inline; margin-right:5px; }
+	
+	.b_ep_tag_cloud { padding: 1em 0 1em 0; border-bottom: 1px solid #ccc; }
+	
+	.default div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
+	.default div.b_pagination { float: none; position: static; width: 100%; }
+	.default div.b_pagination ul { margin: 0; }
+	.default div.b_pagination li { float: left; display: inline; width: auto; margin: 2px 2px 2px 0; padding: 0; background: #FAFAFA; -webkit-border-radius: 7px 7px 0 0; -moz-border-radius: 7px 7px 0 0; -o-border-radius: 7px 7px 0 0; border-radius: 7px 7px 0 0; }
+	.default div.b_pagination li span, .default div.b_pagination li a, .default  div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
+	.default div.b_pagination li.b_disabled { padding-bottom: 2px; margin-bottom: 0; background: #f4f4f4; }
+	.default div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+	.default div.b_pagination li a { padding: 1em; padding: 5px 8px; }
+	.default div.b_eportfolio_page, .default div.b_portfolio_toc, .default div.b_eportfolio_edit { background-image: none; }	
+
+	.comic {font-family: 'Comic Sans MS', 'Comic Sans', fantasy;}
+	.b_eportfolio_map.comic { background: #a2c3e8 none; padding: 30px; -webkit-border-top-right-radius: 10px; -moz-border-radius-topright: 10px; border-top-right-radius: 10px; }
+	.comic div.b_pagination { position: absolute; right: 0; width: 17%; max-height: 100%; overflow-x: hidden; overflow-y: auto; z-index: 100; }
+	.comic .b_ep_relative > div:last-child { position: relative; }
+	.comic div.b_ep_actualpage { width: 85%; margin-top: 1em; }
+	.comic div.b_pagination ul { margin-top: 30px; margin-left: 0px; z-index: 1; }
+	.comic div.b_pagination li  { width: 87%; background: url(../images/brasato/eportfolio/postit.png) center right; padding: 0; margin-bottom: 1em; margin-left: 13%; list-style-type: none; }
+	.comic div.b_pagination li span.b_disabled, .comic div.b_pagination li a span { display: block; padding: 20px 15px 20px 10px; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
+	.comic div.b_pagination li span, .comic div.b_pagination li a, .comic div.b_pagination li { white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
+	.comic div.b_pagination li.b_disabled { z-index: 101; margin-left: 0; width: 100%; }
+	.comic div.b_pagination li .b_disabled { color: black; font-weight: bold; }
+	.comic div.b_pagination li.b_toc { background-image: url(../images/brasato/eportfolio/postit_pink.png); }
+	
+	.b_eportfolio_page, .b_portfolio_toc, .b_eportfolio_edit { min-height: 40em; background: #f4f4f4 url(../images/brasato/eportfolio/eportfolio_page_corner.png) top right no-repeat; padding: 1em; -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -o-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
+	.b_eportfolio_page .b_eportfolio_structure > h5 { border-bottom: 1px solid #ddd; margin-top: 1.2em; }
+	.b_eportfolio_edit {  margin-top: 1.5em; }
+	
+	.leather {font-family: Palatino, Georgia, serif;}
+	.b_eportfolio_map.leather { background: url(../images/brasato/eportfolio/light-leather-tile.jpg); }
+	.leather div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
+	.leather .b_map_header h4, .leather .b_map_header p, .leather .b_map_header a.b_eportfolio_add_link, .leather .b_map_header a.b_eportfolio_comment_link { color: white; }
+	.leather div.b_pagination { float: none; position: static; width: 100%; }
+	.leather div.b_pagination ul { margin: 0; }
+	.leather div.b_pagination li { float: left; display: inline; width: auto; margin: 0 2px 0 0; padding: 0; background: #ddd; -webkit-border-radius: 7px 7px 0 0; -moz-border-radius: 7px 7px 0 0; -o-border-radius: 7px 7px 0 0; border-radius: 7px 7px 0 0; }
+	.leather div.b_pagination li span, .leather div.b_pagination li a, .leather div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
+	.leather div.b_pagination li.b_disabled { padding: 0; background: #f4f4f4; }
+	.leather div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+	.leather div.b_pagination li a { padding: 1em; padding: 5px 8px; }
+	.leather div.b_eportfolio_page, .leather div.b_portfolio_toc, .leather div.b_eportfolio_edit { background-image: none; }	
+	
+	.b_eportfolio.b_artefacts hr.b_ep_filter_spacer { height: 10px; background: url(../images/brasato/eportfolio/divider-arrow-down.png) 25px -12px no-repeat; border: none; border-top: 1px solid #ccc; margin: 2em 0 1em;  }
+	.b_eportfolio.b_artefacts .b_ep_content { background: white; padding: 0 1em 1em 1em; margin-top: 1.5em; }
+	.b_eportfolio.b_artefacts .b_ep_content .b_ep_filter { padding: 0; width:80% }
+	.b_ep_filter { float: left; }
+	.b_ep_viewmode { float: right; width:15% }
+	.b_ep_add_artefact { float: right; }
+	.b_ep_content div.b_ep_viewmode div.b_form_element_label { width: auto; }
+	.b_eportfolio.b_artefacts div.b_segments_container { top: -20px; margin-bottom: -20px; }
+	.b_ep_tagbrowser { width: 30%; margin-right: 0px; }
+	.b_ep_tagbrowser_view { width: 68%; margin-left: 0px; } 
+	
+	.b_ep_collection_icon { background-image: url(../images/brasato/eportfolio/ep_collection.png) ! important; }
+	a.b_ep_collection_icon:hover { background-image: url(../images/brasato/eportfolio/ep_collection_over.png) ! important; }
+	.b_ep_map_icon, .b_portfolio_toc .type_map { background-image: url(../images/brasato/eportfolio/ep_map.png) ! important; }
+	a.b_ep_map_icon:hover, a.b_portfolio_toc:hover a.type_map:hover { background-image: url(../images/brasato/eportfolio/ep_map_over.png) ! important; }
+	.b_ep_page_icon, .b_portfolio_toc .type_page { background-image: url(../images/brasato/eportfolio/ep_page.png) ! important; }
+	a.b_ep_page_icon:hover, a.b_portfolio_toc:hover a.type_page:hover { background-image: url(../images/brasato/eportfolio/ep_page_over.png) ! important; }
+	.b_ep_page_icon.b_eportfolio_add_link { background-image: url(../images/brasato/eportfolio/ep_page_add.png) ! important; }
+	a.b_ep_page_icon.b_eportfolio_add_link:hover { background-image: url(../images/brasato/eportfolio/ep_page_add_over.png) ! important; }
+	.b_ep_struct_icon, .b_portfolio_toc .type_struct { background-image: url(../images/brasato/eportfolio/ep_struct.png) ! important; }
+	a.b_ep_struct_icon:hover, a.b_portfolio_toc:hover a.type_struct:hover { background-image: url(../images/brasato/eportfolio/ep_struct_over.png) ! important; }
+	.b_ep_struct_icon.b_eportfolio_add_link { background-image: url(../images/brasato/eportfolio/ep_struct_add.png) ! important; }
+	a.b_ep_struct_icon.b_eportfolio_add_link:hover { background-image: url(../images/brasato/eportfolio/ep_struct_add_over.png) ! important; }
+	.type_artefact { background-image: url(../images/brasato/eportfolio/ep_icon.png) ! important; }
+	
+	div.b_eportfolio_collect_restriction { margin-top:5px; }
+	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_el { float:left; margin-right:5px; }
+	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_link { float:left; margin-right:5px; }
+	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_link a { padding-left:0px; text-decoration:none }
+	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_link a:hover { text-decoration:none }
+	div.b_eportfolio_restriction_wrapper a.b_togglebox_opened { z-index:10; display:block; width:9px; height:9px; padding:0; margin-left:12px; }
+	div.b_eportfolio_restriction_wrapper a.b_togglebox_closed { display:block; width:9px; height:9px; padding:0; margin-left:12px; }
+	div.b_eportfolio_restriction_wrapper p { padding:0 0 0 15px; margin:0; }
+	div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+  div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../images/olat/decorator_warn.png) no-repeat 3px 2px !important; }
+  div.b_eportfolio_restriction_passed div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #F0F0F0 !important; background:#FCFCFC url(../images/olat/decorator_ok.png) no-repeat 3px 2px !important; }
+  div.b_eportfolio_restriction_error div.b_togglebox_closed { background:transparent url(../images/olat/decorator_warn.png) no-repeat top left !important; }
+  div.b_eportfolio_restriction_passed div.b_togglebox_closed { background:transparent url(../images/olat/decorator_ok.png) no-repeat top left !important; }
+  div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content .b_togglebox_hide { display:none; }
+ 
+	.b_eportfolio_deadline_callout { width:300px; }
+	.b_ep_multiartefacts .b_c50l { clear: both; }
+	.b_eportfolio_fulltextsearch { float:left; }
+	.b_eportfolio_fulltextsearch div.b_form div.b_form_element_wrapper.b_form_horizontal { }
+	
+	.b_eportfolio_share_policy_wrapper { margin: 5px; border: 1px solid #ddd; padding: 1em; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.2); -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.2); background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; }
+	.b_eportfolio_share_policy_wrapper .b_float_right { text-align: right; }
+	.b_eportfolio_share_policy_wrapper a.bit-input { text-decoration: none; }
+	.b_eportfolio_share_policy div input, .b_eportfolio_share_policy div span, .b_eportfolio_share_policy div select { float: left; margin-right:5px; padding-right:5px; }
+	.b_eportfolio_share_policy div span.b_form_datechooser { background: url(../images/brasato/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px;}
+	.b_eportfolio_share_policy div span.b_form_datechooser:hover { background-image: url(../images/brasato/calendar_over.png)}
+	.b_eportfolio_share_policy .b_ep_share_date span { float: left; }
+	.b_eportfolio_share_policy_wrapper .b_eportfolio_share_policy { padding-left: 20px; background: url(../images/brasato/user.png) top left no-repeat; }
+	.b_eportfolio_share_policy_wrapper.policytype_group .b_eportfolio_share_policy { background-image: url(../images/brasato/group.png); }
+	.b_eportfolio_share_policy_wrapper.policytype_invitation .b_eportfolio_share_policy { background-image: url(../images/brasato/publish.png); }
+	.b_eportfolio_share_policy_wrapper.policytype_allusers .b_eportfolio_share_policy { background-image: url(../images/brasato/user_all.png); }
+	
+	div.b_ep_inline div input, div.b_ep_inline div span, div.b_ep_inline div select { float: left; margin-right:5px; padding-right:5px; }
+
+	
+	/* tagging */
+	.b_tag_list { background: url(../images/brasato/tag_icon.png) 5px 2px no-repeat !important; }
+	.b_tag_icon { background-image: url(../images/brasato/tag_icon.png); }
+	
+	div.b_tags { margin: 2em 0; }
+	div.b_tags div { padding: 0.5em 0 0 20px; }
+	div.b_tags span.b_tag { font-size: 80%; padding: 5px 2px 5px 2px;}
+	
+	div.o_ep_toc_editor div.b_subcl{ min-height: 35em;  }
+	div.o_ep_struct_editor div.b_subcr{ min-height: 35em; background: #FFF; padding-right: 1em; overflow-x: auto; }
+	div.b_struct_edit_btn { float: right; display:inline; }
+	div.b_struct_submit_assess_btn { float: right; display: inline; }
+	
+	/* TextboxList  */
+	*:first-child+html div.holder { padding-bottom: 2px; }
+	* html div.holder { padding-bottom: 2px; } /* ie7 and below */
+	.textbox-outer	{ list-style-type: none; margin-left: 0em; }
+	div.holder { font-size: 80%; }
+	.textboxlist-auto { position: absolute; width: 300px; overflow: show; }	
+
+	/* autocompleter bitbox (item) holder */
+	div.holder { min-width: 200px; width: auto!; margin: 0; overflow: hidden; height: auto !important; height: 1%; padding: 0px 0px 0; cursor: text;}
+	div.holder a { float: left; margin: 0 5px 4px 0; }
+	div.holder a.bit { text-decoration: none; color: black; }
+	div.holder a.bit:active, div.holder a.bit:focus { outline: none; }
+	div.holder a.bit-box, span.b_tag { -moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; border: 1px solid #CAD8F3; background: #DEE7F8; padding: 1px 5px 2px; padding-right: 15px; position: relative; }
+	div.holder a.bit-box-focus { border-color: #598BEC; background: #598BEC; color: #fff; }
+	div.holder a.bit-input .maininput {  } 
+	div.holder a.bit-input input { width: 100px; margin: 0; border: none; background: white; outline: 0; padding: 3px 0 2px; } /* no left/right padding here please */
+	div.holder a.bit-input input.smallinput { width: 20px; }
+	div.holder a.bit-hover { background: #BBCEF1; border: 1px solid #6D95E0; }
+	div.holder a.bit-box-focus { background: #598BEC; color: #fff; }
+	div.holder a.bit-box a.closebutton { position: absolute; right: 0; top: 5px	; display: block; width: 7px; height: 7px; font-size: 1px; background: url('../images/brasato/textboxlist/close.gif'); }
+	div.holder a.bit-box a.closebutton:hover { background-position: 7px; }
+	div.holder a.bit-box a.closebutton:active { outline: none }
+	div.holder a.bit-box-focus a.closebutton, div.holder a.bit-box-focus a.closebutton:hover { background-position: bottom; }
+	.b_wizard .textbox-outer { background: url(../images/brasato/tag_icon.png) top left no-repeat; }
+	.b_wizard div.holder a.bit-input input { background: #f8f8f8; padding: 0.4em; }
+
+	/* Autocompleter for textboxlist */
+	ol.textbox-outer {margin: 0; padding: 0;}
+	.textboxlist-auto { display: none; background: #eee; }
+	.textboxlist-auto .default { padding: 5px 7px; border: 1px solid #ccc; border-width: 0 1px 1px; }
+	.textboxlist-auto ul { display: none; margin: 0; padding: 0; overflow: auto; }
+	.textboxlist-auto ul li { padding: 5px 12px; z-index: 1000; cursor: pointer; margin: 0; list-style-type: none; border: 1px solid #ccc; border-width: 0 1px 1px; }
+	.textboxlist-auto ul li.loading-indicator { padding-left: 30px; background-position: 5px center; cursor: default; font-size: 100.01% ! important; line-height: 1.5em; }
+	.textboxlist-auto ul li.more-indicator { cursor: default; font-style: italic; }
+	.textboxlist-auto ul li em { font-weight: bold; font-style: normal; background: #ccc; }
+	.textboxlist-auto ul li.auto-focus { background: #4173CC; color: #fff; }
+	.textboxlist-auto ul li.auto-focus em { background: none; }
+	input.inputMessage { color: #AAA; font-size: 11px; }
+	
+	/* SEGMENTED VIEW */
+	div.b_segments_container { min-height: 25px; background: url(../images/brasato/divider.png) center top no-repeat; padding-top: 8px; position: relative; }
+	div.b_segments { clear:both; position: absolute; left: 50%; }
+	div.b_segments a { color: black; text-decoration: none; }
+	div.b_segments a:hover { text-decoration: none; }
+	div.b_segments ul { position: relative; left: -50%; list-style-type:none; margin: 0; }
+	div.b_segments ul li { float:left; padding: 2px 8px; margin:0px; border: 1px solid #aaa; border-left: none; display: inline-block; line-height: 1.5em; background: url(../images/brasato/toggle_off.png) top left repeat-x; }
+	div.b_segments ul li:hover { background: #ddd; }
+	div.b_segments ul li.b_segment_selected { background: url(../images/brasato/toggle_on.png) top left repeat-x; color: white; border: none; padding: 3px 8px; -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); -moz-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);	}
+	div.b_segments ul li.b_segment_selected a { color: white; }
+	div.b_segments ul li.b_segment_selected:hover { background: url(../images/brasato/toggle_on.png) top left repeat-x; }
+	div.b_segments ul li.b_segment_first { border-left: 1px solid #aaa; padding-left: 11px; -moz-border-radius-topleft: 13px; -webkit-border-top-left-radius: 13px; border-top-left-radius: 13px; -moz-border-radius-bottomleft: 13px; -webkit-border-bottom-left-radius: 13px; border-bottom-left-radius: 13px; }
+	div.b_segments ul li.b_segment_first.b_segment_selected { border-left: none; }
+	div.b_segments ul li.b_segment_last { padding-right: 11px; -moz-border-radius-topright: 13px; -webkit-border-top-right-radius: 13px; border-top-right-radius: 13px; -moz-border-radius-bottomright: 13px; -webkit-border-bottom-right-radius: 13px; border-bottom-right-radius: 13px; }
+	li.b_segment_selected + li.b_segment { border-left: 1px solid #aaa; }
+	div.b_segment_content { margin-top: 50px; clear:both; }
+	
+	
+}

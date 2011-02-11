@@ -1,0 +1,22 @@
+<fieldset class="b_clearfix">
+	<legend>$r.translate("nodeConfigForm.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-des.html","help.hover.des")
+	<div class="b_floatbox">
+		<div class="b_small b_float_right">Id: $nodeId</div>
+	</div>
+	$r.render("nodeConfigForm")
+	
+	
+	#b_togglebox_start("o_course_node_links" $r.translate("nodeEdit.links"))
+		<p>
+			$r.translate("nodeEdit.linksIntro")
+		</p>
+		$r.translate("nodeEdit.extLink"):
+		<pre>${extLink}</pre>
+		<br />
+		<br />
+		$r.translate("nodeEdit.intLink"):
+		<pre>${intLink}</pre>
+	#b_togglebox_end()
+	
+</fieldset>

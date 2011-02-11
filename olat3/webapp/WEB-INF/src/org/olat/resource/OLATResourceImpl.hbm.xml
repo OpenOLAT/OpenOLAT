@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.resource.OLATResourceImpl" table="o_olatresource">
+  		
+	<cache usage="read-write" />
+
+	<id name="key" type="long" column="resource_id"	unsaved-value="null">
+		<generator class="hilo"/>
+	</id>
+
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 	
+	<property name="resName" type="string" >
+		<column name="resname" not-null="true" length="50" unique-key="olat_resource" index="resname_idx9"/>
+	</property>    	
+
+	<property name="resId" type="long"> 
+		<column name="resid" not-null="true" unique-key="olat_resource" index="id_idx2" />    	
+	</property>    
+
+  </class>
+</hibernate-mapping>

@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ext="http://extjs.com/docs" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+ <!-- IE cache -->
+<meta http-equiv="pragma-directive" content="no-cache" />
+<meta http-equiv="cache-directive" content="no-cache" />
+<title>Timemarker</title>
+<!-- use default layout css here, no fancy layouting -->
+<link rel="StyleSheet" href="../themes/default/layout.css" type="text/css" media="screen" />
+<script type="text/javascript">
+/* <![CDATA[ */ 
+	// Parse startup parameters passed by OLAT 
+	// This file is started from the org.olat.core.util.radeox.MovieViewerMacro class
+	var is_input = document.URL.indexOf('?');	
+	if (is_input != -1) { 
+		addr_str = document.URL.substring(is_input+1, document.URL.length);
+		var nameValuePairs = addr_str.split("&");
+		
+		if (nameValuePairs[0].indexOf("maddress") != -1){
+			var nameValue = nameValuePairs[0].split("=");
+			var maddress = decodeURIComponent(nameValue[1]);
+		} else {
+			document.write("Error in url GET param maddress!");
+		}
+		if (nameValuePairs[1].indexOf("mname") != -1){
+			var nameValue = nameValuePairs[1].split("=");
+			var mname = decodeURIComponent(nameValue[1]);
+		} else {
+			document.write("Error in url GET param mname!");
+		}
+		if (nameValuePairs[2].indexOf("displayname") != -1){
+			var nameValue = nameValuePairs[2].split("=");
+			var displayname = decodeURIComponent(nameValue[1]);
+			if(displayname != "null" && displayname != "" && displayname != null){
+				document.title = displayname;
+			}
+		} else {
+			document.write("Error in url GET param displayname!");
+		}
+		if (nameValuePairs[3].indexOf("displayduration") != -1){
+			var nameValue = nameValuePairs[3].split("=");
+			var displayduration = decodeURIComponent(nameValue[1]);
+		} else {
+			document.write("Error in url GET param displayduration!");
+		}
+		if (nameValuePairs[4].indexOf("width") != -1){
+			var nameValue = nameValuePairs[4].split("=");
+			var width = nameValue[1];
+		} else {
+			document.write("Error in url GET param width!");
+		}
+		if (nameValuePairs[5].indexOf("height") != -1){
+			var nameValue = nameValuePairs[5].split("=");
+			var height = nameValue[1];
+		} else {
+			document.write("Error in url GET param height!");
+		}
+				
+	} else {
+		document.write("No values detected");
+	}
+	
+	
+	// Function to write movie viewer to the HTML. The movie viewer will get a movieinfo 
+	// object with the relevant movie parameters
+	function writeMovieViewerCode(doc, maddress, mname, displayname, displayduration, width, height) {
+		// title
+		if(displayname == "null" || displayname == null) displayname = "";
+		if(displayduration == "null" || displayduration == null) displayduration = "";
+		if (displayname != "" || displayduration != "") {
+			doc.write("<h3 class='b_with_small_icon_left b_filetype_mov'>");
+			if (displayname != "") {
+				doc.write(displayname);
+				if (displayduration != "") {
+					doc.write(": ");
+				}
+			}
+			if (displayduration != "") {
+				doc.write(displayduration);
+			}
+			doc.write("</h3><br /><br />");
+		}
+		// create callback URL that is passed to movie player as argument
+		// callback must containt full uri, including the protocol to work (http://myserver....)
+		var currloc = document.URL;
+		var callback = encodeURI(currloc.substring(0,currloc.lastIndexOf("/")) + "/timemarkercallback.html");
+		// movie object
+		doc.write("<object classid=\"clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B\"  width=\"" + width + "\" height=\"" + height + "\" codebase=\"http://www.apple.com/qtactivex/qtplugin.cab\">");
+		doc.write("<param name=\"SRC\" value=\"viewer.mov\">");
+		doc.write("<param name=\"CONTROLLER\" value=\"TRUE\">");
+		doc.write("<param name=\"AUTOPLAY\" value=\"FALSE\">");
+		doc.write("<param name=\"MOVIENAME\" value=\"" + mname + "\">");
+		doc.write("<param name=\"CACHE\" value=\"FALSE\">");
+		doc.write("<param name=\"MovieQTList\" value=\"<movieinfo><address>" + maddress + "</address><displayname>" + displayname + "</displayname><callback>" + callback + "</callback></movieinfo>\">");
+		doc.write("<embed");
+		doc.write(" src=\"viewer.mov\"");
+		doc.write(" width=\"" + width + "\" height=\"" + height + "\"");
+		doc.write(" controller=\"TRUE\"");
+		doc.write(" autoplay=\"FALSE\"");
+		doc.write(" moviename=\"" + mname + "\"");
+		doc.write(" cache=\"FALSE\"");
+		doc.write(" MovieQTList=\"<movieinfo><address>" + maddress + "</address><displayname>" + displayname + "</displayname><callback>" + callback + "</callback></movieinfo>\"");
+		doc.write(" type=\"video/quicktime\"");
+		doc.write(" pluginspage=\"http://www.apple.com/quicktime/download/\">");
+		doc.write("</embed>");
+		doc.write("</object>");
+		doc.write("<input type=\"text\" size=\"40\" id=\"o_movieButtonTag\" style=\" width: " + width + "px;\" />");
+	}
+	
+	// Method to create wiki play button tag with the given attributes. 
+	// The tag is written into an input element where the user can 
+	// copy/paste it to an OLAT forum
+	function o_playButtonTag(name, start, end, displayname, displayduration) {
+		// function called by timemarker quicktime movie to create a forum
+		// movie play button (fg) 
+	 	var buttonElement = document.getElementById("o_movieButtonTag");
+		if (buttonElement != null) {
+			var tag = "{movieButton:name=" + name + "|start=" + start + "|end=" + end + "|displayduration=" + displayduration + "}" + displayname + "{movieButton}";
+			buttonElement.value = tag;
+		}
+	}
+/* ]]> */
+</script>
+</head>
+	
+<body class="b_timemarker">
+	<div id="b_timemarker">
+		<!--	
+			callback to call the o_playButtonTag in iframe... 
+			see http://developer.apple.com/documentation/QuickTime/Conceptual/QTScripting_JavaScript/bQTScripting_JavaScri_Document/chapter_1000_section_4.html  
+		 -->
+		<iframe  id="timemarkercallback"  name="timemarkercallback" frameborder="0"  vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="0"  height="0"  src="timemarkercallback.html">
+		</iframe>
+		
+		<script type="text/javascript">
+		/* <![CDATA[ */ 
+		// create the movie viewer code here
+		writeMovieViewerCode(this.document, maddress, mname, displayname, displayduration, width, height);
+		/* ]]> */
+		</script>
+	</div>
+</body>
+</html>

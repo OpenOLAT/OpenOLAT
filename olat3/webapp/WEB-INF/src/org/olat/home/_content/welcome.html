@@ -1,0 +1,23 @@
+<div class="o_home_portaleditlink">
+#if ($portalEditMode)
+	$r.render("command.portal.back")
+#else
+	$r.render("command.portal.edit")
+#end
+</div>
+<div class="o_home_main">
+	<h4>$r.translate("welcome.header")</h4>
+	#set ($intro = $r.translate("welcome.intro"))
+	#if ($intro != "")
+		$intro <br><br>
+	#end
+</div>
+
+$r.render("myPortal")
+
+<div class="o_home_rsslink">
+	$r.contextHelp("org.olat.home","home-rss.html","help.hover.rss")
+	<a class="o_home_rsslink" href="$rssLink" title="$r.translateInAttribute("welcome.rss")" target="_blank"></a>
+</div>
+
+

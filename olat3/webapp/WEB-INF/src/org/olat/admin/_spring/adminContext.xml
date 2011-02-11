@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<bean id="adminModule" class="org.olat.admin.AdminModule">
+<constructor-arg index="0" ref="propertyManager" />
+<property name="persistedProperties">
+  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+    <constructor-arg index="0" ref="coordinatorManager"/>
+    <constructor-arg index="1" ref="adminModule" />
+  </bean>
+</property>	
+</bean>
+                       
+       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="adminModule" />
+        <property name="targetMethod" value="init" />
+        <property name="arguments">
+        			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
+                    <value>
+                    <!-- 
+					    -1 =: no user sessions, only Administrator roles can log in
+					     0 =: unlimited, hence limited only by RAM
+			          1..n =: n sessions at max, then a static not available page is displayed.
+			          default is 0		     
+					-->
+	                    maxNumberOfSessions=0
+	                </value>
+	     </property>
+</bean>
+
+</beans>

@@ -1,0 +1,6 @@
+@charset "UTF-8";
+/* import default theme and overide some styles */
+@import url(../default/patches.css);
+
+/* IE6 and IE7 patches includes */
+@import url(patches/yaml_patch.css);

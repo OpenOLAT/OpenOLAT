@@ -1,0 +1,11 @@
+#if ($isExpertMode)
+	<div class="b_clearfix">
+		<div class="b_float_right">$r.render("command.activate.easyMode")</div>
+	</div>
+	$r.render("conditionExpertForm")
+#else
+	<div class="b_clearfix">
+		<div class="b_float_right">$r.render("command.activate.expertMode")</div>
+	</div>
+	$r.render("conditionEasyForm")
+#end

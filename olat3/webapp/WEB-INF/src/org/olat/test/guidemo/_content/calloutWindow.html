@@ -1,0 +1,52 @@
+$r.render("sourceview")
+<h3>Callout windows</h3>
+
+<hr style="clear:both" />
+<div class="b_float_right" >
+	$r.render("calloutTriggerLink")
+</div>
+<p>
+	The callout window is a comit callout bubble like mini window that can be used to do some configuration without the overhead of loosing the context. It is less heavy than the normal modal dialog, although the usave
+	scenario is very close. The callout windows should only be used when the displayed form is small and simple. Good candidates are a list of groups to select or something like that. 
+	Click the add user button to see how a mini-subworkflow look-and-feels in a callout window.
+</p>
+
+<hr />
+
+<p>
+	The callout window has a trigger that opens the window and functions as an anchor for the callout window. ExtJS chooses itself where to put the window (north, west, south, east), north is the default. 
+	Click the  more... button to see a very simple info in a callout window.
+	
+	$r.render("calloutTriggerLink2")
+</p>	
+
+
+<hr />
+
+<style>
+<!--
+.trigger3 div.b_callout_content {width: 20em;}
+-->
+</style>
+<p>
+	The constructor works with both a link object or by providing the DOM ID of the trigger element in case you're not using a link or you want to do something special. In the example below the trigger is 
+	a javascript on-click event.
+</p>
+<div id="myspecialdomid" class="b_info">
+	CLICK ME: I'm a custom callout trigger that is not even a link! Fancy stuff..
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+Ext.onReady(function() {
+	## Add click listener to trigger 3 via JavaScript, fire event on 
+	## this velocity container back to java code when click is executed
+	Ext.get('myspecialdomid').on("click",function() {
+		$r.javaScriptBgCommand('trigger3');
+	});
+});
+             
+/* ]]> */
+</script>
+             
+

@@ -1,0 +1,40 @@
+#if($r.available("new_message"))
+	<div class="b_float_right o_infomsg_create_button">
+		$r.render("new_message")
+	</div>
+#end
+<div class="o_infomsgs b_clearfix">
+	#if($infos.isEmpty())
+		<p>$r.translate("display.no_messages")</p>
+	#end
+	
+	#foreach($info in $infos)
+		<div class="o_infomsg b_clearfix">
+			#if($r.available("info.delete.${info.getKey()}") or $r.available("info.edit.${info.getKey()}"))
+				<div class="b_float_right">
+					#if($r.available("info.edit.${info.getKey()}"))
+						$r.render("info.edit.${info.getKey()}")
+					#end
+					#if($r.available("info.delete.${info.getKey()}"))
+						$r.render("info.delete.${info.getKey()}")
+					#end
+				</div>
+			#end
+			$r.render("info.date.${info.getKey()}")
+			<h5>${info.getTitle()}</h5>
+			<p class="o_item_info">$info.getInfos()#if($info.isModified()), <span class="o_item_info_mod">$info.getModifier()</span>#end</p>
+			<p></p>
+			#if($info.getMessage())
+				<p>$info.getMessage()</p>
+			#end
+		</div>
+	#end
+	<div class="b_float_right b_clearfix">
+		#if($r.available("display.old_messages"))
+			$r.render("display.old_messages")
+		#end
+		#if($r.available("display.new_messages"))
+			$r.render("display.new_messages")
+		#end
+	</div>
+</div>

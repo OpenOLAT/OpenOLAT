@@ -1,0 +1,45 @@
+@charset "UTF-8";
+
+/**
+  * layouting for ALL medium and all layouts
+  */ 
+
+@media all
+{
+
+	/* PAGE MARGINS AND PAGE */
+	body { background: #9A9EA7 url(../images/stripe.gif) repeat-x top left; padding: 0; }
+	/* layout: width, background, borders */
+	#b_page_margins { min-width: 740px; max-width: 100em; margin: 10px auto;  }
+	#b_page { background: #fff none; border: 1px #889 solid; position: relative; background: #000B63; background: url(../images/header.gif) repeat-x 0 -10px; }
+	
+	/* HEADER */
+	#b_header {height: auto; min-height: 72px;}
+	#b_logo { background: url(../images/olat_logo2_72.png) no-repeat top left; height: 72px; width: 72px; position: relative; top: 10px; left: 10px;}
+
+	/* TOP NAV */
+	#b_topnav { color: #666; font-size: 90%; }
+ 	#b_topnav li a {color: #000B63; }
+	#b_topnav li a:focus, #b_topnav li a:hover { color: #2E3463; text-decoration: underline; }
+    
+	/* NAV */
+	#b_nav_main { margin-top: 10px;}
+	/* left corner of passive site or tab */
+	#b_nav_main li { background: #e0ecf8 url(../images/left.gif) no-repeat top left;  }	
+	#b_nav_main li.o_site_home { margin-left: 10px; }	
+	/* Right border of passive site or tab */
+	#b_nav_main a, #b_nav_main strong { background: transparent url(../images/right.gif) no-repeat top right; }
+	/*  > mandatory to not apply it to IE browsers */
+	#b_nav_main > ul a,	#b_nav_main > ul strong { width: auto;  }  
+	/* Left border of active site or tab, override hoovering rule from above */
+	#b_nav_main li.b_nav_active { background: white url(../images/left_on.gif) no-repeat top left; }
+	/* right border of active site or tab, override hoovering rule from above */
+	/* bleed to bottom border effect: padding = normal padding + bottom border height */
+	#b_nav_main li.b_nav_active a, #b_nav_main li.b_nav_active strong { background: transparent url(../images/right_on.gif) no-repeat top right; }
+
+	/* MAIN */	
+	#b_main { background: #fff; padding:0; }
+	
+	/* FOOTER */
+	#b_footer { color:#666; background: #F7F8F8 none; padding: 5px; border-top: 1px #E9E9E9 solid; font-size: 90%; z-index: 5; position: relative; /* positioning of top link */ }
+}

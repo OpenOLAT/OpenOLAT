@@ -1,0 +1,7 @@
+<p>$r.translate("add.intro")</p>
+<ul>
+	#if ($r.available("add.text.artefact"))<li>$r.render("add.text.artefact")</li> #end
+	#if ($r.available("add.artefact.upload"))<li>$r.render("add.artefact.upload")</li> #end
+	#if ($r.available("add.artefact.liveblog"))<li>$r.render("add.artefact.liveblog")</li> #end
+	##<li>$r.render("add.artefact.import")</li>
+</ul>

@@ -1,0 +1,20 @@
+<table class="b_table">		
+	<tr>
+		<td><b>$usernameLabel</b></td>
+		<td>$username</td>
+	</tr>
+	
+	#foreach( $propertyHandler in $userPropertyHandlers )		
+	    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")		
+		<tr>
+			<td><label><b>
+					$r.translate($propertyHandler.i18nFormElementLabelKey())
+				</b></label>
+			</td>
+			<td>
+				$propertyHandler.getUserPropertyAsHTML($user, $locale)
+			</td>
+		</tr>				
+		#end
+	#end				
+</table>		

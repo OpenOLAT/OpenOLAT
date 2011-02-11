@@ -1,0 +1,37 @@
+#if ($r.available("taskCondition"))
+<fieldset class="b_clearfix">
+	<legend>$r.translate("task.condition.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-ta-acc.html","help.hover.ta-access")
+	$r.render("taskCondition")
+</fieldset>
+#end
+#if ($r.available("dropCondition"))
+<fieldset class="b_clearfix">
+	<legend>$r.translate("dropbox.condition.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-ta-acc.html","help.hover.ta-access")
+	$r.render("dropCondition")
+</fieldset>
+#end
+
+#if ($r.available("returnboxCondition"))
+<fieldset class="b_clearfix">
+	<legend>$r.translate("returnbox.condition.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-ta-acc.html","help.hover.ta-access")
+	$r.render("returnboxCondition")
+</fieldset>
+#end
+
+#if ($r.available("scoringCondition"))
+<fieldset class="b_clearfix">
+	<legend>$r.translate("scoring.condition.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-ta-acc.html","help.hover.ta-access")
+	$r.render("scoringCondition")
+</fieldset>
+#end
+#if ($r.available("solutionCondition"))
+<fieldset class="b_clearfix">
+	<legend>$r.translate("solution.condition.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-ta-acc.html","help.hover.ta-access")
+	$r.render("solutionCondition")
+</fieldset>
+#end

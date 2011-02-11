@@ -1,0 +1,40 @@
+<html>
+<body>
+
+<h3>Wikisyntax to html</h3>
+<p>This component renders wikisyntax (mediawiki) to html. It's used by
+the olat internal wiki but could be used on other places as well where
+you like to render wikisyntax to html (arbitrary textfields)</p>
+
+<p>The parser for the wiki (mediawiki) syntax is from a other open
+source project called: <a href="http://jamwiki.org">Jamwiki.org</a>. The
+source of the parser is located it the webapp/lib directory</p>
+
+<p>Usage: To include the component see the following code snipplet. You
+create an component and pass a name an OlatRescourcable object and a
+size of the output div. You register your Contriller by adding a
+listener. If you like your component to display images you need an
+seession based mapper. Mappers (global or user session style: @see org.olat.core.dispatcher.mapper.Mapper) generate
+URI's that reference static content like images. To finally display your
+component add it to a container like a VelocityContainer.
+<pre>
+wikiArticleComp = new WikiMarkupComponent("wikiArticle", ores, 300);
+wikiArticleComp.addListener(this);
+wikiArticleComp.setImageMapperUri(ureq, wikiContainer);
+articleContent.put("wikiArticle", wikiArticleComp);
+</pre>
+</p>
+
+<h3>Events:</h3>
+<p>If your syntax contains links in wiki syntax like [[wikiword]] or [[Image:test.jpg]] then events are genereted that can be processed in your controller </p>
+
+<ul>
+<li><strong>RequestImageEvent</strong>: A user clicked an image in a wiki and like to see it in fullsize</li>
+<li><strong>RequestMediaEvent</strong>: A user clicken a media file link(e.g. pdf file)</li>
+<li><strong>RequestNewPageEvent</strong>: A new not yet existing wiki article should be created</li>
+<li><strong>RequestPageEvent</strong>: An existing wiki article is called and shoule be displayed</li>
+<li><strong>ErrorEvent</strong>: An error occured</li>
+</ul>
+
+</body>
+</html>

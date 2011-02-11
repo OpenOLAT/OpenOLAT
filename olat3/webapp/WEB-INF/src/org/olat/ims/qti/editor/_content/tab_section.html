@@ -1,0 +1,109 @@
+<fieldset>
+	<legend>$r.translate("fieldset.legend.sectionsettings")</legend>
+	
+		#if($isSurveyMode.equals("false"))
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-test-sect.html","help.hover.section-assess")
+		#else
+			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-meta-surv-sect.html","help.hover.section-survey")
+		#end
+	
+		
+		
+<form action="$r.formURIbg("ssec")" id="ofo_tab_section" $r.bgTarget() method="post">
+<table border="0" width="100%">
+<tr><td valign="top">
+  <table border="0" width="100%">
+
+	<tr>
+		<td>$r.translate("form.metadata.title")</td>
+		<td><input type="text" size="30" name="title" value="$r.escapeHtml($!section.title)" onchange="return setFormDirty('ofo_tab_section')" onclick="return setFormDirty('ofo_tab_section')" /></td>
+	</tr>
+
+	<tr>
+		<td valign="top">$r.translate("form.metadata.objectives")</td>
+		<td>
+			<textarea name="objectives" cols="35" rows="8" onchange="return setFormDirty('ofo_tab_section')" onclick="return setFormDirty('ofo_tab_section')" >$!section.objectives</textarea>
+			<br>
+		</td>
+	</tr>
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+	<tr>
+		#set ($yeschecked = "")
+		#set ($nochecked = "")
+		#set ($readonly = "")
+		#if($duration)	
+			#set ($yeschecked = 'checked="checked"')
+			#set ($minval = $duration.getMin())
+			#set ($secval = $duration.getSec())
+			#set ($css = "")
+		#else
+			#set ($nochecked = 'checked="checked"')		
+			#set ($minval = "0")
+			#set ($secval = "0")
+			#set ($readonly = 'readonly="readonly"')
+			#set ($css = "b_disabled")
+		#end		
+		<td>$r.translate("form.section.durationswitch")</td>
+		<td nowrap="nowrap">
+			<input type="radio" class="b_radio" name="duration" value="Yes" $yeschecked onchange="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_tab_section')" onclick="return setFormDirty('ofo_tab_section')"/>$r.translate("yes")
+			&nbsp;
+			<input type="radio" class="b_radio" name="duration" value="No" $nochecked onchange="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_tab_section')" onclick="return setFormDirty('ofo_tab_section')"/>$r.translate("no")
+			&nbsp;
+			<input id="min" type="text" name="duration_min" value="$minval"  size="3" onchange="return setFormDirty('ofo_tab_section')" $!readonly class="$css"/>:
+			<input id="sec" type="text" name="duration_sec" value="$secval"  size="3" maxlength="2" onchange="return setFormDirty('ofo_tab_section')" $!readonly class="$css"/>			
+			&nbsp;<i>($r.translate("form.metadata.minutes"):$r.translate("form.metadata.seconds"))</i>
+		</td>	
+	</tr>	
+#end
+
+#if(!$isRestrictedEdit)
+	<tr>
+		<td>$r.translate("form.section.selection_pre")</td>
+		<td>
+		<select id="selection_number" name="selection_number" onchange="if(this.form.selection_number.options.selectedIndex==0){unShadeFormElement('order_type');}else{shadeFormElement('order_type');this.form.order_type.options.selectedIndex=0}return setFormDirty('ofo_tab_section')" onclick="return setFormDirty('ofo_tab_section')">
+			<option value="0"
+			#if ($selection_number == "0") 
+				selected="selected" 
+				#set ($readonly = "")
+				#set ($css = "")
+			#else
+				#set ($readonly = 'readonly="readonly"')
+				#set ($css = "b_disabled")			
+			#end
+			>$r.translate("form.section.selection_all")</option>
+		#foreach($item in $section.items)
+			<option value="$velocityCount"
+			#if ($selection_number == "$velocityCount") 
+			selected="selected" 
+			#end
+			>$velocityCount</option>
+		#end
+		</select>
+		</td>
+	</tr>
+
+	<tr>
+		<td>$r.translate("form.section.order_type")</td>
+		<td>
+		<select id="order_type" name="order_type" onchange="return setFormDirty('ofo_tab_section')" onclick="return setFormDirty('ofo_tab_section')" $readonly class="$css">
+			<option value="Random"
+			#if ($order_type == "Random") 
+			selected="selected" 
+			#end
+			>$r.translate("form.section.order_type.random")</option>
+			<option value="Sequential"
+			#if ($order_type == "Sequential") 
+			selected="selected" 
+			#end
+			>$r.translate("form.section.order_type.sequential")</option>
+		</select>
+	</tr>
+#end
+	
+  </table>
+</td></tr>
+</table>
+<br>
+<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm"/></div>
+</form>
+</fieldset>

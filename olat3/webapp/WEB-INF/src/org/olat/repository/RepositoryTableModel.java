@@ -1,0 +1,141 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <p>
+*/ 
+
+package org.olat.repository;
+
+import java.util.ArrayList;
+import java.util.Locale;
+
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.components.table.TableController;
+import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
+
+/**
+ * Initial Date:  Mar 31, 2004
+ *
+ * @author Mike Stock
+ * 
+ * Comment:  
+ * 
+ */
+public class RepositoryTableModel extends DefaultTableDataModel implements TableDataModel {
+
+	/**
+	 * Identifies a table selection event (outer-left column)
+	 */
+	public static final String TABLE_ACTION_SELECT_LINK = "rtbSelectLink";
+	
+	/**
+	 * Identifies a table launch event (if clicked on an item in the name column).
+	 */
+	public static final String TABLE_ACTION_SELECT_ENTRY = "rtbSelectEntry";
+	
+	private static final int COLUMN_COUNT = 6;
+	Translator translator; // package-local to avoid synthetic accessor method.
+		
+	/**
+	 * Default constructor.
+	 * @param translator
+	 */
+	public RepositoryTableModel(Translator translator) {
+		super(new ArrayList<RepositoryEntry>());
+		this.translator = translator;
+	}
+
+	/**
+	 * @param tableCtr
+	 * @param selectButtonLabel Label of action row or null if no action row should be used
+	 * @param enableDirectLaunch
+	 */
+	public void addColumnDescriptors(TableController tableCtr, String selectButtonLabel, boolean enableDirectLaunch) {
+		
+		
+		tableCtr.addColumnDescriptor(new RepositoryEntryTypeColumnDescriptor("table.header.typeimg", 0, null, 
+				translator.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.displayname", 1, enableDirectLaunch ? TABLE_ACTION_SELECT_ENTRY : null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", 2, null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.access", 3, null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.date", 4, null, translator.getLocale()));
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastusage", 5, null, translator.getLocale()));
+		if (selectButtonLabel != null) {
+			StaticColumnDescriptor desc = new StaticColumnDescriptor(TABLE_ACTION_SELECT_LINK, selectButtonLabel, selectButtonLabel);
+			desc.setTranslateHeaderKey(false);			
+			tableCtr.addColumnDescriptor(desc);
+		}
+	}
+	
+	
+	/**
+	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
+	 */
+	public int getColumnCount() {
+		return COLUMN_COUNT;
+	}
+
+
+
+	/**
+	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
+	 */
+	public Object getValueAt(int row, int col) {
+		RepositoryEntry re = (RepositoryEntry)getObject(row);
+		switch (col) {
+			case 0: return re; 
+			case 1: return getDisplayName(re, translator.getLocale());
+			case 2: return re.getInitialAuthor();
+			case 3: {
+				switch (re.getAccess()) {
+					case RepositoryEntry.ACC_OWNERS: return translator.translate("table.header.access.owner");
+					case RepositoryEntry.ACC_OWNERS_AUTHORS: return translator.translate("table.header.access.author");
+					case RepositoryEntry.ACC_USERS: return translator.translate("table.header.access.user");
+					case RepositoryEntry.ACC_USERS_GUESTS: return translator.translate("table.header.access.guest");
+				}
+			}
+			case 4: return re.getCreationDate();
+			case 5: return re.getLastUsage();
+			default: return "ERROR";
+		}
+	}
+	
+	/**
+	 * Get displayname of a repository entry. If repository entry a course 
+	 * and is this course closed then add a prefix to the title.
+	 */
+	private String getDisplayName(RepositoryEntry repositoryEntry, Locale locale) {
+		String displayName = repositoryEntry.getDisplayname();
+		if (repositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()) {
+			PackageTranslator pT = new PackageTranslator(RepositoryEntryStatus.class.getPackage().getName(), locale);
+			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
+		}
+		return displayName;
+	}
+
+	public Object createCopyWithEmptyList() {
+		RepositoryTableModel copy = new RepositoryTableModel(translator);
+		return copy;
+	}
+
+}

@@ -1,0 +1,46 @@
+<div class="o_notifications_news_wrapper">
+	<h4>$r.translate("news.title")</h4>
+	<p>
+		$r.translate("news.desc")
+	</p>
+	<div class="o_notifications_news_datechooser">
+		<div class="b_float_right">
+			$r.render("emailLink")
+		</div>
+		$r.render("dateChosserCtr")
+		
+	</div>
+#foreach($sub in $subs)
+	#if($subsFormatter.hasNews($sub))
+	<div class="o_notifications_news_subscription">
+		$subsFormatter.getTitleAsHTML($sub)
+		<div class="o_notifications_news_context">
+		#if($subsFormatter.getContainerType() && $subsFormatter.getContainerType() != "" && $subsFormatter.getContainerType() != "-")
+			, $subsFormatter.getContainerType($sub)
+		#end
+		#if($sub.getTransResId() && $sub.getTransResId() != "" && $sub.getTransResId() != "-")
+			"$sub.getTransResId()"
+			#if($sub.getTransSubidentifier() && $sub.getTransSubidentifier() != "" && $sub.getTransSubidentifier() != "-")
+				, "$sub.getTransSubidentifier()"
+			#end
+		#end
+		</div>
+		<div class="o_notifications_news_content">
+			$subsFormatter.getNewsAsHTML($sub)
+		</div>
+		<div class="o_notifications_news_url">
+		#if ($subsFormatter.getCustomUrl($sub))
+			$subsFormatter.getCustomUrl($sub)		
+		#else
+			#set($subscrItem = $subsFormatter.getSubscriptionItem($sub))
+			#if($subscrItem) 
+			<a href="$subscrItem.getLink()" onkeypress="return o2cl();" onclick="return o2cl();">
+				$r.translate("resource.open", $subsFormatter.getType($sub))
+			</a>
+			#end
+		#end
+		</div>
+	</div>	
+	#end
+#end
+</div>

@@ -1,0 +1,15 @@
+#macro (b_togglebox_start $uid $title)
+<a href="#" id="${uid}Opener" class="b_togglebox_closed" onclick="b_togglebox('$uid', this); return false;" onkeypress="b_togglebox('$uid', this); return false;">$title</a>
+<div id="$uid" class="b_togglebox" style="display: none"><div class="b_togglebox_content">	
+##<script type="text/javascript">
+## TODO:FG: keep state in cookie, auto open/close
+##</script>
+#end
+
+#macro (b_togglebox_end)
+</div></div>
+#end
+
+
+
+

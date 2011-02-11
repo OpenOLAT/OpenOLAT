@@ -1,0 +1,18 @@
+<fieldset>
+	<legend>$r.translate("form.configuration")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.ms","ced-ms.html","help.hover.ms-conf")
+	#if ($hasLogEntries)
+		#if ($isOverwriting)
+			<p>
+				<i>$r.translate("scoring.overwriting.note")</i>
+			</p>
+		#else
+			<p>
+				<i>$r.translate("scoring.overwriting")</i>
+			</p>
+			$r.render("scoring.config.enable.button")			
+		#end		
+	#end
+	$r.render("mseditform")
+</fieldset>
+  

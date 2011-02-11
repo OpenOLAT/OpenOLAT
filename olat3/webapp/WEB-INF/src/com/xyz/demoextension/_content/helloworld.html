@@ -1,0 +1,36 @@
+## In velocity, just use plain HTML. All commands are prepended by 
+## a hash sign, references to object are denoted by a dollar sign.
+
+<h3>Hello everybody</h3>
+<p>This is a <b>$myContentVariable</b> example.</p>
+
+
+## This is a reference to the VelocityRenderDecorator which exposes
+## some useful methods to the velocity container such as 
+## building links or instructions to render a sub-component...
+
+## We'd like a link which triggers an event which will be dispatched by our
+## HelloWorldController. The command is "sayhello" and the link will
+## be displayd with text translated by the translator passed to the VelocityContainer
+## and the key "sayhello_i18n_key" automatically.
+
+<div>This is the way to create a component link.</br>
+<p>$r.render("say.hello")</p>
+</div>
+
+## image example (resource from "webapp/static/images/..."). For pictures already available in OLAT.
+<div>
+<img border="0" src="$r.staticLink("images/olat/powered_by_uzh.png")" alt="University of Zurich" width="120" height="30">
+</div>
+<div>&nbsp;</div>
+## image button example
+<div>$r.render("say.hello.xsmall")</div>
+<div>&nbsp;</div>
+<div>$r.render("say.hello.small")</div>
+<div>&nbsp;</div>
+<div>$r.render("say.hello")</div>
+<div>&nbsp;</div>
+## an example to you own pictures
+<div class="demoext_bild">A picture added by css style definition: See source how to reference the css file.</div>
+
+

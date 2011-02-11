@@ -1,0 +1,18 @@
+#if ($isfiletest_on)
+	<h4>$r.translate("filesystemtest")</h4>
+	<p/>
+	$r.render("filesystemtest.reload")<br>
+	$r.render("file.system.test.form")<br>
+	$r.render("filesystemtest.start")  $r.render("filesystemtest.cleanup.testdir")<br>
+	<br>
+	Test-Status:<br>
+	$teststatus
+	<p/>
+	<hr/>
+	Test Result:<br>
+	$testresults
+#else
+	<h4>$r.translate("filesystemtest.intro")</h4>
+	<p/>
+	$r.render("filesystemtest.on")<br>
+#end

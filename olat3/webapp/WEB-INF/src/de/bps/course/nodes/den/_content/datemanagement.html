@@ -1,0 +1,10 @@
+<div class="b_clearfix">
+    ## create an openclose box which is initially closed
+    #b_togglebox_start("values" $r.translate("config.create.dates"))
+		<h6>$r.translate('config.default.values')</h6>
+		$r.render("datesForm")
+	#b_togglebox_end()
+</div>
+<div>
+$r.render("datesTable")
+</div>

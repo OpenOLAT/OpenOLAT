@@ -1,0 +1,140 @@
+#if ($enableScoreInfo)
+	<div class="o_course_run_scoreinfo">
+		<h4>$r.translate("score.title")</h4>		
+		<table>
+			<tbody>
+				<tr>
+					<td>
+						$r.translate("qti.form.attempts"): 
+					</td>
+					<td>
+					#if ($attemptsConfig && $attemptsConfig > 0)
+						$attemptsConfig
+					#else
+						$r.translate("qti.form.attempts.noLimit")
+					#end
+					</td>
+				</tr>		
+				<tr>
+					<td>			
+						$r.translate("attempts.yourattempts"): 
+					</td>
+					<td>
+						$attempts
+					</td>
+				</tr>
+		#if ($attempts >0)
+				<tr>
+					<td>			
+						$r.translate("score.yourscore"): 
+					</td>
+					<td>
+						$score
+					</td>
+				</tr>
+				<tr>
+					<td>			
+						$r.translate("passed.yourpassed"): 
+					</td>
+					<td>
+						#if($hasPassedValue && $passed == true)		
+							<span class="o_passed">$r.translate("passed.yes")</span>
+						#elseif($hasPassedValue && $passed == false)		
+							<span class="o_notpassed">$r.translate("passed.no")</span>
+						#end
+					</td>
+				</tr>
+				#if ($comment)
+				<tr>
+					<td>			
+						$r.translate("comment.yourcomment"): 
+					</td>
+					<td>
+						$comment
+					</td>
+				</tr>
+				#end ##END of if comment...
+			</tbody>
+		</table>				
+		#else
+			</tbody>
+		</table>
+		<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscoreinfoyet")</div>
+		#end ##END of if attempts...		
+	</div>##END o_course_run_scoreinfo
+#end ##END of if enableScoreInfo ...
+	
+#if($showResultsOnHomePage && $attempts >0)	
+	<h4>$r.translate("showResults.title")</h4> 
+  	#if($showResultsVisible)
+		#if ($showResults)
+			$r.render("command.hideResults")					  				  
+		#else
+			$r.render("command.showResults")
+		#end				
+       	#if ($showResults)
+			#if ($displayreporting)
+				<br />
+				<h4>$r.translate("showResults.detailed")</h4>
+				<div id="o_qti_results" class="b_small">
+					$!resreporting
+				</div>
+		    #end
+       	#end
+  	#else
+	  	$visibilityPeriod
+	#end
+#end ##END of if showResultsOnHomePage ...
+
+
+	#if ($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts))
+		<div class="o_course_run_statusinfo">$r.translate("attempts.nomoreattempts")</div>		
+		#if ($hasDisc)
+		<div class="o_course_run_disclaimer">
+			$r.render("disc")
+		</div>
+		#end
+	#else
+		#if ($hasDisc)
+		<div class="o_course_run_disclaimer">
+			$r.render("disc")
+		</div>
+		#end
+			
+		<div class="o_course_run_statusinfo">
+			<p>
+			$r.translate("Intro.test")
+			</p>
+			<p>	
+			$r.translate("info.assessment")
+			</p>
+			#if ($hasChatWindowOpen)
+			<p>
+			$r.translate("close.chat.windows.for.test")
+			</p>
+			#end
+		</div>
+			
+		<div class="b_button_group">
+			$r.render("start")
+		</div>
+	
+#end
+
+#if ($log && $showChangelog)
+    <p /> 
+    #b_togglebox_start("o_course_run_log" $r.translate("log.title"))
+    <pre>
+$log
+    </pre>
+    #b_togglebox_end()
+  #end
+    
+  #if($changeLog)
+    <p /> 
+    #b_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+    <pre>
+$changeLog
+    </pre>
+    #b_togglebox_end()
+  #end

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+   "-//Hibernate/Hibernate Mapping DTD//EN"
+   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+    <class name="org.olat.group.area.BGAreaImpl" table="o_gp_bgarea">
+    		
+		<cache usage="read-write" />
+
+        <id name="key"
+        	type="long"
+        	column="area_id"
+        	unsaved-value="null">
+            <generator class="hilo" />
+        </id>
+        
+        <version name="version" access="field" column="version" type="int" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 		
+        <property name="name" type="string">
+			<column name="name" not-null="true" unique="false" index="name_idx3"/>
+    	</property>
+
+        <property name="description"> 
+        	<column name="descr" length="16777210" not-null="false" unique="false" />               
+        </property>
+			
+	    <many-to-one 
+			name="groupContext" 
+			class="org.olat.group.context.BGContextImpl" 
+			outer-join="false" 
+			cascade="none">
+			<column 
+				name="groupcontext_fk" 
+				not-null="true" />
+		 </many-to-one>
+
+    </class>
+
+</hibernate-mapping>

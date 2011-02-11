@@ -1,0 +1,37 @@
+<div class="o_repository_import">
+	<h4>$r.translate("import.title")</h4>
+	<p class="b_note">
+		$r.translate("import.intro")
+	</p>
+	<table class="b_table">
+		<tr><td>$r.translate("import.nodename"):</td><td><b>$!nodename</b></td></tr>
+		<tr><td>$r.translate("import.nodetype"):</td><td><b>$!type</b></td></tr>
+		<tr><td>$r.translate("import.displayname"):</td><td><b>$!displayname</b></td></tr>
+		<tr><td>$r.translate("import.resourcename"):</td><td><b>$!resourcename</b></td></tr>
+		<tr><td>$r.translate("import.desc"):</td><td><b>$!description</b></td></tr>
+	</table>
+	<br />
+	<hr />
+	<br />
+	<h5 class="b_with_small_icon_left b_info_icon">$r.translate("import.action.title")</h5>
+	<ul>
+		<li>
+			<strong>$r.translate("import.import.title")</strong>
+			$r.translate("import.import.desc")
+			<br/>
+			$r.render("import.import.action")
+		</li>
+		<li>
+			<strong>$r.translate("import.reattach.title")</strong>
+			$r.translate("import.reattach.desc")
+			<br/>
+			$r.render("import.reattach.action")
+		</li>
+		<li>
+			<strong>$r.translate("import.noop.title")</strong>
+			$r.translate("import.noop.desc")
+			<br/>
+			$r.render("import.noop.action")
+		</li>
+	</ul>
+</div>

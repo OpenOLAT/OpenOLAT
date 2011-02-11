@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+	<class name="de.bps.olat.modules.cl.Checklist" table="o_checklist">
+	
+		<id name="key" column="checklist_id" type="long" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+
+		<property  name="version" column="version" type="int" not-null="true" access="field"/>		
+		<property  name="lastModified" column="lastmodified" type="timestamp" not-null="true"/>
+		
+	  	<property name="title" unique="false" not-null="true" length="255" />
+    	<property name="description" type="string">
+			<column name="description" length="16777210" unique="false" not-null="false" />
+    	</property>
+	  	
+		<bag name="checkpoints" table="o_checkpoint" lazy="false" cascade="all,delete-orphan">
+	   	    <key column="checklist_fk" />
+	   	    <one-to-many class="de.bps.olat.modules.cl.Checkpoint" />
+		</bag>
+		
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.notifications.SubscriberImpl" table="o_noti_sub">
+		<!--
+		key (see Interface org.olat.core.commons.persistence.Persistable),
+		lastModified (see Interface org.olat.core.commons.persistence.Auditable)
+		and creationDate (see Interface org.olat.core.commons.persistence.Auditable)
+		are attributes inherited from the abstract class
+		org.olat.core.commons.persistence.PersistentObject
+		-->
+		<id name="key" type="long" column="publisher_id" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		<version name="version" access="field" column="version" type="int"/>
+		<property  name="lastModified" column="lastmodified" type="timestamp" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />	
+  		
+  		<many-to-one name="publisher" class="org.olat.notifications.PublisherImpl" outer-join="auto" cascade="none">  
+			<column name="fk_publisher" not-null="true" unique="false" unique-key="publisher_per_person"/>    	
+    	</many-to-one> 	 
+ 
+ 		<many-to-one name="identity" class="org.olat.basesecurity.IdentityImpl" outer-join="auto" cascade="none">  
+			<column name="fk_identity" not-null="true" unique="false" unique-key="publisher_per_person" />    	
+  		</many-to-one>  
+  	
+		<!-- maybe null; timestamp when latest email sending has taken place -->
+  		<property name="latestEmailed" not-null="false" column="latestemailed" type="timestamp" />	
+	</class>
+</hibernate-mapping>

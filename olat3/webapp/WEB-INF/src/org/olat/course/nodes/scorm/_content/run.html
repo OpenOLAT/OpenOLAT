@@ -1,0 +1,56 @@
+#if ($isassessable)	
+	<div class="o_course_run_scoreinfo">
+		<h4>$r.translate("score.title")</h4>		
+		<table>
+			<tbody>
+				<tr>
+					<td>			
+						$r.translate("attempts.yourattempts"): 
+					</td>
+					<td>
+						$attempts
+					</td>
+				</tr>
+	#if ($attempts >0)
+				<tr>
+					<td>			
+						$r.translate("score.yourscore"): 
+					</td>
+					<td>
+						$score
+					</td>
+				</tr>
+				<tr>
+					<td>			
+						$r.translate("passed.yourpassed"): 
+					</td>
+					<td>
+						#if($hasPassedValue && $passed == true)		
+							<span class="o_passed">$r.translate("passed.yes")</span>
+						#elseif($hasPassedValue && $passed == false)		
+							<span class="o_notpassed">$r.translate("passed.no")</span>
+						#end
+					</td>
+				</tr>
+				#if ($comment)
+					<tr>
+						<td>			
+							$r.translate("comment.yourcomment"): 
+						</td>
+						<td>
+							$comment
+						</td>
+					</tr>
+				#end
+			</tbody>
+		</table>		
+	#else
+			</tbody>
+		</table>
+
+		<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscoreinfoyet")</div>
+	#end
+	</div>
+#end
+
+	$r.render("chooseScormRunMode")

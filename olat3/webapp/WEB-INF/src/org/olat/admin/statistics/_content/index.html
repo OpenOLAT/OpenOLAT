@@ -1,0 +1,25 @@
+<h4>$r.translate("statistics.title")</h4>
+<fieldset>
+	<p>$r.translate("statistics.info")</p>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("statistics.status.title")</legend>
+	<p>$status</p>
+	<p>$lastupdated</p>
+</fieldset>
+
+#if ($statisticEnabled)
+<fieldset>
+	<legend>$r.translate("statistics.update.title")</legend>
+	
+	<p>$r.translate("statistics.update.intro")</p>
+
+	#if (!$statisticUpdateOngoing)
+		<p>$r.render("statistics.fullrecalculation.trigger.button")</p>
+		<p>$r.render("statistics.update.trigger.button")</p>
+	#else
+		<p><b>$r.translate("statistics.update.ongoing")</b></p>
+	#end
+</fieldset>
+#end

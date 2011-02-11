@@ -1,0 +1,88 @@
+$r.render("backLink")
+<h4>$title - $r.translate("details.header")</h4>
+#if($launchableTyp)
+	<p>
+		$r.render("details.launch")	
+	</p>
+	#if ($isGuest)
+		<p class="b_warning">
+		${r.translate("restr.access.first")}${r.render("repo.login")}${r.translate("restr.access.second")}
+		</p>
+	#end
+#else
+	<p>
+		$r.render("details.download")		
+	</p>
+#end
+
+<fieldset class="b_clearfix">
+	<legend>$r.translate("details.description")</legend>
+	#if ($hasImage)
+	<div class="o_repository_resource_image">
+		$r.render("image")
+	</div>
+	#end
+	<span>$description</span>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("details.entryinfoheader")</legend>
+	#if ($isGuestAllowed)
+		$r.contextHelpWithWrapper("org.olat.repository","rep-meta-guest.html","help.hover.rep.detail")
+	#else
+		$r.contextHelpWithWrapper("org.olat.repository","rep-meta-learner.html","help.hover.rep.detail")
+	#end
+	
+	## simulate form view to match styling of fieldset above
+	<div class="b_form">
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.initialAuthor")</label></div>
+			<div class="b_form_element">$initialauthor</div>
+		</div>
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.type")</label></div>
+			<div class="b_form_element">$type</div>
+		</div>
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.id")</label></div>
+			<div class="b_form_element">$id</div>
+		</div>
+		#if ($isOlatAdmin)		
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("cif.ores_id")</label></div>
+			<div class="b_form_element">$ores_id</div>
+		</div>
+		#end			
+		#if ($launchableTyp)		
+		<div class="b_form_element_wrapper b_clearfix">
+			<div class="b_form_element_label"><label>$r.translate("details.extlinkheader")</label></div>
+		</div>
+		<pre>$extlink</pre>
+		#if ($isGuestAllowed)
+		<pre>${extlink}?guest=true&amp;lang=${userlang}</pre>
+		#end
+		
+		#end			
+	</div>
+</fieldset>
+<fieldset>
+	<legend>$r.translate("details.categoriesheader")</legend>
+	$r.render("repoEntryCategoriesTable")
+</fieldset>
+
+#if($isOwner || $isAuthor)
+
+	$r.render("displayform")
+
+	#if($isOwner)
+	
+		#b_togglebox_start("o_repo_details" $r.translate("addinfo.owner"))
+			<fieldset>
+				<legend>$r.translate('details.owner')</legend>
+				
+				$r.render('ownertable')
+			</fieldset>
+			$r.render('vc_infopanel')
+		#b_togglebox_end()
+	#end
+#end

@@ -1,0 +1,23 @@
+$r.translate("step0.content")
+<p>$r.translate("step.notmandatory")</p>
+<br />
+
+#b_togglebox_start("o_usermanagement_bulkChange" "$r.translate('step0.formatexplanation.link')")
+	$r.translate('step0.formatexplanation.text') 
+	<table class="b_table b_grid"><tbody>
+		#foreach( $propertyHandler in $userPropertyHandlers )
+		<tr>
+			<td>
+				<label>
+					$r.translate($propertyHandler.i18nFormElementLabelKey())
+				</label>
+			</td>
+			<td>
+				#set($so='{')
+				#set($sc='}')
+				$$so$propertyHandler.getName()$sc
+			</td>
+		</tr>
+		#end
+	</tbody></table>	
+#b_togglebox_end()

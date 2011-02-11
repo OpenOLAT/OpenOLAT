@@ -1,0 +1,1507 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- 
+     XSLT (WD-19990813) DTD and HTML 4.0 Strict (REC-HTML40-19980424) DTD
+     This DTD defines a XSLT stylesheet with a result-ns of html
+
+     Credits:
+       Original XSLT DTD from W3C XSLT WD-19990813
+       Original XML  DTD for HTML 4.0 Strict by
+         TAMURA, Kent <kent@trl.ibm.co.jp>, for IBM's XML4J package
+       Minor fixes to XSLT & HTML DTDs by 
+         Scott Boag <scott_boag@lotus.com>
+         Henrique M. Holschuh <henriqmh@dca.fee.unicamp.br>
+       HTML/XSLT composite DTD by
+         Henrique M. Holschuh <henriqmh@dca.fee.unicamp.br>
+
+     Caveats: It is possible to generate invalid XSLT and HTML documents 
+       using this DTD, as the result-ns elements (HTML) must allow all 
+       possible xsl elements as content, and all result-ns elements had 
+       to be relaxed on their element content rules.
+
+     TODO:
+       - A XSLT/XHTML1.0 Strict DTD to use instead of this one. Lowercase
+         element names allow for better compression ratios, at least in
+         English documents.
+       - Update to HTML 4.01
+
+     $Id: xsl-html40s.dtd,v 1.1 2000/12/05 13:38:18 dleslie Exp $
+-->
+
+<!-- Predefined XML (REC-XML-19980210) entities -->
+<!--
+<!ENTITY lt     "&#38;#60;">
+<!ENTITY gt     "&#62;">
+<!ENTITY amp    "&#38;#38;">
+<!ENTITY apos   "&#39;">
+<!ENTITY quot   "&#34;">
+-->
+
+<!-- 
+  Result elements allowed (inside xsl elements). These are actually
+  all of the HTML40 Strict elements. 
+-->
+
+<!ENTITY % result-elements "
+  | TT
+  | I
+  | B
+  | BIG
+  | SMALL
+  | EM
+  | STRONG
+  | DFN
+  | CODE
+  | SAMP
+  | KBD
+  | VAR
+  | CITE
+  | ABBR
+  | ACRONYM
+  | SUP
+  | SUB
+  | SPAN
+  | BDO
+  | BR
+  | BODY
+  | ADDRESS
+  | DIV
+  | A
+  | MAP
+  | AREA
+  | LINK
+  | IMG
+  | OBJECT
+  | PARAM
+  | HR
+  | P
+  | H1
+  | H2
+  | H3
+  | H4
+  | H5
+  | H6
+  | PRE
+  | Q
+  | BLOCKQUOTE
+  | INS
+  | DEL
+  | DL
+  | DT
+  | DD
+  | OL
+  | UL
+  | LI
+  | FORM
+  | LABEL
+  | INPUT
+  | SELECT
+  | OPTGROUP
+  | OPTION
+  | TEXTAREA
+  | FIELDSET
+  | LEGEND
+  | BUTTON
+  | TABLE
+  | CAPTION
+  | THEAD
+  | TFOOT
+  | TBODY
+  | COLGROUP
+  | COL
+  | TR
+  | TH
+  | TD
+  | HEAD
+  | TITLE
+  | BASE
+  | META
+  | STYLE
+  | SCRIPT
+  | NOSCRIPT
+  | HTML
+">
+
+<!-- begin XSLT DTD, patched -->
+
+<!ENTITY % char-instructions "
+ | xsl:apply-templates
+ | xsl:call-template
+ | xsl:apply-imports
+ | xsl:for-each
+ | xsl:value-of
+ | xsl:copy-of
+ | xsl:number
+ | xsl:choose
+ | xsl:if
+ | xsl:text
+ | xsl:copy
+ | xsl:variable
+ | xsl:message
+">
+
+<!ENTITY % instructions "
+ %char-instructions;
+ | xsl:processing-instruction
+ | xsl:comment
+ | xsl:element
+ | xsl:attribute
+">
+
+<!ENTITY % char-template "
+(#PCDATA
+ %char-instructions;)*
+">
+
+<!ENTITY % template "
+(#PCDATA
+ %instructions;
+ %result-elements;)*
+">
+
+<!-- Used for the type of an attribute value that is a URI reference.-->
+<!ENTITY % URI "CDATA">
+
+<!-- Used for the type of an attribute value that is a pattern.-->
+<!ENTITY % pattern "CDATA">
+
+<!-- Used for the type of an attribute value that is an
+    attribute value template.-->
+<!ENTITY % avt "CDATA">
+
+<!-- Used for the type of an attribute value that is a QName; the prefix
+    gets expanded by the XSLT processor. -->
+<!ENTITY % qname "NMTOKEN">
+
+<!-- Like qname but a whitespace-separated list of QNames. -->
+<!ENTITY % qnames "NMTOKENS">
+
+<!-- Used for the type of an attribute value that is an expression.-->
+<!ENTITY % expr "CDATA">
+
+<!-- Used for the type of an attribute value that consists
+    of a single character.-->
+<!ENTITY % char "CDATA">
+
+<!-- Used for the type of an attribute value that is a priority. -->
+<!ENTITY % priority "NMTOKEN">
+
+<!ENTITY % space-att "xml:space (default|preserve) #IMPLIED">
+
+<!-- This may be overridden to customize the set of elements allowed
+at the top-level. -->
+
+<!ENTITY % non-xsl-top-level "">
+
+<!ENTITY % top-level "
+(xsl:import*,
+ (xsl:include
+ | xsl:strip-space
+ | xsl:preserve-space
+ | xsl:output
+ | xsl:key
+ | xsl:locale
+ | xsl:attribute-set
+ | xsl:variable
+ | xsl:param
+ | xsl:template
+ %non-xsl-top-level;)*)
+">
+
+<!-- added xmlns attribute suitable for this DTD -->
+<!ENTITY % top-level-atts '
+ extension-element-prefixes CDATA #IMPLIED
+ id ID #IMPLIED
+ xmlns:xsl CDATA #FIXED "http://www.w3.org/XSL/1999/Transform"
+ xmlns CDATA #FIXED "http://www.w3.org/TR/REC-html40"
+ %space-att;
+'>
+
+<!-- This entity is defined for use in the ATTLIST declaration
+for result elements. -->
+
+<!ENTITY % result-element-atts '
+ xsl:extension-element-prefixes CDATA #IMPLIED
+ xsl:use-attribute-sets %qnames; #IMPLIED
+'>
+
+<!ELEMENT xsl:stylesheet %top-level;>
+<!ATTLIST xsl:stylesheet %top-level-atts;>
+
+<!ELEMENT xsl:transform %top-level;>
+<!ATTLIST xsl:transform %top-level-atts;>
+
+<!ELEMENT xsl:import EMPTY>
+<!ATTLIST xsl:import href %URI; #REQUIRED>
+
+<!ELEMENT xsl:include EMPTY>
+<!ATTLIST xsl:include href %URI; #REQUIRED>
+
+<!ELEMENT xsl:strip-space EMPTY>
+<!ATTLIST xsl:strip-space elements CDATA #REQUIRED>
+
+<!ELEMENT xsl:preserve-space EMPTY>
+<!ATTLIST xsl:preserve-space elements CDATA #REQUIRED>
+
+<!ELEMENT xsl:output EMPTY>
+<!ATTLIST xsl:output
+ method %qname; #IMPLIED
+ version NMTOKEN #IMPLIED
+ encoding NMTOKEN #IMPLIED
+ xml-declaration (yes|no) #IMPLIED
+ standalone (yes|no) #IMPLIED
+ doctype-public CDATA #IMPLIED
+ doctype-system CDATA #IMPLIED
+ cdata-section-elements %qnames; #IMPLIED
+ indent (yes|no) #IMPLIED
+ media-type CDATA #IMPLIED
+>
+
+<!ELEMENT xsl:key EMPTY>
+<!ATTLIST xsl:key
+ name %qname; #REQUIRED
+ match %pattern; #REQUIRED
+ use %expr; #REQUIRED
+>
+
+<!ELEMENT xsl:locale EMPTY>
+<!ATTLIST xsl:locale
+ name %qname; #IMPLIED
+ decimal-separator %char; "."
+ grouping-separator %char; ","
+ infinity CDATA "&#x221E;"
+ minus-sign %char; "-"
+ NaN CDATA "&#xFFFD;"
+ percent %char; "%"
+ per-mille %char; "&#x2030;"
+ zero-digit %char; "0"
+ digit %char; "#"
+ pattern-separator %char; ";"
+>
+
+<!ELEMENT xsl:template
+(#PCDATA
+ %instructions;
+ %result-elements;
+ | xsl:param)*
+>
+
+<!ATTLIST xsl:template
+ match %pattern; #IMPLIED
+ name %qname; #IMPLIED
+ priority %priority; #IMPLIED
+ mode %qname; #IMPLIED
+ %space-att;
+>
+
+<!ELEMENT xsl:value-of EMPTY>
+<!ATTLIST xsl:value-of
+ select %expr; #REQUIRED
+ disable-output-escaping (yes|no) "no"
+>
+
+<!ELEMENT xsl:copy-of EMPTY>
+<!ATTLIST xsl:copy-of select %expr; #REQUIRED>
+
+<!ELEMENT xsl:number EMPTY>
+<!ATTLIST xsl:number
+  level (single|multiple|any) "single"
+  count %pattern; #IMPLIED
+  from %pattern; #IMPLIED
+  value %expr; #IMPLIED
+  format %avt; '1'
+  lang %avt; #IMPLIED
+  letter-value %avt; #IMPLIED
+  grouping-separator%avt; #IMPLIED
+  grouping-size %avt; #IMPLIED
+>
+
+<!ELEMENT xsl:apply-templates (xsl:sort|xsl:with-param)*>
+<!ATTLIST xsl:apply-templates
+ select %expr; "node()"
+ mode %qname; #IMPLIED
+>
+
+<!ELEMENT xsl:apply-imports EMPTY>
+
+<!-- xsl:sort cannot occur after any other elements or
+any non-whitespace character -->
+
+<!ELEMENT xsl:for-each
+(#PCDATA
+ %instructions;
+ %result-elements;
+ | xsl:sort)*
+>
+
+<!ATTLIST xsl:for-each
+ select %expr; #REQUIRED
+ %space-att;
+>
+
+<!ELEMENT xsl:sort EMPTY>
+<!ATTLIST xsl:sort
+ select %expr; "."
+ lang %avt; #IMPLIED
+ data-type %avt; "text"
+ order %avt; "ascending"
+ case-order %avt; #IMPLIED
+>
+
+<!ELEMENT xsl:if %template;>
+<!ATTLIST xsl:if
+ test %expr; #REQUIRED
+ %space-att;
+>
+
+<!ELEMENT xsl:choose (xsl:when+, xsl:otherwise?)>
+<!ATTLIST xsl:choose %space-att;>
+
+<!ELEMENT xsl:when %template;>
+<!ATTLIST xsl:when
+ test %expr; #REQUIRED
+ %space-att;
+>
+
+<!ELEMENT xsl:otherwise %template;>
+<!ATTLIST xsl:otherwise %space-att;>
+
+<!ELEMENT xsl:attribute-set (xsl:attribute)*>
+<!ATTLIST xsl:attribute-set
+ name %qname; #REQUIRED
+ use-attribute-sets %qnames; #IMPLIED
+>
+
+<!ELEMENT xsl:call-template (xsl:with-param)*>
+<!ATTLIST xsl:call-template
+ name %qname; #REQUIRED
+>
+
+<!ELEMENT xsl:with-param %template;>
+<!ATTLIST xsl:with-param
+ name %qname; #REQUIRED
+ select %expr; #IMPLIED
+>
+
+<!ELEMENT xsl:variable %template;>
+<!ATTLIST xsl:variable 
+ name %qname; #REQUIRED
+ select %expr; #IMPLIED
+>
+
+<!ELEMENT xsl:param %template;>
+<!ATTLIST xsl:param 
+ name %qname; #REQUIRED
+ select %expr; #IMPLIED
+>
+
+<!ELEMENT xsl:text (#PCDATA)>
+<!ATTLIST xsl:text
+ disable-output-escaping (yes|no) "no"
+>
+
+<!ELEMENT xsl:processing-instruction %char-template;>
+<!ATTLIST xsl:processing-instruction 
+ name %avt; #REQUIRED
+ %space-att;
+>
+
+<!ELEMENT xsl:element %template;>
+<!ATTLIST xsl:element 
+ name %avt; #REQUIRED
+ namespace %avt; #IMPLIED
+ use-attribute-sets %qnames; #IMPLIED
+ %space-att;
+>
+
+<!ELEMENT xsl:attribute %char-template;>
+<!ATTLIST xsl:attribute 
+ name %avt; #REQUIRED
+ namespace %avt; #IMPLIED
+ %space-att;
+>
+
+<!ELEMENT xsl:comment %char-template;>
+<!ATTLIST xsl:comment %space-att;>
+
+<!ELEMENT xsl:copy %template;>
+<!ATTLIST xsl:copy
+ %space-att;
+ use-attribute-sets %qnames; #IMPLIED
+>
+
+<!ELEMENT xsl:message %template;>
+<!ATTLIST xsl:message %space-att;>
+
+<!ELEMENT xsl:fallback %template;>
+<!ATTLIST xsl:fallback %space-att;>
+
+
+
+<!-- ######################################################################## -->
+<!--   HTML 4.0 Strict DTD   (revised to allow for xsl content)               -->
+<!--   Original DTD from XML4J package                                        -->
+<!--   Original SGML to XML conversion by TAMURA, Kent for IBM's XML4J        -->
+
+<!-- 
+     Container for all xsl elements allowed inside result-elements elements,
+     i.e.: all xsl elements which are valid where a result-element is valid,
+     and therefore must be valid inside ALL non-empty HTML elements.
+
+     You'll notice this does allow the user to create invalid XSL documents.
+
+  xsl:sort, xsl:param, xsl:param-variable were not inluded because
+  IMHO it is bad practice (and an error?) not to include them before 
+  other siblings, especially result-ns ones.
+-->
+
+<!-- While the content should be simply %instructions; we cannot do that
+     due to the first '|' in %instructions -->
+<!ENTITY % xsl-valid-in-resultns "
+  xsl:processing-instruction
+  | xsl:comment
+  | xsl:element
+  | xsl:attribute
+  %char-instructions;
+">
+
+<!-- Also, %result-element-atts; was added to the ATTLIST of all html
+     elments -->
+
+<!-- Revision: 23 1.3 docs/data/HTML40strict.xml.dtd, xml4jdocs, xml4j-jtcsv, xml4j_1_1_9  -->
+
+<!--
+    This is HTML 4.0 Strict DTD, which excludes the presentation 
+    attributes and elements that W3C expects to phase out as 
+    support for style sheets matures. Authors should use the Strict
+    DTD when possible, but may use the Transitional DTD when support
+    for presentation attribute and elements is required.
+    
+    HTML 4.0 includes mechanisms for style sheets, scripting,
+    embedding objects, improved support for right to left and mixed
+    direction text, and enhancements to forms for improved
+    accessibility for people with disabilities.
+
+          Draft: Date: 1998/07/06 17:50:32
+
+          Authors:
+              Dave Raggett <dsr@w3.org>
+              Arnaud Le Hors <lehors@w3.org>
+              Ian Jacobs <ij@w3.org>
+
+    Further information about HTML 4.0 is available at:
+
+        http://www.w3.org/TR/REC-html40
+-->
+
+<!--
+    ================================================================
+    Modified for XML 1.0 by:
+	"TAMURA, Kent" <kent@trl.ibm.co.jp>
+
+    o HTMLspecial, HTMLsymbol, HTMLlat1 aren't included in this DTD.
+    o The `lang' attribute was renamed to `xml:lang'.
+
+
+    Typical usage:
+
+    <?xml version="1.0" encoding="..."?>
+    <!DOCTYPE HTML SYSTEM ".../HTML40strict.xml.dtd">
+    <HTML>
+      <HEAD>
+        ...
+        <TITLE>...</TITLE>
+        ...
+      </HEAD>
+      <BODY>
+        ...
+      </BODY>
+    </HTML>
+
+    Note: XML is case-sensitive.  So element names must be written
+    in uppercase and attribute names must be written in lowercase.
+    ================================================================
+-->
+
+<!--
+    Typical usage:
+
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"
+            "http://www.w3.org/TR/REC-html40/strict.dtd">
+    <html>
+    <head>
+    ...
+    </head>
+    <body>
+    ...
+    </body>
+    </html>
+
+    The URI used as a system identifier with the public identifier allows
+    the user agent to download the DTD and entity sets as needed.
+
+    The FPI for the Transitional HTML 4.0 DTD is:
+
+        "-//W3C//DTD HTML 4.0 Transitional//EN"
+
+    and its URI is:
+
+        http://www.w3.org/TR/REC-html40/loose.dtd
+
+    If you are writing a document that includes frames, use 
+    the following FPI:
+
+        "-//W3C//DTD HTML 4.0 Frameset//EN"
+
+    with the URI:
+
+        http://www.w3.org/TR/REC-html40/frameset.dtd
+
+    The following URIs are supported in relation to HTML 4.0
+
+    "http://www.w3.org/TR/REC-html40/strict.dtd" (Strict DTD)
+    "http://www.w3.org/TR/REC-html40/loose.dtd" (Loose DTD)
+    "http://www.w3.org/TR/REC-html40/frameset.dtd" (Frameset DTD)
+    "http://www.w3.org/TR/REC-html40/HTMLlat1.ent" (Latin-1 entities)
+    "http://www.w3.org/TR/REC-html40/HTMLsymbol.ent" (Symbol entities)
+    "http://www.w3.org/TR/REC-html40/HTMLspecial.ent" (Special entities)
+
+    These URIs point to the latest version of each file. To reference
+    this specific revision use the following URIs:
+
+    "http://www.w3.org/TR/REC-html40-971218/strict.dtd"
+    "http://www.w3.org/TR/REC-html40-971218/loose.dtd"
+    "http://www.w3.org/TR/REC-html40-971218/frameset.dtd"
+    "http://www.w3.org/TR/REC-html40-971218/HTMLlat1.ent"
+    "http://www.w3.org/TR/REC-html40-971218/HTMLsymbol.ent"
+    "http://www.w3.org/TR/REC-html40-971218/HTMLspecial.ent"
+
+-->
+
+<!--=== for XML ===-->
+<!ENTITY % Number "CDATA">
+<!ENTITY % Name "NMTOKEN">
+
+
+<!--================== Imported Names ====================================-->
+
+<!ENTITY % ContentType "CDATA"
+> <!-- media type, as per [RFC2045]
+    -->
+
+<!ENTITY % ContentTypes "CDATA"
+> <!-- comma-separated list of media types, as per [RFC2045]
+    -->
+
+<!ENTITY % Charset "CDATA"
+> <!-- a character encoding, as per [RFC2045]
+    -->
+
+<!ENTITY % Charsets "CDATA"
+> <!-- a space separated list of character encodings, as per [RFC2045]
+    -->
+
+<!ENTITY % LanguageCode "NMTOKEN"
+> <!-- a language code, as per [RFC1766]
+    -->
+
+<!ENTITY % Character "CDATA"
+> <!-- a single character from [ISO10646] 
+    -->
+
+<!ENTITY % LinkTypes "CDATA"
+> <!-- space-separated list of link types
+    -->
+
+<!ENTITY % MediaDesc "CDATA"
+> <!-- single or comma-separated list of media descriptors
+    -->
+
+<!-- Defined elsewhere in this DTD
+<!ENTITY % URI "CDATA"
+> <! a Uniform Resource Identifier,
+       see [URI]
+    -->
+
+<!ENTITY % Datetime "CDATA"><!-- date and time information. ISO date format -->
+
+
+<!ENTITY % Script "CDATA"><!-- script expression -->
+
+<!ENTITY % StyleSheet "CDATA"><!-- style sheet data -->
+
+
+
+<!ENTITY % Text "CDATA">
+
+
+<!-- Parameter Entities -->
+
+<!ENTITY % head.misc "SCRIPT|STYLE|META|LINK|OBJECT"><!-- repeatable head elements -->
+<!ENTITY % heading "H1|H2|H3|H4|H5|H6">
+<!ENTITY % list "UL | OL">
+<!ENTITY % preformatted "PRE">
+
+
+<!--================ Character mnemonic entities =========================-->
+
+<!--ENTITY % HTMLlat1 PUBLIC
+   "-//W3C//ENTITIES Latin1//EN//HTML"
+   "HTMLlat1.ent"-->
+<!--   "http://www.w3.org/TR/REC-html40-971218/HTMLlat1.ent"-->
+<!--%HTMLlat1;-->
+
+<!--ENTITY % HTMLsymbol PUBLIC
+   "-//W3C//ENTITIES Symbols//EN//HTML"
+   "HTMLsymbol.ent"-->
+<!--   "http://www.w3.org/TR/REC-html40-971218/HTMLsymbol.ent"-->
+<!--%HTMLsymbol;-->
+
+<!--ENTITY % HTMLspecial PUBLIC
+   "-//W3C//ENTITIES Special//EN//HTML"
+   "HTMLspecial.ent"-->
+<!--   "http://www.w3.org/TR/REC-html40-971218/HTMLspecial.ent"-->
+<!--%HTMLspecial;-->
+
+<!-- We define these elsewhere in this mixed DTD
+<!ENTITY quot "&#34;">
+<!ENTITY amp  "&#38;">
+<!ENTITY lt   "&#60;">
+<!ENTITY gt   "&#62;">
+-->
+
+<!--=================== Generic Attributes ===============================-->
+
+<!ENTITY % coreattrs
+ "id          ID             #IMPLIED
+  class       CDATA          #IMPLIED
+  style       %StyleSheet;   #IMPLIED
+  title       %Text;         #IMPLIED
+  %result-element-atts;"
+>
+
+<!ENTITY % i18n
+ "xml:lang    %LanguageCode; #IMPLIED
+  dir         (ltr|rtl)      #IMPLIED"
+  >
+
+<!ENTITY % events
+ "onclick     %Script;       #IMPLIED
+  ondblclick  %Script;       #IMPLIED
+  onmousedown %Script;       #IMPLIED
+  onmouseup   %Script;       #IMPLIED
+  onmouseover %Script;       #IMPLIED
+  onmousemove %Script;       #IMPLIED
+  onmouseout  %Script;       #IMPLIED
+  onkeypress  %Script;       #IMPLIED
+  onkeydown   %Script;       #IMPLIED
+  onkeyup     %Script;       #IMPLIED"
+  >
+
+<!-- Reserved Feature Switch -->
+<!ENTITY % HTML.Reserved "IGNORE">
+
+<!-- The following attributes are reserved for possible future use -->
+<![ %HTML.Reserved; [
+<!ENTITY % reserved
+ "datasrc     %URI;          #IMPLIED
+  datafld     CDATA          #IMPLIED
+  dataformatas (plaintext|html) plaintext"
+  >
+]]>
+
+<!ENTITY % reserved "">
+
+<!ENTITY % attrs "%coreattrs; %i18n; %events;">
+
+
+<!--=================== Text Markup ======================================-->
+
+<!ENTITY % fontstyle
+ "TT | I | B | BIG | SMALL">
+
+<!ENTITY % phrase "EM | STRONG | DFN | CODE |
+                   SAMP | KBD | VAR | CITE | ABBR | ACRONYM" >
+
+<!ENTITY % special
+   "A | IMG | OBJECT | BR | SCRIPT | MAP | Q | SUB | SUP | SPAN | BDO">
+<!ENTITY % special-A
+   "IMG | OBJECT | BR | SCRIPT | MAP | Q | SUB | SUP | SPAN | BDO">
+
+<!ENTITY % formctrl "INPUT | SELECT | TEXTAREA | LABEL | BUTTON">
+
+<!-- %inline; covers inline or "text-level" elements -->
+<!ENTITY % inline "#PCDATA | %fontstyle; | %phrase; | %special; | %formctrl;">
+<!ENTITY % inline-A "#PCDATA | %fontstyle; | %phrase; | %special-A; | %formctrl;">
+<!ENTITY % inline-LABEL "#PCDATA | %fontstyle; | %phrase; | %special; | INPUT | SELECT | TEXTAREA | BUTTON">
+
+<!--
+<!ELEMENT (%fontstyle;|%phrase;)     (%inline;)*>
+<!ATTLIST (%fontstyle;|%phrase;)
+  %attrs;
+  >-->
+<!ELEMENT TT (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST TT %attrs;>
+<!ELEMENT I (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST I %attrs;>
+<!ELEMENT B (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST B %attrs;>
+<!ELEMENT BIG (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST BIG %attrs;>
+<!ELEMENT SMALL (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST SMALL %attrs;>
+<!ELEMENT EM (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST EM %attrs;>
+<!ELEMENT STRONG (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST STRONG %attrs;>
+<!ELEMENT DFN (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST DFN %attrs;>
+<!ELEMENT CODE (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST CODE %attrs;>
+<!ELEMENT SAMP (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST SAMP %attrs;>
+<!ELEMENT KBD (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST KBD %attrs;>
+<!ELEMENT VAR (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST VAR %attrs;>
+<!ELEMENT CITE (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST CITE %attrs;>
+<!ELEMENT ABBR (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST ABBR %attrs;>
+<!ELEMENT ACRONYM (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST ACRONYM %attrs;>
+
+
+<!ELEMENT SUP (%inline; | %xsl-valid-in-resultns;)*><!-- subscript, superscript -->
+<!ATTLIST SUP
+  %attrs;
+  >
+<!ELEMENT SUB (%inline; | %xsl-valid-in-resultns;)*><!-- subscript, superscript -->
+<!ATTLIST SUB
+  %attrs;
+  >
+
+<!ELEMENT SPAN (%inline; | %xsl-valid-in-resultns;)*><!-- generic language/style container -->
+<!ATTLIST SPAN
+  %attrs;
+  %reserved;			
+  >
+
+<!ELEMENT BDO (%inline; | %xsl-valid-in-resultns;)*><!-- I18N BiDi over-ride -->
+<!ATTLIST BDO
+  %coreattrs;
+  lang        %LanguageCode; #IMPLIED
+  dir         (ltr|rtl)      #REQUIRED
+  >
+
+
+<!ELEMENT BR     EMPTY><!-- forced line break -->
+<!ATTLIST BR
+  %coreattrs;
+  >
+
+<!--================== HTML content models ===============================-->
+
+<!--
+    HTML has two basic content models:
+
+        %inline;     character level elements and text strings
+        %block;      block-like elements e.g. paragraphs and lists
+-->
+
+<!ENTITY % block
+     "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT |
+      BLOCKQUOTE | FORM | HR | TABLE | FIELDSET | ADDRESS">
+<!ENTITY % block-FORM
+     "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT |
+      BLOCKQUOTE | HR | TABLE | FIELDSET | ADDRESS">
+<!ENTITY % block-FORM-FIELDSET
+     "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT |
+      BLOCKQUOTE | HR | TABLE | ADDRESS">
+
+<!--<!ENTITY % flow "%block; | %inline;">-->
+<!ENTITY % flow "%inline; | %block;">
+
+<!--=================== Document Body ====================================-->
+
+<!--ELEMENT BODY     (%block;|SCRIPT)+ +(INS|DEL)  document body -->
+<!ELEMENT BODY ((INS|DEL)*, (%xsl-valid-in-resultns;|%block;|SCRIPT), (INS|DEL)*)+ ><!-- document body -->
+<!ATTLIST BODY
+  %attrs;
+  onload          %Script;   #IMPLIED
+  onunload        %Script;   #IMPLIED
+  >
+
+<!ELEMENT ADDRESS (%inline; | %xsl-valid-in-resultns;)*><!-- information on author -->
+<!ATTLIST ADDRESS
+  %attrs;
+  >
+
+<!ELEMENT DIV (%flow; | %xsl-valid-in-resultns;)*><!-- generic language/style container -->
+<!ATTLIST DIV
+  %attrs;
+  %reserved;
+  >
+
+
+<!--================== The Anchor Element ================================-->
+
+<!ENTITY % Shape "(rect|circle|poly|default)">
+<!ENTITY % Coords "CDATA"><!-- comma separated list of lengths -->
+
+<!ELEMENT A (%inline-A; | %xsl-valid-in-resultns;)*><!-- anchor -->
+<!ATTLIST A
+  %attrs;
+  charset     %Charset;      #IMPLIED
+  type        %ContentType;  #IMPLIED
+  name        CDATA          #IMPLIED
+  href        %URI;          #IMPLIED
+  hreflang    %LanguageCode; #IMPLIED
+  rel         %LinkTypes;    #IMPLIED
+  rev         %LinkTypes;    #IMPLIED
+  accesskey   %Character;    #IMPLIED
+  shape       %Shape;        "rect"
+  coords      %Coords;       #IMPLIED
+  tabindex    %Number;       #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  >
+
+<!--================== Client-side image maps ============================-->
+
+<!-- These can be placed in the same document or grouped in a
+     separate document although this isn't yet widely supported -->
+
+<!ELEMENT MAP  ((%xsl-valid-in-resultns;|%block;)+ | (%xsl-valid-in-resultns;|AREA+))><!-- client-side image map -->
+<!ATTLIST MAP
+  %attrs;
+  name        CDATA          #REQUIRED
+  >
+
+<!ELEMENT AREA     EMPTY><!-- client-side image map area -->
+<!ATTLIST AREA
+  %attrs;
+  shape       %Shape;        "rect"
+  coords      %Coords;       #IMPLIED
+  href        %URI;          #IMPLIED
+  nohref      (nohref)       #IMPLIED
+  alt         %Text;         #REQUIRED
+  tabindex    %Number;       #IMPLIED
+  accesskey   %Character;    #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  >
+
+<!--================== The LINK Element ==================================-->
+
+<!--
+  Relationship values can be used in principle:
+
+   a) for document specific toolbars/menus when used
+      with the LINK element in document head e.g.
+        start, contents, previous, next, index, end, help
+   b) to link to a separate style sheet (rel=stylesheet)
+   c) to make a link to a script (rel=script)
+   d) by stylesheets to control how collections of
+      html nodes are rendered into printed documents
+   e) to make a link to a printable version of this document
+      e.g. a postscript or pdf version (rel=alternate media=print)
+-->
+
+<!ELEMENT LINK     EMPTY><!-- a media-independent link -->
+<!ATTLIST LINK
+  %attrs;
+  charset     %Charset;      #IMPLIED
+  href        %URI;          #IMPLIED
+  hreflang    %LanguageCode; #IMPLIED
+  type        %ContentType;  #IMPLIED
+  rel         %LinkTypes;    #IMPLIED
+  rev         %LinkTypes;    #IMPLIED
+  media       %MediaDesc;    #IMPLIED
+  >
+
+<!--=================== Images ===========================================-->
+
+<!-- Length defined in strict DTD for cellpadding/cellspacing -->
+<!ENTITY % Length "CDATA"><!-- nn for pixels or nn% for percentage length -->
+<!ENTITY % MultiLength "CDATA"><!-- pixel, percentage, or relative -->
+
+<!ENTITY % MultiLengths "CDATA"><!-- comma-separated list of MultiLength -->
+
+<!ENTITY % Pixels "CDATA"><!-- integer representing length in pixels -->
+
+
+<!-- To avoid problems with text-only UAs as well as 
+   to make image content understandable and navigable 
+   to users of non-visual UAs, you need to provide
+   a description with ALT, and avoid server-side image maps -->
+<!ELEMENT IMG     EMPTY><!-- Embedded image -->
+<!ATTLIST IMG
+  %attrs;
+  src         %URI;          #REQUIRED
+  alt         %Text;         #REQUIRED
+  longdesc    %URI;          #IMPLIED
+  height      %Length;       #IMPLIED
+  width       %Length;       #IMPLIED
+  usemap      %URI;          #IMPLIED
+  ismap       (ismap)        #IMPLIED
+  >
+
+<!-- USEMAP points to a MAP element which may be in this document
+  or an external document, although the latter is not widely supported -->
+
+<!--==================== OBJECT ======================================-->
+<!--
+  OBJECT is used to embed objects as part of HTML pages 
+  PARAM elements should precede other content. SGML mixed content
+  model technicality precludes specifying this formally ...
+-->
+
+<!ELEMENT OBJECT (%flow; | %xsl-valid-in-resultns; | PARAM)*
+><!-- generic embedded object -->
+<!ATTLIST OBJECT
+  %attrs;
+  declare     (declare)      #IMPLIED
+  classid     %URI;          #IMPLIED
+  codebase    %URI;          #IMPLIED
+  data        %URI;          #IMPLIED
+  type        %ContentType;  #IMPLIED
+  codetype    %ContentType;  #IMPLIED
+  archive     %URI;          #IMPLIED
+  standby     %Text;         #IMPLIED
+  height      %Length;       #IMPLIED
+  width       %Length;       #IMPLIED
+  usemap      %URI;          #IMPLIED
+  name        CDATA          #IMPLIED
+  tabindex    %Number;       #IMPLIED
+  %reserved;
+  >
+
+<!ELEMENT PARAM     EMPTY><!-- named property value -->
+<!ATTLIST PARAM
+  id          ID             #IMPLIED
+  name        CDATA          #REQUIRED
+  value       CDATA          #IMPLIED
+  valuetype   (DATA|REF|OBJECT) "DATA"
+  type        %ContentType;  #IMPLIED
+  >
+
+
+<!--=================== Horizontal Rule ==================================-->
+
+<!ELEMENT HR     EMPTY><!-- horizontal rule -->
+<!ATTLIST HR
+  %coreattrs;
+  %events;
+  >
+
+<!--=================== Paragraphs =======================================-->
+
+<!ELEMENT P (%inline; | %xsl-valid-in-resultns;)*><!-- paragraph -->
+<!ATTLIST P
+  %attrs;
+  >
+
+<!--=================== Headings =========================================-->
+
+<!--
+  There are six levels of headings from H1 (the most important)
+  to H6 (the least important).
+-->
+
+<!--
+<!ELEMENT (%heading;)      (%inline;)*>
+<!ATTLIST (%heading;)
+  %attrs;
+  >-->
+<!ELEMENT H1 (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST H1 %attrs;>
+<!ELEMENT H2 (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST H2 %attrs;>
+<!ELEMENT H3 (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST H3 %attrs;>
+<!ELEMENT H4 (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST H4 %attrs;>
+<!ELEMENT H5 (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST H5 %attrs;>
+<!ELEMENT H6 (%inline; | %xsl-valid-in-resultns;)*>
+<!ATTLIST H6 %attrs;>
+
+
+<!--=================== Preformatted Text ================================-->
+
+<!-- excludes markup for images and changes in font size -->
+<!--
+<!ENTITY % pre.exclusion "IMG|OBJECT|BIG|SMALL|SUB|SUP">
+
+<!ELEMENT PRE  (%inline;)* -(%pre.exclusion;)><! preformatted text -->
+
+<!ELEMENT PRE (#PCDATA |%xsl-valid-in-resultns;| TT|I|B|%phrase;|A|BR|SCRIPT|MAP|Q|SPAN|BDO|%formctrl;)*>
+			<!-- preformatted text -->
+<!ATTLIST PRE
+  %attrs;>
+<!-- Should the attribute below be incuded in PRE?
+  xml:space (default|preserve) #FIXED "preserve"
+-->
+
+<!--===================== Inline Quotes ==================================-->
+
+<!ELEMENT Q  (%inline; | %xsl-valid-in-resultns;)*><!-- short inline quotation -->
+<!ATTLIST Q
+  %attrs;
+  cite        %URI;          #IMPLIED
+  >
+
+<!--=================== Block-like Quotes ================================-->
+
+<!ELEMENT BLOCKQUOTE  (%block;|%xsl-valid-in-resultns;|SCRIPT)+><!-- long quotation -->
+<!ATTLIST BLOCKQUOTE
+  %attrs;
+  cite        %URI;          #IMPLIED
+  >
+
+<!--=================== Inserted/Deleted Text ============================-->
+
+
+<!-- INS/DEL are handled by inclusion on BODY -->
+<!ELEMENT INS (%flow;|%xsl-valid-in-resultns;)*><!-- inserted text, deleted text -->
+<!ATTLIST INS
+  %attrs;
+  cite        %URI;          #IMPLIED
+  datetime    %Datetime;     #IMPLIED
+  >
+<!ELEMENT DEL (%flow;|%xsl-valid-in-resultns;)*><!-- inserted text, deleted text -->
+<!ATTLIST DEL
+  %attrs;
+  cite        %URI;          #IMPLIED
+  datetime    %Datetime;     #IMPLIED
+  >
+
+<!--=================== Lists ============================================-->
+
+<!-- definition lists - DT for term, DD for its definition -->
+
+<!ELEMENT DL  (%xsl-valid-in-resultns;| DT|DD)+><!-- definition list -->
+<!ATTLIST DL
+  %attrs;
+  >
+
+<!ELEMENT DT (%inline; | %xsl-valid-in-resultns;)*><!-- definition term -->
+<!ELEMENT DD (%flow; | %xsl-valid-in-resultns;)*><!-- definition description -->
+<!ATTLIST DT
+  %attrs;
+  >
+<!ATTLIST DD
+  %attrs;
+  >
+
+
+<!ELEMENT OL (%xsl-valid-in-resultns; | LI)+><!-- ordered list -->
+<!ATTLIST OL
+  %attrs;
+  >
+
+<!-- Unordered Lists (UL) bullet styles -->
+<!ELEMENT UL (%xsl-valid-in-resultns; | LI)+><!-- unordered list -->
+<!ATTLIST UL
+  %attrs;
+  >
+
+
+
+<!ELEMENT LI (%flow; | %xsl-valid-in-resultns;)*><!-- list item -->
+<!ATTLIST LI
+  %attrs;
+  >
+
+<!--================ Forms ===============================================-->
+<!ELEMENT FORM (%xsl-valid-in-resultns;|%block-FORM;|SCRIPT)+>
+
+<!-- interactive form -->
+<!ATTLIST FORM
+  %attrs;
+  action      %URI;          #REQUIRED
+  method      (GET|POST)     "GET"
+  enctype     %ContentType;  "application/x-www-form-urlencoded"
+  onsubmit    %Script;       #IMPLIED
+  onreset     %Script;       #IMPLIED
+  accept-charset %Charsets;  #IMPLIED
+  >
+
+<!-- Each label must not contain more than ONE field -->
+<!ELEMENT LABEL  (%inline-LABEL; | %xsl-valid-in-resultns;)*><!-- form field label text -->
+<!ATTLIST LABEL
+  %attrs;
+  for         IDREF          #IMPLIED
+  accesskey   %Character;    #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  >
+
+<!ENTITY % InputType
+  "(TEXT | PASSWORD | CHECKBOX |
+    RADIO | SUBMIT | RESET |
+    FILE | HIDDEN | IMAGE | BUTTON)"
+   >
+
+<!-- attribute name required for all but submit & reset -->
+<!ELEMENT INPUT     EMPTY><!-- form control -->
+<!ATTLIST INPUT
+  %attrs;
+  type        %InputType;    "TEXT"
+  name        CDATA          #IMPLIED
+  value       CDATA          #IMPLIED
+  checked     (checked)      #IMPLIED
+  disabled    (disabled)     #IMPLIED
+  readonly    (readonly)     #IMPLIED
+  size        CDATA          #IMPLIED
+  maxlength   %Number;       #IMPLIED
+  src         %URI;          #IMPLIED
+  alt         CDATA          #IMPLIED
+  usemap      %URI;          #IMPLIED
+  tabindex    %Number;       #IMPLIED
+  accesskey   %Character;    #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  onselect    %Script;       #IMPLIED
+  onchange    %Script;       #IMPLIED
+  accept      %ContentTypes; #IMPLIED
+  %reserved;
+  >
+
+<!ELEMENT SELECT ((%xsl-valid-in-resultns;|OPTGROUP)|(%xsl-valid-in-resultns;|OPTION))+ ><!-- option selector -->
+<!ATTLIST SELECT
+  %attrs;
+  name        CDATA          #IMPLIED
+  size        %Number;       #IMPLIED
+  multiple    (multiple)     #IMPLIED
+  disabled    (disabled)     #IMPLIED
+  tabindex    %Number;       #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  onchange    %Script;       #IMPLIED
+  %reserved;
+  >
+
+<!ELEMENT OPTGROUP (%xsl-valid-in-resultns;|OPTION)+>  <!-- option group -->
+<!ATTLIST OPTGROUP
+  %attrs;
+  disabled    (disabled)     #IMPLIED
+  label       %Text;         #REQUIRED
+  >
+
+<!ELEMENT OPTION  (#PCDATA | %xsl-valid-in-resultns;)*><!-- selectable choice -->
+<!ATTLIST OPTION
+  %attrs;
+  selected    (selected)     #IMPLIED
+  disabled    (disabled)     #IMPLIED
+  label       %Text;         #IMPLIED
+  value       CDATA          #IMPLIED
+  >
+
+<!ELEMENT TEXTAREA (#PCDATA | %xsl-valid-in-resultns;)*><!-- multi-line text field -->
+<!ATTLIST TEXTAREA
+  %attrs;
+  name        CDATA          #IMPLIED
+  rows        %Number;       #REQUIRED
+  cols        %Number;       #REQUIRED
+  disabled    (disabled)     #IMPLIED
+  readonly    (readonly)     #IMPLIED
+  tabindex    %Number;       #IMPLIED
+  accesskey   %Character;    #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  onselect    %Script;       #IMPLIED
+  onchange    %Script;       #IMPLIED
+  %reserved;
+  >
+
+<!--
+  #PCDATA is to solve the mixed content problem,
+  per specification only whitespace is allowed there!
+
+  We do allow XSL inside as well
+ -->
+<!--ELEMENT FIELDSET     (#PCDATA,LEGEND,(%flow;)*)    form control group -->
+<!ELEMENT FIELDSET  (%flow;|%xsl-valid-in-resultns;|LEGEND)*><!-- form control group -->
+<!ATTLIST FIELDSET
+  %attrs;
+  >
+
+<!ELEMENT LEGEND (%inline;|%xsl-valid-in-resultns;)*><!-- fieldset legend -->
+<!ENTITY % LAlign "(top|bottom|left|right)">
+
+<!ATTLIST LEGEND
+  %attrs;
+  accesskey   %Character;    #IMPLIED
+  >
+
+<!ELEMENT BUTTON
+     (#PCDATA | %xsl-valid-in-resultns; | %fontstyle; | %phrase; | %special-A; | %block;)*
+><!-- push button -->
+<!ATTLIST BUTTON
+  %attrs;
+  name        CDATA          #IMPLIED
+  value       CDATA          #IMPLIED
+  type        (button|submit|reset) "submit"
+  disabled    (disabled)     #IMPLIED
+  tabindex    %Number;       #IMPLIED
+  accesskey   %Character;    #IMPLIED
+  onfocus     %Script;       #IMPLIED
+  onblur      %Script;       #IMPLIED
+  %reserved;
+  >
+
+<!--======================= Tables =======================================-->
+
+<!-- IETF HTML table standard, see [RFC1942] -->
+
+<!--
+ The BORDER attribute sets the thickness of the frame around the
+ table. The default units are screen pixels.
+
+ The FRAME attribute specifies which parts of the frame around
+ the table should be rendered. The values are not the same as
+ CALS to avoid a name clash with the VALIGN attribute.
+
+ The value "border" is included for backwards compatibility with
+ <TABLE BORDER> which yields frame=border and border=implied
+ For <TABLE BORDER=1> you get border=1 and frame=implied. In this
+ case, it is appropriate to treat this as frame=border for backwards
+ compatibility with deployed browsers.
+-->
+<!ENTITY % TFrame "(void|above|below|hsides|lhs|rhs|vsides|box|border)">
+
+<!--
+ The RULES attribute defines which rules to draw between cells:
+
+ If RULES is absent then assume:
+     "none" if BORDER is absent or BORDER=0 otherwise "all"
+-->
+
+<!ENTITY % TRules "(none | groups | rows | cols | all)">
+  
+<!-- horizontal placement of table relative to document -->
+<!ENTITY % TAlign "(left|center|right)">
+
+<!-- horizontal alignment attributes for cell contents -->
+<!ENTITY % cellhalign
+  "align      (left|center|right|justify|char) #IMPLIED
+   char       %Character;    #IMPLIED
+   charoff    %Length;       #IMPLIED"
+  >
+
+<!-- vertical alignment attributes for cell contents -->
+<!ENTITY % cellvalign
+  "valign     (top|middle|bottom|baseline) #IMPLIED"
+  >
+
+<!ELEMENT TABLE 
+  ((%xsl-valid-in-resultns;)*, CAPTION?, (%xsl-valid-in-resultns;)*,
+   ((COL | %xsl-valid-in-resultns;)*|(COLGROUP | %xsl-valid-in-resultns;)*),
+   ((THEAD?,(%xsl-valid-in-resultns;)*,TFOOT?,(%xsl-valid-in-resultns;|TBODY)+)
+    | (%xsl-valid-in-resultns;|TR)+) )>
+
+<!ELEMENT CAPTION   (%inline; | %xsl-valid-in-resultns;)*><!-- table caption -->
+<!ELEMENT THEAD     (TR|%xsl-valid-in-resultns;)+><!-- table header -->
+<!ELEMENT TFOOT     (TR|%xsl-valid-in-resultns;)+><!-- table footer -->
+<!ELEMENT TBODY     (TR|%xsl-valid-in-resultns;)+><!-- table body -->
+<!ELEMENT COLGROUP  (%xsl-valid-in-resultns; | COL)*><!-- table column group -->
+<!ELEMENT COL       EMPTY><!-- table column -->
+<!ELEMENT TR        (TH|TD| %xsl-valid-in-resultns;)+><!-- table row -->
+<!ELEMENT TH        (%flow; | %xsl-valid-in-resultns;)*><!-- table header cell, table data cell-->
+<!ELEMENT TD        (%flow; | %xsl-valid-in-resultns;)*><!-- table header cell, table data cell-->
+
+<!ATTLIST TABLE
+  %attrs;
+  summary     %Text;         #IMPLIED
+  width       %Length;       #IMPLIED
+  border      %Pixels;       #IMPLIED
+  frame       %TFrame;       #IMPLIED
+  rules       %TRules;       #IMPLIED
+  cellspacing %Length;       #IMPLIED
+  cellpadding %Length;       #IMPLIED
+  %reserved;
+  datapagesize CDATA         #IMPLIED
+  >
+
+<!ENTITY % CAlign "(top|bottom|left|right)">
+
+<!ATTLIST CAPTION
+  %attrs;
+  >
+
+<!--
+COLGROUP groups a set of COL elements. It allows you to group
+several semantically related columns together.
+-->
+<!ATTLIST COLGROUP
+  %attrs;
+  span        %Number;       "1"
+  width       %MultiLength;  #IMPLIED
+  %cellhalign;
+  %cellvalign;
+  >
+
+<!--
+ COL elements define the alignment properties for cells in
+ one or more columns.
+
+ The WIDTH attribute specifies the width of the columns, e.g.
+
+     width=64        width in screen pixels
+     width=0.5*      relative width of 0.5
+
+ The SPAN attribute causes the attributes of one
+ COL element to apply to more than one column.
+-->
+<!ATTLIST COL
+  %attrs;
+  span        %Number;       "1"
+  width       %MultiLength;  #IMPLIED
+  %cellhalign;
+  %cellvalign;
+  >
+
+<!--
+    Use THEAD to duplicate headers when breaking table
+    across page boundaries, or for static headers when
+    TBODY sections are rendered in scrolling panel.
+
+    Use TFOOT to duplicate footers when breaking table
+    across page boundaries, or for static footers when
+    TBODY sections are rendered in scrolling panel.
+
+    Use multiple TBODY sections when rules are needed
+    between groups of table rows.
+-->
+<!ATTLIST THEAD
+  %attrs;
+  %cellhalign;
+  %cellvalign;
+  >
+<!ATTLIST TBODY
+  %attrs;
+  %cellhalign;
+  %cellvalign;
+  >
+<!ATTLIST TFOOT
+  %attrs;
+  %cellhalign;
+  %cellvalign;
+  >
+
+<!ATTLIST TR
+  %attrs;
+  %cellhalign;
+  %cellvalign;
+  >
+
+
+<!-- Scope is simpler than axes attribute for common tables -->
+<!ENTITY % Scope "(ROW|COL|ROWGROUP|COLGROUP)">
+
+<!-- TH is for headers, TD for data, but for cells acting as both use TD -->
+<!ATTLIST TH
+  %attrs;
+  abbr        %Text;         #IMPLIED
+  axis        CDATA          #IMPLIED
+  headers     IDREFS         #IMPLIED
+  scope       %Scope;        #IMPLIED
+  rowspan     %Number;       "1"
+  colspan     %Number;       "1"
+  %cellhalign;
+  %cellvalign;
+  >
+<!ATTLIST TD
+  %attrs;
+  abbr        %Text;         #IMPLIED
+  axis        CDATA          #IMPLIED
+  headers     IDREFS         #IMPLIED
+  scope       %Scope;        #IMPLIED
+  rowspan     %Number;       "1"
+  colspan     %Number;       "1"
+  %cellhalign;
+  %cellvalign;
+  >
+
+
+<!--================ Document Head =======================================-->
+<!-- %head.misc; defined earlier on as "SCRIPT|STYLE|META|LINK|OBJECT",
+     extended now to allow xsl -->
+<!ENTITY % head.misc-HEAD "%head.misc;|%xsl-valid-in-resultns;">
+
+<!ENTITY % head.content "TITLE &amp; BASE?">
+
+<!--ELEMENT HEAD     (%head.content;) +(%head.misc;)   document head -->
+<!ELEMENT HEAD
+   ((%head.misc-HEAD;)*, ((BASE?,(%head.misc-HEAD;)*,TITLE?) | (TITLE?,(%head.misc-HEAD;)*,BASE?)|(%head.misc-HEAD;)*)+, (%head.misc-HEAD;)*)>
+<!ATTLIST HEAD
+  %i18n;
+  profile     %URI;          #IMPLIED
+  %result-element-atts;
+  >
+
+<!-- The TITLE element is not considered part of the flow of text.
+       It should be displayed, for example as the page header or
+       window title. Exactly one title is required per document.
+    -->
+<!--ELEMENT TITLE     (#PCDATA) -(%head.misc;)  document title -->
+<!ELEMENT TITLE  (#PCDATA |  %xsl-valid-in-resultns;)*><!-- document title -->
+<!ATTLIST TITLE %i18n; %result-element-atts;>
+
+
+<!ELEMENT BASE     EMPTY><!-- document base URI -->
+<!ATTLIST BASE
+  href        %URI;          #REQUIRED
+  >
+
+<!ELEMENT META     EMPTY><!-- generic metainformation -->
+<!ATTLIST META
+  %i18n;
+  http-equiv  %Name;         #IMPLIED
+  name        %Name;         #IMPLIED
+  content     CDATA          #REQUIRED
+  scheme      CDATA          #IMPLIED
+  %result-element-atts;
+  >
+
+<!--ELEMENT STYLE     %StyleSheet;  style info -->
+<!ELEMENT STYLE (#PCDATA | %xsl-valid-in-resultns;)*><!-- style info -->
+<!ATTLIST STYLE
+  %i18n;
+  type        %ContentType;  #REQUIRED
+  media       %MediaDesc;    #IMPLIED
+  title       %Text;         #IMPLIED
+  %result-element-atts;
+  >
+
+<!--ELEMENT SCRIPT     %Script; script statements -->
+<!ELEMENT SCRIPT (#PCDATA | %xsl-valid-in-resultns;)*><!-- script statements -->
+<!ATTLIST SCRIPT
+  charset     %Charset;      #IMPLIED
+  type        %ContentType;  #REQUIRED
+  language    CDATA          #IMPLIED
+  src         %URI;          #IMPLIED
+  defer       (defer)        #IMPLIED
+  event       CDATA          #IMPLIED
+  for         %URI;          #IMPLIED
+  %result-element-atts;
+  >
+
+<!ELEMENT NOSCRIPT (%xsl-valid-in-resultns;|%block;)+
+><!-- alternate content container for non script-based rendering -->
+<!ATTLIST NOSCRIPT
+  %attrs;
+  >
+
+<!--================ Document Structure ==================================-->
+<!ENTITY % html.content "HEAD, BODY">
+
+<!--<!ELEMENT HTML     (%html.content;)> --><!-- document root element -->
+<!ELEMENT HTML (((%xsl-valid-in-resultns;)*,HEAD?,(%xsl-valid-in-resultns;)*,BODY?,
+                (%xsl-valid-in-resultns;)*) | (%xsl-valid-in-resultns;)*)>
+<!-- document root element -->
+<!ATTLIST HTML
+  %i18n;
+  %result-element-atts;
+  >

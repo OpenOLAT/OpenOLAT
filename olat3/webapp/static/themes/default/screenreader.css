@@ -1,0 +1,15 @@
+@charset "UTF-8";
+
+/**
+  * layouting when in web2a mode (screenreaders)
+  */ 
+
+@media all
+{
+    /* FILE CHOOSER : don't show the fake file input, can't be used by screen readers */
+	div.b_fileinput div.b_fileinput_fakechooser { display: none; }
+    div.b_fileinput input.b_fileinput_realchooser { z-index: 2; -moz-opacity:1; opacity: 1; filter: alpha(opacity:1);}
+    
+    /* generic class to hide noscreenreader layout elements */
+    .b_noscreenreader { display: none; }
+}

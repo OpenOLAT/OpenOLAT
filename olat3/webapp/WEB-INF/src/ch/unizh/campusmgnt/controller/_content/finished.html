@@ -1,0 +1,21 @@
+<script type="text/javascript">
+function o_downloadTable() {
+var links = document.getElementsByTagName("a");
+	for (j=0; j < links.length; j++){
+			if(links[j].href.indexOf("download") > -1){
+				document.getElementById("download_link").href = links[j].href;
+			}
+	}
+}
+</script>
+
+$r.render("backLink")
+<p>
+	<a id="download_link" href="" onclick="o_downloadTable()" onkeypress="o_downloadTable()" class="b_button" $r.bgTarget() ><span>$r.translate("export")</span></a>
+</p>
+<hr />
+$r.render("sepValTable")
+
+
+
+

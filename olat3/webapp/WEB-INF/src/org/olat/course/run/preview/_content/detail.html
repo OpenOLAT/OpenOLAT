@@ -1,0 +1,19 @@
+$r.render("command.config")
+<hr />
+<fieldset id="o_preview_details">
+	<legend>$r.translate("details.header")</legend>
+	<table class="b_grid b_small">
+		<tbody>
+			<tr><td>$r.translate("details.title")</td><td>$!coursenode.getShortTitle()</td></tr>
+			<tr><td>$r.translate("details.longtitle")</td><td>$!coursenode.getLongTitle()</td></tr>
+			<tr><td>$r.translate("details.role")</td><td>$r.translate("${asRole}")</td></tr>
+			<tr><td>$r.translate("details.visibility")</td><td>$!visibilityExpr</td></tr>
+			<tr><td>$r.translate("details.time")</td><td>$!time</td></tr>
+			<tr><td>$r.translate("details.groups")</td><td>$!groups</td></tr>
+			<tr><td>$r.translate("details.areas")</td><td>$!areas</td></tr>
+		</tbody>
+	</table>
+</fieldset>
+<a href="#" onclick="new Effect.toggle('o_preview_details', 'slide', {duration: 0.5})">$r.translate("details.toggle")</a>
+<hr />
+$r.render("content")

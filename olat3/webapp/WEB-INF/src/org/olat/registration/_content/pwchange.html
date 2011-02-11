@@ -1,0 +1,19 @@
+<div class="b_clearfix">
+	$r.render("pwwizard")
+	<h4>$r.translate("step1.pw.title")</h4>
+</div>
+<p>
+	$text
+</p>
+#if ($pwdhelp)
+	<p>
+		$pwdhelp
+	</p>
+#end
+<p>
+	$r.render("pwarea")
+</p>
+#if ($r.available("pwchange.homelink"))
+	<br/><br/>
+	$r.render("pwchange.homelink")
+#end

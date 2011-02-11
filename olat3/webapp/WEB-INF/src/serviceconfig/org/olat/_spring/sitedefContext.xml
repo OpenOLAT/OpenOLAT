@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+	
+	<!-- OLAT sites -->
+	<bean id="olatsites" class="org.olat.core.gui.control.navigation.SiteDefinitions" />
+	
+	<!-- classes implementing the SiteDefinition interface -->
+
+	<!-- 
+		Optional intranet site: uncomment this if you want a specific course to be 
+		your intranet course. The Intranet tab will give you a static access to this
+		special course directly from the topnavigation. Make sure that a course with
+		the given softref ID exists in the system!
+	-->
+	<!--<bean id="ch.goodsolutions.olat.intranetsite" class="ch.goodsolutions.olat.intranetsite.SiteDef" scope="prototype">
+		<property name="repositorySoftKey" value="idpcms72042813088313" />
+	</bean>-->
+	
+	<!-- Disable site by adding '<property name="enabled" value="false"/>' -->
+	<bean id="olatsites_home" class="org.olat.home.site.HomeSiteDef" scope="prototype" >
+	   <property name="order" value="1" />
+	</bean>
+	<bean id="olatsites_groups" class="org.olat.group.site.GroupsSiteDef" scope="prototype" >
+	   <property name="order" value="2" />
+	</bean>
+	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef" scope="prototype" >
+	   <property name="order" value="3" />
+	</bean>
+	<bean id="olatsites_groupman" class="org.olat.group.site.GroupsManagementSiteDef" scope="prototype" >
+	   <property name="order" value="4" />
+	</bean>
+	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef" scope="prototype" >
+	   <property name="order" value="5" />
+	</bean>
+	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef" scope="prototype">
+	   <property name="order" value="6" />
+	</bean>
+	<bean id="olatsites_guidemo" class="org.olat.test.site.GUIDemoSiteDef" scope="prototype" >
+	   <property name="order" value="7" />
+	   <property name="enabled" value="${guidemo.enabled}"/>
+	</bean>
+	<!-- <bean id="olatsites_testing" class="org.olat.test.site.TestSiteDef" scope="prototype" > 
+	   <property name="order" value="8" />
+	</bean>
+	-->
+
+</beans>

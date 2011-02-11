@@ -1,0 +1,38 @@
+@charset "UTF-8";
+/**
+ * "Yet Another Multicolumn Layout" - (X)HTML/CSS Framework
+ *
+ * (en) print stylesheet
+ * (de) Druck-Stylesheet
+ *
+ * @copyright       Copyright 2005-2007, Dirk Jesse
+ * @license         CC-A 2.0 (http://creativecommons.org/licenses/by/2.0/),
+ *                  YAML-C (http://www.yaml.de/en/license/license-conditions.html)
+ * @link            http://www.yaml.de
+ * @package         yaml
+ * @version         3.0.4
+ */
+
+/* import print base styles | Basisformatierung für Drucklayout einbinden */
+@import url(../core/print_base.css);
+
+/* #col1 - x
+** #col2 - x
+** #col3 - x
+*/
+@media print
+{
+  #col1, #col1_content {float:none; width: 100%; margin: 0; padding: 0; border: 0}
+  #col1_content {page-break-after:always}
+
+  #col2, #col2_content {float:none; width: 100%; margin: 0; padding: 0; border: 0}
+  #col2_content {page-break-after:always}
+
+  #col3, #col3_content {width: 100%; margin:0; padding: 0; border:0}
+
+  /* Optional Column Labels | Optionale Spaltenauszeichnung
+  #col1_content:before {content:" [ left | middle | right column ]"}
+  #col2_content:before {content:" [ left | middle | right column ]"}
+  #col3_content:before {content:" [ left | middle | right column ]"}
+  */
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<bean id="JMXModule" class="ch.goodsolutions.olat.jmx.JMXModule" >
+	<property name="persistedProperties">
+        <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+	      	<constructor-arg index="0" ref="coordinatorManager"/>
+	      	<constructor-arg index="1" ref="JMXModule" />
+      </bean>
+	</property>
+	
+	<property name="olatIdentifier" ref="OLATIdentifier" />
+</bean>
+
+<!-- simple jmx demo bean -->
+<bean id="OLATIdentifier" class="ch.goodsolutions.olat.jmx.OLATIdentifier" />
+
+<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="JMXModule" />
+        <property name="targetMethod" value="init" />
+        <property name="arguments">
+                    <value>
+                   		<!-- JMX Module -->
+						<!--
+							Enables JMX support within OLAT. Add any JMX beans to this module. Beans will be registered
+							at startup if JMXsupport is enabled. Their object names will be composed as follows:
+							ch.goodsolutions.olat.jmx:class=FQCLASSNAME,path=/CONTEX
+							(where FQCLASSNAME is the fully-qualified Name of your Bean class and CONTEXT ist the
+							name of the webapp context the bean was registered to.)
+							
+							JMX comes with JDK1.5. To enable JMX in JDK1.5, add the following JVM parameters:
+							-Dcom.sun.management.jmxremote.authenticate=false
+							-Dcom.sun.management.jmxremote.ssl=false
+							-Dcom.sun.management.jmxremote.port=8999
+							(Note that this opens JMX to everyone without any need to authenticate. See the JMX Docu at Sun
+							for further details.)
+							
+							prereq: none
+						-->
+							enableJMXsupport=false
+							jmxserverPort=8999
+							jmxserverUser= 
+							jmxserverPass=
+	                </value>
+          </property>
+</bean>
+
+
+</beans>

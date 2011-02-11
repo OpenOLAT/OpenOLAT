@@ -1,0 +1,31 @@
+$r.render("sourceview")
+<h4>Js and CSS demo</h4>
+<p>
+$r.render("link.jscssremove")
+
+</p>
+<br>
+Below you should see a "smile" image when you return from the dialog that appears when click on the link below.
+(we told the framework to not remove the css, since e.g. it only defines it own styles which don't disturb any other css, but keeping it in the html page 
+allows for activating it later without reloading)
+<br>
+<br><br>
+$r.render("link.jscss")
+<br><br>
+<div class="cssjsdemostyle2">
+sticky style from modal dialog2
+</div>
+<hr>
+
+Two functions with the same name "eval()" ed to the same browser window/document
+<br>
+$r.render("link.js1") &nbsp;&nbsp; $r.render("link.js2") 
+<fieldset>
+$r.render("jstestpanel")
+</fieldset>
+<br>
+<a href="javascript:supijupi()">call function 'supijupi() in jsfuncdef1/2.js' (js lib) now</a>
+<br>
+<a href="javascript:localjstest()">call function 'localjstest' (in local html fragment via script tags) now</a>
+<br>
+

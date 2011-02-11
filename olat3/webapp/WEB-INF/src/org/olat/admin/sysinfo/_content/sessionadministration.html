@@ -1,0 +1,33 @@
+<h4>$r.translate("sessionadministration.title")</h4>
+<div class="sessionadmin">
+#if ($loginBlocked)
+	$r.render("session.admin.allow.login.link")
+#else
+	$r.render("session.admin.block.login.link")	
+#end
+<br /><br />
+$r.render("session.admin.invalidate.all.link")
+#if ($showRejectDMZRequestsLink)
+	<br /><br /><br />
+	#if ($rejectingDMZRequests)
+		$r.render("session.admin.allow.dmz.requests.intro")
+		<br /><br />
+		&nbsp;&nbsp;$r.render("session.admin.allow.dmz.requests.link")
+	#else
+		$r.render("session.admin.reject.dmz.requests.intro")
+		<br /><br />
+		&nbsp;&nbsp;$r.render("session.admin.reject.dmz.requests.link")
+	#end
+#end
+<br /><br />
+$r.render("session.admin.oldest.session.form")
+<br /><br />
+$r.render("session.admin.form")
+<br /><br />
+</div>
+
+<hr/>
+<h4>$r.translate("usersession.title")</h4>
+
+
+$usersessions

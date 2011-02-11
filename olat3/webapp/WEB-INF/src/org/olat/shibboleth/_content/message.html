@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="$r.getLanguageCode()" lang="$r.getLanguageCode()">
+<head>
+<meta name="description" content="$r.translate("meta.description")" />
+<meta name="keywords" content="$r.translate("meta.keywords")" /> 
+<meta name="DC.creator" content="University of Zurich - http://www.uzh.ch" />
+<meta name="DC.subject" content="OLAT - Online Learning And Training - Your Open Source Learning Management System" />
+<meta name="DC.contributor" content="see http://www.olat.org/website/en/html/download_license.html" />
+<meta name="DC.date" content="2010-03-16" scheme="DCTERMS.W3CDTF" />
+<meta name="DC.type" content="Interactive Resource" scheme="DCTERMS.DCMIType" />
+<meta name="DC.identifier" content="http://www.olat.org/" scheme="DCTERMS.URI" />
+<meta name="DC.rights" content="http://www.olat.org/website/en/html/download_license.html" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+## <!-- IE cache -->
+<meta http-equiv="pragma-directive" content="no-cache" />
+<meta http-equiv="cache-directive" content="no-cache" />
+<script type="text/javascript">
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+var o_info = new Object();
+</script>
+## CSS theme inclusion: first the standard css and second the IE bugfixes
+<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link href="${theme.getBaseURI()}layout.css" rel="stylesheet" type="text/css" />
+<title>$r.translate("error.shibboleth.head")</title>
+</head>
+<body>
+<div id="b_page_margins"><div id="b_page">
+	<a name="b_top"></a>
+	<div id="b_header">
+		<div id="b_logo"></div>
+		<div id="b_topnav"></div>
+	</div>
+	
+	<div id="b_main" class="b_hideboth b_exception">
+		<div id="b_col3">
+			<div id="b_col3_content" class="b_clearfix">
+				<a id="b_content" name="content"></a> 
+				<div id="b_col3_content_inner" class="b_floatscrollbox">
+## START ERROR AREA	
+<center>
+<div class="b_important">
+$detailedmessage
+</div>
+#if ($supportEmail)
+<div class="b_note">
+$r.translate("idp.support.email")
+$supportEmail
+</div>
+#end
+<div class="b_button_group">
+<a class="b_button" href="$r.relLink('')"><span>Login</span></a>
+</div>
+</center>		
+## END ERROR AREA				
+				</div>
+			</div>	
+		</div>
+	</div>
+</div>
+	
+</body></html>

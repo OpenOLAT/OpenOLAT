@@ -1,0 +1,25 @@
+Entfernen aller versions etc. Tags die beim mergen Konflikte bereiten und eh überflüssig sind:
+
+1) Paket selektieren und auf Search gehen
+2) File search nach ^ *\*.*\$:*$ (regexp enablen)
+3) Nicht suchen sondern replace drücken
+4) Jede gefundene Stelle duchsteppen und ersetzen mit nichts
+5) Refresh (F5)
+6) Synchronize, outgoing changes
+7) Jeden change anschauen und die Leerzeile weglöschen. So hat man grad 
+   die Kontrolle dass alles korrekt gelöscht ist. Zudem immer schauen ob Tags vergessen
+   gegangen sind (Ein paar werden mit der regexp nicht gefunden)
+8) Checkin
+
+
+Packages (inklusive subpackages)
+
+PACKAGE			WER		STATUS
+-------------------------------
+admin			fg		done
+basesecurity		fg		done
+bookmark			fg		done
+catalog			fg		done
+collaboration	fg		done
+configuration	fg		done
+org.olat.gui.components fj done

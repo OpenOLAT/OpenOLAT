@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- spring replaces vars with values from olat.properties -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+<property name="locations">
+		<list>
+			<value>classpath:serviceconfig/olat.properties</value>
+			<value>classpath:olat.local.properties</value>
+		</list>
+		</property>
+	</bean>
+	
+	
+	<bean id="clusterAdminControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+		<property name="className" value="org.olat.commons.coordinate.cluster.jms.ClusterAdminController${cluster.mode}"/>
+	</bean>
+	
+</beans>

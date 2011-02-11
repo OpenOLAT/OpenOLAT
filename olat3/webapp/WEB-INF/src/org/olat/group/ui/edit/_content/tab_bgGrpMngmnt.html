@@ -1,0 +1,24 @@
+<fieldset>
+  	<legend>$r.translate("fieldset.legend.displaymembers")</legend>
+	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-${type}-member.html","help.hover.bgGrpMngmnt-${type}")
+  	$r.render("displayMembers")
+</fieldset>
+#if ($hasOwnerGrp)
+<fieldset>
+	<legend>$r.translate("fieldset.legend.groupowners")</legend>
+	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-${type}-memberOwner.html","help.hover.bgGrpMngmntOwner-${type}")
+	$r.render("ownerGrpMngmnt")
+</fieldset>
+#end
+<fieldset>
+	<legend>$r.translate("fieldset.legend.grouppartips")</legend>
+	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-${type}-memberParticipants.html","help.hover.bgGrpMngmntParticipants-${type}")
+	$r.render("partipGrpMngmnt")
+</fieldset>
+#if ($hasWaitingGrp)
+<fieldset>
+	<legend>$r.translate("fieldset.legend.waitinggroup")</legend>
+	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-${type}-memberWaiting.html","help.hover.bgGrpMngmntWaiting-${type}")
+	$r.render("waitingGrpMngmnt")
+</fieldset>
+#end

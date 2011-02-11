@@ -1,0 +1,8 @@
+$r.translate("file.title") $filename 
+$r.render("download") 
+$r.translate("file.size") $!meta.getFormattedSize() <br/>
+#if ($thumbMapper)
+	$r.translate("file.preview")<br/>
+	<img src="${thumbMapper}/$filename" alt="$filename"/>
+#end
+#if ($r.available("delete.file")) <br/>$r.render("delete.file") #end

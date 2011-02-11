@@ -1,0 +1,45 @@
+@charset "UTF-8";
+
+/**
+  * layouting for ALL medium and all layouts
+  */ 
+
+@media all
+{
+	/* modal overlay color */
+	div.b_modal_overlay, div.ext-el-mask { background: #fff; -moz-opacity: 0.4; opacity:0.4; } 
+	/* content area in a modal dialog - no gui specific rendering, only a container */
+	div.b_modal_area { position: absolute; top: 0; left: 0; width: 90%; margin: 5%; }
+	/* ajax busy icon*/
+	div.b_ajax_busy {background: url(../images/ajax-loader.gif) no-repeat; position: absolute; left:50% ; top: 30px; width:31px; height: 31px; z-index:5001;}
+	/* modal callout windows. Patch min length issue in Ext QuickTip */
+	div.x-tip-mc {background: #f1f1f1 ! important;}
+	
+	/* MENU TREE */
+	div.b_tree li { position: relative; padding: 0; margin: 0; border-top: 1px dotted #eee}
+	div.b_tree li a { color: #000B63; display: block;}
+	div.b_tree li a:focus,
+	div.b_tree li a:hover,
+	div.b_tree li a:active { color: #2E3463; text-decoration: underline; background-color: #DDE9F6;}	
+	/* active item and all parent items with special color and bold */
+	div.b_tree li a.b_tree_selected,
+	div.b_tree li a.b_tree_selected_parents,
+	div.b_tree li a.b_tree_l0,
+	div.b_tree li strong { color: #000B63; font-weight: bold; display: block;}
+	
+	/* SELECTION TREE */
+	div.b_selectiontree div.b_selectiontree_item:hover { background-color: #DDE9F6;}
+	
+	/* TABLE */
+	div.b_table_wrapper table tbody tr:hover,
+	div.b_table_wrapper table tbody tr:focus { background-color: #DDE9F6;}
+
+	/* TOOLBOX */
+	div.b_toolbox li a:focus,
+	div.b_toolbox li a:hover,
+	div.b_toolbox li a:active { background-color: #DDE9F6;}	
+	
+	/* BRIEFCASE */
+	div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr:hover, div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr:focus { background-color: #DDE9F6;}
+	
+}

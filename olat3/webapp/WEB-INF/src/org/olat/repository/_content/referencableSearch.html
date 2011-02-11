@@ -1,0 +1,16 @@
+<h3>$r.translate("referencableSearch.title")</h3>
+<p>	
+	|&nbsp;$r.render("allEntriesLink")&nbsp;|
+	$r.render("myEntriesLink")&nbsp;|
+	$r.render("searchEntriesLink")&nbsp;|
+</p>
+#if($hasCreateRessourceButton)
+	$r.render("cmd.create.ressource")&nbsp;
+#end
+#if($hasImportRessourceButton)
+	$r.render("cmd.import.ressource")&nbsp;
+#end
+<p>
+	<h4>$subtitle</h4>
+	$r.render("searchCtr")
+</p>

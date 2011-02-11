@@ -1,0 +1,14 @@
+<h4>$r.translate("course.bringtogether")</h4>
+#if($hasAssessableNodes)
+	<p>
+		$r.translate("btnodechoose.intro")
+	</p>
+	<p>
+		$r.render("nodeTable")
+	<p>
+#else
+	<p>
+		$r.translate("btnodesoverview.nonodes")
+	</p>
+#end
+

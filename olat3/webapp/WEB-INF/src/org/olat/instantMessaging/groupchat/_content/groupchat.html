@@ -1,0 +1,55 @@
+<div class="o_groupchat_chat">
+	<div class="b_clearfix">
+		#if ($r.available("toggleSwitch"))
+			$r.render("toggleSwitch")
+		#end
+		#if(!$isAjaxMode)
+			$r.render("refresh")
+		#end
+	</div>
+	$r.render("groupChatMessages")
+	<div class="o_groupchat_chat_form">
+		$r.render("sendMessageForm")
+	</div>
+</div>
+
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+
+function tweak_${panelName}() {
+
+	try {
+			
+		var win = Ext.getCmp('${panelName}');
+		var el = win.body.dom.getElementsByClassName('o_groupchat_history');
+		
+		if (el.length == 1) {
+			el[0].style.height=win.getSize().height-150 + 'px';
+		}
+		
+	} catch (e) {
+		//
+	}
+}
+
+function focus_${panelName}() {
+	
+	try {
+			
+		var win = Ext.getCmp('${panelName}');
+		var el = win.body.dom.getElementsByTagName('input');
+		
+		for (var i=0; i<el.length; i++) {
+			if (el[i].type == 'text') {
+				el[i].focus();
+			}
+		}
+		
+	} catch (e) {
+		//
+	}
+}
+
+/* ]]> */
+</script>

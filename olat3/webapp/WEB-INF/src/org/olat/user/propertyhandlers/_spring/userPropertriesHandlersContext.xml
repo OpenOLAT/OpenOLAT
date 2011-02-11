@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+
+	<!-- 
+		Define all available user properties and its handlers 
+	-->
+	<bean name="userPropertyFirstName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="firstName" />
+		<property name="group" value="account" />
+		<property name="deletable" value="false" />
+	</bean>
+	
+	<bean name="userPropertyLastName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="lastName" />
+		<property name="group" value="account" />
+		<property name="deletable" value="false" />
+	</bean>
+	
+	<bean name="userPropertyEmail" class="org.olat.user.propertyhandlers.EmailProperty">
+		<property name="name" value="email" />
+		<property name="group" value="account" />
+		<property name="deletable" value="false" />
+	</bean>
+	
+	<bean name="userPropertyBirthDay" class="org.olat.user.propertyhandlers.DatePropertyHandler">
+		<property name="name" value="birthDay" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyGender" class="org.olat.user.propertyhandlers.GenderPropertyHandler">
+		<property name="name" value="gender" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyTelPrivate" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
+		<property name="name" value="telPrivate" />
+		<property name="group" value="contact" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyTelMobile" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
+		<property name="name" value="telMobile" />
+		<property name="group" value="contact" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyTelOffice" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
+		<property name="name" value="telOffice" />
+		<property name="group" value="contact" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertySkype" class="org.olat.user.propertyhandlers.SkypePropertyHandler">
+		<property name="name" value="skype" />
+		<property name="group" value="contact" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyMSN" class="org.olat.user.propertyhandlers.MSNPropertyHandler">
+        <property name="name" value="msn" />
+        <property name="group" value="contact" />
+        <property name="deletable" value="true" />
+    </bean>
+    
+    <bean name="userPropertyXing" class="org.olat.user.propertyhandlers.XingPropertyHandler">
+        <property name="name" value="xing" />
+        <property name="group" value="contact" />
+        <property name="deletable" value="true" />
+    </bean>
+    
+    <bean name="userPropertyICQ" class="org.olat.user.propertyhandlers.ICQPropertyHandler">
+        <property name="name" value="icq" />
+        <property name="group" value="contact" />
+        <property name="deletable" value="true" />
+    </bean>
+	
+	<bean name="userPropertyHomepage" class="org.olat.user.propertyhandlers.URLPropertyHandler">
+		<property name="name" value="homepage" />
+		<property name="group" value="contact" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyStreet" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="street" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyExtendedAddress" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="extendedAddress" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean name="userPropertyPoBox" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="poBox" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean name="userPropertyZipCode" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="zipCode" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean name="userPropertyRegion" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="region" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean name="userPropertyCity" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="city" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean name="userPropertyCountry" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="country" />
+		<property name="group" value="address" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyInstitutionalName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="institutionalName" />
+		<property name="group" value="institute" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyInstitutionalUserIdentifier" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="institutionalUserIdentifier" />
+		<property name="group" value="institute" />
+		<property name="deletable" value="false" />
+	</bean>
+	
+	<bean name="userPropertyInstitutionalEmail" class="org.olat.user.propertyhandlers.EmailProperty">
+		<property name="name" value="institutionalEmail" />
+		<property name="group" value="institute" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyOrgUnit" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="orgUnit" />
+		<property name="group" value="institute" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyStudySubject" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="studySubject" />
+		<property name="group" value="institute" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean name="userPropertyEmailChangedKey" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="emchangeKey" />
+		<property name="group" value="account" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean name="userPropertyEmailDisabled" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+		<property name="name" value="emailDisabled" />
+		<property name="group" value="account" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<!--
+		define the properties for matching IdentityEnvironment user attributes to LoggingObject.setUserPropertiesXX. Those can be used for the usertracking context.
+		As an example serves the Shibboleth Attributes set during ShibbolethDispatcher.execute(..).
+		
+		The attribute map is set once during login. The attributes are set via IdentityEnvironment.setIdentityEnvironmentAttributes(attributes).
+		This call sets the attribute also in the User(Impl) as volatile "userproperties", they are retrieved by using the 
+		User.getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale) method. This is used in the UserActivityLogger implementation only.
+		
+		The attributes are stored as <String,String> key,value pairs in the map. The hereafter defined userProperties must meet the following criteria, to 
+		configure the UserTrackingSystem to fetch Attributes and store them to LoggingObject.setUserPropertiesXX:
+		
+		Attributes.Key == Spring property name, i.e. if in the Attributes map the following pair is present ("eduPersonAffiliation","Student"), there must be a
+		spring bean with property name="name" value="eduPersonAffiliation"
+		
+		Here you define all attributes which should be extracted and used for LoggingObject, go to the bean named userPropertyLogConfiguration and add the here defined
+		properties.
+		
+		!!!!!!!!!!!!!!!!!
+		!!! Attention !!!
+		You find then in the o_loggingtable in the userpropertyXX the corresponding value. Which can be used further for statistics. Make sure you have those setup correctly
+		before you go live with your system, and if you change the order or remove/replace something, that your statistics get confused. 
+	 -->
+	 
+	<bean name="usertrackingAttrEduPersonAffiliation" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="eduPersonAffiliation" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduHomeOrganisation" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonHomeOrganization" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduPersonStudyLevel" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonStudyLevel" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduPersonHomeOrganisationType" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonHomeOrganizationType" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrEmployeeNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="employeeNumber" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduPersonStaffCategory" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonStaffCategory" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrOrganizationalUnit" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="organizationalUnit" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduPersonStudyBranch1" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonStudyBranch1" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduPersonStudyBranch2" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonStudyBranch2" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingAttrSwissEduPersonStudyBranch3" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="swissEduPersonStudyBranch3" />
+		<property name="group" value="shibbattr" />
+		<property name="deletable" value="false" />
+	</bean>
+
+	<bean name="usertrackingLanguage" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="language" />
+		<property name="group" value="olatattr" />
+		<property name="deletable" value="false" />
+	</bean>
+	<bean name="usertrackingWebDAV" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="iswebdav" />
+		<property name="group" value="olatattr" />
+		<property name="deletable" value="false" />
+	</bean>
+
+</beans>

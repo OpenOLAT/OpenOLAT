@@ -1,0 +1,99 @@
+#*
+	render error/warnings here
+*#
+#set ($fixit = $r.translate("fix.it"))
+
+#if($hasErrors.booleanValue())
+	<div id="o_course_editor_errorbox" class="b_clearfix">
+		<div class="b_float_right">
+		#if($errorIsOpen.booleanValue())
+			$r.render("keepClosedErrorButton")
+		#else
+			$r.render("keepOpenErrorButton")
+		#end
+		</div>
+		<a href="#" onclick="b_togglebox('o_course_editor_error', this);" onkeypress="b_togglebox('o_course_editor_error', this);" class="#if(!$errorIsOpen.booleanValue()) b_togglebox_closed #else b_togglebox_opened #end">
+			$r.translate("toggle.coursestatus.errors",$errorsCount)
+		</a>	
+		## the following div is triggered by the toggle effect above
+		<div id="o_course_editor_error" #if(!$errorIsOpen.booleanValue()) style="display:none" #end ><div>
+			<ul>
+			#foreach($elem in $errorIsForNode)
+				<li>
+				#set ($counter = $velocityCount - 1)
+				#if($errorHelpWizardLink.get($counter)!="NONE")
+					<strong><a href="$r.commandURI($errorHelpWizardLink.get($counter))" title="${fixit}">${elem}</a></strong>
+				#else
+					<strong>${elem}</strong>		
+				#end
+					<br />
+					${errorMessage.get(${counter})}
+				</li>
+			#end
+			<ul>
+		</div></div>
+	</div>
+#end
+
+
+#if($hasWarnings.booleanValue())	
+	<div id="o_course_editor_warningbox" class="b_clearfix">
+		<div class="b_float_right">
+		#if($warningIsOpen.booleanValue())
+			$r.render("keepClosedWarningButton")
+		#else
+			$r.render("keepOpenWarningButton")
+		#end
+		</div>
+		<a href="#" onclick="b_togglebox('o_course_editor_warning', this);" onkeypress="b_togglebox('o_course_editor_warning', this);" class="#if(!$warningIsOpen.booleanValue()) b_togglebox_closed #else b_togglebox_opened #end">
+			$r.translate("toggle.coursestatus.warnings", $warningsCount)
+		</a>	
+		## the following div is triggered by the toggle effect above
+		<div id="o_course_editor_warning" #if(!$warningIsOpen.booleanValue()) style="display:none" #end ><div>
+			<ul>
+			#foreach($elem in $warningIsForNode)
+				<li>
+				#set ($counter = $velocityCount - 1)
+				#if($warningHelpWizardLink.get($counter)!="NONE")
+					<strong><a href="$r.commandURI($warningHelpWizardLink.get($counter))" title="${fixit}">${elem}</a></strong>
+				#else
+					<strong>${elem}</strong>		
+				#end
+					<br />
+					${warningMessage.get(${counter})}
+				</li>
+			#end
+			<ul>
+		</div></div>
+	</div>
+#end
+
+#if(!$hasErrors.booleanValue() && !$hasWarnings.booleanValue())
+	<div id="o_course_editor_okbox" class="b_clearfix">
+		<a href="#" onclick="b_togglebox('o_course_editor_ok', this);" onkeypress="b_togglebox('o_course_editor_ok', this);" class="b_togglebox_closed">
+			$r.translate("toggle.coursestatus.ok")
+		</a>	
+		## the following div is triggered by the toggle effect above
+		<div id="o_course_editor_ok" style="display:none"><div>
+			$r.translate("coursestatus.ok.message")
+		</div></div>
+	</div>
+#end
+
+#if($courseNode)
+<h4 class="b_with_small_icon_left $courseNodeCss">
+	$r.escapeHtml($courseNode.getShortTitle())
+</h4>
+#end
+#if($targetSelection)
+	$r.render("insertTargetSelection")
+#else
+	$r.render("tabbedNodeConfig")
+#end
+<div class="o_courseeditor_legend b_small">
+	<strong>$r.translate("legend.title")</strong>
+	<div class="o_midlock">$r.translate("legend.cond")</div>
+	<div class="o_miderr">$r.translate("legend.err")</div>
+	<div class="o_midwarn">$r.translate("legend.warn")</div>
+	<div class="o_midpub">$r.translate("legend.ok")</div>
+</div>

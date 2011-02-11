@@ -1,0 +1,105 @@
+dn: dc=olattest,dc=org
+objectClass: domain
+objectClass: extensibleObject
+objectClass: top
+dc: olattest
+description: LDAP ldif for OLAT LDAPLoginModule Junit Tests, by M.Rohrer
+
+dn: ou=groups,dc=olattest,dc=org
+objectClass: organizationalUnit
+objectClass: top
+description: Unterhalb dieses Eintrags befinden sich Gruppen
+ou: groups
+
+dn: ou=person,dc=olattest,dc=org
+objectClass: organizationalUnit
+objectClass: top
+description: Unterhalb dieses Eintrags befinden sich Personen
+ou: person
+
+dn: uid=mrohrer,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Maurus Rohrer
+givenname: Maurus
+labeleduri: http://www.olat.org/maurus
+mail: mrohrer@olat.org
+o: Informatik
+sn: Rohrer
+uid: mrohrer
+userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+modifyTimestamp: 20100630180000Z
+
+dn: uid=test,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: LDAP Test
+givenname: Test
+labeleduri: http://www.olat.org
+mail: test@test.com
+o: Informatik
+sn: Test
+uid: ldaptest
+userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+
+dn: uid=halpen,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Heidi Alpen
+givenname: Heidi
+labeleduri: http://www.olat.org
+mail: halpen@olat.org
+o: Bauer
+sn: Alpen
+uid: halpen
+userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+
+dn: uid=kmeier,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Klaus Meier
+givenname: Klaus
+labeleduri: http://www.olat.org
+mail: kmeier@olat.org
+o: Informatik
+sn: Meier
+uid: kmeier
+userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+
+dn: uid=hhuerlimann,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn:: SGFucyBDaGFzcGVyIEjCuHJsaW1hbm4=
+givenname: Hans Chasper
+labeleduri: http://www.olat.org/huerlimann
+mail: hhuerlimann@olat.org
+o: Forschung
+sn:: SMK4cmxpbWFubg==
+uid: hhuerlimann
+userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+modifyTimestamp: 20100630180000Z
+
+dn: uid=krass,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn:: SGFucyBDaGFzcGVyIEjCuHJsaW1hbm4=
+givenname: Krass Geil
+labeleduri: http://www.olat.org/krass
+o: Forschung
+sn:: SMK4cmxpbWFubg==
+uid: krass
+userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+modifyTimestamp: 20100630180000Z
+

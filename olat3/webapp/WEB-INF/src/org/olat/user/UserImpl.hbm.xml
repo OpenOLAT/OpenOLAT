@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.user.UserImpl" table="o_user">  
+  
+		<cache usage="read-write" />
+
+    <id name="key" column="user_id" type="long" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+
+	<component name="preferences" class="org.olat.user.PreferencesImpl">
+	    <property name="language" unique="false" not-null="false" length="10"/>
+	    <property name="fontsize" unique="false" not-null="false" length="10"/>
+	    <property name="notificationInterval">
+	    	<column name="notification_interval" unique="false" not-null="false" length="16"/>
+	    </property>
+	    <property name="presenceMessagesPublic">
+	    	<column name="presencemessagespublic"  unique="false" not-null="false"/>
+	    </property>	
+    	<property name="informSessionTimeout">
+    		<column name="informsessiontimeout" not-null="true"/>
+	    </property>	     	  
+    </component>
+
+	<map name="properties" table="o_userproperty" cascade="all,delete-orphan" fetch="join">
+        <key column="fk_user_id" not-null="true"/>
+        <map-key column="propname" type="string"/>
+        <element column="propvalue" type="string"/>
+    </map>
+  </class>
+</hibernate-mapping>

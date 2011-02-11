@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.repository.MetaDataElement" table="o_repositorymetadata">
+	
+		<cache usage="read-write" />
+
+		<id name="key" column="metadataelement_id" type="long" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+
+		<version name="version" access="field" column="version" type="int" />
+		<property  name="creationDate" column="creationdate" type="timestamp" />   
+
+		 <property name="name" unique="false" not-null="true" />
+
+		 <property name="value" type="string">
+		 	<column name="value" length="16777210" unique="false" not-null="true"/>
+		</property>
+		
+		<!-- TODO: index setzen -->
+		
+	</class>
+</hibernate-mapping>

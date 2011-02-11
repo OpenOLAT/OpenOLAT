@@ -1,0 +1,23 @@
+<p><i>$r.translate("tagging.intro")</i></p>
+$r.render("artefact.tags")
+
+#if ($userTagLinks.size()!=0) 
+	<div class="b_tags">
+		<p><i>$r.translate("tagging.intro.existing")</i></p>
+		<p>$r.translate("users.tags")<p> 
+		<div class="b_with_small_icon_left b_tag_icon">
+		#foreach($tagLink in $userTagLinks)
+			<span class="b_tag">$r.render($tagLink.getName())</span>
+		#end
+		</div>
+	</div>
+#end
+<br/><br/>
+#if ($r.available("propose.tags.link")) $r.render("propose.tags.link") #end
+<br/>
+#if ($propTagLinks && $propTagLinks.size()!=0) 
+	$r.translate("proposed.tags") 
+	#foreach($tagLink in $propTagLinks)
+		$r.render($tagLink.getName())
+	#end
+#end

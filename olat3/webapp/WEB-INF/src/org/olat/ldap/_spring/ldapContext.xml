@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+   	<!--
+		*****************************************
+		*** Define the LDAP Module          ***
+		*****************************************
+	-->
+	<bean id="org.olat.ldap.LDAPLoginModule" class="org.olat.ldap.LDAPLoginModule" init-method="init">
+		<constructor-arg index="0" ref="org.olat.ldap.LDAPLoginManager"/>
+		<constructor-arg index="1" ref="baseSecurityManager"/>
+		<constructor-arg index="2" ref="userManager"/>
+		<constructor-arg index="3" ref="schedulerFactoryBean"/>
+		
+		<!-- Basic LDAP connection configuration -->
+		<property name="enableLDAPLogins" value="${ldap.enable}" />
+		<!-- Active directory has some special format, especially for password changes -->
+		<property name="activeDirectory" value="${ldap.activeDirectory}" />
+		<property name="ldapDateFormat" value="${ldap.dateFormat}" />
+		<property name="ldapUrl" value="${ldap.ldapUrl}" />
+		<!-- System user: used for getting all users and connection testing -->
+    	<property name="ldapSystemDN" value="${ldap.ldapSystemDN}" />
+    	<property name="ldapSystemPW" value="${ldap.ldapSystemPW}" />
+    	<!-- List of bases where to find users. You can add multiple bases -->
+    	<property name="ldapBases" >
+    		<list>
+    			<value>${ldap.ldapBases}</value> 
+    		</list>
+		</property>
+		<!-- SSL Options - Add server certificate to JDK Keystore whit keytool -->
+		<property name="sslEnabled" value="${ldap.sslEnabled}"/>
+		<property name="trustStoreLocation" value="${ldap.trustStoreLocation}"/>
+		<property name="trustStorePwd" value="${ldap.trustStorePwd}"/>
+		<property name="trustStoreType" value="${ldap.trustStoreType}"/>
+		<!-- 
+			When users log in via LDAP, the system can keep a copy of the password as encrypted
+			hash in the database. This makes OLAT more independent from an offline LDAP server 
+			and users can use their LDAP password to use the WebDAV functionality.
+			When setting to true (recommended), make sure you configured pwdchange=false in the
+			org.olat.user.UserModule olat.propertes.
+		 -->
+		<property name="cacheLDAPPwdAsOLATPwdOnLogin" value="${ldap.cacheLDAPPwdAsOLATPwdOnLogin}" />
+		<!-- 
+			Change on password are propagate to the LDAP server
+		 -->
+		<property name="propagatePasswordChangedOnLdapServer" value="${ldap.propagatePasswordChangedOnLdapServer}" />
+		<!-- 
+			When the system detects an LDAP user that does already exist in OLAT but is not marked
+			as LDAP user, the OLAT user can be converted to an LDAP managed user. 
+			When enabling this feature you should make sure that you don't have a user 'administrator'
+			in your ldapBases (not a problem but not recommended)
+		 -->
+		<property name="convertExistingLocalUsersToLDAPUsers" value="${ldap.convertExistingLocalUsersToLDAPUsers}" />
+		<!-- 
+			Users that have been created vial LDAP sync but now can't be found on the LDAP anymore
+			can be deleted automatically. If unsure, set to false and delete those users manually
+			in the user management.
+		 -->
+		<property name="deleteRemovedLDAPUsersOnSync" value="${ldap.deleteRemovedLDAPUsersOnSync}" />		
+		<!-- 
+			Sanity check when deleteRemovedLDAPUsersOnSync is set to 'true': if more than the defined
+			percentages of user accounts are not found on the LDAP server and thus recognized as to be
+			deleted, the LDAP sync will not happen and require a manual triggering of the delete job
+			from the admin interface. This should prevent accidential deletion of OLAT user because of
+			temporary LDAP problems or user relocation on the LDAP side. 
+			Value= 0 (never delete) to 100 (always delete). 
+		-->
+		<property name="deleteRemovedLDAPUsersPercentage" value="${ldap.deleteRemovedLDAPUsersPercentage}" />
+		<!-- 
+			Should users be created and synchronized automatically? If you set this configuration 
+			to false, the users will be generated on-the-fly when they log in 
+		-->
+		<property name="ldapSyncOnStartup" value="${ldap.ldapSyncOnStartup}" />
+		<property name="ldapSyncCronSync" value="${ldap.ldapSyncCronSync}" />
+		<!-- if ldapSyncCronSync=true, specify cron expression: http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html  -->
+		<property name="ldapSyncCronSyncExpression" value="${ldap.ldapSyncCronSyncExpression}" /> <!--  run every hour -->		
+		<!-- Configuration for syncing user attributes during login or cron and batch sync -->		
+		<property name="ldapUserObjectClass" value="${ldap.ldapUserObjectClass}"/>
+		<property name="ldapUserCreatedTimestampAttribute" value="${ldap.ldapUserCreatedTimestampAttribute}"/>
+		<property name="ldapUserLastModifiedTimestampAttribute" value="${ldap.ldapUserLastModifiedTimestampAttribute}"/>
+		<property name="ldapUserPasswordAttribute" value="${ldap.ldapUserPassordAttribute}"/>
+		<!-- 
+			Define which user attributes are mandatory and how they are mapped to OLAT user properties. 
+			Note that OLAT requires at least the user properties userID and email. Those must be listed 
+			as mandatory. Others can be added as mandatory as well, but make sure the configuration here 
+			is consistent with the user properties configuration in the olat_userconfig.xml file. It is 
+			strongly recommended to add also lastName and firstName. See the file
+			olat3/webapp/WEB-INF/src/serviceconfig/org/olat/_spring/olat_userconfig.xml
+			to learn which OLAT user properties are available.
+
+			The maps require entries in the following syntax:			
+    		key: the LDAP attribute name
+    		value: the OLAT user property name
+		-->
+    	<property name="reqAttrs">
+    		<map>
+     			<entry key='${ldap.attributename.useridentifyer}' value='userID' />
+    			<entry key='${ldap.attributename.email}' value='email' /> 
+    		</map>
+    	</property>
+    	<property name="userAttributeMapper">
+    		<map>
+    			<!-- The name that should be used as OLAT loginname / username -->
+    			<entry key='${ldap.attributename.useridentifyer}' value='userID' />
+    			<entry key='${ldap.attributename.email}' value='email' />
+    			<entry key='${ldap.attributename.firstName}' value='firstName' />
+    			<entry key='${ldap.attributename.lastName}' value='lastName' />
+    			<!-- example for another mapping
+    			<entry key='description' value='orgUnit' />
+    			-->
+    		</map>
+    	</property>
+   		<!-- 
+   			Specify static OLAT user properties that should be populated with a predefined value for 
+   			each user. This is an optional feature, leave the property empty if you don't need it.
+   			It can be use e.g. to distinguish LDAP users from local OLAT users in a course using 
+   			the getUserProperty() condition.
+   		 -->
+    	<property name="staticUserProperties">
+    		<map>
+     			<!-- <entry key='institutionalName' value='MyInstitution' /> -->
+    		</map>
+    	</property>
+    	<!-- 
+    		Specify optional OLAT user properties that are mapped and synced only when the user is 
+    		created and not in any subsequent sync process. This can be used e.g when a dummy mail 
+    		address is used to create the user and then users change their email in OLAT. Adding
+    		the user email property to this list will prevent that the user changed email is overwritten
+    		with the dummy email on the next sync.  
+    	 -->
+    	<property name="syncOnlyOnCreateProperties">
+    		<set>
+    			<!-- <value>email</value> -->
+    		</set>
+    	</property>
+    </bean>
+
+	<!-- The LDAP manager. If you provide your own, you must implement the org.olat.ldap.LDAPLoginManager interface -->
+	<bean id="org.olat.ldap.LDAPLoginManager" class="org.olat.ldap.LDAPLoginManagerImpl">
+			<constructor-arg index="0" ref="coordinatorManager"/>
+			<constructor-arg index="1" ref="taskExecutorManager"/>
+			<property name="userManager" ref="userManager"/>
+			<property name="securityManager" ref="baseSecurityManager"/>
+			<property name="userDeletionManager" ref="userDeletionManager"/>
+	</bean>
+    
+</beans>

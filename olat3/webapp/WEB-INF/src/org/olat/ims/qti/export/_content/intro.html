@@ -1,0 +1,33 @@
+<h4>$r.translate("wizard.intro.title")</h4>
+
+#if($hasQTINodes)
+	<p>
+		$r.translate("wizard.intro.text1")
+	</p>
+	<p>
+	$r.translate("wizard.intro.text2")
+	</p>
+	<hr />
+	$r.translate("wizard.intro.dummy")
+	<ol>
+		<li>$r.translate("wizard.intro.nod")</li>
+		<li>$r.translate("wizard.intro.fin")</li>
+	</ol>
+	$r.render("command.start.exportwizard.dummy")
+	<hr />
+	<p>
+		$r.translate("wizard.intro.expert")
+	</p>
+	<ol>
+		<li>$r.translate("wizard.intro.nod")</li>
+		<li>$r.translate("wizard.intro.opt")</li>
+		<li>$r.translate("wizard.intro.delim")</li>
+		<li>$r.translate("wizard.intro.fin")</li>
+	</ol>
+	$r.render("command.start.exportwizard")
+	<hr />
+#else
+	<p>
+		$r.translate("nodesoverview.nonodes")
+	</p>
+#end

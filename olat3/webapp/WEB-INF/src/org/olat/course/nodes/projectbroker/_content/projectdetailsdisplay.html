@@ -1,0 +1,82 @@
+<fieldset>
+	<legend>$r.translate("detailsform.description.fieldset")</legend>
+	#if ($isProjectManager == true)
+		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-descriptionProjectManager.html","help.hover.projectbroker-descriptionProjectManager")
+	#else
+		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-descriptionProject.html","help.hover.projectbroker-descriptionProject")	
+	#end
+<div class="o_xxx"><div class="b_floatscrollbox">
+	<div class="o_projectbroker_details_content">		
+		<table>
+			<tr>
+				<td valign="top"><label>$r.translate("detailsform.title.label")</label></td>
+				<td><strong>$title</strong></td>
+			</tr>
+			<tr>
+				<td valign="top"><label>$r.translate("detailsform.projectleaders.label")</label></td>
+				<td>
+                        #set ($notFirst = false)
+						#foreach($projectLeaderLinkName in $projectLeaderLinkNameList)
+                            #if ($notFirst)
+                                , 
+                            #end
+                            #set ($notFirst = true)
+							$r.render("${projectLeaderLinkName}")
+						#end
+				</td>
+			</tr>
+			<tr>
+				<td valign="top"><label>$r.translate("detailsform.description.label")</label></td>
+				<td>$description</td>
+				
+			</tr>
+			<tr>
+				<td valign="top"><label>$r.translate("detailsform.state.label")</label></td>
+				<td>$state</td>
+			</tr>
+			<tr>
+				<td valign="top"><label>$r.translate($keyMaxLabel)</label></td>
+				<td>$projectPlaces</td>
+			</tr>
+			#foreach($customField in $customFieldList)
+			<tr>
+				<td valign="top"><label>$customField.name</label></td>
+				<td>$customField.value</td>
+			</tr>
+			#end
+			#foreach($event in $eventList)
+			<tr>
+				<td valign="top"><label>$r.translate("$event.eventType")</label></td>
+				<td>#if ($event.startDate)
+				      $r.translate("event.start.text")
+				      $event.formattedStartDate 
+				    #end
+				    #if ($event.endDate)
+				      $r.translate("event.to.text") 
+				      $event.formattedEndDate
+				    #end
+				</td>
+			</tr>
+			#end
+			<tr>
+				<td valign="top"><label>$r.translate("detailsform.attachmentfilename.label")</label></td>
+				<td>$r.render("attachedFileLink")</td>
+			</tr>
+		</table>
+		#if ($isProjectManager == true)
+		    <br/>
+			$r.render("edit.project.button")
+			$r.render("delete.project.button")
+			#if ($r.available("change.project.state.not_assign.button"))
+				$r.render("change.project.state.not_assign.button")
+			#end
+			#if ($r.available("change.project.state.assign.button"))
+				$r.render("change.project.state.assign.button")
+			#end
+		#end
+	</div>
+</div>
+</fieldset>
+#if ($r.available("autoDownloadComp"))
+	$r.render("autoDownloadComp")
+#end

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+ <class name="org.olat.basesecurity.PolicyImpl" table="o_bs_policy">
+     <!-- the default columns -->
+    <id name="key" column="id" type="long" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+	
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+  	
+    <many-to-one name="olatResource" class="org.olat.resource.OLATResourceImpl" fetch="join" cascade="none">
+		<column name="oresource_id" not-null="true" unique-key="policy_unique" />
+    </many-to-one>
+        
+    <many-to-one name="securityGroup" class="org.olat.basesecurity.SecurityGroupImpl" fetch="join" cascade="none">  
+		<column name="group_id" not-null="true"	unique-key="policy_unique" />    	
+    </many-to-one>  	
+        	
+	<property name="permission" type="string">
+		<column name="permission" unique="false" unique-key="policy_unique" length="16" not-null="true"/>
+	</property>
+	
+	<property name="from" column="apply_from" type="timestamp" not-null="false"/>
+	<property name="to" column="apply_to" type="timestamp" not-null="false"/>
+		
+	<!--later... for auditing or tracing <many-to-one 
+		name="creator" 
+		class="org.olat.core.id.Identity" 
+		column="creator_identity_id" 
+		outer-join="false" 
+		cascade="none"/> 
+	-->
+	</class>
+</hibernate-mapping>
+

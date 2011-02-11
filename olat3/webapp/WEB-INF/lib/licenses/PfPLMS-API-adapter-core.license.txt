@@ -1,0 +1,27 @@
+Matthai Kurian at the ETH Zürich
+
+I worked at the ETH Zürich from 1.10.2000 till 30.10.2006. I was part of the
+e-Learning Team at the International Relations and Security Network (ISN). I 
+worked on Advanced Distributed Learning (ADL) as a Systems Engineer. The SCORM 
+(ADL) related software, which I developed during the time at the ISN, is 
+published here under the GNU General Public License (GPL).
+
+SCORM-1.2
+
+   1. The PfPLMS SCORM-1.2 API Adapter Core
+      (http://n.ethz.ch/student/matthaik/ApiAdapter/ApiAdapter)
+      The ApiAdapter Core is used in the Free Software Systems ILIAS, ATutor and
+      OLAT. ILIAS is the first Free Software System which was certified to the 
+      highest level of SCORM-1.2 conformance (LMS-RTE3) by ADLNet.
+   2. The PfPLMS SCORM-1.2 RTE
+      (http://n.ethz.ch/student/matthaik/RTE/RTE)
+      This is the RTE back end which I had developed for the PfP Web Classroom,
+      which was supposed to be developed by one of our partners. It was designed
+      to serve multiple instances of the classroom front end. 
+
+Special permission is granted to use the PfPLMS SCORM-1.2 API Adapter Core, 
+which is published under the GPL, under the terms of the LGPL in the OLAT System
+, which is not Free Software.
+
+For further information about Free Software, please visit the Free Software 
+Foundation web site. (http://www.fsf.org/)

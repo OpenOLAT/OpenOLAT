@@ -1,0 +1,20 @@
+@charset "UTF-8";
+
+@media screen
+{
+	
+	div.o_forum_message_body .b_floatscrollbox { width: auto; }
+	
+	/* IE6 min-height fix */
+	* html div.o_forum div.o_forum_message_header_wrapper { height: 24px;}
+	* html div.o_visitingcard div.o_visitingcard_content { height: 200px;}
+		
+	div.o_wikimod_nav legend { font-size: 100%; } /* fix blurred fontsize problem */
+	div.o_wikimod_nav fieldset { padding-top: 1.5em; }
+	* html div.o_wikimod_nav fieldset { overflow: hidden; } /* prevent overlapping into content */
+	* html div.o_wikimod_nav input { margin-top: 0.5em}
+	
+	/* IE uses width of parent container that has padding, requires layout */
+	* html #o_instantmessaging_chat, * html #o_groupchat_chat { height: 1%}
+	
+}

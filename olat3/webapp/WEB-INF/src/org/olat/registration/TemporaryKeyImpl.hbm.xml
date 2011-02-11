@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.registration.TemporaryKeyImpl" table="o_temporarykey">
+    <id name="key" type="long" column="reglist_id" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 
+	<property name="emailAddress" >
+		<column name ="email" not-null="true" />
+	</property>		
+	
+	<property name="registrationKey" >
+		<column name ="regkey" not-null="true" />
+	</property>		
+	
+	<property name="ipAddress" >
+		<column name ="ip" not-null="true" />
+	</property>		
+	
+	<property name="mailSent" >
+		<column name ="mailsent" not-null="true" />
+	</property>		
+	
+	<property name="regAction" >
+		<column name ="action" not-null="true" />
+	</property>		
+	
+  </class>
+    
+</hibernate-mapping>
+

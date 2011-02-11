@@ -1,0 +1,68 @@
+<div class="b_float_right">$r.contextHelp("de.bps.course.nodes.den",$chelp,"help.hover.den")</div>
+<div class="b_float_left">
+<table>
+	#if ($f.isVisible("subject"))
+	<tr valign="top">
+		<td>$r.render("subject_LABEL")
+		<td>#if($f.isMandatory("subject"))*#end</td>
+		<td>$r.render("subject")$r.render("subject_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("begin"))
+	<tr valign="top">
+		<td>$r.render("begin_LABEL")</td>
+		<td>#if($f.isMandatory("begin"))*#end</td>
+		<td>$r.render("begin")$r.render("begin_EXAMPLE")$r.render("begin_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("duration"))
+	<tr valign="top">
+		<td>$r.render("duration_LABEL")</td>
+		<td>#if($f.isMandatory("duration"))*#end</td>
+		<td>$r.render("duration")$r.render("duration_EXAMPLE")$r.render("duration_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("pause"))
+	<tr valign="top">
+		<td>$r.render("pause_LABEL")</td>
+		<td>#if($f.isMandatory("pause"))*#end</td>
+		<td>$r.render("pause")$r.render("pause_EXAMPLE")$r.render("pause_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("retake"))
+	<tr valign="top">
+		<td>$r.render("retake_LABEL")</td>
+		<td>#if($f.isMandatory("retake"))*#end</td>
+		<td>$r.render("retake")$r.render("retake_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("participants"))
+	<tr valign="top">
+		<td>$r.render("participants_LABEL")</td>
+		<td>#if($f.isMandatory("participants"))*#end</td>
+		<td>$r.render("participants")$r.render("participants_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("move"))
+	<tr valign="top">
+		<td>$r.render("move_LABEL")</td>
+		<td>#if($f.isMandatory("move"))*#end</td>
+		<td>$r.render("move")$r.render("move_EXAMPLE")$r.render("move_ERROR")</td>
+	</tr>
+	#end
+</table>
+</div>
+<div class="b_float_left">
+<table>
+	#if ($f.isVisible("location"))
+	<tr valign="top">
+		<td>$r.render("location_LABEL")</td>
+		<td>#if($f.isMandatory("location"))*#end</td>
+		<td>$r.render("location")$r.render("location_ERROR")</td>
+	</tr>
+	#end #if ($f.isVisible("comment"))
+	<tr valign="top">
+		<td>$r.render("comment_LABEL")</td>
+		<td>#if($f.isMandatory("comment"))*#end</td>
+		<td>$r.render("comment")$r.render("comment_ERROR")</td>
+	</tr>
+	#end
+</table>
+</div>
+<div style="clear: both" class="b_center">
+$r.render("submitBtn")
+</div>

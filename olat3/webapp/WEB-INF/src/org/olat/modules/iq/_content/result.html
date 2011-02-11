@@ -1,0 +1,74 @@
+<div id="o_qti_run" class="#if($qtistatus.isSurvey())o_qti_survey #else o_qti_test #end">
+
+	<div id="o_qti_run_title">
+		<strong>$qtistatus.getTitle()</strong>
+		#if(!$qtistatus.isPreview())
+			$r.render("close")
+  		#end
+  	</div>
+  
+	#if (!$qtistatus.isSurvey() && $displayScoreProgress)
+ 	<div id="o_qti_run_score">
+		#if ($qtistatus.score)
+		<div id="o_qti_run_scoreinfo">
+			#if ($qtistatus.hasMaxScore())
+		    	#if ($qtistatus.maxScore == "-1.0")
+		  			$r.translate("actualPoints"): $qtistatus.score / $r.translate("noMaxScore")&nbsp;
+		    	#else
+		  			$r.translate("actualPoints"): $qtistatus.score / $qtistatus.maxScore&nbsp;
+		  		#end
+			#else
+				$r.translate("actualPoints"): $qtistatus.score&nbsp;
+			#end
+		</div>
+		<div id="o_qti_run_scoreprogress">
+			$r.render("qtiscoreprogress", "nl")
+		</div>
+		#end
+	</div>
+	#end
+
+	#if ($qtistatus.hasError())
+		<div class="b_warning">$qtistatus.error</div>
+	#end
+	#if ($qtistatus.hasMessage())
+		<div class="b_important">$qtistatus.message</div>	
+	#end
+
+
+	<div id="o_qti_run_main" class="b_subcolumns">
+		#if ($displayMenu)
+		<div id="o_qti_run_menu" class="b_c33l">
+			<div class="b_subcl">			
+				<div id="o_qti_run_menu_inner" class="b_floatbox">
+					$r.render("qticomp", "menu")	
+				</div>
+			</div>
+		</div>
+		#end
+		<div id="o_qti_run_content" class="b_c66r">
+			<div class="b_subcr">			
+				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
+					#if ($displayreporting)
+						<h3>$r.translate("DetailedResults")</h3>
+						<div id="o_qti_results">
+							$!resreporting
+						</div>
+				    #else				      
+				      <h3>$!visibilityPeriod</h3>
+					#end
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+             
+function mark (it) {
+	// do nothing
+}
+/* ]]> */
+</script>

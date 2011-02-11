@@ -1,0 +1,15 @@
+.demoext_bild {
+	background-image: url(img/sonne.gif);
+	background-repeat: no-repeat;
+	padding-left: 45px;
+	padding-bottom: 30px;
+	
+}
+	
+.site_demo_icon {
+	background-image: url(img/site_demo.gif);
+	background-repeat: no-repeat;
+	padding-left: 20px;
+	margin-left: 10px;
+}
+	

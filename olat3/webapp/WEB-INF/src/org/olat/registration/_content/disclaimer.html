@@ -1,0 +1,9 @@
+<fieldset>
+	<legend>$r.translate("disclaimer.terms.of.usage")</legend>
+	<p>$r.translate("disclaimer.paragraph1")</p>
+	<p>$r.translate("disclaimer.paragraph2")</p>
+	#if ($r.available("disclaimer.additionallinktext"))
+		<p>$r.render("disclaimer.additionallinktext")</p>
+	#end
+	$r.render("dclform")
+</fieldset>

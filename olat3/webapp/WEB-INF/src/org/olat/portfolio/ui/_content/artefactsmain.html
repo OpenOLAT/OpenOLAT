@@ -1,0 +1,21 @@
+<div class="b_eportfolio b_artefacts">
+	#if (!$artefactChooseMode)
+		<div class="b_clearfix">
+			<h4 class="b_float_left">$r.translate("myartefacts.title")</h4>
+			<div class="b_ep_add_artefact">
+				$r.render("addArtefactCtrl")
+			</div> 
+		</div>
+	#else
+		$r.translate("choose.artefact.intro")
+	#end
+	
+	<div class="b_ep_content">
+		$r.render("segments") <br/>
+		<div class="b_clearfix">
+			<div class="b_ep_filter b_float_left">$r.render("filterPanel")</div>
+			<div class="b_ep_viewmode b_float_right">$r.render("viewMode")</div>
+		</div>	
+		$r.render("segmentContent")
+	</div>
+</div>

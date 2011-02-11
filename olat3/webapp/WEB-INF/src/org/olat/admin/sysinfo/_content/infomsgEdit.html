@@ -1,0 +1,45 @@
+<script type="text/javascript">
+/* <![CDATA[ */
+function previewInfomsg() {
+#if ($infoEdit)
+	//theMessage = document.infoMsgForm.infomsg.value;
+	theMessage = document.getElementsByTagName('textarea')[0].value;
+#else
+	//theMessage = document.maintenanceMsgForm.infomsg.value;
+	theMessage = document.getElementsByTagName('textarea')[0].value;
+#end
+	newwindow = window.open("","MessagePreview","width=600,height=300,toolbar=no,resizable=yes,location=no,status=no,scrollbars=no");
+	newwindow.document.write("<html><head><title>Message Preview</title></head><body>");
+	if (theMessage.length == 0) {
+		newwindow.document.write("<br /><br /><center><i>No message set.<br />Message will not be displayed.</i></center>")
+	} else {
+		newwindow.document.write(theMessage);
+	}
+	newwindow.document.write("<br /><br /><center><a href='javascript:self.close();'>Close Preview</a></center>");
+	newwindow.document.write("</body></html>");
+	newwindow.document.close();
+}
+/* ]]> */
+</script>
+
+#if ($infoEdit)
+	<h3>$r.translate("infomsgEdit")</h3>
+	<div class="b_clearfix">
+		<a class="b_button b_float_right" href="javascript:previewInfomsg();"><span>$r.translate("infomsg.preview")</span></a>
+	</div>
+	#if ($cluster)
+		$r.render("infoMsgFormCluster")
+	#else
+		$r.render("infoMsgForm")
+	#end
+#else
+	<h3>$r.translate("maintenancemsgEdit")</h3>
+	<div class="b_clearfix">
+		<a class="b_button b_float_right" href="javascript:previewInfomsg();"><span>$r.translate("infomsg.preview")</span></a>
+	</div>
+	#if ($cluster)
+		$r.render("maintenanceMsgFormCluster")
+	#else
+		$r.render("maintenanceMsgForm")
+	#end
+#end

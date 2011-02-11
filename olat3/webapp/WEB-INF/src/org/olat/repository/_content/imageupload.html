@@ -1,0 +1,16 @@
+<div class="b_form">
+	<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_label"><label>$r.translate("rentry.pic"):</label></div>
+		$r.contextHelpWithWrapper("org.olat.repository", "rep-meta-picture.html", "help.hover.rep.picture")
+		<div class="b_form_element">
+			#if ($hasImage)
+				$r.render("image")	
+				<br />
+				$r.render("cmd.delete")
+				<br />
+				<br />
+			#end
+			$r.render("uploadCtr")
+		</div>
+	</div>
+</div>

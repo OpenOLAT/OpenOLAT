@@ -1,0 +1,1 @@
+grep "ERROR" olat.log.2005-05-* | perl -n -e '@bla = split(/\^%\^/); $res = substr($bla[5],1,270); print "\n$res";' | sort | uniq -c | sort -nr > /tmp/felix/erroroccurences.txt

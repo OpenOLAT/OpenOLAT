@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<textMarkerList>
+  <textMarker>
+    <markedText>showing glossar or hints or something</markedText>
+    <cssClass>o_tm_green</cssClass>
+  </textMarker>  
+  <textMarker>
+    <markedText>olat</markedText>
+    <hooverText>Eine Aufgabe ist schwier g zu löööösen</hooverText>
+    <cssClass>o_tm_yellow</cssClass>
+  </textMarker>
+  <textMarker>
+    <markedText>text marker</markedText>
+    <cssClass>o_tm_red</cssClass>
+  </textMarker>
+  <textMarker>
+    <markedText>glossar</markedText>
+    <hooverText>alles klaro?? Tous à l ouvre tralla&lt;b&gt;&lt;/b&gt;</hooverText>
+    <cssClass>o_tm_glossary</cssClass>
+  </textMarker>
+  <textMarker>
+    <markedText>hints</markedText>
+    <hooverText>das gleiche wie ein glossar</hooverText>
+    <cssClass>o_tm_glossary</cssClass>
+  </textMarker>
+  <textMarker>
+    <markedText>only thing</markedText>
+    <cssClass>o_tm_blue</cssClass>
+  </textMarker>  
+  <textMarker>
+    <markedText>cool thing</markedText>
+    <hooverText>Cool things are things that are really cool. Just incredible insane great stuff!</hooverText>
+    <cssClass>o_tm_glossary</cssClass>
+  </textMarker>  
+</textMarkerList>

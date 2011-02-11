@@ -1,0 +1,47 @@
+<h4>$r.translate("search.admin.title")</h4>
+<fieldset>
+	<legend>$r.translate("fullindexer.status.title")</legend>
+	$r.translate("fullindexer.label.status") : $searchstatus.fullIndexerStatus.status<br />
+	$r.translate("fullindexer.label.started") : $searchstatus.fullIndexerStatus.fullIndexStartedAt<br />
+	$r.translate("fullindexer.label.counter") : $searchstatus.fullIndexerStatus.DocumentCount<br />
+	$r.translate("fullindexer.label.queue.size") : $searchstatus.fullIndexerStatus.DocumentQueueSize<br />
+	$r.translate("fullindexer.label.part.counter") : $searchstatus.fullIndexerStatus.PartDocumentCounters<br />
+	$r.translate("fullindexer.label.index.per.minute") : $searchstatus.fullIndexerStatus.IndexPerMinute<br />
+	$r.translate("fullindexer.label.running.indexer") : $searchstatus.fullIndexerStatus.NumberRunningFolderIndexer<br />
+	$r.translate("fullindexer.label.available.indexer") : $searchstatus.fullIndexerStatus.NumberAvailableFolderIndexer<br />	
+	<br />
+	$r.translate("fullindexer.label.finished") : $searchstatus.fullIndexerStatus.lastFullIndexTime<br />
+	$r.translate("fullindexer.label.time") : $searchstatus.fullIndexerStatus.indexingTime ms<br />
+	$r.translate("fullindexer.label.size") : $searchstatus.fullIndexerStatus.IndexSize
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("index.status.title")</legend>
+	$r.translate("index.label.exist") : $searchstatus.IndexExists<br />
+	#if ($searchstatus.IndexExists == true)
+	  $r.translate("search.label.index.creation.date") : $searchstatus.indexCreationDate<br />
+	#end
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("search.status.title")</legend>
+	$searchstatus.fullIndexerStatus.documentCounters
+	<br />
+	<br />
+	$r.translate("search.label.query") : $searchstatus.queryCount<br />
+	<br />
+	<br />
+	#if (($searchstatus.fullIndexerStatus.status == "running") || ($searchstatus.fullIndexerStatus.status == "sleeping"))
+	  $r.render("button.stopindexing")
+	#else
+	  $r.render("button.startindexing")
+	#end
+</fieldset>
+
+$r.render("searchAdminForm")
+
+<fieldset>
+	<legend>$r.translate("fullindexer.file.counters.title")</legend>
+	$searchstatus.fullIndexerStatus.fileTypeCounters<br />
+	$r.translate("fullindexer.doc.excluded.document.count") : $searchstatus.fullIndexerStatus.excludedDocumentCount
+</fieldset>

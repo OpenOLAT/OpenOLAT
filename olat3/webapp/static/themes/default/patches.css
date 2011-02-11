@@ -1,0 +1,16 @@
+@charset "UTF-8";
+
+/* IE Layout-independent patches from the YAML core */
+@import url(../../yaml/core/slim_iehacks.css);
+
+/* IE patches for YAML framework base layout */
+@import url(patches/yaml_patch.css);
+
+/* IE patches for brasato framework layout components */
+@import url(patches/brasato_patch.css); 
+
+/* IE patches for OLAT application layout components*/
+@import url(patches/olat_patch.css); 
+
+/* IE patches for generic layout styles*/
+@import url(patches/content_patch.css); 

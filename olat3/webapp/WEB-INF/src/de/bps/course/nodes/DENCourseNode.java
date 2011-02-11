@@ -1,0 +1,141 @@
+package de.bps.course.nodes;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
+import org.olat.core.util.Util;
+import org.olat.course.ICourse;
+import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.StatusDescriptionHelper;
+import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+
+import de.bps.course.nodes.den.DENEditController;
+import de.bps.course.nodes.den.DENManager;
+import de.bps.course.nodes.den.DENRunController;
+
+/**
+ * Date enrollment course node
+ * @author skoeber
+ */
+public class DENCourseNode extends AbstractAccessableCourseNode {
+
+	private static final String PACKAGE = Util.getPackageName(DENCourseNode.class);
+	private static final String TYPE = "den";
+	/** is cancel of the enrollment allowed */
+	public static final String CONF_CANCEL_ENROLL_ENABLED = "cancel_enroll_enabled";
+	public static final String CONF_COURSE_ID = "den_course_id";
+	public static final String CONF_COURSE_NODE_ID = "den_course_node_id";
+
+	/**
+	 * Standard constructor
+	 */
+	public DENCourseNode() {
+		super(TYPE);
+		initDefaultConfig();
+	}
+
+	private void initDefaultConfig() {
+		ModuleConfiguration config = getModuleConfiguration();
+		config.set(CONF_CANCEL_ENROLL_ENABLED, Boolean.TRUE);
+	}
+
+	@Override
+	public TabbableController createEditController(UserRequest ureq,
+			WindowControl wControl, ICourse course, UserCourseEnvironment userCourseEnv) {
+		DENEditController childTabCntrllr = new DENEditController(getModuleConfiguration(), ureq, wControl, this, course, userCourseEnv);
+		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
+		// needed for DENEditController.isConfigValid()
+		getModuleConfiguration().set(CONF_COURSE_ID, course.getResourceableId());
+		getModuleConfiguration().set(CONF_COURSE_NODE_ID, chosenNode.getIdent());
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, course.getCourseEnvironment()
+				.getCourseGroupManager(), userCourseEnv, childTabCntrllr);
+	}
+
+	@Override
+	public NodeRunConstructionResult createNodeRunConstructionResult(
+			UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne,
+			String nodecmd) {
+		Controller controller;
+		// Do not allow guests to enroll to dates
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isGuestOnly()) {
+			Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else {
+			controller = new DENRunController(ureq, wControl, getModuleConfiguration(), this);
+		}
+		
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_en_icon");
+		return new NodeRunConstructionResult(ctrl);
+	}
+
+	/**
+	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
+	 */
+	@Override
+	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
+		String translatorStr = Util.getPackageName(ConditionEditController.class);
+		List statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		return StatusDescriptionHelper.sort(statusDescs);
+	}
+
+	/**
+	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
+	 */
+	public StatusDescription isConfigValid() {
+		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+
+		StatusDescription sd = StatusDescription.NOERROR;
+
+		if(!DENEditController.isConfigValid(getModuleConfiguration())) {
+			String transPackage = Util.getPackageName(DENEditController.class);
+			sd = new StatusDescription(StatusDescription.WARNING, "config.nodates.short", "config.nodates.long", null, transPackage);
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(DENEditController.PANE_TAB_DENCONFIG);
+		}
+
+		return sd;
+	}
+
+	public RepositoryEntry getReferencedRepositoryEntry() {
+		return null;
+	}
+
+	public boolean needsReferenceToARepositoryEntry() {
+		return false;
+	}
+
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
+		cpm.deleteNodeProperties(this, CONF_CANCEL_ENROLL_ENABLED);
+		DENManager denManager = DENManager.getInstance();
+		//empty List as first argument, so all dates for this course node are going to delete
+		denManager.persistDENSettings(new ArrayList(), course, this);
+	}
+
+}

@@ -1,0 +1,29 @@
+<html><body>
+
+<h3>Repository, OlatResource and OlatResourcable explained</h3>
+<ul>
+<li></li>
+<li></li>
+</ul>
+
+<h3>Code examples</h3>
+<ul>
+<li></li>
+<li>Loading an OLATResourcable by its key (recourcableId)<br>
+<pre>
+OLATResourceable ores = OresHelper.createOLATResourceableInstance(WikiResource.class, rescourcableId);
+You can either get the Folder location of the resource if it is a file resource
+VFSContainer wikiContainer = FileResourceManager.getInstance().getFileResourceRootImpl(ores);
+
+of load the OlatResource as an Object
+org.olat.resource.OLATResourceManager.findResourceable(OLATResourceable resourceable)
+
+if it is an repository entry (element that can be found in the repository) you can also load the entry directly by calling
+org.olat.repository.RepositoryManager.lookupRepositoryEntry(OLATResourceable resourceable, boolean strict)
+</pre>
+</li>
+</ul>
+
+org.olat.core.id.OLATResourceable
+
+</body></html>

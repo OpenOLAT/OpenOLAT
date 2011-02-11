@@ -1,0 +1,49 @@
+<h4 class="b_with_small_icon_left b_group_icon">
+	$r.translate("userdetails.title") $identity.getUser().getProperty("firstName", $locale) $identity.getUser().getProperty("lastName", $locale)
+</h4>
+$r.render("back")
+
+#if ($showOwnerGroups)
+	<br />
+	<br />
+	<h5>$r.translate("userdetails.ownergroups.title")</h5>
+	#if ($noOwnerGroups)
+		$r.translate("userdetails.ownergroups.noGroups")
+	#else
+		<table width="70%" class="b_table">
+		#foreach($link in $ownerGroupLinks)
+			<tr>
+				#set ($groupName = $link.getUserObject().getName())	
+				<td width="10%">$velocityCount</td> 
+				<td width="80%">${groupName}</td>
+				<td width="30%">$r.render("cmd.user.remove.group.own.${link.getUserObject().getKey()}")</td>
+			</tr>
+		#end
+		</table>
+	#end
+#end
+
+<br />
+<br />
+<h5>$r.translate("userdetails.participantgroups.title")</h5>
+#if ($noParticipantGroups)
+	$r.translate("userdetails.participantgroups.noGroups")
+#else
+	<table width="70%" class="b_table">
+	#foreach($link in $participantGroupLinks)
+		<tr>
+			#set ($groupName = $link.getUserObject().getName())		
+			<td width="10%">$velocityCount</td> 
+			<td width="80%">${groupName}</td>
+			<td width="30%">$r.render("cmd.user.remove.group.part.${link.getUserObject().getKey()}")</td>
+		</tr>
+	#end
+	</table>
+#end
+
+<br />
+<br />
+<h5>$r.translate("userdetails.user.title")</h5>
+<div>
+	$r.render("userdetailsform")
+</div>

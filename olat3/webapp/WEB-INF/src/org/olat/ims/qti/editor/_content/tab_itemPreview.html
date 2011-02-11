@@ -1,0 +1,24 @@
+
+<fieldset>
+	<legend>$r.translate("fieldset.legend.preview")</legend>
+	<form name="previewForm" id="ofo_iq_item">
+	$itemPreview
+	</form>
+</fieldset>
+
+## remove listeners doing dirty marking, not needed in preview
+<script type="text/javascript">
+	var f,i;
+
+	f = document.getElementById('ofo_iq_item').getElementsByTagName('input');
+	for (i=0; i<f.length; i++) {
+		f[i].onclick = null;
+		f[i].onchange = null;
+	}
+
+	f = document.getElementById('ofo_iq_item').getElementsByTagName('textarea');
+	for (i=0; i<f.length; i++) {
+		f[i].onclick = null;
+		f[i].onchange = null;
+	}
+</script>

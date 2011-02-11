@@ -1,0 +1,110 @@
+<span style="color:red">Dies ist eine Testseite f&uuml;r die Styles aus "olat-default.css" . 
+Wichtig: Bereits im &lt;body&gt;-Tag ist eine Klasse o_body definiert.</span>
+<br><br>
+
+Text ohne Tag (mit Link): <a href="http://www.olat.org">OLAT</a> ist das strategische Learning Management System an der Universit&auml;t Z&uuml;rich.<br>
+
+<p>&lt;p&gt;-Tag (mit Link):<a href="http://www.olat.org">OLAT</a> ist das strategische Learning Management System an der Universit&auml;t Z&uuml;rich.</p>
+&lt;a&gt;-Tag: 	<a href="http://www.olat.org" target="_blank">OLAT das Learning Management System</a>
+		<a href="http://www.olat.org" target="_blank">OLAT das Learning Management System</a>
+
+<br><br>
+&lt;h1&gt;-Tag:<h1>Learning Management System</h1>
+&lt;h2&gt;-Tag:<h2>Learning Management System</h2>
+&lt;h3&gt;-Tag:<h3>Learning Management System</h3>
+&lt;h4&gt;-Tag:<h4>Learning Management System</h4>
+&lt;h5&gt;-Tag:<h5>Learning Management System</h5>
+&lt;i&gt;-Tag:<i>Learning Management System</i>
+<br><br>
+&lt;b&gt;-Tag:<b>Learning Management System</b>
+&lt;pre&gt;-Tag:<pre>Learning Management System</pre>
+&lt;hr&gt;-Tag:<hr/>
+&lt;hr&gt;-Tag mit class (o_separatorLight):<hr/ class="o_separatorLight">
+<br><br>
+&lt;input&gt;-Tag:<input type="text" value="Learning">
+<br><br>
+&lt;input&gt;-Tag mit class (o_form_label) innerhalb form:<form><input class="o_form_label" type="text" value="Learning"></form>
+
+<!-- Einfache Tabelle-->
+&lt;table&gt;-Tag (ohne class):
+<table border="1">
+<tr>
+<th>tableHeader</th><th><a>tableHeaderLink</a></th>
+</tr>
+<tr>
+<td>tableText</td><td><a>tableTextLink</a></td>
+</tr>
+</table>
+<br><br>
+<!-- OLAT Style Tabelle-->
+&lt;table&gt;-Tag (mit o_table,o_table_row_even, o_table_row_odd class) verwendet thead-Tag:
+<table cellspacing="0" class="o_table">
+<thead>
+	<tr>
+	<th>tableHeaderOlat</th><th><a href="#">tableHeaderLinkOlat</a></th>
+	</tr>
+</thead>
+<tbody>
+	<tr class="o_table_row_even">
+	<td>tableTextOlat</td><td><a href="#">tableTextLinkOlat</a></td>
+	</tr>
+	<tr class="o_table_row_odd">
+	<td>tableTextOlat</td><td><a href="#">tableTextLinkOlat</a></td>
+	</tr>
+	<tr class="o_table_row_even">
+	<td>tableTextOlat</td><td><a href="#">tableTextLinkOlat</a></td>
+	</tr>
+	<tr class="o_table_row_odd">
+	<td><b>bold text in table</b></td><td><i>italic text in table</i></td>
+	</tr>
+</tbody>
+</table>
+<br><br>
+<!-- Buttons -->
+Olat Button (class o_main_button):<a href="/olat/main/sss" class="o_main_button" onclick="" >Submit</a><br><br>
+Olat Button (class o_small_button):<a href="/olat/main/sss" class="o_small_button" onclick="" >Submit</a>
+<br></br>
+
+<!-- Infobox -->
+Infobox: <div class="o_infobox"><a href="http://www.olat.org">OLAT</a> ist das strategische Learning Management System an der Universit&auml;t Z&uuml;rich.<br></div>
+
+<!-- Warnbox-->
+<div>
+<table cellpadding="3" cellspacing="0" width="75%" class="o_warnbox">
+<tr>
+	<td class="o_warnbox_header">Achtung</td>
+</tr>
+<tr>
+	<td class="o_warnbox_content">Bitte benutzen Sie nicht den 'Neu Laden' oder 'Zur&uuml;ck' Button ihres Browsers. Dies kann zu unvorhersehbaren Ergebnissen f&uuml;hren.</td>
+</tr>		
+</table></div>
+
+<!-- Errorbox-->
+<div>
+<table cellpadding="3" cellspacing="0" width="75%" class="o_errorbox">
+<tr>
+	<td class="o_errorbox">Achtung</td>
+</tr>
+<tr>
+	<td class="o_errorbox_content">Die ist ein Error!</td>
+</tr>		
+</table>
+</div>
+
+<!-- toolbox -->
+Toolbox:
+<table class="o_tb" border="0">
+<tr>
+	<td class="o_tb_head1"></td>
+	<td class="o_tb_head2" nowrap="nowrap">Lernressource</td>
+	<td class="o_tb_head3"></td>
+</tr>
+<tr>
+	<td colspan="3" class="o_tb_content">
+	<a class="o_tb_action_a" href="/olat/">CP-Lerninhalt</a><br>
+	<a class="o_tb_action_a" href="/olat/">Test</a><br>
+	<a class="o_tb_action_a" href="/olat/">Fragebogen</a><br>
+	<a class="o_tb_action_a" href="/olat/">Datei</a><br>
+	</td>
+</tr>
+</table>

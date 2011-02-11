@@ -1,0 +1,14 @@
+<h4>$r.translate("wizard.intro.title")</h4>
+
+#if($hasScormNodes)
+	<p>$r.translate("wizard.intro.text")</p>
+	<ol>
+		<li>$r.translate("wizard.intro.nod")</li>
+		<li>$r.translate("wizard.intro.fin")</li>
+	</ol>
+	$r.render("command.start.exportwizard")
+#else
+	<p>
+		$r.translate("nodesoverview.nonodes")
+	</p>
+#end

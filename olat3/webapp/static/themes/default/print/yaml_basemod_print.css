@@ -1,0 +1,22 @@
+@charset "UTF-8";
+@media print
+{
+	body { background: #fff; }
+	
+	/* disable col1 and col2 */
+	#b_col1, #b_col2 {display:none;}  
+	#b_col3, #b_col3_content, #b_col3_content_inner, #b_col3_content_inner { width: 100% ! important; margin:0 ! important; padding: 0 ! important; border:0 ! important;}
+	div.b_iframe_wrapper iframe {width: 100%;}
+	
+	/* additional subtemplates styles */
+	.b_c15l,.b_c20l,.b_c80l,.b_c85l,.b_c15r,.b_c20r,.b_c80r,.b_c85r {width:100%;margin:0;float:none;overflow:visible;display:table}
+
+	/* disable yaml printing of URL's */
+	a[href]:after { content: "";}
+	
+	/* disable page shadows and border */
+	#b_page { background: none; border: 0;}
+	#b_page_margins { background: none; padding-left: 0; }	
+	#b_page_wrapper { background: none; padding-right: 0; }	
+	
+}

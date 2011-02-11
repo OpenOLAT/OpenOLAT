@@ -1,0 +1,101 @@
+#if ($enableScoreInfo)
+	<div class="o_course_run_scoreinfo">
+		<h4>$r.translate("score.title")</h4>		
+		<table>
+			<tbody>				
+		#if ($hasResults)
+				<tr>
+					<td>			
+						$r.translate("score.yourscore"): 
+					</td>
+					<td>
+						$score
+					</td>
+				</tr>
+				<tr>
+					<td>			
+						$r.translate("passed.yourpassed"): 
+					</td>
+					<td>
+						#if($hasPassedValue && $passed == true)		
+							<span class="o_passed">$r.translate("passed.yes")</span>
+						#elseif($hasPassedValue && $passed == false)		
+							<span class="o_notpassed">$r.translate("passed.no")</span>
+						#end
+					</td>
+				</tr>
+				#if ($comment)
+				<tr>
+					<td>			
+						$r.translate("comment.yourcomment"): 
+					</td>
+					<td>
+						$comment
+					</td>
+				</tr>
+				#end
+			</tbody>
+		</table>				
+			
+		#else
+			</tbody>
+		</table>
+		<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscoreinfoyet")</div>
+		#end
+	</div>##END o_course_run_scoreinfo
+#end
+
+#if($showResultsOnHomePage && $attempts >0)	
+	<h4>$r.translate("showResults.title")</h4> 
+	  	#if($showResultsVisible)
+			#if ($showResults)
+				$r.render("command.hideResults")					  				  
+			#else
+				$r.render("command.showResults")
+			#end
+			
+	       	#if ($showResults)
+				#if ($displayreporting)
+					<br />
+					<h4>$r.translate("showResults.detailed")</h4>
+					<div class="b_small">
+						$!resreporting
+					</div>
+			    #end
+	       	#end
+	  	#else
+		  	$visibilityPeriod
+		#end
+#end ##END of if showResultsOnHomePage ...
+
+#if ($showResultsVisible && $showResults)
+
+#else
+	#if ($hasDisc)
+		<div class="o_course_run_disclaimer">
+			$r.render("disc")
+		</div>
+	#end
+	
+	<div class="o_course_run_statusinfo">
+		<p>
+			$r.translate("Intro.self")
+		</p>
+		<p>	
+			$r.translate("info.selfassessment")
+		</p>
+	</div>
+			
+	<div class="b_button_group">
+		$r.render("start")
+	</div>	
+#end
+	
+#if($changeLog)
+	<p />	
+	#b_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+	<pre>
+$changeLog
+	</pre>
+	#b_togglebox_end()
+#end

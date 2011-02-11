@@ -1,0 +1,21 @@
+<fieldset>
+	<legend>$r.translate("tab.layout.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.config.ui","course-layout.html","help.hover.course-lay")
+	<strong>$r.translate("form.layout.cssfile")</strong>: 
+	#if ($hasCustomCourseCSS)
+		<p>
+			$cssFileRef
+		</p>
+		<div class="b_button_group">
+			$r.render("form.layout.changecustomcss")
+			$r.render("form.layout.choosesystemcss")
+		</div>
+	#else
+		<p>
+			$r.translate("$cssFileRef")
+		</p>
+		<div class="b_button_group">
+			$r.render("form.layout.choosecustomcss")
+		</div>
+	#end
+</fieldset>

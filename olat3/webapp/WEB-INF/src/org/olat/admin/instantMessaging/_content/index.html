@@ -1,0 +1,28 @@
+<h3>$r.translate("imadmin.title")</h3>
+<fieldset>
+<legend>$r.translate("imadmin.plugin.title")</legend>
+	<p>
+		$r.translate("imadmin.plugin.intro")
+	</p>
+	<ul>
+	#set ($info= ["$IMServerAdminGUI", "$IMServerAdminUsername", "$IMServerAdminPw"]) 
+	<li>$r.translate("imadmin.plugin.webconsole", $info)</li>
+	<li>$r.render("imadmin.plugin.check") $r.translate("imadmin.plugin.check.info")</li>
+	<li>$r.render("imadmin.plugin.admin.reconnect") $r.translate("imadmin.plugin.admin.connection")</li>
+	</ul>
+</fieldset>
+
+<fieldset>
+<legend>$r.translate("imadmin.sync.title")</legend>
+<p>
+	$r.translate("imadmin.sync.intro")
+</p>
+<p>
+	$r.render("imadmin.sync.cmd.dosync")
+</p>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("imadmin.form.title")</legend>
+	$r.render("mainLayout")
+</fieldset>	

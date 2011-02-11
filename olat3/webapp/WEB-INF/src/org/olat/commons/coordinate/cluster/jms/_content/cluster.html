@@ -1,0 +1,41 @@
+<h4>$r.translate("cluster.title")</h4>
+<p>
+$own_nodeid
+</p>
+<p>
+$r.render("nodeinfos")
+#if ($r.available("refresh"))
+	$r.render("refresh")
+#end
+</p>
+<p>
+<h5>Performance</h5>
+$r.render("toggleStartStop")
+$r.render("resetStats")
+$r.render("performanceinfos")
+</p>
+<br />
+<h5>Checks for cluster functionality</h5>
+<table class="b_table b_grid"><tbody>
+	<tr><td>Syncer:</td><td>$r.render("sync.long") $r.render("sync.short")</td></tr>
+	<tr><td>Syncer Performance:</td><td>$r.render("testSFUPerf")</td></tr>
+	<tr><td>JMS Performance:</td><td>$r.render("testPerf") (should be at least around 2000 msg / sec)</td></tr>
+	<tr><td>Cacher: </td><td>$r.render("cachetest")</td></tr>
+</tbody></table>
+
+<p />
+<h5>Lock Release</h5>
+$r.render("releaseAllLocksFor")
+
+<p />
+<h5>Messages</h5>
+$r.render("busmsgs")
+
+
+<p />
+
+<h5>Bus Listener Infos</h5>
+<p>$eventBusListener</p>
+<p>$busListenerInfos</p>
+
+

@@ -1,0 +1,65 @@
+<div id="o_cal_config_below_cal_container">
+  <div class="b_subcolumns">
+	<div class="b_c75l">
+	  <div class="b_subcl">
+		<div class="b_subcolumns">
+			<div class="b_c25l">
+			  <div class="b_subcl">
+			  <!-- TODO:gs:a refactor to use normal link component -->
+				<a href="$r.commandURIbg("pw")" $r.bgTarget() title="$r.translateInAttribute("cal.previousweek")" class="o_cal_wv_prev" onclick="return o2cl()" onkeypress="return o2cl()"></a>
+				<a href="$r.commandURIbg("nw")" $r.bgTarget() title="$r.translateInAttribute("cal.nextweek")" class="o_cal_wv_next" onclick="return o2cl()" onkeypress="return o2cl()"></a>
+				$r.render("cal.thisweek")
+			  </div>
+			</div>
+			<div class="b_c50l">
+			  <div class="b_subcr">
+				<div class="o_cal_gotodate">
+				$r.render("cal.gotodate")
+				</div>
+		  	  </div>
+			</div>
+			<div class="b_c25r">
+	  			<div class="b_subcr">
+		    		$r.render("cal.search.button")
+		    	</div>
+			</div>
+		</div>
+	  </div>
+	</div>
+	#if ($caller == "home")
+		$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
+	#elseif ($caller == "course")
+		$r.contextHelpWithWrapper("org.olat.commons.calendar","course-calendar.html","help.hover.coursecal")
+	#elseif ($caller == "collab")
+		$r.contextHelpWithWrapper("org.olat.commons.calendar","group-calendar.html","help.hover.groupcal")
+	#elseif ($caller == "profile")
+		$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar.html","help.hover.cal")
+	#end
+  </div>
+	<div class="b_clearfix" style="position:relative;">
+	  <div class="o_cal_search_subscribe" style="float:left;">
+			<span class="o_noti_actions">
+				#if ($hasSubscription)
+					#if ($isSubscribed)
+						<span class="o_noti_u_icon">$r.render("cal.unsubscribe")</span>
+					#else
+						<span class="o_noti_s_icon">$r.render("cal.subscribe")</span>
+					#end
+				#end
+			</span>
+	  </div>
+	  <div class="b_subcr" style="float:right;">
+			#if ($r.available("calsubscription"))
+				$r.render("calsubscription")
+			#end
+	  </div>
+	</div>
+  <div class="o_cal_week_year_label"> $r.translate("cal.week.label") $week - $year </div>
+  $r.render("calendar")
+  $r.render("calendarConfig")
+  #if ($caller == "home")
+  	$r.render("importedCalendarConfig")
+  #end
+</div>
+
+</div>

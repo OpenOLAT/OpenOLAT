@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.resource.references.ReferenceImpl" table="o_references">
+
+	<cache usage="read-write" />
+  		
+	<id name="key" type="long" column="reference_id"	unsaved-value="null">
+		<generator class="hilo"/>
+	</id>
+
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 	
+	<many-to-one name="source" class="org.olat.resource.OLATResourceImpl" outer-join="auto" cascade="none">  
+		<column name="source_id" not-null="true"/>    	
+	</many-to-one>  	
+
+	<many-to-one name="target" class="org.olat.resource.OLATResourceImpl" outer-join="auto" cascade="none">  
+		<column name="target_id" not-null="true" />    	
+	</many-to-one>  	
+
+	<property name="userdata" type="string">
+		<column name="userdata" length="64" />
+	</property>
+
+  </class>
+</hibernate-mapping>

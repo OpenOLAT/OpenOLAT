@@ -1,0 +1,30 @@
+1. Installing OLAT 
+------------------
+Please refer to the HTML documentation in the doc/ folder of this distribution.
+You also can access the same doc online here:
+http://www.olat.org/docu/install/
+
+2. Licensing
+------------
+With regard to licensing please refer to the file LICENSE.TXT
+
+3. Contact information
+----------------------
+You are welcome to participate in our development. If you make any patches to
+the code, please send them to:
+
+mailto:info@olat.org 
+
+For further information about OLAT please visit the product's website at
+
+http://www.olat.org/
+
+4. Mailing lists
+-----------------
+Feel free to subscribe to our mailinglists at http://lists.olat.org
+- announce: Get informed about new releases - very low traffic
+- users: Discussion of users topics - not primarily technical discussions but
+  discussions on how to use OLAT or general discussions about e-learning.
+- developers: Technical discussions, feature requests, bug reports, patches...
+
+

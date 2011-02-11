@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+<!--
+   ====================================================================
+
+   Parsers that can be used with JAMWiki:
+
+   name  - A human-readable name for the parser.
+   class - The fully qualified class name for the parser class.
+   key   - The ApplicationResources translation key for the parser name.  If
+           this value is not specified then the "name" value is used when
+           displaying the parser name.
+   state - An optional parameter that can be set to "experimental" to warn
+           site administrators that a parser is a work-in-progress.
+
+   ======================================================================
+-->
+<parsers>
+	<parser>
+		<name>JAMWiki Default</name>
+		<class>org.jamwiki.parser.jflex.JFlexParser</class>
+		<key>admin.parsertype.default</key>
+	</parser>
+    <parser>
+		<name>Bliki hand-written Parser</name>
+		<class>org.jamwiki.parser.bliki.BlikiParser</class>
+		<key>admin.parsertype.bliki</key>
+	</parser>
+</parsers>
+
+<!--
+   ====================================================================
+
+   User authentication mechanisms that can be used with JAMWiki:
+
+   name  - A human-readable name for the authentication mechanism.
+   class - The fully qualified class name for the authentication class.
+   key   - The ApplicationResources translation key for the authentication
+           mechanism name.  If this value is not specified then the "name"
+           value is used when displaying the authentication mechanism name.
+   state - An optional parameter that can be set to "experimental" to warn
+           site administrators that an authentication mechanism is a
+           work-in-progress.
+
+   ======================================================================
+-->
+<user-handlers>
+	<user-handler>
+		<name>Database</name>
+		<class>org.jamwiki.db.DatabaseUserHandler</class>
+		<key>admin.usergrouptype.database</key>
+	</user-handler>
+	<user-handler>
+		<name>LDAP</name>
+		<class>org.jamwiki.ldap.LdapUserHandler</class>
+		<key>admin.usergrouptype.ldap</key>
+		<state>experimental</state>
+	</user-handler>
+</user-handlers>
+
+<!--
+   ====================================================================
+
+   Data handlers that can be used with JAMWiki:
+
+   name  - A human-readable name for the data handler.
+   class - The fully qualified class name for the data handler.
+   key   - The ApplicationResources translation key for the data handler
+           name.  If this value is not specified then the "name" value is
+           used when displaying the data handler name.
+   state - An optional parameter that can be set to "experimental" to warn
+           site administrators that a data handler is a work-in-progress.
+
+   ======================================================================
+-->
+<data-handlers>
+	<data-handler>
+		<name>ansi</name>
+		<class>org.jamwiki.db.AnsiDataHandler</class>
+	</data-handler>
+	<data-handler>
+		<name>hsql</name>
+		<class>org.jamwiki.db.HSqlDataHandler</class>
+	</data-handler>
+	<data-handler>
+		<name>mssql</name>
+		<class>org.jamwiki.db.MSSqlDataHandler</class>
+	</data-handler>
+	<data-handler>
+		<name>mysql</name>
+		<class>org.jamwiki.db.MySqlDataHandler</class>
+	</data-handler>
+	<data-handler>
+		<name>oracle</name>
+		<class>org.jamwiki.db.OracleDataHandler</class>
+	</data-handler>
+	<data-handler>
+		<name>postgres</name>
+		<class>org.jamwiki.db.PostgresDataHandler</class>
+	</data-handler>
+	<data-handler>
+		<name>db2</name>
+		<class>org.jamwiki.db.DB2DataHandler</class>
+		<state>experimental</state>
+	</data-handler>
+	<data-handler>
+		<name>db2/400</name>
+		<class>org.jamwiki.db.DB2400DataHandler</class>
+		<state>experimental</state>
+	</data-handler>
+</data-handlers>
+
+<!--
+   ====================================================================
+
+   Namespaces that can be used with JAMWiki:
+
+   name     - The internal-use-only name for the namespace.  WARNING: Do not
+              change existing namespace name values as there are hard-coded
+              dependencies for them!
+   main     - The value of the "main" namespace.  For example, "Help" is the
+              main-namespace value for "Help:Topic".  This value can be
+              modified, but doing so will affect any existing topics already
+              created in the namespace.
+   comments - The value of the "comments" namespace.  For example, the "Help"
+              namespace has a comments namespace of "Help comments".  This
+              value can be modified, but doing so will affect any existing
+              topics already created in the namespace.
+
+   ======================================================================
+-->
+<namespaces>
+	<namespace>
+		<name>special</name>
+		<main>Special</main>
+		<comments></comments>
+	</namespace>
+	<namespace>
+		<name>main</name>
+		<main></main>
+		<comments>Comments</comments>
+	</namespace>
+	<namespace>
+		<name>image</name>
+		<main>Image</main>
+		<comments>Image comments</comments>
+	</namespace>
+	<namespace>
+		<name>category</name>
+		<main>Category</main>
+		<comments>Category comments</comments>
+	</namespace>
+	<namespace>
+		<name>jamwiki</name>
+		<main>JAMWiki</main>
+		<comments>JAMWiki comments</comments>
+	</namespace>
+	<namespace>
+		<name>template</name>
+		<main>Template</main>
+		<comments>Template comments</comments>
+	</namespace>
+	<namespace>
+		<name>user</name>
+		<main>User</main>
+		<comments>User comments</comments>
+	</namespace>
+	<namespace>
+		<name>help</name>
+		<main>Help</main>
+		<comments>Help comments</comments>
+	</namespace>
+</namespaces>
+
+<!--
+   ====================================================================
+
+   JAMWiki reserved topic names.  These topics are handled specially and
+   treated differently from normal topics.
+
+   name - The name used for the special topic.
+
+   ======================================================================
+-->
+<pseudotopics>
+	<pseudotopic>
+		<name>jamwiki.css</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Account</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Admin</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Allpages</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Categories</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Contributions</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Convert</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Diff</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Edit</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Export</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Filelist</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:History</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Imagelist</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Import</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:LinkTo</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Login</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Logout</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Manage</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Move</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Print</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:RecentChanges</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:RecentChangesFeed</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Search</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Setup</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Specialpages</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:TopicsAdmin</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Translation</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Upgrade</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Upload</name>
+	</pseudotopic>
+	<pseudotopic>
+		<name>Special:Watchlist</name>
+	</pseudotopic>
+</pseudotopics>
+
+</configuration>

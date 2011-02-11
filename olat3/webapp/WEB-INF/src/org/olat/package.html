@@ -1,0 +1,467 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en">
+<head>
+    <meta http-equiv="Content-Type"
+          content="text/html;charset=utf-8" />
+    <title>OLAT Framework - framework</title>    
+</head>
+
+<body>
+
+    <!-- Main style sheets for CSS2 capable browsers -->
+    <style type="text/css" media="screen"> 
+        /* The basic elements: */
+        body {
+            font: 69% "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
+            background-color: White;
+            color: Black;
+            margin: 0;
+            padding: 0;
+        }
+        a {
+            text-decoration: none;
+            color: #99001E;
+            background-color: transparent;
+        }       
+        table {
+            font-size: 100%;
+        }
+        
+        ul { 
+            line-height: 1.5em;
+            list-style-type: square;
+            margin: 0.5em 0 0 1.5em;
+            padding: 0;
+            list-style-type:square;
+        }
+        
+        li {
+            margin-bottom: 1em;
+        }
+    </style>
+
+    <style type="text/css" media="all">
+        .diagramClearer {
+        	clear: left; 
+        	line-height: 0; 
+        	height: 0;
+        	margin: 0;
+        	padding: 0;
+        }
+        
+        .diagramContainer {
+        	border: 1px black solid;
+        	background-color: #FFFFEF;
+        	padding: 0.5em 1em 0.5em 1em;
+        }
+        
+        .diagramContainer a {
+        	text-decoration: none;
+        }
+        
+        .diagramContainer h5 {
+        	border: 1px black solid;
+        	padding: 0.5em;
+        	margin: 0.5em 0 0 0;
+        	text-align: center;
+        }
+        
+        .diagramContainer ul {
+        	margin: 0.5em 0 0 0.6em;
+        	padding: 0;
+        	text-align: center;
+        }
+        
+        .diagramContainer li {
+        	list-style: none;
+        	border: 1px black solid;
+        	width: 22em;
+        	float: left;
+        	margin: 0 0.5em 0.5em 0;
+        	padding: 0 0.5em 0 0.5em;
+        	text-align: left;
+        	vertical-align: middle;
+        }
+        
+        
+        .diagramLinkContainer {
+        	padding: 0.2em 1em 0.2em 1em;	
+        	border-top: 1px solid black;
+        	border-left: 1px solid black;
+        	border-right: 1px solid black;
+        	margin: 0;
+        	text-align: right;
+        }
+        
+        .diagramLinkContainer a {
+        	text-decoration: none;
+        }
+        
+        .diagramLinkContainer a.selected {
+        	font-weight: bold;
+        }
+    </style>
+
+    <!-- Internet Explorer CSS Fixes -->
+    <!--[if IE]>
+    <style type="text/css" media="all">
+        /*
+        ** Stylesheet with Internet Explorer-specific workarounds.
+        */
+        
+        /*  */
+        
+        * html #portal-columns {
+          width: 100%;
+        }
+        * html*#portal-columns {
+            width: auto;
+        }
+        
+        /* Fix for IE float bug */
+        * html .visualIEFloatFix {
+            float: left;
+            clear: both;
+            width: 99%;
+        }
+        
+        
+        input {
+            margin-bottom: 1px; /* bug fix */
+        }
+        
+        table.listing td.top {
+            /* insane IE row bug workaround */
+            position: relative;
+            left: -1px;
+            top: -1px;
+        }
+        
+        div#portal-columns div.portlet {
+            text-align: left;
+        }
+        div#portal-columns div#portal-column-one,
+        div#portal-columns div#portal-column-two {
+            overflow: hidden;
+        }
+        
+        textarea {
+            width: 97%;
+        }
+        
+        .visualOverflow {
+            width: 88%;
+        }
+        
+        .hiddenStructure { /* This is necessary to eliminate the 1px high object in
+                              the document flow in place of .hiddenStructure block objects */
+            position: absolute;
+        }
+        
+        body { /* These work in IE only, changes the look of the scrollbar + textareas */
+            scrollbar-base-color: #ececec;
+            scrollbar-highlight-color: #ececec;
+            scrollbar-track-color: #F0F0F0;
+            scrollbar-darkshadow-color: #F0F0F0;
+            scrollbar-3dlight-color: #8c8c8c;
+            scrollbar-shadow-color: #8c8c8c;
+            scrollbar-arrow-color: #434343;
+        }
+        
+        /* 
+        ** Fix for IE6 diseappearing float bug and
+        ** Nonexistant Class for fixing IE5.0
+        **  
+        ** Do not change anything here, this
+        ** could cause IE 5.0 and/or 6.0 woes.
+        **
+        ** It must be the last defintion, otherwise
+        ** the rest of the stylesheet will be commented
+        ** out for IE 5.0.
+        */
+        
+        .fakeclass {content:"\"/*"}
+        
+        #content,
+        #content p,
+        .comment,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .documentDescription,
+        .portalMessage,
+        .link-parent,
+        #documentContent dl,
+        #documentContent ul,
+        #documentContent ol,
+        {
+            height: 100%;
+        }
+        
+        /*  */
+    </style>
+    <![endif]-->
+
+<table id="portal-columns">
+  <tbody>
+    <tr>
+      <td id="portal-column-content">
+        <div id="content" class="">
+          <div class="documentContent">
+
+            <a name="documentContent"></a>
+
+            <p>The full framework is shown below. Please click on a service or component to explore further:</p>
+        
+        	<div class="diagramContainer">      
+        		<h5 style="background-color: #9CFFCE">
+        		 OLAT Services
+        		</h5>
+        		<ul>
+        		
+         		<li style="background-color: #9CFFCE">
+        		  <b>Instant Messaging</b><br>
+                  {@link org.olat.instantMessaging} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Course</b><br>
+                  {@link org.olat.course} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Bookmark</b><br>
+                  {@link org.olat.bookmark} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Catalog</b><br>
+                  {@link org.olat.catalog} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Note</b><br>
+                  {@link org.olat.note} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Portal</b><br>
+                  {@link org.olat.portal} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>User Home</b><br>
+                  {@link org.olat.home} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Administration</b><br>
+                  {@link org.olat.admin} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Shibboleth</b><br>
+                  {@link org.olat.shibboleth} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Security</b><br>
+                  {@link org.olat.basesecurity} 
+                </li>
+                <li style="background-color: #9CFFCE">
+                  <b>Login</b><br>
+                  {@link org.olat.login} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Groups</b><br>
+                  {@link org.olat.group} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Registration</b><br>
+                  {@link org.olat.registration} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Repository</b><br>
+                  {@link org.olat.repository} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Fulltext-Search</b><br>
+                  {@link org.olat.search} 
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Wiki</b><br>
+                  {@link org.olat.modules.wiki}
+                </li>
+        		<li style="background-color: #9CFFCE">
+        		  <b>Forum</b><br>
+                  {@link org.olat.modules.fo}
+                </li>
+        
+        		</ul>
+
+        
+        	   	<div class="diagramClearer">&nbsp;</div>
+        	  
+        	                
+        		<h5 style="background-color: #FFCE9C">
+        		{@link org.olat.core} OLAT Common Base Services
+        		</h5>
+        		<ul>
+        		
+        		<li style="background-color: #FFCE9C">
+        		  <b>Email</b><br>
+                  {@link org.olat.core.util.mail} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Notification</b><br>
+                  {@link org.olat.notifications} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>RSS</b><br>
+                  {@link org.olat.commons.rss} 
+                </li>                
+        		<li style="background-color: #FFCE9C">
+        		  <b>Locking / Synchronization</b><br>
+                  {@link org.olat.core.util.locks} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Caching</b><br>
+                  {@link org.olat.core.util.cache} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Configuration</b><br>
+                  {@link org.olat.core.configuration} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Logging</b><br>
+                  {@link org.olat.core.logging} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Persistency / DB</b><br>
+                  {@link org.olat.core.commons.persistence} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Virtual File System</b><br>
+                  {@link org.olat.core.util.vfs} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Event Handling</b><br>
+                  {@link org.olat.core.util.event} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Internationalization</b><br>
+                  {@link org.olat.core.util.i18n} 
+                </li>
+        		<li style="background-color: #FFCE9C">
+        		  <b>Extensions</b><br>
+                  {@link org.olat.core.extensions} 
+                </li>
+                
+        		</ul>
+        
+        	   	<div class="diagramClearer">&nbsp;</div>
+        		<h5 style="background-color: #9CCEFF">
+        		  {@link org.olat.core.gui.components} OLAT GUI Component
+        		</h5>
+        		<ul>
+        		
+        		<li style="background-color: #9CCEFF">
+        		  <b>Form (legacy)</b><br>
+                  {@link org.olat.core.gui.components.form} 
+                </li>
+                <li style="background-color: #9CCEFF">
+        		  <b>Flexi.Form</b><br>
+                  {@link org.olat.core.gui.components.form.flexible} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Choice</b><br>
+                  {@link org.olat.core.gui.components.choice} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Image</b><br>
+                  {@link org.olat.core.gui.components.image} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Progressbar</b><br>
+                  {@link org.olat.core.gui.components.progressbar} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Table</b><br>
+                  {@link org.olat.core.gui.components.table} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>HTML Header</b><br>
+                  {@link org.olat.core.gui.components.htmlheader} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Delegating</b><br>
+                  {@link org.olat.core.gui.components.delegating} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Panel</b><br>
+                  {@link org.olat.core.gui.components.panel} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Tabbed Pane</b><br>
+                  {@link org.olat.core.gui.components.tabbedpane} 
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>Tree</b><br>
+                  {@link org.olat.core.gui.components.tree}
+                </li>
+         		<li style="background-color: #9CCEFF">
+        		  <b>Link</b><br>
+                  {@link org.olat.core.gui.components.link}
+                </li>
+        		<li style="background-color: #9CCEFF">
+        		  <b>HTML Site</b><br>
+                  {@link org.olat.core.gui.components.htmlsite}
+                </li>
+        
+        		</ul>
+        
+        	   	<div class="diagramClearer">&nbsp;</div>
+	  
+            </div>
+          </div>
+        </div>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br/>
+<br/>
+<hr align="center" size="2" width="90%"/>
+<h2>How to's</h2>
+<ul> 
+<li>Need code samples? Go to<a href="http://demo.olat.org">demo.olat.org</a> and log in as administrator and look for the "gui demo" tab, which shows you plenty examples on how to do different stuff in OLAT and you can view the source code directly with a click in your browser. Check it out!</li>
+ <li><a href="#jumpIn">How to create a direkt jumpin-link into OLAT ?</a></li>
+ <li><a href="#statusMsg">How to show status messages ?</a></li>
+</ul>
+<hr align="center" size="1" width="90%"/>
+
+<H4>How to create a direkt jumpin link ?</H4>
+<blockquote>
+E.g. Create a direct link to a course-node.<br>
+<table>
+ <tr><td style="background-color: #DDDDDD">
+  <code>
+	String nodeUrl = new URLEncoder().encode("[" + OresHelper.calculateTypeName(CourseNode.class) + ":" + node.getIdent() + "]");<br>
+	String link = JumpInManager.getJumpInUri(this.getWindowControl().getBusinessControl()) + nodeUrl;
+  </code>
+ </td></tr>
+</table>  
+see {@link org.olat.core.dispatcher.jumpin}
+</blockquote>
+
+<a name=statusMsg>
+<H4>How to show status messages ?</H4>
+<blockquote>
+Show a translated text as info-message at the top of UI :<br>
+<table>
+ <tr><td style="background-color: #DDDDDD">
+  <code>
+	this.getWindowControl().setInfo(translator.translate("found.no.result.try.fuzzy.search"));
+  </code>
+ </td></tr>
+</table>  
+</blockquote>
+
+</body>
+</html>

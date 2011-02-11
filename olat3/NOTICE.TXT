@@ -1,0 +1,115 @@
+LICENSE CONCERNING THIS DISTRIBUTION
+Copyright 1999-2011 Björn Adelberg, Sandra Arnold, Sandra Bischof, Armin Blawitzki, Hanspeter Brun, Patrick Brunner, 
+Gabriel Bucher, Lavinia Dumitrescu, Lars Eberle, Stefan Egli, Claudia Ehrle, Joël Fisler, Florian Gnägi, Christian Guretzki, 
+Roman Haag, Stefan Hofstetter, Kristina Isacson, Sabina Jeger, Felix Jost, Andreas Kapp, Martin Kernland, Stefan Köber, 
+Ingmar Kroll, Rainer Kulow, Matthai Kurian, Thomas Linowsky, Andre Locher, Marc Luder, Alan Moran, Sven Morgner, 
+Pascal Pellmont, Tiziana Perini, Frank Richter, Milanka Ringwald, Stéphane Rossé, Alberto Sanz, Alexander Schneider, 
+Franziska Schneider, Guido Schnider, Ruth Schuermann, Maya Schüssler, Jens Schwendel, Renata Sevcikova, Coni Steinemann, 
+Mike Stock, Alexandra Stucki, Marion Weber, Carsten Weisse, Immo Wille, Hans-Jörg Zuberbühler at 
+Multimedia- & E-Learning Services (MELS) [http://www.id.uzh.ch/org/mels.html] , University of Zurich [http://www.uzh.ch], Switzerland.
+
+Licensed under the Apache License, Version 2.0 (the "License").
+
+OLAT (http://www.olat.org) is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+either express or implied. See the License for the specific language governing 
+permissions and limitations under the License. 
+
+You should have received a copy of the License along with OLAT, see 
+file COPYING distributed along with this release; otherwise You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0
+
+OLAT Logo and Icons
+The OLAT logo and icons are released under the Creative Commons Attribution-NoDerivs 2.5 Switzerland license (for German see http://creativecommons.org/licenses/by-nd/2.5/ch/ and English http://creativecommons.org/licenses/by-nd/2.5/).
+
+CONTRIBUTORS
+============
+
+This Software contains code contributed by the following companies and people:
+
+- frentix GmbH, Switzerland (http://www.frentix.com)
+Florian Gnägi, Roman Haag, Maurus Rohrer, Gregor Wassmann, Stéphane Rossé, Timo Würsch
+
+- JGS goodsolutions GmbH, Switzerland (http://www.goodsolutions.ch):
+Florian Gnägi, Felix Jost, Mike Stock
+
+- beecom, Switzerland (http://www.beecom.ch):
+Gabriel Bucher, Rainer Kulow, Pascal Pellmont
+
+- Nouvelle srl, Italy (http://www.orion.it):
+Roberto Bagnoli
+
+- BPS Bildungsportal Sachsen GmbH, Germany (http://www.bildungsportal.sachsen.de):
+Carsten Weiße
+Ingmar Kroll
+Lars Eberle
+
+- LaLiLuna tutorial site, Germany (http://www.laliluna.de)
+Sebastian Hennebrueder
+
+
+OTHER LICENSES AFFECTED BY THIS DISTRIBUTION
+============================================
+This product uses software based on the Apache Software License like
+* Tomcat
+* Ant
+* Velocity
+* Log4J
+--------------------------------------------
+This product includes software developed by the JDOM Project (http://www.jdom.org/).
+--------------------------------------------
+This product includes the net.sf.jazzlib library, which can be found at 
+http://jazzlib.sourceforge.net/.
+It is under GPL with a special exception :
+"As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License."
+--------------------------------------------
+The layout of this product is based on the YAML layout framework. Please read the 
+licensing terms of YAML if you plan to use OLAT in a commercial setup.
+http://www.yaml.de
+--------------------------------------------
+This product includes the DHTML calendar software developed by dynarch.com 
+The DHTML Calendar (http://prdownloads.sourceforge.net/jscalendar/)
+Author: Mihai Bazon, <mishoo@infoiasi.ro>
+http://dynarch.com/mishoo/ (LGPL)
+--------------------------------------------
+This product includes the TinyMCE WYSIWYG HTML editor (LGPL)
+http://tinymce.moxiecode.com/
+--------------------------------------------
+This product includes the rss4j library from ChurchillObjects.com
+http://www.churchillobjects.com/c/13005.html
+--------------------------------------------
+This product includes the SMACK client library from jivesoftware.org
+http://www.jivesoftware.org/smack/ 
+--------------------------------------------
+This product includes links to comic strips produces by Alex Macartney
+Please not that these comics are not public domain and must not be used for any
+other purpose than beeing displayed in the OLAT home portal
+http://www.macartney.ch
+--------------------------------------------
+This product includes software developed by the reload SCORM player project. (http://www.reload.ac.uk/scormplayer.html)
+--------------------------------------------
+This product includes SCORM Api adaper developed by the ISN (International Relations and Security Network). (http://www.isn.ethz.ch/)
+Author: Matthai Kurian <matthai.kurian@ethz.ch>
+--------------------------------------------
+This product includes software for the wiki rendering engine developed by jamwiki.org (http://jamwiki.org)
+--------------------------------------------
+This product includes the javaScript library jsMath from http://www.math.union.edu/~dpvc/jsMath/
+--------------------------------------------
+This product includes the javaScript library tooltip-js from Jonathan Weiss <jw@innerewut.de>
+--------------------------------------------
+This product includes the Quartz job scheduler library from the OpenSymphony project (Apache 2 license)
+http://www.opensymphony.com/quartz/
+--------------------------------------------
+This product includes the prototype javascript framework from http://www.prototypejs.org
+-------------------------------------------
+This product includes the script.aculo.us javascript framework from http://script.aculo.us/
+-------------------------------------------
+This product includes the extjs javascript framework from http://extjs.com/
+-------------------------------------------
+This product includes the owasp antisamy xss filter from http://code.google.com/p/owaspantisamy/ (new BSD license)
+-------------------------------------------
+This product includes the CyberNeko HTML Parser from http://nekohtml.sourceforge.net/index.html (Apache 2 license)
+-------------------------------------------

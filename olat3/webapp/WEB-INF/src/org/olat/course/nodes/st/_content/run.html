@@ -1,0 +1,104 @@
+#if ($hasScore || $hasPassed)
+	<div class="o_course_run_scoreinfo">
+		<h4>$r.translate("score.title")</h4>		
+		<table>
+			<tbody>
+			#if ($hasScore)
+				<tr>
+					<td>			
+						$r.translate("calcedscore"): 
+					</td>
+					<td>
+						#if($scoreScore)		
+							$scoreScore
+						#else
+							<i>$r.translate("score.noinfo")</i>
+						#end
+					</td>
+				</tr>
+			#end
+			#if ($hasPassed)
+				<tr>
+					<td>			
+						$r.translate("calcedpassed"): 
+					</td>
+					<td>
+						#if ($hasPassedValue && $scorePassed == true)		
+							<span class="o_passed">$r.translate("passed.yes")</span>
+						#elseif($hasPassedValue && $scorePassed == false)		
+							<span class="o_notpassed">$r.translate("passed.no")</span>
+						#else
+							<i>$r.translate("passed.noinfo")</i>
+						#end
+					</td>
+				</tr>
+			#end
+			</tbody>
+		</table>
+	</div>
+#end
+
+#if ($children.size() > 0)
+	#if ($layoutType == "o_course_run_toc_one_column")
+		<div class="o_course_run_toc o_course_run_toc_one_column">
+		#foreach($coursenode in $children)
+			$r.render("childView_${coursenode.getIdent()}")
+		#end
+		</div>
+	#else 	
+		<div class="o_course_run_toc o_course_run_toc_two_columns">
+		#foreach($coursenode in $children)
+			## Build a 2-column subcolumn layout for every row except for the last item 
+			## if we have an uneven number of items. In this case use the full width.
+			#if ($velocityCount == $children.size() && ($velocityCount % 2 == 1))
+				$r.render("childView_${coursenode.getIdent()}")
+			#else 
+				#if ($velocityCount % 2 == 1)
+					#set ($align = "l")
+					<div class="b_subcolumns">
+				#else
+					#set ($align = "r")			
+				#end
+				<div class="b_c50${align}"><div class="b_subc${align}">
+					$r.render("childView_${coursenode.getIdent()}")
+				</div></div>
+				#if ($velocityCount % 2 == 0 || $velocityCount == $children.size())			
+					</div>
+				#end
+			#end
+			
+		#end
+		</div>
+	#end
+#end
+
+
+## Scroll to position 0,0 first to fix jump which is expected by users and otherwhise does not happen in ajax mode (OLAT-3387)
+## Add event JS event listeners for click and keydown events on all the gotonodes links
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(function() {
+	$$('div.o_course_run_toc a.o_gotoNode').each(function(n) {
+		n.observe('click', function() {window.scrollTo(0,0);}); 
+		n.observe('keydown', function() {window.scrollTo(0,0);}); 
+	});
+	#if ($layoutType == "o_course_run_toc_two_columns")
+		## resize items to match height on each row, not possible via CSS 
+		$$('div.o_course_run_toc_two_columns > div.b_subcolumns').each(function(n) {
+			try {
+				var children = n.select('div.o_course_run_toc_entry');
+			    var maxHeight  = children.map(function(child) {
+			      return child.getHeight();
+			    }).max();
+			    children.each(function(child) {
+			      var padding = parseInt(child.getStyle('padding-top')) +
+			                    parseInt(child.getStyle('padding-bottom'));
+			      child.setStyle('height:' + (maxHeight - padding) + 'px;');
+			    });
+			} catch (e) { }
+		});
+	#end	
+	
+});
+/* ]]> */
+</script>

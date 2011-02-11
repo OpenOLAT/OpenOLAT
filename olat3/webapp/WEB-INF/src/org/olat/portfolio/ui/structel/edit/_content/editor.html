@@ -1,0 +1,20 @@
+<div class="b_eportfolio_edit">
+	#if($template-help)
+		$r.contextHelpWithWrapper("org.olat.portfolio.ui.structel.edit", "editorwithrestrictions.html", "chelp.editorwithrestrictions.hoover")
+	#else
+		$r.contextHelpWithWrapper("org.olat.portfolio.ui.structel.edit", "editor.html", "chelp.editor.hoover")
+	#end
+	<div style="float: left">$r.translate("map.style") &nbsp;</div> 
+	$r.render("map.style") <br/>
+	
+	<div class="b_subcolumns">
+		<div class="b_c33l o_ep_toc_editor"><div class="b_subcl">
+		$r.render("tocCtrl")
+		</div></div>
+		
+		<div class="b_c66r o_ep_struct_editor"><div class="b_subcr">
+		$r.render("editCtrl")
+		</div></div>
+	
+	</div> 
+</div>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="olat_ims_cp_editor_v1" schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 imsmd_v1p2p2.xsd">
+  <metadata/>
+  <organizations>
+    <organization identifier="TOC" structure="hierarchical">
+      <title>New CP</title>
+      <item identifier="this_is_a_great_inital_item_identifier" identifierref="re-1" isvisible="true">
+        <title>New Page</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="re-1" type="webcontent" href="new.html">
+      <file href="new.html"/>
+    </resource>
+  </resources>
+</manifest>

@@ -1,0 +1,83 @@
+#if ($callback.mayCreateItems() && $feed.isInternal())
+	<div class="b_float_right b_clearfix">
+		$r.render("feed.add.item")
+	</div>
+#end
+<h4 class="o_podcast_episodes">$r.translate("podcast.episodes")</h4>
+#if (!$feed.hasItems() )
+	$r.contextHelpWithWrapper("org.olat.modules.webFeed.ui.podcast","internal-external.html","help.hover.internal-external")
+	<p>$r.translate("podcast.has.no.episodes")</p>
+#end
+#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal") )
+	<div class="o_podcast_no_episodes b_msg_dialog b_important">
+		<p>$r.translate("podcast.internal.or.external")</p>
+		$r.render("feed.make.internal")
+		$r.render("feed.make.external")
+	</div>
+#else
+
+	<!-- loop over episodes -->
+	#foreach( $episode in $helper.getItems($callback) ) 	
+		<div class="o_podcast_episode b_clearfix">
+			#if ($callback.mayEditItems() && $feed.isInternal())
+				<div class="b_float_right b_clearfix">
+					## special case: this item has been added by another user and thus we 
+					## don't yet have links for this item. But we can still display the content
+					#if ($r.available("feed.edit.item.$episode.getGuid()"))
+						$r.render("feed.edit.item.$episode.getGuid()")
+						#if ($callback.mayDeleteItems())
+							$r.render("delete.$episode.getGuid()")
+						#end
+					#end
+				</div>
+			#end
+			#if ("$!episode.getExternalLink()" != "")
+				<a href="$episode.getExternalLink()" target="_blank">
+			#end
+			<h5>$r.escapeHtml($!episode.getTitle())</h5>
+			#if ("$!episode.getExternalLink()" != "")
+				</a>
+			#end
+			<p>$!helper.getMediaType($episode.getEnclosure())</p>
+			<p class="o_podcast_date">$!helper.getLastModified($episode)</p>
+			<p>$!helper.getItemDescriptionForBrowser($episode)</p>
+			
+			#if ($!episode.getEnclosure())								
+				<div id="o_podcast_episode_$velocityCount" name="o_podcast_episode_$velocityCount" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"><a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.</div>
+				<p>
+					<a href="$!helper.getMediaUrl($episode)" target="_blank" class="b_with_small_icon_left b_filetype_mov">$r.translate("podcast.episode.download")</a>
+				</p>
+				<script type="text/javascript">
+				/* <![CDATA[ */
+				#if ($!helper.getMediaType($episode.getEnclosure()) == "video")
+					BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",400,300,"video");
+				#else
+					BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",400,24,"sound");
+				#end
+				/* ]]> */
+				</script>
+			#end
+			
+			#if ($r.available("commentsAndRating.${episode.getGuid()}"))
+				$r.render("commentsAndRating.${episode.getGuid()}")
+			#end
+			
+		</div>
+	#end
+	
+	<div id="o_link_container">
+	#if ( $helper.hasOlderItems() )
+		<div class="o_older_items">
+			$r.render("feed.older.items")
+		</div>
+	#end
+	#if ( $helper.hasNewerItems() )
+		<div class="o_newer_items">
+			$r.render("feed.newer.items")
+		</div>
+		<div class="o_home">
+			$r.render("feed.startpage")
+		</div>
+	#end
+	</div>
+#end

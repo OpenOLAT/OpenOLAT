@@ -1,0 +1,18 @@
+<div class="o_course_run_task">
+	<h4>$r.translate("task.title")</h4>		
+#if ($taskText)
+	<p>
+		$taskText
+	</p>
+#end
+#if ($nomoretasks)
+	<p>
+		<i>$nomoretasks</i>
+	</p>
+#else
+	<p>
+		$r.translate("task.choose")
+		$r.render("taskTable")
+	</p>
+#end
+</div>

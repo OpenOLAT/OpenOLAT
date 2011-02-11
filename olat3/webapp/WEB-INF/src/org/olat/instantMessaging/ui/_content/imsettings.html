@@ -1,0 +1,14 @@
+$r.render("onlinelistform")
+$r.render("rosterform")
+
+<fieldset>
+	<legend>$r.translate("title.imclient.extern")</legend>
+	<p>
+		$r.translate("imclient.extern.intro")
+	</p>
+	<p>
+		$r.translate("imclient.extern.protocol")<br />
+		$r.translate("imclient.extern.username", $chatusername)<br />
+		$r.translate("imclient.extern.pw") <input type="text" value="$password" readonly="readonly"/>
+	</p>
+</fieldset>

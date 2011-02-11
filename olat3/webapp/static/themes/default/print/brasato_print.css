@@ -1,0 +1,18 @@
+@charset "UTF-8";
+@media print
+{
+	/* disable elements that should not be printent */
+	#b_footer #b_toplink,	
+	.b_button,
+	div.b_noti,
+	#b_contexthelp_rating
+	 { display: none;}
+	
+	.b_floatscrollbox, b_overflowscrollbox { overflow:visible; display: table; }
+	
+	#b_col1_resizer #b_col2_resizer { display: none; }	
+	#b_main.b_preview { background-image: none; }
+	
+	#jsMath_button { display: none ! important;}
+	
+}

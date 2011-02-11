@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration>
+	<institution shortname="Test-Uni"> <!-- must match the users institution attribute -->
+		<logo value="test.gif"/> <!-- has to be placed in webapp/static/images/institution/ -->
+		<name value="Test Universität"/>
+		<url value="http://www.test-universitaet.de"/>
+		<supervisor> <!-- contact person for this institution -->
+			<person value="Fester Tester"/>
+			<phone value="(0123) 456-7891"/>
+			<email value="fester.tester@test-uni.de"/>
+			<url value="http://elearning.test-uni.de"/>
+		</supervisor>
+		<!-- define one or more links -->
+		<polymorphlink  type="course" default_targetid="360448" text="Perpetuum Mobile">
+			<!-- optionally define alternative targets depending on user attributes -->
+			<element attribute="orgunit" value="A" targetid="360463" condition="equals"/>
+            <element attribute="orgunit" value="B" targetid="360466" condition="starts_with"/>
+            <element attribute="orgunit" value="C" targetid="360464" condition="contains"/>
+		</polymorphlink>
+		<polymorphlink  type="catalog" default_targetid="66453510" text="Katalog der Test-Uni" />
+	</institution>
+</configuration>

@@ -1,0 +1,22 @@
+<div class="b_eportfolio_share_policy_wrapper policytype_$wrapper.getType() b_clearfix">
+	<div class="b_float_right">
+		$r.render($wrapper.calc("map.share.policy.add"))
+		$r.render($wrapper.calc("map.share.policy.delete"))
+		#if($r.available($wrapper.calc("map.share.policy.invite"))) <br/><br/>$r.render($wrapper.calc("map.share.policy.invite")) #end
+	</div>
+	<div class="b_eportfolio_share_policy">
+		$r.render($wrapper.calc("map.share.target"))
+		#if($r.available($wrapper.calc("map.share.with")))
+			<div class="b_eportfolio_share_with">
+				$r.render($wrapper.calc("map.share.with"))
+			</div>
+		#end
+		<br/>
+		<div class="b_ep_share_date"><span>$r.translate("map.share.from")</span></div>
+		$r.render($wrapper.calc("map.share.from"))
+		<div class="b_ep_share_date"><span>$r.translate("map.share.to")</span></div>
+		$r.render($wrapper.calc("map.share.to"))
+		<br/><div class="b_form_error_msg">$r.render($wrapper.calc("errorpanel"))</div>
+	</div>
+</div>
+

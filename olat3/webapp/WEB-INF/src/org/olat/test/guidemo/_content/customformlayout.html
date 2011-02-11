@@ -1,0 +1,33 @@
+#if($off_title)
+<span><strong>$off_title</strong></span>
+#end
+<hr>
+<div class="b_subcolumns">
+	<div class="b_c25l">
+	<span>$r.render("firstname_LABEL")</span>
+	#if($f.isMandatory("firstname"))
+		<!-- place your icon or your custom message here... -->
+	#end
+	$r.render("firstname")
+	#if($f.hasError("firstname"))
+		$r.render("firstname_ERROR")
+	#end
+	</div>
+	<div class="b_c25r">
+	<div style="padding-top:1.1em">$r.render("submit")</div>
+	</div>
+	<div class="b_c25r">
+	$r.render("institution_LABEL")
+	$r.render("institution")
+	#if($f.hasError("institution"))
+		$r.render("institution_ERROR")
+	#end
+	</div>
+	<div class="b_c25r">
+	$r.render("lastname_LABEL")
+	$r.render("lastname")
+	#if($f.hasError("lastname"))
+		$r.render("lastname_ERROR")
+	#end
+	</div>
+</div>

@@ -1,0 +1,15 @@
+<div class="o_forum">
+$text
+#if ($hasAttachments)
+<div class="o_forum_message_attachments" style="border-top-style:hidden;">
+	<strong>$r.translateWithPackage("org.olat.modules.fo","attachments")</strong>
+	<ul>
+	#foreach( $attachment in $attachments )
+		#set( $fsize = $attachment.getSize() / 1024 )
+		#set( $downlCompName = "download${velocityCount}")
+		<li>$r.render($downlCompName)</li>
+	#end 
+	</ul>
+</div>
+#end
+</div>

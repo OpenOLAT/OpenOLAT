@@ -1,0 +1,88 @@
+<h4>$r.translate("buildinfo")</h4>
+<p/>
+<fieldset>
+	<legend>Server</legend>
+	<table class="b_table b_grid">
+		<thead>
+			<tr>
+				<th>key</th>
+				<th>value</th>
+			</tr>
+		</thead>
+		#foreach($property in $properties)
+		<tr>
+			<td>$property.key</td>
+			<td>$property.value</td>
+		</tr>
+		#end
+	</table>
+</fieldset>
+
+#if($existsDeploymentInfoProperties)
+<hr/>
+<fieldset>
+	<legend>deployment-info.properties (date: $fileDateDeploymentInfoProperties)</legend>
+	<table class="b_table b_grid">
+		#foreach($line in $deploymentInfoPropertiesLines)
+		<tr>
+			<td>$line.line</td>
+		</tr>
+		#end
+	</table>
+</fieldset>
+#end
+
+#if($existsPatchFile)
+<hr/>
+<fieldset>
+	<legend>patches.xml.newest (date: $patchesFileDate, active: <b>$patchesActive</b>, basetag: $patchesBaseTag)</legend>
+	<table class="b_table b_grid">
+		<thead>
+			<tr>
+				<th>id</th>
+				<th>enabled</th>
+				<th>jira</th>
+				<th>tag</th>
+			</tr>
+		</thead>
+		#foreach($patch in $patches)
+		#if($patch.title)
+		<tr title="$patch.title">
+		#else
+		<tr>
+		#end
+			<td>$patch.id</td>
+			<td>$patch.enabled</td>
+			<td>$patch.jira</td>
+			<td>$patch.tag</td>
+		</tr>
+		#end
+	</table>
+</fieldset>
+#end
+
+#if($existsActivePatchFile)
+<hr/>
+<fieldset>
+	<legend>$activePatchFileName (date: $activePatchesFileDate, active: <b>true</b>, basetag: $activePatchesBaseTag)</legend>
+	<table class="b_table b_grid">
+		<thead>
+			<tr>
+				<th>id</th>
+				<th>enabled</th>
+				<th>jira</th>
+				<th>tag</th>
+			</tr>
+		</thead>
+		#foreach($patch in $activePatches)
+		<tr>
+			<td>$patch.id</td>
+			<td>$patch.enabled</td>
+			<td>$patch.jira</td>
+			<td>$patch.tag</td>
+		</tr>
+		#end
+	</table>
+</fieldset>
+#end
+

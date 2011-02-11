@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
+
+	<property name="persistedProperties">
+	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+	    <constructor-arg index="0" ref="coordinatorManager"/>
+	    <constructor-arg index="1" ref="repositoryModule" />
+	  </bean>
+	</property>
+</bean>
+
+<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="repositoryModule" />
+        <property name="targetMethod" value="init" />
+</bean>
+
+		
+<bean id="repositoryManager" class="org.olat.repository.RepositoryManager">
+	<constructor-arg index="0" ref="baseSecurityManager" />
+	<constructor-arg index="1" ref="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" />
+</bean>
+
+</beans>

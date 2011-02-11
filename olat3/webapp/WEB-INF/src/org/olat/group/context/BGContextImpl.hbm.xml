@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+   "-//Hibernate/Hibernate Mapping DTD//EN"
+   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+    <class name="org.olat.group.context.BGContextImpl" table="o_gp_bgcontext">
+
+		<cache usage="read-write" />
+
+        <id name="key"
+        	type="long"
+        	column="groupcontext_id"
+        	unsaved-value="null">
+            <generator class="hilo" />
+        </id>
+        
+        <version name="version" access="field" column="version" type="int"/>
+		<property  name="creationDate" column="creationdate" type="timestamp" />   
+	 		
+		<property name="name" type="string">
+			<column name="name" not-null="true" unique="false" index="name_idx4"/>
+		</property>
+	
+	    <property name="description" type="string"> 
+	    	<column name="descr" length="16777210" not-null="false" unique="false" />               
+	    </property>
+	    
+		<property name="groupType">
+			<column name="grouptype" length="15" not-null="true" unique="false" index="type_idx"/>
+		</property>
+		
+		<many-to-one
+	        name="ownerGroup"
+	        column="ownergroup_fk"
+	        class="org.olat.basesecurity.SecurityGroupImpl" 
+	        outer-join="true"   
+	        unique="true" 
+	        not-null="false" 
+            cascade="none"/>
+		
+		<property name="defaultContext">
+			<column name="defaultcontext" not-null="true" unique="false"  index="default_idx"/>
+		</property>
+		
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,29 @@
+<h4 class="b_with_small_icon_left b_group_icon">
+	$r.translate("userlist.title")
+</h4>
+
+#if ($showOwnerGroups)
+	<h5>$r.translate("userlist.owners.title")</h5>
+	$r.render("owners")
+#else
+    <br/><h5>$r.translate("userlist.show.no.owners.title")</h5>
+	$r.translate("userlist.show.no.owners.text")<br/><br/>
+#end
+
+#if ($showPartipsGroups)
+	<h5>$r.translate("userlist.participants.title")</h5>
+	$r.render("participants")
+#else
+	<br/><h5>$r.translate("userlist.show.no.participants.title")</h5>
+	$r.translate("userlist.show.no.participants.text")<br/><br/>
+#end
+
+#if ($hasWaitingList)
+	#if ($showWaitingList)
+		<h5>$r.translate("userlist.waitinglist.title")</h5>
+		$r.render("waitingList")
+	#else
+	    <br/><h5>$r.translate("userlist.show.no.waitinglist.title")</h5>
+		$r.translate("userlist.show.no.waitinglist.text")
+	#end
+#end

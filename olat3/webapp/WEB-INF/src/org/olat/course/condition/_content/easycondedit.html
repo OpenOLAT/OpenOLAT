@@ -1,0 +1,84 @@
+<div class="b_form b_clearfix">
+## block this node from learner
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("coachExclusive")</div>
+        <div class="b_form_element_label">$r.render("coachExclusive_LABEL")</div>        
+	</div>
+## date switch, from and to date
+	  <!-- dateswitch -->
+      <!-- generates -->
+      <!-- Date dependent?:| | [.] | | from | |[.....][chooser] |
+                           | |     | | to   | |[.....][chooser] |-->	
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("dateSwitch")</div>
+		<div class="b_form_element_label">$r.render("dateSwitch_LABEL")</div>
+	</div>
+	#if ($f.isVisible("dateSubContainer"))
+	<div class="b_form_subform">
+		$r.render("dateSubContainer")
+		$r.render("dateSubContainer_ERROR")
+	</div>
+	#end
+## group switch, group and group area listing	
+      <!-- groupswitch -->
+      <!-- generates -->
+      <!-- Group dependent?:| | [.] | | Groups | |[.....][chooser] |
+        	                | |     | | Areas  | |[.....][chooser] | -->
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("groupSwitch")</div>
+		<div class="b_form_element_label">$r.render("groupSwitch_LABEL")</div>
+	</div>
+	#if ($f.isVisible("groupSubContainer"))
+	<div class="b_form_subform">
+		$r.render("groupSubContainer")
+		$r.render("groupSubContainer_ERROR") 
+	</div>
+	#end
+## assessment switch, cutvalue or score switch and score value	
+      <!-- assessswitch -->
+      <!-- generates -->
+      <!-- Assess dependent?:| |[.]  | |               | O PASSED | |
+                             | |     | |               | X SCORE  | |
+        	                 | |     | | Kursbaustein  | [.....V] | |
+        	                 | |     | | Cut value     | [...]    | |-->
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("assessmentSwitch")</div>
+		<div class="b_form_element_label">$r.render("assessmentSwitch_LABEL")</div>
+	</div>
+#if ($f.isVisible("assessSubContainer"))
+	<div class="b_form_subform">
+		$r.render("assessSubContainer")
+	</div>
+#end    
+
+## attribute switch, shibboleth attribute choosers
+#if ($shibbolethEnabled)
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("attributeSwitch")</div>
+		<div class="b_form_element_label">$r.render("attributeSwitch_LABEL")</div>
+	</div>
+	#if ($f.isVisible("attributeBconnector"))
+	<div class="b_form_subform">
+		<div class="b_form_element_wrapper b_form_vertical b_clearfix">
+	       	<div class="b_form_element_label b_form_vertical">	$r.render("attributeBconnector_LABEL")</div>
+			<div class="b_form_element b_form_vertical b_small">$r.render("attributeBconnector")</div>
+		</div>
+		$r.render("attribteRowAdderSubform")
+	</div>
+	#end  
+#end
+
+## apply rules also for coach
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("applyRulesForCoach")</div>
+        <div class="b_form_element_label">$r.render("applyRulesForCoach_LABEL")</div>        
+	</div>
+## submit button
+	<div class="b_form_subform">
+		<div class="b_button_group">
+## PB:FIXME - cancel (revert) button does not really reset the whole form
+##			$r.render("cancel")
+			$r.render("subm")
+		</div>
+	</div>
+</div>

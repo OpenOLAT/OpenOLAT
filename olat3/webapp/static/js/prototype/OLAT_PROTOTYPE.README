@@ -1,0 +1,40 @@
+Currently OLAT uses prototype in version 1.7
+
+When updating to a newer version make the following modifications to fix an 
+incompatibility between Prototype and ExtJS in IE browser family:
+
+
+1) search for "pollDoScroll()"
+
+2) Replace the method and the lines below with the following:
+
+
+  function pollDoScroll() {
+    try { document.documentElement.doScroll('left'); }
+    catch(e) {
+// OLAT PATCH
+// See http://extjs.com/forum/showthread.php?p=198159
+//      timer = pollDoScroll.defer();    
+      timer = pollDoScroll.delay(0.01);
+      return;
+    }
+    fireContentLoadedEvent();
+  }
+
+  if (document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', fireContentLoadedEvent, false);
+  } else {
+    document.observe('readystatechange', checkReadyState);
+    if (window == top)
+// OLAT PATCH
+//      timer = pollDoScroll.defer();    
+      timer = pollDoScroll.delay(0.01);
+  }
+
+  
+The real changes are the two lines:
+      timer = pollDoScroll.defer();    
+that must be changed to:
+      timer = pollDoScroll.delay(0.01);
+      
+3) Clear your caches in IE browsers and test...

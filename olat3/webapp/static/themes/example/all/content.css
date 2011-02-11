@@ -1,0 +1,104 @@
+@charset "UTF-8";
+/* This styles define the general content formatting. This stylesheet does also contain some 
+ * e-learning specific content styles since it is used in the tiny mce editor as the base
+ * stylesheet
+/* 
+
+/* no @all tag - confuses tinymce! */
+	/* FONT: */
+	/* Font size is resetted to standard size in yaml_basemod to not get in conflict with content that contains font tags */
+	/* (en) reset monospaced elements to font size 16px in Gecko browsers */
+  	textarea, pre, tt, code { font-family: Lucida Console, Monaco5, monospace;  }	
+	/* Base layout gets standard font size 12px */
+	body { font-family: Lucida Sans Unicode, Lucida Grande, Verdana, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; }
+	
+	/* HEADERS */
+	h1,h2,h3,h4,h5,h6 { font-weight:bold; margin: 0 0 0.25em 0; }
+	h1 { font-size: 200% }                        /* 24px */
+	h2 { font-size: 166.67% }                     /* 20px */
+	h3 { font-size: 150% }                        /* 18px */
+	h4 { font-size: 133.33% }                     /* 16px */
+	h5 { font-size: 116.67% }                     /* 14px */
+	h6 { font-size: 116.67%; font-style:italic }  /* 14px */
+	
+	/* LISTS */
+	ul, ol, dl { line-height: 1.5em; margin: 0 0 1em 1em }
+	li { margin-left: 1.5em; line-height: 1.5em }
+	
+	dt { font-weight: bold }
+	dd { margin: 0 0 1em 2em }
+	/* glossary definition lists have no margin, add padding to fix Ext Tip render issue */
+	.x-tip dl, .x-tip dd { margin: 0 0 0 0 }
+	.x-tip dl { padding: 1px; }
+
+	/* TEXT FORMATTING */
+	cite, blockquote { font-style:italic }
+	blockquote { margin: 0 0 1em 1.5em }
+	
+	strong,b { font-weight: bold }
+	em,i { font-style:italic }
+	
+	textarea, pre, tt, code { font-family: Lucida Console, Monaco5, monospace; font-size: 1em; }
+	
+	acronym, abbr {letter-spacing: .07em; border-bottom: .1em dashed #c00; cursor: help; }
+	
+	/* FIELDSET */
+	fieldset { border: solid #ACAAAA 1px; position: relative; padding: 1em; margin: 0.5em 0 1em 0; }
+	legend {padding: 0 5px; color: #504D4E; }
+	
+	/* OTHER ELEMENTS */
+	p { line-height: 1.5em; margin: 0 0 1em 0; }
+	hr { color: #fff; background:transparent; margin: 0 0 0.5em 0;padding: 0 0 0.5em 0;border:0;border-bottom: 1px #000 solid;}
+		
+	/* CONTENT CLASSES */	
+	/* content boxes */
+	.b_note {background: #dfd url(../../default/images/brasato/information.png) no-repeat 5px 5px; padding: 5px 5px 5px 30px; border-top: 1px #bdb dotted; border-bottom: 1px #bdb dotted;}
+	.b_important {background: #ffd; padding: 1em; border-top: 1px #ddb dotted; border-bottom: 1px #bdb dotted;}
+	.b_warning {background: #fdd; padding: 1em; border-top: 1px #dbb dotted; border-bottom: 1px #bdb dotted;}
+	div.b_note, div.b_important, div.b_warning { margin: 1em 0;}
+	.b_border_box { border: 1px solid #ACAAAA; padding: 1em;}
+	
+	/* THEME SPECIFIC CLASSES */
+	.b_example { background: #FBFBFB; padding: 1em; border-top: 1px #eee dotted; border-bottom: 1px #eee dotted; }
+	.b_example:first-letter { font-size: 120%}
+	
+	/* font  */
+	.b_disabled { color: #ACAAAA; }
+	.b_deleted { text-decoration: line-through; }	
+	.b_selected { font-weight: bold; }	
+	/* font sizes relative to parent object */
+	.b_small { font-size: 90% }
+	.b_xsmall { font-size: 80% }
+	.b_large { font-size: 110% }
+	.b_xlarge { font-size: 120% }
+	/* text alignment: normal flow in a LTR language is left, in a RTL language it is right */
+	.b_align_normal { text-align: left; }
+	.b_align_center { text-align: center; }
+	.b_align_inverse { text-align: right; }
+	
+	/* LINKS */	
+	a {color: #000B63; text-decoration:none;}
+	a:focus, a:hover, a:active { color: #2E3463; text-decoration:underline;}
+	a.b_link_extern { }
+	a.b_link_mailto { }
+	a.b_link_call { }
+	
+	
+	/* GENERIC TABLES styles for home-brew tables, table component uses other styles */	
+	table.b_table { background: #FFF; width: auto; border-collapse: collapse; margin-bottom: 0.5em; margin-left: 1px;} /* left margin fix for FF */
+	table.b_table_nobackground { width: auto; border-collapse: collapse; margin-bottom: 0.5em; margin-left: 1px;} /* left margin fix for FF */
+	table.b_full { width: 99.5%; } /* 99.5% width fix for FF border overflow issue*/
+	table.b_fixed { table-layout:fixed }
+	table.b_table th, td { padding: 0.2em; }
+	table.b_table th { background: #ccc; color: #333 }
+	table.b_table th.b_sub { background: #ddd; color: #333 }	
+	table.b_table label { font-weight: bold;}
+	table.b_table tr.b_table_odd { background: #F1F5FA; }
+	table.b_table tr:hover { background: #c4d0dc;}	
+	table.b_table_nohover tr:hover {background: none } 
+	/* tables with visible grid layout */
+	table.b_grid_row tr, table.b_grid th, table.b_grid td { border: 1px solid #ACAAAA; }
+
+			
+/* } no @media all because of tinymce */
+

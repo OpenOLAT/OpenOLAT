@@ -1,0 +1,14 @@
+<div class="b_msg_dialog">
+  <div class="b_msg_title">
+  $r.translate("exit.header")
+  </div>
+  <div class="b_msg_content">
+  $r.translate("exit.message")
+    <div class="b_button_group">
+      <a href="$r.commandURIbg("exit.save")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() title="$r.translateInAttribute("exit.save.tooltip")" class="b_button"><span>$r.translate("exit.save")</span></a>
+
+      <a href="$r.commandURIbg("exit.discard")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() title="$r.translateInAttribute("exit.discard.tooltip")" class="b_button"><span>$r.translate("exit.discard")</span></a>
+      <a href="$r.commandURIbg("exit.cancel")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() title="$r.translateInAttribute("exit.cancel.tooltip")" class="b_button"><span>$r.translate("exit.cancel")</span></a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="o_blog_post">
+#if($readOnlyMode)
+	<div class="o_post b_clearfix $!item.extraCSSClass()">
+		#if($r.available("dateComp"))
+			$r.render("dateComp")
+		#end
+		<h5>$r.escapeHtml($item.getTitle())</h5>
+		<p class="o_description">
+			$!helper.getItemDescriptionForBrowser($item)
+		</p>
+		#if ($item.getContent() && $item.getContent() != "")
+		<p class="o_content">
+			$!helper.getItemContentForBrowser($item)
+		</p>
+		#end
+	</div>
+#else
+	<i>$item.getTitle()</i><br/>
+	$!filteredText	
+#end	
+	
+</div>

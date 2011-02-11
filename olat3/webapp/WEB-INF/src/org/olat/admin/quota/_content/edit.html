@@ -1,0 +1,36 @@
+#if($editQuota)
+	<fieldset class="b_clearfix">
+		<legend>$r.translate("qf.edit")</legend>
+		#if(!$isEmptyQuota)
+		<div class="b_float_right">$r.render("qf.del")</div>
+		#end
+		$r.render("quotaform")
+	</fieldset>
+#else
+	<fieldset class="b_clearfix">
+		<legend>$r.translate("qf.new")</legend>
+		<div class="b_float_right">$r.render("qf.new")</div>
+		$r.translate("qf.noquota")
+		#if ($modalMode)
+			&nbsp;
+			$r.render("cancel")
+		#end
+	</fieldset>	
+#end
+
+<fieldset>
+	<legend>$r.translate("qd.title")</legend>
+	<table class="b_table b_grid">
+		<thead>
+			<tr><th>$r.translate("qd.title")</th><th>$r.translate("qf.quota")</th><th>$r.translate("qf.limit")</th></tr>
+		</thead>
+		<tbody>
+			<tr><td>$r.translate("qd.users")</td><td>$users.getQuotaKB()</td><td>$users.getUlLimitKB()</td></tr>
+			<tr><td>$r.translate("qd.powerusers")</td><td>$powerusers.getQuotaKB()</td><td>$powerusers.getUlLimitKB()</td></tr>
+			<tr><td>$r.translate("qd.groups")</td><td>$groups.getQuotaKB()</td><td>$groups.getUlLimitKB()</td></tr>
+			<tr><td>$r.translate("qd.repository")</td><td>$repository.getQuotaKB()</td><td>$repository.getUlLimitKB()</td></tr>
+			<tr><td>$r.translate("qd.coursefolder")</td><td>$coursefolder.getQuotaKB()</td><td>$coursefolder.getUlLimitKB()</td></tr>
+			<tr><td>$r.translate("qd.nodefolder")</td><td>$nodefolder.getQuotaKB()</td><td>$nodefolder.getUlLimitKB()</td></tr>
+		</tbody>
+	</table>
+</fieldset>

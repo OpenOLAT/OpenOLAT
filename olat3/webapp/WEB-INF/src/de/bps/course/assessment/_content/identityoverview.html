@@ -1,0 +1,23 @@
+<h5>$r.translate("identityoverview.title")</h5>
+$r.render("backLink")
+<br><br>
+<span class="b_with_small_icon_left b_user_icon">
+	$user.getProperty("firstName", $locale) $user.getProperty("lastName", $locale)
+</span>
+<br />
+<a href="mailto:$user.getProperty("email", $locale)" class="b_link_mailto">$user.getProperty("email", $locale)</a>
+#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
+	<br />
+	<a href="mailto:$user.getProperty("institutionalEmail", $locale)" class="b_link_mailto">$user.getProperty("institutionalEmail", $locale)</a>
+#end
+#if ($user.getProperty("institutionalName", $locale))
+	<br />
+	<span class="b_with_small_icon_left b_institution_icon">
+		$user.getProperty("institutionalName", $locale)
+	</span>
+#end
+#if ($user.getProperty("institutionalUserIdentifier", $locale))
+	($user.getProperty("institutionalUserIdentifier", $locale))
+#end
+
+$r.render("assessmentOverviewTable")

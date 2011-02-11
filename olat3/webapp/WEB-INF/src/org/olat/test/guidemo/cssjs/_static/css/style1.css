@@ -1,0 +1,10 @@
+* {
+	color:red ;
+}
+
+.cssjsdemostyle1 {
+	background-image: url(img/sonne.gif);
+	background-repeat: no-repeat;
+	padding-left: 45px;
+	padding-bottom: 30px; 
+}

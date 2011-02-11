@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.notifications.PublisherImpl" table="o_noti_pub">
+
+		<!--
+		key (see Interface org.olat.core.commons.persistence.Persistable),
+		lastModified (see Interface org.olat.core.commons.persistence.Auditable)
+		and creationDate (see Interface org.olat.core.commons.persistence.Auditable)
+		are attributes inherited from the abstract class
+		org.olat.core.commons.persistence.PersistentObject
+		-->
+		<id name="key" type="long" column="publisher_id" unsaved-value="null">
+			<generator class="hilo"/>
+		</id>
+		<version name="version" access="field" column="version" type="int"/>
+		<property  name="creationDate" column="creationdate" type="timestamp" />		 
+ 		
+		<!-- data from publisherdata -->
+ 		
+		<property name="type" type="string">
+			<column name="publishertype" not-null="true" unique="false" length="50" />	
+		</property>
+
+		<!-- data which is type specific. it can be whatever can be packed into a string.
+			We can use XStreams to wrap any object into the db in xml form 
+		-->
+		<property name="data" unique="false" type="string" not-null="false">
+			<column name="data" length="16777210"/>
+		</property> 
+
+		<!-- reference: ores and subidentifier (soft, since we would like to have notifications maybe even after deletion);
+			 may be null in case it has been marked deleted
+		-->
+		<property name="resName" type="string" >
+			<column name="resname" not-null="false" unique="false" length="50" index="name_idx5" />
+		</property>    	
+
+		<property name="resId" type="long"> 
+			<column name="resid" not-null="false" unique="false" index="name_idx6" />    	
+		</property>    
+
+		<property name="subidentifier" type="string">
+			<column name="subident" not-null="false" unique="false" length="128" index="name_idx7"/>	
+		</property>
+		
+	  	<property name="state" unique="false" type="int"  />
+
+		<!-- mandatory; if created, then the latestNewsDate is set to the current time -->
+		<property name="latestNewsDate" not-null="true" column="latestnews" type="timestamp" />
+		
+		
+		<property name="businessPath" not-null="false" column="businesspath" type="string" />
+  		  	
+	</class>
+</hibernate-mapping>

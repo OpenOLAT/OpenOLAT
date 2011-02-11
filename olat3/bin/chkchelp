@@ -1,0 +1,187 @@
+#!/usr/bin/perl
+
+#
+# Try to figure out where the files found in the _chelp directories are used and
+# list the files for which no usage can be figured out.
+#
+# Warning: the results are not very reliable because it depends on coding style etc. 
+# of the scanned source files (java and html)
+#
+# Author: Matthai Kurian
+#
+
+my $d = $0;
+$d =~ s!/?[^/]*/*$!!;
+
+$od  = $d . '/../webapp/WEB-INF/src/org/olat';
+$cd = $d . '/../../olatcore/src/main/java';
+
+die 'Could not find olat3' unless -d $od;
+die 'Could not find olatcore' unless -d $cd;
+
+
+my @srcfiles;
+my @chelpfiles;
+my $usedin;
+my @paramized;
+
+# Special known cases we do not search for
+push (@paramized, "statistic_(.*).html");
+
+print "Scanning $od for chelp files...";
+&findChelpFiles($od);
+print "done.\n";
+
+print "Scanning $cd for chelp files...";
+&findChelpFiles($cd);
+print "done.\n";
+
+print "Scanning source files ...";
+
+foreach $f (@srcfiles) {
+	$f =~ s/[^\/]+\/\.\.\///;
+	$f =~ s/[^\/]+\/\.\.\///;
+	open (F, $f);
+	@l=<F>;
+	foreach ($f) {
+		/\.java$/ and do {
+			foreach (@l) {
+				if (/setFormContextHelp\s?\([\s"']*([^'"]+)[\s"']*,[\s"']*([^'"]+)[\s"']*,[\s"']*([^'"]+)[\s"']*\)/) {
+					if (defined ($usedin->{$2})) {
+						push (@{$usedin->{$2}},$f);
+						next;
+					}
+				} 
+				if (/setFormContextHelp\s?\("(.*),\s?"((.*)"\+(.*)\+"(.*)"),(.*)\)/) {
+					#print "Parametrized $3\+$4\+$5 chelp file: $f\n";
+					push (@paramized, "$3(.*)$5");
+				}
+			}
+			break;
+		};
+		/\.htm$/ and do {
+			foreach (@l) {
+				if (/javascript:contextHelpWindow\s?\('(.*)\/(.*)'\)/) {
+					push (@{$usedin->{$2}},$f);
+					next;
+				}
+			}
+		};
+		/\.html$/ and do {
+			foreach (@l) {
+				if (/\$r\.contextHelpRelativeLink\s?\([\s"]*([^"]+)[\s"]*,[\s"]*([^"]+)[\s"]*\)/) {
+					if (defined $usedin->{$2}) {
+						push (@{$usedin->{$2}},$f);
+					}
+					next;
+				}
+				if (/\$r\.contextHelp\s?\([\s"']*([^'"]+)[\s"']*,[\s"']*([^'"]+)[\s"']*,[\s"']*([^'"]+)[\s"']*\)/) {
+					if (defined $usedin->{$2}) {
+						push (@{$usedin->{$2}},$f);
+					}
+					next;
+				}
+				if (/\$r\.contextHelpWithWrapper\s?\([\s"']*([^'"]+)[\s"']*,[\s"']*([^'"]+)[\s"']*,[\s"']*([^'"]+)[\s"']*\)/) {
+					if (defined $usedin->{$2}) {
+						push (@{$usedin->{$2}},$f);
+						next;
+					}
+					my $p = $2;
+					if ($2 =~ /\${(.*)}/) {
+						$p =~ s/\${(.*)}/(.*)/;
+						#print "Parametrized >$p< \${$1} chelp file: $f\n";
+						push (@paramized, $p);
+					}
+					next;
+				}
+				if (/javascript:contextHelpWindow\s?\('(.*)'\)/) {
+					$1 =~ /\$r\.relLink\("help\/\${r.getLanguageCode\(\)}\/(.*)\/(.*)"\)/;
+					push (@{$usedin->{$2}},$f);
+					next;
+				}
+				if (/\$r\.contextHelpRelativeLink\s?\([\s"]*([^"]+)[\s"]*\)/) {
+					if (defined $usedin->{$1}) {
+						push (@{$usedin->{$1}},$f);
+					}
+					next;
+				}
+
+				if (/<img src="\$chelpStaticDirUrl\/([^"]*)"(.*)?>/) {
+					$if = $1;
+					$if =~ s/\.png//;
+					foreach (@chelpfiles) {
+						if (/$if_(..)\.png$/) {
+							if (defined $usedin->{$if.'_'.$1.'.png'}) {
+								push (@{$usedin->{$if.'_'.$1.'.png'}}, $f);
+							}
+						}
+					}
+				} 
+			}
+			break;
+		};
+	}
+}
+print "done.\n";
+
+# consider patterns found for parametrized use
+foreach $h (@chelpfiles) {
+	$x=join (',', @{$usedin->{$h}});
+	if ($x =~ /^$/) {
+		foreach $p (@paramized) {
+			if($h =~ m/($p)/) {
+				push (@{$usedin->{$h}}, $p);
+			} 
+		}
+	}
+}
+
+my $unused = 0;
+foreach $h (@chelpfiles) {
+	$x=join (',', @{$usedin->{$h}});
+	if ($x =~ /^$/) {
+		print 'Cound not figure out usage of chelp file >'.$h."<\n";
+		$unused++;
+	} 
+}
+
+print "$#chelpfiles chelp files found $#srcfiles files scanned. ";
+print "$unused unused chelp files found.\n";
+
+
+foreach (@chelpfiles) {
+	print "\n$_\n";
+	my %d;
+	foreach $u (@{$usedin->{$_}}) {
+		if (!defined $d{$u}) {
+			$d{$u}=1;
+		}
+	}
+	foreach (sort keys (%d)) {
+		print "\t$_\n";
+	}
+}
+
+sub findChelpFiles () {
+	my ($p) = @_;
+	if (-f $p) {
+		push (@srcfiles, $p);
+		if ($p =~ /\/_chelp\//) {
+			$f = (split(/\//, $p))[-1];
+			push (@chelpfiles, $f);
+			$usedin->{$f}=[];
+		}
+		return;
+	}
+
+	opendir (D, $p);
+	foreach (readdir (D)) {
+		chomp;
+		next if /^\.$/;
+		next if /^\.\.$/;
+		next if /^CVS$/;
+		&findChelpFiles("$p/$_");
+	}
+}
+
+

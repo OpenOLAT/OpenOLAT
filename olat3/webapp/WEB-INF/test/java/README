@@ -1,0 +1,12 @@
+Junit testing
+-----------------------------------
+
+o INTEGRATION testing: Write your test code extending from OlatTestCase and a whole OLAT will be started for you.
+	The database will be an hsqldb in memory only database which will not be persisted and will only last for the duration of a test.
+	This kind of tests take some time to run as they start the whole framework
+
+o TRUE UNIT TESTING: write your testcode extended by AbstractJUnit4SpringContextTests and only 
+	add the spring context you need
+	- see test/java/org/olat/test/SpringTest.java for an example
+	
+o RUN ALL TESTS: Run AllTestsJunit4 as junit test

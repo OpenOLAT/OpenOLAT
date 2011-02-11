@@ -1,0 +1,18 @@
+<fieldset  class="b_clearfix">
+	<legend>$r.translate("header")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.scorm","ced-scorm.html","help.hover.scorm-filename")
+	#if ($showPreviewButton)
+		<p>
+			<strong>$r.translate("chosencp"):</strong>&nbsp;$r.render("command.preview")
+		</p>		
+		$r.render("command.changecp")		
+	#else
+		<p>
+			<strong>$r.translate("chosencp"):</strong>&nbsp;&nbsp; $chosencp
+		</p>
+		$r.render("command.importcp")		
+	#end	
+</fieldset>
+
+$r.render("scorevarform")
+

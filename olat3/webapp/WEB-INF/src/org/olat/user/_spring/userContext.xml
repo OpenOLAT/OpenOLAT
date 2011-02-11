@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<bean id="userModule" class="org.olat.user.UserModule" 
+	depends-on="org.olat.core.util.notifications.NotificationsManager, database, baseSecurityManager, triggerI18nModuleInit">
+<!-- default auth string -->
+<constructor-arg index="0" value="${default.auth.provider.identifier}" />
+<constructor-arg index="1" ref="userManager" />
+<constructor-arg index="2" ref="afterLoginInterceptionManager" />
+
+<property name="persistedProperties">
+  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+    <constructor-arg index="0" ref="coordinatorManager"/>
+    <constructor-arg index="1" ref="userModule" />
+  </bean>
+</property>
+
+<!-- provide an admin user-->
+<property name="defaultUsers">
+        <list>
+                <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                        <constructor-arg type="java.lang.String" value="administrator" />
+                        <property name="firstName" value="OLAT" />
+                        <property name="lastName" value="Administrator" />
+                        <property name="email" value="admin@olat-newinstallation.org" />
+                        <property name="password" value="olat" />
+                        <property name="language" value="${defaultlang}" />
+                        <property name="admin" value="true" />
+                </bean>
+        </list>
+</property>
+
+<!-- provide some test users -->
+<property name="testUsers">
+        <list>
+                <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="author" />
+                       <property name="firstName" value="Aurich" />
+                       <property name="lastName" value="Thorw" />
+                       <property name="email" value="author@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="true" />
+                       <property name="admin" value="false" />
+                       
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="learner" />
+                       <property name="firstName" value="Leisa" />
+                       <property name="lastName" value="Arnerich" />
+                       <property name="email" value="learner@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                      <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="usermgr" />
+                       <property name="firstName" value="Marc" />
+                       <property name="lastName" value="Bond" />
+                       <property name="email" value="usermgr@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+                       <property name="userManager" value="true" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="groupmgr" />
+                       <property name="firstName" value="Alexandra" />
+                       <property name="lastName" value="Jeunet" />
+                       <property name="email" value="groupmgr@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+                       <property name="groupManager" value="true" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="test" />
+                       <property name="firstName" value="Thomas" />
+                       <property name="lastName" value="Est" />
+                       <property name="email" value="test@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="test2" />
+                       <property name="firstName" value="Till" />
+                       <property name="lastName" value="Estobesto" />
+                       <property name="email" value="test2@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                      <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="test3" />
+                       <property name="firstName" value="Tanja" />
+                       <property name="lastName" value="Estelle" />
+                       <property name="email" value="test3@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                      <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+           </list>
+</property>
+<property name="loginBlacklist">
+		<list>
+			<!--
+			Use regexp to define logins which are not allowed.
+			All logins are matched lower-case, i.e to match
+			both 'Admin5' and 'administrator' a regexp of '.*admin.*' would match
+			-->
+			<value>.*olat.*</value>
+			<value>.*admin.*</value>
+			<value>.*rektor.*</value>
+			<value>.*prof.*</value>
+			<value>.*assist.*</value>
+			<value>.*tutor.*</value>
+			<value>.*betreuer.*</value>
+			<value>.*root.*</value>
+			<value>.*support.*</value>
+			<value>.*universit.*</value>
+			<value>.*scheisse.*</value>
+			<value>.*fuck.*</value>
+			<value>.*shit.*</value>
+			<value>.*kacke.*</value>
+			<value>.*kotz.*</value>
+			<value>.*geil.*</value>
+			<value>.*bitch.*</value>
+			<value>.*schlampe.*</value>
+			<value>.*arsch.*</value>
+			<value>.*info.*</value>
+			<value>guest</value>
+			<value>master</value>
+			<value>elc</value>
+			<value>mels</value>
+			<value>eth</value>
+			<value>help</value>
+			<value>hilfe</value>
+			<value>uniaccess</value>
+			<value>beratung</value>
+			<value>pmuster</value>
+			<!-- Do not allow fancy login names that start or contain only special characters -->
+			<value>[\.\-_].*</value>
+			<value>[\.\-_]*</value>
+		</list>
+</property>
+<!--  
+<property name="afterLoginConfig">
+-->
+	<!-- enable Controllers or add others if you want them presented right after the Login of a user in an overlay. -->
+
+	<!-- <bean id="org.olat.user.AfterLoginConfig" class="org.olat.login.AfterLoginConfig" scope="prototype">	
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.user.ProfileAndHomePageEditController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>true</value></entry>			
+					  <entry key="redoTimeout"><value>10</value></entry>  
+					<entry key="i18nIntro"><value>org.olat.user:runonce.profile.intro</value></entry>	
+				</map> -->
+			<!-- <map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.user.ChangePasswordController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>true</value></entry>
+					## equals 30d in seconds ## 
+					<entry key="redoTimeout"><value>2592000</value></entry> 
+					<entry key="i18nIntro"><value>org.olat.user:runonce.changepw.intro</value></entry>			
+				</map> -->	
+				
+			<!-- example config: <map>
+					## specify a controller to start with default args (ureq, wControl) 
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.user.ChangePasswordController"/>
+						</bean>
+					</entry>
+					## optional argument to not let user close the controller before controller sent done-event
+					<entry key="forceUser"><value>false</value></entry>
+					## optional argument to redo workflow after specified timeout in seconds. O means everytime. 
+					## leave parameter to only run once
+					<entry key="redoTimeout"><value>0</value></entry>		
+					## optional i18nKey to present an intro-text for this controller
+					## specify in the form of "package:i18nKey"
+					<entry key="i18nIntro"><value>org.olat.user:runonce.intro</value></entry>		
+				</map> --> 
+	<!-- </list> 
+		</property>
+	</bean> -->		
+<!--  
+</property>
+-->
+</bean>
+
+<bean id="triggerUserModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+    <property name="targetObject" ref="userModule" />
+    <property name="targetMethod" value="init" />
+    <property name="arguments">
+            <value>
+                    generateTestUsers=${user.generateTestUsers}
+                    passwordChangeAllowed=${password.change.allowed}
+                    adminUserName=administrator
+            </value>
+    </property>
+</bean>
+
+
+<bean id="userManager" class="org.olat.user.UserManagerImpl" >
+		<property name="userPropertiesConfig">
+                <ref bean="org.olat.user.UserPropertiesConfig" />
+        </property>
+        <property name="userNameAndPasswordSyntaxChecker">
+                <!--  a) enable to use standard username and password checker -->
+                <bean name="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxChecker" />
+                <!--  b) enable to use email-adresses as usernames (allowing @ in username) -->
+                <!--<bean name="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithEmail" />-->
+                <!--  c) enable to use a generic regexp based email  and password checker. Make sure you adjusted also the corresponding i18n keys -->
+                <!--
+                <bean name="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexp">
+                        <property name="usernameRegExp" value="[0-9a-z\\.\\-_@]{3,32}" />
+                        <property name="passwordRegExp"><value><![CDATA[^[\\p{Graph}[^'\\"]]{4,128}$]]></value></property>
+                </bean>
+                -->
+        </property>
+</bean>
+
+<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager">
+	<constructor-arg ref="userDeletionManager"></constructor-arg>
+</bean>
+
+<bean class="org.olat.user.DisplayPortraitManager">
+	<constructor-arg ref="userDeletionManager"></constructor-arg>
+</bean>
+
+<bean class="org.olat.user.HomePageConfigManagerImpl">
+	<constructor-arg ref="userDeletionManager"></constructor-arg>
+</bean>
+
+</beans>

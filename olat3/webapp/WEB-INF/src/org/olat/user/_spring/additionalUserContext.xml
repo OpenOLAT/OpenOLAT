@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<!-- EXAMPLE SPRING CONFIG FILE FOR ADDITIONAL TEST USERS -->
+<!-- Copy this file to the top of your web-app CLASSPATH e.g. webapp/WEB-INF/classes and add your test-users to additionalTestUsers-list -->
+<!-- Delete this two line which contains 'REMOVE THIS LINE TO ENABLE' below -->
+
+<!--  REMOVE THIS LINE TO ENABLE
+
+<bean class="org.olat.user.TestUserAdder">
+	<constructor-arg ref="userModule"></constructor-arg>
+	
+	<property name="additionalTestUsers">
+        <list>
+                <bean class="org.olat.user.DefaultUser">
+                       <constructor-arg type="java.lang.String" value="author2" />
+                       <property name="firstName" value="Aurich2" />
+                       <property name="lastName" value="Thorw2" />
+                       <property name="email" value="author2@olat-newinstallation.org" />
+                       <property name="password" value="test" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="true" />
+                       <property name="admin" value="false" />
+                       
+               </bean>
+           </list>
+	</property>
+</bean>
+
+  REMOVE THIS LINE TO ENABLE -->
+
+</beans>

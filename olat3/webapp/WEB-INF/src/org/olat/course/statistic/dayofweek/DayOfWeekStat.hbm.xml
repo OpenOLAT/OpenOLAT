@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.course.statistic.dayofweek.DayOfWeekStat"
+		table="o_stat_dayofweek">
+
+		<id name="key"                  column="id"          type="long" unsaved-value="null">
+			<generator class="identity" />
+		</id>
+		<property name="businessPath"   column="businesspath"		type="string"	length="2048" not-null="true" />
+		<property name="resId"			column="resid"				type="long"		not-null="true"/>
+		<property name="day"    		column="day"     			type="int"		not-null="true"/>
+		<property name="value"    		column="value"				type="int"		not-null="true"/>
+
+	</class>
+</hibernate-mapping>

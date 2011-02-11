@@ -1,0 +1,215 @@
+/**
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) 1999-2007 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <p>
+ */
+
+package org.olat.ims.cp.objects;
+
+import java.util.Iterator;
+import java.util.Vector;
+
+import org.dom4j.tree.DefaultElement;
+import org.olat.ims.cp.CPCore;
+
+/**
+ * 
+ * Description:<br>
+ * This class represents a organizations-element of a IMS-manifest-file
+ * 
+ * <P>
+ * Initial Date: 26.06.2008 <br>
+ * 
+ * @author Sergio Trentini
+ */
+public class CPOrganizations extends DefaultElement implements CPNode {
+
+	private Vector<CPOrganization> orgas;
+	private CPManifest parent;
+
+	private Vector<String> errors;
+
+	/**
+	 * this constructor is used when building up the CP (parsing XML)
+	 * 
+	 * @param me
+	 */
+	public CPOrganizations(DefaultElement me) {
+		super(me.getName());
+		orgas = new Vector<CPOrganization>();
+		errors = new Vector<String>();
+		// setAttributes(me.attributes());
+		setContent(me.content());
+	}
+
+	/**
+	 * this constructor is used when creating a new CP
+	 */
+	public CPOrganizations() {
+		super(CPCore.ORGANIZATIONS);
+		orgas = new Vector<CPOrganization>();
+		errors = new Vector<String>();
+	}
+
+	/**
+	 * 
+	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
+	 */
+	public void buildChildren() {
+		Iterator<DefaultElement> children = this.elementIterator();
+		// iterate through children
+		while (children.hasNext()) {
+			DefaultElement child = children.next();
+			if (child.getName().equals(CPCore.ORGANIZATION)) {
+				CPOrganization org = new CPOrganization(child);
+				org.setParentElement(this);
+				org.buildChildren();
+				orgas.add(org);
+			} else {
+				errors.add("Invalid imsmanifest (only \"Organization\"-elements allowed under <organizations> )");
+			}
+		}
+		this.clearContent();
+		validateElement();
+	}
+
+	/**
+	 * 
+	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
+	 */
+	public boolean validateElement() {
+		if (orgas.size() < 1) {
+			errors.add("Invalid IMS-Manifest ( missing <organization> element, must have one at least)");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * 
+	 * @see org.olat.ims.cp.objects.CPNode#buildDocument(org.dom4j.tree.DefaultDocument)
+	 */
+	public void buildDocument(DefaultElement parent) {
+		DefaultElement orgaElement = new DefaultElement(CPCore.ORGANIZATIONS);
+
+		for (Iterator<CPOrganization> itOrgas = orgas.iterator(); itOrgas.hasNext();) {
+			CPOrganization org = itOrgas.next();
+			org.buildDocument(orgaElement);
+		}
+		parent.add(orgaElement);
+	}
+
+	// *** cp manipulation ****
+
+	/**
+	 * adds a new CPOrganization to the end of the orgas-vector
+	 */
+	public void addOrganization(CPOrganization newOrganization) {
+		newOrganization.setParent(this);
+		orgas.add(newOrganization);
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public Vector<CPOrganization> getOrganizations() {
+		return orgas;
+	}
+
+	public Iterator<CPOrganization> getOrganizationIterator() {
+		return orgas.iterator();
+	}
+
+	/**
+	 * 
+	 * @see org.olat.ims.cp.objects.CPNode#getPosition()
+	 */
+	public int getPosition() {
+		// there is only one <organizations> element, so position is always 0
+		return 0;
+	}
+
+	/**
+	 * Returns the Organization with identifier id Returns null if O. is not found
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public CPOrganization getOrganizationByID(String id) {
+		Iterator<CPOrganization> it = orgas.iterator();
+		CPOrganization org;
+		while (it.hasNext()) {
+			org = it.next();
+			if (org.getIdentifier().equals(id)) { return org; }
+		}
+		// TODO: should it throw an exception, if no organization with the given
+		// identifier is found ???
+		return null;
+	}
+
+	/**
+	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
+	 */
+	public DefaultElement getElementByIdentifier(String id) {
+		DefaultElement e;
+		for (Iterator<CPOrganization> it = orgas.iterator(); it.hasNext();) {
+			CPOrganization orga = it.next();
+			e = orga.getElementByIdentifier(id);
+			if (e != null) return e;
+		}
+		return null;
+	}
+
+	public CPManifest getParentElement() {
+		return parent;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	String getLastError() {
+		if (errors.size() == 0) {
+			for (Iterator<CPOrganization> it = orgas.iterator(); it.hasNext();) {
+				CPOrganization orga = it.next();
+				String err = orga.getLastError();
+				if (err != null) return err;
+			}
+			return null;
+		} else {
+			return errors.lastElement();
+		}
+	}
+
+	// ***SETTERS***
+
+	/**
+	 * 
+	 * @see org.olat.ims.cp.objects.CPNode#setPosition(int)
+	 */
+	public void setPosition(int pos) {
+	// There is only one <organizations>...
+	}
+
+	public void setParentElement(CPManifest parent) {
+		this.parent = parent;
+	}
+
+}

@@ -1,0 +1,65 @@
+<h4>$r.translate("sess.details")</h4>
+$r.render("backLink")
+<hr />
+<fieldset>
+	<legend>Session Information</legend>
+	<table class="b_table">
+		<tr><td>$r.translate("sess.authent"):</td><td>$isauth</td></tr>
+		<tr><td>$r.translate("sess.first"):</td><td>$!si.getFirstname()</td></tr>
+		<tr><td>$r.translate("sess.last"):</td><td>$!si.getLastname()</td></tr>
+		<tr><td>$r.translate("sess.identity"):</td><td>$!si.getLogin()</td></tr>
+		<tr><td>$r.translate("sess.authprovider"):</td><td>$!si.getAuthProvider()</td></tr>
+		<tr><td>$r.translate("sess.ip"):</td><td>$!si.getFromIP()</td></tr>
+		<tr><td>$r.translate("sess.fqdn"):</td><td>$!si.getFromFQN()</td></tr>
+		<tr><td>User Agent:</td><td>$!si.getUserAgent()</td></tr>
+		<tr><td>$r.translate("sess.created"):</td><td>$created</td></tr>
+		<tr><td>$r.translate("sess.access"):</td><td>$lastaccess</td></tr>
+		<tr><td>$r.translate("sess.webMode"):</td><td>$!si.getWebMode()</td></tr>
+		<tr><td>WebDAV:</td><td>$!si.isWebDAV()</td></tr>
+		<tr><td>REST:</td><td>$!si.isREST()</td></tr>
+		<tr><td>$r.translate("sess.secure"):</td><td>$!si.isSecure()</td></tr>
+		<tr><td>$r.translate("sess.locale"):</td><td>$!env.getLocale().getLanguage()</td></tr>
+		<tr><td>$r.translate("sess.roles"):</td><td>$!env.getRoles()</td></tr>
+	</table>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("sess.locks.title")</legend>
+	<table class="b_table">
+		#if ($locklist.size() == 0)
+		<tr><td><i>$r.translate("sess.locks.nolock")</i></td></tr>
+		#else
+		<tr><td><i>$r.translate("sess.locks.hold")</i></td></tr>
+			#foreach ($lock in $locklist)
+				<tr><td>$lock</td></tr>
+			#end
+		#end
+	</table>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("sess.attributes.title")</legend>
+	<table class="b_table">
+		#if (!$env.getAttributes())
+		<tr><td><i>$r.translate("sess.noattributes")</i></td></tr>
+		#else
+			#foreach($key in $env.getAttributes().keySet())
+				<tr><td>$key:</td><td>$env.getAttributes().get($key)</td></tr>
+			#end
+		#end
+	</table>
+</fieldset>
+
+<fieldset>
+	<legend>$r.translate("sess.guistats")</legend>
+	$!guistats
+</fieldset>
+<fieldset>
+	<legend>$r.translate("sess.kill")</legend>
+	<p>
+		$r.translate("sess.kill.info")
+	</p>
+	<p>
+		$r.render("sess.kill")
+	</p>
+</fieldset>

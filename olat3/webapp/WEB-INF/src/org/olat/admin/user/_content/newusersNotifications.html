@@ -1,0 +1,10 @@
+$r.render("newUsersSubscription")
+<h4>$r.translate("title.userlist")</h4>
+<div class="o_notifications_news_datechooser">
+$r.render("dateChooser")
+</div>
+#if ($hasNews == "false")
+	<p>$r.translate("notification.noNews")</p>
+#else
+	$r.render("notificationsList")
+#end

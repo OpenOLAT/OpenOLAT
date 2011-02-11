@@ -1,0 +1,11 @@
+#if ($isWeblogOwner) 
+	<div style="float:right">$r.render("open.editor")</div>
+#end
+<h4>Weblog</h4>
+
+<div>
+	$r.render("startpagelink") 
+	$r.render("categorypagelink")
+	$r.render("archivepagelink") 
+</div>
+	$r.render("contentpanel")

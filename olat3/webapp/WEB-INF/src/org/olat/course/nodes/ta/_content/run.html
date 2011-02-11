@@ -1,0 +1,20 @@
+#if ($hasTask)
+	$r.render("taskController")
+#end
+
+#if ($hasDropbox)
+	$r.render("dropboxController")
+#end
+
+#if ($hasReturnbox)
+	$r.render("returnboxController")
+#end
+
+#if ($hasSolution)
+	$r.render("solutionController")
+#end
+
+#if ($hasScoring)
+	<h4>$r.translate("scoring.title")</h4>
+	$r.render("scoringController")
+#end

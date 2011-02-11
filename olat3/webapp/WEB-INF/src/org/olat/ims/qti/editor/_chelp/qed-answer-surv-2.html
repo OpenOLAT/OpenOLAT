@@ -1,0 +1,9 @@
+<br/>
+	#set( $imgLink = $r.staticLink("images/transparent.gif") )
+	#set( $editIcon = [ "<img src=$imgLink class=o_edit_icon width=16 height=16 />" ] )
+
+	$r.translate("chelp.quest2",$editIcon) $r.translate("chelp.quest3") <br/>
+	#set( $arrUpIcon = "<img src=$imgLink class=b_move_up_icon width=16 height=16 />" )
+	#set( $arrDnIcon = "<img src=$imgLink class=b_move_down_icon width=16 height=16 />" )
+	#set( $arrIcons = [ $arrUpIcon, $arrDnIcon ] )
+	$r.translate("chelp.quest5",$arrIcons)

@@ -1,0 +1,48 @@
+@charset "UTF-8";
+/* "Yet Another Multicolumn Layout" v3.0.4 (c) by Dirk Jesse (http://www.yaml.de) */
+@media all {
+*{margin:0;padding:0}
+option{padding-left:0.4em}
+* html body *{overflow:visible}
+* html iframe,* html frame{overflow:auto}
+* html frameset{overflow:hidden}
+html{height:100%;margin-bottom:1px}
+body{font-size:100.01%;color:#000;background:#fff;text-align:left}
+fieldset,img{border:0 solid}
+ul,ol,dl{margin:0 0 1em 1em}
+li{margin-left:1.5em;line-height:1.5em}
+dt{font-weight:700}
+dd{margin:0 0 1em 2em}
+blockquote{margin:0 0 1em 1.5em}
+#b_topnav{position:absolute;top:10px;right:10px;text-align:right}
+#b_col1{float:left;width:200px;z-index:3}
+#b_col2{float:right;width:200px;z-index:5}
+#b_col3{width:auto;z-index:1;margin:0 200px}
+#b_header,#b_nav,#b_main,#b_footer{clear:both}
+#b_col1_content{z-index:4}
+#b_col2_content{z-index:6}
+#b_col3_content{z-index:2}
+.b_hideboth #b_col3{margin-left:0;margin-right:0}
+.b_hidecol1 #b_col3{margin-left:0;margin-right:200px}
+.b_hidecol2 #b_col3{margin-left:200px;margin-right:0}
+.b_clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden}
+.b_clearfix{display:block}
+.b_floatbox{overflow:hidden}
+.b_subcolumns,.b_subcolumns_oldgecko{width:100%;overflow:hidden}
+.b_c50r,.b_c25r,.b_c33r,.b_c38r,.b_c66r,.b_c75r,.b_c62r{float:right;margin-left:-5px;}
+.b_c25l,.b_c25r{width:25%}
+.b_c33l,.b_c33r{width:33.333%}
+.b_c50l,.b_c50r{width:50%}
+.b_c66l,.b_c66r{width:66.666%}
+.b_c75l,.b_c75r{width:75%}
+.b_c38l,.b_c38r{width:38.2%}
+.b_c62l,.b_c62r{width:61.8%}
+.b_subc{padding:0 0.5em}
+.b_subcl{padding:0 1em 0 0}
+.b_subcr{padding:0 0 0 1em}
+.b_skip,.b_hideme,.b_print{position:absolute;top:-1000em;left:-1000em;height:1px;width:1px}
+.b_skip:focus,.b_skip:active{position:static;top:0;left:0;height:auto;width:auto}
+#b_header,#b_col1_content,#b_col2_content,#b_col3_content{position:relative}
+.b_hideboth #b_col1,.b_hideboth #b_col2,.b_hidecol1 #b_col1,.b_hidecol2 #b_col2,#b_ie_clearing{display:none}
+.b_subcolumns_oldgecko,.b_c50l,.b_c25l,.b_c33l,.b_c38l,.b_c66l,.b_c75l,.b_c62l{float:left}
+}

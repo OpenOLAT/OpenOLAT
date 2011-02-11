@@ -1,0 +1,21 @@
+<div class="o_repository_import">
+	<div class="b_note">
+		<strong>$r.translate("sf.import.title")</strong>
+		<br />
+		$r.translate("sf.import.intro")
+	</div>
+	<br/>
+	<table class="b_table">
+		<tr><td>$r.translate("sf.displayname"):</td><td><b>$!displayname</b></td></tr>
+		<tr><td>$r.translate("sf.desc"):</td><td><b>$!description</b></td></tr>
+	</table>	
+	<br/>
+	<hr />
+	<br/>
+	<h5 class="b_with_small_icon_left b_info_icon">$r.translate("import.action.title")</h5>	
+	<ul>
+		<li>$r.render("sf.import.action")</li>
+		<li>$r.render("sf.reattach.action")</li>
+		<li>$r.render("sf.noop.action")</li>
+	</ul>
+</div>	

@@ -1,0 +1,29 @@
+#***********************************
+* shows a user list in a pop up off all connected
+* instant messaging users together with
+* real name and last status
+***********************************#
+$r.render("chats")
+<div class="b_float_right">$r.render("command.refresh")</div>
+<h4>$r.translate("im.users.list")</h4>
+#if($havelist)
+$r.render("usertable")
+## show number of invisible users
+#if($invisibleUsers != "0")
+	<h4>$r.translate("im.users.list.unavailable",["$invisibleUsers"])</h4>
+#end
+#else
+$r.translate("im.users.list.not.available") 
+#end
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+var xx = false;
+function unloaded () {
+	if (xx) return;
+	xx = true;
+	$r.javaScriptBgCommand("close");	             
+}
+Ext.onReady(function(){window.onunload=unloaded;window.onbeforeunload=unloaded;},100);
+/* ]]> */
+</script>

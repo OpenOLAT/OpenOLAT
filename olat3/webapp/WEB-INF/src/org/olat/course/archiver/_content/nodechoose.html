@@ -1,0 +1,14 @@
+<h4>$r.translate("$nodeType")</h4>
+#if($hasNodes)
+	<p>
+		$r.translate("nodechoose.intro.$nodeType")
+	</p>
+	<p>		
+		$r.render("nodeTable")
+	</p>
+#else
+	<p>
+		$r.translate("overview.nonodes.$nodeType")
+	</p>
+#end
+

@@ -1,0 +1,83 @@
+@charset "UTF-8";
+
+@media screen
+{
+
+	#b_msg_sticky {zoom:1; }
+	/* min height fix IE 6 */
+	* html #b_msg_sticky, * html div.b_msg_dialog, * html #b_msg_sticky,* html #b_msg_info,	* html #b_msg_warn, * html #b_msg_error {height: 52px;}
+	
+	/* patch for IE7 */
+	fieldset a.b_contexthelp, div.b_contexthelp_wrapper a.b_contexthelp { top: -1em; right: -0.8em; }
+	fieldset {	margin: 1.5em 0 1em 0;}
+	
+	/* patch for IE6 */
+	* html fieldset a.b_contexthelp, * html div.b_contexthelp_wrapper a.b_contexthelp { top: -1em; right: 0; }
+	div.b_form div.b_form_element input.b_checkbox, div.b_form div.b_form_element input.b_radio { height: 1.2em; width: 1.2em;}
+	
+	div.b_closablewapper_handle { height: 2em; }
+	
+	/* min-height fix IE6 */
+	* div.b_form div.b_form_general_error { height: 32px;}
+	/* 3-pixel job bug fix for IE6 and IE7: set hasLayout=true and remove margin */
+	div.b_form div.b_form_element { margin-left: 0; padding-left: 5px; height: 1%;}	
+	div.b_form div.b_button_group { margin-left: 20%;padding-left: 5px;}
+	div.b_form div.b_form_subform div.b_button_group {margin-left: 0; }
+	div.b_form.b_form_vertical div.b_button_group { margin-left: 0%;padding-left: 0px;}
+	
+	* html textarea { width: 99%; }	
+	
+	/* set hasLayout=1 for IE6 */
+	* html div.b_portlet { display: inline-block; }	
+	/* min-height fix for IE6 */
+	* html div.b_portlet { height: 13em; }
+		
+	/* min-height and word wrap fix for IE6 */
+	* html div.b_window div.b_window_header_title { height: 18px;}
+	* html div.b_wizard div.b_wizard_steps_current_inner {height: 300px;}
+	* html div.b_window div.b_window_content_inner { height: 200px; }		
+	
+	/**
+	 * @bugfix
+	 * @affected   IE5.x, IE6
+	 * @css-for    all browsers
+	 * @valid      yes
+	 */
+	div.b_tabbedpane_tabs a, div.b_tabbedpane_tabs strong {
+		width: auto; /* only IE 5.x */
+		width/**/:/**/ .1em; /* only IE 6.0 */
+		min-width: 1em; /* IE 7 bugfix: force hasLayout=true */
+	}		
+	
+	
+			
+  /**
+   * Box Model Bug
+   * Adjustment of width values for list elements of the menu in IE 5.x/Win.
+   * Note: If IE6 is running in quirks mode, it also needs 100% values!
+   *
+   * @bugfix
+   * @affected   IE 5.x/Win (IE6 in Quirks-Mode)
+   * @css-for    IE 5.x/Win, IE6
+   * @valid      no
+   */
+	div.b_tree li a,
+	div.b_tree li strong { 
+		width: 100%; w\idth: 90%; 
+	}
+	
+	/* Nur für < IE7, sonst gibts im IE7 neue Positionierungsprobleme */
+	* html div.b_tabbedpane_tabs li div,
+	* html div.b_tabbedpane_tabs li div {
+		/* IE fix to set hasLayout=true. Required to display the background images at all */
+		width: 1px;
+	}	
+	/* min-height bug fix */
+/*	* html div.b_tabbedpane_content div.b_tabbedpane_content_inner { height: 30em; } */
+	
+	.b_floatscrollbox, .b_overflowscrollbox { width: 100%; overflow: auto;}
+}
+
+
+
+

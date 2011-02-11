@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+	
+	<!-- WebDAV provider factory -->
+	<bean id="webdavfactory" class="org.olat.core.util.servlets.WebDAVProviderFactory" >
+		<property name="webdavProviderList">
+			<list>
+				<!-- WebDAV providers -->
+				<bean id="webdav_briefcase" class="org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider" scope="prototype" />
+				<bean id="webdav_coursefolders" class="org.olat.course.CoursefolderWebDAVProvider" scope="prototype" />
+				<bean id="webdav_sharedfolders" class="org.olat.modules.sharedfolder.SharedFolderWebDAVProvider" scope="prototype" >
+				<!-- 
+					Optional configuration: specify shared folder that should be visible to normal users. 
+					By default, shared folders are only mounted for shared folder owners (read/write). By
+					using this config option, it is possible to mount shared folders also to normal users
+					(read-only). The shared folder access must be set to users in the learning resource 
+					configuration.
+					Two configuration option:
+
+					1) Expose all publicly visible shared folder to all users via WebDAV
+					<property name="publiclyReadableFolders">
+						<list>
+							<value>*</value>
+						</list>
+					</property>
+					
+					2) Alternatively it's possible to explicitly name the shared folders that should be
+					   exposed. Use the shared folder ID that you see in the learning resource details page
+					<property name="publiclyReadableFolders">
+						<list>
+							<value>7045120</value>
+							<value>7208960</value>
+						</list>
+					</property>
+				-->
+				</bean> 
+				<bean id="webdav_groupfolders" class="org.olat.group.GroupfoldersWebDAVProvider" scope="prototype" />
+				<!-- bean id="webdav_calendars" class="org.olat.calendar.CalendarWebDAVProvider" scope="prototype" / -->
+				<!-- comment out following line to enable webdav-provider for static/themes folder, only accessible by administrators -->
+				<!-- bean id="webdav_themes" class="org.olat.util.themes.ThemesWebDAVProvider" scope="prototype" /-->
+			</list>
+		</property>
+	</bean>
+
+</beans>

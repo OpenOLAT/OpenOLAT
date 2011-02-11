@@ -1,0 +1,22 @@
+#if ($r.available("subscription"))
+	<div class="b_float_right">
+		$r.render("subscription")
+	</div>
+#end
+<div class="o_wiki_wrapper">
+	<div class="b_subcolumns">
+		<div class="b_c20l">
+			<div class="b_subcl">
+				$r.render("navigation")
+			</div>
+		</div>
+		<div class="b_c80r">
+			<div class="b_subcr">
+				$r.render("wikiTabs")
+				#if($r.available("portfolio-link"))
+					$r.render("portfolio-link")
+				#end
+			</div>
+		</div>
+	</div>
+</div>

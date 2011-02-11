@@ -1,0 +1,28 @@
+<div class="b_form b_artefact b_clearfix" >
+	<h4 class="b_with_small_icon_left $artefact.getIcon()">$!artefact.getTitle()</h4>
+	#if($description)
+	<div class="b_desc">
+		$description
+	</div>
+	#end
+	<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_label">$r.translate("artefact.author")</div>
+		<div class="b_form_element">$!authorName</div>
+	</div>
+	<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_label">$r.translate("artefact.date")</div>
+		<div class="b_form_element">$r.formatDateAndTime($artefact.getCreationDate())</div>
+	</div>
+#if($tags)
+	<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_with_small_icon_left b_tag_icon">$tags</div>
+	</div>
+#end	
+	<div class="b_actions b_clearfix">
+		#if($r.available("unlink.link"))
+		<div class="b_float_left"> $r.render("unlink.link") </div>
+		#end
+		<div class="b_float_right"> $r.render("small.details.link") </div>
+	</div>
+</div>
+

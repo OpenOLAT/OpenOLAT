@@ -1,0 +1,23 @@
+<fieldset class="b_clearfix">
+	<legend>$r.translate("header")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.cp","ced-cp.html", "help.hover.cp-choose")
+	#if ($showPreviewButton)		
+		<p>
+		<strong>$r.translate("chosencp"):</strong>&nbsp;$r.render("command.preview")
+		</p>
+		$r.render("command.changecp")	    
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
+	#else
+		<p>
+		<strong>$r.translate("chosencp"):</strong>&nbsp;&nbsp; $chosencp
+		</p>	
+		    $r.render("command.createcp")	    
+	#end	
+</fieldset>
+<fieldset class="b_clearfix">
+  	<legend>$r.translate("display.config.fieldset")</legend>  
+	$r.contextHelpWithWrapper("org.olat.course.nodes.cp","ced-cp-disp.html", "help.hover.cp-filename")		
+	$r.render("cpMenuForm")
+</fieldset>

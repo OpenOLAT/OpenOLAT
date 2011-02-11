@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+
+ <class name="org.olat.basesecurity.InvitationImpl" table="o_bs_invitation">
+     <!-- the default columns -->
+	<id name="key" column="id" type="long" unsaved-value="null">
+		<generator class="hilo"/>
+	</id>
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />
+	
+	<property  name="token" column="token" type="string" length="64"/>
+	<property  name="firstName" column="first_name" type="string" length="64"/>
+	<property  name="lastName" column="last_name" type="string" length="64"/>
+	<property  name="mail" column="mail" type="string" length="128"/>
+	 
+  <many-to-one name="securityGroup" class="org.olat.basesecurity.SecurityGroupImpl" fetch="join" cascade="none"
+  	column="fk_secgroup" not-null="true"	unique-key="policy_unique"/>
+	</class>
+</hibernate-mapping>
+

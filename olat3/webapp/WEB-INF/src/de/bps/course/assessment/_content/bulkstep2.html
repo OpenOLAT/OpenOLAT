@@ -1,0 +1,10 @@
+$r.render("backLink")
+<p>
+<small><b>$r.translate("form.step1.bulkactions"):</b></small> $bulkActionDisplayName
+<p>
+#if($hasMsOrTaNodes)
+	$r.render("nodeTable")
+#else
+	$r.translate("wizard.step2.nonodes")
+#end
+

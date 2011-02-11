@@ -1,0 +1,36 @@
+<html>
+<head>
+</head>
+
+<body>
+
+The indexer package contains all classes to create a new search-index.
+
+<h3>Indexer Structure</h3>
+<p>
+The indexer loops over all OLAT data to analyse and generate a new index. 
+The indexer structure is given through the spring config defaultconfig.xml at org.olat.search.service._spring.
+Each indexer analyse his content and pass tha context to his child elements.<br>
+E.g. GroupIndexer goes further to GroupFolderIndexer, GroupForumIndexer, GroupWikiIndexer for each group.<br>
+<br>
+<img src="doc-files/IndexerStruktur.png"/>
+</p>
+
+<h3>Indexer Single-Thread / Multi-Thread Mode</h3>
+<p>
+The indexer can runs in two modes :<br>
+<dl>
+ <dt>Single Thread</dt>
+ <dd>Only one thread does the hole work, analyse olat data, read file content and write index-data to index-file.
+ </dd>
+ <dt>Multi-Thread</dt>
+ <dd>Main thread analyse the olat-data. One or more FolderIndexerWorker read data form file-system. One or more IndexWriter
+ writes index-data to index-file. The  
+ </dd>
+</li>
+</dl>
+<br>
+<img src="doc-files/MultiThreadedOverview.png"/>
+</p>
+</body>
+</html>

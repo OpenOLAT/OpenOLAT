@@ -1,0 +1,30 @@
+<div class="o_podcast_info">
+	#if ($callback.mayEditMetadata())
+		<div class="o_feed_edit">
+			$r.render("feed.edit")
+		</div>
+	#end	
+	<h3>$!feed.getTitle()</h3>
+	#if ($!helper.getImageUrl())
+		<img class="icon" src="$helper.getImageUrl()" alt="Podcast Icon" />
+	#else
+		<div class="o_podcast_no_image"><span>$r.translate("feed.no.image")</span></div>
+	#end
+	<p class="o_podcast_date">$!helper.getLastModified()</p>
+	#if ($!feed.getAuthor())
+		<p>$r.translate("feed.author"): $feed.getAuthor()</p>
+	#end
+	<p>$!helper.getFeedDescriptionForBrowser()</p>
+</div>
+#if ( !$feed.isUndefined() && $helper.getFeedUrl() )
+	<div class="o_podcast_subscription">
+		<a href="$!helper.getFeedUrl()" class="o_podcast_rss_link" target="_blank"></a>
+		<h5>$r.translate("podcast.subscribe.to.this.feed")</h5>
+		$r.render("feedUrlComponent")
+		<p>
+			<a href="$!helper.getITunesUrl()" target="_blank"><img src="http://media-art-culture.net/images/icons/ico_itunes.png" /></a>
+			<a href="$!helper.getYahooUrl()" target="_blank"><img src="http://us.i1.yimg.com/us.yimg.com/i/us/my/addtomyyahoo4.gif" /></a>
+			<a href="$!helper.getGoogleUrl()" target="_blank"><img src="http://buttons.googlesyndication.com/fusion/add.gif" /></a>
+		</p>
+	</div>
+#end	

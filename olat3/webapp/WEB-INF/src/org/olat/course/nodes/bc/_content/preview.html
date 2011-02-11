@@ -1,0 +1,14 @@
+<fieldset id="o_preview_nodedetails">
+	<legend>$r.translate("preview.header")</legend>
+	<table class="b_grid b_small">
+		<tbody>
+			<tr><td>$r.translate("preview.canUpload")</td><td>#if ($canUpload) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+			<tr><td>$r.translate("preview.canDownload")</td><td>#if ($canDownload) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+			<tr><td>$r.translate("preview.quotaKB")</td><td>$quotaKB</td></tr>
+		</tbody>
+	</table>
+	$r.translate("preview.info")
+</fieldset>
+<a href="#" onclick="new Effect.toggle('o_preview_nodedetails', 'slide', {duration: 0.5})">$r.translate("preview.conf.toggle")</a>
+<hr />
+$r.render("folder")

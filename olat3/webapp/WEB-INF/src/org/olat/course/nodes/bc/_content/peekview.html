@@ -1,0 +1,8 @@
+<div class="o_briefcase_peekview b_clearfix">
+#foreach( $leaf in $leafs ) 	
+	<div class="o_briefcase_peekview_file">
+		$r.render("nodeLink_${velocityCount}")
+	</div>
+#end
+	$r.render("peekview.allItemsLink")
+</div>

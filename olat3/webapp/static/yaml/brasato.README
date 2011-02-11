@@ -1,0 +1,31 @@
+YAML in the Brasato framework
+-----------------------------
+YAML is a layout framework available under http://www.yaml.de that 
+is used in Brasato to layouting.
+
+Note that for license reasons you must add a backlink to the YAML 
+homepage in your web app footer or add it to the imprint of the page.
+YAML is licensed under the Creative Commons Attribution 2.0 license.
+http://creativecommons.org/licenses/by/2.0 
+
+It is also possible to buy a commercial license for project where 
+the backlink is not desired. The license fee is very, very small.
+
+Please see the YAML homepage for more information about licensing.
+
+For further documentation, please see the Brasato GUI documentation 
+and the YAML homepage
+
+http://www.yaml.de/en/
+
+The author of YAML, Dirk Jesse, is supporting OLAT by allowing us to 
+integrate and use the framework under the conditions described above.
+We are very thankful for this framework and his work and urge you to
+support his work too.
+
+ 
+Adjustments made for the Brasato framework
+------------------------------------------
+In Brasato, all YAML CSS classes and ID selectors have a "b_" prefix. 
+Instead of #page we use #b_page. This makes sure that we have no 
+conflicts with classes that are defined somewhere else. 

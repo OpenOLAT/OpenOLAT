@@ -1,0 +1,58 @@
+$r.render("sourceview")
+<h3>Window Control</h3>
+<p>
+	Window control is about how you control the content on the screen. The framework
+	provides various elements which we will show you below.
+</p>
+<h4>Warning and error messages</h4>
+<p>
+	The framework provides standard ways of diaplaying warning and error messages.
+	This is done via the appropriate methods:
+	<pre>
+getWindowControl().setInfo()
+getWindowControl().setWarning()
+getWindowControl().setError()
+	</pre>
+</p>
+<p>
+	<ul>
+		<li>$r.render("guidemo.window.control.info")</li>
+		<li>$r.render("guidemo.window.control.warn")</li>
+		<li>$r.render("guidemo.window.control.error")</li>
+	</ul>
+</p>
+<h4>Push and Pop windows</h4>
+<p>
+	The framework allows to push and pop content to the main window. This enables a workflow to take the entire screen real estate
+	if necessary, e.g. a workflow that wants to prevent the user from clicking any other link by simply not showing them.
+</p>
+$r.render("guidemo.window.control.push")
+
+<br />
+<br />
+<h4>Additional infos</h4>
+<p>
+	This is done directly in velocity using the b_togglebox_start and b_togglebox_end makros.
+</p>
+#b_togglebox_start("testdomid" "check me out, I got some stuff in me")
+	<strong>aöksldfjasjd</strong>
+	<p>
+		föasldkj aösdfskld
+	</p> 
+	<ul>
+		<li>ö</li>
+		<li>ösdkja</li>
+		<li>kjösdfaasj ald ads</li>
+	</ul>
+#b_togglebox_end()
+<br />
+#b_togglebox_start("infoContent" "Here are some additional details")
+	Welcome, you found the cool hidden stuff...
+	Click again to close this
+#b_togglebox_end()
+<br />
+#b_togglebox_start("secondContent" "And click here to get the other details")
+	Trallala, jepee this is such a cool framework this OLAT thing, really, it rocks so much!
+	<p>
+	And again, some other text...
+#b_togglebox_end()

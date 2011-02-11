@@ -1,0 +1,9 @@
+<fieldset>
+	<legend>$r.translate("fieldset.legend.groups")</legend>
+	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-Area-select-learn.html","help.hover.bgLearningGroup-Area")
+	#if ($noGroupsFound)
+		$r.translate("groupchoice.no.groups")
+    #else
+		$r.render("groupsChoice")
+    #end	
+</fieldset>

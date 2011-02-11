@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+ <class name="org.olat.basesecurity.NamedGroupImpl" table="o_bs_namedgroup">
+     <!-- the default columns -->
+    <id name="key" column="id" type="long" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+	
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+         
+    <many-to-one name="securityGroup" class="org.olat.basesecurity.SecurityGroupImpl" fetch="join" cascade="none">  
+		<column name="secgroup_id" not-null="true" />    	
+    </many-to-one>  	
+   
+	<property name="groupName" type="string">
+		<column name="groupname" length="16" unique-key="groupname_unique" index="groupname_idx"/>
+	</property>
+   
+	</class>
+</hibernate-mapping>
+

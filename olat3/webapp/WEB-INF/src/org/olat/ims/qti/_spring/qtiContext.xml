@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<bean id="qtiModule" class="org.olat.ims.qti.QTIModule" depends-on="database" >
+	<property name="qtiRepositoryHandlers">
+		<list>
+			<ref bean="QTITestHandler${assessmentplugin.activate}" />
+			<ref bean="QTISurveyHandler${assessmentplugin.activate}" /> 
+		</list>
+	</property>
+	
+	<property name="persistedProperties">
+	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+	    <constructor-arg index="0" ref="coordinatorManager"/>
+	    <constructor-arg index="1" ref="qtiModule" />
+	  </bean>
+	</property>
+</bean>
+<!-- The Handlers which are registered by the QTIMOdule at the repository -->
+<bean id="QTITestHandlerOlat" class="org.olat.ims.qti.repository.handlers.QTITestHandler"></bean>
+<bean id="QTISurveyHandlerOlat" class="org.olat.ims.qti.repository.handlers.QTISurveyHandler"></bean>
+
+<!--  The validators for detecting qti conformant files -->
+<bean class="org.olat.ims.qti.fileresource.SurveyFileResource" >
+	<property name="validator" ref="SurveyValidator${assessmentplugin.activate}" />
+</bean>
+<bean id="SurveyValidatorOlat" class="org.olat.ims.qti.fileresource.SurveyFileResourceValidator" />
+
+<bean class="org.olat.ims.qti.fileresource.TestFileResource" >
+	<property name="validator" ref="TestValidator${assessmentplugin.activate}" />
+</bean>
+<bean id="TestValidatorOlat" class="org.olat.ims.qti.fileresource.TestFileResourceValidator" />
+
+
+
+<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="qtiModule" />
+        <property name="targetMethod" value="init" />
+        <property name="arguments">
+                    <value>
+                    <!-- Whether to validate QTI XML files or not. -->
+					validating=false
+         			</value>
+         </property>
+</bean>
+		
+<bean id="qtiResultManager" class="org.olat.ims.qti.QTIResultManager">
+	<constructor-arg ref="userDeletionManager" />
+</bean>
+
+</beans>

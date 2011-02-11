@@ -1,0 +1,81 @@
+#if ($isRegisteredWeb)
+<h4 class="b_note">
+	$r.translate("registration.title.registered")
+</h4>
+#elseif ($isRegisteredStatistics)
+<h4 class="b_important">
+	$r.translate("registration.title.partialregistered")
+</h4>
+#else 
+<h4 class="b_warning">
+	$r.translate("registration.title.notregistered")
+</h4>
+#end
+
+<div class="b_info">
+	<a href='http://www.olat.org' target='_blank' class="b_float_right" style="margin: 10px;">
+		<img src="$r.staticLink("images/olat/olat_logo2_72.png")" border="0" />
+	</a>	
+	<p>
+		$r.translate("registration.statistics")
+	</p>
+	<p>
+		$r.translate("registration.sustainability")
+	</p>
+	<p>
+		$r.translate("registration.website")
+	</p>
+	<p>
+		$r.translate("registration.thanks", "<a href='http://www.olat.org' class='b_link_extern' target='_blank'>www.olat.org</a>")
+	</p>
+</div> 
+
+<div class="b_form b_clearfix">
+	<fieldset><legend>$r.translate("registration.title")</legend>
+
+	
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("registration.publishWebSiteSelection")</div>
+		<div class="b_form_element_label">$r.translate("registration.publishWebSiteSelection", "$webSiteURL")</div>
+	</div>
+	#if ($f.isVisible("registration.webSiteDescription"))
+	<div class="b_form_subform">
+		$r.translate("registration.webSiteDescription", "$webSiteURL")
+		$r.render("registration.webSiteDescription")
+		$r.translate("registration.location")
+		$r.render("registration.location")
+		$r.render("registration.location_EXAMPLE")
+	</div>
+	#end
+
+	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+        <div class="b_form_element">$r.render("registration.addToAnnounceListSelection")</div>
+		<div class="b_form_element_label">$r.translate("registration.addToAnnounceListSelection")</div>
+	</div>	
+	#if ($f.isVisible("registration.email"))
+		<div class="b_form_subform">
+		<div class="b_form_element_wrapper b_form_element_switch b_clearfix #if($f.hasError("registration.email")) b_form_error #end ">
+	        <div class="b_form_element">$r.render("registration.email")</div>
+			<div class="b_form_element_label">$r.render("registration.email_LABEL")</div>
+	        	#if($f.hasError("registration.email"))
+					$r.render("registration.email_ERROR")
+				#end
+		</div>
+	</div>
+	#end
+
+	<div class="b_form_subform">
+		<div class="b_button_group">
+			$r.render("save")
+		</div>
+	</div>
+	</fieldset>
+	
+	<div style="width: 99%"> ## FF fieldset fix
+		<p>
+			$r.translate("registration.summary")
+		</p>
+		<div class="b_form_element">$r.render("registration.summary")</div>
+	</div>
+</div>
+<p />

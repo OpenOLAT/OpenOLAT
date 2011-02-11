@@ -1,0 +1,73 @@
+<script type="text/javascript">
+/* <![CDATA[ */
+function check() {
+	document.write(
+		"<tr><td>$r.translate("browsercheck.yourbrowser.name")</td><td><b>"+navigator.appName+"</b></td></tr>"+
+		"<tr class='b_table_odd'><td>$r.translate("browsercheck.yourbrowser.generation")</td><td>"+navigator.appVersion+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.language")</td><td>"+navigator.language+"</td></tr>"+
+		"<tr class='b_table_odd'><td>$r.translate("browsercheck.yourbrowser.codename")</td><td>"+navigator.appCodeName+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.os")</td><td>"+navigator.platform+"</td></tr>"+
+		"<tr class='b_table_odd'><td>$r.translate("browsercheck.yourbrowser.usragent")</td><td>"+	navigator.userAgent+"</td></tr>"+
+		"<tr><td>$r.translate("browsercheck.yourbrowser.cookies")</td><td>" + ( navigator.cookieEnabled ? "$r.translate("browsercheck.yes")" : "$r.translate("browsercheck.no")") + "</td></tr>"+
+		"<tr class='b_table_odd'><td>$r.translate("browsercheck.yourbrowser.js")</td><td>$r.translate("browsercheck.yes")</tr>"
+		);
+}
+
+function check2() {
+	//dom is calulated by functions.js
+	
+	document.write("<tr class='b_table_odd'><td>$r.translate("browsercheck.comfortfunctions.learninggroup")</td><td>"+ (true ? "$r.translate("browsercheck.yes")" : "$r.translate("browsercheck.no")") + "</td></tr>");	
+	document.write("<tr><td>$r.translate("browsercheck.comfortfunctions.learningarea")</td><td>" + (true ? "$r.translate("browsercheck.yes")" : "$r.translate("browsercheck.no")") + "</td></tr>");	
+	document.write("<tr class='b_table_odd'><td>$r.translate("browsercheck.comfortfunctions.datechooser")</td><td>" + (true ? "$r.translate("browsercheck.yes")" : "$r.translate("browsercheck.no")") + "</td></tr>");	
+	document.write("<tr><td>$r.translate("browsercheck.comfortfunctions.htmleditor")</td><td>" + (htmlEditorEnabled ? "$r.translate("browsercheck.yes")" : "$r.translate("browsercheck.no")") + "</td></tr>");
+	document.write("<tr class='b_table_odd'><td>$r.translate("browsercheck.comfortfunctions.ajax")</td><td>");
+	
+	#if ($isBrowserAjaxReady)
+	document.write("$r.translate("browsercheck.yes")");
+	#else
+	document.write("$r.translate("browsercheck.no")");
+	#end
+	document.write("</td></tr>");	
+}
+/* ]]> */
+</script>
+
+<h3>$r.translate("browsercheck.title")</h3>
+<h4>$r.translate("browsercheck.minimum.title")</h4>
+<ul>
+  <li>$r.translate("browsercheck.minimum.first")</li>
+  <li>$r.translate("browsercheck.minimum.second")</li>
+</ul>
+</p>
+
+
+<p>
+<h4>$r.translate("browsercheck.bestresults.title")</h4>
+<ul>
+	<li><a class="b_link_extern" href="http://www.mozilla.org/products/firefox/" target="_blank">Firefox 3.0</a> $r.translate("browsercheck.bestresults.recommended") $r.translate("browsercheck.bestresults.newerversion") </li>
+	<!-- safari is disabled as html editor does not fully work, with tiny 3.0 safari should be fine again -->
+	<!-- <li><a class="b_link_extern" href="http://www.apple.com/safari/" target="_blank">Safari 3.2</a> $r.translate("browsercheck.bestresults.newerversion") </li> -->
+	<li><a class="b_link_extern" href="http://www.microsoft.com" target="_blank">Microsoft Internet Explorer 8</a> $r.translate("browsercheck.bestresults.newerversion")</li>
+</ul>
+$r.translate("browsercheck.osx")
+</p>
+<p align="center">
+	<a href="http://www.spreadfirefox.com/?q=affiliates&amp;id=36288&amp;t=55" target="_blank"><img border="0" alt="Get Firefox!" title="Get Firefox!" src="$r.staticLink("images/getfirefox.gif")"/></a>
+</p>
+
+<p>
+<table class="b_table b_grid  b_full"><tbody>
+	<tr>
+		<td colspan="2"><h4>$r.translate("browsercheck.yourbrowser.title") </h4></td>
+	</tr>
+	<script type="text/javascript">
+	check();
+	</script>
+	<tr>
+		<td colspan="2"><br /><h4>$r.translate("browsercheck.comfortfunctions.title")</h4></td>
+	</tr>
+	<script type="text/javascript">
+	check2();
+	</script>
+</tbody></table>
+</p>

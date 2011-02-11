@@ -1,0 +1,11 @@
+$r.render("sourceview")
+A simple component was pushed on top of the window stack. The previous window remains on the stack
+and keeps its full state. By calling <code>getWindowControl().pop()</code> the current top-window is
+removed from the stack and the underlying window is shown again.
+<p>
+$stack
+</p>
+<ul>
+	<li>$r.render("guidemo.window.control.push")</li>
+	<li>$r.render("guidemo.window.control.pop")</li>
+</ul>

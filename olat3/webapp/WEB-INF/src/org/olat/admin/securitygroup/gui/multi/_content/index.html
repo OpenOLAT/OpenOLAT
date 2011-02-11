@@ -1,0 +1,37 @@
+#if ($usercount > 0)
+<h4>$r.translate("import.title.finish.create")</h4>
+$r.render("table")
+#end
+
+#if ($alreadyin != "")
+<div class="b_info">
+	<h5>$r.translate("import.title.finish.alreadyin")</h5>
+	$alreadyin
+</div>
+#end
+
+#if ($notfound != "")
+<div class="b_info">
+	<h5>$r.translate("import.title.finish.notfound")</h5>
+	$notfound
+</div>
+#end
+
+#if ($isanonymous != "")
+<div class="b_info">
+	<h5>$r.translate("import.title.finish.isanonymous")</h5>
+	$isanonymous
+</div>
+#end
+
+<div class="b_button_group">
+#if ($usercount > 0)
+	#if ($r.available("next"))
+		$r.render("next")
+	#else
+		$r.render("finish")
+	#end
+#else
+	$r.render("back")
+#end
+</div>

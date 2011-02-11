@@ -1,0 +1,66 @@
+<div class="o_search_result">
+	<div class="o_search_result_title">
+		#set($contextpath = $result.getResourceUrl() )
+	  	#set($lastIndex = $contextpath.lastIndexOf("path=") + 5 )
+	  	#if($lastIndex>=0)
+	  		#set($minone=$contextpath.length() - 1)
+	    	#set($contextpath = $contextpath.substring($lastIndex,$minone) )
+	  	#end
+		<a class="b_with_small_icon_left b_contexthelp_icon" href="$contextpath" target="$target">$result.title</a>
+		<a href="#" class="o_search_result_details_link" id="o_search_result_show_$id">$r.translate("metadata.show")</a>
+		<a href="#" class="o_search_result_details_link" id="o_search_result_hide_$id" style="display:none">$r.translate("metadata.hide")</a>	
+	</div>
+	
+	#if ($highlight && !$result.highlightResult.equals("")) 
+		<div class="o_search_result_excerpt">
+		  $result.highlightResult
+		</div>
+	#end
+	
+	
+    #if ($result.parentContextName && $result.parentContextName != "")
+		<div class="o_search_result_context">
+			<strong>$r.translate("label.search.result.parent.context"):</strong>
+			$r.translate("$result.parentContextType") "$result.parentContextName" 
+		</div> 
+    #end
+    
+    <div class="o_search_result_details" style="display: none" id="o_search_result_$id">
+		#if (!$result.author.equals("") ) 
+			<div class="o_search_result_author">
+		    	<strong>$r.translate("label.search.author"):</strong> $result.author.
+			</div>
+		#end
+		#if ($result.lastChange )
+			<div class="o_search_result_lastmod">
+			  	<strong>$r.translate("label.search.result.last.changed"):</strong> $formatter.formatDate($result.lastChange)
+			</div>
+	  	#end		  
+		<div class="o_search_result_type">
+		    <strong>$r.translate("label.search.result.documenttype"):</strong> 
+		    $r.translate($result.documentType)
+	  	</div>
+		#if (!$result.description.equals("")) 
+			<div class="o_search_result_desc">
+			  	<strong>$r.translate("result.description"):</strong> $result.description
+		  	</div>		  
+		#end
+    </div>
+    
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		Ext.onReady(function() {  
+			Ext.get('o_search_result_show_$id').on('click', function() { 
+				Effect.toggle('o_search_result_$id', 'slide', {duration: 0.3});
+				$('o_search_result_show_$id').hide();
+				$('o_search_result_hide_$id').show();
+			});
+			Ext.get('o_search_result_hide_$id').on('click', function() { 
+				Effect.toggle('o_search_result_$id', 'slide', {duration: 0.3});
+				$('o_search_result_hide_$id').hide();
+				$('o_search_result_show_$id').show();
+			});
+		});
+	/* ]]> */
+	</script>
+</div>

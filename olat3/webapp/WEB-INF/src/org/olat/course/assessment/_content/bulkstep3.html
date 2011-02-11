@@ -1,0 +1,22 @@
+$r.render("backLink")
+<br />
+<br />
+<p>
+	<strong>$r.translate("form.step1.bulkactions"):</strong> $bulkActionDisplayName
+	<br />
+	<strong>$r.translate("wizard.step3.currentNodeShortTitle"):</strong> $currentNodeShortTitle
+</p>
+$r.translate("wizard.step0.intro2")<br />
+$r.translate("wizard.step0.intro3")<br />
+
+<br />
+<br />
+#b_togglebox_start("o_bulk_example" "$r.translate('wizard.step3.importexample')")
+	<img src='$r.staticLink('images/screen/xls_bulkimp.png')' />
+#b_togglebox_end()
+
+<br />
+<br />
+$r.render("step3Form")
+<p>
+

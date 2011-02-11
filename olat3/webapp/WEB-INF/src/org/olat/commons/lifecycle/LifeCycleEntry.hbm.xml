@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+
+  <class name="org.olat.commons.lifecycle.LifeCycleEntry" table="o_lifecycle">
+  	
+    <id name="key" type="long" column="id" unsaved-value="null">
+      <generator class="hilo" />
+    </id>
+	
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 
+    <property name="persistentTypeName"	type="string">
+    	<column name="persistenttypename" length="50" index="lc_type_idx" not-null="true"/>
+    </property>
+    
+    <property name="persistentRef"	type="long">
+    	<column name="persistentref" index="lc_pref_idx" not-null="true"/>
+    </property>
+    
+    <property name="action"	type="string">
+    	<column name="action" length="32" index="lc_action_idx" not-null="true"/>
+    </property>
+    
+    <property  name="lcTimestamp" column="lctimestamp" type="timestamp" not-null="true"/>
+    
+    <property name="userValue"	type="string">
+    	<column name="uservalue"  not-null="false" length="16777210"/>
+    </property>
+
+  </class>
+
+</hibernate-mapping>

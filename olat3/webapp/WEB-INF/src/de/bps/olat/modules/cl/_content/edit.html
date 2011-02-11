@@ -1,0 +1,32 @@
+<p>
+<table>
+	<tr>
+		<td colspan="2"><div class="b_form_element_label" style="width: 100%;">$r.translate("cl.table.title")<span class="b_form_mandatory" title="$r.translateInAttribute("form.mandatory.hover")">&nbsp;</span></div></td>
+		<td>$r.translate("cl.table.description")</td>
+		<td colspan="2">$r.translate("cl.table.mode")</td>
+	</tr>
+	#foreach($checkpoint in $checkpoints)
+		#set( $iter = $velocityCount - 1)
+		#set( $title = $titleInputList.get($iter).getName() )
+		#set( $titleErr =	$title + "_ERROR" )
+		#set( $descr =	$descriptionInputList.get($iter).getName() )
+		#set( $descrErr = $descr + "_ERROR" )
+		#set( $hasError = "false" )
+		<tr>
+			<td>$r.render($titleErr)</td>
+			<td>$r.render($titleInputList.get($iter).getName())</td>
+			<td>$r.render($descriptionInputList.get($iter).getName())</td>
+			<td>$r.render($modeInputList.get($iter).getName())</td>
+			<!-- IE7-compatibility -->
+			<td style="white-space: nowrap; ">
+				$r.render($delButtonList.get($iter).getName())
+			</td>
+		</tr>
+	#end
+	<tr>
+	<td colspan="4"></td>
+	<td>
+	$r.render($addButton.getName())
+	</td></tr>
+</table>
+</p>

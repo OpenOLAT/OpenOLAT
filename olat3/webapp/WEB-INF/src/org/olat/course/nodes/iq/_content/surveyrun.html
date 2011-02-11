@@ -1,0 +1,35 @@
+	#if ($hasDisc)
+		<div class="o_course_run_disclaimer">
+			$r.render("disc")
+		</div>
+	#end
+	
+	
+	#if ($attempts == 0)
+		<div class="o_course_run_statusinfo">
+			<p>
+				$r.translate("Intro.surv")	
+			</p>
+			<p>	
+				$r.translate("info.survey")
+			</p>
+		</div>
+				
+		<div class="b_button_group">
+			$r.render("start")
+		</div>	
+	#else
+		<div class="o_course_run_statusinfo">
+			$r.translate("info.survey.alreadydone")
+		</div>
+	#end
+	
+	
+	#if($changeLog)
+		<p />	
+		#b_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+		<pre>
+$changeLog
+		</pre>
+		#b_togglebox_end()
+	#end

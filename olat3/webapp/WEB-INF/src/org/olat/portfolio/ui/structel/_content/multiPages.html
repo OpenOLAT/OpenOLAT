@@ -1,0 +1,18 @@
+<div class="b_pagination" >
+	<ul>
+	<li class="b_toc #if ($tocactive) b_disabled #end">$r.render("toc")</li>
+	#if ($pageLinkList)
+		#foreach($pageLink in $pageLinkList)
+			#set($viewLink = "pageLink$velocityCount")
+			#if ($velocityCount != $actualPage)<li>
+			#else <li class="b_disabled">
+			#end
+			$r.render($viewLink)</li>
+		#end
+	#end
+	</ul>
+</div>
+<div class="b_ep_actualpage">
+$r.render("pageCtrl")
+</div>
+<div style="clear: both;">

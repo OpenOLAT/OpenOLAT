@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.basesecurity.IdentityImpl" table="o_bs_identity">
+  	<!-- the default columns -->
+    <id name="key" column="id" type="long" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+    
+    <version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 	<property  name="lastLogin" column="lastlogin" type="timestamp" />
+ 	
+    <property name="name" type="string">
+    	<column name="name" unique="true" length="128" not-null="true" index="name_idx2" />
+    </property>
+    <property name="status" type="integer">
+    	<column name="status" index="identstatus_idx"/>
+    </property>
+ 
+    <many-to-one name="user" column="fk_user_id" class="org.olat.user.UserImpl" fetch="join" unique="true"  cascade="none"/>
+
+  </class>
+</hibernate-mapping>

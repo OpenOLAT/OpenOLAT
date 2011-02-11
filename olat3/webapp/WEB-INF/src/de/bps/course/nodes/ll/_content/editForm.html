@@ -1,0 +1,38 @@
+##
+<table>
+	<tr>
+		<td>$r.translate("ll.table.target")</td>
+		<td>$r.translate("ll.table.html_target")</td>
+		<td>$r.translate("ll.table.description")</td>
+		<td colspan="2">$r.translate("ll.table.comment")</td>
+	</tr>
+	#foreach($link in $linkList)
+		#set( $iter = $velocityCount - 1)
+		#set( $target = $lTargetInputList.get($iter).getName() )
+		#set( $targetErr =	$target + "_ERROR" )
+		#set( $descr =	$lDescriptionInputList.get($iter).getName() )
+		#set( $descrErr = $descr + "_ERROR" )
+		#set( $hasError = "false" )
+
+		<tr>
+			<td>
+				<div class="b_small">$r.render($targetErr)</div>
+			</td>
+			<td>
+				<div class="b_small">$r.render($descrErr)</div>
+			</td>
+			<td>&nbsp;</td>
+		</tr>
+
+		<tr>
+			<td>$r.render($lTargetInputList.get($iter).getName())</td>
+			<td>$r.render($lHtmlTargetInputList.get($iter).getName())</td>
+			<td>$r.render($lDescriptionInputList.get($iter).getName())</td>
+			<td>$r.render($lCommentInputList.get($iter).getName())</td>
+			<td style="white-space: nowrap; text-align: right;">
+				$r.render($lAddButtonList.get($iter).getName())
+				$r.render($lDelButtonList.get($iter).getName())
+			</td>
+		</tr>
+	#end
+</table>

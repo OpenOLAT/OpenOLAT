@@ -1,0 +1,10 @@
+$r.render("sourceview")
+<h4>$r.translate("guidemo.flexiformdemos")</h4>
+$r.translate("guidemo.flexi.form.simpleform.explain")
+<hr>
+##layouting based on subtemplates from the yaml framework, see base.css for more options
+		#foreach($demolinkname in $demolinknames)
+		<span style="padding-right:15px">$r.render("${demolinkname}")</span>
+		#end
+<hr>
+$r.render("democontent")

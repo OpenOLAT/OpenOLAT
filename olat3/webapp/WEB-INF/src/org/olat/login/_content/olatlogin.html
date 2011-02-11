@@ -1,0 +1,16 @@
+<div class="o_login_form">
+		
+	$r.render("loginForm")
+	
+	<ul>
+		#if ($r.available("menu.guest"))
+			<li>$r.render("menu.guest")</li>
+		#end
+		#if ($r.available("menu.pw"))
+			<li>$r.render("menu.pw")</li>
+		#end
+		#if ($r.available("menu.register"))
+			<li>$r.render("menu.register")</li>
+		#end
+	</ul>
+</div>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<bean id="repositoryManager" class="org.olat.repository.RepositoryManager">
+	<constructor-arg index="0" ref="baseSecurityManager" />
+	<constructor-arg index="1" ref="backgroundTaskQueueManager" />
+	
+	
+</bean>
+
+<bean id="baseSecurityManager" class="org.olat.basesecurity.BaseSecurityManager"></bean>
+
+<!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->
+<bean id="backgroundTaskQueueManager" class="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager">
+	<!-- Number of retries when a task failed e.g. incrementLaunchCounter try 20 times to increment when a exception occurs -->
+	<property name="maxRetry" value="20"/>
+</bean>	
+
+<bean id="commentAndRatingService" class="org.olat.test.NullFactoryBean" />	
+</beans>

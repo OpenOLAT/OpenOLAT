@@ -1,0 +1,45 @@
+<p>
+#if ("started" == $started)
+	Performance Monitor is <b>on</b><p>
+#else
+	Performance Monitor is <b>off</b><p>
+#end
+<fieldset>
+	<legend>Performance Statistics</legend>
+	<table class="b_table b_grid">
+		<thead>
+			<tr>
+				<th>Item</th>
+				<th>min time</th>
+				<th>max time</th>
+				<th>last time (ms)</th>
+				<th>avg time</th>
+				<th>10-avg time</th>
+				<th>100-avg time</th>
+				<th>1000-avg time</th>
+				<th>freq (1/s)</th>
+				<th>10-freq</th>
+				<th>100-freq</th>
+				<th>1000-freq</th>
+				<th>count</th>
+			</tr>
+		</thead>
+		#foreach($perf in $perfs)
+		<tr>
+			<td>$perf.itemName</td>
+			<td>$perf.minTime</td>
+			<td>$perf.maxTime</td>
+			<td>$perf.lastTime</td>
+			<td>$perf.avgTime</td>
+			<td>$perf.last10AvgTime</td>
+			<td>$perf.last100AvgTime</td>
+			<td>$perf.last1000AvgTime</td>
+			<td>$perf.frequency</td>
+			<td>$perf.last10Frequency</td>
+			<td>$perf.last100Frequency</td>
+			<td>$perf.last1000Frequency</td>
+			<td>$perf.count</td>
+		</tr>
+		#end
+	</table>
+</fieldset>

@@ -1,0 +1,18 @@
+<fieldset class="b_clearfix">
+	<legend>$r.translate("form.title.choose.feed")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.feed","help_choose_feed.html","heip.hover.choose.feed")
+	#if ($showPreviewLink)
+		<p>
+			<strong>$r.translate("chosen.feed"):</strong>&nbsp;$r.render("command.preview")
+		</p>
+		$r.render("button.change.feed")	 	
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
+	#else
+		<p>
+		<strong>$r.translate("chosen.feed"):</strong>&nbsp;&nbsp; $chosen_feed_name
+		</p>		
+	    $r.render("button.create.feed")	 	
+	#end	
+</fieldset>

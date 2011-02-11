@@ -1,0 +1,22 @@
+	<p>
+		$r.render("statisticResult")
+	</p>
+	#if ($hasChart)
+ 		<hr class="b_form_spacer"/>
+ 		<br/>
+		<p>
+			$chartIntro
+		</p>
+ 		<br/>
+		<div class="b_floatscrollbox" style="height: 240px">
+			<img src="$chartUrl" alt="$chartAlt"/>
+		</div>
+	#end
+	#if ($hasChartError)
+ 		<hr class="b_form_spacer"/>
+ 		<br/>
+		<p>
+			$chartError
+		</p>
+	#end
+	

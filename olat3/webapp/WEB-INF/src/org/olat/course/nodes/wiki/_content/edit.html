@@ -1,0 +1,18 @@
+<fieldset class="b_clearfix">
+	<legend>$r.translate("header")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.wiki","ced-wiki.html","help.hover.wiki-filename")
+	#if ($showPreviewLink)
+		<p>
+			<strong>$r.translate("chosenwiki"):</strong>&nbsp;$r.render("command.preview")
+		</p>
+		$r.render("command.change")	 	
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
+	#else
+		<p>
+		<strong>$r.translate("chosenwiki"):</strong>&nbsp;&nbsp; $chosen_entry
+		</p>		
+	    $r.render("command.create")	 	
+	#end	
+</fieldset>

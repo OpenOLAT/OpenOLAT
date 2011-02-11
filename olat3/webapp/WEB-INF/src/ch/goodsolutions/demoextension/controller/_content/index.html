@@ -1,0 +1,39 @@
+## this line is a velocity comment
+## see http://jakarta.apache.org/velocity/docs/vtl-reference-guide.html for a complete guide to the velocity template language
+##
+##
+<h4>$r.translate("title")</h4>
+$userinfo
+<br>
+<br>
+## offer a button here
+$r.render("command.modal")
+<br>
+<br>
+## offer an image as a link
+$r.render("sonne")
+<br>
+<br>
+<br>
+$r.translate("js.demo.desc")<br>
+<a href="javascript:ch_goodsolutions_demoextension_controller.afunction('$r.translateInAttribute("js.demo.msg")')">
+$r.translate("click.for.jsdemo")
+</a>
+<br>
+<br>
+## another button here
+$r.render("command.search") &nbsp;&nbsp; $r.translate("infomsg")
+<br><br><br>
+## below is the panel for the homepage of the chosen user (emtpy in the beginning)
+$r.render("homepagepanel")
+<br><br>
+## render a sample form here
+## $r 
+$r.render("sampleform")
+
+
+
+
+
+
+

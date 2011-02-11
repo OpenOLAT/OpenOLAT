@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false" threshold="all">
+
+<!--
+   This file gets only used if you overwrite the file in WEB-INF/classes with this one or by specifing a java system property.
+   Overwrite it with -Dlog4j.configuration="file:/tmp/mylog4j.xml" (java system property) and specifie a path for your logging config.
+-->
+
+ <!-- CONSOLE appender defined in case it is ever needed -->
+ <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+   <layout class="org.apache.log4j.PatternLayout">
+     <param name="ConversionPattern" value="%d [%t] %-5p %c{1} %x - %m%n"/>
+   </layout>
+ </appender>
+
+ <appender name="DebugLog" class="org.apache.log4j.DailyRollingFileAppender">
+   <param name="File" value="/olatapps/olatng/logs/thishost/tomcat/olatng99/olat.debug.log"/>
+   <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+   <layout class="org.apache.log4j.PatternLayout">
+     <param name="ConversionPattern" value="%d [%t] %-5p %c{1} %x - %m%n"/>
+   </layout>
+ </appender>
+
+ <!-- this is not UNIX syslog but instead the standard olat logging -->
+ <appender name="syslog" class="org.apache.log4j.DailyRollingFileAppender">
+   <param name="File" value="/olatapps/olatng/logs/thishost/tomcat/olatng99/olat.log"/>
+   <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+   <layout class="org.apache.log4j.PatternLayout">
+     <param name="ConversionPattern" value="%d [%t] %-5p %c{1} %x - %m%n"/>
+   </layout>
+ </appender>
+
+ <!--  OLAT settings  -->
+ <logger name="org.olat">
+    <level value="INFO"/>
+ </logger>
+
+ <logger name="org.olat.basesecurity.AuthHelper">
+   <level value="ERROR"/>
+ </logger>
+
+ <logger name="org.apache.commons.httpclient">
+   <level value="WARN"/>
+ </logger>
+
+ <logger name="org.olat.core.commons.taskExecutor.ThreadPoolTaskExecutor">
+   <level value="ERROR"/>
+ </logger>
+ <logger name="org.apache.pdfbox.filter.FlateFilter">
+   <level value="FATAL" />
+ </logger>
+ <!--  Third party libraries -->
+ <logger name="org.apache">
+   <level value="ERROR"/>
+ </logger>
+
+ <logger name="org.hibernate">
+   <level value="ERROR"/>
+ </logger>
+
+ <logger name="org.springframework">
+   <level value="ERROR"/>
+ </logger>
+
+  <!--
+  Filter db-task executor error and warn because they could happen per design
+  -->
+ <logger name="org.hibernate.event.def.AbstractFlushingEventListener">
+   <level value="FATAL"/>
+ </logger>
+ <logger name="net.sf.hibernate">
+   <level value="WARN"/>
+ </logger>
+
+ <!-- verify treecache.xml activation -->
+ <logger name="org.jboss.cache">
+   <level value="DEBUG" />
+ </logger>
+ <logger name="org.hibernate.cache">
+   <level value="DEBUG" />
+ </logger>
+ <root>
+   <level value="INFO" />
+     <appender-ref ref="syslog"/>
+ </root>
+
+</log4j:configuration> 

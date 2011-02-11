@@ -1,0 +1,26 @@
+org.olat.core.util.radeox.ForumQuoteFilter
+
+# emotion filters
+org.olat.core.util.radeox.DevilFilter
+org.olat.core.util.radeox.AngelFilter
+org.olat.core.util.radeox.SmileFilter
+org.olat.core.util.radeox.SadFilter
+org.olat.core.util.radeox.ConfusedFilter
+org.olat.core.util.radeox.EmbarrassedFilter
+org.olat.core.util.radeox.OmgFilter
+org.olat.core.util.radeox.ShadeFilter
+org.olat.core.util.radeox.TeethFilter
+org.olat.core.util.radeox.TongueFilter
+org.olat.core.util.radeox.UglyFilter
+org.olat.core.util.radeox.WinkFilter
+
+# additional in case it would be inserted somewhere, to complete smiley-set
+org.olat.core.util.radeox.KissFilter
+org.olat.core.util.radeox.CryFilter
+
+
+# wikimedia compatibillity filters
+# org.olat.core.util.radeox.ItalicFilter
+
+# filters used to overwrite internal ones during migration to tinymce-htmlareas
+# org.olat.core.util.radeox.GenericFilterForMigration

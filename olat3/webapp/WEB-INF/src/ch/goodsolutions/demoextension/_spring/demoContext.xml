@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+<!-- 
+	OLAT extensions are searched on the whole classpath by spring startup and are enabled by default. 
+	Spring searches for alles files with name "xyzContext.xml" (Context with capital C).
+	To keep your extensions outside the war file place them in tomcat/lib directory which is part of the java classpath.
+-->
+
+<!-- Locations that implement action extensions are: SystemAdminMainController, HomeMainController, ArchiverMaincontroller -->
+
+<!-- this extension will show up in the menu tree of the home screen after login -->
+<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+	<property name="actionController">	
+		<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+			<property name="className" value="ch.goodsolutions.demoextension.controller.DemoController"/>
+		</bean>
+	</property>
+	<property name="i18nActionKey" value="democontroller.actiontext"/>
+	<property name="i18nDescriptionKey" value="democontroller.description"/>
+	<property name="extensionPoints">
+		<list>	
+			<value>org.olat.home.HomeMainController</value>
+			<value>ch.goodsolutions.demoextension.controller.DemoMainLayoutController</value>
+		</list>
+	</property>
+	<property name="order" value="101" />
+	<property name="enabled" value="false" />
+</bean>
+
+
+<!-- 
+	A site def will result in a tab on the OLAT top navigation. 
+	The order value can be used to position your tab where you want it.
+-->  
+<bean id="olatsites_demo" class="ch.goodsolutions.demoextension.DemoSiteDef" scope="prototype" >
+   <property name="order" value="300" />
+   <property name="enabled" value="false"/>
+</bean>
+
+</beans>

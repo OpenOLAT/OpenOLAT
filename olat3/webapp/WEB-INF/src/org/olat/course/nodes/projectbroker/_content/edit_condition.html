@@ -1,0 +1,12 @@
+#if ($r.available("projectBrokerCondition"))
+<fieldset class="b_clearfix">
+	<legend>$r.translate("projectbroker.condition.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.editor","ced-acc.html","help.hover.acc")
+	$r.render("projectBrokerCondition")
+</fieldset>
+#end
+
+#if ( !($r.available("projectBrokerCondition"))  )
+	$r.translate("no.condition.available")
+#end
+

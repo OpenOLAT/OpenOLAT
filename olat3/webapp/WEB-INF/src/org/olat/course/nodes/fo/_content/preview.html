@@ -1,0 +1,10 @@
+<fieldset>
+	<legend>$r.translate("preview.header")</legend>
+	<table class="b_grid b_small">
+		<tbody>
+			<tr><td>$r.translate("preview.canRead")</td><td>#if ($canRead) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+			<tr><td>$r.translate("preview.canPost")</td><td>#if ($canPost) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+			<tr><td>$r.translate("preview.canModerate")</td><td>#if ($canModerate) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+		</tbody>
+	</table>
+</fieldset>

@@ -1,0 +1,19 @@
+#if ($showButton == "true")
+$r.render("btn.back")
+<p>
+#end
+#if ($r.available("autocompletionsearch"))
+<fieldset style="z-index:10"> ## fix IE7 layering issue
+	<legend>$r.translate("header.autocompletion")</legend>
+	<p>
+	<i>$r.translate("autocompletion.info")</i>
+	<p>
+	$r.render("autocompletionsearch")
+</fieldset>
+<p>
+<br>
+#end
+<fieldset>
+	<legend>$r.translate("header.normal")</legend>
+	$r.render("usersearchPanel")
+</fieldset>

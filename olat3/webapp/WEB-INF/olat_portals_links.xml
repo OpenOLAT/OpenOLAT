@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinksPortlet xmlns="https://bildungsportal.sachsen.de/portlets/LinksPortlet" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://bildungsportal.sachsen.de/portlets/LinksPortlet olat_portals_links.xsd ">
+<!-- see olat_portals_links.xsd for all configuration issues -->
+  <University name="*"><!-- all users -->
+    <Link>
+      <Title>Google</Title>
+      <URL>http://www.google.de</URL>
+      <Target>blank</Target>
+      <Language>de</Language>
+      <Description>Sehr gute Suchmaschine</Description>
+    </Link>
+    <Link>
+      <Title>google</Title>
+      <URL>http://www.google.com</URL>
+      <Target>blank</Target>
+      <Language>en</Language>
+      <Description>Very good search engine</Description>
+    </Link>
+  </University>
+  <University name="+"><!-- all registered users -->
+    <Link>
+      <Title>MELS</Title>
+      <URL>http://www.id.uzh.ch/org/mels.html</URL>
+      <Target>blank</Target>
+      <Language>*</Language>
+      <Description>Multimedia und E-Learning Services (MELS)</Description>
+    </Link>
+  </University>
+  <University name="-"><!-- only guests -->
+    <Link>
+      <Title>OLAT</Title>
+      <URL>http://www.olat.org</URL>
+      <Target>blank</Target>
+      <Language>de</Language>
+      <Description>Projektseite zu OLAT</Description>
+    </Link>
+  </University>
+  <University name="UZH"><!-- example for users with UZH as institution -->
+    <Link>
+      <Title>Universität Zürich</Title>
+      <URL>http://www.uzh.ch/</URL>
+      <Target>blank</Target>
+      <Language>*</Language>
+      <Description>Webseite der Universität Zürich</Description>
+    </Link>
+  </University>
+</LinksPortlet>

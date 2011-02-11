@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"> 
+<head>
+    <meta http-equiv="Content-Type"
+          content="text/html;charset=utf-8" />
+    <title>OLAT Framework - framework</title>
+    <style type="text/css" media="screen"> 
+        body {
+            font: 90% "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
+            background-color: White;
+            color: Black;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+</head>
+
+<body>
+<table width="100%">
+ <tr>
+  <td><H2>OLAT How to's</H2></td>
+  <td align="right"><image src=http://www.olat.org/public/docroot/olatorg/images/logo.jpg width=90 height=60/></td>
+ </tr>
+</table>
+<HR>
+<ul>
+ 
+ <li><a href="#jumpIn">How to create a direkt jumpin link ?</a></li>
+ <li>How to synchronized workflows in OLAT ? {@link org.olat.core.util.locks}</li>
+ <li>When do you choose Virtual File System (VFS) or java.lang.File ?</li>
+ <li><a href="#statusMsg">How to show status messages ?</a></li>
+ <li>How to add a modal dialog ? [push,pop,ModalDialog]</li>
+ <li>How to uplaod files in a workflow ? [redesign File Upload ]</li>
+</ul>
+
+<a name=jumpIn>
+<H4>How to create a direkt jumpin link ?</H4>
+<blockquote>
+E.g. Create a direct link to a course-node.<br>
+<code style="background-color: #DDDDDD">
+	String nodeUrl = new URLEncoder().encode("[" + OresHelper.calculateTypeName(CourseNode.class) + ":" + node.getIdent() + "]");<br>
+	String link = JumpInManager.getJumpInUri(this.getWindowControl().getBusinessControl()) + nodeUrl;
+</code>
+See also Javadoc {@link org.olat.core.dispatcher.jumpin}
+</blockquote>
+
+<a name=statusMsg>
+<H4>How to show status messages ?</H4>
+<blockquote>
+Show a translated text as info-message at the top of UI :<br>
+<code style="background-color: #DDDDDD">
+	this.getWindowControl().setInfo(translator.translate("found.no.result.try.fuzzy.search"));
+</code>
+</blockquote>
+
+<HR>
+<center><b>1999-2007 (c) www.olat.org</b></center>
+</body>
+</html>

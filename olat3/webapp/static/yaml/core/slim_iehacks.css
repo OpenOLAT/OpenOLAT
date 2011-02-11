@@ -1,0 +1,40 @@
+@charset "UTF-8";
+/* "Yet Another Multicolumn Layout" v3.0.4 (c) by Dirk Jesse (http://www.yaml.de) */
+@media all {
+html {height: auto;margin-bottom:0}
+body {height:1%;position:relative}
+#b_main{position:relative}
+* html textarea {overflow:scroll;overflow-x: hidden}
+* html input {overflow:hidden}
+.b_clearfix {display:inline-block}
+.b_clearfix {display:block}
+* html .b_clearfix {height:1%}
+* html .b_floatbox {width:100%}
+.b_slidebox {margin-right:-1000px;position:relative;height:1%}
+* html #b_col1,* html #b_col2,* html #b_col3 {position:relative}
+body ol li {display:list-item}
+#b_page_margins,#b_page,#b_header,#b_nav,#b_main,#b_footer {zoom:1}
+#b_page_margins,#b_page {height:1%}
+* html #b_header,* html #b_nav,* html #b_main,* html #b_footer {width:100%}
+* html #b_header,* html #b_nav,* html #b_main,* html #b_footer {wid\th:auto}
+* html ul,* html ol,* html dl {position:relative}
+#b_ie_clearing {position:static;display:block;\clear:both;width:100%;font-size:0;margin:-2px 0 -1em 1px}
+* html #b_ie_clearing {margin:-2px 0 -1em 0}
+#b_col3_content {margin-bottom:-2px}
+html {margin-right:1px}
+* html {margin-right:0}
+#b_col3 {position:relative}
+* html body a, * html body a:hover {background-color: transparent}
+* html .b_c50l,* html .b_c25l,* html .b_c33l,* html .b_c38l,* html .b_c66l,* html .b_c75l,* html .b_c62l,
+* html .b_c50r,* html .b_c25r,* html .b_c33r,* html .b_c38r,* html .b_c66r,* html .b_c75r,* html .b_c62r {display:inline}
+}
+@media screen
+{
+* html #b_col1,* html #b_col2 {display:inline}
+* html #b_col1_content,* html #b_col2_content,* html #b_col3_content {word-wrap:break-word}
+* html .b_subcolumns .b_subc,* html .b_subcolumns .b_subcl,* html .b_subcolumns .b_subcr {word-wrap:break-word;overflow:hidden}
+}
+@media print
+{
+#b_col3 {height:1%}
+}

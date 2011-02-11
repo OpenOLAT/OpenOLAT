@@ -1,0 +1,12 @@
+<div class="o_course_run_returnbox">
+	#if($hasNotification == true)
+		$r.render("subscription")
+	#end
+	<h4>$r.translate("returnbox.title")</h4>		
+	<p>
+		$r.translate("returnbox.intro")
+	</p>
+	<p>
+		$r.render("returnbox")
+	</p>
+</div>

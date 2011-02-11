@@ -1,0 +1,351 @@
+<script type="text/javascript">
+/*
+* little hack to allow next clicks after clicking cancel on the js confirm dialog.
+* Should be properly done by olat modal dialog and get rid of js dialogs: gs
+*/
+function confirmSubmit() {
+	if (!confirm("$r.translate('confirmSubmit')")){
+		o_allowNextClick();
+		removeAjaxBusy()
+		return false;
+	}
+	return true;
+}
+function confirmCancel() {
+	if (!confirm("$r.translate('confirmCancel')")){
+		o_allowNextClick();
+		removeAjaxBusy()
+		return false;
+	}
+	return true;
+}
+function confirmSuspend() {
+	if (!confirm("$r.translate('confirmSuspend')")){
+		o_allowNextClick();
+		removeAjaxBusy()
+		return false;
+	}
+	return true;
+}
+</script>
+
+<div id="o_qti_run" class="#if($qtistatus.isSurvey())o_qti_survey #else o_qti_test #end">
+	<div id="o_qti_run_title">
+		<strong>$qtistatus.getTitle()</strong>
+  	#if ($qtistatus.isOpen())
+		#if ($qtistatus.isSurvey())
+			<a class="b_button" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
+			#if ($enableCancel)
+				<a class="b_button" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelSurvey")</span></a>
+			#end
+			#if ($enableSuspend)
+				<a class="b_button" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendSurvey")</span></a>
+			#end
+		#else
+			<a class="b_button" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitAssess")</span></a>
+			#if ($enableCancel)
+				<a class="b_button" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelAssess")</span></a>
+			#end
+			#if ($enableSuspend)
+				<a class="b_button" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendAssess")</span></a>
+			#end
+		#end
+  	#elseif(!$qtistatus.isPreview())
+		$r.render("close")
+ 	#end
+  	</div>
+
+	<div id="o_qti_run_score">
+	#if (!$qtistatus.isSurvey() && $displayScoreProgress && $qtistatus.score)
+		<div id="o_qti_scoreinfo">
+			<div id="o_qti_run_scoreinfo">
+			#if ($qtistatus.hasMaxScore())
+	    		#if ($qtistatus.maxScore == "-1.0")
+	  				$r.translate("actualPoints"): $qtistatus.score / $r.translate("noMaxScore")
+	    		#else
+	  				$r.translate("actualPoints"): $qtistatus.score / $qtistatus.maxScore
+	  			#end
+			#else
+				$r.translate("actualPoints"): $qtistatus.score
+			#end
+	  		</div>
+			<div id="o_qti_run_scoreprogress">
+			$r.render("qtiscoreprogress", "nl")
+			</div>
+		</div>
+	#end
+	
+	#if ($displayQuestionProgress)
+		<div id="o_qti_questioninfo">
+			<div id="o_qti_run_questioninfo">
+				$qtistatus.getQuestionProgressLabel()
+			</div>
+			<div id="o_qti_run_questionprogress" >
+			$r.render("qtiquestionprogress", "nl")
+			</div>
+		</div>
+	#end
+	</div>
+	
+
+	<div id="o_qti_run_status">
+	#if ($qtistatus.hasAssessTimeLimit())
+		<div class="b_with_small_icon_left o_qti_timelimit_icon">$r.translate("timelimit.assessment"): $qtistatus.getAssessTimeLimit()</div>
+	#end
+	</div>
+
+	<div id="o_qti_run_main" class="b_subcolumns">
+		#if ($displayMenu)
+		<div id="o_qti_run_menu" class="b_c33l">
+			<div class="b_subcl">			
+				<div id="o_qti_run_menu_inner" class="b_floatbox">
+					$r.render("qticomp", "menu")
+				</div>	
+			</div>
+		</div>
+		#end
+	
+	
+		<div id="o_qti_run_content" class="b_c66r">
+			<div class="b_subcr">
+			#if ($qtistatus.hasError())
+			<div class="b_warning">$qtistatus.error</div>
+			#end
+			#if ($qtistatus.hasMessage())
+			<div class="b_important">$qtistatus.message</div>	
+			#end
+			</div>
+			
+			#if ($qtistatus.isOpen())
+			<div class="b_subcr">			
+				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
+				
+				#if ($qtistatus.hasItemTimeLimit() && !$qtistatus.hasItemAttemptsLimit())
+					#if ($qtistatus.hasItemTimeLimitExeeded())
+							<div class="b_warning">
+								<div class="b_with_small_icon_left o_qti_timelimit_icon">
+									$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
+								</div>
+							</div>						
+					#else 					
+							<div id="o_qti_info_timelimit" class="b_note">
+								<div class="b_with_small_icon_left o_qti_timelimit_icon">
+									$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
+								</div>
+							</div>	
+					#end
+				#end
+				
+				#if (!$qtistatus.hasItemTimeLimit() && $qtistatus.hasItemAttemptsLimit())
+					#if($qtistatus.hasAttemptsExeeded())
+							<div class="b_warning">						
+								<div class="b_with_small_icon_left o_qti_attemptslimit_icon">
+									$qtistatus.getItemAttemptsLeft()
+								</div>
+							</div>
+						#else
+							<div class="b_note">
+								<div class="b_with_small_icon_left o_qti_attemptslimit_icon">
+									$qtistatus.getItemAttemptsLeft()
+								</div>
+							</div>
+						#end
+				#end
+				
+				#if ($qtistatus.hasItemTimeLimit() && $qtistatus.hasItemAttemptsLimit())
+						#if($qtistatus.hasAttemptsExeeded())
+							<div class="b_warning">						
+								<div class="b_with_small_icon_left o_qti_attemptslimit_icon">$qtistatus.getItemAttemptsLeft()</div>
+							</div>
+						#else
+							
+							#if ($qtistatus.hasItemTimeLimitExeeded())
+								<div class="b_warning">
+									<div class="b_with_small_icon_left o_qti_timelimit_icon">
+										$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
+									</div>
+								</div>						
+							#else 					
+								<div id="o_qti_info_timelimit" class="b_note">
+									<div class="b_with_small_icon_left o_qti_timelimit_icon">
+										$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
+									</div>
+								</div>	
+								<div class="b_note">
+									<div class="b_with_small_icon_left o_qti_attemptslimit_icon">
+										$qtistatus.getItemAttemptsLeft()
+									</div>
+								</div>						
+							#end
+						#end
+					
+				#end
+					
+					
+						$r.render("qticomp", "qtiform")
+						
+					
+				</div>
+			</div>
+			#end
+		</div>
+	</div>
+</div>
+
+#if($qtistatus.hasAssessTimeLimit() || $qtistatus.hasItemTimeLimit())
+<script type="text/javascript" defer="defer">
+/* <![CDATA[ */ 
+## JS code to show a live counter for the remaining time
+function o_qtiFormatCounter(remaining) {
+	var seconds = Math.floor(remaining / 1000);
+	var minutes = Math.floor(seconds / 60);
+	seconds = seconds - (minutes * 60);
+	return minutes + "' " + seconds + "\"";
+}
+##
+## item time counter
+function o_qtiFormatItemCounter(pe) {
+	try {
+		o_itemremain = $('o_itemremain');
+		if (o_itemremain) {
+			if (o_itemremain_value >= 0) {				
+				o_itemremain.innerHTML = o_qtiFormatCounter(o_itemremain_value);
+				o_itemremain_value -= 1000;
+				return;
+			} else {
+				## set message that time is now finished
+				o_itemremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";			
+				## mark container with time message as warning
+				var container = $$('#o_qti_run_content_inner div.b_note')[0];
+				if (container) {
+					container.toggleClassName('b_note');
+					container.toggleClassName('b_warning');
+					## fallback in case not container was found
+				} else {
+					$('o_qti_run_content_inner').insert({top: "<div class='b_warning'>$r.translate("timelimit.finished")</div>"});
+				}
+			}
+		}
+		## time up or not even started, stop executor
+		if (pe != null) pe.stop();
+	} catch(e) {
+		//
+	}
+}
+var o_itemremain = $('o_itemremain');
+var o_itemremain_value = 0;
+try{
+	if (o_itemremain) {
+		o_itemremain_value = o_itemremain.firstChild.nodeValue;	
+		if (o_itemremain_value == 0) {
+			o_itemremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";		
+		} else {
+			o_qtiFormatItemCounter(null);
+			new PeriodicalExecuter(o_qtiFormatItemCounter, 1);
+		}
+	}
+} catch(e) {
+	//
+}
+
+## assessment time counter
+function o_qtiFormatAssessmentCounter(pe) {
+	try {
+		o_assessmentremain = $('o_assessmentremain');
+		if (o_assessmentremain) {
+			if (o_assessmentremain_value >= 0) {
+				o_assessmentremain.innerHTML = o_qtiFormatCounter(o_assessmentremain_value);			
+				o_assessmentremain_value -= 1000;
+				return;
+			} else {					
+				## set message that time is now finished
+				o_assessmentremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";			
+				## mark container with time message as warning
+				var container = $$('#o_qti_run_status div.o_qti_timelimit_icon')[0];
+				if (container) {
+					container.toggleClassName('b_warning');
+				} else {
+					## fallback in case not container was found
+					$('o_qti_run_status').insert({top: "<div class='b_warning'>$r.translate("timelimit.finished")</div>"});
+				}
+				$('o_qti_info_timelimit').innerHTML='';
+			}
+		}
+		## time up or not even started, stop executor
+		if (pe != null) pe.stop();
+	} catch(e) {
+		//
+	}
+}
+var o_assessmentremain = $('o_assessmentremain');
+var o_assessmentremain_value = 0;
+try {
+	if (o_assessmentremain) {
+		o_assessmentremain_value = o_assessmentremain.firstChild.nodeValue;	
+		if (o_assessmentremain_value == 0) {
+			o_assessmentremain.innerHTML = "<b>$r.translate("timelimit.finished")</b>";		
+		} else {
+			o_qtiFormatAssessmentCounter(null);
+			new PeriodicalExecuter(o_qtiFormatAssessmentCounter, 1);
+		}
+	}
+} catch(e) {
+	//
+}
+
+
+/* ]]> */
+</script>
+#end
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+             
+function mark (it, title, title_marked) {
+
+	var m = it.getAttribute('class') == 'o_qti_menu_item_attempts_marked';
+	
+	if (m) {
+		it.setAttribute('class', 'o_qti_menu_item_attempts');
+		it.title=title;
+	} else {
+		it.setAttribute('class', 'o_qti_menu_item_attempts_marked');
+		it.title=title_marked;
+	}
+	
+	m=!m;
+	
+	if (!o_info.linkbusy) {	
+		o_beforeserver();
+		$r.javaScriptBgCommand("mark")+'?id='+it.id+'&p='+m;
+	}
+}
+
+function memo (id, s) {
+	if (!o_info.linkbusy) {	
+		o_beforeserver();
+		$r.javaScriptBgCommand("memo")+'?id='+id+'&p='+encodeURIComponent(s);
+	}
+}
+
+function resize (it) {
+	
+	try {
+		var h = Math.floor((''+it.scrollHeight).replace('px',''));
+		var l = Math.floor((''+it.getStyle('line-height')).replace('px',''));
+		var nh = h/l*l;
+		Ext.get(it.id).setHeight(nh+'px');
+	} catch (e) {
+		//
+	}
+}
+
+function clrMemo (it) {
+	it.value='';
+	it.onfocus=null;
+}
+
+Ext.onReady(function(){resize(document.getElementById('o_qti_item_note'));}, 356);
+/* ]]> */
+</script>
+

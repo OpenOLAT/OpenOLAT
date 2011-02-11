@@ -1,0 +1,31 @@
+<h4>$r.translate("extensions.title")</h4>
+<p>$r.translate("extensions.intro")</p>
+#foreach($extensionName in $extensionList.keySet())
+	<div>
+	 <a href="#" id="o_olat_$extensionNameOpener" class="b_togglebox_closed" onclick="b_togglebox('o_olat_$extensionName', this); return false;"onkeypress="b_togglebox('o_olat_$extensionName', this); return false;">
+	 $extensionName</a> 
+	 <div id="o_olat_$extensionName" class="b_togglebox" style="display: none">
+	  <div class="b_togglebox_content">
+		<fieldset >
+		  <legend>$extensionName</legend>
+		  #foreach($beanName in $extensionList.get($extensionName).keySet())
+		  		#set ( $bean=$extensionList.get($extensionName).get($beanName) )
+				<div>
+				  <span>Bean Name=<b>$beanName</b></span><br/>
+				  <span>Extension=$bean</span><br/>
+				  #foreach($valueHolder in $bean.getConstructorArgumentValues().getGenericArgumentValues() )
+				  	<span style=color:green>ConstructorArgument: $valueHolder.getValue()</span><br/>
+				  #end			  
+				  #foreach($property in $bean.getPropertyValues().getPropertyValueList() )
+				    <span style=color:blue>Property: $property.getName()=$property.getValue()</span><br/>
+				  #end
+				</div>
+				<hr/>
+		  #end
+		</fieldset>
+	  </div>
+	 </div>
+	</div>
+	<hr/>
+#end
+

@@ -1,0 +1,41 @@
+<center>
+<table width="60%">
+	<tr>
+		<td align="center" >
+			<div class="o_course_run_statusinfo">
+			#if ($isSurvey)
+				$r.translate("onyx.waiting.info.survey")
+				<br>
+				<hr></hr>
+				<b>$r.translate("onyx.cancel.info.survey")</b>
+			#else
+				$r.translate("onyx.waiting.info")
+				<br>
+				<!--  -->
+				#if($nohint)
+				#else
+				<hr></hr>
+				<b>$r.translate("onyx.cancel.info")</b>
+				#end
+				<!--  -->
+			#end
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<div>$r.render($"onyx.back")</div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div>
+				<center>
+					<iframe style="min-height:300px;border:none;" frameborder="0" src="$urlonyxplugin" height="400" width="90%"></iframe>
+				</center>
+			</div>
+		</td>
+	</tr>
+</table>	
+</center>
+	

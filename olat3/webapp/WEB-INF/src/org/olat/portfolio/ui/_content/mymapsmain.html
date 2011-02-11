@@ -1,0 +1,15 @@
+<div class="b_eportfolio">
+	<div>
+		<h4>$r.translate($title)</h4>
+		$r.translate($description)
+	</div>
+	<div class="b_clearfix">
+		#if($r.available("search_input"))
+			<div class="b_eportfolio_fulltextsearch">$r.render("search_input")</div>
+		#end
+		#if($r.available("create.map"))
+			<div class="b_ep_add_artefact">$r.render("create.map")</div>
+		#end
+	</div>
+	$r.render("mapCtrl") 
+</div>

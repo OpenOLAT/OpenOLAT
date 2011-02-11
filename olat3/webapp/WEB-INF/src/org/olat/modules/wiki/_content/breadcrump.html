@@ -1,0 +1,7 @@
+#if($queue.size() > 0)
+	<ul>
+	#foreach($crumb in $queue)
+	<li><a title="$r.escapeHtml($crumb.getName())" href="$r.commandURIbg("go")$crumb.getName()" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$crumb.getDescription()</a></li>
+	#end
+	</ul>
+#end

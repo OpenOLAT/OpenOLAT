@@ -1,0 +1,31 @@
+<!ELEMENT schema  (#PCDATA )>
+<!ATTLIST schema  e-dtype NMTOKEN  #FIXED 'string' >
+<!ELEMENT schemaversion  (#PCDATA )>
+<!ATTLIST schemaversion  e-dtype NMTOKEN  #FIXED 'string' >
+<!ELEMENT title  (#PCDATA )>
+<!ATTLIST title  e-dtype NMTOKEN  #FIXED 'string' >
+<!ELEMENT file  (metadata? )>
+<!ATTLIST file  href CDATA  #REQUIRED >
+<!ELEMENT dependency EMPTY>
+<!ATTLIST dependency  identifierref CDATA  #IMPLIED >
+<!ELEMENT resource  (metadata? , file+ , dependency* )>
+<!ATTLIST resource  identifier ID     #REQUIRED
+                    type       CDATA  #REQUIRED
+                    href       CDATA  #IMPLIED >
+<!ELEMENT resources  (resource* )*>
+
+<!ELEMENT item  (title? , item* , metadata? )*>
+<!ATTLIST item  identifier    ID        #REQUIRED
+                isvisible     CDATA     #IMPLIED
+                parameters    CDATA     #IMPLIED
+                identifierref CDATA     #IMPLIED
+                a-dtype       NMTOKENS  'isvisible boolean' >
+<!ELEMENT organization  (title? , item* , metadata? )>
+<!ATTLIST organization  identifier ID  #REQUIRED >
+<!ELEMENT organizations  (organization* )>
+<!ATTLIST organizations  default IDREF  #IMPLIED >
+<!ELEMENT metadata  (schema? , schemaversion? )>
+
+<!ELEMENT manifest  (metadata? , organizations , resources , manifest* )>
+<!ATTLIST manifest  identifier ID     #REQUIRED
+                    version    CDATA  #IMPLIED >

@@ -1,0 +1,41 @@
+<div class="back_link o_podcast">
+	$r.render("backLink")
+</div>
+<div class="o_podcast_episode b_clearfix">
+	#if ($callback.mayEditItems() && $feed.isInternal())
+		<div class="b_float_right b_clearfix">
+			## special case: this item has been added by another user and thus we 
+			## don't yet have links for this item. But we can still display the content
+			#if ($r.available("feed.edit.item.$episode.getGuid()"))
+				$r.render("feed.edit.item.$episode.getGuid()")
+				#if ($callback.mayDeleteItems())
+					$r.render("delete.$episode.getGuid()")
+				#end
+			#end
+		</div>
+	#end
+	#if ("$!item.getExternalLink()" != "")
+		<a href="$item.getExternalLink()" target="_blank">
+	#end
+	<h5>$r.escapeHtml($!item.getTitle())</h5>
+	#if ("$!item.getExternalLink()" != "")
+		</a>
+	#end
+	<p class="o_podcast_date">$!helper.getLastModified($item)</p>
+	<p>$!helper.getItemDescriptionForBrowser($item)</p>
+	
+	#if ($!item.getEnclosure())								
+		<div id="o_podcast_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"><a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.</div>
+		<a href="$!helper.getMediaUrl($item)" target="_blank" class="b_with_small_icon_left b_filetype_mov">$r.translate("podcast.episode.download")</a>
+		
+		<!-- siehe auch http://www.jcplayer.com (noncommercial creative commons licence, doch was genau heisst 'noncommercial'? -->
+		<script type="text/javascript">
+		/* <![CDATA[ */
+			BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode",null,null,"$!helper.getMediaType($item.getEnclosure())");
+		/* ]]> */
+		</script>
+	#end
+</div>
+#if($r.available("commentsAndRating"))
+	$r.render("commentsAndRating")
+#end

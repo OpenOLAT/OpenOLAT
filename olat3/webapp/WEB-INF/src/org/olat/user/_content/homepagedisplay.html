@@ -1,0 +1,53 @@
+<div class="o_visitingcard b_clearfix"><div class="b_floatscrollbox">
+	<h4>$r.translate("menu.homepage") $user.getProperty("firstName", $locale) $user.getProperty("lastName", $locale)</h4>
+	#if ($deleted) 
+		<p>
+			<i><strong>$r.translate("user.deleted")</strong></i>
+		</p>
+	#end
+
+	<div class="o_visitingcard_content">
+		<div class="o_visitingcard_image">
+			$r.render("image")
+		</div>
+		
+		<table>
+			<tr>
+				<td>
+					<label>
+						$r.translate("form.username")
+					</label>
+				</td>
+				<td>
+					<strong>$userName</strong>
+				</td>
+			</tr>
+			#foreach( $propertyHandler in $userPropertyHandlers )
+				#if($homepageConfig.isEnabled($propertyHandler.getName()))
+			<tr>
+				<td>
+					<label>
+						$r.translate($propertyHandler.i18nFormElementLabelKey())
+					</label>
+				</td>
+				<td>
+					$!propertyHandler.getUserPropertyAsHTML($user, $locale)
+				</td>
+			</tr>
+				#end
+			#end		
+		#if ( $homepageConfig.getTextAboutMe() && ($homepageConfig.getTextAboutMe() != "") )
+		<tr valign="top">
+			<td>
+				<label>
+					$r.translate("form.text")
+				</label>
+			</td>
+			<td>
+				$!r.formatLatexFormulas($homepageConfig.getTextAboutMe())
+			</td>
+		</tr>		
+		#end
+		</table>
+	</div>
+</div></div>

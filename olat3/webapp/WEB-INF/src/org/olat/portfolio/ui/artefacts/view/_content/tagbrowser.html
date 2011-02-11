@@ -1,0 +1,6 @@
+$r.translate("tag.browser.intro")
+<div class="b_ep_tag_cloud b_clearfix">
+	#foreach($tag in $tags)
+		$r.render($tag.componentName)
+	#end
+</div>

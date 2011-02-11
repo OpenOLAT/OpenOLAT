@@ -1,0 +1,31 @@
+<h4>$r.translate("loglevels.title")</h4>
+$r.render("resetloglevels")
+<br><br>
+<div class="b_table_wrapper">
+<table class="b_table">
+	<thead><tr><th>Logger</th><th>Level</th><th>New Level</th><th>New Level</th><th>New Level</th><th>New Level</th></tr></thead>
+<tbody>
+#foreach( $logger in $loggers)
+#if ($velocityCount % 2 == 0)
+<tr>
+#else
+<tr class="b_table_odd">
+#end
+
+<td class="b_align_normal">
+<div style="white-space:nowrap;">
+## could not make it work with (\\.) - workaround to use a-zA-Z0-9_- maybe more??
+## sorry for the pure uglyness below... quick hack to bring everything on one line without whitespace
+#set ($package="")
+#foreach( $part in $logger.name.split("[^a-zA-Z0-9_-]"))#if ($package != "")#set ($package="${package}.${part}").#else#set ($package=$part)#end<a href="$r.commandURIbg("viewlog")?p=${package}" $r.bgTarget() style="display:inline">$part</a>#end
+</div></td>
+<td class="b_align_normal">$logger.getEffectiveLevel()</td>
+<td class="b_align_normal"><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=error" $r.bgTarget()>Error</a></td>
+<td class="b_align_normal"><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=warn" $r.bgTarget()>Warn</a></td>
+<td class="b_align_normal"><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=info" $r.bgTarget()>Info</a></td>
+<td class="b_align_normal"><a href="$r.commandURIbg("setlevel")?logger=$logger.name&level=debug" $r.bgTarget()>Debug</a></td>
+</tr>
+#end
+</tbody>
+</table>
+

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+	<!-- Configure the main url dispatcher: here: url http://host:port/webappname/ leads to http://host:port/webappname/go
+		configures DispatcherActions to be called on certain paths -->
+	<bean id="mainUrlDispatcher"
+		class="org.olat.core.dispatcher.DispatcherAction"  >
+		<property name="defaultDispatcherName" value="/dmz/" />
+		<property name="dispatchers">
+			<map>
+				<!-- <entry key="/go/"><ref bean="demodispatcher" /></entry>-->
+				<entry key="/dmz/">
+					<ref bean="dmzbean" />
+				</entry>
+				<!--  //TODO:PB:OLAT-4047 --> 
+				<entry key="/url/">
+					<!-- if you change /url make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
+					<ref bean="restdispatcher" />
+				</entry> <!-- 
+				 -->
+				<!-- for fast developement mode  
+				<entry key="/temp/">
+					<ref bean="tempdispatcher" />
+				</entry>
+				-->
+				<entry key="/">
+					<ref bean="redirect2defaultbean" />
+				</entry>
+				<!-- Feature provided by Frentix:
+					see
+					- Java comment in RemoteLoginformDispatcher
+					- http://bugs.olat.org/jira/browse/OLAT-3360
+					disabled by default  
+				<entry key="/remotelogin/">
+					<ref bean="remoteloginbean" />
+				</entry>
+				 -->
+				<entry key="/auth/">
+					<!-- if you change /auth make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
+					<ref bean="authbean" />
+				</entry>
+				<entry key="/shib/">
+					<ref bean="shibbean" />
+				</entry>
+				<entry key="/stats.html">
+					<ref bean="statisticbean" />
+				</entry>
+				<entry key="/admin.html">
+					<ref bean="adminbean" />
+				</entry>
+				<entry key="/raw/">
+					<ref bean="staticsrawbean" />
+				</entry>
+				<entry key="/classpath/">
+					<ref bean="classpathstaticsrawbean" />
+				</entry>
+				<entry key="/help/">
+					<ref bean="contexthelpbean" />
+				</entry>
+				<entry key="/qti/">
+					<ref bean="secstaticlegacybean" />
+				</entry>
+				<entry key="/secstatic/">
+					<ref bean="secstaticlegacybean" />
+				</entry>
+				<entry key="/error/">
+					<ref bean="errorMailBean" />
+				</entry>
+				<entry key="/podcast/">
+					<ref bean="podcastMediaBean" />
+				</entry>
+				<entry key="/blog/">
+					<ref bean="blogMediaBean" />
+				</entry>
+				<!-- uncomment this if the xml catolog export should be enabled
+					<entry key="/catalog.xml">
+					<ref bean="catexport" />
+					</entry>
+				-->
+
+			</map>
+		</property>
+	</bean>
+	
+	
+	<bean id="restdispatcher" class="org.olat.dispatcher.RESTDispatcher" />
+	
+	
+	
+	<!-- send bug report dispatcher -->
+	<bean id="errorMailBean" class="org.olat.core.dispatcher.ErrorFeedbackMailer" />
+
+	<!--  all olat dispatchers -->
+	<bean id="dmzbean" class="org.olat.dispatcher.DMZDispatcher">
+		<!-- defines the first page if /dmz/ only is dispatched 
+		DEFAULT -->
+		<property name="chiefControllerCreator">
+			<bean
+				class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+				<property name="contentControllerCreator">
+					<!-- creates a BasicFullWebappController with DMZ content -->
+					<bean
+						class="org.olat.login.DMZContentControllerCreator" />
+				</property>
+			</bean>
+		</property>
+		<!-- defines first pages of other dmz entry points, e.g. /dmz/register etc. -->
+		<property name="dmzServicesByPath">
+			<map>
+				<!-- triggers registration workflow -->
+				<entry key="/registration/">
+					<bean
+						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<!-- creates a BasicFullWebappController with DMZ content -->
+							<bean
+								class="org.olat.registration.DMZRegistrationContentControllerCreator" />
+						</property>
+					</bean>
+				</entry>
+				<!-- triggers password change workflow -->
+				<entry key="/pwchange/">
+					<bean
+						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<!-- creates a BasicFullWebappController with DMZ content -->
+							<bean
+								class="org.olat.registration.DMZPWChangeContentControllerCreator" />
+						</property>
+					</bean>
+				</entry>
+				<!-- triggers shibboleth registration workflow -->
+				<entry key="/shibregister/">
+					<bean
+						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<!-- creates a BasicFullWebappController with DMZ content -->
+							<bean
+								class="org.olat.shibboleth.DMZShibRegistrationContentControllerCreator" />
+						</property>
+					</bean>
+				</entry>
+				<!-- triggers email change workflow -->
+				<entry key="/emchange/">
+					<bean
+						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<!-- creates a BasicFullWebappController with DMZ content -->
+							<bean
+								class="de.bps.olat.registration.DMZEMChangeContentControllerCreator" />
+						</property>
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+	<bean id="authbean"
+		class="org.olat.dispatcher.AuthenticatedDispatcher">
+		<!-- set arg to true if you want to force only access to olat 
+		over a secured http session. Otherwise the sessions get invalidated -->
+		<constructor-arg index="0">
+			<value>false</value>
+		</constructor-arg>
+	</bean>	
+	
+	<!--  provides the possibility to log in using a remote loginform, e.g. from a portal.
+		The follwing requirements are given:
+		username parameter: username
+		password parameter: pwd
+		form submit method : POST (GET not allowed)
+		form action: /olat/remotelogin/
+	-->
+	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher" />
+	
+	<bean id="tempdispatcher"
+		class="org.olat.dispatcher.TemporaryAutoDispatcher" />
+
+	<bean id="shibbean"
+		class="org.olat.shibboleth.ShibbolethDispatcher" />
+		
+	<!--  static files delivery. See org.olat.core.dispatcher.mapper.package.html for more infos -->
+	<bean id="staticsrawbean"
+		class="org.olat.core.defaults.dispatcher.StaticMediaDispatcher"
+		>
+		<constructor-arg index="0">
+			<value>/raw/</value>
+		</constructor-arg>
+	</bean>
+	<bean id="classpathstaticsrawbean" 
+		depends-on="staticsrawbean"
+		class="org.olat.core.defaults.dispatcher.ClassPathStaticDispatcher"
+		>
+		<constructor-arg index="0">
+			<!-- 
+				true: copy resources to webapp/static/classpath/ and deliver files via staticsrawbean 
+					or mod_jk if configured properly. Note: it can also make sense to set this to true
+					withoud mod_jk to reduce overhad with files delivered from the jars
+				false: don't copy files and deliver files directly from classpath (slower)
+				If unsure, use false.
+			 -->
+			<value>${server.modjk.enabled}</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value>/classpath/</value>
+		</constructor-arg>
+	</bean>
+	
+	
+	<bean id="contexthelpbean"
+		class="org.olat.core.commons.contextHelp.ContextHelpDispatcher"
+		>
+		<constructor-arg index="0">
+			<value>/help/</value>
+		</constructor-arg>
+	</bean>
+	
+	
+	<bean id="statisticbean"
+		class="org.olat.admin.sysinfo.MRTGStatsDispatcher">
+		<constructor-arg ref="coordinatorManager" />
+		<property name="monitoringHost" value="127.0.0.1" />
+		<property name="instanceId" value="${instance.id}"/>
+	</bean>
+	<bean id="secstaticlegacybean"
+		class="org.olat.commons.servlets.StaticsLegacyDispatcher">
+		<property name="inputBufferSize" value="32768" />
+		<property name="outputBufferSize" value="32768" />
+	</bean>
+
+	<bean id="adminbean"
+		class="org.olat.admin.AdminModuleDispatcher" />
+	<bean id="redirect2defaultbean"
+		class="org.olat.core.defaults.dispatcher.RedirectToDefaultDispatcher" />
+	<!-- uncomment this if the xml catolog export should be enabled -->
+	<!-- 
+	<bean id ="catexport" class = "org.olat.dispatcher.CatalogExportModuleDispatcher" >
+		<constructor-arg index="0">5</constructor-arg>
+	</bean>
+	 -->
+	<!-- uncomment this and comment above line if automatic guest login should be enabled  <bean id ="redirect2defaultbean" class = "org.olat.dispatcher.RedirectToAutoGuestLoginDispatcher" /> -->
+
+
+	<!-- podcast media dispatcher -->
+	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
+
+	<!-- blog media dispatcher -->
+	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
+
+	<!--  gui prefs via database -->
+	<bean id="core.preferences.PreferencesStorage"
+		class="org.olat.preferences.DbStorage"  />
+
+	<!-- Search components -->
+	<bean id="org.olat.admin.user.UserSearchUIService"
+		class="org.olat.admin.user.UserSearchUIServiceImpl" />
+	
+	<bean id="org.olat.core.commons.services.search.ui.SearchServiceUIFactory"
+		class="org.olat.search.ui.SearchControllerFactory" />
+
+</beans>

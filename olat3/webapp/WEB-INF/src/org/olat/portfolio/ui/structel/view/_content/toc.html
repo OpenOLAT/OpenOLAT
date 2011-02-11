@@ -1,0 +1,28 @@
+<div class="b_portfolio_toc">
+	<div class="b_float_right">$r.render("artOnOffLink")</div>
+	<h1>$r.translate("toc.root")</h1>
+	#if ($tocList)
+	<ul>
+		#foreach($tocElement in $tocList)
+			<li class="level$tocElement.getLevel() type_$tocElement.getType()">
+			#set($titleLink = $tocElement.getTitleLink().getComponentName())
+			#set($iconLink = $tocElement.getIconLink().getComponentName())
+			#set($commentLink = $tocElement.getCommentLinkComponentName())
+			
+			$r.render($titleLink)
+			#if ($r.available($iconLink)) 
+				<span class="link">$r.render($iconLink)</span>
+			#end
+			#if ($r.available($commentLink)) 
+				<span class="commentlink">$r.render($commentLink)</span>
+			#end
+			</li>
+		#end
+	</ul>
+	#end
+	#if($r.available("commentCtrl"))
+		<div class="b_clearfix">
+			$r.render("commentCtrl")
+		</div>
+	#end
+</div>

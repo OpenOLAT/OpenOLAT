@@ -1,0 +1,49 @@
+<div class="o_blog_post">
+	<div class="back_link">
+		$r.render("backLink")
+	</div>
+	<div class="o_post b_clearfix $!item.extraCSSClass()">
+		#if (( $helper.isAuthor($item) && !$item.isDraft()) && $feed.isInternal() && $r.available("artefactLink"))
+			<div class="b_float_right">
+				<span class="o_post_artefact_collector">$r.render("artefactLink")</span>
+			</div>
+		#end
+		#if($r.available("dateComp"))
+			$r.render("dateComp")
+		#end
+		<h5>$r.escapeHtml($item.getTitle())</h5>
+		<p class="o_description">
+			$!helper.getItemDescriptionForBrowser($item)
+		</p>
+		#if ($item.getContent() && $item.getContent() != "")
+		<p class="o_content">
+			$!helper.getItemContentForBrowser($item)
+		</p>
+		#end
+		#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $item.isDraft())) && $feed.isInternal())
+			#if ($r.available("editButton"))
+			<div class="b_float_right">
+				## special case: this item has been added by another user and thus we 
+				## don't yet have links for this item. But we can still display the content
+				$r.render("editButton")
+				#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $item.isDraft()))
+					$r.render("deleteButton")
+				#end
+			</div>
+			#end
+		#end	
+		
+		#set ( $info = $!helper.getInfo($item) )
+		#if ( $info )
+			<p class="o_item_info">
+				$info
+				#if ($feed.isExternal() && $item.getExternalLink())
+					<a href="$!item.getExternalLink()" target="_blank" class="b_with_tiny_icon_left b_ext_tiny_link"><span>$r.translate("feed.item.original")</span></a>
+				#end
+			</p>
+		#end
+	</div>
+</div>
+#if($r.available("commentsAndRating"))
+	$r.render("commentsAndRating")
+#end

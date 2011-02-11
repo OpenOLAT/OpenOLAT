@@ -1,0 +1,12 @@
+<h4>$r.translate("undeletenode.header")</h4>
+<p>
+	$r.translate("undeletenode.message")
+</p>
+<p>
+	$r.render("undeletenode.button")
+</p>
+#if($targetSelection)
+	<p>
+		$r.render("insertTargetSelection")
+	</p>
+#end

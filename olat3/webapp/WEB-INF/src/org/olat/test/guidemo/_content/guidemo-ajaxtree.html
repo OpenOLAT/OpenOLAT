@@ -1,0 +1,48 @@
+$r.render("sourceview")
+<h3>Browse through time, select a time or move </h3>
+<script type="text/javascript">
+/* <![CDATA[ */
+function myjsCallback(dragOverEvent) { 
+	// the following members can be getted from the dragOverEvent:
+	// tree - The TreePanel
+	// target - The node being targeted for the drop
+	// data - The drag data from the drag source
+	// point - The point of the drop - append, above or below
+	// source - The drag source
+	// rawEvent - Raw mouse event
+	// dropNode - Drop node(s) provided by the source.
+	// cancel - Set this to true to signal drop not allowed.
+
+	// do some stuff here: e.g. dynamically check if a move operation is allowed
+	// for this demo we allow to drop lefs and nodes within nodes but not within leafs
+	var node = dragOverEvent.dropNode;
+	var isLeaf = node.attributes.leaf
+	var oldParent = dragOverEvent.dropNode.parentNode;
+	// append -> add as child; above -> at same level above; blow -> at same level above
+	var newParent = (dragOverEvent.point == 'append' ? dragOverEvent.target : dragOverEvent.target.parentNode);
+	
+	if (newParent.attributes.leaf)
+		return false;
+	else
+		return true;
+}
+/* ]]> */
+</script>
+
+$r.render("treeCtr")
+<hr />
+<p class="b_with_small_icon_left #if($isSorted) b_status_enabled_icon #else b_status_disabled_icon #end">
+	$r.render("GuiDemoAjaxTreeController.sortlink")
+</p>
+<p class="b_with_small_icon_left #if($isInlineEdit) b_status_enabled_icon #else b_status_disabled_icon #end">
+	$r.render("GuiDemoAjaxTreeController.editlink")
+	<i>Click on the text of a selected node to modify the node text</i>
+</p>
+
+<p>
+$r.render("GuiDemoAjaxTreeController.selectlink")
+</p>
+
+<p>
+$r.render("GuiDemoAjaxTreeController.removelink")
+</p>

@@ -1,0 +1,32 @@
+<!-- Copyright by Alex Macartney, www.macartney.ch - Thanks Alex for supporting OLAT with you comic -->
+<a href="http://www.macartney.ch" target="_blank">
+	<img src="${imageBaseUri}klein/${currentEpisodeImage}" id="o_macartney" border="0" width="100%" alt="Macartney Comic" />
+</a>
+<br />
+<div id="o_macartney_open" class="b_float_right"></div>
+<i><a class="b_link_extern" href="http://www.macartney.ch" target="_blank">$r.translate("macartney.copyright")</a></i>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+Ext.onReady(function(){
+	## Add large image version at the top of the page. Uses the Prototype library
+	new Insertion.Top($('b_page_margins'), "<div id='o_macartney_large' style='display: none;'><img src='${imageBaseUri}gross/${currentEpisodeImage}' border='0' alt='Macartney Comic'/><div id='o_macartney_close'></div></div>");
+
+	## Add event handlers to slide large image in and out. Uses the Extjs library
+	## show image when user has mouse over loop tool    
+    Ext.get('o_macartney_open').hover( 
+    	function(){ Ext.get('o_macartney_large').fadeIn(); },
+		function(){ Ext.get('o_macartney_large').fadeOut(); }
+    );
+    ## close fallback: 
+    ## close when user hovers over close icon
+    Ext.get('o_macartney_close').on('mouseover', function(e){
+    	Ext.get('o_macartney_large').slideOut();
+    });
+    ## close when user clicks on large image
+    Ext.get('o_macartney_large').on('click', function(e){
+    	Ext.get('o_macartney_large').slideOut();
+    });
+});
+/* ]]> */ 
+</script>

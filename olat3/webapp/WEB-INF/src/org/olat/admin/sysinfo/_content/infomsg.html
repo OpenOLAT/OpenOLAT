@@ -1,0 +1,59 @@
+<fieldset>
+<legend>$r.translate("infomsg.title")</legend>
+#if ($infomsg)
+  <div class="b_border_box">
+     $infomsg
+  </div>
+#else
+<i>$r.translate("infomsg.nomsg")</i>
+#end
+<br /><br />
+$r.render("infomsgEdit")
+</fieldset>
+
+## cluster has additional node level option
+#if($cluster)
+<fieldset>
+<legend>$r.translate("infomsg.title.cluster")</legend>
+	#if ($infoMsgCluster)
+	  <div class="b_border_box">
+	     $infoMsgCluster
+	  </div>
+	#else
+	<i>$r.translate("infomsg.nomsg")</i>
+	#end
+	<br /><br />
+	$r.render("infomsgEditCluster")
+</fieldset>
+#end
+
+<hr class="o_separator">
+
+<fieldset>
+<legend>$r.translate("maintenancemsg.title")</legend>
+#if ($maintenanceMsgAllNodes)
+  <div class="b_border_box">
+     $maintenanceMsgAllNodes
+  </div>
+#else
+<i>$r.translate("maintenancemsg.nomsg")</i>
+#end
+<br /><br />
+$r.render("maintenancemsgEdit")
+</fieldset>
+
+## cluster has additional node level option
+#if($cluster)
+<fieldset>
+<legend>$r.translate("maintenancemsg.title.cluster")</legend>
+#if ($maintenanceMsgThisNodeOnly)
+  <div class="b_border_box">
+     $maintenanceMsgThisNodeOnly
+  </div>
+#else
+<i>$r.translate("maintenancemsg.nomsg")</i>
+#end
+<br /><br />
+$r.render("maintenancemsgEditCluster")
+</fieldset>
+#end

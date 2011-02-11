@@ -1,0 +1,16 @@
+$r.render("chats")
+#if($iconsHolder.size() > 0)
+<script type="text/javascript">
+/* <![CDATA[ */
+	## Play sound using scriptaculous library. 
+	## Use Ext.onReady to deferre execution and prevent errors in IE
+	Ext.onReady(function() {Sound.play('$newMessageSoundURL')});
+	document.title = "$r.translate('im.new.message.short')";
+/* ]]> */ 
+</script>
+#end
+
+## render the new message icon links
+#foreach ($holder in $iconsHolder)
+	$r.render($holder.getJabberId())
+#end

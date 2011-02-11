@@ -1,0 +1,9 @@
+#if(!$inAssessment)
+<ul>
+	<li id="o_topnav_imclient_message">$r.render("newMsgPanel")</li>
+	<li id="o_topnav_imclient_status">$r.render("statusChangerPanel")</li>
+	<li id="o_topnav_imclient_summary">$r.render("buddiesSummaryPanel")</li>
+</ul>
+$r.render("rosterPanel")
+$r.render("statusPanel")
+#end

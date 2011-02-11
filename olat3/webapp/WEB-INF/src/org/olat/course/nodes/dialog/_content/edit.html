@@ -1,0 +1,19 @@
+<fieldset>
+	<legend>$r.translate("folder.info")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.nodes.dialog","ced-dialog.html","help.hover.dialog")
+	#if ($overview)
+		<p>
+			$r.render("dialog.upload.file")
+		</p>
+		<p>
+			$r.render("dialogElementsTable")
+		</p>
+	#else
+		$r.render("upload")
+	#end
+</fieldset>
+<fieldset>
+	<legend>$r.translate("dialog.forum.popup.config.title")</legend>	
+	$r.contextHelpWithWrapper("org.olat.course.nodes.dialog","ced-dialog-display.html","help.hover.dialogdisplay")
+	$r.render("showForumAsPopupConfigForm")
+</fieldset>

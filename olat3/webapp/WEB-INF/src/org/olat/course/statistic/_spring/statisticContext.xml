@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- 
+		
+		Configuration for the Export Manager
+		
+		
+		There are currently three different implementations for exporting log files:
+		
+		 a) SimpleLogExporter
+		    .................
+		    a generic hibernate version which does a plain select and writes the resulting
+		    LoggingObject list into a csv file.
+		    
+		    This version runs on all standard OLAT deployments where the o_loggingtable
+		    resides in the normal DB
+		    
+		    The downside of this version is that it is slow with big tables and result sets
+		    
+		 b) SQLLogExporter
+		    ..............
+		    an optimized sql-export version which leaves the job to export the selected
+		    o_loggingtable rows into a csv file to the database.
+		    
+		    This version requires database specific SQL to be configured in this file.
+		    
+		    This version should be performant since it leaves the job to the database
+		    to export and doesn't read the result into the JVM.
+		    
+		    The downside of this version is that it requires 'FILE' permissions for
+		    the database user executing the 'SELECT INTO OUTFILE' statement. This FILE
+		    permission is a security risk and hence a possible concern.
+		   
+		 c) UZHStoredProcedureLogExporter
+		    ............................... 
+		    a stored-procedure version where the database does the job of exporting
+		    the selected o_loggingtable rows into a csv including avoiding the 
+		    security risk of the FILE permission.
+		    
+		    To avoid the FILE permission concern, this version uses a stored procedure
+		    (which has root permissions) and only grants the executing user the permission
+		    to execute mentioned stored procedure.
+		    
+		    This version requires a special database setup - i.e. it requires the
+		    stored procedure to be set plus the GRANT ON PROCEDURE permission for the
+		    executing user.
+		    
+		    This version should be performant since it leaves the job to the database
+		    to export and doesn't read the reuslt into the JVM.
+		    
+		    The downside of this version is the setup work necessary plus it is currently
+		    only available (i.e. tested) for MySQL
+		
+	-->
+	
+	<!-- 
+	.........................................................
+	Configuration of ExportManager - required for any version
+	.........................................................
+	
+	Cluster-Node:
+		An ExportManager must be configured on every host in a cluster,
+		plus an AsyncExportManager
+	 -->
+	 
+	<bean id="logExportManager"
+		class="org.olat.course.statistic.ExportManager">
+	
+		<property name="courseLogExporter">
+			<ref bean="courseLogExporter"/>
+		</property>
+	</bean>
+	
+	<bean id="asyncLogExportManager"
+		class="org.olat.course.statistic.AsyncExportManager">
+		
+		<property name="concurrentExportsPerNode" value="2"/>
+	</bean>
+
+	<!-- 
+	.............................................................
+	Configuration of DataSource - required for versions b) and c)
+	.............................................................
+	 -->
+	
+
+
+	<!-- 
+	........................................................................
+	Sample remaining configuration for SimpleLogExporter or version a) above
+	........................................................................
+	 -->
+	
+	<bean id="courseLogExporter"
+		class="org.olat.course.statistic.export.SimpleLogExporter">
+		
+		<property name="logLineConverter">
+			<ref bean="logLineConverter"/>
+		</property>
+		
+	</bean>
+
+	<bean id="logLineConverter"
+		class="org.olat.course.statistic.export.LogLineConverter">
+		<property name="orderedExportedProperties">
+			<list>
+				<value>creationDate</value>
+				<value>userName</value>
+				<value>actionCrudType</value>
+				<value>actionVerb</value>
+				<value>actionObject</value>
+				<value>parentResName</value>
+				<value>targetResName</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- 
+	.....................................................................
+	Sample remaining configuration for SQLLogExporter or version b) above
+	.....................................................................
+	
+	Implementation note: reason for select..(select into outfile) syntax is
+	                     a mysql bug, see here for details:
+	                     
+	                     http://bugs.mysql.com/bug.php?id=34665
+	 -->
+
+ 	<!--<bean id="courseLogExporter"
+		class="org.olat.course.statistic.export.SQLLogExporter">
+		<property name="sessionFactory">
+			<ref bean="logExportSessionFactory" />
+		</property>
+		
+		<property name="anonymizedUserSql" 
+			value="select
+					    'creationDate','username','actionVerb','actionObject','greatGrandParent','grandParent','parent','target'
+				  	union
+				  	(
+						select 
+							creationDate,password(concat(userName,':resId')),actionVerb,actionObject,greatGrandParentResName,grandParentResName,parentResName,targetResName 
+						from 
+							o_loggingtable v 
+						where 
+								v.resourceAdminAction = :resAdminAction 
+							AND (
+								(v.targetResId = :resId) OR
+								(v.parentResId = :resId) OR
+								(v.grandParentResId = :resId) OR
+								(v.greatGrandParentResId = :resId)
+								)
+					   INTO OUTFILE :outFile FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+				 	)"/>
+		<property name="nonAnonymizedUserSql" 
+			value="select
+					    'creationDate','username','actionVerb','actionObject','greatGrandParent','grandParent','parent','target'
+				  	union
+				  	(
+						select 
+							creationDate,userName,actionVerb,actionObject,greatGrandParentResName,grandParentResName,parentResName,targetResName 
+						from 
+							o_loggingtable v 
+						where 
+								v.resourceAdminAction = :resAdminAction 
+							AND (
+								(v.targetResId = :resId) OR
+								(v.parentResId = :resId) OR
+								(v.grandParentResId = :resId) OR
+								(v.greatGrandParentResId = :resId)
+								)
+					   INTO OUTFILE :outFile FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+				 	)"/>
+	</bean>
+
+	<bean id="logExportSessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref local="logExportDataSource" />
+		</property>
+		<property name="mappingResources">
+			<list>
+				<value>org/olat/core/logging/activity/LoggingObject.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	
+	--><!-- 
+	....................................................................................
+	Sample remaining configuration for UZHStoredProcedureLogExporter or version c) above
+	....................................................................................
+	 --><!--
+	
+	<bean id="courseLogExporter"
+		class="org.olat.course.statistic.export.UZHStoredProcedureLogExporter">
+		
+		<property name="jdbcTemplate">
+			<ref bean="mysqlJdbcTemplate"/>
+		</property>
+
+		<property name="header" value="tbd"/>
+
+	</bean>
+
+	<bean id="mysqlJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		
+		<property name="dataSource">
+			<ref bean="logExportDataSource"/>
+		</property>
+		
+	</bean>
+	
+
+-->
+
+	<!--  STATISTICS BEANS -->
+
+	<bean id="statisticsMysqlJdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate">
+		
+		<property name="dataSource">
+			<ref bean="${db.vendor}DataSource"/>
+		</property>
+		
+	</bean>
+
+
+<!--  HSQLDB:
+
+      mysql  :  select businesspath,date(creationdate) day, count(*) cnt from o_loggingtable group by businesspath,day
+      hsqldb :  select businesspath,convert(creationdate,date) d,count(*) cnt from o_loggingtable group by businesspath,d
+      
+ -->
+	<bean id="statisticUpdateConfig_hsqldb" class="org.olat.course.statistic.StatisticUpdateConfig">
+		<property name="updaters">
+			<list>
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="DailyStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								delete from o_stat_daily;
+							</value>
+							<value>
+								insert into o_stat_daily 
+									(businesspath,resid,day,value)  
+									(select businesspath, 
+										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
+										convert(creationdate,date) d,
+										count(*)  c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != ''  group by businesspath, d);
+							</value>
+						</list>
+					</property>
+					
+					<property name="deleteSQL" value="delete from o_stat_daily;"/>
+					
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="WeeklyStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<!--  NOTE: week(date) seems broken in hsqldb currently - using an approximation instead:
+										select (dayofyear(now())-dayofweek(now()))/7 from o_loggingtable;  -->
+							<value>
+								delete from o_stat_weekly;
+							</value>
+							<value>
+								insert into o_stat_weekly
+									(businesspath,resid,week,value)  
+									(select businesspath, 
+										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
+										year(creationdate)+ '-'+repeat('0',2-length(convert((dayofyear(creationdate)-dayofweek(creationdate))/7,varchar(7))))+convert((dayofyear(creationdate)-dayofweek(creationdate))/7,varchar(7)) d,
+										count(*)  c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != '' group by businesspath, d);
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_weekly;"/>
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="DayOfWeekStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								delete from o_stat_dayofweek;
+							</value>
+							<value>
+								insert into o_stat_dayofweek
+									(businesspath,resid,day,value)  
+									(select businesspath, 
+										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
+										dayofweek(creationdate) d,
+										count(*)  c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != ''  group by businesspath, d);							
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_dayofweek;"/>
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="HourOfDayStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								delete from o_stat_hourofday;
+							</value>
+							<value>
+								insert into o_stat_hourofday
+									(businesspath,resid,hour,value)  
+									(select businesspath, 
+										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
+										hour(creationdate) d,
+										count(*)  c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != ''  group by businesspath, d);
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_hourofday;"/>
+				</bean>
+			
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="statisticUpdateConfig_test" class="org.olat.course.statistic.StatisticUpdateConfig" >
+		<property name="updaters">
+			<list />
+		</property>
+	</bean>
+
+ 	<bean id="statisticUpdateConfig_mysql" class="org.olat.course.statistic.StatisticUpdateConfig">
+ 		<property name="updaters">
+			<list>
+				<bean class="org.olat.course.statistic.MySQLTempStatTableCreator" >
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+				</bean>
+				
+				<ref bean="DailyStatisticUpdater_mysql"/>
+			
+				<ref bean="WeeklyStatisticUpdater_mysql"/>
+
+				<ref bean="DayOfWeekStatisticUpdater_mysql"/>
+			
+				<ref bean="HourOfDayStatisticUpdater_mysql"/>
+
+				<bean class="org.olat.course.statistic.MySQLTempStatTableDropper" >
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+				</bean>
+				
+			</list>
+		</property>
+	</bean> 
+	
+				<bean class="org.olat.course.statistic.StatisticUpdater" id="DailyStatisticUpdater_mysql">
+					<property name="loggingName" value="DailyStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<!-- 
+							
+							    'old' represents the existing i.e. old table
+							    'delta' represents the new stuff being added
+							    this update goes through the 'old' table and adds from the 'delta' where entries already exist in 'old'
+							  update o_stat_dayofweek as old, (select businesspath,dayofweek(creationdate) day, count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,day) as delta SET old.value=old.value+delta.cnt where old.day=delta.day and old.businesspath=delta.businesspath;
+							
+							 -->
+							<value>
+								update o_stat_daily as old,
+									(select businesspath,date(creationdate) day, count(*) cnt from o_stat_temptable group by businesspath,day) as delta
+								SET old.value=old.value+delta.cnt
+									where old.day=delta.day and old.businesspath=delta.businesspath;
+							</value>
+							<!-- 
+							
+							  again:
+							    'old' represents the existing i.e. old table
+							    'delta' represents the new stuff being added
+							    this insert goes through the delta to add entries which do not yet exist in the 'old' table at all
+							  insert into o_stat_dayofweek (businesspath,day,value) select delta.businesspath,delta.day,delta.cnt from (select businesspath,dayofweek(creationdate) day,count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,day) delta left join o_stat_dayofweek old on delta.businesspath=old.businesspath and delta.day=old.day where old.businesspath is null;
+							
+							 -->
+							<value>
+								insert into o_stat_daily (businesspath,resid,day,value)
+									select
+										delta.businesspath, delta.resid, delta.day, delta.cnt
+									from
+										(select
+												businesspath,
+												substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,
+												date(creationdate) day,
+												count(*) cnt
+											from o_stat_temptable group by businesspath,day) delta
+										left join o_stat_daily old on delta.businesspath=old.businesspath and delta.day=old.day
+									where old.businesspath is null;
+							</value>
+							<value>
+								delete from o_stat_daily where datediff(now(),day)>180;
+							</value>
+						</list>
+					</property>
+					
+					<property name="deleteSQL" value="delete from o_stat_daily;"/>
+					
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" id="WeeklyStatisticUpdater_mysql">
+					<property name="loggingName" value="WeeklyStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								update o_stat_weekly as old,
+									(select businesspath,concat(year(creationdate),'-',lpad(week(creationdate,3),2,'0')) week, count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,week) as delta
+								SET old.value=old.value+delta.cnt
+									where old.week=delta.week and old.businesspath=delta.businesspath;							
+							</value>
+							<value>
+								insert into o_stat_weekly (businesspath,resid,week,value)
+									select
+										delta.businesspath, delta.resid, delta.week, delta.cnt
+									from
+										(select
+												businesspath,
+												substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,
+												concat(year(creationdate),'-',lpad(week(creationdate,3),2,'0')) week,
+												count(*) cnt
+											from o_stat_temptable group by businesspath,week) delta
+										left join o_stat_weekly old on delta.businesspath=old.businesspath and delta.week=old.week
+									where old.businesspath is null;
+							</value>
+							<value>
+								delete from o_stat_weekly where week&lt;concat(year(now() - interval 180 day),'-',lpad(week(now() - interval 180 day,3),2,'0'));
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_weekly;"/>
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" id="DayOfWeekStatisticUpdater_mysql">
+					<property name="loggingName" value="DayOfWeekStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								update o_stat_dayofweek as old,
+									(select businesspath,dayofweek(creationdate) day, count(*) cnt from o_stat_temptable group by businesspath,day) as delta
+								SET old.value=old.value+delta.cnt
+									where old.day=delta.day and old.businesspath=delta.businesspath;
+							</value>
+							<value>
+								insert into o_stat_dayofweek (businesspath,resid,day,value)
+									select
+										delta.businesspath, delta.resid, delta.day, delta.cnt
+									from
+										(select
+												businesspath,
+												substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,
+												dayofweek(creationdate) day,
+												count(*) cnt
+											from o_stat_temptable group by businesspath,day) delta
+										left join o_stat_dayofweek old on delta.businesspath=old.businesspath and delta.day=old.day
+									where old.businesspath is null;
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_dayofweek;"/>
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" id="HourOfDayStatisticUpdater_mysql">
+					<property name="loggingName" value="HourOfDayStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								update o_stat_hourofday as old,
+									(select businesspath,hour(creationdate) hour, count(*) cnt from o_stat_temptable group by businesspath,hour) as delta
+								SET old.value=old.value+delta.cnt
+									where old.hour=delta.hour and old.businesspath=delta.businesspath;
+							</value>
+							<value>
+								insert into o_stat_hourofday (businesspath,resid,hour,value)
+									select
+										delta.businesspath, delta.resid, delta.hour, delta.cnt
+									from
+										(select
+												businesspath,
+												substr(businesspath,locate(':',businesspath)+1,locate(']',businesspath)-locate(':',businesspath)-1) resid,
+												hour(creationdate) hour,
+												count(*) cnt
+											from o_stat_temptable group by businesspath,hour) delta
+										left join o_stat_hourofday old on delta.businesspath=old.businesspath and delta.hour=old.hour
+									where old.businesspath is null;
+							
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_hourofday;"/>
+				</bean>
+			
+	<!--  Postgres:
+
+      mysql  :  select businesspath,date(creationdate) day, count(*) cnt from o_loggingtable group by businesspath,day
+      hsqldb :  select businesspath,convert(creationdate,date) d,count(*) cnt from o_loggingtable group by businesspath,d
+      
+ 	-->
+	<bean id="statisticUpdateConfig_postgresql" class="org.olat.course.statistic.StatisticUpdateConfig">
+		<property name="updaters">
+			<list>
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="DailyStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								delete from o_stat_daily;
+							</value>
+							<value>
+								insert into o_stat_daily 
+									(businesspath,resid,day,value)  
+									(select businesspath, 
+										int8(substring(businesspath from position(':' in businesspath) + 1 for position(']' in businesspath) - position(':' in businesspath) - 1)),
+										date_trunc('day',creationdate) as d,
+										count(*) as c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != '' group by businesspath, d);
+							</value>
+						</list>
+					</property>
+					
+					<property name="deleteSQL" value="delete from o_stat_daily;"/>
+					
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="WeeklyStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<!--  NOTE: week(date) seems broken in hsqldb currently - using an approximation instead:
+										select (dayofyear(now())-dayofweek(now()))/7 from o_loggingtable;  -->
+							<value>
+								delete from o_stat_weekly;
+							</value>
+							<value>
+								insert into o_stat_weekly
+									(businesspath,resid,week,value)  
+									(select businesspath, 
+										int8(substring(businesspath from position(':' in businesspath) + 1 for position(']' in businesspath) - position(':' in businesspath) - 1)),
+										to_char(creationdate, 'IYYY') || '-' || to_char(creationdate, 'IW') as d,
+										count(*) as c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != '' group by businesspath, d);
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_weekly;"/>
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="DayOfWeekStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								delete from o_stat_dayofweek;
+							</value>
+							<value>
+								insert into o_stat_dayofweek
+									(businesspath,resid,day,value)  
+									(select businesspath, 
+										int8(substring(businesspath from position(':' in businesspath) + 1 for position(']' in businesspath) - position(':' in businesspath) - 1)), 
+										int8(to_char(creationdate, 'D')) as d,
+										count(*) as c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != '' group by businesspath, d);							
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_dayofweek;"/>
+				</bean>
+			
+				<bean class="org.olat.course.statistic.StatisticUpdater" >
+					<property name="loggingName" value="HourOfDayStatisticUpdater"/>
+					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
+					<property name="updateSQL">
+						<list>
+							<value>
+								delete from o_stat_hourofday;
+							</value>
+							<value>
+								insert into o_stat_hourofday
+									(businesspath,resid,hour,value)  
+									(select businesspath, 
+										int8(substring(businesspath from position(':' in businesspath) + 1 for position(']' in businesspath) - position(':' in businesspath) - 1)), 
+										int8(to_char(creationdate, 'HH24')) as d,
+										count(*) as c 
+									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != '' group by businesspath, d);
+							</value>
+						</list>
+					</property>
+					<property name="deleteSQL" value="delete from o_stat_hourofday;"/>
+				</bean>
+			
+			</list>
+		</property>
+	</bean>
+ 
+ 	<bean id="org.olat.course.statistic.StatisticUpdateManager" class="org.olat.course.statistic.StatisticUpdateManagerImpl" >
+		<constructor-arg>
+			<ref bean="coordinatorManager"/>
+		</constructor-arg>
+		<constructor-arg>
+			<ref bean="statisticUpdateConfig_${db.vendor}"/>
+		</constructor-arg>
+		<constructor-arg value="${cluster.singleton.services}"/>
+	</bean>
+
+	<bean class="org.olat.course.statistic.SimpleStatisticInfoHelper" >
+		<constructor-arg>
+			<ref bean="statisticsMysqlJdbcTemplate"/>
+		</constructor-arg>
+		<constructor-arg>
+			<map>
+				<entry key="hsqldb">
+					<value>select "org.olat.course.statistic.HsqldbUnixTimeConverter.convertTimestampToUnixMillis"(convert(creationdate,varchar(100))) from o_loggingtable limit 1;</value>
+				</entry>
+				<entry key="mysql">
+					<value>select unix_timestamp(creationdate) from o_loggingtable limit 1;</value>
+				</entry>
+				<entry key="postgresql">
+					<value>select round(date_part('epoch', creationdate)) from o_loggingtable limit 1;</value>
+				</entry>
+			</map>
+		</constructor-arg>
+		<constructor-arg value="${db.vendor}"/>
+	</bean>
+
+
+</beans>

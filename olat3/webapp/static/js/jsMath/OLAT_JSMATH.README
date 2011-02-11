@@ -1,0 +1,23 @@
+Currently OLAT uses jsMath in version 3.6 
+
+Do not rename the folder to include the version number because the path to 
+jsmath is used at several places. The OLAT URL version mechanism makes sure 
+the user always has the newest version. When updating the jsMath code, make 
+sure you update this verion file.
+
+When updating to a newer version, make sure you change the following settings
+in easy/load.js:
+
+// CUSTOM OLAT CONFIGURATION
+jsMath.Easy.allowGlobal = 0;
+jsMath.Easy.showFontWarnings = 0;
+var scriptTags = document.getElementsByTagName("script");
+for (var i=0; i< scriptTags.length; i++) {
+	var scriptSrc = scriptTags[i].src;
+	var mathPos = scriptSrc.indexOf("js/jsMath/easy/load.js");
+	if (mathPos != -1) {
+		jsMath.Easy.root = scriptSrc.substring(0,mathPos) + "js/jsMath";
+		break;
+	}
+}
+//

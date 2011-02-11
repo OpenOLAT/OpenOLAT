@@ -1,0 +1,19 @@
+<fieldset>
+	<legend>$r.translate("tab.glossary.title")</legend>
+	$r.contextHelpWithWrapper("org.olat.course.config.ui","course-glossary.html","help.hover.course-gloss")
+	<strong>$r.translate("glossary.isconfigured")</strong>:
+	#if ($r.available("command.glossary.add"))
+		<i>$r.translate("glossary.no.glossary")</i>
+		<div class="b_button_group">
+			$r.render("command.glossary.add")
+		</div>
+	#elseif ($r.available("command.glossary.remove"))
+		$repoEntry.getDisplayname()
+		<p>
+			$r.translate("glossary.description"): $r.formatLatexFormulas($repoEntry.getDescription())
+		</p>
+		<div class="b_button_group">
+			$r.render("command.glossary.remove")	
+		</div>
+	#end
+</fieldset>

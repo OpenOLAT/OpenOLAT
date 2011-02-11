@@ -1,0 +1,35 @@
+<h4>$r.translate("error.title")</h4>
+<p><form action="$r.formURIbg('errors')" $r.bgTarget() method="post">
+<div ext:qtip="${highestError}">$r.translate("error.number")
+<input type="text" name="mynr" value="$!mynr" size="10" maxlength="10"><span class="b_xsmall">&nbsp;( $example_error )</span>
+</div>
+<br><br>$r.translate("error.date")
+<input type="text" name="mydd" value="$!mydd" size="2" maxlength="2">.
+<input type="text" name="mymm" value="$!mymm" size="2" maxlength="2">.
+<input type="text" name="myyyyy" value="$!myyyyy" size="4" maxlength="4"><span class="b_xsmall">&nbsp;$r.translate("error.format")</span>
+<br><br>
+<input type="submit" value="$r.translateInAttribute("error.retrieve")">
+</form>
+
+
+<table border="0" cellspacing="0">
+#set($count = 0)
+#foreach ($errormsg in $errormsgs)
+#if(($count==1)||($count==4))
+<tr>
+#else
+<tr bgcolor="#eeeeee">
+#end
+
+#if($count==4)
+	#set($count = 0)
+	<td><hr size="1"></td>
+</tr>
+<tr bgcolor="#eeeeee"><td>$errormsg</td>
+#else
+	<td>$errormsg</td>
+#end
+</tr>
+#set($count = $count + 1)
+#end
+</table>	

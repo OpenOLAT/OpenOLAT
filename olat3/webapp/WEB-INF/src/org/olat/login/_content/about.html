@@ -1,0 +1,54 @@
+<h3>$r.translate("about.title")</h3>
+<p class="b_clearfix b_large">
+	<a href="http://www.olat.org" target="_blank">
+	<img border="0" class="b_float_left"  src="$r.staticLink("images/olat/olat_logo2_72.png")" alt="Online Learning And Training">
+	</a>
+	<i>$r.translate("about.slogan")</i>
+<p>
+<p>
+	$r.translate("about.version") $version
+</p>
+<p>
+	$r.translate("about.history")
+</p>
+<p>
+	$r.translate("about.linktext") 
+</p>
+<p class="b_align_inverse">
+	<br />
+	$r.translate("about.date")
+</p>
+<p class="b_align_center">
+	<a href="http://www.uzh.ch" target="_blank">
+	<img border="0" src="$r.staticLink("images/olat/powered_by_uzh.png")" alt="University of Zurich"  width="120" height="30">
+	</a>
+</p>
+
+<p>
+	<h4>$r.translate("about.copyright")</h4>
+	$r.translate("about.who")
+</p>
+<p>	
+	<h5>$r.translate("about.guigroup")</h5>
+	$r.translate("about.guigroup.who")
+</p>
+<p>
+	<h5>$r.translate("about.translate")</h5>
+	<ul style="list-style: none;">
+	#foreach ($lang in $enabledKeys) 
+		<li class="b_with_small_icon_left b_flag_${lang}">$langNames.get("$lang") : $langTranslators.get("$lang")</li>
+	#end
+	</ul>
+</p>
+<p>
+	<h5>$r.translate("about.layout")</h5>
+	$r.translate("about.layout.who")
+	<br />
+	<a href="http://www.yaml.de" class="b_link_extern"  target="_blank">YAML Homepage: www.yaml.de</a>
+		
+</p>
+<p>
+	<pre>
+$license
+	</pre>
+</p>

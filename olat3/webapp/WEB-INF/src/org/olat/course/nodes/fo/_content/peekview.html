@@ -1,0 +1,16 @@
+<div class="o_forum_peekview b_clearfix">
+#foreach( $message in $messages ) 	
+	<div class="o_forum_peekview_message">
+		<h5>
+			$r.render("nodeLink_${message.getKey()}")
+		</h5>
+		<div class="o_peekview_author">
+			#set($user=$message.getCreator().getUser())
+			$user.getProperty("firstName", null) $user.getProperty("lastName", null)
+			($formatter.formatDateAndTime($message.getCreationDate()))
+		</div>
+		$r.formatLatexFormulas($message.getBody())
+	</div>
+#end
+	$r.render("peekview.allItemsLink")
+</div>

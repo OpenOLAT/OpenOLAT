@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!--
+		****************************************************
+		*** Configuration for OLAT Cluster/SingleVM Coordinator   ***
+		****************************************************
+		
+	-->
+	<!-- spring replaces vars with values from olat.properties -->
+	<bean class="org.olat.core.configuration.OLATPropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:serviceconfig/olat.properties</value>
+				<value>classpath:olat.local.properties</value>
+			</list>
+		</property>
+	</bean>
+
+<bean id="org.olat.commons.coordinate.cluster.ClusterConfig" class="org.olat.core.util.cache.n.impl.cluster.ClusterConfig">
+		<!-- nodeId must be a cluster-wide unique integer between 1 and 63 -->
+		<property name="nodeId" value="${node.id}" />
+</bean>
+
+<bean id="coordinatorManager" class="org.olat.core.util.coordinate.CoordinatorManagerImpl">
+		<property name="coordinator" ref="org.olat.core.util.coordinate.${cluster.mode}Coordinator"/>
+</bean>
+
+
+<bean id="org.olat.core.util.coordinate.ClusterCoordinator" 
+	class="org.olat.commons.coordinate.cluster.ClusterCoordinator" lazy-init="true">
+		<property name="locker" >
+			<bean class="org.olat.commons.coordinate.cluster.lock.ClusterLocker" init-method="init">
+				<constructor-arg index="0" ref="clusterLockManager" />
+				<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
+				<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
+				<!-- to avoid circular reference method lookup is used for dependecy injection of persistent lock manager -->
+				<lookup-method name="getPersistentLockManager" bean="persistentLockManager"/>
+			</bean>
+		</property>
+		
+		<property name="clusterConfig" ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
+		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
+		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
+		
+		<property name="cacher">
+			<!-- cache config, please note that settings can also stem from the file ehcache.xml (deprecated) -->
+			<bean class="org.olat.core.util.cache.n.impl.cluster.ClusterCacher" init-method="init">
+				<property name="clusterConfig" ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
+				<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
+				<property name="rootConfig">
+					<bean class="org.olat.core.util.cache.n.CacheConfig">
+						<property name="childrenConfig">
+							<map>
+								<entry key="org.olat.login.LoginModule_blockafterfailedattempts" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
+								<entry key="org.olat.commons.servlets.RSSServlet_rssdocs" value-ref="org.olat.commons.servlets.RSSServlet_rssdocs"/>
+								<entry key="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
+								<entry key="org.olat.modules.wiki.WikiManager_wiki" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
+								<entry key="org.olat.commons.calendar.ICalFileCalendarManager_calendar" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
+								<entry key="org.olat.course.CourseFactory_courses" value-ref="org.olat.course.CourseFactory_courses" />
+								<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
+								<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
+								<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
+								<entry key="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items" value-ref="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items"/>
+								<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
+								<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
+								<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
+							
+								
+								<!-- 
+									for the cache-test of the cluster admin controller  .
+									this is also a sample how cache parameters can be assigned to a specific resource only.
+								 	// org.olat.commons.coordinate.cluster.jms.ClusterAdminController:cachetest::0@subcachetypetest::123
+								-->
+								<entry key="org.olat.commons.coordinate.cluster.jms.ClusterAdminController_cachetest">
+									<bean class="org.olat.core.util.cache.n.CacheConfig">
+										<!-- no cache needed on this level here, but configure children -->
+										<property name="childrenConfig">
+											<map>
+												<entry key="subcachetypetest::123">
+													<bean class="org.olat.core.util.cache.n.CacheConfig">
+														<!-- for demo reason, let the values expire after 30 seconds -->													
+														<property name="timeToLive" value="30" />
+														<property name="timeToIdle" value="0" />
+														<property name="maxElementsInMemory" value="1" />	
+													</bean>													
+												</entry>
+											</map>
+										</property>							
+									</bean>
+								</entry>
+							</map>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+</bean>
+
+<bean id="org.olat.core.util.coordinate.SingleVMCoordinator" class="org.olat.commons.coordinate.singlevm.SingleVMCoordinator" lazy-init="true">
+		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer"/>
+  		<property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
+		<property name="locker" ref="org.olat.commons.coordinate.singlevm.SingleVMLocker"/>
+
+	<property name="cacher">
+			<!-- cache config, please note that settings can also stem from the file ehcache.xml (deprecated) -->
+			<bean class="org.olat.core.util.cache.n.impl.svm.SingleVMCacher" init-method="init">
+				<property name="rootConfig">
+					<bean class="org.olat.core.util.cache.n.CacheConfig">
+						<property name="childrenConfig">
+							<map>
+								<entry key="org.olat.login.LoginModule_blockafterfailedattempts" value-ref="org.olat.login.LoginModule_blockafterfailedattempts" />
+								<entry key="org.olat.commons.servlets.RSSServlet_rssdocs" value-ref="org.olat.commons.servlets.RSSServlet_rssdocs"/>
+								<entry key="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"  value-ref="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents"/>
+								<entry key="org.olat.modules.wiki.WikiManager_wiki" value-ref="org.olat.modules.wiki.WikiManager_wiki"/>
+								<entry key="org.olat.commons.calendar.ICalFileCalendarManager_calendar" value-ref="org.olat.commons.calendar.ICalFileCalendarManager_calendar" />
+								<entry key="org.olat.course.CourseFactory_courses" value-ref="org.olat.course.CourseFactory_courses" />
+								<entry key="org.olat.collaboration.CollaborationToolsFactory_tools" value-ref="org.olat.collaboration.CollaborationToolsFactory_tools" />
+								<entry key="org.olat.course.assessment.NewCachePersistingAssessmentManager" value-ref="org.olat.course.assessment.NewCachePersistingAssessmentManager" />
+								<entry key="org.olat.core.util.UserSession" value-ref="org.olat.core.util.UserSession" />
+								<entry key="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items" value-ref="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items"/>
+								<entry key="org.olat.core.modules.glossary.GlossaryItemManager_glossary" value-ref="org.olat.core.modules.glossary.GlossaryItemManager_glossary"/>
+								<entry key="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" value-ref="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb"/>
+								<entry key="org.olat.commons.servlets.WebDAVManagerImpl_webdav" value-ref="org.olat.commons.servlets.WebDAVManagerImpl_webdav" />
+							</map>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+</bean>
+	
+	
+<!-- cache beans -->
+	
+<bean id="org.olat.login.LoginModule_blockafterfailedattempts" class="org.olat.core.util.cache.n.CacheConfig" >
+	<property name="timeToLive" value="300" />
+	<property name="timeToIdle" value="0" />
+	<property name="maxElementsInMemory" value="1000" />
+</bean>
+
+<bean id="org.olat.commons.servlets.RSSServlet_rssdocs" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="190" />
+	<property name="timeToIdle" value="0" />
+	<property name="maxElementsInMemory" value="200" />								
+</bean>
+<bean id="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="3600" />
+	<property name="timeToIdle" value="1800" />
+	<!-- qti files may be large -->
+	<property name="maxElementsInMemory" value="20" />
+</bean>					
+<bean id="org.olat.modules.wiki.WikiManager_wiki" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="14400" />
+	<property name="timeToIdle" value="1800" />
+	<property name="maxElementsInMemory" value="50" />								
+</bean>
+<bean id="org.olat.commons.calendar.ICalFileCalendarManager_calendar" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="3600" />
+	<property name="timeToIdle" value="3600" />
+	<property name="maxElementsInMemory" value="50" />								
+</bean>
+<bean id="org.olat.course.CourseFactory_courses" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="0" />
+	<property name="timeToIdle" value="3600" />
+	<property name="maxElementsInMemory" value="${course.cache.elements}" />								
+</bean>
+<bean id="org.olat.collaboration.CollaborationToolsFactory_tools" class="org.olat.core.util.cache.n.CacheConfig">
+		<property name="timeToLive" value="3600" />
+		<property name="timeToIdle" value="1800" />
+		<property name="maxElementsInMemory" value="5000" />								
+</bean>
+<bean id="org.olat.core.modules.glossary.GlossaryItemManager_glossary" class="org.olat.core.util.cache.n.CacheConfig">
+		<property name="timeToLive" value="7200" />
+		<property name="timeToIdle" value="1800" />
+		<property name="maxElementsInMemory" value="50" />								
+</bean>
+<bean id="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="3600" />
+	<property name="timeToIdle" value="3600" />
+	<property name="maxElementsInMemory" value="50" />								
+</bean>
+<bean id="org.olat.commons.servlets.WebDAVManagerImpl_webdav" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="1800" />
+	<property name="timeToIdle" value="300" />
+	<property name="maxElementsInMemory" value="200" />								
+</bean>
+
+<!--  caching for the olat course. a cache is segemented as follows: first per course, then per identity -->
+<bean id="org.olat.course.assessment.NewCachePersistingAssessmentManager" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="1" />
+	<property name="timeToIdle" value="1" />
+	<property name="maxElementsInMemory" value="1" />	
+	<property name="childrenConfig">
+		<map>
+			<entry key="CourseModule">
+				<bean class="org.olat.core.util.cache.n.CacheConfig">													
+					<property name="childrenConfig">
+						<map>
+							<entry key="Identity">
+								<bean class="org.olat.core.util.cache.n.CacheConfig">
+									<property name="timeToLive" value="0" />
+									<property name="timeToIdle" value="60" />
+									<property name="maxElementsInMemory" value="1000" />
+								</bean>
+							</entry>
+						</map>
+					</property>
+				</bean>													
+			</entry>
+			<!-- a sample how special cache parameters can be assigned to a specific resource:
+				here: a course (e.g. when a course has either tons of visitors, or tons of (assessable) nodes.
+			 -->
+			<entry key="CourseModule_dfdsf">
+				<bean class="org.olat.core.util.cache.n.CacheConfig">													
+					<property name="childrenConfig">
+						<map>
+							<entry key="Identity">
+								<bean class="org.olat.core.util.cache.n.CacheConfig">
+									<property name="timeToLive" value="0" />
+									<property name="timeToIdle" value="60" />
+									<property name="maxElementsInMemory" value="1000" />
+								</bean>
+							</entry>
+						</map>
+					</property>
+				</bean>													
+			</entry>
+		</map>
+	</property>							
+</bean>
+
+<bean id="org.olat.core.util.UserSession" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="3600" />
+	<property name="timeToIdle" value="3600" />
+	<property name="maxElementsInMemory" value="2000" />								
+</bean>
+<bean id="org.olat.instantMessaging.syncservice.RemoteSessionsOnIMServerOverXMPP_items" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="timeToLive" value="1800" />
+	<property name="timeToIdle" value="600" />
+	<property name="maxElementsInMemory" value="5000" />								
+</bean>
+															
+<!-- end cache beans -->
+	
+<bean id="org.olat.commons.coordinate.cluster.ClusterSyncer" class="org.olat.commons.coordinate.cluster.ClusterSyncer" >
+		<constructor-arg index="0" ref="lockManager" />
+		<!-- if the ClusterSyncer is on debug level and if a sync takes longer than the given threshhold in miliseconds, then a warn message is written into the log -->
+		<property name="executionTimeThreshold" value="1000" />
+		<property name="dbInstance" ref="database"></property>
+</bean>
+
+<bean id="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" class="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" 
+init-method="springInit" destroy-method="stop" lazy-init="true">
+		<property name="clusterConfig"     ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="destination"       ref="sysbus.topic"/>
+		<property name="sendInterval"      value="15000" />
+		<property name="jmsMsgDelayLimit"  value="5000" />
+</bean>
+
+<bean id="clusterLockManager" class="org.olat.commons.coordinate.cluster.lock.ClusterLockManager"/>
+
+<bean id="org.olat.commons.coordinate.singlevm.SingleVMEventBus" class="org.olat.commons.coordinate.singlevm.SingleVMEventBus" lazy-init="true"/>
+
+<bean id="org.olat.commons.coordinate.singlevm.SingleVMLocker" class="org.olat.commons.coordinate.singlevm.SingleVMLocker" init-method="init" lazy-init="true">
+		<property name="eventBus" ref="org.olat.commons.coordinate.singlevm.SingleVMEventBus"/>
+		<lookup-method name="getPersistentLockManager" bean="persistentLockManager"/>
+	</bean>
+
+<bean id="sysbus.topic" class="org.apache.activemq.command.ActiveMQTopic">
+	<constructor-arg value="olat/${instance.id}/sysbus" />
+</bean>
+
+<bean id="jmsConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" >
+	<property name="brokerURL" value="${jms.broker.url}" /> <!-- e.g.: tcp://localhost:61616 -->
+</bean>
+
+<!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->
+<bean id="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" class="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager">
+	<!-- Number of retries when a task failed e.g. incrementLaunchCounter try 20 times to increment when a exception occurs -->
+	<property name="maxRetry" value="20"/>
+</bean>	
+
+	
+	
+	<!--
+		for security, you should use at least a username/pwd authentication, see below
+		
+		TODO: provide a sample configuration for the activemq broker with simple user/pwd configured
+		 
+	<bean id="connectionFactory" class="org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter">
+		<property name="targetConnectionFactory" ref="myTargetConnectionFactory"/>
+		<property name="username" value="myusername"/>
+		<property name="password" value="mypassword"/>
+	</bean>
+	-->
+	
+	
+<!-- JMX -->
+<bean id="org.springframework.jmx.support.MBeanServerFactoryBean" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+	<property name="locateExistingServerIfPossible" value="true" />
+</bean>
+<bean id="registry" class="org.springframework.remoting.rmi.RmiRegistryFactoryBean" lazy-init="true">
+  <property name="port" value="${jmx.rmi.port}"/>
+</bean>	
+
+<!--  DISABLE JMX CONNECTOR	
+    <bean id="serverConnector"
+	      class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
+		<property name="objectName" value="connector:name=rmi"/>
+		<property name="serviceUrl" 
+	            value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jmx.rmi.port}/olat_connector"/>
+	    <property name="daemon" value="true"/>
+		<property name="environment">
+-->
+			 <!-- the following is only valid when the sun jmx implementation is used --> 
+<!--  DISABLE JMX CONNECTOR	
+   			<map>
+  				<entry key="jmx.remote.x.password.file" value="/usr/local/opt/java/jre/lib/management/jmxremote.password"/>
+				<entry key="jmx.remote.x.access.file" value="/usr/local/opt/java/jre/lib/management/jmxremote.access"/>
+			</map>
+		</property>
+	</bean>
+-->
+
+<bean id="org.olat.core.util.codepoint.CodepointServer" class="org.olat.testutils.codepoints.server.impl.JMSCodepointServer" destroy-method="close" init-method="springInit">
+	<constructor-arg value="${codepoint_server.enabled}" type="boolean" index="0"/> 	<!--  whether or not the codepoint server is enabled -->
+	<property name="brokerUrl" value="${codepoint.jms.broker.url}"/>								<!-- e.g.: tcp://localhost:61616 -->
+	<property name="uniqueNodeId" value="${instance.id}-${node.id}"/>					<!--  the unique id of the codepoint server -->
+</bean>
+
+</beans>	

@@ -1,0 +1,16 @@
+autoclosing...
+<script type="text/javascript">
+var retval="$val";
+//alert("set val");
+var ope = this.window.opener;
+//alert(ope);
+var elem = ope.document.getElementById("$var");
+//alert("var: $var ; elem:"+elem);
+if (elem) {
+	elem.value=retval;
+	// set original form dirty and close window
+	var origFormId = elem.form.getAttribute("id");
+	ope.setFormDirty(origFormId);
+}
+this.window.close(); // close first, safari bug will not close window otherwhise
+</script>

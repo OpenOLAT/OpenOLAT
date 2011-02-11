@@ -1,0 +1,38 @@
+<div class="o_forum b_floatbox">
+	<div class="o_forum_message b_clearfix" >
+		<div class="o_forum_message_header_wrapper" >
+			<div class="o_forum_message_header b_clearfix">
+				<div class="o_forum_message_title">
+					<strong>
+						$message.getTitle()
+					</strong>
+				</div>
+			</div>
+		</div>
+	
+		<div class="o_forum_message_content_wrapper ">
+			<div class="o_forum_message_content b_clearfix ">
+				<div class="o_forum_message_creator b_float_left">
+					<strong>$identity.getUser().getProperty("firstName", $locale) $identity.getUser().getProperty("lastName", $locale)</strong>
+					<br />
+					<br />
+					$r.render("portrait")
+				</div>
+				
+				<div class="o_forum_message_body">
+					<div class="b_clearfix b_floatscrollbox">
+						$r.formatLatexFormulas($messageBody)						
+					</div>
+					<div style="clear:both; height: 1px">&nbsp;</div>	   	
+				</div>
+			</div>
+		</div>
+	
+		<div class="o_forum_message_footer_wrapper b_clearfix">
+			<div class="o_forum_message_footer">
+				<div class="o_forum_message_actions">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

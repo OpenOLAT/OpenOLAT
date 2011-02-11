@@ -1,0 +1,26 @@
+#######################################################################
+# Recommended MySQL settings for OLAT                                 #
+# For production and replicated environments it is advisable to       #
+# review these settings in light of local policies (e.g., backup etc.)#
+#######################################################################
+
+[mysqld]
+default-storage_engine 						= innodb
+transaction-isolation                      	= READ-COMMITTED
+default-character-set                      	= latin1
+max_connections 							= 300
+
+innodb_data_file_path 						= ibdata/ibdata1:1000M;ibdata/ibdata2:1000M
+innodb_autoextend_increment 	 			= 50M
+innodb_data_home_dir 						= /usr/local/opt/mysql-tablespace
+innodb_mirrored_log_groups 					= 1
+innodb_log_group_home_dir 					= /usr/local/opt/mysql-log/mysql/iblogs
+innodb_log_files_in_group  					= 3
+innodb_log_file_size 						= 50M
+innodb_log_buffer_size 						= 8M
+innodb_log_archive 							= 0
+innodb_flush_log_at_trx_commit 				= 1
+innodb_additional_mem_pool_size 			= 20M
+innodb_buffer_pool_size          			= 1024M
+innodb_lock_wait_timeout 					= 50
+

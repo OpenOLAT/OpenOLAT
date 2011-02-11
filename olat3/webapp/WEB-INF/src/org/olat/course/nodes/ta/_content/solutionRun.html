@@ -1,0 +1,12 @@
+<div class="o_course_run_solutionbox">
+	#if($hasNotification == true)
+		$r.render("subscription")
+	#end
+	<h4>$r.translate("solutionbox.title")</h4>		
+	<p>
+		$r.translate("solutionbox.intro")
+	</p>
+	<p>
+		$r.render("solutionbox")
+	</p>
+</div>

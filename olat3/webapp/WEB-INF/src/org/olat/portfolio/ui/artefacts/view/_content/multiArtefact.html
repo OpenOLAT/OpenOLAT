@@ -1,0 +1,55 @@
+<div class="b_ep_multiartefacts">
+	#if ($artefactAmnt) 
+		#if ($r.available("detail.options")) 
+		<div class="b_float_right">
+			$r.render("detail.options") 
+		</div>
+		#end
+		<div class="b_artefact_count">
+			$r.translate("artefact.amount", $artefactAmnt)
+		</div>
+	#else
+		<br/>
+		$r.translate("no.artefacts.found")
+	#end
+	
+	#if ($pageLinkList)
+	<div align="center">
+		$r.translate("page.links") &nbsp;
+		#foreach($pageLink in $pageLinkList)
+			#set($viewLink = "pageLink$velocityCount")
+			$r.render($viewLink) &nbsp;
+		#end
+	</div>
+	#end
+	
+	<div class="b_subcolumns">
+		#foreach($artefactComp in $artefactCtrlComps)
+			#if ($velocityCount % 2 == 0)
+				#set($leftRight = "r")
+			#else
+				#set($leftRight = "l")
+			#end
+		
+			<div class="b_c50$leftRight">
+				<div class="b_subc$leftRight">
+					#set($artCtrl = "artCtrl$velocityCount")
+					$r.render($artCtrl)
+					<br/>
+				</div>
+			</div>
+		#end
+	</div>
+	
+	## paging links below list, same as above
+	#if ($pageLinkList)
+	<div align="center">
+		$r.translate("page.links") &nbsp;
+		#foreach($pageLink in $pageLinkList)
+			#set($viewLink = "pageLink$velocityCount")
+			$r.render($viewLink) &nbsp;
+		#end
+	</div>
+	#end
+	
+</div>

@@ -1,0 +1,1 @@
+same as in original path, but without the "instantMessagingModule" bean definition. this would need too much from other parts of olat

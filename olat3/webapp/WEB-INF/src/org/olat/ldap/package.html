@@ -1,0 +1,412 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Unix)">
+	<META NAME="CREATED" CONTENT="20081116;16013700">
+	<META NAME="CHANGED" CONTENT="20081116;19235100">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { margin: 2cm }
+		TD P { margin-bottom: 0.21cm }
+		P { margin-bottom: 0.21cm }
+		A:link { so-language: zxx }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=4><B>OLAT
+- LDAP authentication module</B></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal"><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Documentation
+of ldap package by Maurus Rohrer during GSoC</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Use
+Cases:</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><I>Business
+Use Case 1:</I></FONT></P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=2 STYLE="font-size: 11pt">The
+user enters the OLAT URL in his web browser and will be prompted to
+enter his user name and password. This Information is send to the
+configured LDAP server and checked on it's validation. If the user
+exits in LDAP and the password is the same as in LDAP, the user is
+redirected to his home environment in OLAT.</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/BusinessUseCase1.gif" NAME="Grafik1" ALIGN=LEFT WIDTH=400 HEIGHT=148 BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><I>Business
+Use Case 2:</I></FONT></P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif">The
+OLAT administrator can start the admin-sync on a special side in
+OLAT. The admin-sync is gathering all information on the LDAP server
+and compares them with the one in the OLAT DB, all differences will
+be prompted to the administrator, if he confirms all changes will be
+written to the OLAT DB. </FONT>
+</P>
+<P STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/BusinessUseCase2.gif" NAME="Grafik2" ALIGN=LEFT WIDTH=392 HEIGHT=164 BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><I>Business
+Use Case 3:</I></FONT></P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>I<FONT SIZE=3>n
+a special configuration-file the administrator can specify the time
+an periods in which the cron-sync process should be executed. The
+cron-sync process is doing the same activities as the admin-sync,
+except that the changes don't need to be confirmed. All differences
+will be automatically written to the OLAT DB</FONT></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/BusinessUseCase3.gif" NAME="Grafik3" ALIGN=LEFT WIDTH=430 HEIGHT=165 BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Flow-Diagrams:</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><I>Detailed
+Flow-Diagram Use Case 1:</I></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/DeFlowDiaUC1_Lgoin.gif" NAME="Grafik3" ALIGN=LEFT WIDTH=581 HEIGHT=1325 BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><I>Detailed
+Flow-Diagram Use Case 2:</I></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/DeFlowDiaUC2_AdminSync.gif" NAME="Grafik3" ALIGN=LEFT WIDTH=558 HEIGHT=1302 BORDER=0><BR><BR CLEAR=LEFT>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><I>Detailed
+Flow-Diagram Use Case 3:</I></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/DeFlowDiaUC3_CronSync.gif" NAME="Grafik3" ALIGN=LEFT WIDTH=554 HEIGHT=1191 BORDER=0><BR><BR CLEAR=LEFT>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Class-Diagram:</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><IMG SRC="doc-files/pic/ClassDirgramm.gif" NAME="Grafik3" ALIGN=LEFT WIDTH=1334 HEIGHT=754 BORDER=0><BR><BR CLEAR=LEFT>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Configuration:</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0cm"><FONT FACE="Verdana, sans-serif"><FONT SIZE=2><FONT SIZE=3>To
+get the LDAPLogin Authentication Module running the olatextconfig.xml
+has to be configured. The different parameters are explained in the
+following table. The config file is saved under
+serviceconfig.org.olat.ldap._spring.olatextconfig.xml.</FONT></FONT></FONT></P>
+<TABLE WIDTH=921 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=256>
+	<COL WIDTH=148>
+	<COL WIDTH=479>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Property</B></FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Description</B></FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=3><B>Notes</B></FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>enableLDAPLogin</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Enable or disable
+			LDAP Module</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>true or false. If
+			true LDAP Module will be loaded, otherwise the Module can't be
+			used. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapURL</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>URL to LDAP
+			Directory</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, module will not be loaded. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapSystemDN</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>DN for
+			system-user how can search throw hole directory.</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, module will not be loaded. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapSystemPW</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Password for ldap
+			system-user</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, module will not be loaded. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapBases</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>List of bases
+			where to find users</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, no users will be synced and create. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>sslEnable</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Enable if LDAP
+			uses SSL</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Keystore must
+			contain certificate of LDAPs server. If not OLAT will not be
+			starting.</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>trustStoreLocation</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Path to keystore</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, OLAT won't start. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>trustStorePwd</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Password for
+			keystore</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, OLAT won't start. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>trustStoreType</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Type of keystore</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>If
+			miss-configured, OLAT won't start. </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>cacheLDAPPwdAsOLATPwdOnLogin</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Saves LDAP
+			Password in OLAT</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>When users log in
+			via LDAP, the system can keep a copy of the password as encrypted
+			hash in the database. This makes OLAT more independent from an
+			offline LDAP server and users can use their LDAP password to use
+			the WebDAV functionality. When setting to true (recommended), make
+			sure you configured pwdchange=false in the
+			olat.properties file.</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>convertExistingLocalUsersToLDAPUsers</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Saves Olat Users
+			as LDAP Users</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>When the system
+			detects an LDAP user that does already exist in OLAT but is not
+			marked as LDAP user, the OLAT user can be converted to an LDAP
+			managed user. When enabling this feature you should make sure that
+			you don't have a user 'administrator' in your ldapBases (not a
+			problem but not recommended)</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>deleteRemovedLDAPUsersOnSync</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Deleted users on
+			Sync</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Users that have
+			been created vial LDAP sync but now can't be found on the LDAP
+			anymore can be deleted automatically. If unsure, set to false and
+			delete those users manually in the user management.</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapSyncOnStartup</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Start Sync on
+			OLAT startup</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Should users be
+			created and synchronized automatically? If you set this
+			configuration to false, the users will be generated on-the-fly
+			when they log in </FONT></FONT>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapSyncCronSync</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Enable Cron Sync</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Will execute
+			cron-sync on defined schedule</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapSyncCronSyncExpression</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Define schedule</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Typically
+			unix-cron configuration</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>ldapUserObjectClass</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>LDAP Person
+			Schema</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>reqAttrs</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Attributes which
+			must exist in LDAP</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Define which user
+			attributes are mandatory and how they are mapped to OLAT user
+			properties. Note that OLAT requires at least the user properties
+			userID and email. Those must be listed as mandatory. Others can be
+			added as mandatory as well, but make sure the configuration here
+			is consistent with the user properties configuration in the
+			olat_userconfig.xml file. It is strongly recommended to add also
+			lastName and firstName. See the olat_userconfig.xml file to learn
+			which OLAT user properties are available. The maps require entries
+			in the following syntax:<BR>key: the LDAP attribute name<BR>value:
+			the OLAT user property name</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>userAttributeMapper</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Attributes which
+			will be saved in OLAT</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Look at reqAttrs</FONT></FONT></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=256>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>staticUserProperties</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=148>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Static User
+			Properties</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=479>
+			<P><FONT FACE="Verdana, sans-serif"><FONT SIZE=2>Specify static
+			OLAT user properties that should be populated with a predefined
+			value for each user. This is an optional feature, leaf the
+			property empty if you don't need it. It can be use e.g. to
+			distinguish LDAP users from local OLAT users in a course using the
+			getUserProperty() condition.</FONT></FONT></P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0cm"> 
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+</BODY>
+</HTML>

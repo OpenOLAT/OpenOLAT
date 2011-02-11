@@ -1,0 +1,20 @@
+@charset "UTF-8";
+/* basic layout definitions for all media */
+@import url(../../yaml/core/slim_base.css);
+@import url(all/yaml_basemod.css);
+@import url(all/brasato.css);
+@import url(all/olat.css);
+@import url(all/content.css);
+
+/* print specific adjustments */
+@import url(../../yaml/core/slim_print_base.css);
+@import url(print/yaml_basemod_print.css);
+@import url(print/brasato_print.css);
+@import url(print/olat_print.css);
+
+/* aural styles */
+@import url(aural/brasato.css);
+@import url(aural/content.css);
+
+/* @import url(../../yaml/debug/debug.css); */
+

@@ -1,0 +1,21 @@
+<div class="b_with_small_icon_left b_filetype_folder">
+	$r.translate("folders.description")
+</div>
+<br />
+$r.render("folders")
+<br />
+<br />
+
+<hr />
+<br />
+<div class="b_with_small_icon_left b_fileinput_icon">
+	$r.translate("upload.description")
+</div>
+<br />
+$r.render("upload")
+
+#if($showcancelbutton)
+	<div class="b_button_group">
+		$r.render("cancel")
+	</div>
+#end

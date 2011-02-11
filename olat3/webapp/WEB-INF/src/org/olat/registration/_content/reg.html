@@ -1,0 +1,30 @@
+<div class="b_clearfix">
+	$r.render("regwizard")
+	<h4>$r.translate("step1.reg.title")</h4>
+</div>
+<p>
+	$text
+</p>
+#if ($loginhelp)
+	<p>
+		$loginhelp
+	</p>
+#end
+#if ($pwdhelp)
+	<p>
+		$pwdhelp
+	</p>
+#end
+#if ($disclaimer)
+	<p>
+		$disclaimer
+	</p>
+#end
+#if ($yourdata)
+	<p>
+		$yourdata
+	</p>
+#end
+<p>
+	$r.render("regarea")
+</p>

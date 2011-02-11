@@ -1,0 +1,15 @@
+<h4>Time: $time</h4>
+<h5>Sent:</h5>
+<textarea rows=12">
+#foreach ($sent in $sentmsgs)
+$sent
+#end
+</textarea>
+
+<p />
+<h5>Received:</h5>
+<textarea rows=12">
+#foreach ($rec in $recmsgs)
+$rec
+#end
+</textarea>

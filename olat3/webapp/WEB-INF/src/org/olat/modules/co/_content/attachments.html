@@ -1,0 +1,9 @@
+<table>
+	#foreach ($attachment in $attachments)
+	<tr>
+		<td><span class="b_with_small_icon_left ${attachmentCss.get($attachment.getName())}">${attachmentNames.get($attachment.getName())}</span></td>
+		<td> $r.render(${attachment.getName()})</td>
+	</tr>
+	#end
+</table>
+

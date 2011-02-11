@@ -1,0 +1,33 @@
+<h4>$r.translate("statistic.title")<div style="float: right;">$r.contextHelp($package, $packageHtml,"help.hover.statistic")</div></h4>
+
+	<p>
+		$r.translate("statistic.intro", $statsSince)
+		#if (!$r.translate('statistic.intro.more').startsWith('no translation::::'))
+			$r.translate('statistic.intro.more')
+		#end
+	</p>
+<!-- 	<p>
+		$r.render("statisticForm")
+	</p> -->
+	<p>
+		$r.render("statisticResult")
+	</p>
+	#if ($hasChart)
+ 		<hr class="b_form_spacer"/>
+ 		<br/>
+		<p>
+			$chartIntro
+		</p>
+ 		<br/>
+		<div class="b_floatscrollbox" style="height: 240px">
+			<img src="$chartUrl" alt="$chartAlt"/>
+		</div>
+	#end
+	#if ($hasChartError)
+ 		<hr class="b_form_spacer"/>
+ 		<br/>
+		<p>
+			$chartError
+		</p>
+	#end
+	

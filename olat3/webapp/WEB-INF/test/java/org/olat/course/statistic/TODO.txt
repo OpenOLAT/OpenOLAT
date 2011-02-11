@@ -1,0 +1,4 @@
+TODO:
+
+Write proper unit/integration tests for these statistics tests, see 
+http://static.springsource.org/spring/docs/3.0.x/reference/testing.html

@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+@media aural
+{
+	/* special sound for main navigation */
+	#b_nav li {
+    	cue-before: url(../sounds/new_message.wav);
+	}
+	/* special sound for content menu */
+	#b_col1 li {
+    	cue-before: url(../sounds/beep5.wav);
+	}
+	/* special sound for toolbox entries */
+	#b_col2 li {
+    	cue-before: url(../sounds/Pop.wav);
+	}
+}
