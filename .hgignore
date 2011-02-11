@@ -1,0 +1,36 @@
+# OLAT .hgignore file
+# Files and patterns that will be ignored by status, add and by
+# implication checks unless locally overriden.
+# see http://www.selenic.com/mercurial/hgignore.5.html
+
+syntax: glob
+
+# java deployment assets
+*.class
+*.jar
+
+# mvn build trees
+target/*
+
+# deprecated scripting files
+*.pl
+*.php
+
+# editor backup files
+*~
+*.bak
+*.swp
+
+# sundry useless files
+*.out
+
+# hg merge reject files
+*.rej
+
+# hg originals arising from reverts
+*.orig
+
+# CVS leftovers
+CVS/*
+.cvsignore
+
