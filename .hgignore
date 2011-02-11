@@ -34,3 +34,7 @@ target/*
 CVS/*
 .cvsignore
 
+# Mac idiosyncrasies
+.DS_Store
+
+
