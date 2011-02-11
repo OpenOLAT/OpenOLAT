@@ -1,0 +1,24 @@
+This project is part of the webapplication framework brasato. It contains framework 
+specific translation files for all optional languages. 
+
+You only need to check out this project when you want to setup your own translation 
+server. But, we strongly recommend using the public translation server available at
+
+http://translation.olat.org
+
+To use this project in your installation you must configure the i18n.application.src.dir
+property in the olat3/build.properties to point to this directory. Example:
+
+i18n.brasato.src.dir = /usr/local/olatcore_i18n/src/main/java
+
+In addition, you must set the property is.translation.server=true
+
+
+Again: normally there is no need to checkout this project and configure your translation
+server. Instead, download the zipped language pack from olat.org.
+
+----
+20.11.2008
+Florian Gnägi
+frentix GmbH
+http://www.frentix.com
