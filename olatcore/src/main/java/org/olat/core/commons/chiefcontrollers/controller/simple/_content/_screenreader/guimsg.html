@@ -1,0 +1,9 @@
+#if($guiMessage.hasInfo())
+	#oPrintInfoBox($r.get("guiMessage").renderInfo())
+#end
+#if($guiMessage.hasWarn())
+	#oPrintWarnBox($r.get("guiMessage").renderWarn())
+#end
+#if($guiMessage.hasError())
+	#oPrintErrorBox($r.get("guiMessage").renderError())
+#end

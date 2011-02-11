@@ -1,0 +1,74 @@
+<div class="b_table_wrapper $!tableConfig.getCustomCssClass() b_floatscrollbox">
+#if ($hasTableSearch && !$tableEmpty)
+  <div>
+  $r.render("tableSearch")
+  </div>
+#end
+
+#if ($hasFilters && $filters.size() > 0)
+	<div class="b_table_filter">
+		<form name="tablefilter" action="">
+			<label for="filter">$filterTitle</label>
+			<select name="filter" size="1" onchange="{tf = document.tablefilter; tf.action=tf.filter.value; if(o2cl()){tf.submit();}}">
+				#if ($useNoFilterOption)
+					<option value="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</option>
+				#end
+				#foreach ($filter in $filters)
+					#if ($filter.getShortName() == $selectedFilterValue)
+						#set ($selected="selected")
+					#else
+						#set ($selected="")
+					#end
+					#set ($filterPosition = $velocityCount - 1)
+					<option $selected value="$r.commandURI("cmd.filter.${filterPosition}")">$r.escapeHtml($filter.getShortName())</option>
+				#end
+			</select>
+		</form>
+	</div>
+#end
+
+#if ($tableEmpty)
+	<div class="b_table_empty">$tableEmptyMessage</div>
+#else
+	<div class="b_clearfix">
+		<div class="b_floatbox">
+		#if ($tableConfig.isDisplayRowCount())
+			<div class="b_table_count">
+			    #if ($isFiltered)
+			    	$numberFilteredElements
+			    	$r.translate("table.filtered.of")
+			    	$r.render("link.numberOfElements")
+			    	#if ($numberOfElements == "1")
+			    		$r.translate("table.entry")
+			    	#else
+			    		$r.translate("table.entries.dative")
+			    	#end
+			    	#if ($numberFilteredElements == "1")
+						$r.translate("table.filtered.include.sing")
+					#else
+						$r.translate("table.filtered.include.plur")
+					#end			    	
+			    	`$filter`			    	
+			    #else
+					$numberOfElements
+					#if ($numberOfElements == "1")
+						$r.translate("table.entry")
+					#else
+						$r.translate("table.entries")
+					#end
+				#end
+			</div>
+		#end
+		#if ($tableConfig.isPreferencesOffered())
+			<a href="$r.commandURIbg("cmd.changecols")" $r.bgTarget() class="b_table_prefs" title="$r.translateInAttribute("table.changecols")">&nbsp;</a>
+		#end
+		
+		#if ($tableConfig.isDownloadOffered())	
+			<a href="$r.commandURIbg("cmd.download")" $r.bgTarget() class="b_table_download" title="$r.translateInAttribute("table.download")">&nbsp;</a>
+		#end
+		</div>
+	</div>
+	$r.render("table", $tableConfig.getCssPrefix())
+#end
+</div>
+

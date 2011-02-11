@@ -1,0 +1,195 @@
+
+<div id="b_main" class="$mainCssClasses">
+	## begin: #col1 - first float column
+	#if($existsCol1)	
+	<div id="b_col1" style="$!col1CustomCSSStyles">
+		<div id="b_col1_content" class="b_clearfix"> 
+			<a name="b_col1"></a>
+			<div class="b_floatbox">
+				$r.render("col1")	
+			</div>
+		</div>
+	</div>
+	#end
+	## end: #col1 
+	## begin: #col2 second float column
+	#if($existsCol2)	
+	<div id="b_col2" style="$!col2CustomCSSStyles">
+		<div id="b_col2_content" class="b_clearfix"> 
+			<a name="b_col2"></a>
+			<div class="b_floatbox">
+				$r.render("col2")
+			</div>
+		</div>
+	</div>
+	#end
+	## end: #col2 
+	## begin: #col3 static column 
+	#if($existsCol3)	
+	<div id="b_col3" style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
+		<div id="b_col3_content" class="b_clearfix">
+			## skip anchor: content
+			<a id="b_content" name="content"></a> 
+			<div id="b_col3_content_inner" class="b_floatscrollbox">
+				<a name="b_col3"></a>
+				$r.render("col3")		
+			</div>
+		</div>
+		## IE column clearing
+		<div id="b_ie_clearing">&nbsp;</div>
+	</div>
+	#end
+	## end: #col3
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+	## remove event handlers and alike from existing resizers first and clean them up
+	if (!Object.isUndefined(B_ResizableColumns)) {
+		B_ResizableColumns.destroy.bind(B_ResizableColumns)(); 
+		B_ResizableColumns = null;
+	}
+	
+	var B_ResizableColumns = {	
+		## The two resizabe columns
+		_res_col1 : null, 
+		## The object that contains the resizable columns and all the associated code
+		_res_col2 : null,
+		## true when the on-dom-replacement callback has already been added for this render cycle
+		_onDomReplacementCallbackAdded : false,
+		
+		## init method to initialize the column resizer objects
+	    init : function(){
+			#if($existsCol1)	
+				if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('B_ResizableColumns.init called', "main_3cols.html");	
+		    	var col1Elem = Ext.get('b_col1');
+		    	var col1WidthStyle = col1Elem.getStyle('width');
+				this._res_col1 = new Ext.Resizable(col1Elem, {
+					handles: 'e',
+					widthIncrement: o_info.emPxFactor,
+		    		dynamic: true,
+		    		width: col1Elem.getWidth()
+				}); 
+				this._res_col1.on('resize', onResizeCol1);
+				## reset style to original EM value from class name			
+				col1Elem.setStyle('width', col1WidthStyle); 
+				col1Elem.clip();
+				col1Elem = null;
+			#end
+			#if($existsCol2)	
+		      	var col2Elem = Ext.get('b_col2');
+		    	var col2WidthStyle = col2Elem.getStyle('width');
+				this._res_col2 = new Ext.Resizable(col2Elem, {
+					handles: 'w',
+					widthIncrement: o_info.emPxFactor,
+		    		dynamic: true,
+		    		width: col2Elem.getWidth()
+				}); 
+				this._res_col2.on('resize', onResizeCol2);					
+				## reset style to original EM value from class name	
+				col2Elem.setStyle('width', col2WidthStyle); 
+				col2Elem.clip();
+				col2Elem = null;
+			#end
+			## Add click listener on body for DOM replacement callback to adjust content height after each click
+	      	var body = Ext.get('b_body');
+			body.on('click', B_ResizableColumns.setOnDomReplacementFinishedCallback, B_ResizableColumns); 
+			## Adjust resizers height at the end
+			B_ResizableColumns.adjustHeight();
+			body = null;
+	    },
+	    
+		adjustHeight : function(){
+			if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('B_ResizableColumns.adjustHeight called', "main_3cols.html");	
+			try {
+				## Reset col height first
+				#if($existsCol1)	
+					var col1Elem = Ext.get('b_col1_content');
+					col1Elem.setHeight('auto');
+					col1Elem = null;
+				#end
+				#if($existsCol2)	
+					var col2Elem = Ext.get('b_col2_content');
+					col2Elem.setHeight('auto');
+					col2Elem = null
+				#end
+				## Calculate new col height
+				var contentHeight = b_getMainColumnsMaxHeight();
+				## Set new col height
+				#if($existsCol1)	
+					var col1Elem = Ext.get('b_col1_content');
+					col1Elem.setHeight(contentHeight);
+					col1Elem = null;
+				#end
+				#if($existsCol2)	
+					var col2Elem = Ext.get('b_col2_content');
+					col2Elem.setHeight(contentHeight);
+					col2Elem = null;
+				#end
+			} catch (e) {
+				if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('Exception while adjusting height with exception::' + e, "main_3cols.html");				
+			}
+			## clear on dom replacement callback
+			this._onDomReplacementCallbackAdded = false;
+		},
+
+		setOnDomReplacementFinishedCallback : function() {
+			if (!this._onDomReplacementCallbackAdded) {				
+				this._onDomReplacementCallbackAdded = true;
+				## recalculate resizers height again when clicked to adjust column height, set callback to dom replacement mechanism
+				b_AddOnDomReplacementFinishedCallback( B_ResizableColumns.adjustHeight.bind(B_ResizableColumns) );
+			}
+		},
+
+		destroy : function() {
+			## cleanup event listeners, to prevent issues in IE
+			try {
+				if (this._res_col1 != null) {
+					if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('destroying _res_col1 resizer', "main_3cols.html");	
+					this._res_col1.purgeListeners();
+					this._res_col1.destroy(); 
+					this._res_col1 = null;
+				}
+				if (this._res_col2 != null) {
+					if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('destroying _res_col2 resizer', "main_3cols.html");	
+					this._res_col2.purgeListeners();
+					this._res_col2.destroy(); 
+					this._res_col2 = null;
+				}		
+				## Remove click listener on body for the scope of B_ResizableColumns to prevent memory leaks
+		      	var body = Ext.get('b_body');
+				body.un('click', B_ResizableColumns.setOnDomReplacementFinishedCallback, B_ResizableColumns); 
+				body = null;
+			} catch (e) {
+				if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('Exception while destroying ResizeableColumns::' + e, "main_3cols.html");				
+			}
+		}
+	};
+	
+	## callback resize _res_col1
+	function onResizeCol1() {
+		## calculate menu column width change
+		var newWidth = Ext.get('b_col1').getWidth(); 
+		var newEmWidth = Math.round(newWidth / o_info.emPxFactor);
+		Ext.get('b_col1').setStyle("width", newEmWidth + "em");	
+		Ext.get('b_col3').setStyle("margin-left", newEmWidth + "em");	
+		if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('col1 width::' + newWidth + " EM::" + newEmWidth + " factor::" + o_info.emPxFactor, "main_3cols.html");	
+		## save new width on server
+		new Ajax.Request("$r.commandURI("saveCol1Width")" + newEmWidth);
+	}
+	
+	## callback resize _res_col2
+	function onResizeCol2() {
+		var newWidth = Ext.get('b_col2').getWidth(); 
+		var newEmWidth = Math.round(newWidth / o_info.emPxFactor);
+		Ext.get('b_col2').setStyle("width", newEmWidth + "em");	
+		Ext.get('b_col3').setStyle("margin-right", newEmWidth + "em");	
+		if (B_AjaxLogger.isDebugEnabled()) B_AjaxLogger.logDebug('col2 width::' + newWidth + " EM::" + newEmWidth + " factor::" + o_info.emPxFactor, "main_3cols.html");
+		## save new width on server
+		new Ajax.Request("$r.commandURI("saveCol2Width")" + newEmWidth);
+	}
+		
+	## initialize everything now
+	Ext.onReady(B_ResizableColumns.init, B_ResizableColumns, true);
+/* ]]> */
+</script>

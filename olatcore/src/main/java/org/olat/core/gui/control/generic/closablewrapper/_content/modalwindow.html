@@ -1,0 +1,116 @@
+<div id="${panelName}-center" class="b_modalwindow x-layout-inactive-content x-hidden" style="padding:5px;">
+	$r.render("content")
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+//global var
+Ext.onReady(function(){
+	var winPosition = null;
+	var winHeight = 0;
+	var winWidth = 0;
+
+	//check if already exists
+	if( Ext.getCmp('${panelName}') != null ) {
+		var ${panelName}winpop = Ext.getCmp('${panelName}');
+		winPosition = ${panelName}winpop.getPosition();
+		winHeight = ${panelName}winpop.getHeight();
+		winWidth = ${panelName}winpop.getWidth();
+		${panelName}winpop.purgeListeners();
+		${panelName}winpop.close();
+	} else {
+		var pos = Ext.util.Cookies.get('${panelName}_pos');
+		if(pos != undefined) {
+			var posArr = pos.split(',');
+			winHeight = parseInt(posArr[0]);
+			winWidth = parseInt(posArr[1]);
+		} else {
+			#if (!$width && !$height)
+			var myHeight,myWidth;
+			if( typeof( window.innerWidth ) == 'number' ) { //Non-IE
+	    		myWidth = window.innerWidth;
+	    		myHeight = window.innerHeight;
+	  		} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+	    		//IE 6+ in 'standards compliant mode'
+	    		myWidth = document.documentElement.clientWidth;
+	    		myHeight = document.documentElement.clientHeight;
+	  		} else {
+				myWidth = 640;
+				myHeight = 480;
+	  		}
+			winHeight = myHeight - 100;
+			winWidth = myWidth - 100;
+			#else
+				winHeight = $height;
+				winWidth = $width;	
+			#end
+		}
+	}
+
+	if( Ext.getCmp('${panelName}') == null) {
+		// Panel for the content
+		var content = new Ext.Panel({
+			contentEl:'${panelName}-center',
+			width: '100%',
+			height: '100%',
+			collapsible: false,
+ 			autoScroll:true,
+ 			border:false
+	    });
+        
+		//the window
+		var ${panelName}winpop = new Ext.Window({
+			id: '${panelName}',
+			title: '$!title',
+			closable:true,
+			collapsible:false,
+			constrain: true,
+			resizable: true,
+			height: winHeight,
+			width: winWidth,
+			minWidth: 200,
+			minHeight: 100,
+    		plain:true,
+			layout: 'fit',
+			items: [content]
+    	});
+	    ${panelName}winpop.on('minimize', function(win){
+		    win.toggleCollapse();
+		});
+		${panelName}winpop.on('beforeclose', function(win){
+			var allPos = new Array();
+			allPos[0] = win.getHeight();
+			allPos[1] = win.getWidth();
+			allPos[2] = win.getPosition()[0];
+			allPos[3] = win.getPosition()[1];
+			Ext.util.Cookies.set('${panelName}_pos',allPos);
+		});
+		
+		${panelName}winpop.on('close', function(win){
+			win.purgeListeners();
+			win.close();
+			win.destroy();
+			if (!o_info.linkbusy) { 
+				o_beforeserver();
+				## Add ; after javaScriptBgCommand since javaScriptBgCommand does not add it so that you 
+				## could add additional parameters to the URL. ; needed for better compatibility with IE
+				$r.javaScriptBgCommand("close");
+			}		
+		});
+
+		var pos = Ext.util.Cookies.get('${panelName}_pos');
+		if(winPosition != null) {
+			${panelName}winpop.setPosition(winPosition[0],winPosition[1]);
+		} else if(pos != undefined) {
+			var posArr = pos.split(',');
+			${panelName}winpop.setPosition(parseInt(posArr[2]),parseInt(posArr[3]));
+		} else {
+			${panelName}winpop.setPosition(50,50);
+		}
+		${panelName}winpop.show(this);
+	}
+//delay is needed for IE to solve timing problem
+},{delay:1000});
+/* ]]> */
+</script>
+

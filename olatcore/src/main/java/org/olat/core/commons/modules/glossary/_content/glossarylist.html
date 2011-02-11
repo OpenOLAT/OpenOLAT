@@ -1,0 +1,53 @@
+#if ($editModeEnabled)
+	<div class="o_glossary_addcommand">
+		$r.render("cmd.add")
+	</div>
+#end	
+<div class="o_glossary">
+	<h3>$r.translate("glossary.title")</h3><br/>
+	#if ($registerEnabled)
+		<div class="o_glossary_register">
+		#foreach( $registerLink in $registerLinkList )
+			#set ( $indexChar = $registerLink.getI18n() )
+			$r.render("register.link.$indexChar")
+		#end
+		$r.render("register.link.all")
+		</div>
+	#end
+	<dl>
+	#foreach( $editAndDelButton in $editAndDelButtonList )
+		#set ($glossaryItem = $editAndDelButton.get(0).getUserObject())
+		#set ($glossaryItemIndex = $glossaryItem.getIndex())
+		#if ( $filterIndex == $glossaryItemIndex || $filterIndex == "all" )
+##		<div class="o_glossary_entry">
+			#if ($editModeEnabled)
+				<div class="o_glossary_commands">
+					$r.render("cmd.edit.$velocityCount")
+					$r.render("cmd.delete.$velocityCount")
+				</div>
+			#end
+			<dt>
+				$glossaryItem.getGlossTerm() 
+				#if ( $glossaryItem.getGlossSynonyms().size() > 0)
+				  <div class="o_glossary_synonym">
+					#foreach ( $glossSynonym in $glossaryItem.getGlossSynonyms() )  
+				    	$glossSynonym
+					#end
+				  </div>
+				#end  
+			</dt>
+			<dd>
+				$glossaryItem.getGlossDef()
+			</dd>
+##		</div>
+		#end
+	#end
+	</dl>
+</div>
+#if ($editModeEnabled)
+	<p />
+	<div class="o_glossary_addcommand">
+		$r.render("cmd.add")
+	</div>
+#end	
+

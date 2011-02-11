@@ -1,0 +1,23 @@
+<p>
+#if ($move)
+	<b>$r.translate("mc.move")</b>
+#else
+	<b>$r.translate("mc.copy")</b>
+#end
+	$fileselection.renderAsHtml()
+</p>
+
+#if ($invalidFileNames)
+<p>
+	<b>$r.translate("invalid.file.names")</b>
+	<br/>
+	$invalidFileNames
+</p>
+#end
+
+<p>
+	<b>$r.translate("mc.to")</b>
+</p>
+<p>
+	$r.render("seltree")
+</p>

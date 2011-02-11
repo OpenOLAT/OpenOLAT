@@ -1,0 +1,29 @@
+<div id="b_contexthelp">
+
+#if($pageFound)
+	<h2 class="b_with_small_icon_left b_contexthelp_icon">$title</h2>
+	<div id="b_contexthelp_content">
+		$r.render("contextHelpPage")
+	</div>
+	#if($r.available("commentsAndRatingCtr"))
+	<div id="b_contexthelp_rating">
+		<h4>$r.translate("contexthelp.rating.title")</h4>
+	</div>
+		$r.render("commentsAndRatingCtr")
+	#end
+#else
+	<div class="b_warning">
+		<p>
+		$r.translate("contexthelp.error.page.not.found")
+		</p>
+		<code>
+			$page
+		</code>
+	</div>
+#end
+</div>
+
+## always show top of page when on long pages
+<script type="text/javascript">
+	Effect.ScrollTo('b_top');
+</script>

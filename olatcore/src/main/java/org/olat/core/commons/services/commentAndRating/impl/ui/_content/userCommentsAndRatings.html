@@ -1,0 +1,35 @@
+<div class="b_ratings_and_comments">
+	#if ($enableRatings)
+	<div id="b_rating_wrapper_$viewIdent" class="b_rating_wrapper">
+		#if($r.render("ratingUserC"))
+			<div id="b_rating_$viewIdent" style="display: none">
+			$r.render("ratingUserC")
+			</div>
+		#end
+		#if($r.render("ratingAverageC"))
+			$r.render("ratingAverageC")
+		#end
+	</div>
+	#end
+	#if ($enableComments)
+		$r.render("comments.count")
+	#end
+</div> 
+
+## Display user rating when hovering over rating area
+#if($r.render("ratingUserC"))
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(function(){
+	Ext.get('b_rating_wrapper_$viewIdent').hover( 
+			function(){ var el = Ext.get('b_rating_$viewIdent'); el.show(); },
+			function(){ var el = Ext.get('b_rating_$viewIdent'); el.hide(); }
+	);
+});
+/* ]]> */
+</script>
+#end
+
+#if ($r.available("commentsCtr"))
+	$r.render("commentsCtr")
+#end

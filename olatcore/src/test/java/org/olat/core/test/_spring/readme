@@ -1,0 +1,2 @@
+Do not name the spring context files xyzContext.xml otherwise they may get loaded when olat starts. See web.xml for all 
+generic names which are searched on the classpath.

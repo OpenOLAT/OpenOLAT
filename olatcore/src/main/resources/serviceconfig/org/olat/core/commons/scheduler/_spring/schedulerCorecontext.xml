@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<!-- 
+
+*****************************
+Scheduler system for OLAT     *
+*****************************
+You can either create simple jobs which are executed like every minute or hour or jobs
+which are configured with cron style syntax.
+
+If you would like to expose your beans to the Jconsole for accessing your properties add them
+to the MBeanExporter Bean at the end.
+
+How to add a new job:
+1. Create you class which extends from QuartzJobBean see ChangePresenceJob as example
+2. Create a file called "olatextconfig.xml" with your own beans and place it in the same directory as this file. It will be loaded automatically.
+3. Add a bean definition where your job is created like ="<bean id="changePresenceJob" class="org.springframework.scheduling.quartz.JobDetailBean">"
+4. Create a scheduler for your definded bean: Either an SimpleTriggerBean or an CronTriggerBean
+5. Add your trigger bean to the SchedulerFactoryBean list.
+-->
+
+
+<!-- this tells spring to create the quartz scheduler -->
+<bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+	<property name="quartzProperties">
+		<props>
+			<prop key="org.quartz.threadPool.threadCount">1</prop>
+		</props>
+	</property>
+	<property name="triggers">
+        <list>
+        	<!-- Include every bean here that should be scheduled -->
+            <!-- <ref bean="cronTrigger" /> -->
+        </list>
+    </property>
+</bean>
+
+<!-- Example bean for cron style scheduling--> 
+<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
+<!--
+<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <property name="jobDetail" ref="exampleJob" />
+    <property name="cronExpression" value="0 0 6 * * ?" />
+    <property name="startDelay" value="300000" />
+</bean>
+ -->
+
+
+</beans>

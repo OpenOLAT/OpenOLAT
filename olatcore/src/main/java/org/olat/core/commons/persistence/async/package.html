@@ -1,0 +1,17 @@
+<html>
+<head>
+</head>
+
+<body>
+
+Overview description of asynchron background task.
+The business-logic can create background-task, which will be executed async by the background-db-updater job (QuarzJob).  
+This job runs with a configurable interval. The task will be added to FIFO queue. The queue will be checked by  the background-db-updater job.
+
+<h3>Class Diagram</h3>
+<p>
+<img src="doc-files/BackgroundJobDesign.png"/>
+
+
+</body>
+</html>

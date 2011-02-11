@@ -1,0 +1,12 @@
+#if ($r.available("edit"))
+	<div class="b_float_right">
+	$r.render("edit")
+	</div>
+#end
+#if ($ENABLED)
+<iframe src="$uri" height="$height" name="$name" frameborder="0">
+	<p>$r.translate("iframe.notsupported")</p>
+</iframe>
+#else
+	$uri not found
+#end

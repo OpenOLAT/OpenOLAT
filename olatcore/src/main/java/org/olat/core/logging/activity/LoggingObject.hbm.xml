@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false">
+	<class name="org.olat.core.logging.activity.LoggingObject"
+		table="o_loggingtable">
+
+
+<!--    ==================================================================================      -->
+<!--    Technical fields                                                                        -->
+<!--    ==================================================================================      -->
+		<id name="key"                  column="log_id"          type="long" unsaved-value="null">
+			<generator class="hilo" />
+		</id>
+		<property name="creationDate"   column="creationdate"    type="timestamp"/>
+		<property name="sourceClass"  type="string">
+			<column name="sourceclass" length="512" sql-type="varchar(512)" not-null="false" />
+		</property>
+<!--    ==================================================================================      -->
+
+
+<!--    ==================================================================================      -->
+<!--    Session and User Fields                                                                 -->
+<!--    ==================================================================================      -->
+		<property name="sessionId"      column="sessionid"       type="string" length="255" not-null="true" />
+	    <property name="userId"         column="user_id"         type="long"/>
+		<property name="userName"       column="username"        type="string" length="255" not-null="false" />
+		<property name="userProperty1"  column="userproperty1"   type="string" length="255" not-null="false" />
+		<property name="userProperty2"  column="userproperty2"   type="string" length="255" not-null="false" />
+		<property name="userProperty3"  column="userproperty3"   type="string" length="255" not-null="false" />
+		<property name="userProperty4"  column="userproperty4"   type="string" length="255" not-null="false" />
+		<property name="userProperty5"  column="userproperty5"   type="string" length="255" not-null="false" />
+		<property name="userProperty6"  column="userproperty6"   type="string" length="255" not-null="false" />
+		<property name="userProperty7"  column="userproperty7"   type="string" length="255" not-null="false" />
+		<property name="userProperty8"  column="userproperty8"   type="string" length="255" not-null="false" />
+		<property name="userProperty9"  column="userproperty9"   type="string" length="255" not-null="false" />
+		<property name="userProperty10" column="userproperty10"  type="string" length="255" not-null="false" />
+		<property name="userProperty11" column="userproperty11"  type="string" length="255" not-null="false" />
+		<property name="userProperty12" column="userproperty12"  type="string" length="255" not-null="false" />
+<!--    ==================================================================================      -->
+
+
+<!--    ==================================================================================      -->
+<!--    Action Fields                                                                           -->
+<!--    ==================================================================================      -->
+		<property name="actionCrudType"      column="actioncrudtype"        type="string" length="1"   not-null="true" />
+		<property name="actionVerb"          column="actionverb"            type="string" length="16"  not-null="true" />
+		<property name="actionObject"        column="actionobject"          type="string" length="32"  not-null="true" />
+	    <property name="resourceAdminAction" column="resourceadminaction"   type="boolean" length="1" not-null="true"/>
+	    <property name="simpleDuration"      column="simpleduration"        type="long" />
+<!--    ==================================================================================      -->
+
+<!--    ==================================================================================      -->
+<!--    Scope Fields                                                                            -->
+<!--    ==================================================================================      -->
+		<property name="businessPath" type="string" >
+			<column name="businesspath" length="2048" not-null="false" sql-type="varchar(2048)"/>
+		</property>
+		<property name="greatGrandParentResType" column="greatgrandparentrestype"	  type="string" length="32"   not-null="false" />
+		<property name="greatGrandParentResId"   column="greatgrandparentresid"  	  type="string" length="64"   not-null="false" />
+		<property name="greatGrandParentResName" column="greatgrandparentresname"	  type="string" length="255"   not-null="false" />
+		<property name="grandParentResType" column="grandparentrestype"	  type="string" length="32"   not-null="false" />
+		<property name="grandParentResId"   column="grandparentresid"  	  type="string" length="64"   not-null="false" />
+		<property name="grandParentResName" column="grandparentresname"	  type="string" length="255"   not-null="false" />
+		<property name="parentResType" column="parentrestype"	  type="string" length="32"   not-null="false" />
+		<property name="parentResId"   column="parentresid"  	  type="string" length="64"   not-null="false" />
+		<property name="parentResName" column="parentresname"	  type="string" length="255"   not-null="false" />
+		<property name="targetResType"  column="targetrestype"	  type="string" length="32"   not-null="false" />
+		<property name="targetResId"    column="targetresid"  	  type="string" length="64"   not-null="false" />
+		<property name="targetResName"  column="targetresname"	  type="string" length="255"   not-null="false" />
+<!--    ==================================================================================      -->
+
+<!--    A NOTE ON THE sql-update check none BELOW:
+
+        OLAT-4109
+        
+        What we want to achieve with the statement below is to DISABLE THE HIBERNATE "EXPECTATION CHECK" -
+        i.e. when you do a normal update with hibernate, it checks the number of changed rows to match
+        the number it expected - with update on single objects the expected number is 1.
+        Now with the Logging-DB setup we have @ UZH - where we have a master mysql database which has
+        BLACKHOLE configured as the table engine for the o_loggingtable and a slave mysql database which
+        is configured in a replication setup to retrieve all updates from the master, we only have
+        the o_loggingtable on the slave - it is completely empty (BLACKHOLE) on the master.
+        This will conflict with insert/update combinations - since after the insert, the logging entry
+        is not really in the master's o_loggingtable but only in the slave - hence the update check would fail.
+        Hence we want to disable it.
+        
+        Now there are not many ways in hibernate (at least they haven't been discovered) to do this. One is
+        to use FlushMode.MANUAL (but that can't be used with multiple logging events per transaction) and
+        below check="none".
+        
+        The only implication/limitation of check="none" is that you CANT USE 
+        
+           DBFactory.getInstance().updateObject(logObj);
+           
+        because it will fail with the BLACKHOLE@UZH setup!
+        
+        Instead you must do manual updating via something like this:
+        
+			DBQuery update = DBFactory.getInstance().createQuery(
+					"update org.olat.core.logging.activity.LoggingObject set simpleDuration = :duration where log_id = :logid");
+			update.setLong("duration", duration);
+			update.setLong("logid", lastLogObj.getKey());
+			update.executeUpdate(FlushMode.AUTO);
+ -->
+		<sql-update check="none"/> 
+
+	</class>
+</hibernate-mapping>

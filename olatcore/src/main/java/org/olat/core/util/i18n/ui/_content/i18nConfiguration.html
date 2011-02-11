@@ -1,0 +1,62 @@
+<div class="b_translation_config">
+	<fieldset>
+		<legend>$r.translate("configuration.defaultLangSelection")</legend>
+		<p>
+			$r.translate("configuration.defaultLangSelection.intro")
+		</p>
+		<div class="b_with_small_icon_left b_flag_$defaultLangKey">
+			$r.render("configuration.defaultLangSelection")
+		</div>
+	</fieldset>
+
+	<fieldset>
+		<legend>$r.translate("configuration.enabledLangSelection")</legend>
+		<p>
+			$r.translate("configuration.enabledLangSelection.intro")
+		</p>
+		$r.render("configuration.enabledLangSelection")
+	</fieldset>
+
+	<fieldset>
+		<legend>$r.translate("configuration.management")</legend>
+		<p>
+			$r.translate("configuration.management.intro")
+		</p>
+
+		<div class="b_subsolumns b_clearfix">
+			<div class="b_c50l">
+				<div class="b_subcl">
+					<p>
+						$r.render("configuration.management.package.import")
+					</p>
+					<p>
+						$r.render("configuration.management.package.export")
+					</p>
+					#if ($r.available("configuration.management.package.delete"))
+					<p>
+						$r.render("configuration.management.package.delete")
+					</p>
+					#end
+				</div>
+			</div>
+			<div class="b_c50r">
+				<div class="b_subcr">			
+					#if ($r.available("configuration.management.delete"))
+					<p>
+						$r.render("configuration.management.delete")
+					</p>
+					#end
+					#if ($r.available("configuration.management.create"))
+					<p>
+						$r.render("configuration.management.create")
+					</p>
+					#end
+				</div>
+			</div>			
+		</div>
+
+		<div class="b_note">$r.translate("configuration.management.flag")</div>
+
+	</fieldset>
+	
+</div>

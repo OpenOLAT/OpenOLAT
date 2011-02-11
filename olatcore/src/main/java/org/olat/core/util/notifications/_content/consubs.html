@@ -1,0 +1,12 @@
+<div class="b_noti"> 
+	$r.contextHelp("org.olat.core.util.notifications","home-notifications.html","help.hover.notif")
+	$r.translate("actions.title"):&nbsp;
+	<span class="b_noti_actions"> 
+		#if ($subscribed)
+			$r.render("command.unsubscribe")
+		#else
+			$r.render("command.subscribe")
+		#end
+	</span>
+	&nbsp;
+</div>

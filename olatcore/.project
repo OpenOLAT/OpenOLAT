@@ -1,0 +1,21 @@
+<projectDescription>
+  <name>olatcore</name>
+  <comment>Welcome to OLAT (Online Learning And Training), the web-based open source Learning 
+  Management System (LMS) based on Java and completely free of charge.
+  The development of OLAT started in 1999 at the University of Zurich, Switzerland, 
+  where it is the strategic learning management system and deployed on the main OLAT 
+  server. For further information see our main project website.
+  This site contains information chiefly of interest to developers e.g., source code
+  documentation, unit testing information and static code analysis output.  In 
+  addition you will also find technical project information (e.g., links to
+  issue management, version control and project statistics etc.). NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+</projectDescription>

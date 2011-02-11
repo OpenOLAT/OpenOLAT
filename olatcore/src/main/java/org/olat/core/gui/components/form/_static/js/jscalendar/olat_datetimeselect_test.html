@@ -1,0 +1,50 @@
+<html style="background-color: buttonface; color: buttontext;">
+
+<head>
+<meta http-equiv="content-type" content="text/xml; charset=utf-8" />
+
+<title>Simple calendar setups [popup calendar]</title>
+
+  <!-- calendar stylesheet -->
+  <link rel="stylesheet" type="text/css" media="all" href="calendar-win2k-cold-1.css" title="win2k-cold-1" />
+
+  <!-- main calendar program -->
+  <script type="text/javascript" src="calendar.js"></script>
+
+  <!-- language for the calendar -->
+  <script type="text/javascript" src="lang/calendar-en.js"></script>
+
+  <!-- the following script defines the Calendar.setup helper function, which makes
+       adding a calendar a matter of 1 or 2 lines of code. -->
+  <script type="text/javascript" src="calendar-setup.js"></script>
+
+</head>
+
+<body>
+
+<form action="#" method="get">
+<table cellspacing="0" cellpadding="0" style="border-collapse: collapse"><tr>
+ <td><input type="text" name="date" id="f_date_c" readonly="1" /></td>
+ <td><img src="img.gif" id="f_trigger_c" style="cursor: pointer; border: 1px solid red;" title="Date selector"
+      onmouseover="this.style.background='red';" onmouseout="this.style.background=''" /></td>
+</table>
+</form>
+
+<script type="text/javascript">
+    Calendar.setup({
+        inputField     :    "f_date_c",     	// id of the input field
+        ifFormat       :    "%d.%m.%Y %H:%M",   // format of the input field
+        button         :    "f_trigger_c",  	// trigger for the calendar (button ID)
+        align          :    "Tl",           	// alignment (defaults to "Bl")
+        singleClick    :    false,
+        showsTime	   :    true,
+        timeFormat     :    "24",
+        cache          :    true,
+        showOthers     :    true
+    });
+</script>
+
+
+
+</body>
+</html>

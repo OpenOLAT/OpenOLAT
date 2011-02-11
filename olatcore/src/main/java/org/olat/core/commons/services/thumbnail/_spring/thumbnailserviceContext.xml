@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<!-- Define commenting and rating service implementation. Remove this bean if you don't want this service to be enabled at all -->
+	<bean id="thumbnailService"
+		class="org.olat.core.commons.services.thumbnail.impl.ThumbnailServiceImpl">
+		
+		<property name="thumbnailSPIes">
+			<list>
+				<bean class="org.olat.core.commons.services.thumbnail.impl.ImageToThumbnail"/>
+				<bean class="org.olat.core.commons.services.thumbnail.impl.PDFToThumbnail"/>
+			</list>
+		</property>
+	</bean>
+	
+</beans>

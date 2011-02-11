@@ -1,0 +1,52 @@
+<div id="b_nav_main">
+<ul>
+## ---- START sites tabs ---
+#foreach ($site in $sites)
+	#set ($navel = $site.getNavElement())
+	#if($tabhelper.isSiteActive($site))
+	<li class="b_nav_site b_nav_active $!navel.getIconCSSClass()">
+		<div> ## div used for site icon
+			$r.render("t$velocityCount")
+		</div>
+	</li>	
+	#else
+	<li class="b_nav_site $!navel.getIconCSSClass()">
+		<div> ## div used for site icon
+			$r.render("t$velocityCount")
+		</div>
+	</li>	
+	#end
+#end
+## ---- END sites tabs ---
+	<li id="b_nav_spacer"></li> ##spacer between sites and tabs
+## ---- START dynamic tabs ---
+#foreach ($dtab in $dtabs)
+	#set ($navel = $dtab.getNavElement())
+	#set ($pos=${velocityCount} - 1)
+	#set ($postfix=$dtabsLinkNames.get(${pos}))
+	#if($tabhelper.isDTabActive($dtab))
+	<li class="b_nav_tab b_nav_active $!navel.getIconCSSClass()">
+		<div> ## div used for tab icon
+			$r.render("a$postfix")
+			$r.render("cp$postfix")	 ## close link has class b_nav_tab_close
+		</div>
+	</li>
+	#else
+	<li class="b_nav_tab $!navel.getIconCSSClass()">
+		<div> ## div used for tab icon
+			$r.render("a$postfix")
+			$r.render("cp$postfix")  ## close link has class b_nav_tab_close
+		</div>
+	</li>
+	#end
+#end
+## ---- END dynamic tabs ---
+</ul>
+#if($pageTitle)
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		document.title = "$r.translate("page.appname") - $r.escapeDoubleQuotes($pageTitle)";
+	/* ]]> */
+	</script>
+#end
+</div>

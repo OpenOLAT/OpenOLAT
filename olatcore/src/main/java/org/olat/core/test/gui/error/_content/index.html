@@ -1,0 +1,13 @@
+$r.render("sourceview")
+<h4>Demo Controller to create errors and test error handling</h4>
+<ul>
+	<li>$r.render("command.npe")</li>
+	<li>$r.render("command.assert")</li>
+	<li>$r.render("command.render")</li>
+	<li>
+		<a href="#" onclick="if (B_AjaxLogger.isDebugEnabled()) {B_AjaxLogger.logDebug('Demonstration of ajax logger', 'functions.js')}">AJAX logger Demo</a>
+		( Set log4j.logger.org.olat.core.logging.JavaScriptTracingController=DEBUG  to enable JavaScript AJAX logging )
+	</li>
+</ul>
+$!obj.doit()
+

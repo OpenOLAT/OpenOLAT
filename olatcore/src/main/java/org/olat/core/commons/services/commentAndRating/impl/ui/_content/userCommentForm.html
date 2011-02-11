@@ -1,0 +1,11 @@
+<div class="b_form">
+	<h5>
+	#if ($r.available("parentComment"))
+		$r.translate("comments.form.reply.title", ["$parentFirstName", "$parentLastName"])
+	#else
+		$r.translate("comments.form.new.title")
+	#end
+	</h5>
+	$r.render("commentElem")
+	$r.render("buttonContainer")
+</div>

@@ -1,0 +1,79 @@
+#if ($transToolEnabled)
+	<fieldset>
+		<legend>$r.translate("launch.title")</legend>
+		<p>
+			$r.translate("launch.intro")
+		</p>
+		$r.render("start")
+	</fieldset>
+	
+	<fieldset>
+		<legend>$r.translate("inline.title")</legend>
+		<p>
+			$r.translate("inline.intro")
+		</p>
+		#if	($logoutRequired)
+		<p class="b_warning">
+			$r.translate("inline.require.logout")
+		</p>
+		#end
+		#if ($r.available("inline.enable"))
+			<p>
+				<span class="b_with_small_icon_right b_status_disabled_icon">$r.translate("inline.state"): $r.translate("inline.state.disabled")</span>
+			</p>
+			$r.render("inline.enable")
+		#elseif ($r.available("inline.disable"))
+			<p>
+				<span class="b_with_small_icon_right b_status_enabled_icon">$r.translate("inline.state"): $r.translate("inline.state.enabled")</span>
+			</p>
+			$r.render("inline.disable")
+		#end
+	</fieldset>
+#end
+
+#if ($customizingToolEnabled)
+	<fieldset>
+		<legend>$r.translate("launch.customize.title")</legend>
+		<p>
+			$r.translate("launch.customize.intro")
+		</p>
+		$r.render("start")
+	</fieldset>
+	
+	<fieldset>
+		<legend>$r.translate("inline.customize.title")</legend>
+		<p>
+			$r.translate("inline.customize.intro")
+		</p>
+		#if	($logoutRequired)
+		<p class="b_warning">
+			$r.translate("inline.customize.require.logout")
+		</p>
+		#end
+		#if ($r.available("inline.enable"))
+			<p>
+				<span class="b_with_small_icon_right b_status_disabled_icon">$r.translate("inline.state"): $r.translate("inline.state.disabled")</span>
+			</p>
+			$r.render("inline.enable")
+		#elseif ($r.available("inline.disable"))
+			<p>
+				<span class="b_with_small_icon_right b_status_enabled_icon">$r.translate("inline.state"): $r.translate("inline.state.enabled")</span>
+			</p>
+			$r.render("inline.disable")
+		#end
+	</fieldset>
+#end
+
+<fieldset>
+	<legend>$r.translate("cache.title")</legend>
+#if($r.available("cache.flush"))
+	<p>
+		$r.translate("cache.intro")
+	</p>
+	$r.render("cache.flush")
+#else
+	<p class="b_warning">
+		$r.translate("cache.disabled")
+	</p>
+#end
+</fieldset>

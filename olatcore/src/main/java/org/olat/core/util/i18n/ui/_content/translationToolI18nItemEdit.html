@@ -1,0 +1,152 @@
+<div class="b_translation_edit b_form">
+	<div  class="b_translation_edit_head">
+		<table class="b_table b_table_nohover b_full">
+			<tr><td><span class="b_with_small_icon_left b_translation_package_icon"><b>$r.translate("generic.bundle"): </b></span></td><td id="bundlesSelectionContainer">$r.render("bundlesSelection")</td><td width="50%">$r.render("progressBarBundle")</td></tr>
+			<tr><td><span class="b_with_small_icon_left b_translation_item_icon"><b>$r.translate("generic.key"): </b></span></td><td>$r.render("keysSelection")</td><td>$r.render("progressBarKey")</td></tr>
+		</table>
+	</div>
+	<div  class="b_translation_edit_body">
+		<p class="b_info">
+			$r.translate("edit.${customizingPrefix}intro")
+		</p>	
+		
+		<div class="b_translation_edit_reference b_form_element">
+			<div class="b_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+				<code></code> = <span></span>
+			</div>
+			<h5 class="b_with_small_icon_left b_flag_$referenceLanguageKey">$r.translate("generic.${customizingPrefix}lang.reference"): $referenceLanguage</h5>
+			$r.render("referenceArea")
+		</div>
+		#if ($r.available("annotationAddLink"))
+			#if (!$customizingMode)
+			<div class="b_button_group">
+				$r.render("annotationAddLink")
+			</div>
+			#end
+		#else
+		<div class="b_translation_edit_annotation b_form_element" title="$r.translateInAttribute("edit.annotation.hover")" >
+			<h5 class="b_with_small_icon_left b_info_icon">$r.translate("generic.annotation")</h5>
+			$r.render("annotationArea")
+		</div>
+		#end
+		<div class="b_translation_edit_compare b_form_element">			
+			#if ($compareSwitchEnabled)
+			<div class="b_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+				<code></code> = <span></span>
+			</div>
+			#end
+			<div class="b_clearfix">
+				<div class="b_float_left #if (!$compareSwitchEnabled) b_dimmed #end"><h5 class="b_with_small_icon_left b_flag_$compareLanguageKey">$r.translate("generic.lang.compare"): </h5></div>
+				<div class="b_float_left #if (!$compareSwitchEnabled) b_dimmed #end">$r.render("compareLangSelection") </div>
+				<div class="b_float_left" style="margin-right: 0;">$r.render("compareSwitch")</div>
+				$r.translate("generic.enable")
+			</div>
+			$r.render("compareArea")
+		</div>
+		<div class="b_translation_edit_target b_form_element" title="$r.translateInAttribute("edit.${customizingPrefix}target.hover")">
+			<div class="b_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+				<code></code> = <span></span>
+			</div>
+			<h5 class="b_with_small_icon_left b_flag_$targetLanguageKey">$r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage</h5>	
+			$r.render("targetArea")
+		</div>		
+		<div class="b_button_group">
+		#if ($hasPrevious) 
+			$r.render("previousLink") 
+		#end
+			$r.render("saveLink")
+		#if ($hasNext) 
+			$r.render("saveNextLink")
+			$r.render("nextLink") 
+		#end
+		</div>
+	</div>	
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+
+//FIXME:FG:6.2: Implement Java way of setting flexi form link buttons dirty on change
+function b_SetTranslationSaveLinksDirty() {
+	var save=$("$f.getItemId("saveLink")"); 
+	if (!save.hasClassName('b_button_dirty')) {
+		save.addClassName('b_button_dirty'); 
+		#if ($hasNext) 
+			$("$f.getItemId("saveNextLink")").addClassName('b_button_dirty');
+		#end
+	}
+	
+}
+$("$f.getItemId("targetArea")").observe("keyup", b_SetTranslationSaveLinksDirty);    
+
+## Code to check for user click on key references within the textarea fields
+
+## Method to check the clicked text within the textarea of the given wrapper 
+## element. The method searches for the clicked word boundaries of type
+## $org.olat:my.key ; $:my.key ; ${org.olat:my.key}
+## and then uses the javascript translator to lookup this reference on the server 
+## for the given language code
+function checkClick(wrapperName, langCode) {
+	## Get content from text area within this wrapper
+	var area = $$('div.' + wrapperName + ' textarea')[0];
+	var cursorPos = area.selectionStart;
+	var content = area.getValue();
+	## Find the start position of the next i18n reference supported style:
+	var counter = 0;
+	while (content.indexOf("$") != -1 && counter < 10) {
+		var startPos = content.search("\\$\\{?([\\w\\.\\-]*):([\\w\\.\\-]*[\\w\\-])\\}?");
+		var endPos = startPos + content.substring(startPos).search("[^\\{\\w\\.\\-:\\}]|$");
+		##console.log("cursorPos::" + cursorPos + " startPos::"+ startPos + " endPos::"+ endPos + " KEY::" + content.substring(startPos, endPos));
+
+		if (startPos <= cursorPos && endPos >= cursorPos) {
+			var reference = content.substring(startPos, endPos);
+			## remove {wrapper} brakes
+			if (reference.startsWith("{")) reference = reference.substring(1, reference.length-1);			
+			var bundleName = "";
+			var key = "";
+			if (reference.startsWith(":")) {
+				## of type ':my.key' - get current bundle from bundles selction dropdown
+				key = reference.substring(1, reference.length);	
+				var select = $$("#bundlesSelectionContainer select")[0];
+				bundleName = select.options[select.selectedIndex].value;
+			} else {
+				## of type 'org.olat.core:my.key' - parse bundle from reference
+				var elements = reference.split(":");
+				bundleName = elements[0];
+				key = elements[1];
+			}
+			
+			var trans = b_jsTranslatorFactory.getTranslator(langCode, bundleName);
+			if (trans) {
+				var translated = trans.translate(key);
+				##console.log("WORD FOUND::" + reference + " translated as::" + translated);
+				if (translated != reference) {
+					## set new key and value, make element visible
+					$$('div.' + wrapperName + ' div.b_translation_refKey code')[0].update(reference);
+					$$('div.' + wrapperName + ' div.b_translation_refKey span')[0].update(translated);
+					$$('div.' + wrapperName + ' div.b_translation_refKey')[0].setStyle('display: inline');
+				}
+			}
+			break;
+		}
+		## remove parsed content from string
+		content = content.substring(endPos);	
+		cursorPos -= endPos;
+		## increment emergency stop counter - don't lookup more than 10 keys, probably a programming error
+		counter++;
+	}	
+}
+	
+## Initialize observers
+Ext.onReady(function() {
+	var area = $$('div.b_translation_edit_reference textarea')[0]; 
+	area.observe('click', function(){checkClick('b_translation_edit_reference', '${referenceLanguageKey}');});
+#if ($compareSwitchEnabled)
+	area = $$('div.b_translation_edit_compare textarea')[0]; 
+	area.observe('click', function(){checkClick('b_translation_edit_compare', '${compareLanguageKey}');});
+#end
+	area = $$('div.b_translation_edit_target textarea')[0]; 
+	area.observe('click', function(){checkClick('b_translation_edit_target', '${targetLanguageKey}');});
+});
+/* ]]> */
+</script>

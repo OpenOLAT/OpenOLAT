@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ext="http://extjs.com/docs" xml:lang="$r.getLanguageCode()" lang="$r.getLanguageCode()">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+## <!-- IE cache -->
+<meta http-equiv="pragma-directive" content="no-cache" />
+<meta http-equiv="cache-directive" content="no-cache" />
+<script type="text/javascript">
+/* <![CDATA[ */ 
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+var o_info = new Object();
+/* ]]> */
+</script>
+## Basic JS libraries for DOM manipulation and visual effects
+<script type="text/javascript" src="$r.staticLink("js/prototype/prototype.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/effects.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/controls.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/sound.js")"></script>
+## EXT JS library
+<link rel="stylesheet" type="text/css" href="$r.staticLink("js/ext/resources/css/ext-all.css")" />
+## Use Ext src version when in debug mode to allow JS debugging. Below are the ext parts that are used in OLAT
+## FIXME:FG:6.4 create ext component in java to reduce loading of ext elements on login screen
+## EXT base elements
+<script type="text/javascript" src="$r.staticLink("js/ext/adapter/prototype/ext-prototype-adapter.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-core.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-foundation.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/cmp-foundation.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-dd.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/resizable.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-foundation.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-json.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-list-views.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/window.js")"></script>		## needed by info/warn/error message
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-buttons.js")"></script>	## needed by info/warn/error message
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-toolbars.js")"></script>	## needed by info/warn/error message
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tips.js")"></script> 		## needed everywhere
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tree.js")"></script> 		## AjaxTreeController
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-forms.js")"></script> 	## needed by tree inline edit
+
+## OLAT libraries
+<script type="text/javascript" src="$r.staticLink("js/functions.js")"></script>
+##
+## LAYOUT
+
+## 1) Dynamic component CSS included by components
+$r.render("jsCssRawHtmlHeader", "pre-theme")
+## 2) CSS theme inclusion and favicons
+<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link id="b_theme_css" href="${theme.getBaseURI()}layout.css" rel="stylesheet" type="text/css" />
+## 3) IE specific bugfixes for current theme
+<!--[if lte IE 7]>
+<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
+<![endif]-->
+## 4) Dynamic overriding of CSS rules
+$r.render("jsCssRawHtmlHeader", "post-theme")
+## 5) Add user font size
+<style id="b_fontSize_css" type="text/css">#b_page_margins{font-size:${globalSettings.getFontSize()}%}</style>
+
+## deprecated - include any raw header
+$r.renderHeaderIncludes()
+
+## Page title taken from org.olat.core package
+<title>$r.translate("page.appname") - $r.translate("error.header")</title>
+</head>
+
+<body>
+<div id="b_page_margins"><div id="b_page">
+	<a name="b_top"></a>
+	<div id="b_header">
+		<div id="b_logo"></div>
+		<div id="b_topnav"></div>
+	</div>
+	<div id="b_nav">
+		<a name="b_navigation"></a>
+		<div id="b_nav_main">
+			<ul>
+				<li class="b_nav_site b_exception">
+					<div> ## div used for site icon
+						<a href="#"><span>$r.translate("error.header")</span></a>
+					</div>
+				</li>	
+			</ul>
+		</div>
+	</div>
+	<div id="b_main" class="b_hideboth b_exception">
+		<div id="b_col3">
+			<div id="b_col3_content" class="b_clearfix">
+				<a id="b_content" name="content"></a> 
+				<div id="b_col3_content_inner" class="b_floatscrollbox">
+## START ERROR AREA
+
+<div class="b_important">
+	$r.translate('error.message1') <a href="mailto:${supportaddress}" class="b_link_mailto">${supportaddress}</a> $r.translate('error.message2'):
+</div>
+<div class="b_note">
+	$r.translate('error.errnum') <strong>$errnum</strong>
+	<br />
+	$r.translate('error.time') <strong>$time</strong>
+	<br />
+	$r.translate('error.addinfo') <strong>$detailedmessage</strong>
+	#if($!knownissuelink)
+	<br />
+	Known Issue: <strong>$knownissuelink</strong>
+	#end
+	
+</div>
+
+<div class="b_button_group">		
+	#if ($allowBackButton)
+		<a class="b_button" href="javascript:history.back()"><span>$r.translate("error.back")</span></a>
+	#end
+	<a class="b_button" href="$r.relLink('')"><span>Login</span></a>
+</div>
+
+<div class="b_note ">
+	<h5 class="b_with_small_icon_left b_exception_mailform_icon">$r.translate('error.report')</h5>
+	<p class="b_with_small_icon_left">
+		$r.translate('error.report.tell')
+	</p>
+
+	<div class="b_with_small_icon_left">
+		<form method="get" name="reportform" action="$r.relLink('')error/" id="ofo_366191">
+			<input type="hidden" name="username" value="$username" />
+			<textarea cols="70" rows="15" name="textarea" >$r.translate('error.errnum') $errnum
+		$r.translate('error.time') $time
+		---------------------------------------------
+			</textarea>
+			<div class="b_button_group">
+				<input type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="b_button" />
+				<input type="reset" value="$r.translateInAttribute('cancel')" class="b_button" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<p />
+<a href="#" onclick="new Effect.toggle('b_stacktrace', 'slide', {duration: 0.5})" class="b_with_small_icon_left b_exception_stacktrace_icon">$r.translate("error.technical")</a>
+<div id="b_stacktrace" #if(!$debug) style="display: none;" #end class="b_floatscrollbox"><div>
+<pre>
+$listenerInfo
+$stacktrace
+</pre>
+</div></div>
+
+
+
+## END ERROR AREA				
+				</div>
+			</div>
+			## IE column clearing
+			<div id="b_ie_clearing">&nbsp;</div>
+		</div>
+	</div>
+	<div id="b_footer" class="b_clearfix">
+		<div class="b_floatbox">
+			<a id="b_toplink" href="#b_top" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
+		</div>
+	</div>
+</div></div>
+</body>

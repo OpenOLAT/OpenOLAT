@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-lazy="false">
+  <class name="org.olat.core.commons.services.commentAndRating.impl.UserCommentImpl" table="o_usercomment">
+  		
+	<cache usage="read-write" />
+
+	<id name="key" type="long" column="comment_id"	unsaved-value="null">
+		<generator class="hilo"/>
+	</id>
+
+	<version name="version" access="field" column="version" type="int"/>
+	<property  name="creationDate" column="creationdate" type="timestamp" />   
+ 	
+	<property name="resName" type="string" >
+		<column name="resname" not-null="true" length="50" index="resname_idx"/>
+	</property>    	
+
+	<property name="resId" type="long"> 
+		<column name="resid" not-null="true" index="id_idx3" />    	
+	</property>    
+
+	<property name="resSubPath" type="string" >
+		<column name="ressubpath" length="2048" sql-type="varchar(2048)" index="subpath_idx2"  not-null="false"/>
+	</property>    	
+	
+	<many-to-one name="creator" class="org.olat.basesecurity.IdentityImpl" 
+		column="creator_id" outer-join="true" cascade="none" not-null="true"/>     	
+	
+	<property name="comment" unique="false" type="string" not-null="false">
+		<column name="commenttext" length="16777210" />
+	</property> 
+		
+	<many-to-one name="parent" class="org.olat.core.commons.services.commentAndRating.impl.UserCommentImpl">
+		<column name="parent_key" />
+	</many-to-one>
+
+  </class>
+</hibernate-mapping>

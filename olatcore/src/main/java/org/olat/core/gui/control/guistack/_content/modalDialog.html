@@ -1,0 +1,48 @@
+## modal dialog consists of two elements:
+## 1) the shim: an invisible iframe so solve the problem ofn ative window elements shinging through 
+##    from lower layers 
+## 2) the modal area: this is the place where the modal content will be. Note that this are
+##    has no visual effects like a border. It is just a container where the various modal elements
+##    are placed.
+## 3) the overlay: a transparent element that covers the background. links in the background
+##    are not clickable anymore (see blow)
+
+## First tell Ext on which z-index the next Ext-window can be opened so that is is on top of 
+## this modal dialog
+<script type="text/javascript">
+/* <![CDATA[ */
+   Ext.WindowMgr.zseed = $zindexextwindows;
+/* ]]> */
+</script>
+
+## 1) 
+## some browser elements (e.g. pulldown lists) are displayed through the 
+## overlay. this invisible iframe does the trick for IE
+## It's important to display the ifram only for IE browsers. Firefox has a bug
+## that looses the curser in form fields if this iframe is present.
+## See http://www.activewidgets.com/javascript.forum.8495.4/blinking-cursor-lost-in-text.html
+<!--[if IE]>
+	<iframe class="b_modal_iebug" src="$r.staticLink("empty.html")" style="position:absolute; left:0; top:0; width:100%; height:100%; border:none; z-index: $zindexshim; opacity:0; filter: alpha(opacity:0);" ></iframe>
+<![endif]-->
+
+## 2)
+<div class="b_modal_area b_clearfix" style="z-index: $zindexarea">
+	<div class="b_floatscrollbox"> 
+		<a name="b_modal"></a>
+		$r.render("guimsgplace")
+		$r.render("cont")
+	</div>
+</div>
+
+## 3)
+<div class="b_modal_overlay" style="z-index: $zindexoverlay" id="b_modal_overlay_$r.getCId()"></div>
+<!--[if lte IE 7]>
+	## fix brocken transparend overlay in IE6, set height manually with javascript
+	<script type="text/javascript">
+	try {
+		$('b_modal_overlay_$r.getCId()').setStyle({ height: $('b_page').getHeight() + 'px' });
+	} catch (e) {
+		//
+	}
+	</script>
+<![endif]-->

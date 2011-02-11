@@ -1,0 +1,11 @@
+
+$r.render("fileUploadCtr")
+#if($showFieldset)
+<fieldset>
+	<legend>$r.translate("ul.quote")</legend>
+	$r.render("ubar")
+</fieldset>
+#else
+	<h5>$r.translate("ul.quote")</h5>
+	$r.render("ubar")
+#end

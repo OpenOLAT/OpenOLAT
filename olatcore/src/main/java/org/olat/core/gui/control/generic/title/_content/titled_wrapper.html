@@ -1,0 +1,19 @@
+<div class="b_titled_wrapper $wrapperCss">
+#if($title)
+	<h$size class="b_titled_wrapper $titleCss">
+		#if($contextTitle)
+			<span>$contextTitle:</span>
+		#end	
+		$title
+	</h$size>
+#end
+#if($r.available("description"))
+<div class="b_titled_wrapper_desc">
+	$r.render("description")
+</div>
+#end
+#if($separator)
+	<hr />
+#end
+$r.render("child")
+</div>

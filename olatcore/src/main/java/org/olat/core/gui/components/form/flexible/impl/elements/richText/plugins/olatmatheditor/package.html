@@ -1,0 +1,112 @@
+<html>
+<head>
+</head>
+
+<body>
+<h3>OLAT Math Editor Plugin for TinyMCE</h3>
+
+This plugin provides an editor for LaTeX formulas with instant preview
+and syntax checking.
+
+<h4>Configuration</h4>
+
+To enable this plugin in OLAT, you have to add it to OLAT's rich text
+configuration file. Open the file
+
+<pre>
+olatcore/src/main/resources/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/olatdefaultconfig.xml
+</pre>
+
+and add the bean
+<code>org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor.OlatMathEditorPlugin</code>
+to the list of custom plugins:
+
+<pre>
+<beans>
+	<bean
+	id="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory"
+	class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.TinyMCECustomPluginFactory"
+	singleton="true">
+ 		<property name="customPlugins">		
+ 			<list>
+ 				  :
+ 				  : (Beans for other plugins go here.) 
+ 				  :
+ 				<bean
+	class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor.OlatMathEditorPlugin"
+	singleton="true">
+ 				</bean>
+ 				  :
+ 				  :
+  			</list>	  			
+		</property>
+	</bean>
+</beans>
+</pre>
+
+No additional configuration is needed.
+
+
+<h4>Usage</h4>
+<p>After successful configuration, you should see the Math Editor
+button (showing a greek Sigma) in the editor toolbar:</p>
+
+<p><img src="doc-files/toolbar.png"></p>
+<p>If you click this button, a dialog will appear:</p>
+
+<p><img src="doc-files/dialog.png"></p>
+
+<p>Enter your LaTeX into the top area. It will be converted into a
+preview as you type:</p>
+
+<p><img src="doc-files/dialog-filled.png"></p>
+
+<p>If you make a mistake, an error message will appear inside the
+preview area:</p>
+
+<p><img src="doc-files/dialog-error.png"></p>
+
+<p>When you're done, klick the <i>Insert</i> button. The math
+formula will be shown in the text using a placeholder image:</p>
+
+<p><img src="doc-files/in-tinymce.png"></p>
+
+<p>If you want to open the formula again, just select the
+placeholder image and then klick on the Math Editor button again.<br>
+<i><b>Hint:</b></i> If you want to know the formula without having to
+open the dialog again, just move your mouse over the placeholder image.
+The formula will appear as a tooltip.</p>
+
+<p>The OLAT Math Editor Plugin uses <a
+	href="http://www.math.union.edu/~dpvc/jsMath/">jsMath</a> to render the
+LaTeX formulas. jsMath has an option dialog which allows you to choose
+what types of fonts to use, the size of the fonts etc. Just click on the
+small "jsMath" box in the top right corner of the editor window.<br>
+<i><b>Hint:</b></i> You can choose the method used by jsMath to display
+the math formulas, and it is possible to tell it to use separately
+downloadable fonts to do so. See the <a
+	href="http://www.math.union.edu/~dpvc/jsMath/users/fonts.html">jsMath
+homepage</a> for more information.</p>
+
+<h4>Information for OLAT developers</h4>
+<ul>
+	<li>The Math Editor Plugin depends on the jsMath library for
+	rendering the formulas. jsMath is integrated into OLAT and is loaded
+	dynamically by <code>jsmathdialog.html</code> via a parameter set in <code>OlatMathEditorPlugin.java</code>
+	(see the <code>getPluginParameters()</code> method)</li>
+	<li>The placeholder image location is given in the <code>OlatMathEditorPlugin.getPluginParameters()</code>
+	method as well.</li>
+	<li>This plugin depends on the <a href="http://www.prototypejs.org/">Prototype JavaScript library</a>, stored in its own, local <code>prototype.js</code> file.</li>
+	<li>The <code>content.css</code> file responsible for the
+	placeholder styling can be found in the package directory under the <code>_static/js/css</code>
+	path.</li>
+	<li>The preview is rendered to an offscreen surface first. If the result is a formula, it will be copied onscreen, and if the result is an error message returned by jsMath, it will be copied onscreen <i>below</i> the formula. Have a look at <code>js/jsmathdialog.js</code> for details. </li>
+</ul>
+
+<h4>Credits</h4>
+<ul>
+	<li>Implementation in OLAT: Timo W&uuml;rsch, <a
+		href="http://www.frentix.com">frentix.com</a></li>
+</ul>
+</body>
+</html>

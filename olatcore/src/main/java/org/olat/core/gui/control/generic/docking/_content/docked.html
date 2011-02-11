@@ -1,0 +1,20 @@
+<script type="text/javascript">
+function $r.getId("undf")() {
+	try {
+		var nd = $("$r.getId("undck")");
+		nd.setAttribute("style","display:none");
+		## for IE specialwurscht...
+		nd.style.display = 'none';
+		var ww = window.open("$r.commandURI("ud")", "$winid", "height=400, width=800, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
+		ww.focus();
+	} catch(e) {
+		if (B_AjaxLogger.isDebugEnabled()) {
+			B_AjaxLogger.logDebug("Error when trying to dock div id::$r.getId("undck")" , "org.olat.core.gui.control.generic.docking._content.docked.html");
+		}
+	}
+}
+</script>
+<div id="$r.getId("undck")">
+	<a id="b_content_popup" href="javascript:$r.getId("undf")()" title="$r.translateInAttribute("command.undock")"></a>	
+	$r.render("controllerComp")
+</div>

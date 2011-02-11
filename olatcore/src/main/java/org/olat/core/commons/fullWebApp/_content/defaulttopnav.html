@@ -1,0 +1,11 @@
+<ul>
+#if (!$isGuest)
+	<li><a id="b_logout" href="$r.commandURI("logout")" title="$r.translateInAttribute("header.topnav.logout.alt")">
+			<span class="b_logout_icon">$r.translate("header.topnav.logout")</span>
+		</a>
+	</li>
+#else
+	<li><a id="b_login" href="$r.commandURI("login")" title="$r.translateInAttribute("header.topnav.login.alt")" onclick="return o2cl()">
+		<span class="b_login_icon">$r.translate("header.topnav.login")</span></a></li>
+#end
+</ul>

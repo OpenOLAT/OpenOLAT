@@ -1,0 +1,19 @@
+<script type="text/javascript">
+/* <![CDATA[ */ 
+function $r.getId("undf")() {
+	try {
+		## open window with same size as current window. Uses prototype library to access the viewport
+		var ww = window.open("$r.commandURI("cl")", "$winid", "height=" + document.viewport.getHeight()+ ", width=" + document.viewport.getWidth() + ", left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no");
+		ww.focus();
+	} catch(e) {
+		if (B_AjaxLogger.isDebugEnabled()) {
+			B_AjaxLogger.logDebug("Error when trying to dock div id::$r.getId("undck")" , "org.olat.core.gui.control.generic.docking._content.docked.html");
+		}
+	}
+}
+/* ]]> */
+</script>
+
+<a id="b_content_popup" href="javascript:$r.getId("undf")()" title="$r.translateInAttribute("command.clone")"></a>	
+$r.render("cloneableCC")
+

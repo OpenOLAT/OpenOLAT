@@ -1,0 +1,11 @@
+$r.translate("closewindow.manually")
+<script type="text/javascript">
+/* <![CDATA[ */ 
+var ope = window.opener;
+#if($imagepath)
+ope.BTinyHelper.writeLinkSelectionToTiny("$imagepath");
+#end
+window.close(); // close first, safari bug will not close window otherwhise
+ope.focus();
+/* ]]> */
+</script>

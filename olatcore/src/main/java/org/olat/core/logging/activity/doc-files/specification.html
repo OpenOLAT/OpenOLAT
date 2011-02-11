@@ -1,0 +1,1523 @@
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html class="pageview">
+
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<base target="_top">
+<style type="text/css">
+  
+
+/* default css */
+
+table {
+  font-size: 1em;
+  line-height: inherit;
+  border-collapse: collapse;
+}
+
+
+tr {
+  
+  text-align: left;
+  
+}
+
+
+div, address, ol, ul, li, option, select {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+p {
+  margin: 0px;
+}
+
+
+pre {
+  font-family: Courier New;
+  white-space: pre-wrap;
+  margin:0;
+}
+
+body {
+  margin: 6px;
+  padding: 0px;
+  font-family: Verdana, sans-serif;
+  font-size: 10pt;
+  background-color: #ffffff;
+  color: #000;
+}
+
+
+img {
+  -moz-force-broken-image-icon: 1;
+}
+
+@media screen {
+  html.pageview {
+    background-color: #f3f3f3 !important;
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+
+  
+
+  body {
+    min-height: 1100px;
+    
+    counter-reset: __goog_page__;
+  }
+  
+  * html body {
+    height: 1100px;
+  }
+  /* Prevent repaint errors when scrolling in Safari. This "Star-7" css hack
+     targets Safari 3.1, but not WebKit nightlies and presumably Safari 4.
+     That's OK because this bug is fixed in WebKit nightlies/Safari 4 :-). */
+  html*#wys_frame::before {
+    content: '\A0';
+    position: fixed;
+    overflow: hidden;
+    width: 0;
+    height: 0;
+    top: 0;
+    left: 0;
+  }
+  
+  .pageview body {
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 2px solid #bbb;
+    border-bottom: 2px solid #bbb;
+    width: 648px !important;
+    margin: 15px auto 25px;
+    padding: 40px 50px;
+  }
+  /* IE6 */
+  * html {
+    overflow-y: scroll;
+  }
+  * html.pageview body {
+    overflow-x: auto;
+  }
+  
+
+  
+    
+    .writely-callout-data {
+      display: none;
+    }
+    
+
+    .writely-footnote-marker {
+      background-image: url('MISSING');
+      background-color: transparent;
+      background-repeat: no-repeat;
+      width: 7px;
+      overflow: hidden;
+      height: 16px;
+      vertical-align: top;
+
+      
+      -moz-user-select: none;
+    }
+    .editor .writely-footnote-marker {
+      cursor: move;
+    }
+    .writely-footnote-marker-highlight {
+      background-position: -15px 0;
+      -moz-user-select: text;
+    }
+    .writely-footnote-hide-selection ::-moz-selection, .writely-footnote-hide-selection::-moz-selection {
+      background: transparent;
+    }
+    .writely-footnote-hide-selection ::selection, .writely-footnote-hide-selection::selection {
+      background: transparent;
+    }
+    .writely-footnote-hide-selection {
+      cursor: move;
+    }
+
+    /* Comments */
+    .writely-comment-yellow {
+      background-color: #ffffd7;
+    }
+    .writely-comment-orange {
+      background-color: #ffe3c0;
+    }
+    .writely-comment-pink {
+      background-color: #ffd7ff;
+    }
+    .writely-comment-green {
+      background-color: #d7ffd7;
+    }
+    .writely-comment-blue {
+      background-color: #d7ffff;
+    }
+    .writely-comment-purple {
+      background-color: #eed7ff;
+    }
+
+  
+
+
+  
+  .br_fix span+br:not(:-moz-last-node) {
+    
+    position:relative;
+    
+    left: -1ex
+    
+  }
+
+  
+  #cb-p-tgt {
+    font-size: 8pt;
+    padding: .4em;
+    background-color: #ddd;
+    color: #333;
+  }
+  #cb-p-tgt-can {
+    text-decoration: underline;
+    color: #36c;
+    font-weight: bold;
+    margin-left: 2em;
+  }
+  #cb-p-tgt .spin {
+    width: 16px;
+    height: 16px;
+    background: url(//ssl.gstatic.com/docs/clipboard/spin_16o.gif) no-repeat;
+  }
+}
+
+h6 { font-size: 8pt }
+h5 { font-size: 8pt }
+h4 { font-size: 10pt }
+h3 { font-size: 12pt }
+h2 { font-size: 14pt }
+h1 { font-size: 18pt }
+
+blockquote {padding: 10px; border: 1px #DDD dashed }
+
+.webkit-indent-blockquote { border: none; }
+
+a img {border: 0}
+
+.pb {
+  border-width: 0;
+  page-break-after: always;
+  /* We don't want this to be resizeable, so enforce a width and height
+     using !important */
+  height: 1px !important;
+  width: 100% !important;
+}
+
+.editor .pb {
+  border-top: 1px dashed #C0C0C0;
+  border-bottom: 1px dashed #C0C0C0;
+}
+
+div.google_header, div.google_footer {
+  position: relative;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+
+/* Table of contents */
+.editor div.writely-toc {
+  background-color: #f3f3f3;
+  border: 1px solid #ccc;
+}
+.writely-toc > ol {
+  padding-left: 3em;
+  font-weight: bold;
+}
+ol.writely-toc-subheading {
+  padding-left: 1em;
+  font-weight: normal;
+}
+/* IE6 only */
+* html writely-toc ol {
+  list-style-position: inside;
+}
+.writely-toc-none {
+  list-style-type: none;
+}
+.writely-toc-decimal {
+  list-style-type: decimal;
+}
+.writely-toc-upper-alpha {
+  list-style-type: upper-alpha;
+}
+.writely-toc-lower-alpha {
+  list-style-type: lower-alpha;
+}
+.writely-toc-upper-roman {
+  list-style-type: upper-roman;
+}
+.writely-toc-lower-roman {
+  list-style-type: lower-roman;
+}
+.writely-toc-disc {
+  list-style-type: disc;
+}
+
+/* Ordered lists converted to numbered lists can preserve ordered types, and
+   vice versa. This is confusing, so disallow it */
+ul[type="i"], ul[type="I"], ul[type="1"], ul[type="a"], ul[type="A"] {
+  list-style-type: disc;
+}
+
+ol[type="disc"], ol[type="circle"], ol[type="square"] {
+  list-style-type: decimal;
+}
+
+/* end default css */
+
+
+  /* default print css */
+  @media print {
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    div.google_header, div.google_footer {
+      display: block;
+      min-height: 0;
+      border: none;
+    }
+
+    div.google_header {
+      flow: static(header);
+    }
+
+    /* used to insert page numbers */
+    div.google_header::before, div.google_footer::before {
+      position: absolute;
+      top: 0;
+    }
+
+    div.google_footer {
+      flow: static(footer);
+    }
+
+    /* always consider this element at the start of the doc */
+    div#google_footer {
+      flow: static(footer, start);
+    }
+
+    span.google_pagenumber {
+      content: counter(page);
+    }
+
+    span.google_pagecount {
+      content: counter(pages);
+    }
+
+    .endnotes {
+      page: endnote;
+    }
+
+    /* MLA specifies that endnotes title should be 1" margin from the top of the page. */
+    @page endnote {
+      margin-top: 1in;
+    }
+
+    callout.google_footnote {
+      
+      display: prince-footnote;
+      footnote-style-position: inside;
+      /* These styles keep the footnote from taking on the style of the text
+         surrounding the footnote marker. They can be overridden in the
+         document CSS. */
+      color: #000;
+      font-family: Verdana;
+      font-size: 10.0pt;
+      font-weight: normal;
+    }
+
+    /* Table of contents */
+    #WritelyTableOfContents a::after {
+      content: leader('.') target-counter(attr(href), page);
+    }
+
+    #WritelyTableOfContents a {
+      text-decoration: none;
+      color: black;
+    }
+
+    /* Comments */
+    .writely-comment-yellow {
+      background-color: #ffffd7;
+    }
+    .writely-comment-orange {
+      background-color: #ffe3c0;
+    }
+    .writely-comment-pink {
+      background-color: #ffd7ff;
+    }
+    .writely-comment-green {
+      background-color: #d7ffd7;
+    }
+    .writely-comment-blue {
+      background-color: #d7ffff;
+    }
+    .writely-comment-purple {
+      background-color: #eed7ff;
+    }
+  }
+
+  @page {
+    @top {
+      content: flow(header);
+    }
+    @bottom {
+      content: flow(footer);
+    }
+    @footnotes {
+      border-top: solid black thin;
+      padding-top: 8pt;
+    }
+  }
+  /* end default print css */
+
+
+/* custom css */
+
+
+/* end custom css */
+
+/* ui edited css */
+
+body {
+  font-family: Verdana;
+  
+  font-size: 10.0pt;
+  line-height: normal;
+  background-color: #ffffff;
+}
+/* end ui edited css */
+
+
+/* editor CSS */
+.editor a:visited {color: #551A8B}
+.editor table.zeroBorder {border: 1px dotted gray}
+.editor table.zeroBorder td {border: 1px dotted gray}
+.editor table.zeroBorder th {border: 1px dotted gray}
+
+
+.editor div.google_header, .editor div.google_footer {
+  border: 2px #DDDDDD dashed;
+  position: static;
+  width: 100%;
+  min-height: 2em;
+}
+
+.editor .misspell {background-color: yellow}
+
+.editor .writely-comment {
+  font-size: 9pt;
+  line-height: 1.4;
+  padding: 1px;
+  border: 1px dashed #C0C0C0
+}
+
+
+/* end editor CSS */
+
+</style>
+
+  
+  <title>User Activity Logging</title>
+
+</head>
+
+<body 
+    
+    >
+    
+    
+    
+<div>
+  &nbsp;<br>
+  <h1>
+    User Activity Logging
+  </h1>
+  <h2>
+    Specification &amp; Architecture
+  </h2>
+  <h2>
+    1 Introduction
+  </h2>
+  This document summarizes a year long discussion between UZH and BPS about how to do Activity Logging in OLAT and describes the next steps necessary to finish the implementation.<br>
+  <br>
+  <h3>
+    Terminology
+  </h3>
+  There will still be two different kinds of logging:<br>
+  <br>
+  <ul>
+    <li>
+      <b>user activity logging</b> for auditing and user-, group-, course-level statistics<br>
+    </li>
+    <li>
+      <b>technical logging</b> for errors, warns and debugging.
+    </li>
+  </ul>
+  <br>
+  This document only affects user activity logging<br>
+  <br>
+  <h2>
+    2 Architecture
+  </h2>
+  <h3>
+    IUserActivityLogger, ThreadLocalUserActivityLoggerInstaller and ThreadLocalUserActivityLogger
+  </h3>
+  <ul>
+    <li>
+      All logging happens via an interface I<font face="courier new">UserActivityLogger</font> via the Method(s) <font face="courier new">log(..)</font>
+    </li>
+    <li>
+      An <font face="courier new">UserActivityLogger </font>can be created via <font face="courier new">ThreadLocalUserActivityLoggerInstaller</font>
+    </li>
+    <li>
+      Also, a <font face="courier new">ThreadLocalUserActivityLogger </font>is introduced to pass <font face="courier new">UserActivityLogger</font>s from <font face="courier new">Controller</font> to <font face="courier new">Controller </font>during event handling (which is the most common use case of doing user activity logging)
+    </li>
+    <ul style=FONT-FAMILY:Verdana>
+      <li>
+        When <font face="courier new">ThreadLocalUserActivityLogger.log()</font> is accessed and no <font face="courier new">IUserActivityLogger </font>is set, it falls back to the minimum set of informations available which is the user and the session.
+      </li>
+    </ul>
+  </ul>
+  <h3>
+    User Activity Logging During Event Handling
+  </h3>
+  <ul>
+    <li>
+      Each <font face="courier new">Controller </font>has an (optional) I<font face="courier new">UserActivityLogger </font>which is initialized usually at constructor time.<br>
+      <b>PS:</b>&nbsp; Controllers should set the <font face="courier new">IUserActivityLogger </font>as early as possible when they have knowledge of olat resourceable that would be important to have for logging (incl. <font face="courier new">ForumController</font>, <font face="courier new">CourseGroupManagementMainController</font>). Not always are Controllers created from within an event() method<br>
+    </li>
+    <li>
+      In the event loop where <font face="courier new">Window.event()</font> calls <font face="courier new">Controller.event()</font> the Framework grabs the <font face="courier new">Controller</font>'s <font face="courier new">IUserActivityLogger </font>and sets it as the <font face="courier new">ThreadLocalUserActivityLogger</font>. (setting the minimal I<font face="courier new">UserActivityLogger </font>if the <font face="courier new">Controller </font>one is <font face="courier new">null</font>)
+    </li>
+    <ul>
+      <li>
+        Similarly, the <font face="courier new">EventAgency.fireEvent()</font> - through which all <font face="courier new">MultiUserEvent </font>for both singleVM and cluster mode are passed through - sets the <font face="courier new">ThreadLocalUserActivityLogger </font>to the Controller's <font face="courier new">IUserActivityLogger</font>. If the listener is not a <font face="courier new">Controller </font>then the <font face="courier new">ThreadLocalUserActivityLogger </font>is set to <font face="courier new">null</font><br>
+      </li>
+    </ul>
+    <li>
+      This allows for any code which is executed within the scope of <font face="courier new">Controller.event()</font> to be able to simply access the <font face="courier new">ThreadLocalUserActivityLogger.log()</font> method to do user activity logging.<br>
+    </li>
+    <li>
+      Similarly to <font face="courier new">Controller.event()</font> there is a bit of logging done within the scope of <font face="courier new">Window.dispose()</font>. The framework also sets the <font face="Courier New">ThreadLocal</font><font face="courier new">User</font><font face="Courier New">ActivityLogger</font> to simplify user activity logging during <font face="courier new">dispose()</font>.<br>
+    </li>
+    <li>
+      For cases where logging is done outside of the scope of the <font face="courier new">Controller.event()/Window.dispose()</font> the <font face="courier new">ThreadLocalUserActivityloggerInstaller </font>can be used to create an <font face="courier new">User</font><font face="courier new">ActivityLogger</font>
+    </li>
+    <li>
+      <font face=verdana>Special care needs to be taken during multi user session event handling: There we should not pass on the <font face="courier new">UserActivityLogger </font>object via ThreadLocal</font><br>
+    </li>
+  </ul>
+  <h3>
+    Initialization of IUserActivityLogger
+  </h3>
+  <ul>
+    <li>
+      As a minimum fallback there will always be an <font face="courier new">IUserActivityLogger </font>which knows about the user and the session - therefore minimal user activity logging within an event handler is always possible.
+    </li>
+    <li>
+      The goal though is to pass more specific information to the <font face="courier new">IUserActivityLogger</font>:
+    </li>
+    <ul>
+      <li>
+        the <i>business path</i> - which we should be able to retrieve via <font face="courier new">WindowControl</font>/<font face="courier new">BusinessControl </font>- attribute <font face="courier new">"BUSPATH"</font>
+      </li>
+      <li>
+        and derived thereof the following (duplicate) information to simplify logging analysis later:
+      </li>
+      <ul>
+        <li>
+          target resource (ID &amp; Type)
+        </li>
+        <li>
+          course
+        </li>
+        <li>
+          group
+        </li>
+        <li>
+          node<br>
+        </li>
+      </ul>
+    </ul>
+    <li>
+      The framework sets the <font face="courier new">IUserActivityLogger </font>in the <font face="courier new">DefaultController </font>to the one currently set in <font face="courier new">ThreadLocalUserActivityLogger </font>(as part of passing <font face="courier new">IUserActivityLogger</font>s from <font face="courier new">Controller </font>to <font face="courier new">Controller</font>)
+    </li>
+  </ul>
+  <br>
+  <h3>
+    Logging Targets: distributed, into OLAT DB or Separate DB
+  </h3>
+  Logging is done into a database - this can either be the olat database or a separate one.<br>
+  <br>
+  Each OLAT node logs directly into the (logging) DB - i.e. logging happens distributed. This is better performance-wise - as sending an event to a central-single-service which would then do the DB transaction is an overhead. The main reason for the RemoteAuditLogger (which did logging into a log file from a singleton service) was to make sure the log file was not garbled. With the DB this is no longer an issue and we can now log distributed. Hence the<font face="courier new"> RemoteAuditLogger<font face=Verdana> will no longer be used.<br>
+  <br>
+  Regarding logging into the OLAT DB or a separate DB: This comes down to lifecycling logging data. As this table grows constantly and rather rapidly, one needs to plan how this big logging table is handled. Two or three different concepts could be considered:<br>
+  </font></font>
+  <ol>
+    <li>
+      <font face=Verdana>Logging happens into the OLAT DB - with replication configured to <i>forward</i> the <font face="courier new">o_loggingtable</font> to a separate, <i>long-term-logging-db</i>. The latter can then do periodic compressing, normalization etc.<br>
+      </font>
+    </li>
+    <li>
+      <font face=Verdana>Logging happens into a separate DB which does periodic compressing, normalization etc.</font>
+    </li>
+    <li>
+      <font face=Verdana>Logging happens into a separate DB which is configured with replication and forwards its logging table to a separate, <i>long-term-logging-db</i> which then does compressing and normalization</font>
+    </li>
+  </ol>
+  The decision on which setup to implement is a deployment choice.<br>
+  <br>
+  <h3>
+    Logged Information
+  </h3>
+  The following is the complete list of information which is logged. As shown above, the logging can happen to the usual OLAT DB or to a separate <i>logging DB</i>.<br>
+  <br>
+  Note that not all of below fields are mandatory<br>
+  <br>
+  <h4>
+    Technical Fields
+  </h4>
+  <table border=1 bordercolor=#000000 cellpadding=3 cellspacing=0 id=bjmv width=100%>
+    <tbody>
+    <tr>
+      <td bgcolor=#eeeeee>
+        ID<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Type<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Length<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Mandatory<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        log_id<br>
+      </td>
+      <td>
+        bigint<br>
+      </td>
+      <td>
+        20<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        globally unique id of this log entry<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        creationdate<br>
+      </td>
+      <td>
+        timestamp<br>
+      </td>
+      <td>
+        <br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        date and time when this log happened<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        sourceclass<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        512<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        the class which triggered this log<br>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <br>
+  <h4>
+    Session and User Fields
+  </h4>
+  <table border=1 bordercolor=#000000 cellpadding=3 cellspacing=0 id=xam4 width=100%>
+    <tbody>
+    <tr>
+      <td bgcolor=#eeeeee>
+        ID<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Type<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Length<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Mandatory<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        sessionid<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        255<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        JSessionID<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        user_id<br>
+      </td>
+      <td>
+        bigint<br>
+      </td>
+      <td>
+        20<br>
+      </td>
+      <td>
+        false
+      </td>
+      <td>
+        o_user.user_id<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        username<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        255<br>
+      </td>
+      <td>
+        false
+      </td>
+      <td>
+        <br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        userproperty1<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        255<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        customizable property 1<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ..<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        255<br>
+      </td>
+      <td>
+        false
+      </td>
+      <td>
+        ..<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        userproperty12<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        255<br>
+      </td>
+      <td>
+        false
+      </td>
+      <td>
+        customizable property 12
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <br>
+  <h4>
+    Action
+  </h4>
+  <table border=1 bordercolor=#000000 cellpadding=3 cellspacing=0 id=u5df width=100%>
+    <tbody>
+    <tr>
+      <td bgcolor=#eeeeee>
+        ID<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Type<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Length<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Mandatory<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        actionCRUDType<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        1<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        CRUD: (C)reate, (R)etrieve, (U)pdate, (D)elete, (E)xit<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        actionVerb<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        16<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        verb describing this action. This comes from a limited, olat-wide defined enum. e.g.:<br>
+        add,remove,edit,launch,denied,move,copy,view...<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        actionObject<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        32<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        object of this action. usually corresponds to targetrestype but the latter might not always exist. e.g.:<br>
+        course,node,editor,groupmanagement,forumthread,<br>
+        owner,participant...<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        resourceadminaction<br>
+      </td>
+      <td>
+        boolean<br>
+      </td>
+      <td>
+        1<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        formerly known as logStream - true for ADMIN, false for USER<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        simpleDuration<br>
+      </td>
+      <td>
+        bigint<br>
+      </td>
+      <td>
+        20<br>
+      </td>
+      <td>
+        true<br>
+      </td>
+      <td>
+        -1 by default, otherwise the time between the next and this log action in this session<br>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <br>
+  <h4>
+    Scope
+  </h4>
+  <table border=1 bordercolor=#000000 cellpadding=3 cellspacing=0 id=trd- width=100%>
+    <tbody>
+    <tr>
+      <td bgcolor=#eeeeee>
+        ID<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Type<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Length<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Mandatory<br>
+      </td>
+      <td bgcolor=#eeeeee>
+        Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        businesspath<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        2048<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        REST-like, full business path<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        targetrestype<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        32<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        target olat resourceable type (e.g. forum,wiki)<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        targetresid<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        64<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        target olat resourceable id<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        targetresname<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        256<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        target olat resourceable name<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        parentrestype<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        32<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the parent olat resourceable type (e.g. node)<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        parentresid<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        64<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the parent olat resourceable id<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        parentresname<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        256<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the parent olat resourceable name<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        grandparentrestype<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        32<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the grand parent olat resourceable type (e.g. course)<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        grandparentresid<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        64<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the grand parent olat resourceable id<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        grandparentresname<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        256<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the grand parent olat resourceable name<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        greatgrandparentrestype<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        32<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the great grand parent olat resourceable type (e.g. course)<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        greatgrandparentresid<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        64<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the great grand parent olat resourceable id<br>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        greatgrandparentresname<br>
+      </td>
+      <td>
+        varchar<br>
+      </td>
+      <td>
+        256<br>
+      </td>
+      <td>
+        false<br>
+      </td>
+      <td>
+        the great grand parent olat resourceable name<br>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <br>
+  <b>A note on olat resourceables:<br>
+  </b>
+  <ul>
+    <li>
+      Not all information stored in the scope/resource columns are of type OLATResourceable. Within Olat this concept of OLATResourceable is not implemented consequently - e.g. a Course Node is not an OLATResouceable, yet we want to log this information
+    </li>
+    <li>
+      Also, sometimes we want to store information which has nothing to do with an OLATResourceable, such as a user or the number of qti attempts - in short, in these cases we want to store a plain old String.
+    </li>
+    <li>
+      To support all of the above cases (a proper OLATResourceable, an almost OLAT Resourceable and a plain String) we introduce a new interface called ILoggingResourceable under which there are two concrete implementations, one for OLATResourceable and one <i>for the rest</i>. Hence the type and id of the above fields do not always match to something in the DB or in the filesystem and are therefore -1 in those cases<br>
+    </li>
+  </ul>
+  <b>A note on target, parent, grandparent, greatgrandparent<br>
+  </b>
+  <ul>
+    <li>
+      The User Activity Logging framework collects ILoggingResourceables which it then stores into the DB. This <i>collection</i> happens at constructor creator time, is magically available during event handling and dispose via the ThreadLocal concept and can also be provided to the IUserActivityLogger at log() call time.
+    </li>
+    <li>
+      All of these resourceables are then checked against what the LoggingAction expects there to be - plus also checked against the businessPath.
+    </li>
+    <li>
+      The result - or to be precise at max 4 of them - are then stored in those target/parent/grandparent/greatgrandparent fields, starting with the most specific one, which is target.
+    </li>
+    <li>
+      Hence target should rather never be null, but greatgrandparent/greatparent are often null.<br>
+    </li>
+  </ul>
+  <br>
+  <h3>
+    Example 'Log-Line'
+  </h3>
+  <font face="courier new">*************************** 2. row ***************************</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; log_id: 1703939</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; creationdate: 2009-11-03 09:54:51</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sourceclass: org.olat.course.run.navigation.NavigationHandler</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sessionid: CF2F6ABEEBD1CC3112196ABB3699E07A</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; user_id: 229376</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; username: administrator</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty1: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty2: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty3: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty4: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty5: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty6: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty7: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty8: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty9: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty10: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty11: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; userproperty12: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; actioncrudtype: r</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; action: NODE_ACCESS</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; simpleduration: 2404</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp; resourceadminaction: 0</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; businesspath: [RepositoryEntry:393222][CourseNode:70448659388630]</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">greatgrandparentrestype: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp; greatgrandparentresid: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">greatgrandparentresname: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp; grandparentrestype: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; grandparentresid: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp; grandparentresname: NULL</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentrestype: CourseModule</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentresid: 80387775267358</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentresname: Course template small</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; targetrestype: st</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; targetresid: 70448659388630</font><br style="FONT-FAMILY:Courier New">
+  <font face="courier new">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; targetresname: Course template small</font><br style="FONT-FAMILY:Courier New">
+  <br>
+  <h3>
+    Duration Estimation
+  </h3>
+  In order to estimate the duration which a user spent on a particular page we can use the following algorithm:<br>
+  <ul>
+    <li>
+      initially a log entry is written to the DB with duration=-1
+    </li>
+    <li>
+      if a subsequent the above written log entry's duration value is overwritten with the measured delta value.<br>
+    </li>
+  </ul>
+  <br>
+  Note that a session timeout will set the duration of the user's last click to <i>session_timeout</i> by default. This must be taken into account when doing reports. Also, large values of duration might not be useful since the user could have done something else in the meantime.<br>
+  <br>
+</div>
+<h3>
+  <strike>Configuration</strike>
+</h3>
+<strike>The following is an overview of what and how to configure user activity logging<br>
+<br>
+</strike>
+<ol>
+  <li>
+    <strike>hibernate configuration of the database in spring (a la <font face="courier new">DBModule</font>)</strike>
+  </li>
+  <li>
+    <strike>configuration of the user properties</strike>
+  </li>
+  <ul>
+    <li>
+      <strike>either via<br>
+      <font face="courier new">UserManager um = UserManager.getInstance();</font><br style="FONT-FAMILY:Courier New">
+      <font face="courier new">um.getAllUserPropertyHandlers()</font></strike>
+    </li>
+    <li>
+      <strike><font face=Verdana>or via something pluggable (TBD)</font><br>
+      </strike>
+    </li>
+  </ul>
+</ol>
+<br>
+<br>
+<h2>
+  3 Deployment @ UZH
+</h2>
+Early measurements of log traffic to the o_loggingtable have resulted in an estimate of 15-20GB log-data per month (down from an original 100GB/month). With the requirement of keeping a backlog of about 2 years worth of logging data this results in quite a big database table.<br>
+<br>
+When doing statistical analysis - i.e. select statements on the loggingtable - this can generate quite some, albeit only temporary, load on the database.<br>
+<br>
+This brought up the need to look for alternative database setups - especially having a separate database specifically for logging. While it would be possible to have two databases configurable in OLAT, such a setup would mean having to deal with two sets of configurations, two sets of database connection pools, fixing the DBImpl/DBInstance singleton as well as making commits on two connections (not that we have strict transactional requirements on logging as much as we have on the other data).<br>
+<br>
+With the above in mind we came up with the following draft of deployment which we'll aim for @UZH:<br>
+<br>
+<div id=y9d3 style=TEXT-ALIGN:center>
+  <img src="images/dkt7x72_181c6qb9pg2_b.png" style=WIDTH:100%>
+</div>
+<br>
+<br>
+<h3>
+  A few notes on the logging DB setup
+</h3>
+All <i>normal OLAT instances</i> are still configured with only 1 database connection - nothing changes on that front.<br>
+<br>
+There are now two databases used in this setup:<br>
+<h4>
+  Main OLAT DB
+</h4>
+<ul>
+  <li>
+    This database stores all data locally except the o_loggingtable which is configured as BLACKHOLE - hence no logging entries exist on this DB
+  </li>
+  <li>
+    This database has the o_statistics table 'mounted' i.e. federated from the logging DB in read-only mode - hence it can access statistics information generated on the logging DB.
+  </li>
+</ul>
+<h4>
+  Logging DB
+</h4>
+<ul>
+  <li>
+    The logging DB is configured to be a Replication Slave to the Main OLAT DB. That means it will retrieve all updates from the Main OLAT DB, especially including the o_loggingtable which now only exists here.
+  </li>
+  <li>
+    The logging DB is equiped with scripts which montly compress the o_loggingtable, store the resulting table in a (read-only) o_loggingtable_200910 and 'mount' it back into the logging DB via a so called Merge Table. That means that in any event it can access as much logging data as required or kept in those monthly compress snapshots and at the same time save space using compression.
+  </li>
+</ul>
+<br>
+<h3>
+  OLAT Log(-Reporting)&amp;Statistics node
+</h3>
+<h4>
+  Generating Statistics
+</h4>
+There will be functionality - implemented by BPS - which processes logging data into some form of statistics. This data will be stored in a table - let's call it o_statistics. This table is configured to exist in the Logging DB and in a read-only-federated mode also back on the Main OLAT DB.<br>
+<br>
+The statistics are triggered via a <b>Quartz-Job</b> which is only configured on this <b>Singleton Statistics Service in the Cluster</b>.<br>
+<br>
+<h4>
+  Generating the (legacy) log file
+</h4>
+The Log &amp; Statistics node will also take care of extracting filtered logging data from the logging table (it is the only node which is configured to have access to the logging DB) and provides the information in the method required. This could include:<br>
+<ul>
+  <li>
+    store the result in a course resource folder (downside: would require disk space again)<br>
+  </li>
+  <li>
+    send the result via an email (downside: file could be too big for some inboxes)
+  </li>
+  <li>
+    downloadable (downside: complicated mechanism for pass the resulting log file - e.g. via temp directory - to the calling olat node)
+  </li>
+</ul>
+<br>
+<b>Preferred way to go</b>: store the result in a course resource folder.<br>
+<br>
+<h3>
+  SimpleDuration Update
+</h3>
+<div>
+  Here is a note about updating simpleDuration. With the setup @ UZH of having BLACKHOLE configured in the o_loggingtable on the Main OLAT DB those logging entries we insert directly 'disappear' (and get replicated to the logging db). That means that doing an updateObject() later would fail because hibernate does a safety check on how many rows were updated. And since it can't find the previous logging object anymore, it fails.<br>
+  <br>
+  To work around this issue, the code now does an update manually via createQuery and executeQuery. This way we don't assume that the log row we're updating actually exists in the database. If it exists, it will update it fine. If it doesn't, nothing happens. Except that our setup with replication will still forward the update command to the slave - hence it still gets updated accordingly in the slave.<br>
+  <br>
+</div>
+<h2>
+  4 Deployment @ BPS
+</h2>
+<font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font><br>
+<br>
+<h2>
+  5 Deployment @ Demo Installer
+</h2>
+<br>
+<div id=edd_ style=TEXT-ALIGN:center>
+  <img src="images/dkt7x72_1834qvbskdz_b.png" style=HEIGHT:350px;WIDTH:403px>
+</div>
+<br>
+In the demo installer case there is only one tomcat node and all services run in that node. Therefore the log &amp; statistics service runs in that one tomcat node as well. The other difference to cluster setups is that there is no JMS used - MultiUserEvents are sent to singleton services internally directly.<br>
+<br>
+With both the log-reporting &amp; statistics services being a singleton service (in OLAT terms) this setup becomes a <i>simple configuration task</i>.<br>
+<br>
+Note that the OLAT DB contains the usual tables as well as the o_loggingtable. The o_loggingtable might grow rapidly and we should add documentation about this fact - and how we deal with this in our installations.<br>
+<br>
+<h2>
+  6 Tasks
+</h2>
+<h3>
+  Design
+</h3>
+<ul>
+  <li>
+    <strike>Finish up the specification and design of the new user activity logging framework. Especially go through existing usage of logging and verify that it fits into the new schema.</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font><br>
+  </li>
+  <li>
+    <strike>Multi user events: analyse what information needs and needs not be passed via <font face="courier new">ThreadLocalUserActivityLogger </font>(e.g. don't pass the session but pass the course/group?)</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font><br>
+  </li>
+  <li>
+    <strike>Finish review of existing delta in BPS-1229 branch</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font><br>
+  </li>
+  <li>
+    <strike>Decide on any open issue/TBDs</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font>
+  </li>
+</ul>
+<h3>
+  BPS-1229 Branch
+</h3>
+<ul>
+  <li>
+    <strike>The BPS-1229 branch - containing a prototype of the new logging - is based on rather old code and the merge into HEAD is probably not worthwhile. Hence we will have to redo this work</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font>
+  </li>
+  <ul>
+    <li>
+      <strike>There seem to be various changes in the BPS-1229 branch - most of them not related to logging. Hence it would make it rather difficult to extract what is logging and what not. Hence redoing the work</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font>
+    </li>
+  </ul>
+</ul>
+<h3>
+  Framework
+</h3>
+<ul>
+  <li>
+    <strike><u style="FONT-FAMILY:Courier New">IUser</u><u style="FONT-FAMILY:Courier New">ActivityLogger, </u><u style="FONT-FAMILY:Courier New">ThreadLocalUserActivityLoggerInstaller</u><u style="FONT-FAMILY:Courier New">, </u><u><font face="courier new">ThreadLocal</font><font face="courier new">User</font><font face="courier new">ActivityLogger</font></u>: Implement these main framework parts<br>
+    </strike>
+  </li>
+  <li>
+    <strike><i>activity logging scope</i>: make sure the <font face="courier new">ThreadLocalUserActivityLogger </font>is set when going into <font face="courier new">Controller.event()</font>.&nbsp;</strike>
+  </li>
+  <li>
+    <strike>make sure the businessPath is available when doing logging (also in the <font face="courier new">ThreadLocalUserActivityLogger</font>?)<br>
+    </strike>
+  </li>
+  <li>
+    <strike>Multi user events &amp; <font face="courier new">ThreadLocalActivityLogger</font>: make sure session information doesn't propagate between sessions via the <font face="courier new">ThreadLocalUserActivityLogger</font>, instead pass other required information (course, group?)</strike>
+  </li>
+  <li>
+    <strike>Implement the database logging part</strike>
+  </li>
+</ul>
+<br>
+<div style=MARGIN-LEFT:40px>
+  <font style=BACKGROUND-COLOR:#00ff00>[DONE]</font>
+</div>
+<h3>
+  Integration into ManagedTransaction
+</h3>
+<ul>
+  <li>
+    User activity logging should be treated transactionally: either the transaction succeeded and hence the logging is written - or the transaction failed and hence the logging should not be written
+  </li>
+  <li>
+    The ManagedTransaction and the new user activity logging classes should cooperate to make sure these logs are treated transactionally. <font style=BACKGROUND-COLOR:#ffff00>[LATER/6.4]</font><br>
+  </li>
+</ul>
+<h3>
+  Migration
+</h3>
+<ul>
+  <li>
+    <strike>The migration from the existing <font face="courier new">AuditManager.log()</font> to <font face="courier new">ThreadLocalUserActivityLogger.log()</font> will take a while and make the HEAD unstable. Hence there should be a smooth transition. This can be done by allowing the old and the new logging code to co-exist and flag the old one as <b>deprecated </b></strike><font style=BACKGROUND-COLOR:#00ff00>[DONE]</font>
+  </li>
+  <li>
+    move old logfiles to course folder (use new folder <i>archive</i> and zip the files; bps task)<font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font>
+  </li>
+</ul>
+<h3>
+  Controllers, Managers
+</h3>
+<ul>
+  <li>
+    <strike>Refactor all occurrences of audit/activity logging by switching to the new <font face="courier new">UserActivityLogger</font>. Make sure to test each place verifying that either that logging is within the <font face="courier new">Controller.event()</font> scope or else a specific <font face="courier new">UserActivityLogger </font>is created via the </strike><font face="courier new"><strike>UserActivityLoggerFactory</strike> </font><font style=BACKGROUND-COLOR:#00ff00>[DONE]</font>
+  </li>
+</ul>
+<h3>
+  User Properties
+</h3>
+<ul>
+  <li>
+    Configurable User Properties - incl passing them to the database. <font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font>
+  </li>
+</ul>
+<h3>
+  User interface
+</h3>
+<ul>
+  <li>
+    <strike>disable tab for log files in course configuration</strike> <font style=BACKGROUND-COLOR:#00ff00>[DONE] (eglis)</font>
+  </li>
+  <li>
+    <font style=BACKGROUND-COLOR:#00ff00><font style=BACKGROUND-COLOR:#ffffff>clean up user interface </font></font>(bps task) <font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font><br>
+  </li>
+  <li>
+    archive logfiles - previous ui without checkbox "delete after archive" and without choice for log format (bps task) <font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font>
+  </li>
+  <li>
+    <font style=BACKGROUND-COLOR:#ff0000><font style=BACKGROUND-COLOR:#ffffff>statistics </font></font><font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font><br>
+  </li>
+</ul>
+<h3>
+  Review
+</h3>
+<ul>
+  <li>
+    review log entries (bps task) <font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font>
+  </li>
+</ul>
+<h3>
+  Workflows
+</h3>
+<ul>
+  <li>
+    delete course - create admin and statistic log files and add these to course file (bps task) <font style=BACKGROUND-COLOR:#ff0000>[OPEN]</font>
+  </li>
+</ul>
+<h2>
+  7 Estimates
+</h2>
+The below estimates require a review further down the road.<br>
+<br>
+<ul>
+  <li>
+    Design requires another 1-2 weeks (in parallel with other<br>
+  </li>
+  <li>
+    Migrating the existing BPS-1229 branch (reuse the reusable parts) requires 3-5 days
+  </li>
+  <li>
+    Finishing up the framework code (which includes parts of the BPS-1229 branch) requires another 3-5 days
+  </li>
+  <li>
+    Going through all controllers and managers can only start once the above work is finished - hence not before early/mid October - and will probably take 1-3 weeks<br>
+  </li>
+</ul>
+<br>
+<br>
+<br></body>
+</html>

@@ -1,0 +1,10 @@
+#if ( $year )
+<div class="b_year_navigation">
+	$r.render("navi.backward") $r.render("navi.forward") $r.render("yearLink")
+	<ul class="b_months">
+		#foreach ( $month in $year.getMonths() )
+			<li>$r.render("month_$month.getName()") ($month.itemsCount())</li>
+		#end
+	</ul>
+</div>
+#end

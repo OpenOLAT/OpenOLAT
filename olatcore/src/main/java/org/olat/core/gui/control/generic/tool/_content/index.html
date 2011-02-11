@@ -1,0 +1,49 @@
+<div class="b_toolboxes">
+
+#set($entriesSize = $entries.size())
+#foreach ($entry in $entries)
+	#if ($entry.getType() == 1)
+		#if ($velocityCount > 1)
+			</ul></div>
+		</div>
+		#end
+		
+		## wrapper div
+		<div class="b_toolbox">
+		## head
+		<div class="b_toolbox_head_wrapper">
+			<div class="b_toolbox_head">
+				<div class="b_toolbox_head_icon $!entry.getCssClass()"><strong>$entry.getHeaderText()</strong></div>
+			</div>
+		</div>
+		## body
+		<div class="b_toolbox_content"> 
+		<ul>
+	#elseif ($entry.getType() == 2)
+		#if ($entry.isEnabled())
+			#if($offerdrag) 
+			<li class="b_clearfix"><a id="$r.getCId()_$velocityCount" href="$r.commandURIbg("$entry.getAction()")" $r.bgTarget() onclick="return o2cl()" class="$entry.getCssClass()">$entry.getLinkText()</a></li>
+			 ## FIXME: leaner code, collect scripts
+			 <script type="text/javascript">new Draggable('$r.getCId()_$velocityCount',{revert:true});</script>
+			#else
+			<li class="b_clearfix"><a href="$r.commandURIbg("$entry.getAction()")" $r.bgTarget() onclick="return o2cl()" class="$entry.getCssClass()">$entry.getLinkText()</a></li>
+			#end
+		#else
+			<li class="b_clearfix"><span class="b_toolbox_disabled">$entry.getLinkText()</span></li>
+		#end
+	#elseif ($entry.getType() == 3)
+		#if ($entry.isEnabled())
+			<li class="b_clearfix"><a href="javascript:void(o_openPopUp('$r.commandURI("$entry.getAction()")', '$entry.getAction()', '$entry.getWidth()', '$entry.getHeight()', $entry.isBrowserMenuEnabled()))" onclick="return o2cl()" class="$entry.getCssClass()">$entry.getLinkText()</a></li>
+		#else
+			<li class="b_clearfix"><span class="b_toolbox_disabled">$entry.getLinkText()</span></li>
+		#end
+	#elseif ($entry.getType() == 4)
+		<li class="b_clearfix">$r.render("$entry.getComponentName()")</li>
+	#end
+#end
+
+#if ($entriesSize > 0)
+			</ul></div>
+		</div>
+#end		
+</div>

@@ -1,0 +1,39 @@
+#address, #streamer {
+	width: 300px;
+}
+
+.size {
+	width: 40px;
+}
+
+#prev { 
+	margin:0;
+	clear:both;
+}
+
+.panel_wrapper div.current {
+	height:590px;
+}
+
+div.b_contexthelp {
+	display:inline;
+	float:right;
+	width: 16px;
+	height:16px;
+	line-height:16px;
+}
+
+a.b_contexthelp {
+	display:block;
+	width: 16px;
+	height:16px;
+	line-height:16px;
+	background: url(../images/help.png) no-repeat;
+	cursor: help;
+	text-decoration:none;
+}
+
+a.b_contexthelp:hover{
+	background-image: url(../images/help_over.png);
+	text-decoration:none;
+}

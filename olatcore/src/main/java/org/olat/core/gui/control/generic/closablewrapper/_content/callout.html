@@ -1,0 +1,89 @@
+<div id="calloutview_$r.getCId()" class="b_callout_content x-hidden">
+	<div class="b_ext_tooltip_wrapper">
+		$r.render("calloutWindowContent")
+	</div>
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+			
+Ext.onReady(function() {
+	## Cleanup any leftovers from a previous drawing
+	if(Ext.getCmp('callout_$r.getCId()') != null ) {
+		Ext.getCmp('callout_$r.getCId()').destroy();
+	};
+
+	var autoLayout = true;
+	## Older IE browsers are just too stupid to do this
+	if (Ext.isIE6 || Ext.isIE7) {
+		autoLayout = false;
+	}
+	## Overwrite the default z-index defined in the x-tip CSS class from ExtJS to work
+	## properly with z-index steps from the LayeredPanelRenderer and the GuiStackNiceImpl
+	var zindex = Ext.WindowMgr.zseed;
+	Ext.WindowMgr.zseed = zindex + 5;
+	
+	## Create a new tooltip with the content element from above
+	new Ext.ToolTip({        
+		id: 'callout_$r.getCId()',
+		contentEl: 'calloutview_$r.getCId()',
+		target: '$target',
+		#if ($title)  	title: '$title', draggable: true, 	#end
+		closable: $closable,
+		autoHide: false,
+		anchor: 'box',
+		autoScroll: true,
+		autoWidth: autoLayout,
+		autoHeight: autoLayout,
+		style: 'z-index: ' + zindex,
+		
+		## Overwrite initTarget method of ToolTip, we don't want to use 
+		## the ToolTip over events to trigger the tooltip, this is all done by OLAT
+		initTarget : function(target){
+		    if(this.anchor){
+		        this.anchorTarget = this.target;
+		    }
+		},
+		
+		## Overwrite onDocMouseDown method of ToolTip, we don't want clicks somewhere on the 
+		## documents to close the callout window. Problem is that click on the trigger link
+		## should close the window, however this will open the window again (event problem) 
+		onDocMouseDown: function(e) { }
+				
+	}).on('hide', function() {
+		## Fired when the user presses the close icon in the callout window
+		## This will send the close event to the CloseableCaloutWindowController which
+		## in turn will call the destroy method and perform necessary cleanup.
+		$r.javaScriptBgCommand('close');
+	});
+	## Show the tip now
+	Ext.getCmp('callout_$r.getCId()').show();
+
+	## Add method to resize the callout window every time the OLAT DOM replacement
+	## mechanism is triggered
+	var resize = function() {
+		if(Ext.getCmp('callout_$r.getCId()') != null ) {
+			Ext.getCmp('callout_$r.getCId()').onResize();
+			b_AddOnDomReplacementFinishedCallback(resize);
+		};
+	}
+	b_AddOnDomReplacementFinishedCallback(resize);
+
+	## Make modal overlay transparent, not a typical modal layer
+	try {
+		var layerbackground = Ext.get(Ext.get(Ext.get('callout_layer_$r.getCId()').findParentNode('div.b_modal_area')).next('div.b_modal_overlay'));
+		## Remove the opacity from the b_modal_overlay layer, not desired for callyout windows
+		layerbackground.setOpacity(0);
+		## Click listener to close callout window on background click
+		#if($closable)
+			layerbackground.on('click', function() {if (o2cl()) { $r.javaScriptBgCommand('close');} });
+		#end
+		## Help GC
+		layerbackground = null;
+	} catch (e) {}
+});
+
+/* ]]> */
+</script>
+
+<div id="callout_layer_$r.getCId()"></div>

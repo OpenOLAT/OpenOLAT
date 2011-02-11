@@ -1,0 +1,28 @@
+<div class="b_briefcase">
+#if ($r.available("subscription"))
+	$r.render("subscription")
+#end
+	<div class="b_briefcase_foldercomp">
+		#if ($r.available("searchcomp"))
+		<div class="b_briefcase_searchcomp">$r.render("searchcomp")</div>
+		#end
+		<div class="b_briefcase_folder">$r.render("foldercomp")</div>
+	</div>
+#if ($webdavlink)
+	<div class="b_briefcase_webdav">
+	#b_togglebox_start("b_briefcase_webdav_link" "$r.translate('webdav.link')")
+		<div class="b_float_left">$r.contextHelp("org.olat.core.commons.modules.bc", "bc-webdav.html","help.hover.webdav")</div> 
+		$webdavlink
+	#b_togglebox_end()
+	</div>
+#end
+#if($editQuota)
+	<div class="b_briefcase_quota">
+		$r.render("editQuota")
+	</div>
+#end
+</div>
+
+#if ($r.available("autoDownloadComp"))
+	$r.render("autoDownloadComp")
+#end

@@ -1,0 +1,15 @@
+<div id="o_internallink_chooser">
+	<h3>
+		$r.translate("filechooser.select.internallink.title")
+	</h3>
+	<p>
+	$r.render("internalLinkTree")
+	
+	#if ($r.available("selectfile"))
+		<div class="b_button_group">
+			$r.render("selectfile")
+			$r.render("cancel")
+		</div>	
+	#end
+	
+</div>

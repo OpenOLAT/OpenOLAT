@@ -1,0 +1,160 @@
+## Set height to 0 to fix IE rendering issue (div would consume some visible space)
+<div style="height:0px">
+<script type="text/javascript">
+/* <![CDATA[ */ 
+
+function log(s) {
+	try {
+		if (!window.ActiveXObject) {
+			##console.log(s);
+		}
+	} catch (me) {}
+}
+
+var stopped = true;
+
+function initPolling () {
+	o_info.lastClickTime = new Date().getTime();
+	pollgrowth = 0;
+	pollcount  = 0;
+	if (stopped) {
+		stopped = false;
+		tick();
+	}
+}
+
+##observe mouse/keyboard activity to resume polling
+Event.observe("b_body","click",function(event){initPolling();});
+Event.observe("b_body","mouseover",function(event){initPolling();});
+Event.observe("b_body","keyup",function(event){initPolling();});
+
+o_info.mainwinref = this.window;
+o_info.wins = {};
+
+var pollperiod  = $pollperiod;
+var growthrate  = 10; //
+var pollminutes = 60; //
+var ishighlight = $highlight;
+var showjson    = $showJSON;
+
+
+var pollcount = 0;
+var pollError = 0;
+var pollgrowth = 0;
+var timestampLastPoll = new Date().getTime();
+
+
+// set timestamp cookie to inform other windows that they are outdated
+var sbtimestamp = new Date().getTime();
+var sbcookie = 'OLAT-UI-TIMESTAMP';
+if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/';
+//
+
+
+##
+## starts an interval which checks every second whether to send an poll request based on
+## the pollperiod or not 10 min after the last click the poll process stops
+##
+
+function tick () {
+	##log("starting poller with interval: "+pollperiod);
+	new PeriodicalExecuter(function(pe) {
+		if ( !o_info.linkbusy && (pollperiod > 1000) && (pollError < 2) ) {
+			try {
+				var now = new Date().getTime();
+				##log("checking for pollrequest...");
+				if ((now - o_info.lastClickTime) < (pollminutes*60*1000)) {
+					if ((now - timestampLastPoll) > (pollperiod + pollgrowth)) {
+						timestampLastPoll = now;
+						pollcount++;
+						pollgrowth = Math.ceil((pollperiod+pollgrowth)*(100+growthrate)/100)-pollperiod;
+						o_info.ajaxpp = new Ajax.Request('$mapuri/', {method: 'post', onComplete:onPollSuccess, onFailure: onPollFailure});
+						var idl = (now - o_info.lastClickTime)/1000;
+						##log("sent poll request. idle="+idl+"s gr="+growthrate+" g="+pollgrowth+" c="+pollcount+" eff="+Math.floor(idl/pollcount*1000));
+					}
+				} else {
+					##log("stopped polling. User was inactive for more than "+pollminutes+" minutes");
+					stopped = true;
+				}
+			} catch (e) {
+				##log("poll request error:"+showerror(e));
+				pe.stop(); //stop on errors
+			}
+		} else {
+			##log("preconditions for are not ok:");
+			##log("period: "+pollperiod);
+			##log("busy: "+o_info.linkbusy);
+			##log("errorcount: "+pollError);
+		}
+
+		// if window is not a popup window, become a standby window 
+		// in case the cookie timestamp is newer than the own one set while loading
+		// because another window holds the current UI which works
+		if (window.opener == null) {
+			var p = sbcookie + "=";
+			var ca = document.cookie.split(';');
+			for(var i=0;i < ca.length;i++) {
+				var c = ca[i];
+				while (c.charAt(0)==' ') c = c.substring(1,c.length);
+				if (c.indexOf(p) == 0) {
+					try {
+						var ts = Math.floor(c.substring(p.length,c.length));
+						if (ts > sbtimestamp) {
+							window.onunload=null;
+							window.onbeforeunload=null;
+							window.location='$sburi/';
+						}
+					} catch (e) {
+						// does not matter
+					};
+				}
+			}
+		}
+	}, 1);
+}
+
+
+Ext.onReady(initPolling);
+
+#if ($isAdmin)
+##check whether polling started or not. Wrap in ext makes it more stable
+Ext.onReady(
+	function() { 
+		setTimeout( function(){ if (!o_info.ajaxpp) {showMessageBox('error', 'error',  'Some core functionality could not be started. Please log out of OLAT and login again. ');B_AjaxLogger.logDebug('Could not initialize polling!', "serverpart.html");} },60000);
+	}
+);
+#end
+
+
+function onPollSuccess(r) {
+	if(r.status == 200){
+	 	pollError = 0;
+	 	o_onc(r);
+	} else {
+	 	pollError++;
+	}
+}
+
+function onPollFailure() {
+  pollError++;
+}
+
+/* ]]> */
+</script>
+$r.render("pollperiodPanel")
+
+#if ($showJSON)
+## COMMENTED out for browser-history reasons
+JSON <iframe src="javascript:false;document.write('');" style="height:300px; width:90%" name="$iframeName" ></iframe>
+#else
+## for safari: we cannot use display:none which would be the obvious choice here
+<div id="oaawrp" style="visibility:hidden;width:0px;height:0px">
+## don't use the document.write approach, triggers an 'page contains insecure elements' warning (OLAT-4548). Load empty.html instead
+<iframe src='$r.staticLink("empty.html")' name="$iframeName" id="$iframeName" width="1" height="1"></iframe>
+## try javascript:void(0)
+</div>
+#end	
+## below we need to provide an action attribute to make it html 4.01 transitional
+## not needed now, later for dragging, see panel.java <form id="o_oaap" method="post" action="#" onsubmit="return false" target="oaa"><input type="hidden" name="v"></form>
+</div>
+

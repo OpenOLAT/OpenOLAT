@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/tiny_mce_popup.js"></script>
+ 	<script type="text/javascript" src="jscripts/helpers.js"></script>
+ 	<script type="text/javascript" src="jscripts/movieviewer.js"></script>
+ 	<link type="text/css" rel="stylesheet" href="css/editor.css"></link>
+ 	<script type="text/javascript" src="../../../../raw/_noversion_/movie/player.js"></script>
+	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/utils/mctabs.js"></script>
+	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/utils/validate.js"></script>
+	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/utils/form_utils.js"></script>
+	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/utils/editable_selects.js"></script>
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		// Load the OLAT translator
+		function findMainWindow(win) {
+			if (win.b_jsTranslatorFactory) return win;
+			else if (win.opener) return findMainWindow(opener);
+			else return null;
+		}
+		var mainWin = findMainWindow(tinyMCEPopup.getWin());
+		var translator;
+		if (mainWin) {
+			translator = mainWin.b_jsTranslatorFactory.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer')	
+		} else {
+			// implement dummy-translator
+			translator = {	translate : function(key) { return key; } }
+		}
+		document.title = translator.translate('olatmovieviewer.title');
+	/* ]]> */
+	</script>
+	<script type="text/javascript">
+	  	var cssFiles = tinyMCEPopup.getParam("content_css").split(",");
+	  	for(i=0; i < cssFiles.length; i++) {
+			var cssElement = document.createElement("link");
+			cssElement.setAttribute("rel", "stylesheet");
+		  	cssElement.setAttribute("type", "text/css");
+		  	cssElement.setAttribute("href", cssFiles[i]);
+		  	document.getElementsByTagName("head")[0].appendChild(cssElement);
+	  	}
+	</script>
+</head>
+<body style="display:none;" onload="renderDialog(); generatePreview(); return false;">
+	<form action="#">
+		<div class="tabs">
+			<ul>
+				<li id="general_tab" class="current"><span><a href="javascript:mcTabs.displayTab('general_tab','general_panel');generatePreview();" onmousedown="return false;">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.general'))</script></a></span></li>
+				<li id="advanced_tab"><span><a href="javascript:mcTabs.displayTab('advanced_tab','advanced_panel');" onmousedown="return false;">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.advanced'))</script></a></span></li>
+			</ul>
+		</div>
+		<div class="panel_wrapper">
+			<div id="general_panel" class="panel current">
+				
+				<fieldset id="params_set">
+					<legend>﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.general'))</script></legend>
+					<div class="b_contexthelp">
+						<a href="javascript:contextHelpWindow('/olat/help/de/org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer/movie-editor.html')" class="b_contexthelp">&nbsp;</a>
+					</div>
+					<table border="0" cellpadding="0" cellspacing="0">
+						<tr>
+							<td><label for="provider">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.provider'))</script></label></td>
+							<td><select id="provider" name="provider" onchange="generatePreview();">
+								<option value="video"><script type="text/javascript">document.write(translator.translate('olatmovieviewer.video'))</script></option>
+								<option value="sound"><script type="text/javascript">document.write(translator.translate('olatmovieviewer.sound'))</script></option>
+								<option value="youtube"><script type="text/javascript">document.write(translator.translate('olatmovieviewer.youtube'))</script></option>
+								<option value="http"><script type="text/javascript">document.write(translator.translate('olatmovieviewer.http'))</script></option>
+								<option value="rtmp"><script type="text/javascript">document.write(translator.translate('olatmovieviewer.rtmp'))</script></option>
+							</td>
+						</tr>
+						<tr id="streamer_line" name="streamer_line">
+							<td><label for="streamer">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.streamer'))</script></label></td>
+							<td><input id="streamer" name="streamer" type="text" value="" onchange="generatePreview();" /></td>
+						</tr>
+						<tr>
+							<td><label for="address">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.address'))</script></label></td>
+							<td><table border="0" cellspacing="0" cellpadding="0">
+								<tr> 
+								  <td><input id="address" name="address" type="text" value="" onchange="generatePreview();" /></td>
+								  <td id="srcbrowsercontainer">&nbsp;</td>
+								</tr>
+							</table></td>
+						</tr>
+						<tr>
+							<td><label for="width">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.size'))</script></label></td>
+							<td><input type="text" id="width" name="width" value="" class="size" onchange="generatePreview();" />
+										x <input type="text" id="height" name="height" value="" class="size"  onchange="generatePreview();" />
+							</td>
+						</tr>
+					</table>
+				</fieldset>
+				<fieldset>
+					<legend>﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.preview'))</script></legend>
+					<div id="prev" name="prev">
+						<div id="prev_container" name="prev_container">&nbsp;</div>
+					</div>
+				</fieldset>
+			</div>
+			<div id="advanced_panel" class="panel">
+				<fieldset>
+					<legend>﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.advanced'))</script></legend>
+					<table border="0" cellpadding="4" cellspacing="0" width="100%">
+						<tr>
+							<td><label for="starttime">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.starttime'))</script></label></td>
+							<td><input type="text" id="starttime" name="starttime" onchange="checkTimeFormat('starttime');generatePreview();" /></td>
+						</tr>
+						<tr>
+							<td><label for="autostart">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.autostart'))</script></label></td>
+							<td><input type="checkbox" class="checkbox" id="autostart" name="autostart" onchange="generatePreview();" /></td>
+						</tr>
+						<tr>
+							<td><label for="repeat">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.repeat'))</script></label></td>
+							<td><input type="checkbox" class="checkbox" id="repeat" name="repeat" onchange="generatePreview();" /></td>
+						</tr>
+						<tr>
+							<td><label for="controlbar">﻿<script type="text/javascript">document.write(translator.translate('olatmovieviewer.controlbar'))</script></label></td>
+							<td><input type="checkbox" class="checkbox" id="controlbar" name="controlbar" onchange="generatePreview();" /></td>
+						</tr>
+					</table>
+				</fieldset>
+			</div>
+		</div>
+		<div class="mceActionPanel">
+			<div style="float: left">
+				<input type="button" id="insert" name="insert" value="{#insert}" onclick="MovieViewerDialog.insert();" />
+			</div>
+
+			<div style="float: right">
+				<input type="button" id="cancel" name="cancel" value="{#cancel}" onclick="tinyMCEPopup.close();" />
+			</div>
+		</div>
+    <input id="domIdentity" name="domIdentity" type="hidden" value="" />
+	</form>
+</body>
+</html>

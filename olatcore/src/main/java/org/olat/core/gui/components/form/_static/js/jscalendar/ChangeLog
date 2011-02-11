@@ -1,0 +1,500 @@
+2004-02-06  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* make-release.pl: ChangeLog included in the distribution (if found)
+
+	* calendar.js, doc/reference.tex, index.html: switched to version 0.9.6
+
+	* doc/Calendar.setup.tex, doc/reference.tex: updated documentation
+
+	* release-notes.html: updated release notes
+
+	* calendar.js: Fixed bug: Feb/29 and year change now keeps Feb in view
+
+	* calendar.js: fixed the "ESC" problem (call the close handler)
+
+	* calendar.js: fixed day of year range (1 to 366 instead of 0 to 365)
+
+	* calendar.js: fixed week number calculations
+
+	* doc/reference.tex: fixed (date input format)
+
+	* calendar.php: removed comment
+
+	* calendar-blue.css, calendar-blue2.css, calendar-brown.css, calendar-green.css, calendar-system.css, calendar-tas.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css, calendar.js:
+	workaround for IE bug (you can't normally specify through CSS the style for
+	an element having two classes or more; we had to change a classname)
+
+	* calendar-blue.css, calendar-blue2.css, calendar-brown.css, calendar-green.css, calendar-system.css, calendar-tas.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css:
+	smaller fonts on days that are in neighbor months
+
+2004-02-04  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* index.html: first demo shows the "showOtherMonths" capability
+
+	* calendar-setup.js: support new parameters in the calendar.
+	added: firstDay, showOthers, cache.
+
+	* calendar-blue.css, calendar-blue2.css, calendar-brown.css, calendar-green.css, calendar-system.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css, calendar.js, lang/calendar-en.js, lang/calendar-ro.js:
+	new parameters: firstDayOfWeek, showsOtherMonths; removed mondayFirst.
+	This adds support for setting any day to be the first day of week (by just
+	clicking the day name in the display); also, if showsOtherMonths is enabled
+	then dates belonging to adjacent months that are in the current view will be
+	displayed and the calendar will have a fixed height.
+
+	all themes updated.
+
+	* test.php: test for calendar.php
+
+	* calendar.php: fixed bug (pass numeric values as numbers)
+
+2004-02-01  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.php: added PHP wrapper
+
+	* img.gif: icon updated
+
+	* TODO: updated TODO list
+
+2004-01-27  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js:
+	Janusz Piwowarski sent over a patch for IE5 compatibility which is much more
+	elegant than the atrocities that I had wrote :-D  I'm gettin' old..  Thanks Janusz!
+
+	* lang/calendar-fi.js: updated
+
+2004-01-15  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* TODO: updated TODO list
+
+	* calendar-setup.js: default align changed to "Br"
+
+	* doc/reference.tex: changed default value for "align"
+
+	* calendar-setup.js: calling onchange event handler, if available
+
+	* calendar-setup.js: added "position" option
+
+	* simple-1.html: demonstrates "step" option
+
+	* calendar-setup.js: added "step" option
+
+	* calendar.js: added yearStep config parameter
+
+	* calendar.js:
+	fixed parseDate routine (the NaN bug which occurred when there was a space
+	after the date and no time)
+
+2004-01-14  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-en.js: added "Time:"
+
+	* test-position.html: test for the new position algorithm
+
+	* index.html: do not destroy() the calendar
+	avoid bug in parseDate (%p must be separated by non-word characters)
+
+	* menuarrow2.gif: for calendar-blue2.css
+
+	* calendar-setup.js: honor "date" parameter if passed
+
+	* calendar.js: IE5 support is back
+	performance improvements in IE6 (mouseover combo boxes)
+	display "Time:" beside the clock area, if defined in the language file
+	new positioning algorithm (try to keep the calendar in page)
+	rewrote parseDate a little cleaner
+
+	* lang/calendar-el.js:
+	updated Greek translation (thanks Alexandros Pappas)
+
+2004-01-13  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* index.html: added style blue2, using utf-8 instead of iso-8859-2
+
+	* calendar.js: performance under IE (which sucks, by the way)
+
+	* doc/reference.tex: Sunny added to sponsor list
+
+	* doc/Calendar.setup.tex: documenting parameter 'electric'
+
+	* calendar-blue.css, calendar-blue2.css, calendar-brown.css, calendar-green.css, calendar-system.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css:
+	fixed IE text size problems
+
+2004-01-08  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-pl.js:
+	Polish translation updated to UTF-8 (thanks to Artur Filipiak)
+
+2004-01-07  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-si.js: updated (David Milost)
+
+	* lang/calendar-si.js: Slovenian translation (thanks to David Milost)
+
+2003-12-21  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* TODO: updated TODO list
+
+	* lang/calendar-de.js: German translation (thanks to Peter Strotmann)
+
+2003-12-19  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/reference.tex: Thank you, Ian Barrak
+
+2003-12-18  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/reference.tex: fixed documentation bug (thanks Mike)
+
+2003-12-05  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-ko-utf8.js:
+	UTF8 version of the Korean language (hopefully correct)
+
+	* lang/calendar-pl-utf8.js, lang/calendar-pl.js:
+	updated Polish translation (thanks to Janusz Piwowarski)
+
+2003-12-04  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-fr.js:
+	French translation updated (thanks to Angiras Rama)
+
+2003-11-22  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-da.js: updated (thanks to Jesper M. Christensen)
+
+2003-11-20  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar-blue2.css, calendar-tas.css:
+	new styles (thanks to Wendall Mosemann for blue2, Mark Lynch for tas)
+
+	* lang/calendar-lt-utf8.js, lang/calendar-lt.js:
+	Lithuanian translation (thanks to Martynas Majeris)
+
+	* lang/calendar-sp.js: updated
+
+2003-11-17  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* TODO: added TODO list
+
+2003-11-14  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-ko.js: Korean translation (thanks to Yourim Yi)
+
+2003-11-12  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-jp.js: small bug fixed (thanks to TAHARA Yusei)
+
+2003-11-10  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-fr.js: translation updated, thanks to Florent Ramiere
+
+	* calendar-setup.js:
+	added new parameter: electric (if false then the field will not get updated on each move)
+
+	* index.html: fixed DOCTYPE
+
+2003-11-07  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar-setup.js:
+	fixed minor problem (maybe we're passing object reference instead of ID for
+	the flat calendar parent)
+
+2003-11-06  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-fi.js:
+	added Finnish translation (thanks to Antti Tuppurainen)
+
+2003-11-05  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* release-notes.html: fixed typo
+
+	* doc/reference.tex, index.html, calendar.js: 0.9.5
+
+	* README: fixed license statement
+
+	* release-notes.html: updated release notes (0.9.5)
+
+2003-11-03  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-de.js:
+	updated German translation (thanks to Gerhard Neiner)
+
+	* calendar-setup.js: fixed license statement
+
+	* calendar.js: whitespace
+
+	* calendar.js: fixed license statement
+
+	* calendar.js:
+	fixed positioning problem when input field is inside scrolled divs
+
+2003-11-01  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-af.js: Afrikaan language (thanks to Derick Olivier)
+
+2003-10-31  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-it.js:
+	updated IT translation (thanks to Christian Blaser)
+
+	* lang/calendar-es.js: updated ES translation, thanks to Raul
+
+2003-10-30  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-hu.js: updated thanks to Istvan Karaszi
+
+	* index.html, simple-1.html, simple-2.html, simple-3.html:
+	switched to utf-8 all encodings
+
+	* lang/calendar-sk.js:
+	added Slovak translation (thanks to Peter Valach)
+
+	* lang/calendar-ro.js: switched to utf-8
+
+2003-10-29  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-es.js:
+	updated translation, thanks to Jose Ma. Martinez Miralles
+
+	* doc/reference.tex:
+	fixed the footnote problem (thanks Dominique de Waleffe for the tip)
+
+	* lang/calendar-ro.js: fixed typo
+
+	* lang/calendar-sv.js: oops, license should be LGPL
+
+	* lang/calendar-sw.js: new swedish translation is calendar-sv.js
+
+	* menuarrow.gif, menuarrow.png:
+	oops, forgot little drop-down menu arrows
+
+	* lang/calendar-sv.js: swedish translation thanks to Leonard Norrgard
+
+	* index.html: oops, some other minor changes
+
+	* index.html, release-notes.html:
+	latest changes in release-notes and index page for 0.9.4
+
+	* doc/reference.tex, calendar.js:
+	added %s date format (# of seconds since Epoch)
+
+	* calendar.js:
+	A click on TODAY will not close the calendar, even in single-click mode
+
+2003-10-28  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* index.html: previous cal.html
+
+	* cal.html: moved to index.html
+
+	* README, cal.html, doc/reference.tex, lang/calendar-de.js, lang/calendar-en.js, lang/calendar-ro.js, release-notes.html:
+	LGPL license, forever.
+
+	* doc/Calendar.setup.tex, simple-1.html:
+	doc updated for the onUpdate parameter to Calendar.setup
+
+2003-10-26  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js: fixed bug (correct display of the dropdown menus)
+
+	* doc/Calendar.setup.tex, doc/reference.tex, lang/calendar-de.js, lang/calendar-en.js, lang/calendar-ro.js, README, cal.html, calendar-blue.css, calendar-brown.css, calendar-green.css, calendar-setup.js, calendar-system.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css, calendar.js, release-notes.html, simple-1.html, simple-3.html:
+	lots of changes for the 0.9.4 release (see the release-notes.html)
+
+2003-10-15  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/reference.tex:
+	documentation updated for 0.9.4 (not yet finished though)
+
+2003-10-07  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js, doc/reference.tex, release-notes.html, README, cal.html, calendar-setup.js:
+	modified project website
+
+2003-10-06  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar-setup.js:
+	added some properties (onSelect, onClose, date) (thanks altblue)
+
+2003-09-24  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* simple-3.html: dateIsSpecial does not need the "date" argument ;-)
+
+2003-09-24  fsoft  <fsoft@mishoo>
+
+	* calendar.js, simple-3.html:
+	added year, month, day to getDateStatus() function
+
+2003-09-24  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* simple-3.html: example on how to use special dates
+
+	* calendar-setup.js, calendar.js, simple-1.html:
+	support for special dates (thanks fabio)
+
+2003-09-17  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/reference.tex: fixed error in section 3.
+
+2003-08-01  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-jp.js: added Japanese translation
+
+2003-07-16  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* simple-1.html: fixed problem with first example [IE,Opera]
+
+2003-07-09  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/Calendar.setup.tex: fixed typo (closing parenthesis)
+
+	* lang/calendar-de.js:
+	added German translation, thanks to Hartwig Weinkauf
+
+2003-07-08  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* cal.html: added link to release-notes
+
+	* release-notes.html: 0.9.3 release notes
+
+	* make-release.pl:
+	Script to create distribution archive.  It needs some additional packages:
+
+	  - LaTeX
+	  - tex2page
+	  - jscrunch (JS compressor)
+
+	* doc/html/makedoc.sh, doc/html/reference.css, doc/reference.tex, doc/makedoc.sh:
+	documentation updates...
+
+	* calendar.js: added semicolon to make the code "compressible"
+
+2003-07-06  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/reference.tex: spell checked
+
+	* doc/reference.tex: [minor] changed credits order
+
+	* doc/reference.tex: various improvements and additions
+
+	* doc/html/reference.css: minor eye-candy tweaks
+
+2003-07-05  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* doc/html/Calendar.setup.html.tex, doc/html/makedoc.sh, doc/html/reference.css, doc/html/reference.t2p, doc/hyperref.cfg, doc/makedoc.sh, doc/reference.tex, doc/Calendar.setup.tex, doc/Calendar.setup.pdf.tex:
+	full documentation in LaTeX, for PDF and HTML formats
+
+	* simple-2.html:
+	added demonstration of flat calendar with Calendar.setup
+
+	* simple-1.html:
+	modified some links, added link to documentation, added demonstration of
+	disableFunc property
+
+	* calendar-setup.js: added the ability to create flat calendar too
+
+	* cal.html: added links to documentation and simple-[12].html pages
+
+	* README: up-to-date...
+
+	* calendar-setup.html: removed: the documentation is unified
+
+2003-07-03  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* cal.html: some links to newly added files
+
+	* calendar-setup.html, calendar-setup.js, img.gif, simple-1.html:
+	added some files to simplify calendar creation for non-(JS)-programmers
+
+	* lang/calendar-zh.js: added simplified chinese (thanks ATang)
+
+2003-07-02  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js: * "yy"-related... [small fix]
+
+	* calendar.js:
+	* #721833 fixed (yy format will understand years prior to 29 as 20xx)
+
+	* calendar.js: * added refresh() function
+
+	* calendar.js: * fixed bug when in single click mode
+	* added alignment options to "showAtElement" member function
+
+2003-06-25  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-pt.js:
+	added portugese translation (thanks Nuno Barreto)
+
+2003-06-24  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js:
+	call user handler when the date was changed using the keyboard
+
+	* bugtest-hidden-selects.html:
+	file to test bug with hidden select-s (thanks Ying Zhang for reporting and for this test file)
+
+	* lang/calendar-hr-utf8.js:
+	added croatian translation in utf8 (thanks Krunoslav Zubrinic)
+
+2003-06-23  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-hu.js: added hungarian translation
+
+	* lang/calendar-hr.js:
+	added croatian translation (thanks to Krunoslav Zubrinic)
+
+2003-06-22  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js:
+	* #723335 fixed (clicking TODAY will not select the today date if the
+	  disabledHandler rejects it)
+
+	* cal.html: * new code for to work with fix for bug #703238
+	* switch to new version
+
+	* calendar.js:
+	* some patches to make code compatible with Opera 7 (well, almost compatible)
+	* bug #703238 fixed (fix breaks compatibility with older code that uses
+	  calendar in single-click mode)
+	* bug #703814 fixed
+
+2003-04-09  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-tr.js: added turkish lang file
+
+2003-03-19  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-ru.js: russian translation added
+
+	* lang/calendar-no.js: norwegian translation added
+
+2003-03-15  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-no.js: norwegian translation
+
+2003-03-12  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* lang/calendar-pl.js: added polish translation
+
+2003-03-11  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js:
+	bugfix in parseDate (added base to parseInt, thanks Alan!)
+
+2003-03-05  Mihai Bazon  <mishoo@localhost.localdomain>
+
+	* calendar.js, lang/calendar-br.js, lang/calendar-ca.js, lang/calendar-cs-win.js, lang/calendar-da.js, lang/calendar-du.js, lang/calendar-el.js, lang/calendar-en.js, lang/calendar-es.js, lang/calendar-fr.js, lang/calendar-it.js, lang/calendar-nl.js, lang/calendar-ro.js, lang/calendar-sp.js, lang/calendar-sw.js:
+	New file.
+
+	* calendar.js, lang/calendar-br.js, lang/calendar-ca.js, lang/calendar-cs-win.js, lang/calendar-da.js, lang/calendar-du.js, lang/calendar-el.js, lang/calendar-en.js, lang/calendar-es.js, lang/calendar-fr.js, lang/calendar-it.js, lang/calendar-nl.js, lang/calendar-ro.js, lang/calendar-sp.js, lang/calendar-sw.js:
+	moved to CVS at sourceforge.net
+	release: 0.9.2 + new language packs
+
+
+	* README, cal.html, calendar-blue.css, calendar-brown.css, calendar-green.css, calendar-system.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css:
+	New file.
+
+	* README, cal.html, calendar-blue.css, calendar-brown.css, calendar-green.css, calendar-system.css, calendar-win2k-1.css, calendar-win2k-2.css, calendar-win2k-cold-1.css, calendar-win2k-cold-2.css:
+	moved to CVS at sourceforge.net
+	release: 0.9.2 + new language packs
+
+

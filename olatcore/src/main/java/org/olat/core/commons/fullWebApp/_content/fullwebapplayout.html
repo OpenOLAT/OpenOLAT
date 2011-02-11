@@ -1,0 +1,104 @@
+## ---- START #b_page_margins #b_page_wrapper
+<div id="b_page_margins"><div id="b_page_wrapper">
+## special classes for border styling, see YAML book chapter 4.5.7 for more information
+<div id="b_border-top">
+	<div id="b_edge-lt"></div>
+	<div id="b_edge-rt"></div>
+</div>
+## ---- START #b_page
+<div id="b_page">
+<a id='b_top' name="b_top"></a>
+
+## ---- START #b_header ---
+<div id="b_header">
+
+## ---- START Access keys to improve accessability
+## not visible for normal browser
+<span class="b_skip">$r.translate("accesskey.title")</span>
+<a accesskey="0" class="b_skip" href="#b_top">0: $r.translate("accesskey.top")</a>
+<a accesskey="n" class="b_skip" href="#b_nav">n: $r.translate("accesskey.nav")</a>
+<span class="b_skip">$r.translate("accesskey.sites")</span>
+<span class="b_skip">$r.translate("accesskey.tabs")</span>
+<a accesskey="o" class="b_skip" href="#b_topnav">o: $r.translate("accesskey.topnav")</a>
+<a accesskey="m" class="b_skip" href="#b_col1">m: $r.translate("accesskey.menu")</a>
+<a accesskey="c" class="b_skip" href="#b_col3">c: $r.translate("accesskey.content")</a>
+<a accesskey="t" class="b_skip" href="#b_col2">t: $r.translate("accesskey.tools")</a>
+<a accesskey="a" class="b_skip" href="#b_table">a: $r.translate("accesskey.table")</a>
+<a accesskey="d" class="b_skip" href="#b_modal">d: $r.translate("accesskey.modal")</a>
+<span class="b_skip">b: $r.translate("accesskey.back")</span>
+<span class="b_skip">$r.translate("accesskey.changes")</span>
+## don't use numbers as access keys - reserved for the addressing of opened tabs
+## ---- END Access keys
+
+<div id="b_logo"></div>
+## something to be displayed in the header, a logo, some ads, whatever
+#if($r.available("headerComponent"))
+	$r.render("headerComponent")
+#end
+## top nav usually placed top left. Previously named upperRightCorner
+#if($r.available("topnavComponent"))
+	<div id="b_topnav">
+		<a name="b_topnav"></a>
+		$r.render("topnavComponent")
+	</div>
+#end
+</div>
+## ---- END #b_header ---	
+
+## ---- START #b_nav sites navigation
+<div id="b_nav">
+	<a name="b_nav"></a>
+	$r.render("navComponent")
+</div>
+## ---- END #b_nav ---
+
+#if($hasStickyMessage)
+<div id="b_msg_sticky">
+	<div class="b_msg_content b_floatscrollbox">
+		$stickyMessage
+	</div>
+</div>
+#end
+
+## ------ START #b_main -----
+	$r.render("main")
+## END MAIN
+
+## ----- START #b_footer ----------
+<div id="b_footer" class="b_clearfix">
+	<div class="b_floatbox">
+		<a id="b_toplink" href="#b_top" onclick="{Effect.ScrollTo('b_top'); return false;}" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
+	#if($r.available("footerComponent"))
+		$r.render("footerComponent")
+	#end
+	</div>
+</div>
+## ---- END #b_footer ---
+
+</div>
+## ---- END #b_page
+
+## special classes for border styling, see YAML book chapter 4.5.7 for more information
+<div id="b_border-bottom">
+	<div id="b_edge-lb"></div>
+	<div id="b_edge-rb"></div>
+</div>
+</div></div>
+## ---- END #b_page_wrapper and #b_page_margins
+
+## ---- START #b_messages
+## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 
+## This prevents an ugly IE bug that appears when the messages are at the top of the page.
+## IE can't render empty div's properly which results in an ugly white bar.
+<div id="b_messages">
+	$r.renderForce("guimessage")
+</div>
+## ---- END #b_messages ---
+
+## ---- START #b_modal
+## Modal dialog is absolute positioned, thus it's ok to have it at the end of the page. 
+## This prevents an ugly IE bug that appears when the modal dialog is at the top of the page.
+## IE can't render empty div's properly which results in an ugly white bar.
+	$r.render("modalpanel")
+## ---- END #b_nav ---
+

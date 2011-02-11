@@ -1,0 +1,18 @@
+<div id="b_footer_user">
+    #if($ajaxOn)
+	<a href="http://en.wikipedia.org/wiki/Ajax_%28programming%29" target="_blank" title="$r.translateInAttribute("footer.ajax.hover")" class="b_ajax"></a>
+	#end
+	#if ($loggedIn)
+    $r.translate("footer.logged.in.as", ["$username"])  &nbsp;&nbsp;&nbsp; ($userSessionsCnt $r.translate("footer.users.online"))
+    #else
+	    $r.translate("footer.not.logged.in") &nbsp;&nbsp;&nbsp; ($userSessionsCnt $r.translate("footer.users.online"))    
+    #end
+</div>
+
+<div id="b_footer_version">
+	<a href="http://www.brasatoframework.org"  title="Homepage brasato Framework" target="_blank">$olatversion</a>
+</div>	
+
+<div id="b_footer_powered">
+	<a href="http://www.brasatoframework.org/" target="_blank" title="Brasato framework"><img border="0" src="${ressourceMapperUri}/brasatoframework_logo-100x50.png" alt="Brasato framework" /></a>
+</div>

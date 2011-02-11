@@ -1,0 +1,29 @@
+#if($guiMessage.hasInfo())
+##needs to be delayed otherwise IE6 will crash in non ajax mode
+<script type="text/javascript">
+/* <![CDATA[ */
+	setTimeout(function(){ showMessageBox("info", "$r.translate("info.header")", "$r.get("guiMessage").renderInfo()"); }, 100);
+/* ]]> */
+</script>
+#end
+
+#if($guiMessage.hasWarn())
+<script type="text/javascript">
+/* <![CDATA[ */
+	setTimeout(function(){ showMessageBox("warn", "$r.translate("warn.header")",  "$r.get("guiMessage").renderWarn()"); }, 100);
+	##auto hide box
+	setTimeout(function(){ Ext.MessageBox.hide(); }, 8000);
+/* ]]> */
+</script>
+#end
+
+#if($guiMessage.hasError())
+<script type="text/javascript">
+/* <![CDATA[ */
+	setTimeout(function(){ showMessageBox("error", "$r.translate("error.header")",  "$r.get("guiMessage").renderError()");  }, 100);
+/* ]]> */
+</script>
+#end
+
+
+

@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ext="http://extjs.com/docs" xml:lang="$r.getLanguageCode()" lang="$r.getLanguageCode()">
+<head>
+<meta name="description" content="$r.translate("meta.description")" />
+<meta name="keywords" content="$r.translate("meta.keywords")" /> 
+<meta name="DC.creator" content="University of Zurich - http://www.uzh.ch" />
+<meta name="DC.subject" content="OLAT - Online Learning And Training - Your Open Source Learning Management System" />
+<meta name="DC.contributor" content="see http://www.olat.org/website/en/html/download_license.html" />
+<meta name="DC.date" content="2010-03-16" scheme="DCTERMS.W3CDTF" />
+<meta name="DC.type" content="Interactive Resource" scheme="DCTERMS.DCMIType" />
+<meta name="DC.identifier" content="http://www.olat.org/" scheme="DCTERMS.URI" />
+<meta name="DC.rights" content="http://www.olat.org/website/en/html/download_license.html" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+## <!-- IE cache -->
+<meta http-equiv="pragma-directive" content="no-cache" />
+<meta http-equiv="cache-directive" content="no-cache" />
+<script type="text/javascript">
+/* <![CDATA[ */ 
+var o_info = new Object();
+o_info.initialPageLoadFinished = false;
+o_info.o_winid = $o_winid;
+o_info.uriprefix="$r.relWinLink()";
+o_info.bc="$o_bc";
+o_info.dirty_form = "$r.escapeDoubleQuotes($r.translate("form.dirty"))";
+o_info.locale = "$r.getLanguageCode()";
+o_info.lastClickTime = new Date().getTime();
+## olat layout specific
+o_info.o_baseURI = "$r.staticLink("")";
+o_info.b_classPathStaticBaseURI = "${classPathStaticBaseURI}";
+o_info.b_textMarkingIframeIntervals = new Array();
+
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+function b_start(){
+## init the extjs tooltip engine
+if (window["Ext"]) {Ext.QuickTips.init();}
+o_init();
+## js B
+$r.renderBodyOnLoadJSFunctionCall()
+## js E
+##
+## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
+## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
+o_info.initialPageLoadFinished = true;
+}
+/* ]]> */
+</script>
+## Basic JS libraries for DOM manipulation and visual effects
+<script type="text/javascript" src="$r.staticLink("js/prototype/prototype.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/effects.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/controls.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/sound.js")"></script>
+## EXT JS library
+<link rel="stylesheet" type="text/css" href="$r.staticLink("js/ext/resources/css/ext-all.css")" />
+## Use Ext src version when in debug mode to allow JS debugging. Below are the ext parts that are used in OLAT
+## FIXME:FG:6.4 create ext component in java to reduce loading of ext elements on login screen
+#set ($extDebug = "")	
+#if($r.isDebuging()) #set ($extDebug = "-debug")#end
+## EXT base elements
+<script type="text/javascript" src="$r.staticLink("js/ext/adapter/prototype/ext-prototype-adapter${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-core${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-foundation${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/cmp-foundation${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/ext-dd${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/resizable${extDebug}.js")"></script>
+## EXT data model and loaders
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-foundation${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-json${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-xml${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-grouping${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/data-list-views${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/state${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/direct${extDebug}.js")"></script>
+## EXT widgets
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/window${extDebug}.js")"></script>		## needed by info/warn/error message
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-buttons${extDebug}.js")"></script>	## needed by info/warn/error message
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-toolbars${extDebug}.js")"></script>	## needed by info/warn/error message
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-charts${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-editor${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-foundation${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-grouping${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-grid-property${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-history${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-menu${extDebug}.js")"></script>
+##<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tabs${extDebug}.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tips${extDebug}.js")"></script> 		## needed everywhere
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-tree${extDebug}.js")"></script> 		## AjaxTreeController
+<script type="text/javascript" src="$r.staticLink("js/ext/pkgs/pkg-forms${extDebug}.js")"></script> 	## needed by tree inline edit
+## Some initializations
+<script type="text/javascript">
+Ext.BLANK_IMAGE_URL = '$r.staticLink("images/csshelper/s.gif")';
+## references to objects for later access or cleanup
+o_info.objectMap = new Ext.util.MixedCollection();
+</script>
+
+## OLAT JS libraries
+<script type="text/javascript" src="$r.staticLink("js/functions.js")"></script>
+## Initialize js translator factory with the js translator mapper path
+<script type="text/javascript" src="$r.staticLink("js/jsTranslator.js")"></script>
+<script type="text/javascript">var b_jsTranslatorFactory = new JSTranslatorFactory("$jsTranslationMapperPath");</script>
+
+## Always load jsmath. By default the autoloader is enabled, this means that 
+## the real jsmath code is loaded on demand when needed
+## There is a rewrite of jsMath called http://www.mathjax.org/ which does not need font images. Switch to this one!
+#if($jsMathEnabled)<script type="text/javascript" src="$r.staticLink("js/jsMath/easy/load.js")"></script>#end
+
+##Std flash player
+<script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
+
+
+##
+## LAYOUT
+
+## 1) Dynamic component CSS included by components
+$r.render("jsCssRawHtmlHeader", "pre-theme")
+## 2) CSS theme inclusion and favicons
+<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link id="b_theme_css" href="${theme.getBaseURI()}layout.css" rel="stylesheet" type="text/css" />
+## 3) IE specific bugfixes for current theme
+<!--[if lte IE 7]>
+<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
+<![endif]-->
+## 4) Dynamic overriding of CSS rules
+$r.render("jsCssRawHtmlHeader", "post-theme")
+## 5) Add user font size
+<style id="b_fontSize_css" type="text/css">#b_page_margins{font-size:${globalSettings.getFontSize()}%}</style>
+## 6) Add special CSS for web2.a screen reader mode
+#if ($isScreenReader)
+<link id="b_theme_reader_css" href="${theme.getBaseURI()}screenreader.css" rel="stylesheet" type="text/css" />
+#end
+
+## deprecated - include any raw header
+$r.renderHeaderIncludes()
+
+## Page title taken from org.olat.core package
+<title>$r.translate("page.appname") - $r.translate("page.title")</title></head>
+## TODO:fj pb: Review order
+<body onload="b_start();" id="b_body" class="b_lang_$r.getLanguageCode()">
+## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
+## components.
+<!-- START guiDebug -->
+$r.renderForce("guidebug")
+<!-- END guiDebug -->
+## The inline translation tool
+<!-- START inlineTranslation -->
+$r.renderForce("inlineTranslation")
+<!-- END inlineTranslation -->
+## - include javascript for window and ajax control
+<!-- START jsServer -->
+$r.render("jsServer")
+<!-- END jsServer -->
+## controller for development
+$r.renderForce("development")
+## the content comes here
+<!-- START olatContentPanel -->
+$r.render("olatContentPanel")
+<!-- END olatContentPanel -->
+## the div for the busy-wait animated-gif
+<div id="b_ajax_busy" class=""></div>
+## hidden div for EM-PX factor readout 
+<div id="b_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
+<div>
+<script type="text/javascript">
+/* <![CDATA[ */ 
+// init size and listen to text resize events
+Ext.onReady(function() {b_initEmPxFactor();Ext.EventManager.onTextResize(b_initEmPxFactor)},{delay:1000});
+/* ]]> */
+</script>
+</div>
+</body></html>

@@ -1,0 +1,37 @@
+<html><body>
+<h3>Logging</h3>
+<p>The Tracing class is the frontend for log4j we use in OLAT. Use
+Tracing for all logging purposes in OLAT. Examples:
+<pre>Tracing.logWarn("A warning message...", this.getClass());</pre>
+
+If you add debug information you should put an if statement round the
+debug information like:
+
+<pre>
+if(Tracing.isDebugEnabled(DemoController.class)){
+	Tracing.logDebug("link clicked, log something to the olat.log file", DemoController.class);
+}
+</pre>
+Like this the compiler can optimize calls and you do not get a performance issue while 
+using debugging information in your code.
+</p>
+<p>Be carefull when using Tracing.logError(); In most cases when an
+error occurs like an ex. IOException it is more appropriate to throw an
+OLATRuntimeException() and stop to continue with the execution of this
+thread otherwise the error will let the system crash on an other place
+where is it often difficult to find the origin reason for the exception.
+</p>
+
+<p>
+Javascript logging: You can use
+<pre>
+if (B_AjaxLogger.isDebugEnabled()) {
+// always test if in log debug before loggin!!
+B_AjaxLogger.logDebug("This is a cool ajaxified debug message", "myjsfile.js");
+} 
+</pre>
+to debug and log javascript stuff to the olat.log file. To enable it set the loglevel in the log4j.properties file of the controller to debug
+<pre>log4j.logger.org.olat.core.logging.JavaScriptTracingController=DEBUG</pre>
+
+</p>
+</body></html>

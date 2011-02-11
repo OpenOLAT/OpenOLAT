@@ -1,0 +1,45 @@
+##tmContainer <a href="javascript:o_tm_highlightFromArray(glossaryId, '$domId');">start highlighting</a>
+
+#if ($glossaryEnabled)
+	<script type="text/javascript">
+	var b_glossaryDefinitionMapperPath = "$glossaryDefinitionMapperPath"
+	var b_glossaryTermMapperPath = "$glossaryTermMapperPath"
+	var domID = '$domId';
+	var b_glossaryId = "$glossaryId";
+	</script>
+#end
+
+<div id="$domId">
+$r.render("tmComponent")
+</div>
+
+<script type="text/javascript">
+	#if ($glossaryEnabled)
+	 
+		Ext.onReady(function() {
+			var glossaryId = "$glossaryId";
+		
+			//loads the terms via ajax-call from GlossaryTermMapper
+		 	if (this.o_glossaries == null) this.o_glossaries = new Object(); 
+			var terms = o_glossaries[glossaryId];
+			if (terms == null) {
+				// do load
+				var url = this.b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
+				new Ajax.Request(url, { asynchronous : false, 
+					encoding : 'UTF-8', method : 'get', 
+				 	onSuccess: function(transport) {
+				    	//alert(transport.responseText);
+				    	this.o_glossaries[glossaryId] = eval(transport.responseText);
+				  	}
+				  });
+			}
+		
+			//  now let highlighter run
+			o_tm_highlightFromArray(glossaryId, "$domId");
+		});
+		
+	#else
+		// clear glossary
+		this.o_glossaries = null;		
+	#end
+</script>

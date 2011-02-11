@@ -1,0 +1,6 @@
+<h1>Edit velocity html template</h1>
+$r.render("editor")
+#if ($readOnly)
+<span style="font-size:16px; color:red">To enable write permissions, please set the 
+readOnlyDebug flag to false in coreconfig.xml</span>
+#end

@@ -1,0 +1,131 @@
+<script type="text/javascript">
+/* <![CDATA[ */
+Ext.onReady(function(){
+try {
+	## cleanup any old tree first, only one tree at any time supported right now
+	if (o_info.objectMap.containsKey('${r.getId("treePanel")}')) {
+		var oldTree = o_info.objectMap.removeKey('${r.getId("treePanel")}');
+		if (oldTree) {
+			oldTree.destroy();			
+		}
+		oldTree = null;
+	}
+    ## turn on quick tips
+    Ext.QuickTips.init();
+ 	## initialize the tree panel
+    ## set the root node
+    var myroot = new Ext.tree.AsyncTreeNode({
+        text: '$titleRootNode',
+        draggable:false,
+        #if($hasCustomRootCSS)
+        iconCls: '$customRootCSS',
+        #end
+        id:'$treeId'
+    });
+    var tree = new Ext.tree.TreePanel({
+    	id: 'b_amt_$treeId',
+    	el: 'b_amt_$treeId',
+        animate:true, 
+        loader: new Ext.tree.TreeLoader({dataUrl:'$dataMapperUri/'}),
+        enableDD:true,
+        containerScroll: true,
+        rootVisible: true,
+        autoHeight: true,
+        bodyBorder: false,
+        border: false,        
+        root: myroot      
+    });
+    ##tree.on('destroy', function() {console.log('destroying ${r.getId("treePanel")}')});
+	## put tree into managed object map to access it later on
+	o_info.objectMap.add('${r.getId("treePanel")}', tree);
+    
+    ## sort folders above non-folders if configured
+    #if ($doSort)
+	    new Ext.tree.TreeSorter(tree, {
+	    	dir : '$sortOrder',
+		    folderSort: $foldersFirst,
+		    leafAttr : 'isTypeLeaf'
+		});    
+	#end
+
+	## inline tree editing
+	#if ($treeEditingEnabled)
+    var treeEditor = new Ext.tree.TreeEditor(tree,{
+		 allowBlank:false,
+         blankText:this.nameRequiredLabel
+		}, {
+		 editDelay:10,
+		 cancelOnEsc:true,
+		 completeOnEnter:true,
+		 ignoreNoChange:true
+	}); 
+	## before start, before save callback and complete (save) callback
+	#if ($beforeStartEditCallback) treeEditor.on('beforestartedit', $beforeStartEditCallback); #end
+	#if ($beforeCompleteCallback) treeEditor.on('beforecomplete', $beforeCompleteCallback); #end
+	treeEditor.on('complete', function(editor, newVal,oldVal) { $r.javaScriptBgCommand("edit") + '?node=' + encodeURIComponent(editor.editNode.id) + '&value=' + encodeURIComponent(newVal);});
+	#end
+	    
+	## callback for rebuilding the tree    
+	function cms_tree_rebuild(options, success, response) {
+		if (response == "ok") return;
+		tree.getLoader().load();
+	}
+	## notify java controller about change    
+    tree.on('beforemovenode', function(tree, node, oldParent, newParent, index){
+    	var stat = new Ajax.Request('$r.commandURI("move")', { method: 'get', asynchronous : false,
+    		parameters : {tree : tree.id, node : node.id, oldParent : oldParent.id, newParent : newParent.id, index : index}
+  		});
+  		## the request does write the following js variable
+  		if (b_amt_status == false) {
+  			Ext.MessageBox.alert(b_amt_status_title, b_amt_status_msg);
+  		}
+  		## ping brasato framework to refresh dirty panels
+  		if (!o_info.linkbusy) { 
+			o_beforeserver();
+	    	$r.javaScriptBgCommand("ping");
+		}  		
+  		return b_amt_status;
+    });
+    ## sent click events via brasato framework ajax channel, asynchronous
+    tree.on('click', function(node){
+    	if (!o_info.linkbusy) { 
+			o_beforeserver();
+	    	$r.javaScriptBgCommand("click") + '?node=' + encodeURIComponent(node.id);
+    	}
+  		return true;
+    });
+    #if($nodeDragOverCallback)
+    tree.on('nodedragover', $nodeDragOverCallback);
+    #end
+     
+    ## render the tree and open users current selection
+    tree.render();
+
+    ## expand tree to last saved state
+	#foreach ($path in $expandedPathes)
+	try {
+		tree.expandPath('$path');	
+	} catch(e) {}
+	#end
+	
+    ## send expand and collapse info back if tree has an identifyer
+    #if ($persistPathes)
+    tree.on('expandnode', function(node) {
+		new Ajax.Request('$r.commandURI("expand")', { method: 'get', asynchronous : true, parameters : {path : node.getPath()} });
+	});
+	tree.on('collapsenode', function(node) {
+		new Ajax.Request('$r.commandURI("collapse")', { method: 'get', asynchronous : true, parameters : {path : node.getPath()} });
+	});
+	#end
+
+} catch (e) {
+	B_AjaxLogger.logDebug("Problem creating the ajax tree with id::${treeId} ; exception::" + e , "org.olat.core.gui.control.generic.ajax.tree._content.tree.html");	
+}
+});
+/* ]]> */
+</script>
+<div id="b_amt_$treeId" class="b_ext_elem"></div>
+
+## container that contains calls to the select, remove and reload methods
+$r.render("functioncalls")
+

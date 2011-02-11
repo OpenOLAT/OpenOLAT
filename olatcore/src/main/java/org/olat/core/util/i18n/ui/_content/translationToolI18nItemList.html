@@ -1,0 +1,39 @@
+<div class="b_translation_list">
+##	<h2>$r.translate("list.title")</h2>
+	<p>
+		$r.translate("list.found.entries", ["$keysCount","$bundlesCount"])
+	</p>
+	<p class="b_info">
+		$r.translate("list.${customizingPrefix}intro")
+	</p>
+#if ($i18nItems.size() > 0)
+	<div class="b_button_group">
+		$r.render("allTranslateButtonTop")
+	</div>	
+	#set($currentBundle="")
+	#foreach ($item in $i18nItems)
+		#if ($currentBundle != $item.getBundleName())
+			#if ($velocityCount != 1)
+	</div></div></div>
+			#end
+	<div class="b_translation_list_package">
+			#set ($currentBundle=$item.getBundleName())
+			
+			<div class="b_clearfix">
+				<div class="b_float_right">
+					$r.render("translateBundle_$currentBundle")
+				</div>
+				<a href="#" id="$b_translation_item_$velocityCountOpener" class="b_togglebox_closed" onclick="b_togglebox('$b_translation_item_$velocityCount', this); return false;" onkeypress="b_togglebox('$b_translation_item_$velocityCount', this); return false;">
+					<b class="b_with_small_icon_left b_translation_package_icon">$r.translate("generic.bundle"): $currentBundle </b> 
+				</a>
+			</div>
+			<div id="$b_translation_item_$velocityCount" class="b_togglebox" style="display: none"><div class="b_togglebox_content">
+		#end
+		<div class="b_translation_list_item b_with_small_icon_left b_translation_item_icon">$item.getKey()</div>
+	#end
+	</div></div></div>	
+	<div class="b_button_group">
+		$r.render("allTranslateButtonBottom")
+	</div>	
+#end
+</div>

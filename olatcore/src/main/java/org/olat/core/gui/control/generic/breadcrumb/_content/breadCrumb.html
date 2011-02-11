@@ -1,0 +1,18 @@
+<div class="b_breadcumb">
+	<div class="b_clearfix">
+	<div class="b_breadcumb_path">
+		<ul>
+			#foreach ($crumb in $breadCrumbs)
+			<li class="#if ($velocityCount==1) b_first #end #if ($velocityCount==$breadCrumbs.size()) b_last #end">
+				<span>$r.render($crumb.getCommand())</span>
+			</li>	
+			#end
+		</ul>
+	</div>
+	</div>
+	<div class="b_breadcumb_content">
+	#if ($r.available("content"))
+		$r.render("content")
+	#end
+	</div>
+</div>

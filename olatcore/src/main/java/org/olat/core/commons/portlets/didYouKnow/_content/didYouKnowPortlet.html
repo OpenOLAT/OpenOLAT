@@ -1,0 +1,10 @@
+#if ($questionId == -1)
+	<div class="b_portlet_dyk_q">$r.translate("not.found")</div>
+	<div class="b_portlet_dyk_a">$r.translate("not.found")</div>
+#else
+	<div class="b_portlet_dyk_q">$r.translate("Q-${questionId}")</div>
+	<div class="b_portlet_dyk_a">$r.translate("A-${questionId}")</div>
+#end
+<div class="b_portlet_dyk_next">
+	$r.render("next")
+</div>

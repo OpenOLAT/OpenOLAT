@@ -1,0 +1,53 @@
+<fieldset>
+	<legend>$r.translate("glossary.form.glossaryKey")</legend>
+	$r.render("termLayout")
+</fieldset>
+
+<br/><br/>
+
+<fieldset>
+	<legend>$r.translate("synonym.add")</legend>
+	<p>$r.translate("synonym.intro")</p>
+	<table>
+		<tbody>		
+			#foreach ($synonym in $glossItemSynonyms)
+				<tr>
+					<td>$r.render("synonym.$velocityCount")</td>
+					<td>$r.render("delete.synonym.$velocityCount")</td>
+				</tr>
+			#end
+				<tr>
+					<td>$r.render("synonym.inputfield")</td>
+					<td></td>
+				</tr>
+		</tbody>
+	</table>
+	
+	<br/>
+	$r.render("synonym.button")
+</fieldset>
+
+
+<script type="text/javascript">
+/* <![CDATA[ */
+//FIXME:FG:6.2: Implement Java way of setting flexi form link buttons dirty on change
+function b_SetTermSaveLinkDirty() {
+	var save=$("$f.getItemId("form.submit")"); 
+	if (!save.hasClassName('b_button_dirty')) {
+		save.addClassName('b_button_dirty'); 
+	}
+}
+$("$f.getItemId("glossTerm.inputfield")").observe("keyup", b_SetTermSaveLinkDirty);
+
+function b_SetSynonymSaveLinkDirty() {
+	var save=$("$f.getItemId("synonym.button")"); 
+	if (!save.hasClassName('b_button_dirty')) {
+		save.addClassName('b_button_dirty'); 
+	}
+}
+#foreach ($synonym in $glossItemSynonyms)
+	$("$f.getItemId("synonym.$velocityCount")").observe("keyup", b_SetSynonymSaveLinkDirty);
+#end
+
+/* ]]> */
+</script>

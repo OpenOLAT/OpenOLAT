@@ -1,0 +1,35 @@
+<div class="b_window" id="$r.getId("b_closablewapper_")">
+	<div class="b_window_header_wrapper">
+		<div class="b_window_header">
+			<div class="b_window_header_title">
+				#if ($title)
+					<strong>$!title</strong>
+				#end
+				$r.render("closeIcon")
+			</div>
+		</div>
+	</div>
+
+	<div class="b_window_content_wrapper">	
+		<div class="b_window_content">
+			<div class="b_window_content_inner b_clearfix">
+				<div class="b_floatscrollbox">
+					$r.render("guimessage")
+					$r.render("modalContent")
+				</div>
+			</div>
+			<div style="clear:both; height: 1px">&nbsp;</div>	   	
+		</div>
+	</div>	
+	
+	<div class="b_window_footer_wrapper">
+		<div class="b_window_footer">
+			<div class="b_window_footer_inner"></div>		
+		</div>
+	</div>
+</div>
+
+## always show top of modal dialog when on long pages
+<script type="text/javascript">
+	Effect.ScrollTo('b_top');
+</script>

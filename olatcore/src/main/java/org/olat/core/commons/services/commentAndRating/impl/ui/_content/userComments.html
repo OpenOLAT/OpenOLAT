@@ -1,0 +1,16 @@
+#if(($commentControllers.size() > 0) && $r.available("createCommentFormCtr"))
+	<a id="b_comment_form_link" class="b_link_forward" onclick="{Effect.ScrollTo('b_comment_form'); return false;}" href="#b_comment_form">
+		$r.translate("comments.create.goto")
+	</a>
+#end
+
+<div class="b_comments">
+	#foreach($commentController in $commentControllers)
+		$r.render("$commentController.getViewCompName()")
+	#end
+	
+	#if($r.available("createCommentFormCtr"))
+		<a id="b_comment_form" name="b_comment_form"></a>
+		$r.render("createCommentFormCtr")
+	#end
+</div>

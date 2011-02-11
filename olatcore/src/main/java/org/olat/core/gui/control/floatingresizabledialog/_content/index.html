@@ -1,0 +1,140 @@
+	#if ($r.available("collapsibleContent"))
+	<div id="${panelName}-east" class="x-layout-inactive-content x-hidden" style="padding:5px;">
+		$r.render("collapsibleContent")
+	</div>
+	#end
+	<div id="${panelName}-center" class="x-layout-inactive-content x-hidden" style="padding:5px;height:95%;width:95%">
+		$r.render("panelContent")
+	</div>
+	
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+	
+
+	Ext.onReady(function(){
+		var winPosition = null;
+		var winHeight = 0;
+		var winWidth = 0;
+		//check if already exists
+		if( Ext.getCmp('${panelName}') != null ) {
+			${panelName}win = Ext.getCmp('${panelName}');
+			winPosition = ${panelName}win.getPosition();
+			winHeight = ${panelName}win.getHeight();
+			winWidth = ${panelName}win.getWidth();
+			${panelName}win.purgeListeners();
+			${panelName}win.close();
+		} else {
+			winWidth = ${width};
+		  	winHeight = ${height};
+		}
+		if( Ext.getCmp('${panelName}') == null) {
+	        // Panel for the content
+	        var content = new Ext.Panel({
+	        	contentEl:'${panelName}-center',
+	            region: 'center',
+	            split: true,
+	            width: 150,
+			    minSize: 100,
+		        maxSize: 250,
+	            collapsible: false,
+	            autoScroll:$scroll,
+	            margins:'3 0 3 3',
+	            cmargins:'3 3 3 3'
+	        });
+	
+	        // Panel for the east
+	        #if ($r.available("collapsibleContent"))
+	        var east = new Ext.Panel({
+	        	contentEl:'${panelName}-east',
+	            title: '${collabsibleContentPanelTitel}',
+	            region: 'east',
+	            split: true,
+	            width: 150,
+	            minSize: 100,
+		        maxSize: 250,
+	            collapsible: true,
+	            autoScroll:$scroll,
+	            margins:'2 0 2 2',
+	            cmargins:'2 2 2 2'
+	        });
+	        #end
+	        
+			//the window
+	        var ${panelName} = new Ext.Window({
+		        id: '${panelName}',
+	            title: '$title',
+	            closable:true,
+	            collapsible:false,
+	            constrain: ${constrain},
+	            resizable: ${resizable},
+	            width: winWidth,
+		        height: winHeight,
+		        minWidth:100,
+		        minHeight:100,
+		        plain:true,
+		        layout: 'border',
+		        #if ($r.available("collapsibleContent"))
+			        items: [content, east]
+				#else
+					items: [content]
+				#end
+	        });
+			
+	        ${panelName}.on('minimize', function(win){
+			    win.toggleCollapse();
+			});
+	    	
+	        ${panelName}.on('close', function(win){
+				win.purgeListeners();
+				win.close();
+				win.destroy();
+				if (!o_info.linkbusy) { 
+					o_beforeserver();
+					$r.javaScriptBgCommand("close")
+				}		
+			});
+			
+			${panelName}.on('resize', function(win, width, height){
+				#if ($ajaxFlags.isIframePostEnabled())
+				if (!o_info.linkbusy) {
+					o_beforeserver();
+					$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(win.getPosition()+':'+win.getSize().width+','+win.getSize().height);
+				}
+				#end
+				
+				try {
+					tweak_${panelName}(win);
+				} catch (Exception) {
+					//
+				}
+				
+			});
+				
+			${panelName}.on('move', function(win, x, y){
+				#if ($ajaxFlags.isIframePostEnabled())
+				if (!o_info.linkbusy) {	
+					o_beforeserver();
+					$r.javaScriptBgCommand("geometry") + '?p='+ encodeURIComponent(win.getPosition()+':'+win.getSize().width+','+win.getSize().height);
+				}
+				#end
+				
+				try {
+					tweak_${panelName}(win);
+				} catch (Exception) {
+					//
+				}
+			});
+			
+			if(winPosition != null) {
+				${panelName}.setPosition(winPosition[0],winPosition[1]);
+			} else {
+				${panelName}.setPosition(${offsetX},${offsetY});
+			}
+			${panelName}.show(this);
+		}
+	//delay is needed for IE to solve timing problem
+	},{delay:1000});
+	
+	/* ]]> */
+	</script>
+	

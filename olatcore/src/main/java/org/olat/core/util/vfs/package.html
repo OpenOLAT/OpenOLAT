@@ -1,0 +1,55 @@
+<html>
+<body>
+<h3>Virtual File System (VFS) code examples</h3>
+<p>The virtial file system allows the same operations as you are may
+know form java.io but names and behavior are a bit different. See
+techdocu for an introduction to the <a href="http://www.olat.org/docu/5.X/ApplicationLayers.html#vfs">VFS</a>.</p>
+<ul>
+	<li>Find a file or folder vfs style: If you are sure it is a folder you
+	can resolve and cast it immediatly <pre>VFSContainer folder = (VFSContainer) wikiContainer.resolve(WIKI_FOLDER_NAME);</pre>
+	if you are not shure whether it is a file or a folder you get an
+	VFSItem as result of a resolve operatin and have to check with: <pre>	
+		if (item instanceof VFSLeaf) {
+			VFSLeaf leaf = (VFSLeaf)item;
+		}
+		<i>TODO:Add methods like isLeaf() or isContainer() to item.</i>
+		</pre></li>
+
+	<li>Get a folder in the OLAT bcroot/repository hierarchie: <pre>VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(ores);</pre>
+	<i>TODO: Create proper factory that delivers Containers, </i></li>
+
+	<li>To write of read from a vfs file you have to get the OutputStream
+	from the leave where your can read of write with support of the
+	FileUtils class: <pre>
+		VFSLeaf leaf = wikiContentContainer.createChildLeaf(filename);
+		FileUtils.save(leaf.getOutputStream(false), content, "utf-8");
+		</pre>
+	<li>
+	<li>Reading content of a file <pre>
+		VFSLeaf leaf = (VFSLeaf) folder.resolve(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
+		page.setContent(FileUtils.load(leaf.getInputStream(), "utf-8"));
+		</pre></li>
+
+	</li>
+	Getting a list of files with a specific file ending
+	<pre>List propertyLeafs = wikiCtn.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));</pre>
+	</li>
+
+	<li>Creating a subfolder <pre>rootContainer.createChildContainer(WIKI_RESOURCE_FOLDER_NAME)</pre>
+	</li>
+
+	<li>Creating a file in a folder <pre>VFSLeaf leaf = wikiContentContainer.createChildLeaf(page.getPageId());</pre>
+	</li>
+
+</ul>
+<p>The VFS can also be used to create a collection of containers that
+are merged virtually to offer some folders in a view which is not
+physically the same on the filesystem. Similar to the use of symlinks in
+a unix environnement. @see org.olat.modules.bc.BriefcaseWebDAVProvider</p>
+
+<p>TODO:how to create an initial container out form a path??? creating
+an Impl, This need to be refactored to use the Abstract type
+VFSContainer through out olat</p>
+
+</body>
+</html>

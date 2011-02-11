@@ -1,0 +1,21 @@
+<div class="b_form_selection_vertical">
+#if ($!columns && $columns == 2)
+	<div class="b_subcolumns">
+	<div class="b_c50l"><div class="b_subcl b_form b_clearfix">
+#end
+
+	#foreach ($item in $items)
+		<div class="b_form_selection_element">
+			$r.render(${item})
+		</div>
+#if ($!columns && $columns == 2 && $velocityCount == ($size/2 + $size % 2))
+	</div></div>
+	<div class="b_c50r"><div class="b_subcr b_form b_clearfix">
+#end
+
+	#end
+#if ($!columns && $columns == 2)
+	</div></div></div>
+#end
+	
+</div>

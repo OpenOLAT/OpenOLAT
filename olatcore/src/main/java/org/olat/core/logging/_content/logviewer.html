@@ -1,0 +1,28 @@
+<div id="b_logviewer">
+	<div class="b_float_right">
+	#if ($r.available("logviewer.link.update"))		
+		$r.render("logviewer.link.update")
+	#end
+	#if ($r.available("logviewer.link.start"))		
+		$r.render("logviewer.link.start")
+	#end
+	#if ($r.available("logviewer.link.stop"))		
+		$r.render("logviewer.link.stop")
+	#end
+	</div>
+	<div style="font-weight: bold" class="b_logviewer_package">
+		$loggingPackage
+	</div>
+	<div id="b_logviewer_log" class="b_overflowscrollbox b_border_box">
+		<div class="b_xsmall">
+		#if ($r.available("logviewer.link.update"))		
+			$log
+		#end
+		</div>
+	</div>	
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		Ext.onReady(function(){var logger = $('b_logviewer_log'); logger.scrollTop=logger.scrollHeight;});
+	/* ]]> */ 
+	</script>
+</div>

@@ -1,0 +1,31 @@
+<html>
+<head>
+</head>
+
+<body>
+
+Overview description of event handling in OLAT system.
+
+<h3>Introduction</h3> 
+The different software part in OLAT communicates over three 
+OLAT System has three different type of event which can be used to inform  other
+<ul>
+ <li><b>Components-Events</b> : A GUI component can send a event to controllers.<br>
+ Context : GUI Model of certain user (only 1!). 
+ </li>
+ <li><b>Controller-Events</b> : Controller can send events to parent controllers.<br>
+ Context : GUI Model of certain user (only 1!).
+ </li>
+ <li><b>Multi-User Events</b> : Controller or Managers can send events to all users (and there controllers). <br>
+ Context : Globle OLAT System.
+ </li>
+</ul>
+The following picture illustrates this 
+<br>
+ <img src="doc-files/EventTypes.png"/>
+
+<h3>New BusinessControl based jump-in </h3>
+  
+
+</body>
+</html>

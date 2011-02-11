@@ -1,0 +1,36 @@
+<div class="b_portal_wrapper">
+
+## The layout is implemented as YAML subcolumns. 
+## See YAML documentation
+	<div class="b_portal b_subcolumns">
+	#foreach( $column in $portalColumns )
+		<div class="$columnCssClassWrapper.get($velocityCount)">
+			<div class="$columnCssClassInner.get($velocityCount)">
+			#foreach( $portlet in $column )
+				$r.render($portlet)
+			#end
+			</div>
+		</div>
+	#end
+	</div>
+
+#if ($editMode && $inactivePortlets.size() > 0)
+	<div class="b_portal_inactive">
+		<h4>$r.translate("inactive.portlets.title")</h4>
+		$r.translate("inactive.portlets.description")
+		#foreach( $portletName in $inactivePortlets)
+			#set ($portlet = $portletContainers.get($portletName).getPortlet())
+			<div class="b_portlet b_portlet_incactive $portlet.getCssClass()">
+				<div class="b_portlet_header"><strong>$portlet.getTitle()</strong> </div>
+				<div class="b_portlet_content">
+					$portlet.getDescription()
+				</div>
+				<div class="b_portlet_add">
+					$r.render("command.add.${portletName}")
+				</div>
+			</div>
+		#end
+	</div>
+#end
+
+</div>

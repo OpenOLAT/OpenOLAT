@@ -1,0 +1,35 @@
+<div class="b_comment_wrapper b_clearfix">
+	#if($r.available("avatarCtr"))
+		<div class="b_float_left b_avatar">
+			$r.render("avatarCtr")
+		</div>
+	#end
+	#if ($r.available("deleteLink"))
+		<span class="b_float_right">
+			$r.render("deleteLink")				
+		</span>
+	#end
+	#if ($r.available("editLink"))
+		<span class="b_float_right">
+			$r.render("editLink")				
+		</span>
+	#end
+	#if ($r.available("replyLink"))
+		<span class="b_float_right">
+			$r.render("replyLink")				
+		</span>
+	#end
+	<h5 class="b_clearfix">
+		$r.render("creator")
+		<span class="b_date">
+			$formatter.formatDateAndTime($comment.getCreationDate())
+		</span>
+	</h5>
+	<blockquote class="b_comment b_clearfix">
+		$comment.getComment()
+	</blockquote>
+	
+	#foreach($replyController in $replyControllers)
+		$r.render("$replyController.getViewCompName()")
+	#end
+</div>

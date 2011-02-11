@@ -1,0 +1,30 @@
+#if ($editMode)
+	#set($css = "b_portlet b_portlet_edit $cssClass")
+#else 
+	#set($css = "b_portlet $cssClass")
+#end
+
+<div class="$css">
+	#if ($editMode)
+	## this div must be on the same level as the header and content wrapper due to brasato
+	## component wrappers that break the layering of the components !
+	<div class="b_portlet_toolbox b_clearfix">
+		$r.render("toolbox")	
+	</div>
+	#end
+	<div class="b_portlet_header">
+		<strong>$title</strong>
+	</div>
+	<div class="b_portlet_content">
+		$r.render("portlet")
+	</div>
+</div>
+
+
+
+
+
+
+
+
+

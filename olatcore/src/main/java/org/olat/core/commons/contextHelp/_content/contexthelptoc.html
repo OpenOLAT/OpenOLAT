@@ -1,0 +1,7 @@
+<h3>$r.translate("contexthelp.toc.title")</h3>
+<ul>
+#foreach($pageIdentifyer in $pageIdentifyers)
+	#set( $counter = $velocityCount - 1 )
+	<li>$r.render("$counter")</li>
+#end
+</ul>

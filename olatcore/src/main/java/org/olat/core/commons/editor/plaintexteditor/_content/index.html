@@ -1,0 +1,18 @@
+<div class="b_plaintext_editor">
+	$r.render("form")
+	#if ($findtext)
+	<script type="text/javascript">
+	function findTxt(win,txt) {
+	  if(win.find) {
+	      win.find(txt);
+	  } else if(rng = win.document.body.createTextRange()){
+	      if(rng.findText(txt)==true) {
+	          rng.select();
+	      }
+	  }
+	}
+	
+	findTxt(this, "$findtext");
+	</script>
+	#end
+</div>

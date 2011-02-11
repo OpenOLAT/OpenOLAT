@@ -1,0 +1,26 @@
+<fieldset style="background-color:#ddeeff">
+  #if($record)
+	#if($status.equals("off"))
+		#if($rootChildCnt>0)
+			$r.render("clear") |
+			$r.render("startreplay") |
+			#if(!$finished)
+				$r.render("nextandmark") |
+			#end
+		#else
+			$r.render("start") |
+		#end
+		$r.render("manage")
+	#else
+		$r.render("stop") |
+	#end
+  #else
+  	$r.render("load") |
+  	$r.render("save") |
+  	$r.render("delete") |
+  	$r.render("closeIt")
+  	<br />
+  	$r.render("manageVC")
+  #end
+</fieldset>
+

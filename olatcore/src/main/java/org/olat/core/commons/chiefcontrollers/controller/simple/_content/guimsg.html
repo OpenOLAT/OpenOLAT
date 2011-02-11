@@ -1,0 +1,36 @@
+## Gui messages without special styling of positioning. See the FullWebApp 
+## implementation to see a version that displays in a nice window
+
+#if($guiMessage.hasInfo())
+	<div id="b_msg_info" class="b_clearfix">
+		<div class="b_msg_title">
+			$r.translate("info.header")
+		</div>
+		<div class="b_msg_content b_floatscrollbox">
+			$r.get("guiMessage").renderInfo()
+		</div>
+	</div>
+#end
+#if($guiMessage.hasWarn())
+	<div id="b_msg_warn" class="b_clearfix">
+		<div class="b_msg_title">
+			$r.translate("info.header")
+		</div>
+		<div class="b_msg_content b_floatscrollbox">
+			$r.get("guiMessage").renderWarn()
+		</div>
+	</div>
+#end
+#if($guiMessage.hasError())
+	<div id="b_msg_error" class="b_clearfix">
+		<div class="b_msg_title">
+			$r.translate("info.header")
+		</div>
+		<div class="b_msg_content b_floatscrollbox">
+			$r.get("guiMessage").renderError()
+		</div>
+	</div>
+#end
+
+
+

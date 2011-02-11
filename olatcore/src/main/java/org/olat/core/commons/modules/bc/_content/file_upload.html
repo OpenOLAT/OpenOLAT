@@ -1,0 +1,37 @@
+<div class="b_form b_form_vertical #if ($off_css_class) $off_css_class #end b_clearfix">
+#if ($off_title) <fieldset><legend>$off_title</legend> #end
+#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
+#if ($off_desc) <div class="b_form_desc">$off_desc</div> #end
+
+$r.render("file_upload")
+#if($resizeImg)
+<div id="resize_image_wrapper" style="display:none;">
+$r.render("resize_image_wrapper")
+</div>
+#end
+
+#if ($off_title) </fieldset> #end
+
+#if ($showMetadata)
+	$r.render("metadata")
+#end
+
+$r.render("buttons")
+
+</div>
+#if($resizeImg)
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(function() {
+	if ($$('.b_fileinput_realchooser').length > 0) {
+		$$('.b_fileinput_realchooser')[0].observe("change", function() {
+			var re = new RegExp('[.](jpeg)|(jpg)|(png)$');
+			var name = $$('.b_fileinput_realchooser')[0].value;
+			if(name != null && name.toLowerCase().match(re)) { $('resize_image_wrapper').show(); } 
+			else { $('resize_image_wrapper').hide(); } 
+		});
+	}
+});
+/* ]]> */
+</script>
+#end

@@ -1,0 +1,145 @@
+<div class="b_translation_start">
+	<div  class="b_translation_start_head">
+		<div class="b_subcolumns">
+			<div class="b_c50l">
+				<div class="b_subcl b_form b_clearfix">
+					<div class="b_form_element_wrapper b_clearfix">
+						<div class="b_form_element_label">
+							$r.render("start.referenceLangSelection_LABEL", $f.getItemId("start.referenceLangSelection"), "false")
+						</div>
+						<div class="b_form_element">
+							<div class="b_with_small_icon_left b_flag_$referenceLangKey">
+								$r.render("start.referenceLangSelection")
+							</div>
+						</div>
+					</div>
+					<div class="b_form_element_wrapper b_clearfix">
+						<div class="b_form_element_label">
+							$r.render("start.targetLangSelection_LABEL", $f.getItemId("start.targetLangSelection"), "false")
+						</div>
+						<div class="b_form_element">
+							<div class="b_with_small_icon_left b_flag_$targetLangKey">
+								$r.render("start.targetLangSelection")
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="b_c50r">
+				<div class="b_subcr">
+					$r.translate("start.progressBar"):
+					$r.render("progressBar")
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div  class="b_translation_start_body">	
+		<p class="b_info">
+			$r.translate("start.${customizingPrefix}intro")
+		</p>
+		
+		<div class="b_subcolumns">
+			<div class="b_c50l">
+				<div class="b_subcl b_form b_clearfix">
+					<fieldset>
+						<legend class="b_with_small_icon_left b_translation_item_icon">$r.translate("start.${customizingPrefix}missing.title")</legend>
+						<p>
+							$r.translate("start.${customizingPrefix}missing.intro")
+						</p>
+						<p>
+							$r.translate("start.${customizingPrefix}missing.count"): $missingCount
+						</p>
+						$r.render("missingBundlesSelection")
+						<div class="b_clearfix">
+							<div class="b_float_left">$r.render("missingBundlesIncludeBundlesChildrenSwitch") </div>
+							<div class="b_float_left">$r.translate("generic.limit.bundles.includeChildren")</div>
+						</div>
+						<div class="b_clearfix">
+							<div class="b_float_left">$r.render("missingBundlesPrioritySortSwitch") </div>
+							<div class="b_float_left">$r.translate("generic.sort.by.priority")</div>
+						</div>
+						<div class="b_button_group">
+							$r.render("missingListButton")
+							$r.render("missingTranslateButton")
+						</div>						
+					</fieldset>			
+				</div>
+			</div>
+			<div class="b_c50r">
+				<div class="b_subcr b_form b_clearfix">
+					<fieldset>
+						<legend class="b_with_small_icon_left b_translation_item_icon">$r.translate("start.${customizingPrefix}existing.title")</legend>
+						<p>
+							$r.translate("start.${customizingPrefix}existing.intro")
+						</p>
+						<p>
+							$r.translate("start.${customizingPrefix}existing.count"): $existingCount
+						</p>
+						$r.render("existingBundlesSelection")
+						<div class="b_clearfix">
+							<div class="b_float_left">$r.render("existingBundlesIncludeBundlesChildrenSwitch") </div>
+							<div class="b_float_left">$r.translate("generic.limit.bundles.includeChildren")</div>
+						</div>
+						<div class="b_clearfix">
+							<div class="b_float_left">$r.render("existingBundlesPrioritySortSwitch") </div>
+							<div class="b_float_left">$r.translate("generic.sort.by.priority")</div>
+						</div>
+						<div class="b_button_group">
+							$r.render("existingListButton")
+							$r.render("existingTranslateButton")
+						</div>						
+					</fieldset>			
+				</div>
+			</div>
+		</div>
+		<div class="b_subcolumns">
+			<div class="b_c50l">
+				<div class="b_subcl b_form b_clearfix">
+					<fieldset>
+						<legend class="b_with_small_icon_left b_translation_package_icon">$r.translate("start.all.title")</legend>
+						<p>
+							$r.translate("start.all.intro")
+						</p>
+						<p>
+							$r.translate("start.all.count"): $allCount
+						</p>
+						$r.render("allBundlesSelection")
+						<div class="b_clearfix">
+							<div class="b_float_left">$r.render("allBundlesIncludeBundlesChildrenSwitch") </div>
+							<div class="b_float_left">$r.translate("generic.limit.bundles.includeChildren")</div>
+						</div>
+						<div class="b_clearfix">
+							<div class="b_float_left">$r.render("allBundlesPrioritySortSwitch") </div>
+							<div class="b_float_left">$r.translate("generic.sort.by.priority")</div>
+						</div>
+						<div class="b_button_group">
+							$r.render("allListButton")
+							$r.render("allTranslateButton")
+						</div>						
+					</fieldset>						
+				</div>
+			</div>
+			<div class="b_c50r">
+				<div class="b_subcr b_form b_clearfix">
+					<fieldset>
+						<legend class="b_with_small_icon_left b_translation_search_icon">$r.translate("start.search.title")</legend>
+						<p>
+							$r.translate("start.${customizingPrefix}search.intro")
+						</p>
+						$r.render("searchLayoutContainer")
+					</fieldset>			
+				</div>
+			</div>
+		</div>
+	
+	</div>	
+	
+	## set meaningfull page title
+	<script type="text/javascript">
+	/* <![CDATA[ */ 
+		document.title = "$r.translate("page.appname") - $r.escapeHtml($r.translate("start.title"))";
+	/* ]]> */
+	</script>	
+</div>

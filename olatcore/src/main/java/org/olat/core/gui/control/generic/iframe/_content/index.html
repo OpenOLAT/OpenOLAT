@@ -1,0 +1,20 @@
+#if ($r.available("command.download"))
+	$r.render("command.download")
+#end
+
+<div class="b_iframe_wrapper">
+#if ($isAbsoluteURI)
+	<iframe name="$frameId" id="$frameId" src="${currentURI}" frameborder="0" title="$r.translateInAttribute("iframe.content")" height="$iframeHeight"></iframe>
+	#if($adjustAutoHeight)
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
+		Ext.onReady(function() {b_resizeIframeToMainMaxHeight("$frameId");});		
+	/* ]]> */ 
+	</script>
+	#end
+#else
+	<iframe name="$frameId" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px"></iframe>
+#end
+</div>
+$r.render("newUriEvent")

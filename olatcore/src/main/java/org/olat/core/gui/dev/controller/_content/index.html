@@ -1,0 +1,48 @@
+<div id="b_devcon_content">
+		<fieldset class="b_clearfix">
+			<div id="b_devcon_mode" style="background-color: #$sys.modthree();"></div> 
+			(full-page-reload) - Time: $sys.time()
+		</fieldset>
+		<fieldset class="b_clearfix">
+			<ul>
+				<li><strong>Modes</strong></li>
+				<li>$r.render("debug")</li>
+				<li>$r.render("web10")</li>
+				<li>$r.render("web20")</li>
+				<li>$r.render("web20hl")</li>
+				<li>$r.render("showJson")</li>
+				<li>$r.render("web21")</li>
+			</ul>
+			<ul>
+				<li><strong>Tools</strong></li>
+				<li>$r.render("showComponentTree")</li>
+				<li><a href="#" onclick="b_toggle_log()" class="b_button"><span>JavaScript console</span></a></li>
+				#if ($r.available("inlineTrans"))
+				<li>$r.render("inlineTrans")</li>
+				#end
+			</ul>
+		</fieldset>
+		<fieldset class="b_clearfix">
+			$r.render("bandwidth")
+		</fieldset>
+		
+		<fieldset id="b_js_log" class="b_clearfix" style="display:none">
+			<strong>Console:</strong> (newest msg on top)
+			<form action="#">
+			<textarea id="o_debug_cons"></textarea>
+			<input type="button" onclick="o_clearConsole()" name="abc" value="Clear console">
+			</form>
+		</fieldset>
+		
+		#if( $compdump != "")
+		<fieldset id="b_devcon_compdump">
+			$!compdump
+		</fieldset>
+		#end
+</div>
+<script type="text/javascript">
+		function b_toggle_log() {
+			Element.toggle("b_js_log");
+			o_log(null);
+		}
+</script>

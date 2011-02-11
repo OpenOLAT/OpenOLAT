@@ -1,0 +1,23 @@
+#if($selectPath.isTrue())
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(BTree.selectPath.curry('$selectedPath', '$treePanelName'));
+/* ]]> */
+</script>
+#end
+
+#if($removePath.isTrue())
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(BTree.removePath.curry('$removedPath', '$treePanelName'));
+/* ]]> */
+</script>
+#end
+
+#if($reloadPath.isTrue())
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(BTree.reloadPath.curry('$reloadedPath', '$treePanelName'));
+/* ]]> */
+</script>
+#end

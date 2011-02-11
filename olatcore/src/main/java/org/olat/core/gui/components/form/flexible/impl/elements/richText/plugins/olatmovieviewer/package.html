@@ -1,0 +1,55 @@
+<html>
+<head><title></title></head>
+<body>
+<h3>OLAT movie viewer plugin for TinyMCE</h3>
+<h4>Configuration</h4>
+The HTMl editor has a custom TinyMCE plugin that is called <i>MovieViewer</i>. The idea is basically, to give users 
+the possibility to embed a movie viewer that can handle streamed movies and play buttons based. 
+<p>
+The movies must be flash and not Quicktime. Why? Flash is preinstalled on pretty every computer whereas QuickTime is not.
+<p>
+The flash movies must be on a streaming server. 
+<p>
+To enable the movie viewer you must configure the HTML editor bean using the Spring configuration and make sure 
+that the property <b>movieViewerEnabled</b> is set to <i>true</i>. Then there are some other variables to set. 
+<p>
+Please have a look at the default configuration file that can be found at 
+<pre>
+olatcore/src/main/resources/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/olatdefaultconfig.xml
+</pre>
+The current implementation of the viewer is done by <a href="http://www.longtailvideo.com/">Longtail Video</a>.
+
+<h4>Usage</h4>
+When configured, the editor has two new buttons:
+<p>
+<img src="doc-files/movieviewer-buttons.png"/>
+<p>
+The left button is use to insert a new movieViewer or to edit the selected movieViewer. Note that only one
+movieViewer per page is supported.
+<br>
+The right button is used to create a play button for this movie. There can be as many or no play buttons on a
+page as desired. Each play button can jump to a specified location in the movie.
+<p>
+In both the viewer and the play buttons the <i>start time</i> and the movie <i>duration</i> can be specified. 
+The default value is 00:00:00.000 for both which means running from start to the end.
+<p>
+<img src="doc-files/movieviewer-edit.png"/>
+<p>
+The start time must be entered using the format hh:mm:ss.000 where hh stands for hours, mm for
+minutes, ss for seconds and 000 for milliseconds.
+<br>
+Example: A starttime of 00:25:10.000 would play the movie starting at the point 25 minutes and 10 seconds in the movie timeline.
+
+<h4>Information for OLAT developers</h4>
+<ul>
+	<li>The path to the transparent placeholder image is determined in <code>OlatMovieViewerPlugin.getPluginParameters()</code>.</li>
+</ul>
+
+<h4>Credits</h4>
+<ul>
+<li>Implementation of JW Player from <a href="http://www.longtailvideo.com/">Longtail Video</a></li>
+<li>Integration in the OLAT HTML editor: Florian Gn&auml;gi from <a href=http://www.frentix.com">frentix.com</a></li>
+</ul>
+
+</body>
+</html>

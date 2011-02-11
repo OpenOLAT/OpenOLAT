@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+	<!-- Define commenting and rating service implementation. Remove this bean if you don't want this service to be enabled at all -->
+	<bean id="commentAndRatingService" class="org.olat.core.commons.services.commentAndRating.impl.CommentAndRatingServiceImpl" 
+	scope="prototype" >
+	<property name="userCommentsManager" ref="userCommentsManager" />
+	<property name="userRatingsManager" ref="userRatingsManager" />
+	</bean>
+	
+	<!-- Define the manager implementation used in comment and rating service -->
+	<bean id="userCommentsManager" 
+	class="org.olat.core.commons.services.commentAndRating.impl.UserCommentsManagerImpl" scope="prototype" />
+	<bean id="userRatingsManager" 
+	class="org.olat.core.commons.services.commentAndRating.impl.UserRatingsManagerImpl" scope="prototype" />
+	
+</beans>

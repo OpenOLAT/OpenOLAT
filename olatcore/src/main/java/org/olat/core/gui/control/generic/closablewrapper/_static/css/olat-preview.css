@@ -1,0 +1,5 @@
+/* override css style, add preview background image */
+#o_container {
+	background-image: url(img/prevbg.gif);
+	background-repeat: repeat;
+}

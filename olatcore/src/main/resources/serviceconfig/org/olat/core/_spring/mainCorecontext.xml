@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	
+	<!--
+		*****************************************
+		*** Configuration for core.dispatcher ***
+		*****************************************
+		
+		../default/ mapped to defaultbean etc.
+		configures DispatcherActions to be called on certain paths.
+		
+		[!!] reserved starting pathes are
+		[!!] /n/ for named dispatchers used by the extension mechansim
+		[!!] /m/ for per user session mapper
+		[!!] /g/ for the global mapper
+		[!!] if you use one of those you get an exception.
+	-->
+	<bean 	id="core.dispatchers" 
+			class="org.olat.core.dispatcher.DispatcherConfig" 
+			abstract="true">
+			<!-- System defined dispatchers -->
+			<property name="dispatchers">
+	  			<map>
+	  				<entry key="/">
+	  					<ref bean="redirect2defaultbean" />
+	  				</entry>
+	  				<entry key="/error">
+	  					<ref bean="errorbean" />
+	  				</entry>
+	  			</map>
+	  		</property>
+	</bean>
+	<bean id ="errorbean" class = "org.olat.core.dispatcher.ErrorFeedbackMailer" />
+	<bean id ="redirect2defaultbean" class = "org.olat.core.defaults.dispatcher.RedirectToDefaultDispatcher" />
+	
+	<!-- Override this bean in extconfig.xml with your configuration -->
+	<bean 	id="org.olat.core.dispatcher.DispatcherConfig" 
+			class="org.olat.core.dispatcher.DispatcherConfig" 
+			
+			parent="core.dispatchers">
+	  		<property name="extconfigdispatchers">
+	  			<map>
+	  				<!-- TODO: <entry key="::DEFAULT::" value="/default/" /> -->
+	  				<!-- TODO: <entry key="/default/">
+	  					<ref bean="defaultbean" />
+	  				</entry> -->
+	  			</map>
+	  		</property>
+	</bean>
+	<!-- TODO:<bean id ="defaultbean" class = "org.olat.core.default.Dispatcher" scope="prototype"/> -->
+	
+	
+	<!-- the specifed creator is responsible for the frameworks popup browser window layout.
+	     Special layouts must be implemented by wrapping the content into a content-layouting controller 
+	     TODO:pb: discuss a layoutconfig.xml?-->
+	<bean id="org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator" 
+		class="org.olat.core.gui.control.generic.popup.BasePopupWindowControllerCreator" >
+	</bean> 
+	<!-- An alternate popup controller when the base full web app controller is used
+	<bean id="org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator" 
+		class="org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutCreator" >
+	</bean>
+	 -->
+	
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** header part, e.g. for a logo       ***
+		******************************************
+	-->
+	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.commons.fullWebApp.LogoWithLinkHeaderControllerCreator" scope="prototype">
+		<property name="linkURI" value="http://www.brasatoframework.org" />	
+		<property name="imgURI" value="http://www.brasatoframework.org/images/logo.png" />	
+		<property name="imgAltText" value="Brasato Open Source WebApp Framework" />					
+	</bean> 		
+	<!-- use the following header controller instead if you want an empty header or configure you own
+	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
+	</bean>
+	 -->
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** right upper corner.                ***
+		******************************************
+	-->
+	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultTopNavController"/>
+	</bean>
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** Footer.                            ***
+		******************************************
+	-->
+	<bean id="fullWebApp.FooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultFooterController"/>
+	</bean>
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** header part, in popups             ***
+		******************************************
+	-->
+	<!-- 
+	<bean id="fullWebApp.MinimalHeaderControllerCreator" class="org.olat.core.commons.fullWebApp.LogoWithLinkHeaderControllerCreator" scope="prototype">
+		<property name="linkURI" value="http://www.brasatoframework.org" />	
+		<property name="imgURI" value="http://www.brasatoframework.org/images/logo.png" />	
+		<property name="imgAltText" value="Brasato Open Source WebApp Framework" />					
+	</bean> 		
+	 -->
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** right upper corner in pop ups      ***
+		******************************************
+	-->
+	<bean id="fullWebApp.MinimalTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultMinimalTopNavController" />
+	</bean>
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** Footer in popups.                  ***
+		******************************************
+	-->
+	<!-- 
+	<bean id="fullWebApp.MinimalFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultFooterController"/>
+	</bean>
+	 -->
+
+
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** header part, in context help       ***
+		******************************************
+	-->
+	<bean id="fullWebApp.ContextHelpHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
+	</bean> 		
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** right upper corner inin context help**
+		******************************************
+	-->
+	<bean id="fullWebApp.ContextHelpNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.core.commons.contextHelp.ContextHelpMinimalTopNavController" />
+	</bean>
+	<!--
+		******************************************
+		*** Configure the controller in the    ***
+		*** Footer in in context help.         ***
+		******************************************
+	-->
+	<bean id="fullWebApp.ContextHelpFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultFooterController"/>
+	</bean>
+
+      
+    <!--
+		*****************************************
+		*** Define the persistent lock manager    ***
+		*****************************************
+	-->
+	<!-- TODO:pb: <bean id="PersistentLockManager" class="org.olat.core.default.PersistentLockManager" />  -->
+
+	
+    <!--
+		*****************************************
+		*** Define the Quota Manager          ***
+		*****************************************
+	-->
+	<!-- 
+	<bean 
+		id="org.olat.core.util.vfs.QuotaManager" class="org.olat.core.util.vfs.QuotaManager"  />  
+	-->
+
+</beans>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+	<!--
+		The link chooser can be configured to have an additional media chooser
+		controller. Specify one here or in another Spring configuration file.
+		
+		The custom media chooser controller adds an additional tab in the 
+		media browser in the HTML editor. You can use this to e.g. connect to 
+		an externam media asset management system.
+
+		To use a custom media chooser controller it is best to override this
+		section in your webapps extconfig.xml file
+		
+		Florian Gnägi, frentix GmbH, http://www.frentix.com
+	-->
+	<!-- Add your custom media chooser here
+	<bean   id="org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController" 
+			class="org.olat.core.commons.controllers.linkchooser.CustomMediaChooserControllerImpl" scope="prototype" />
+	-->
+</beans>

@@ -1,0 +1,23 @@
+<div id="o_fc_select" class="b_clearfix" >
+	<a href="#o_top" class="b_button b_small b_float_right"   
+		onclick="Effect.toggle('o_fc_select','appear',{queue: 'front', duration: 0.3});Effect.toggle('o_fc_upload', 'appear',{ queue: 'end', duration: 0.3});">
+		<span>$r.translate("filechooser.upload.title")</span>	
+	</a>
+	<h3>
+		$r.translate("filechooser.select.title")
+	</h3>
+	<p>
+	$r.render("stTree")
+</div>
+
+<div id="o_fc_upload" class="b_clearfix" style="display: none">
+	<a href="#o_top" class="b_button b_small b_float_right" 
+		onclick="Effect.toggle('o_fc_upload', 'appear',{queue: 'front', duration: 0.3});Effect.toggle('o_fc_select','appear',{ queue: 'end', duration: 0.3});">	
+		<span>$r.translate("filechooser.select.title")</span>
+	</a>
+	<h3>
+		$r.translate("filechooser.upload.title")
+	</h3>
+	<p>
+	$r.render("uploader")
+</div>

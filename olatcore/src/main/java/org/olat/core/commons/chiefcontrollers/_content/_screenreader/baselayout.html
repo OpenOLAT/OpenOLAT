@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta name="description" content="$r.translate("meta.description")" />
+<meta name="keywords" content="$r.translate("meta.keywords")" /> 
+<meta name="DC.creator" content="University of Zurich - http://www.uzh.ch" />
+<meta name="DC.subject" content="OLAT - Online Learning And Training - Your Open Source Learning Management System" />
+<meta name="DC.contributor" content="see http://www.olat.org/website/en/html/download_license.html" />
+<meta name="DC.date" content="2010-03-16" scheme="DCTERMS.W3CDTF" />
+<meta name="DC.type" content="Interactive Resource" scheme="DCTERMS.DCMIType" />
+<meta name="DC.identifier" content="http://www.olat.org/" scheme="DCTERMS.URI" />
+<meta name="DC.rights" content="http://www.olat.org/website/en/html/download_license.html" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+## <!-- IE cache -->
+<meta http-equiv="Pragma-directive" content="no-cache">
+<meta http-equiv="cache-directive" content="no-cache">
+<script type="text/javascript">
+var o_info = new Object();
+o_info.o_winid = $o_winid;
+##o_info.bkme =  dollar bkme;
+o_info.uriprefix="$r.relWinLink()";
+o_info.bc="$o_bc";
+o_info.dirty_form = "$r.translate("form.dirty")";
+o_info.hasFocus = false;
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+function o2start(){o_init();
+## js B
+$r.renderBodyOnLoadJSFunctionCall()
+## js E
+}
+</script>
+
+## Basic JS libraries for DOM manipulation and visual effects
+<script type="text/javascript" src="$r.staticLink("js/prototype/prototype.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/effects.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/controls.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/sound.js")"></script>
+## EXT JS library
+<link rel="stylesheet" type="text/css" href="$r.staticLink("js/ext/resources/css/ext-all.css")" />
+<script type="text/javascript" src="$r.staticLink("js/ext/adapter/prototype/ext-prototype-adapter.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/ext/ext-all.js")"></script>
+
+<script type="text/javascript" src="$r.staticLink("js/functions.js")"></script>
+
+## favicons
+<link rel="icon" href="$r.staticLink("favicon.ico")" type="image/x-icon"> 
+<link rel="shortcut icon" href="$r.staticLink("favicon.ico")" type="image/x-icon"> 
+## include component-specific css and js includes
+$r.render("jsCssRawHtmlHeader")
+## deprecated - include any raw header
+$r.renderHeaderIncludes()
+## css for printing
+<link rel="StyleSheet" href="$r.staticLink("css/print.css")" type="text/css" media="print">
+## ------------------------------------------------------------------------
+## special css specific per theme; baselayout.html in subfolders (=themes) differ only in the next line to this html here
+<link rel="StyleSheet" href="$r.staticLink("css/screenreader.css")" type="text/css" media="screen">
+<link rel="StyleSheet" href="$r.staticLink("css/screenreader-aural.css")" type="text/css" media="aural">
+## ------------------------------------------------------------------------
+<title></title></head>
+## -------------------------
+## set the lang attribute for aural support / screenreaders
+## TODO:fj pb: Review order
+<body onload="o2start();" class="o_body" lang="$lang" onFocus="o_info.hasFocus = true;" onBlur="o_info.hasFocus = false;">
+## -------------------------
+## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
+## components.
+$r.renderForce("guidebug")
+## - include javascript for window and ajax control
+$r.render("jsServer")
+## the content comes here
+$r.render("olatContentPanel")
+## ---------------------------------
+## next line is to provide a link for a short key overview for screenreader navigation.
+## this help is triggered by alt+1, as suggested (see todo felix url link for accessibility guidelines)
+<a accesskey="1" href="$r.staticLink("msg/screenreader/$lang/about.html")" target="_blank">$r.translate("link.screenreader.about")</a>
+## ---------------------------------
+## controller for development
+$r.renderForce("development")
+<div id="b_ajax_busy" class=""></div>
+</body></html>

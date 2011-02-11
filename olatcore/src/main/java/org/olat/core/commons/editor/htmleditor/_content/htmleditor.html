@@ -1,0 +1,91 @@
+<div class="b_htmleditor_wrapper b_clearfix">
+#if($locked)
+	<p class="b_warning">
+		$r.translate("error.pageeditedby", $lockOwner)
+	</p>
+#else
+	
+	<script language="JavaScript">
+	/* <![CDATA[ */ 
+	function b_resizetofit_htmleditor() {
+		var height = b_viewportHeight() / 3 * 2;
+		var edi = $("$f.getItemId("rtfElement")_ifr");
+		if (edi) {		
+			## use calculated height
+			edi.style.height=parseInt(height)+"px";		
+		} else {
+			## editor not available anymore - remove listener
+			Event.stopObserving(window, 'resize', b_resizetofit_htmleditor);
+		}
+		## reuse for next start of html editor
+		var toolbar = $$("#$f.getItemId("rtfElement")_tbl tr.mceFirst")[0];
+		if (toolbar) height = height + toolbar.getHeight();
+		var footer = $$("#$f.getItemId("rtfElement")_tbl tr.mceLast")[0];
+		if (footer) height = height + footer.getHeight();
+		o_info.optimized_htmleditor_height = height;
+	}
+	## execute once and attach handler on window resize 
+	Event.observe(window, 'resize', b_resizetofit_htmleditor);	
+
+	## method to use the last editor height as a preset to reduce flickering.
+	function b_initialEditorHeight() {
+		if (o_info.optimized_htmleditor_height) return o_info.optimized_htmleditor_height;
+		else return 400;
+	}
+	
+	## Check for dirtyness and mark buttons accordingly, each second
+	new PeriodicalExecuter(function(executor) {
+		## first check if the html editor still exists on this page, otherwhise stop executing this code
+		var elem = $('$f.getItemId("rtfElement")');
+		if (!elem) {
+			executor.stop();
+			return;
+		}
+		if (tinyMCE && tinyMCE.activeEditor) {
+			if (tinyMCE.activeEditor.isDirty()) {
+				o2c=1;				
+				## add dirty class when dirty
+				var sb = $$('#b_htmleditor_button_save a')[0];
+				if (!sb.hasClassName('b_button_dirty')) {
+					sb.addClassName('b_button_dirty');
+					#if ($f.isVisible("saveandclosebuttontext"))
+						$$('#b_htmleditor_button_saveclose a')[0].addClassName('b_button_dirty');
+					#end
+				}
+			} else {
+				## when not dirty remove dirty class
+				var sb = $$('#b_htmleditor_button_save a')[0];
+				if (sb.hasClassName('b_button_dirty')) {
+					sb.removeClassName('b_button_dirty');
+					#if ($f.isVisible("saveandclosebuttontext"))
+						$$('#b_htmleditor_button_saveclose a')[0].removeClassName('b_button_dirty');
+					#end
+				}
+			}
+		}		
+	},1);
+	/* ]]> */
+	</script>
+	
+	## script block must be before editor loads
+	<div class="b_htmleditor_editor">
+		#if ($r.available("metadata"))
+			$r.render("metadata")
+		#end
+		$r.render("rtfElement")
+	</div>
+		
+	<div class="b_button_group" id="b_htmleditor_save">
+		#if ($f.isVisible("savebuttontext"))
+			<span id="b_htmleditor_button_save">$r.render("savebuttontext")</span>
+		#end
+		#if ($f.isVisible("saveandclosebuttontext"))
+			<span id="b_htmleditor_button_saveclose">$r.render("saveandclosebuttontext")</span>
+		#end
+		#if ($f.isVisible("cancel"))
+			<span id="b_htmleditor_button_close">$r.render("cancel")</span>
+		#end
+	</div>
+
+#end		
+</div>

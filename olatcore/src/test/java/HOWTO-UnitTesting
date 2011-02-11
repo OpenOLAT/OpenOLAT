@@ -1,0 +1,51 @@
+Unittesting with Spring and Junit4
+
+@autor: Guido Schnider - 19.05.2010
+-------------------------------------------------------------
+
+(Wikipedia http://en.wikipedia.org/wiki/Unit_testing)
+In computer programming, unit testing is a software verification and validation method in which a programmer tests if individual units of source code are fit for use.
+A unit is the smallest testable part of an application. In procedural programming a unit may be an individual function or procedure.
+
+Because some classes may have references to other classes, testing a class can frequently spill over into testing another class.
+A common example of this is classes that depend on a database: in order to test the class, the tester often writes code that interacts with the database.
+This is a mistake, because a unit test should usually not go outside of its own class boundary.
+
+
+Eclipse setup
+-----------------------------------
+If you have problems running the junit tests (Errors like: Could not find olat.propeties file). Check your build path for the src/test/java settings that it includes
+ALL files and not only *.java classes!
+
+To achive this there are some different approaches:
+
+1: You like to test code which does not depend on any spring beans or any other olat framework stuff
+
+Solution: Use the junit4 annotations @RunWith for the class and @Test for every method you like to test  
+-----------------------------------
+
+@RunWith(JUnit4.class)
+public class AddBaseURLToMediaRelativeURLFilterTest {...
+
+@Test
+public void testPlainText() {...
+-----------------------------------
+
+2: You like to test code which includes managers/modules that are spring beans you can use this setup:
+
+-----------------------------------
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = {
+	"/org/olat/core/test/_spring/yourSpringContext.xml"})
+
+public class YourTestClass {...
+
+-------------------------------------
+
+The Springcontext gets loaded and you can use @Autowire or access directly the "applicationContext" var and do you testing
+
+3: If you need more stuff from the framework like Coordinator or database access in your code you can use the OlatcoreTestCaseWithMocking which
+already has some mocked stuff inside (Coordinator.getEventBus() calls) or create your own mocks based on the example. The library we use for mocking is 
+Mockito (http://mockito.org/)
+When you run all tests in a suite, the spring context gets cached and only loaded once for better performance. But if you load the same spring beans twice,
+the beans will not get overwritten and instead they get created again and a new instance gets assigned for e.g. a singleton.

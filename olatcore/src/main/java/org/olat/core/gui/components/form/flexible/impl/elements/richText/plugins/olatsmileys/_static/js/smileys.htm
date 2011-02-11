@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/tiny_mce_popup.js"></script>
+	<script type="text/javascript">
+		function findMainWindow(win) {
+			if (win.b_jsTranslatorFactory) return win;
+			else if (win.opener) return findMainWindow(opener);
+			else return null;
+		}
+		var mainWin = findMainWindow(tinyMCEPopup.getWin());
+		var translator;
+		if (mainWin) {
+			translator = mainWin.b_jsTranslatorFactory.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatsmileys')	
+		} else {
+			// implement dummy-translator
+			translator = {	translate : function(key) { return key; } }
+		}
+		document.title = translator.translate('olatsmileys.title');
+	</script>
+	<script type="text/javascript" src="js/smileys.js"></script>
+	<script type="text/javascript">
+	  	var cssFiles = tinyMCEPopup.getParam("content_css").split(",");
+	  	for(i=0; i < cssFiles.length; i++) {
+			var cssElement = document.createElement("link");
+			cssElement.setAttribute("rel", "stylesheet");
+		  	cssElement.setAttribute("type", "text/css");
+		  	cssElement.setAttribute("href", cssFiles[i]);
+		  	document.getElementsByTagName("head")[0].appendChild(cssElement);
+	  	}
+	</script>
+</head>
+
+<body style="display: none" onload="renderDialog();">
+	
+	<!--  Simple chooser dialog for the emoticons. -->
+	<div align="center">
+
+		<div class="title">
+			<script type="text/javascript">document.write(translator.translate('olatsmileys.desc'))</script>
+			:<br /><br />
+		</div>
+
+		<table border="0" cellspacing="0" cellpadding="4" id="smileystable">
+		</table>
+	</div>
+</body>
+</html>
+

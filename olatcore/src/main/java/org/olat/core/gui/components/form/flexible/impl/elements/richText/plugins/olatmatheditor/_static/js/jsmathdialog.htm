@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<script type="text/javascript" src="prototype.js"></script>
+		<script type="text/javascript" src="../../org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/tiny_mce_popup.js"></script>
+		<script type="text/javascript">
+			// Load the OLAT translator
+			function findMainWindow(win) {
+				if (win.b_jsTranslatorFactory) return win;
+				else if (win.opener) return findMainWindow(opener);
+				else return null;
+			}
+			var mainWin = findMainWindow(tinyMCEPopup.getWin());
+			var translator;
+			if (mainWin) {
+				translator = mainWin.b_jsTranslatorFactory.getTranslator(mainWin.o_info.locale, 'org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmatheditor')	
+			} else {
+				// implement dummy-translator
+				translator = {	translate : function(key) { return key; } }
+			}
+			document.title = translator.translate('olatmatheditor.title');
+		</script>
+		<script type="text/javascript" src="js/jsmathdialog.js"></script>
+		<script type="text/javascript">loadJSMath();</script>
+	</head>
+	
+	<body>
+	<form onsubmit="JSMathDialog.insert();return false;" action="#">
+		<div class="tabs">
+			<ul>
+				<li id="general_tab" class="current"><span><a href="javascript:mcTabs.displayTab('formulaTab', 'formulaPanel');" onmousedown="return false;">
+					<script type="text/javascript">document.write(translator.translate('olatmatheditor.formulaTabTitle'))</script>
+				</a></span></li>
+			</ul>
+		</div>
+		
+		<div class="panel_wrapper">
+			<div id="formulaPanel" class="panel current">
+				<fieldset>
+					<legend>
+						<script type="text/javascript">document.write(translator.translate('olatmatheditor.latexGroupTitle'))</script>
+					</legend>
+					<p><center><textarea id="latex" name="latex" rows="8" cols="50" class="text" style="border: none; background-color:#ffffcc; overflow:auto;" onkeyup="updatePreview();"></textarea></center></p>
+				</fieldset>
+				<fieldset style="height: 120px;">
+					<legend>
+						<script type="text/javascript">document.write(translator.translate('olatmatheditor.previewGroupTitle'))</script>
+					</legend>
+					<div id="mathpreviewFormula" class="math" style="width:100%; height=100%;"></div>
+					<div id="mathpreviewErrorMessage" class="math"></div>
+				</fieldset>
+			</div>
+		</div>
+		
+		<div class="mceActionPanel">
+			<div style="float: left">
+				<input type="button" id="insert" name="insert" value="{#insert}" onclick="JSMathDialog.insert();" />
+			</div>
+	
+			<div style="float: right">
+				<input type="button" id="cancel" name="cancel" value="{#cancel}" onclick="tinyMCEPopup.close();" />
+			</div>
+		</div>
+	</form>
+	
+	<div id="mathpreviewOffscreen" class="math" style="display:none;"></div>
+	
+	</body>
+</html>

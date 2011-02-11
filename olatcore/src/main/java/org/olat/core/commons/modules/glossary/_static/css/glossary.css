@@ -1,0 +1,49 @@
+.o_glossary {
+	margin: 0 100px 0 100px;
+}
+
+/* wrapper for one glossary term */
+.o_glossary_entry{
+	margin: 0px 0 0px 0;
+	padding: 10px;
+	border-top: 1px solid #DCDDE0;
+	border-left: 1px solid #DCDDE0;
+	border-right: 1px solid #DCDDE0;
+}
+
+/* wrapper for the edit / delete buttons */
+.o_glossary_commands {
+	float: right;
+}
+/* wrapper for the add buttons */
+.o_glossary_addcommand {
+	float: right;
+}
+
+/* the glossary term */
+dt {
+	font-size: 110%;
+	font-weight: bold;
+	font-variant: small-caps;
+}
+dt o_glossary_synonym {
+	font-size: 80%;
+	font-variant: small-caps;
+	font-style: italic;
+}
+/* the glossary explanation */
+dd {
+	padding-left: 20px;
+	clear: both;
+}
+
+.o_glossary_register {
+	margin-bottom: 10px;	
+}
+
+.o_glossary_register_active {
+	font-weight: bold;
+	background-color: lightgrey;
+	font-size: 120%;
+}
+ 

@@ -1,0 +1,93 @@
+<div class="b_form_auto_completer">
+	<form id="$r.getId("aj_ac_f")" action="$r.formURIbg('select')" method="post" $r.bgTarget()>
+	    #if ($autocompleter_label)
+			$autocompleter_label 
+		#end
+		<div class="b_form_element">
+		    <input type="text" size="$inputWidth" name="$r.getId("b_autocomplete_input")" id="$r.getId("b_autocomplete_input")" />
+		</div>	
+	</form>
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+Ext.onReady(function(){
+	
+	## Cleanup old stuff first, e.g. when component was temporary invisible and now in the DOM tree again
+	if (o_info.objectMap.containsKey('${r.getId("autocompleterDatastore")}')) {
+		var oldStore = o_info.objectMap.removeKey('${r.getId("autocompleterDatastore")}');
+		if (oldStore) {
+			oldStore.destroy();			
+		}
+		oldStore = null;
+	}
+	if (o_info.objectMap.containsKey('${r.getId("autocompleterCombobox")}')) {
+		var oldCombo = o_info.objectMap.removeKey('${r.getId("autocompleterCombobox")}');
+		if (oldCombo) {
+			oldCombo.destroy();			
+		}
+		oldCombo = null;
+	}
+	
+	## Data store gets key value pairs from server
+    var dataStore = new Ext.data.Store({
+        proxy: new Ext.data.ScriptTagProxy({
+            url: '$mapuri'
+        }),
+        reader: new Ext.data.JsonReader({
+            root: 'rows',
+            totalProperty: 'results',
+            id: 'key'
+        }, [
+            {name: 'key', mapping: 'key'},
+            {name: 'displayKey', mapping: 'displayKey'},
+            {name: 'value', mapping: 'value'},
+            {name: 'cssClass', mapping: 'cssClass'}
+        ])
+    });
+	## put datastore into managed object map to access it later on
+	o_info.objectMap.add('${r.getId("autocompleterDatastore")}', dataStore);
+	##dataStore.on('destroy', function() {console.log('destroying ${r.getId("autocompleterDatastore")}')});
+    
+    ## The auto completer input field element
+    var comboBox = new Ext.form.ComboBox({
+        store: dataStore,
+        typeAhead: false,
+        hideTrigger: true,
+        minChars : $minChars,
+        ## Note when you use the pageing feature you get a conflict with ServletUtil.isFlashPseudoStreaming() 
+        ## which tests for a start parameter which is used by the pageing as well. Set to 0 to disable feature.
+        pageSize: 0,  
+        loadingText: '$r.translate("autocomplete.searching")',
+        tpl: new Ext.XTemplate('<tpl for="."><div class="b_form_auto_completer_item search-item {cssClass}">','#if($showDisplayKey)<span class=\'b_key\'>{displayKey}: </span>#end<span class=\'b_value\'>{value}</span>','</div></tpl>'),
+        itemSelector: 'div.search-item',
+        applyTo: '$r.getId("b_autocomplete_input")'
+    });
+	## Put combobox into managed object map to access it later on
+	o_info.objectMap.add('${r.getId("autocompleterCombobox")}', comboBox);
+	##comboBox.on('destroy', function() {console.log('destroying ${r.getId("autocompleterCombobox")}')});
+
+	## Add some event listeners
+    ## Fire selection back to controller
+    comboBox.on('select', function(combo, record, index){ 
+        	## Send event to controller with selected key
+            $r.javaScriptBgCommand("select") + '?key=' + record.data.key;
+        }
+    );
+    ## When the result list is showed, check if the input field is still visible
+    ## When user enters fast and presses enter, the search might have been triggered
+    ## by the form submit and the combo box result list is showed delayed. In this case
+    ## don't expand
+    comboBox.on('expand', function(combo) {
+	    	var elem=document.getElementById('${r.getId("aj_ac_f")}'); 
+	    	if (!elem) combo.collapse();
+	    	elem = null;
+    	}
+    );        
+
+    ## Help GC
+    dataStore = null;
+    comboBox = null;
+});
+/* ]]> */
+</script>

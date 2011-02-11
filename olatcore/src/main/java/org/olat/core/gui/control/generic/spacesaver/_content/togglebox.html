@@ -1,0 +1,12 @@
+<div class="b_togglebox  #if($toggleStatus)b_tooglebox_opened #{else}b_togglebox_closed #{end}">
+	#if($toggleStatus)
+		<div id="my_toggle_box_uuid" class="b_togglebox_content">	
+			$r.render("toggle")
+			$r.render("cmpToToggle")
+			$r.render("hide")
+		</div>
+	#else
+		$r.render("toggle")
+	#end
+</div>
+		

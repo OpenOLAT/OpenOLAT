@@ -1,0 +1,17 @@
+<div class="b_legacy_wizard">
+	<div class="b_clearfix">
+		$r.render("wic")
+		<h4>$wizardTitle</h4>
+	</div>
+	<fieldset>
+		<legend>$r.translate("wizard.step") $currentStep/$steps: $title</legend>
+		$r.render("component")
+	</fieldset>
+	<div class="b_button_group">
+		#if($lastStep)
+			$r.render("finish")
+		#else
+			$r.render("cancel")
+		#end
+	</div>
+</div>

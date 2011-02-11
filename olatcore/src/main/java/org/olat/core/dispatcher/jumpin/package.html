@@ -1,0 +1,48 @@
+<html>
+<head>
+</head>
+
+<body>
+
+Overview description of jump-in handling for external links into OLAT system.
+
+<h3>Introduction</h3> 
+Jump-in URL are used e.g. in automatic generated emails to add a direct link into OLAT system. 
+Two jump-in mechanisms exist :<br>
+ - A new with full-text search introduced-BusinessControl based jump-in.<br>
+ - Older deprecated with olatResourceable and initialViewIdentifier based jump-in.<br>
+Both mechanisms are used in OLAT, but for new implementation you should use the  
+BusinessControl based jump-in.
+
+<h3>New BusinessControl based jump-in </h3>
+ Used in DropboxScoringViewController Email.<br>
+ <br>
+ Example JumpIn URL :<br>
+ <code>http://olathost.org/olat/resource/go?resourceurl=[BusinessGroup=123456]</code><br> 
+ This URL opens in OLAT-system a group-tab with group-ID=123456.
+ <br>
+ Background : In the fulltext search each resource must have a unique resource-url to link information from search-index to
+ system-resource. E.g. a forum in a certain group must be adressed. To solve this a BusinessControl was introduced. The
+ resource-url represent the nessessary clicks to navigate to a resource.<br>
+ <br>
+ Resource-url Format :<br>
+ <code>[RESOURCE_TYPE_1:RESOURCE_ID_1][RESOURCE_TYPE_2:RESOURCE_ID_2][...</code><br>
+ <br>
+ Entry-point to resolve jump-in url : NewControllerFactory. The NewControllerFactory resolve the first entry in the resource-url.
+ Now this could be a business-group or a repository-entry. The appropriate element is loaded and a launch-controller will be created.
+ The next part of the resource-url will be resolved by the child element. 
+ <br>
+ <img src="doc-files/JumpIn.png"/>
+ 
+<h3>Login process with jump-in </h3>
+<br>
+ <img src="doc-files/JumpinLogin.png"/>
+
+<h3>Old jump-in </h3>
+ Used in notification emails of subscription.<br>
+ Example JumpIn URL :<br>
+ <code>http://olathost.org/olat/auth/subs/go?sid=<SUBSCRIPTION_ID>&lr=<LATEST_NEWS_DATE></code><br> 
+ <br>
+ Entry-point to resolve jump-in url : ControllerFactory
+</body>
+</html>
