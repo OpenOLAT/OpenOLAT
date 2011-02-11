@@ -1,0 +1,89 @@
+The QTI engine can process results from a flash file,
+if the flash file is properly integrated into the
+qti.xml file. Regular flash "movies" are integrated
+with the <matvideo> tag of type "application/x-shockwave-flash".
+Those Flash files can not communicate further with the OLAT QTI
+engine. If your Flash is integrated with an <matapplet> tag,
+the QTI engine does allow for the flash to send back an
+response which will be propcessed by the engine. The
+matapplet tag has to be within an <response_str> tag.
+Your Flash can thus send back its response in the form of
+a single string.
+
+
+The following shows an example excerpt:
+
+     <item ident="QTIEDIT:FLA:1063841914107" title="A Flash Test">
+        <presentation>
+          <material>
+            <mattext><![CDATA[What is the answer to life, the universe and everything?]]></mattext>
+          </material>
+          <response_str ident="1063841914115" rcardinality="Single" rtiming="No">
+            <render_extension>
+            	<material>
+              	<matapplet uri="media/sendparam.swf" width="300" height="200"></matapplet>
+            	</material>
+            </render_extension>
+          </response_str>
+        </presentation>
+        <resprocessing>
+          <outcomes>
+            <decvar varname="SCORE" vartype="Decimal" defaultval="0" minvalue="0.0" maxvalue="1.0" cutvalue="1.0"/>
+          </outcomes>
+          <respcondition title="Mastery" continue="Yes">
+            <conditionvar>
+              <varequal respident="1063841914115" case="Yes">42</varequal>
+            </conditionvar>
+            <setvar varname="SCORE" action="Set">1.0</setvar>
+          </respcondition>
+          <respcondition title="Fail" continue="Yes">
+            <conditionvar>
+              <not>
+                <varequal respident="1063841914115" case="Yes">42</varequal>
+              </not>
+            </conditionvar>
+            <setvar varname="SCORE" action="Set">-1</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>
+
+Note that in addition, the items ident attribute has to begin with "QTIEDIT:FLA:"
+which will instruct the QTI engine not to display any forms (your Flash should
+already implement some kind of "Submit" button.)
+
+The following code snippet demonstrates how to
+send back an answer to the OLAT QTI Engine from
+within a flash file.
+
+----- Sample Code -----
+
+var oResponseURL:String = _root.oResponseURL;
+var oResponseParam:String = _root.oResponseParam;
+
+sendbutton.onRelease = function(){
+  loadVars = new LoadVars();
+  loadVars[oResponseParam] = inputfield.text;
+  loadVars.send(oResponseURL, "_self", "POST");
+} 
+----- Sample Code -----
+
+See the files sendparam.fla/.swf for an example.
+This will display an input field with a submit button.
+
+IMPORTANT NOTICE ON STATIC RESOURCES
+------------------------------------
+
+If you want to load resources from within your flash, use the
+supplied parameter oStaticsURL as base from where you'll load
+your data from.
+
+Example:
+
+Instead of calling
+
+	loadVariables("media/foo.txt", 0);
+
+use
+
+	loadVariables(_root.oStaticsURL + "media/foo.txt", 0);
+	
