@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -48,7 +46,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
 
@@ -99,46 +96,38 @@ public class CORunController extends BasicController {
 			panel.setContent(learningObjectives);
 		}
 
-		boolean valid = false; // true if at least one email adress
-		Stack<ContactList> contactLists = new Stack<ContactList>();
 		Boolean partipsConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS);
-		if (partipsConfigured != null && partipsConfigured.booleanValue()) {
-			ContactList participantsEmailList = retrieveParticipants();
-			if (participantsEmailList != null && participantsEmailList.getEmailsAsStrings().size()>0) {
-				contactLists.push(participantsEmailList);
-				valid = true;
-			}
-		}
 		Boolean coachesConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES);
-		if (coachesConfigured!=null && coachesConfigured.booleanValue()) {
-			ContactList coachesEmailList = retrieveCoaches();
-			if (coachesEmailList != null && coachesEmailList.getEmailsAsStrings().size()>0){
-				contactLists.push(coachesEmailList);
-				valid = true;
+
+		Stack<ContactList> contactLists = new Stack<ContactList>();
+		
+		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		
+		String grpNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
+		
+		List<String> grpList = splitNames(grpNames);
+		for (int i=0; i<grpList.size(); i++) {
+			if (coachesConfigured) {
+				ContactList cl = retrieveCoachesFromGroup (grpList.get(i));
+				contactLists.push(cl);
+			}
+			if (partipsConfigured) {
+				ContactList cl = retrieveParticipantsFromGroup(grpList.get(i));
+				contactLists.push(cl);
 			}
 		}
-		String groups = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-		if (groups != null && !groups.equals("")) {
-			ContactList[] groupsCL = retrieveGroups(groups);
-			if (groupsCL.length > 0){
-				for (int i = 0; i < groupsCL.length; i++) {
-					if(groupsCL[i].getEmailsAsStrings().size() > 0){
-						contactLists.push(groupsCL[i]);
-						valid=true;
-					}
-				}
-			}
-		}
+		
 		String areas = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-		if (areas != null && !areas.equals("")) {
-			ContactList[] areasCL = retrieveAreas(areas);
-			if (areasCL.length > 0){
-				for (int i = 0; i < areasCL.length; i++) {
-					if(areasCL[i].getEmailsAsStrings().size() > 0){
-						contactLists.push(areasCL[i]);
-						valid = true;
-					}
-				}
+		
+		List<String> areaList = splitNames(areas);
+		for (int i=0; i<areaList.size(); i++) {
+			if (coachesConfigured) {
+				ContactList cl = retrieveCoachesFromArea (areaList.get(i));
+				contactLists.push(cl);
+			}
+			if (partipsConfigured) {
+				ContactList cl = retrieveParticipantsFromArea(areaList.get(i));
+				contactLists.push(cl);
 			}
 		}
 
@@ -150,16 +139,16 @@ public class CORunController extends BasicController {
 				emailList.add(email);
 			}
 			contactLists.push(emailList);
-			valid = true;
 		}
 
-		if (valid){ // at least one email adress
+		if (contactLists.size() > 0) { 
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 			
 			while (!contactLists.empty()) {
 				ContactList cl = contactLists.pop();
-				cmsg.addEmailTo(cl);
+				cmsg.addEmailTo(cl);	
 			}
+			
 			cmsg.setBodyText(mBody);
 			cmsg.setSubject(mSubject);
 			coFoCtr = new ContactFormController(ureq, getWindowControl(), true,false,false,false, cmsg);
@@ -174,97 +163,40 @@ public class CORunController extends BasicController {
 		}
 	}
 
-	private ContactList retrieveCoaches() {
+	private ContactList retrieveCoachesFromGroup(String grpName) {
 		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> coaches = cgm.getCoachesFromLearningGroup(null);
+		List<Identity> coaches = cgm.getCoachesFromLearningGroup(grpName);
 		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
 		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		return cl;
 	}
-
-	private ContactList retrieveParticipants() {
+	
+	private ContactList retrieveCoachesFromArea(String areaName) {
 		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<Identity> participiants = cgm.getParticipantsFromLearningGroup(null);
-		//FIXME:pb:c docu getParticipantsFromLearningGroup: really duplicates?
-		Set<Identity> participantsWithoutDuplicates = new HashSet<Identity>(participiants);
-		
-		participiants = new ArrayList<Identity>(participantsWithoutDuplicates);
+		List<Identity> coaches = cgm.getCoachesFromArea(areaName);
+		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
+		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
+		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
+		cl.addAllIdentites(coaches);
+		return cl;
+	}
+	
+	private ContactList retrieveParticipantsFromGroup(String grpName) {
+		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		List<Identity> participiants = cgm.getParticipantsFromLearningGroup(grpName);
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
 		return cl;
-
 	}
-
-	private ContactList[] retrieveGroups(String csvGroups) {
+	
+	private ContactList retrieveParticipantsFromArea(String areaName) {
 		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		List<String> groupNames = splitNames(csvGroups);
-		List<ContactList> groupsCL = new ArrayList<ContactList>();
-		/*
-		 * for each group name in all the course's group contexts get the
-		 * participants groups. From the resulting groups take all participants and
-		 * add the identities to the ContactList named like the group.
-		 */
-		Iterator<String> iterator = groupNames.iterator();
-		while (iterator.hasNext()) {
-			// fetch all participants and owners by getting all participants and
-			// owners of all groups
-			String groupName = iterator.next();
-			List<BusinessGroup> mygroups = cgm.getLearningGroupsFromAllContexts(groupName);
-			// create a ContactList with the name of the group
-			ContactList tmp = new ContactList(groupName);
-			for (int i = 0; i < mygroups.size(); i++) {
-				BusinessGroup bg = mygroups.get(i);
-				List<Identity> ids = secManager.getIdentitiesOfSecurityGroup(bg.getPartipiciantGroup());
-				ids.addAll(secManager.getIdentitiesOfSecurityGroup(bg.getOwnerGroup()));
-				// add all identities to the ContactList
-				tmp.addAllIdentites(ids);
-			}
-			// add the ContactList
-			groupsCL.add(tmp);
-		}
-		// remove duplicates and convert List -> to Array.
-		Set<ContactList> groupsCLWithouthDups = new HashSet<ContactList>(groupsCL);
-		ContactList[] retVal = new ContactList[groupsCLWithouthDups.size()];
-		retVal = groupsCLWithouthDups.toArray(retVal);
-		return retVal;
-	}
-
-	private ContactList[] retrieveAreas(String csvAreas) {
-		CourseGroupManager cgm = this.userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		List<String> areaNames = splitNames(csvAreas);
-		List<ContactList> groupsCL = new ArrayList<ContactList>();
-		/*
-		 * for each area name in all the course's group contexts get the
-		 * participants groups. From the resulting groups take all participants and
-		 * add the identities to the ContactList named like the group.
-		 */
-		Iterator<String> iterator = areaNames.iterator();
-		while (iterator.hasNext()) {
-			// fetch all participants and owners by getting all participants and
-			// owners of all groups
-			String areaName = iterator.next();
-			List<BusinessGroup> mygroups = cgm.getLearningGroupsInAreaFromAllContexts(areaName);
-			// create a ContactList with the name of the group
-			ContactList tmp = new ContactList(areaName);
-			for (int i = 0; i < mygroups.size(); i++) {
-				BusinessGroup bg = mygroups.get(i);
-				List<Identity> ids = secManager.getIdentitiesOfSecurityGroup(bg.getPartipiciantGroup());
-				ids.addAll(secManager.getIdentitiesOfSecurityGroup(bg.getOwnerGroup()));
-				// add all identities to the ContactList
-				tmp.addAllIdentites(ids);
-			}
-			// add the ContactList
-			groupsCL.add(tmp);
-		}
-		// remove duplicates and convert List -> to Array.
-		Set<ContactList> groupsCLWithouthDups = new HashSet<ContactList>(groupsCL);
-		ContactList[] retVal = new ContactList[groupsCLWithouthDups.size()];
-		retVal = groupsCLWithouthDups.toArray(retVal);
-		return retVal;
+		List<Identity> participiants = cgm.getParticipantsFromArea(areaName);
+		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
+		cl.addAllIdentites(participiants);
+		return cl;
 	}
 
 	/**
