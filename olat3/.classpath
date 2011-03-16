@@ -131,7 +131,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/olatcore"/>
 	<classpathentry kind="src" output="olat/target/test-classes" path="webapp/WEB-INF/test/java"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/axis2/axis2/1.4.1/axis2-1.4.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/ws/commons/axiom/axiom-api/1.2.8/axiom-api-1.2.8.jar"/>

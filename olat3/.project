@@ -3,7 +3,6 @@
 	<name>olat3</name>
 	<comment>Online Learning and Training Learning Management System</comment>
 	<projects>
-		<project>olatcore</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -23,12 +22,28 @@
 		<link>
 			<name>corejava</name>
 			<type>2</type>
-			<location>/home/matthai/workspace/olatcore/src/main/java</location>
+			<locationURI>LOC_MERCURIAL_BASE/olatcore/src/main/java</locationURI>
 		</link>
 		<link>
 			<name>coreresources</name>
 			<type>2</type>
-			<location>/home/matthai/workspace/olatcore/src/main/resources</location>
+			<locationURI>LOC_MERCURIAL_BASE/olatcore/src/main/resources</locationURI>
+		</link>
+		<link>
+			<name>static</name>
+			<type>2</type>
+			<locationURI>LOC_MERCURIAL_BASE/olat3/webapp/static</locationURI>
+		</link>
+		<link>
+			<name>webapp/WEB-INF/src/olat.local.properties</name>
+			<type>1</type>
+			<locationURI>LOC_MERCURIAL_BASE/olat3/olat.local.properties</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>LOC_MERCURIAL_BASE</name>
+			<value>file:/Users/rhaag/workspace/OLAT-7.1.x/</value>
+		</variable>
+	</variableList>
 </projectDescription>
