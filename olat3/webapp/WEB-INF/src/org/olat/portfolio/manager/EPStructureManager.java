@@ -1149,7 +1149,7 @@ public class EPStructureManager extends BasicManager {
 			} else {
 				clonedChildEl.setRootMap(targetEl.getRootMap());
 			}
-			clonedChildEl.setStructureElSource(childSourceEl.getKey());
+			if (!importEl) clonedChildEl.setStructureElSource(childSourceEl.getKey());
 			
 			copyCollectRestriction(childSourceEl, clonedChildEl);
 			if(importEl) {
@@ -1484,6 +1484,8 @@ public class EPStructureManager extends BasicManager {
 		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
 		
 		fillStructureElement(el, root.getTitle(), root.getDescription());
+		EPStructuredMapTemplate rootTemp = (EPStructuredMapTemplate) root;
+		rootTemp.setStructureElSource(null);
 		
 		importEPStructureElementRecursively((EPStructureElement)root, el);
 		
@@ -1500,6 +1502,8 @@ public class EPStructureManager extends BasicManager {
 		//clone the links
 		List<EPStructureToStructureLink> childLinks = sourceEl.getInternalChildren();
 		for(EPStructureToStructureLink childLink:childLinks) {
+			EPStructureElement childSourceEl = (EPStructureElement) childLink.getChild();
+			childSourceEl.setStructureElSource(null); // remove source-info on imports.
 			copy(childLink, targetEl, false, true); 
 		}
 		
