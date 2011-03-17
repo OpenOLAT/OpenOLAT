@@ -924,6 +924,16 @@ public class EPStructureManager extends BasicManager {
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
 		dbInstance.deleteObject(struct);		
+		if (struct instanceof EPAbstractMap){
+			EPAbstractMap esmap = (EPAbstractMap)struct;
+			SecurityGroup securityGroup = esmap.getOwnerGroup();
+			if (securityGroup!=null) {
+				securityManager.deleteSecurityGroup(securityGroup);
+				resourceManager.deleteOLATResourceable(securityGroup);
+			}
+		}
+		
+		resourceManager.deleteOLATResourceable(struct);
 	}
 	
 	
@@ -1049,13 +1059,12 @@ public class EPStructureManager extends BasicManager {
 		Comparator<EPStructureToStructureLink> COMPARATOR = new KeyStructureToStructureLinkComparator();
 
 		//remove deleted elements
-		List<EPStructureToStructureLink> linksToDelete = new ArrayList<EPStructureToStructureLink>();
 		for(Iterator<EPStructureToStructureLink> targetIt=targetEl.getInternalChildren().iterator(); targetIt.hasNext(); ) {
 			EPStructureToStructureLink targetLink = targetIt.next();
 			int index = indexOf(sourceRefLinks, targetLink, COMPARATOR);
 			if(index < 0) {
-				linksToDelete.add(targetLink);
 				targetIt.remove();
+				removeStructureRecursively(targetLink.getChild());
 			}
 		}
 		
