@@ -601,12 +601,14 @@ public class EPFrontendManager extends BasicManager {
 		final Identity author = identity;
 		// only remove synthetic access warnings
 		final EPStructureManager structMgr = structureManager;
-		final PortfolioStructureMap template = mapTemplate;
+		final long tempKey = mapTemplate.getKey();
 		final OLATResourceable ores = targetOres;
 		final String subPath = targetSubPath;
 
-		PortfolioStructureMap map = coordinator.getSyncer().doInSync(template.getOlatResource(), new SyncerCallback<PortfolioStructureMap>() {
+		PortfolioStructureMap map = coordinator.getSyncer().doInSync(mapTemplate.getOlatResource(), new SyncerCallback<PortfolioStructureMap>() {
 			public PortfolioStructureMap execute() {
+				// OLAT-6274: reload template in the moment before copying it!
+				PortfolioStructureMap template = (PortfolioStructureMap) structMgr.loadPortfolioStructureByKey(tempKey);
 				String title = template.getTitle();
 				String description = template.getDescription();
 				PortfolioStructureMap copy = structMgr.createPortfolioStructuredMap(template, author, title, description, 
