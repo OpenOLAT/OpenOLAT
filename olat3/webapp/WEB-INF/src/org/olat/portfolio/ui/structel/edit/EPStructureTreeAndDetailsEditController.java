@@ -214,7 +214,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 					rootStructure = ePFMgr.loadPortfolioStructureByKey(rootStructure.getKey());
 				}
 				// refresh the tree on changes!
-				tocCtrl.update(structure);
+				tocCtrl.update(ureq, structure);
 			}
 			fireEvent(ureq, structureEvent);
 		}

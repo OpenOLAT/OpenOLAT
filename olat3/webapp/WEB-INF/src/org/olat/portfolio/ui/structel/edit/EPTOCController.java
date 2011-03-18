@@ -247,12 +247,13 @@ public class EPTOCController extends BasicController {
 		return model;
 	}
 	
-	public void update(PortfolioStructure structure) {
+	public void update(UserRequest ureq, PortfolioStructure structure) {
 		String path = idToPath.get(structure.getKey());
 		if(path != null) {
 			treeCtr.reloadPath(path);
 			treeCtr.selectPath(path);
 		}
+		refreshAddElements(ureq, structure);
 	}
 
 	/**
