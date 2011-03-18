@@ -138,20 +138,20 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		else remainingQuotaKB = (int) quotaKB - (int) actualUsage;
 		removeAsListenerAndDispose(fileUploadCtr);
 		
+		fileUploadCtr = new FileUploadController(getWindowControl(), currentContainer, ureq, uploadLimitKB, remainingQuotaKB, null, true, showMetadata, true, showCancel);
+		listenTo(fileUploadCtr);
+		mainVC.put("fileUploadCtr", fileUploadCtr.getInitialComponent());
+		mainVC.contextPut("showFieldset", Boolean.TRUE);
+
 		//if folder full show error msg
 		if (remainingQuotaKB == 0 ) {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
 			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
 			getWindowControl().setError(msg);
 			return null;
-		} else {
-			fileUploadCtr = new FileUploadController(getWindowControl(), currentContainer, ureq, uploadLimitKB, remainingQuotaKB, null, true, showMetadata, true, showCancel);
-			listenTo(fileUploadCtr);
-			mainVC.put("fileUploadCtr", fileUploadCtr.getInitialComponent());
-			mainVC.contextPut("showFieldset", Boolean.TRUE);
-			
-			putInitialPanel(mainVC);
 		}
+		
+		putInitialPanel(mainVC);
 		return this;
 	}
 	

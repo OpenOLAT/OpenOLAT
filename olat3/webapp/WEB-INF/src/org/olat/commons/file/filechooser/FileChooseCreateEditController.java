@@ -60,6 +60,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
@@ -216,8 +217,16 @@ public class FileChooseCreateEditController extends BasicController{
 		cmdUpload.hideFieldset();
 		listenTo(cmdUpload);
 		Panel mainPanel = new Panel("upl");
-		mainPanel.pushContent(cmdUpload.getInitialComponent());
-		fileChooser.put(mainPanel.getComponentName(), mainPanel);
+		Component uploadComp = cmdUpload.getInitialComponent();
+		if (uploadComp != null)	{
+			mainPanel.pushContent(uploadComp);
+			fileChooser.put(mainPanel.getComponentName(), mainPanel);
+		} else { // quota exceeded or no valid upload comp.
+			String supportAddr = WebappHelper.getMailConfig("mailSupport");
+			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
+			myContent.contextPut("quotaover", msg);
+			fileChooser.contextPut("quotaover", msg);
+		}
 		fileChooserActive = false;
 		updateVelocityVariables(chosenFile);
 		putInitialPanel(myContent);
