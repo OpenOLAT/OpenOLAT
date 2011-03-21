@@ -1,0 +1,6 @@
+<p>$r.translate("artefact.options.title")</p>
+<ul>
+	#if ($r.available("unlink.link")) <li>$r.render("unlink.link")</li> #end
+	#if ($r.available("move.link")) <li>$r.render("move.link")</li> #end
+	<li>$r.render("reflexion.link")</li>
+</ul>

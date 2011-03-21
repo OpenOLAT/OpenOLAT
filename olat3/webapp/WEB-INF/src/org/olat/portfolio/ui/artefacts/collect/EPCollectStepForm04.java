@@ -41,8 +41,10 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
 /**
  * Description:<br>
@@ -60,6 +62,8 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	private TreeController treeCtr;
 	EPFrontendManager ePFMgr;
 	private PortfolioStructure selStructure;
+	private AbstractArtefact artefact;
+	private PortfolioStructure oldStructure;
 	
 	@SuppressWarnings("unused")
 	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
@@ -69,6 +73,14 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		initForm(this.flc, this, ureq);
 	}
 
+	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, PortfolioStructure oldStructure) {
+		super(ureq, wControl, "step04selectmap");
+		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		this.artefact = artefact;
+		this.oldStructure = oldStructure;
+		initForm(this.flc, this, ureq);	
+	}
+	
 	/**
 	 * @see org.olat.core.gui.control.generic.wizard.StepFormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
@@ -93,6 +105,10 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 			flc.put("treeCtr", treeCtr.getInitialComponent());
 		}
 
+		if (!isUsedInStepWizzard()) {
+			// add form buttons
+			uifactory.addFormSubmitButton("stepform.submit", formLayout);
+		}		
 	}
 
 	private AjaxTreeModel buildTreeModel() {
@@ -116,7 +132,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 					}
 					if (structs == null || structs.size() == 0) { return null; }
 					// add a fake map to choose if no target should be set
-					if (!firstLevelDone ){
+					if (!firstLevelDone){
 						child = new AjaxTreeNode(NO_MAP_CHOOSEN, translate("no.map.as.target"));
 						child.put(AjaxTreeNode.CONF_LEAF, true);
 						child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, true);
@@ -124,16 +140,22 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 						child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
 						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, "b_ep_collection_icon");
 						child.put(AjaxTreeNode.CONF_QTIP, translate("no.map.as.target.desc"));
-						children.add(child);
+						if (isUsedInStepWizzard()) children.add(child);
 						firstLevelDone = true;
 					}
 					for (PortfolioStructure portfolioStructure : structs) {
-						child = new AjaxTreeNode(String.valueOf(portfolioStructure.getKey()), portfolioStructure.getTitle());
+						String title = portfolioStructure.getTitle();
+						if (!isUsedInStepWizzard() && oldStructure.getKey().equals(portfolioStructure.getKey())) {
+							title = portfolioStructure.getTitle() + "&nbsp; &nbsp; <-- " + translate("move.artefact.actual.node");
+						}						
+						child = new AjaxTreeNode(String.valueOf(portfolioStructure.getKey()), title);
 						boolean hasChilds = ePFMgr.countStructureChildren(portfolioStructure) > 0;	
 						child.put(AjaxTreeNode.CONF_LEAF, !hasChilds);
 						child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, !hasChilds);
 						child.put(AjaxTreeNode.CONF_ALLOWDRAG, false);
 						child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
+						child.put(AjaxTreeNode.CONF_EXPANDED, true);
+						child.put(AjaxTreeNode.CONF_DISABLED, portfolioStructure instanceof EPAbstractMap);
 						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
 						child.put(AjaxTreeNode.CONF_QTIP, portfolioStructure.getDescription());
 						children.add(child);
@@ -169,6 +191,12 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 					selStructure = null;
 					this.flc.setDirty(true);
 				}
+				if (selStructure!=null && selStructure instanceof EPAbstractMap) {
+					showWarning("map.not.choosable");
+					treeCtr.selectPath(null);
+					selStructure = null;
+					this.flc.setDirty(true);
+				}
 			}
 		}
 	}
@@ -189,12 +217,18 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		addToRunContext("selectedStructure", selStructure);
 		if (selStructure != null) {
 			ePFMgr.setUsersLastUsedPortfolioStructure(getIdentity(), selStructure);
 		}
-
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		if (isUsedInStepWizzard()) {
+			addToRunContext("selectedStructure", selStructure);
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		} else {
+			if (!selStructure.getKey().equals(oldStructure.getKey())){
+				ePFMgr.moveArtefactFromStructToStruct(artefact, oldStructure, selStructure);
+				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.CHANGED, selStructure)); // refresh ui
+			}
+		}
 	}
 
 	/**

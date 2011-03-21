@@ -136,7 +136,7 @@ public class EPStructureElementsController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
-		if (event instanceof EPStructureChangeEvent && event.getCommand().equals(EPStructureChangeEvent.ADDED)){
+		if (event instanceof EPStructureChangeEvent){
 			//update the elements
 			EPStructureChangeEvent changeEvent = (EPStructureChangeEvent)event;
 			PortfolioStructure changedEl = changeEvent.getPortfolioStructure();

@@ -37,10 +37,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPUIFactory;
@@ -50,8 +48,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
-import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm03;
-import org.olat.portfolio.ui.artefacts.collect.EPReflexionChangeEvent;
+import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm04;
 import org.olat.portfolio.ui.filter.PortfolioFilterController;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
@@ -67,23 +64,23 @@ import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
  */
 public class EPMultipleArtefactsAsTableController extends BasicController implements EPMultiArtefactsController {
 
-	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_CHOOSE = "choose";
 	private static final String CMD_UNLINK = "unlink";
 	private static final String CMD_REFLEXION = "refl";
 	private static final String CMD_TITLE = "title";
+	private static final String CMD_MOVE = "move";
 	private VelocityContainer vC;
 	private TableController artefactListTblCtrl;
 	
 	private CloseableModalWindowWrapperController artefactBox;
-	private Controller reflexionCtrl;
 	private PortfolioStructure struct;
-	private CloseableModalWindowWrapperController reflexionBox;
 	private EPFrontendManager ePFMgr;
 	private boolean mapClosed = false;
 	private boolean artefactChooseMode;
 	private EPSecurityCallback secCallback;
 	private PortfolioModule portfolioModule;
+	private EPCollectStepForm04 moveTreeCtrl;
+	private CloseableModalWindowWrapperController moveTreeBox;
 
 	public EPMultipleArtefactsAsTableController(UserRequest ureq, WindowControl wControl, List<AbstractArtefact> artefacts, PortfolioStructure struct, boolean artefactChooseMode, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -170,6 +167,11 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 			staticDescr = new StaticColumnDescriptor(CMD_UNLINK, "table.header.unlink", translate("remove.from.map"));
 			artefactListTblCtrl.addColumnDescriptor(true, staticDescr);			
 		}
+		
+		if(struct!=null && secCallback.canRemoveArtefactFromStruct() && secCallback.canAddArtefact()){
+			staticDescr = new StaticColumnDescriptor(CMD_MOVE, "table.header.move", translate("artefact.options.move"));
+			artefactListTblCtrl.addColumnDescriptor(true, staticDescr);			
+		}
 
 		artefactListTblCtrl.setTableDataModel(artefactListModel);
 		if (vC.getComponent("artefactTable")!=null) vC.remove(artefactListTblCtrl.getInitialComponent()); 
@@ -211,10 +213,8 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 				String action = te.getActionId();
 				if(CMD_TITLE.equals(action)) {
 					popupArtefact(artefact, ureq);
-				} else if (CMD_DOWNLOAD.equals(action)) {
-					downloadArtefact(artefact, ureq);
 				} else if (CMD_REFLEXION.equals(action)){
-					popupReflexion(artefact, ureq);
+					EPUIFactory.getReflexionPopup(ureq, getWindowControl(), secCallback, artefact, struct);
 				} else if (CMD_CHOOSE.equals(action)){
 					fireEvent(ureq, new EPArtefactChoosenEvent(artefact));
 				} else if (CMD_UNLINK.equals(action)){
@@ -222,66 +222,30 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 					ePFMgr.removeArtefactFromStructure(artefact, struct);
 					artefactListTblCtrl.modelChanged();
 					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, struct));
+				} else if (CMD_MOVE.equals(action)){
+					showMoveTree(ureq, artefact);
 				}
 			}
-		} else if (source == reflexionCtrl && event instanceof EPReflexionChangeEvent) {
-				EPReflexionChangeEvent refEv = (EPReflexionChangeEvent) event;
-				if (struct != null) {
-					ePFMgr.setReflexionForArtefactToStructureLink(refEv.getRefArtefact(), struct, refEv.getReflexion());
-					reflexionBox.deactivate();
-					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, struct));
-				} else {
-					AbstractArtefact artefact = refEv.getRefArtefact();
-					artefact.setReflexion(refEv.getReflexion());
-					ePFMgr.updateArtefact(artefact);
-					reflexionBox.deactivate();
-					fireEvent(ureq, Event.DONE_EVENT);
-				}
-				removeAsListenerAndDispose(reflexionBox);
-		} else if (source == reflexionBox && event == CloseableCalloutWindowController.CLOSE_WINDOW_EVENT) {
-			removeAsListenerAndDispose(reflexionBox);
-			reflexionBox = null;
-		} 
+		} else if (source == moveTreeCtrl && event.getCommand().equals(EPStructureChangeEvent.CHANGED)){
+			EPStructureChangeEvent epsEv = (EPStructureChangeEvent) event;
+			PortfolioStructure newStruct = epsEv.getPortfolioStructure();
+			showInfo("artefact.moved", newStruct.getTitle());
+			fireEvent(ureq, event);
+			moveTreeBox.deactivate();
+		}
 		super.event(ureq, source, event);
 	}
 	
-	protected void popupReflexion(AbstractArtefact artefact, UserRequest ureq) {
-		removeAsListenerAndDispose(reflexionCtrl);
-		String title = "";
-		boolean artClosed = ePFMgr.isArtefactClosed(artefact);
-		if(mapClosed || !secCallback.canEditStructure() || (artClosed && struct==null)) {
-			// reflexion cannot be edited, view only!
-			reflexionCtrl = new EPReflexionViewController(ureq, getWindowControl(), artefact, struct);
-		} else {
-			// check for an existing reflexion on the artefact <-> struct link
-			String reflexion = ePFMgr.getReflexionForArtefactToStructureLink(artefact, struct);
-			if (StringHelper.containsNonWhitespace(reflexion)){
-				// edit an existing reflexion
-				reflexionCtrl = new EPCollectStepForm03(ureq, getWindowControl(), artefact, reflexion);
-				title = translate("title.reflexion.link");
-			} else if (struct != null) {
-				// no reflexion on link yet, show warning and preset with artefacts-reflexion
-				reflexionCtrl = new EPCollectStepForm03(ureq, getWindowControl(), artefact, true);
-				title = translate("title.reflexion.artefact");
-			}	else {
-				// preset controller with reflexion of the artefact. used by artefact-pool
-				reflexionCtrl = new EPCollectStepForm03(ureq, getWindowControl(), artefact);
-				title = translate("title.reflexion.artefact");
-			}
-		}
-		listenTo(reflexionCtrl);
-		removeAsListenerAndDispose(reflexionBox);
-		reflexionBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, reflexionCtrl.getInitialComponent(),
-				"reflexionBox");
-		listenTo(reflexionBox);
-		reflexionBox.setInitialWindowSize(550, 600);
-		reflexionBox.activate();
+	private void showMoveTree(UserRequest ureq, AbstractArtefact artefact){
+		moveTreeCtrl = new EPCollectStepForm04(ureq, getWindowControl(), artefact, struct);
+		listenTo(moveTreeCtrl);
+		String title = translate("artefact.move.title");
+		moveTreeBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, moveTreeCtrl.getInitialComponent(), "moveTreeBox");
+		listenTo(moveTreeBox);
+		moveTreeBox.setInitialWindowSize(450, 300);
+		moveTreeBox.activate();
 	}
-	
-	protected void downloadArtefact(AbstractArtefact artefact, UserRequest ureq) {
-		getWindowControl().setInfo("not yet possible");
-	}
-	
+
 	protected void popupArtefact(AbstractArtefact artefact, UserRequest ureq) {
 		String title = translate("view.artefact.header");
 		artefactBox = EPUIFactory.getAndActivatePopupArtefactController(artefact, ureq, getWindowControl(), title);

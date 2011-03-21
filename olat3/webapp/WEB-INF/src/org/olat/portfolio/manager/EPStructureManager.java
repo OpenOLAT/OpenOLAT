@@ -639,7 +639,7 @@ public class EPStructureManager extends BasicManager {
 	}
 	
 	protected boolean moveArtefactFromStructToStruct(AbstractArtefact artefact, PortfolioStructure oldParStruct, PortfolioStructure newParStruct) {
-		EPStructureElement oldEPSt = (EPStructureElement)oldParStruct;
+		EPStructureElement oldEPSt = (EPStructureElement)dbInstance.loadObject((EPStructureElement)oldParStruct);
 		Identity author = oldEPSt.getInternalArtefacts().get(0).getAuthor();
 		if (author == null) return false; // old model without author, doesn't work!
 		
