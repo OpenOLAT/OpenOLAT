@@ -447,7 +447,7 @@
 	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_3:hover { background-image: url(../images/olat/page_edit_over.png) ! important; }
 	div.o_wiki_wrapper div.b_tabbedpane_tabs li.b_item_4 { background: transparent url(../images/olat/page_white_copy.png) no-repeat left 50% ! important; }
 	/* portfolio */
-	div.o_wiki_wrapper .b_eportfolio_add { position:absolute; top:28px; right:3px; z-index:99; }
+	div.o_wiki_wrapper .b_eportfolio_add, div.o_wiki_wrapper .b_eportfolio_add_again { position:absolute; top:28px; right:3px; z-index:99; }
 	/* override default styles to have smaller title and header on wiki pages */
 	div.o_wiki_wrapper h1 	{ font-size: 1.0em;}
 	div.o_wiki_wrapper h2 	{ font-size: 1.0em;}
