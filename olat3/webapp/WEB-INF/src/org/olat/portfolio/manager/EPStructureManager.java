@@ -919,7 +919,11 @@ public class EPStructureManager extends BasicManager {
 		
 		// remove from parent
 		PortfolioStructure parent = loadStructureParent(struct);
+		if (parent == null && struct.getRoot() != null) parent = struct.getRoot();
 		removeStructure(parent, struct);
+		
+		// remove collect restriction
+		struct.getCollectRestrictions().clear();
 		
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
@@ -1000,10 +1004,10 @@ public class EPStructureManager extends BasicManager {
 		//reconnect to the session
 		EPStructureElement sourceEl = (EPStructureElement)source;
 		targetEl.setStyle(sourceEl.getStyle());
-		copyEPStructureElementRecursively(sourceEl, targetEl, withArtefacts);
+		copyEPStructureElementRecursively(sourceEl, targetEl, withArtefacts, true);
 	}
 	
-	private void copyEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {
+	private void copyEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts, boolean cloneRestrictions) {
 		//needed if the sourceEl come from a link. Hibernate doesn't initialize the list properly
 		sourceEl = (EPStructureElement)dbInstance.loadObject(sourceEl);
 		if(withArtefacts) {
@@ -1018,7 +1022,7 @@ public class EPStructureManager extends BasicManager {
 		//clone the links
 		List<EPStructureToStructureLink> childLinks = sourceEl.getInternalChildren();
 		for(EPStructureToStructureLink childLink:childLinks) {
-			copy(childLink, targetEl, withArtefacts, false); 
+			copy(childLink, targetEl, withArtefacts, false, cloneRestrictions); 
 		}
 		
 		savePortfolioStructure(targetEl);
@@ -1042,17 +1046,13 @@ public class EPStructureManager extends BasicManager {
 	}
 	
 	/**
-	 * This sync method only sync the structure of the tree and no content.
-	 * TODO: epf: SR sync collect restriction, title, description, representation-mode (table/miniview) also pay attention to this on copy and import!
+	 * This sync method syncs the structure of the tree, collect restriction, title, description, representation-mode (table/miniview) 
+	 * 
 	 * @param sourceEl
 	 * @param targetEl
 	 * @param withArtefacts
 	 */
-	private void syncEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {
-		if(withArtefacts) {
-			syncArtefacts(sourceEl, targetEl);
-		}
-		
+	private void syncEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {		
 		List<EPStructureToStructureLink> sourceRefLinks = new ArrayList<EPStructureToStructureLink>(sourceEl.getInternalChildren());
 		List<EPStructureToStructureLink> targetRefLinks = new ArrayList<EPStructureToStructureLink>(targetEl.getInternalChildren());
 
@@ -1069,15 +1069,20 @@ public class EPStructureManager extends BasicManager {
 		}
 		
 		//add new element
-		Set<Long> newSourceRefLinkKeys = new HashSet<Long>();
 		for(EPStructureToStructureLink sourceRefLink:sourceRefLinks) {
 			int index = indexOf(targetRefLinks, sourceRefLink, COMPARATOR);
 			if(index < 0) {
-				//create a new structure element
-				copy(sourceRefLink, targetEl, withArtefacts, false); 
-				newSourceRefLinkKeys.add(sourceRefLink.getKey());
+				//create a new structure element, dont clone restriction!
+				copy(sourceRefLink, targetEl, withArtefacts, false, false); 
 			}
 		}
+		
+		//sync attributes, representation and collect restrictions
+		copyOrUpdateCollectRestriction(sourceEl, targetEl, true);
+		targetEl.setArtefactRepresentationMode(sourceEl.getArtefactRepresentationMode());
+		targetEl.setStyle(sourceEl.getStyle());
+		targetEl.setTitle(sourceEl.getTitle());
+		targetEl.setDescription(sourceEl.getDescription());		
 		
 		//at this point, we must have the same content in the two list
 		//but with perhaps other ordering: reorder
@@ -1114,13 +1119,6 @@ public class EPStructureManager extends BasicManager {
 		}
 		return -1;
 	}
-
-	private void syncArtefacts(EPStructureElement sourceEl, EPStructureElement targetEl) {
-		List<EPStructureToArtefactLink> artefactLinks = sourceEl.getInternalArtefacts();
-		for(EPStructureToArtefactLink artefactLink:artefactLinks) {
-			//TODO
-		}
-	}
 	
 	/**
 	 * Copy/Import structure elements recursively
@@ -1128,8 +1126,9 @@ public class EPStructureManager extends BasicManager {
 	 * @param targetEl
 	 * @param withArtefacts Copy the artefacts
 	 * @param importEl Don't load elements from the DB
+	 * @param cloneRestrictions should the collect-restrictions be applied? you could also do this manually by copyCollectRestriction()
 	 */
-	private void copy(EPStructureToStructureLink refLink, EPStructureElement targetEl, boolean withArtefacts, boolean importEl) {
+	private void copy(EPStructureToStructureLink refLink, EPStructureElement targetEl, boolean withArtefacts, boolean importEl, boolean cloneRestrictions) {
 		EPStructureElement childSourceEl = (EPStructureElement)refLink.getChild();
 		EPStructureElement clonedChildEl = instantiateClone(refLink.getChild());
 		if(clonedChildEl == null) {
@@ -1151,11 +1150,11 @@ public class EPStructureManager extends BasicManager {
 			}
 			if (!importEl) clonedChildEl.setStructureElSource(childSourceEl.getKey());
 			
-			copyCollectRestriction(childSourceEl, clonedChildEl);
+			if (cloneRestrictions) copyOrUpdateCollectRestriction(childSourceEl, clonedChildEl, true);
 			if(importEl) {
 				importEPStructureElementRecursively(childSourceEl, clonedChildEl);
 			} else {
-				copyEPStructureElementRecursively(childSourceEl, clonedChildEl, withArtefacts);
+				copyEPStructureElementRecursively(childSourceEl, clonedChildEl, withArtefacts, cloneRestrictions);
 			}
 
 			EPStructureToStructureLink link = new EPStructureToStructureLink();
@@ -1189,13 +1188,26 @@ public class EPStructureManager extends BasicManager {
 		return targetEl;
 	}
 	
-	private void copyCollectRestriction(PortfolioStructure source, PortfolioStructure target) {
-		if(source == null || target == null ||source.getCollectRestrictions() == null
-				|| source.getCollectRestrictions().isEmpty()) {
+	/**
+	 * 
+	 * @param source
+	 * @param target
+	 * @param update if true, the old existing restrictions will be overwritten
+	 */
+	private void copyOrUpdateCollectRestriction(PortfolioStructure source, PortfolioStructure target, boolean update) {
+		if(source == null || target == null) {
+			return;
+		}
+		List<CollectRestriction> targetRestrictions = target.getCollectRestrictions();
+		if ((source.getCollectRestrictions() == null || source.getCollectRestrictions().isEmpty()) && (target.getCollectRestrictions() != null && !target.getCollectRestrictions().isEmpty()) && update){
+			// remove former existing restrictions
+			targetRestrictions.clear();
 			return;
 		}
 		
-		List<CollectRestriction> targetRestrictions = target.getCollectRestrictions();
+		if (update) {
+			targetRestrictions.clear();
+		} 
 		for(CollectRestriction sourceRestriction: source.getCollectRestrictions()) {
 			CollectRestriction targetRestriction = new CollectRestriction();
 			targetRestriction.setArtefactType(sourceRestriction.getArtefactType());
@@ -1397,7 +1409,7 @@ public class EPStructureManager extends BasicManager {
 		el.setStructureElSource(template.getKey());
 		
 		if(template != null) {
-			copyCollectRestriction(template, el);
+			copyOrUpdateCollectRestriction(template, el, false);
 		}
 		
 		EPTargetResource targetResource = el.getTargetResource();
@@ -1504,7 +1516,7 @@ public class EPStructureManager extends BasicManager {
 		for(EPStructureToStructureLink childLink:childLinks) {
 			EPStructureElement childSourceEl = (EPStructureElement) childLink.getChild();
 			childSourceEl.setStructureElSource(null); // remove source-info on imports.
-			copy(childLink, targetEl, false, true); 
+			copy(childLink, targetEl, false, true, true); 
 		}
 		
 		savePortfolioStructure(targetEl);
