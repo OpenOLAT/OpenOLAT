@@ -51,8 +51,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
 public class PortfolioArtefactIndexer extends AbstractIndexer {
 	
 	public static final String TYPE = "type.identity." + AbstractArtefact.class.getSimpleName();
-	public static final String ORES_TYPE = AbstractArtefact.class.getSimpleName();
-	
+		
 	private static final int MAX_RESULTS = 500;
 	
 	private PortfolioModule portfolioModule;
@@ -76,16 +75,18 @@ public class PortfolioArtefactIndexer extends AbstractIndexer {
 
 	@Override
 	public String getSupportedTypeName() {
-		return ORES_TYPE;
+		return AbstractArtefact.class.getSimpleName();
 	}
 	
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object object, OlatFullIndexer indexerWriter)
 	throws IOException, InterruptedException {
 		Identity identity = (Identity)object;
+//		SearchResourceContext resourceContext = new SearchResourceContext(searchResourceContext); // dont do this way, as it would then try to open an artefact over visiting card -> not possible!
 		SearchResourceContext resourceContext = new SearchResourceContext();
 		resourceContext.setDocumentType(TYPE);
-
+		resourceContext.setParentContextType(null);
+		
 		int currentPosition = 0;
 		List<AbstractArtefact> artefacts;
 		do {

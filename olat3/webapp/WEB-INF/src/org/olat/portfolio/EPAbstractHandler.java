@@ -121,14 +121,12 @@ public abstract class EPAbstractHandler<U extends AbstractArtefact> implements E
 		OlatDocument document = new OlatDocument();
 
 		Identity author = artefact.getAuthor();
-		if(author != null && author.getUser() != null) {
-			User user = author.getUser();
-			document.setAuthor(user.getProperty(UserConstants.FIRSTNAME, null) + " "
-					+ user.getProperty(UserConstants.LASTNAME, null));
+		if(author != null) {
+			document.setAuthor(author.getName());
 		}
 		
 		Filter filter = FilterFactory.getHtmlTagAndDescapingFilter();
-
+		
 		document.setCreatedDate(artefact.getCreationDate());
   	document.setTitle(filter.filter(artefact.getTitle()));
   	document.setDescription(filter.filter(artefact.getDescription()));
