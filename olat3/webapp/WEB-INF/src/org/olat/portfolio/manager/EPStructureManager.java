@@ -643,9 +643,12 @@ public class EPStructureManager extends BasicManager {
 		Identity author = oldEPSt.getInternalArtefacts().get(0).getAuthor();
 		if (author == null) return false; // old model without author, doesn't work!
 		
+		String reflexion = getReflexionForArtefactToStructureLink(artefact, oldParStruct);
+		
 		removeArtefactFromStructure(artefact, oldParStruct);
 		boolean allOk = false;
 		allOk = addArtefactToStructure(author, artefact, newParStruct);
+		if (allOk) return setReflexionForArtefactToStructureLink(artefact, newParStruct, reflexion);
 		return allOk;
 	}
 	
@@ -1703,14 +1706,17 @@ public class EPStructureManager extends BasicManager {
 
 
 	protected boolean setReflexionForArtefactToStructureLink(AbstractArtefact artefact, PortfolioStructure structure, String reflexion) {
-		//EPStructureElement structureEl = (EPStructureElement) structure;
 		EPStructureElement structureEl = (EPStructureElement)dbInstance.loadObject((EPStructureElement)structure);
 		List<EPStructureToArtefactLink> links = structureEl.getInternalArtefacts();
 		boolean changed = false;
 		for (EPStructureToArtefactLink epStructureToArtefactLink : links) {
 			if (epStructureToArtefactLink.getArtefact().getKey().equals(artefact.getKey())){
 				epStructureToArtefactLink.setReflexion(reflexion);
-				dbInstance.updateObject(epStructureToArtefactLink);
+				if(epStructureToArtefactLink.getKey() == null) {
+					dbInstance.saveObject(epStructureToArtefactLink);
+				} else {
+					dbInstance.updateObject(epStructureToArtefactLink);
+				}
 				changed = true;
 				break;
 			}
