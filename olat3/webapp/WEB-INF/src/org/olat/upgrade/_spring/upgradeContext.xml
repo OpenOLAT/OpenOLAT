@@ -62,6 +62,10 @@
 					<property name="portletRepositoryStudentEnabled" value="${portlet.repository.student.enabled}"/>
 					<property name="portletRepositoryTeacherEnabled" value="${portlet.repository.teacher.enabled}"/>
 				</bean>
+				<bean id="upgrade_7_1_1" class="org.olat.upgrade.OLATUpgrade_7_1_1">
+					<constructor-arg index="0" ref="portfolioModule" />
+					<property name="portfolioCourseNodeEnabled" value="${course.node.portfolio.enabled}"/>
+				</bean>
 			</list>
 		</property>
 	</bean>
