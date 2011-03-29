@@ -23,6 +23,7 @@ package org.olat.repository.controllers;
 
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.ui.CatalogController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -65,6 +66,7 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
@@ -134,6 +136,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private WizardController wc;
 	private RepositoryAddChooseStepsController chooseStepsController;
 	private Controller creationWizardController;
+	private PortfolioModule portfolioModule;
 
 	/**
 	 * The check for author rights is executed on construction time and then
@@ -148,6 +151,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		if (log.isDebug()) {
 			log.debug("Constructing ReposityMainController for user::" + ureq.getIdentity());
 		}
+		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 
 		// use i18n from RepositoryManager level
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
@@ -225,7 +229,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			mainToolC.addLink(ACTION_NEW_WIKI, translate("tools.new.wiki"), ACTION_NEW_WIKI, "o_toolbox_wiki");
 			mainToolC.addLink(ACTION_NEW_PODCAST, translate("tools.new.podcast"), ACTION_NEW_PODCAST, "o_toolbox_podcast");
 			mainToolC.addLink(ACTION_NEW_BLOG, translate("tools.new.blog"), ACTION_NEW_BLOG, "o_toolbox_blog");
-			mainToolC.addLink(ACTION_NEW_PORTFOLIO, translate("tools.new.portfolio"), ACTION_NEW_PORTFOLIO, "o_toolbox_portfolio");
+			if (portfolioModule.isEnabled()){
+				mainToolC.addLink(ACTION_NEW_PORTFOLIO, translate("tools.new.portfolio"), ACTION_NEW_PORTFOLIO, "o_toolbox_portfolio");
+			}
 			mainToolC.addLink(ACTION_NEW_CREATETEST, translate("tools.new.createtest"), ACTION_NEW_CREATETEST, "o_toolbox_test");
 			mainToolC.addLink(ACTION_NEW_CREATESURVEY, translate("tools.new.createsurvey"), ACTION_NEW_CREATESURVEY, "o_toolbox_questionnaire");
 			mainToolC.addLink(ACTION_NEW_CREATESHAREDFOLDER, translate("tools.new.createsharedfolder"), ACTION_NEW_CREATESHAREDFOLDER,
@@ -276,7 +282,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			rootNode.addChild(new GenericTreeNode(translate("search.wiki"), "search.wiki"));
 			rootNode.addChild(new GenericTreeNode(translate("search.podcast"), "search.podcast" ));
 			rootNode.addChild(new GenericTreeNode(translate("search.blog"), "search.blog" ));
-			rootNode.addChild(new GenericTreeNode(translate("search.portfolio"), "search.portfolio"));
+			if (portfolioModule.isEnabled()){
+				rootNode.addChild(new GenericTreeNode(translate("search.portfolio"), "search.portfolio"));
+			}
 			rootNode.addChild(new GenericTreeNode(translate("search.test"), "search.test"));
 			rootNode.addChild(new GenericTreeNode(translate("search.survey"), "search.survey"));
 			rootNode.addChild(new GenericTreeNode(translate("search.sharedfolder"), "search.sharedfolder"));

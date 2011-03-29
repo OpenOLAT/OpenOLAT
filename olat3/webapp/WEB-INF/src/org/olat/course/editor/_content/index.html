@@ -90,6 +90,9 @@
 #else
 	$r.render("tabbedNodeConfig")
 #end
+#if($courseNodeDisabled) 
+	$r.translate("course.building.block.disabled")
+#end
 <div class="o_courseeditor_legend b_small">
 	<strong>$r.translate("legend.title")</strong>
 	<div class="o_midlock">$r.translate("legend.cond")</div>

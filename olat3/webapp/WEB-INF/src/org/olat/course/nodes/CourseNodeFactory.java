@@ -57,6 +57,7 @@ public class CourseNodeFactory {
 	private static List<String> courseNodeConfigurationsAliases;
 	private static Map<String, CourseNodeConfiguration> courseNodeConfigurations;
 	private Object lockObject = new Object();
+	private HashMap<String, CourseNodeConfiguration> allCourseNodeConfigurations;
 
 	/**
 	 * [used by spring]
@@ -83,13 +84,14 @@ public class CourseNodeFactory {
 	private void initCourseNodeConfigurationList() {
 		courseNodeConfigurationsAliases = new ArrayList<String>();
 		courseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
+		allCourseNodeConfigurations = new HashMap<String, CourseNodeConfiguration>();
 		Map sortedMap = new TreeMap(); 
 		Map<String, Object> courseNodeConfigurationMap = CoreSpringFactory.getBeansOfType(OlatBeanTypes.courseNodeConfiguration);
 		Collection<Object> courseNodeConfigurationValues = courseNodeConfigurationMap.values();
 		for (Object object : courseNodeConfigurationValues) {
 			CourseNodeConfiguration courseNodeConfiguration = (CourseNodeConfiguration) object;
+			int key = courseNodeConfiguration.getOrder();
 			if (courseNodeConfiguration.isEnabled()) {
-				int key = courseNodeConfiguration.getOrder();
 				while (sortedMap.containsKey(key) ) {
 					// a key with this value already exist => add 1000 because offset must be outside of other values.
 					key += 1000;
@@ -101,6 +103,7 @@ public class CourseNodeFactory {
 			} else {
 				log.debug("Disabled courseNodeConfiguration=" + courseNodeConfiguration);
 			}
+			allCourseNodeConfigurations.put(courseNodeConfiguration.getAlias(), courseNodeConfiguration);
 		}
 		
 		for (Object key : sortedMap.keySet()) {
@@ -126,6 +129,17 @@ public class CourseNodeFactory {
 		return courseNodeConfigurations.get(alias);
 	}
 
+	public CourseNodeConfiguration getCourseNodeConfigurationEvenForDisabledBB(String alias) {
+		if (allCourseNodeConfigurations == null) {
+			synchronized(lockObject) {
+				if (allCourseNodeConfigurations == null) { // check again in synchronized-block, only one may create list		
+					initCourseNodeConfigurationList();
+				}
+			}
+		}
+		return allCourseNodeConfigurations.get(alias);
+	}
+	
 	/**
 	 * Launch an editor for the repository entry which is referenced in the given
 	 * course node. The editor is launched in a new tab.

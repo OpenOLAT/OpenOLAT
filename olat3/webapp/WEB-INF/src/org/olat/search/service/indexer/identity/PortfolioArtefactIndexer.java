@@ -81,6 +81,7 @@ public class PortfolioArtefactIndexer extends AbstractIndexer {
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object object, OlatFullIndexer indexerWriter)
 	throws IOException, InterruptedException {
+		if(!portfolioModule.isEnabled()) return;
 		Identity identity = (Identity)object;
 //		SearchResourceContext resourceContext = new SearchResourceContext(searchResourceContext); // dont do this way, as it would then try to open an artefact over visiting card -> not possible!
 		SearchResourceContext resourceContext = new SearchResourceContext();

@@ -30,6 +30,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -86,6 +87,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.InstantMessagingGroupChatController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.wiki.WikiManager;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.resource.OLATResource;
@@ -949,7 +951,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeWiki = gtnChild;
 		}
 		
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO)) {
+		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");		
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO) && portfolioModule.isEnabled()) {
 			gtnChild = new GenericTreeNode();
 			gtnChild.setTitle(translate("menutree.portfolio"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_PORTFOLIO);

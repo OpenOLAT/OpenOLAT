@@ -440,13 +440,16 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		tabbedNodeConfig.removeAll();
 		// dispose old one, if there was one
 		removeAsListenerAndDispose(nodeEditCntrllr);
-		nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), course, euce);
-		listenTo(nodeEditCntrllr);
-		nodeEditCntrllr.addTabs(tabbedNodeConfig);
-
+		String type = chosenNode.getType();
+		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
+		if (cnConfig.isEnabled()) {
+			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), course, euce);
+			listenTo(nodeEditCntrllr);
+			nodeEditCntrllr.addTabs(tabbedNodeConfig);
+		} 
+		main.contextPut("courseNodeDisabled", !cnConfig.isEnabled());
+		main.contextPut("courseNodeCss", cnConfig.getIconCSSClass());
 		main.contextPut("courseNode", chosenNode);
-		main.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfiguration(chosenNode.getType()).getIconCSSClass());
-
 	}
 
 	/**

@@ -56,6 +56,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -94,6 +95,7 @@ import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.EPUIFactory;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.properties.NarrowedPropertyManager;
@@ -210,11 +212,22 @@ public class CollaborationTools implements Serializable {
 		this.coordinatorManager = coordinatorManager;
 		this.ores = ores;
 		cacheToolStates = new Hashtable<String, Boolean>();
+		ArrayList<String> toolArr = new ArrayList<String>();
+		toolArr.add(TOOL_NEWS);
+		toolArr.add(TOOL_CONTACT);
+		toolArr.add(TOOL_CALENDAR);
+		toolArr.add(TOOL_FOLDER);
+		toolArr.add(TOOL_FORUM);
 		if (InstantMessagingModule.isEnabled()) {
-			TOOLS = new String[]{ TOOL_NEWS, TOOL_CONTACT, TOOL_CALENDAR, TOOL_FOLDER, TOOL_FORUM, TOOL_CHAT, TOOL_WIKI, TOOL_PORTFOLIO };
-		} else {
-			TOOLS = new String[]{ TOOL_NEWS, TOOL_CONTACT, TOOL_CALENDAR, TOOL_FOLDER, TOOL_FORUM, TOOL_WIKI, TOOL_PORTFOLIO };			
+			toolArr.add(TOOL_CHAT);
 		}
+		toolArr.add(TOOL_WIKI);
+		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		if (portfolioModule.isEnabled()) {
+			toolArr.add(TOOL_PORTFOLIO);
+		}	
+		TOOLS = ArrayHelper.toArray(toolArr);
+//		TOOLS = (String[]) toolArr.toArray();
 	}
 
 	/**

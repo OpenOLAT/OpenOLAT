@@ -30,6 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -39,9 +41,12 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -203,7 +208,12 @@ public class NavigationHandler {
 				// nclr: the new treemodel, visible, selected nodeid, calledcoursenode,
 				// nodeconstructionresult
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
-			} else { // access ok
+			} else if (!CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).isEnabled()) {
+				Translator pT = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+				Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, pT.translate("course.building.block.disabled"));
+				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
+				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
+			}	else { // access ok
 				// access the node, display its result in the right pane
 				NodeRunConstructionResult ncr;
 				
