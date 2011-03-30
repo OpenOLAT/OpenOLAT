@@ -50,7 +50,7 @@ public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OL
 	public final static String VALID_GROUPNAME_REGEXP = "^[^,\"]*$";
 	
 	/** the max length for the group name.*/
-	public static final int MAX_GROUP_NAME_LENGTH = 100;
+	public static final int MAX_GROUP_NAME_LENGTH = 255;
 
 	/**
 	 * @return The group type identification

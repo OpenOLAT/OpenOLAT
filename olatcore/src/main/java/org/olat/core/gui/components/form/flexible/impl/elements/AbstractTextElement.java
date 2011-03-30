@@ -21,6 +21,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
 
@@ -222,13 +223,22 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	}
 
 	private boolean notLongerThan(){
-		if (value.length() > notLongerLength) {
+		boolean lengthError = false;
+		try {
+			if (value.length() > notLongerLength || value.getBytes("UTF-8").length > notLongerLength) {
+				lengthError = true;
+			} 
+		} catch (UnsupportedEncodingException e) {
+			if (value.length() > notLongerLength){
+				lengthError = true; 
+			}
+		}		
+		if (lengthError) {
 			setErrorKey(notLongerThanErrorKey, new String[]{notLongerLength + ""});
-			return false;
 		} else {
 			clearError();
-			return true;
-		}
+		}		
+		return !lengthError;
 	}
 	/**
 	 * compares a text value with another value

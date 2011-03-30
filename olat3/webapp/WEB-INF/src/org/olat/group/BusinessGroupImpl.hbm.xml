@@ -34,7 +34,7 @@
 		</property>
 			 		
 		<property name="name" type="string">
-			<column name="groupname" unique="false" length="128" index="gp_name_idx"/>	
+			<column name="groupname" unique="false" length="255" index="gp_name_idx"/>	
 		</property>
 			
 		<property name="description" type="string">
