@@ -82,6 +82,7 @@ public class EPStructureDetailsController extends FormBasicController {
 	private List<TextElement> amountElements;
 	private List<CollectRestriction> collectRestrictions;
 	private SingleSelection viewRadio;
+	private List<StaticTextElement> errorElements;
 
 	public EPStructureDetailsController(UserRequest ureq, WindowControl wControl, Form rootForm, PortfolioStructure rootStructure) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
@@ -175,6 +176,7 @@ public class EPStructureDetailsController extends FormBasicController {
 			restrictionElements = new ArrayList<SingleSelection>();
 			restrictToArtefactElements = new ArrayList<SingleSelection>();
 			amountElements = new ArrayList<TextElement>();
+			errorElements = new ArrayList<StaticTextElement>();
 
 			List<String> counts = new ArrayList<String>();
 			for(CollectRestriction restriction:collectRestrictions) {
@@ -202,9 +204,13 @@ public class EPStructureDetailsController extends FormBasicController {
 				TextElement amountElement = uifactory.addTextElement("collect.restriction.amount." + count, "", 2, amountStr, collectContainer);
 				amountElement.setDisplaySize(3);
 				
+				StaticTextElement errorElement = uifactory.addStaticTextElement("collect.restriction.error." + count, "", collectContainer);
+				errorElement.setVisible(false);
+				
 				restrictionElements.add(restrictionElement);
 				restrictToArtefactElements.add(restrictToArtefactElement);
 				amountElements.add(amountElement);
+				errorElements.add(errorElement);
 				
 				FormLink addLink = uifactory.addFormLink("collect.restriction.add." + count, "collect.restriction.add", "collect.restriction.add",
 						collectContainer, Link.BUTTON_SMALL);
@@ -225,6 +231,48 @@ public class EPStructureDetailsController extends FormBasicController {
 	public FormItem getInitialFormItem() {
 		return flc;
 	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
+	 */
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		if(rootStructure instanceof EPStructuredMapTemplate && restrictionElements != null) {
+			setCollectRestrictions();
+			clearErrors();
+			ArrayList<String> usedTypes = new ArrayList<String>();
+			int i=0;
+			boolean hasError = false;
+			for(SingleSelection restrictionElement:restrictionElements) {
+				CollectRestriction restriction = (CollectRestriction)restrictionElement.getUserObject();
+				if (usedTypes.contains(restriction.getArtefactType())){
+					StaticTextElement thisErrorEl = errorElements.get(i);
+					thisErrorEl.setVisible(true);
+					thisErrorEl.setValue(translate("collect.restriction.duplicate.type"));
+					hasError = true;
+				}				
+				usedTypes.add(restriction.getArtefactType());
+				
+				if (!(StringHelper.containsNonWhitespace(restriction.getRestriction())
+						&& StringHelper.containsNonWhitespace(restriction.getArtefactType()) && restriction.getAmount() > 0)) {
+					StaticTextElement thisErrorEl = errorElements.get(i);
+					thisErrorEl.setVisible(true);
+					thisErrorEl.setValue(translate("collect.restriction.incomplete"));
+					hasError = true;
+				}
+
+				i++;
+			}
+			return !hasError;			
+		}
+		return true;		
+	}
+	
+	private void clearErrors(){
+		for (StaticTextElement errorElement : errorElements) {
+			errorElement.setVisible(false);
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
@@ -237,6 +285,7 @@ public class EPStructureDetailsController extends FormBasicController {
 		editStructure.setArtefactRepresentationMode(viewRadio.getSelectedKey());
 		
 		if(rootStructure instanceof EPStructuredMapTemplate && restrictionElements != null) {
+			clearErrors();
 			editStructure.getCollectRestrictions().clear();
 			setCollectRestrictions();
 			for(SingleSelection restrictionElement:restrictionElements) {
