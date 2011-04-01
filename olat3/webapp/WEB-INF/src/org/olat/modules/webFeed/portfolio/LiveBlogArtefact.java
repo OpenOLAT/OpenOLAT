@@ -48,7 +48,7 @@ public class LiveBlogArtefact extends AbstractArtefact {
 
 	@Override
 	public String getIcon() {
-		return "o_blog_icon";
+		return "b_ep_liveblog_icon";
 	}
 	
 	public Feed getFeedLight() {
