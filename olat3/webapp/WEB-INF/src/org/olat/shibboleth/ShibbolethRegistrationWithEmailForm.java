@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.user.UserManager;
 
 /**
@@ -65,13 +66,8 @@ public class ShibbolethRegistrationWithEmailForm extends FormBasicController {
 			return false;
 		}
 
-		if (!eMail.getValue().matches(".+@.+\\..+")) {
+		if (!MailHelper.isValidEmailAddress(getEmail())){
 			eMail.setErrorKey("srf.error.email.valid", null);
-			return false;
-		}
-
-		if (eMail.getValue().matches("^[^<>\"' \t\n\r]*$")) {
-			eMail.setErrorKey("srf.error.email.badcharacters", null);
 			return false;
 		}
 
