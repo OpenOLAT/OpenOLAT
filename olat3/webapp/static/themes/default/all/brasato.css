@@ -440,7 +440,7 @@
 	div.b_table_wrapper table tbody tr:hover,
 	div.b_table_wrapper table tbody tr:focus { background: #E0E2E8;}
 	div.b_table_wrapper table tbody tr a:hover,
-	div.b_table_wrapper table tbody tr a:focus { background-color: none} 
+	div.b_table_wrapper table tbody tr a:focus { background-color: none; } 
 	div.b_table_wrapper table tbody tr td { border-left: 1px solid #C7CCD6; border-right: 1px solid #C7CCD6; padding: 2px 3px; }
 	div.b_table_wrapper table tbody tr td.b_first_child { border-left: 1px solid #8F99AD; } /* first column */
 	div.b_table_wrapper table tbody tr td.b_last_child { border-right: 1px solid #8F99AD; } /* last column */
@@ -1242,6 +1242,5 @@
 	div.b_segments ul li.b_segment_last { padding-right: 11px; -moz-border-radius-topright: 13px; -webkit-border-top-right-radius: 13px; border-top-right-radius: 13px; -moz-border-radius-bottomright: 13px; -webkit-border-bottom-right-radius: 13px; border-bottom-right-radius: 13px; }
 	li.b_segment_selected + li.b_segment { border-left: 1px solid #aaa; }
 	div.b_segment_content { margin-top: 50px; clear:both; }
-	
-	
-}
+
+} 

@@ -172,7 +172,7 @@
 	a.o_instantmessaging_offline_icon:hover { background-image: url(../images/olat/instantmessaging/unavailable_over.png);}
 	.o_instantmessaging_new_msg_icon { background-image: url(../images/olat/new_message.gif);}
 	a.o_instantmessaging_new_msg_icon:hover { background-image: url(../images/olat/new_message.gif);}
-	.o_instantmessaging_error_icon { background-image: url(../images/brasato/cross.png);}	
+	.o_instantmessaging_error_icon { background-image: url(../images/olat/cross.png);}	
 	.o_instantmessaging_refresh_icon {background-image: url(../images/olat/arrow_refresh.png);} 
 		
 	/* FULLTEXT SEARCH */
@@ -580,7 +580,7 @@
 	div.b_table_wrapper td a.o_peekview_infomsg_link { display:inline; }
 	div.o_infomsgs_config { padding-bottom:5px; }
 	div.o_infomsgs_config div { display:inline; }
-	.o_infomsg_icon { background-image: url(../../../infomessage_icon.png); }
+	.o_infomsg_icon { background-image: url(../images/olat/infomessage.png); }
 	.o_infomsg_create_button { position:absolute; top:0; right:250px; }
 	
 	/* LINK LIST */
@@ -725,8 +725,8 @@
 	#o_qti_hints, #o_qti_solutions { margin: 1em 0;}
 	#o_qti_hints a { background: url(../images/olat/lightbulb.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
 	#o_qti_hints a:focus, #o_qti_hints a:hover{ background-image: url(../images/olat/lightbulb_hover.png); }	
-	#o_qti_solutions a { background: url(../images/olat/magnifyer.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
-	#o_qti_solutions a:focus, #o_qti_solutions a:hover{ background-image: url(../images/olat/magnifyer_hover.png); }	
+	#o_qti_solutions a { background: url(../images/olat/magnifier.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
+	#o_qti_solutions a:focus, #o_qti_solutions a:hover{ background-image: url(../images/olat/magnifier_hover.png); }	
 	.qti_response_level_feedback_label { margin-top: 1em; font-style:italic }
 	.qti_edit_layout { position:relative; padding-right:30px; margin-bottom:0.6em; }
 	.qti_edit_layout .edit_link { position:absolute; top:10px; right:0px; }
@@ -775,7 +775,7 @@
 	div.o_qti_item_note_box_title{color: silver;}
 	
 	div.o_qti_item_itemfeedback, div.o_qti_item_assessfeedback, div.o_qti_item_o_qti_item_sectionfeedback{margin: 1em 0; background: url(../images/olat/lightning.png) no-repeat left 50%; padding-left: 20px;}
-	div.o_qti_item_objectives {margin: 1em 0; background: url(../images/images/brasato/information.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
+	div.o_qti_item_objectives {margin: 1em 0; background: url(../images/brasato/information.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
 	/* qti menu items */
 	.o_qti_timelimit_icon {background-image: url(../images/olat/qti/time.png); }
 	a.o_qti_timelimit_icon:hover {background-image: url(../images/olat/qti/time_over.png); }
@@ -809,7 +809,7 @@
 	div.o_catalog div.o_catalog_itemlist ul { list-style-type: none; margin: 0; padding: 0;}      
 	div.o_catalog div.o_catalog_itemlist li { margin: 0; padding: 0 0 0 0.5em;;overflow: hidden;}      
 	div.o_catalog div.o_catalog_itemlist a { display: block; }	
-	div.o_catalog .o_catalog_cat_icon { background-image: url(../images/olat/folder_small_open.png); }
+	div.o_catalog .o_catalog_cat_icon { background-image: url(../images/olat/folder_open.png); }
     div.o_catalog .o_catalog_sub_icon { background-image: url(../images/olat/folder_small.png); }
     div.o_catalog div.o_catalog_link { margin: 1em 0 1em 0;}
     div.o_catalog div.o_catalog_link_title { background: #D6D7E0; line-height: 1.5em; padding: 0 0 0 0.5em; margin: 2em 0 0 0;}
