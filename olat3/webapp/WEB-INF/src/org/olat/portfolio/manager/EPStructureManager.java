@@ -1502,6 +1502,7 @@ public class EPStructureManager extends BasicManager {
 		EPStructuredMapTemplate rootTemp = (EPStructuredMapTemplate) root;
 		rootTemp.setStructureElSource(null);
 		
+		el.setStyle(((EPStructureElement)root).getStyle()); 
 		importEPStructureElementRecursively((EPStructureElement)root, el);
 		
 		//create an empty security group
