@@ -29,7 +29,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
@@ -106,17 +105,12 @@ public class ProjectListTableModel extends DefaultTableDataModel {
 			if (identities.isEmpty()) {
 				return "-";
 			} else {
-				// Get last added identity
-				Object[] identityAndDate  = identities.get(identities.size() - 1);
-				String last = ((Identity)identityAndDate[0]).getUser().getProperty(UserConstants.LASTNAME, getLocale());
-				String first= ((Identity)identityAndDate[0]).getUser().getProperty(UserConstants.FIRSTNAME, getLocale()); 
-				String showName = last + " " + first;
-				if (identities.size() == 1) {
-					return showName;
-				} else {
-					// more than one projectleader => show ...
-					return showName + ", ...";
+				// return all proj-leaders
+				ArrayList<Identity> allIdents = new ArrayList<Identity>();
+				for (Object[] idobj : identities) {
+					allIdents.add((Identity)idobj[0]);
 				}
+				return allIdents;
 			}
 		} else if (col == (numberOfCustomFieldInTable + numberOfEventInTable + 2)) {
 			return ProjectBrokerManagerFactory.getProjectBrokerManager().getStateFor(project,identity,moduleConfig);

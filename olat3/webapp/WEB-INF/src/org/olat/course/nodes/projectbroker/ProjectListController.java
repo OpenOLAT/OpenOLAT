@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -43,9 +43,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dtabs.DTab;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -59,6 +64,8 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.user.HomePageConfigManager;
+import org.olat.user.HomePageConfigManagerImpl;
 import org.olat.user.UserInfoMainController;
 
 /**
@@ -69,6 +76,7 @@ import org.olat.user.UserInfoMainController;
 
 public class ProjectListController extends BasicController implements GenericEventListener {
 	
+	private static final String OPEN_IDENTITY_CMD = "openID";
 	// List commands
 	private static final String TABLE_ACTION_SHOW_DETAIL     = "cmd.show.detail";
 	private static final String TABLE_ACTION_ACCOUNT_MANAGER = "cmd.account.manager";
@@ -94,6 +102,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	private int numberOfEventInTable = 0;
 	private int nbrSelectedProjects;
 	private boolean isParticipantInAnyProject;
+	private CloseableCalloutWindowController calloutCtrl;
 
 
 	/**
@@ -207,6 +216,13 @@ public class ProjectListController extends BasicController implements GenericEve
 			projectController = new ProjectController(ureq, this.getWindowControl(), userCourseEnv, nodeEvaluation, project, true, moduleConfig);
 			projectController.addControllerListener(this);
 			mainPanel.pushContent(projectController.getInitialComponent());
+		} else if (event.getCommand().equals(OPEN_IDENTITY_CMD)){
+			Link link = (Link) source;
+			if (calloutCtrl!=null) {
+				calloutCtrl.deactivate();
+				calloutCtrl = null;
+			}
+			openUserInPopup(ureq, (Identity) link.getUserObject());
 		}
 	}
 
@@ -244,7 +260,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		if ( te.getActionId().equals(TABLE_ACTION_SHOW_DETAIL)) {
 			activateProjectController(currentProject, urequest);
 		} else if ( te.getActionId().equals(TABLE_ACTION_ACCOUNT_MANAGER)) {
-			activateUserController(currentProject, urequest);
+			activateUserController(currentProject, urequest, te);
 		} else if ( te.getActionId().equals(TABLE_ACTION_SELECT)) {
 			handleEnrollAction(urequest, currentProject);
 		} else if ( te.getActionId().equals(TABLE_ACTION_CANCEL_SELECT)) {
@@ -298,22 +314,55 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 
-	private void activateUserController(final Project projectAt, UserRequest urequest) {
+	private void activateUserController(final Project projectAt, UserRequest urequest, TableEvent tableEvent) {
 		if (projectAt.getProjectLeaders().isEmpty()) {
 			this.showInfo("show.info.no.project.leader");
-		} else if (projectAt.getProjectLeaders().size() > 0) {
-			// Open visiting card in new popup
-			ControllerCreator ctrlCreator = new ControllerCreator() {
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					return new UserInfoMainController(lureq, lwControl, projectAt.getProjectLeaders().get(0));
-				}
-			};
-			// wrap the content controller into a full header layout
-			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(urequest, ctrlCreator);
-			this.openInNewBrowserWindow(urequest, layoutCtrlr);
+		} else if (projectAt.getProjectLeaders().size() > 1) {
+			VelocityContainer identityVC = createVelocityContainer("identityCallout");
+			List<Identity> allIdents = projectAt.getProjectLeaders();
+			ArrayList<Link> identLinks = new ArrayList<Link>(allIdents.size());
+			for (Identity identity : allIdents) {
+				String last = identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
+				String first = identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()); 
+				String linkName = last + " " + first;	
+				
+				Link idLink = LinkFactory.createCustomLink(linkName, OPEN_IDENTITY_CMD, linkName, Link.NONTRANSLATED, identityVC, this);
+				idLink.setUserObject(identity);
+				identLinks.add(idLink);
+			}
+			identityVC.contextPut("identLinks", identLinks);			
+			
+			int row = tableEvent.getRowId();
+			String targetDomID = ProjectManagerColumnRenderer.PROJECTMANAGER_COLUMN_ROW_IDENT + row;
+			String title = translate("projectlist.callout.title", projectAt.getTitle());
+			
+			calloutCtrl = new CloseableCalloutWindowController(urequest, getWindowControl(), identityVC, targetDomID, title, true, null);
+			calloutCtrl.activate();
+			listenTo(calloutCtrl);	
+		} else if (projectAt.getProjectLeaders().size() == 1) {
+			// no callout, if its only one user
+			Identity leader = projectAt.getProjectLeaders().get(0);
+			openUserInPopup(urequest, leader);
 		}
 	}
 
+	private void openUserInPopup(UserRequest ureq, final Identity ident){
+		// did not work to open as popup based on ureq! -> open as tab in same window
+			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
+			OLATResourceable ores = hpcm.loadConfigFor(ident.getName());
+			DTabs dts = (DTabs) Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+			DTab dt = dts.getDTab(ores);
+			if (dt == null) {
+				// does not yet exist -> create and add
+				dt = dts.createDTab(ores, ident.getName());
+				if (dt == null) return;
+				UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), ident);
+				dt.setController(uimc);
+				dts.addDTab(dt);
+			}
+			dts.activate(ureq, dt, null);
+	}
+	
 
 	private void activateProjectController(Project project, UserRequest urequest) {
 		removeAsListenerAndDispose(projectController);
@@ -344,8 +393,27 @@ public class ProjectListController extends BasicController implements GenericEve
 		
 		int dataColumn = 0;
 		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.title", dataColumn++, TABLE_ACTION_SHOW_DETAIL, ureq.getLocale()));
-		DefaultColumnDescriptor projectManagerDescriptor = new DefaultColumnDescriptor("projectlist.tableheader.account.manager", dataColumn++, TABLE_ACTION_ACCOUNT_MANAGER, ureq.getLocale());
-		projectManagerDescriptor.setIsPopUpWindowAction( true, "height=600, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+		
+		CustomRenderColumnDescriptor projectManagerDescriptor = new CustomRenderColumnDescriptor("projectlist.tableheader.account.manager", dataColumn++, TABLE_ACTION_ACCOUNT_MANAGER, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectManagerColumnRenderer()){
+
+			/**
+			 * @see org.olat.core.gui.components.table.DefaultColumnDescriptor#compareTo(int, int)
+			 */
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				return super.compareTo(rowa, rowb);
+			}
+
+			/**
+			 * @see org.olat.core.gui.components.table.CustomRenderColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput, int, org.olat.core.gui.render.Renderer)
+			 */
+			@Override
+			public void renderValue(StringOutput sb, int row, Renderer renderer) {
+					Object val = getModelData(row);
+					String rowSt = Integer.toString(row); // to get info about row in Renderer!
+					getCustomCellRenderer().render(sb, renderer, val, getLocale(), getAlignment(), rowSt);
+			}	
+		};
 		tableController.addColumnDescriptor(projectManagerDescriptor);
 		// Custom-Fields
 		List<CustomField> customFieldList = moduleConfig.getCustomFields();
