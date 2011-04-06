@@ -253,14 +253,16 @@ public class EPStructureDetailsController extends FormBasicController {
 				}				
 				usedTypes.add(restriction.getArtefactType());
 				
-				if (!(StringHelper.containsNonWhitespace(restriction.getRestriction())
-						&& StringHelper.containsNonWhitespace(restriction.getArtefactType()) && restriction.getAmount() > 0)) {
+				boolean hasRestriction = StringHelper.containsNonWhitespace(restriction.getRestriction());
+				boolean hasArtType = StringHelper.containsNonWhitespace(restriction.getArtefactType());
+				boolean hasAmount = restriction.getAmount() > 0;
+				boolean isValid = restriction.isValid();
+				if (!isValid && (hasRestriction || hasArtType || hasAmount)) {
 					StaticTextElement thisErrorEl = errorElements.get(i);
 					thisErrorEl.setVisible(true);
 					thisErrorEl.setValue(translate("collect.restriction.incomplete"));
 					hasError = true;
 				}
-
 				i++;
 			}
 			return !hasError;			
@@ -290,10 +292,7 @@ public class EPStructureDetailsController extends FormBasicController {
 			setCollectRestrictions();
 			for(SingleSelection restrictionElement:restrictionElements) {
 				CollectRestriction restriction = (CollectRestriction)restrictionElement.getUserObject();
-				if(StringHelper.containsNonWhitespace(restriction.getRestriction()) &&
-					 StringHelper.containsNonWhitespace(restriction.getArtefactType()) &&
-					 restriction.getAmount() >= 0) {
-					
+				if(restriction.isValid()) {					
 					CollectRestriction cr = new CollectRestriction(restriction);
 					editStructure.getCollectRestrictions().add(cr);
 				}
@@ -324,32 +323,25 @@ public class EPStructureDetailsController extends FormBasicController {
 	}
 	
 	protected void setCollectRestrictions() {
-		if(restrictionElements == null || restrictionElements.isEmpty()) {
-			return;
-		}
-		
-		for(int i=0; i<restrictionElements.size(); i++) {
+		if (restrictionElements == null || restrictionElements.isEmpty()) { return; }
+
+		for (int i = 0; i < restrictionElements.size(); i++) {
 			SingleSelection restrictionElement = restrictionElements.get(i);
 			SingleSelection restrictToArtefactElement = restrictToArtefactElements.get(i);
+			TextElement amountElement = amountElements.get(i);
 			
-			if(restrictionElement.getSelected() > 0 || restrictToArtefactElement.getSelected() > 0) {
-				TextElement amountElement = amountElements.get(i);
-				CollectRestriction cr = (CollectRestriction)restrictionElement.getUserObject();
-				String restriction = restrictionElement.getSelectedKey();
-				String artefactType = restrictToArtefactElement.getSelectedKey();
-				String amount = amountElement.getValue();
-				if(StringHelper.containsNonWhitespace(restriction)) {
-					cr.setRestriction(restriction);
-				}
-				if(StringHelper.containsNonWhitespace(artefactType)) {
-					cr.setArtefactType(artefactType);
-				}
-				if(StringHelper.containsNonWhitespace(amount)) {
-					try {
-						cr.setAmount(Integer.parseInt(amount));
-					} catch (NumberFormatException e) {
-						logWarn("Wrong format for number", e);
-					}
+			CollectRestriction cr = (CollectRestriction) restrictionElement.getUserObject();
+			String restriction = restrictionElement.getSelectedKey();
+			String artefactType = restrictToArtefactElement.getSelectedKey();
+			String amount = amountElement.getValue();
+			
+			cr.setRestriction(restriction);
+			cr.setArtefactType(artefactType);			
+			if (StringHelper.containsNonWhitespace(amount)) {
+				try {
+					cr.setAmount(Integer.parseInt(amount));
+				} catch (NumberFormatException e) {
+					logWarn("Wrong format for number", e);
 				}
 			}
 		}

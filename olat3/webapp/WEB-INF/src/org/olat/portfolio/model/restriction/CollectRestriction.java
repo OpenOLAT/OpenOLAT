@@ -21,6 +21,7 @@
 package org.olat.portfolio.model.restriction;
 
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.util.StringHelper;
 
 /** 
  * Description:<br>
@@ -129,4 +130,19 @@ public class CollectRestriction extends PersistentObject {
 		}
 		return false;
 	}
+
+	/**
+	 * @see org.olat.core.commons.persistence.PersistentObject#toString()
+	 */
+	@Override
+	public String toString() {
+		return "key: " + getKey() + " Restriction: " + getRestriction() + " amount: " + getAmount() + " of type: " + getArtefactType();
+	}
+	
+	// basic check for validity. do not save invalid restrictions!
+	public boolean isValid(){
+		if (StringHelper.containsNonWhitespace(getRestriction()) && StringHelper.containsNonWhitespace(getArtefactType()) && getAmount() > 0) return true; 
+		return false;
+	}
+	
 }
