@@ -796,8 +796,9 @@ public class EPStructureManager extends BasicManager {
   * Add a child structure to the parent structure.
   * @param parentStructure
   * @param childStructure
+  * @param destinationPos set to -1 to append at the end!
   */
-	public void addStructureToStructure(PortfolioStructure parentStructure, PortfolioStructure childStructure) {
+	public void addStructureToStructure(PortfolioStructure parentStructure, PortfolioStructure childStructure, int destinationPos) {
 		if (parentStructure == null || childStructure == null) throw new NullPointerException();
 		if(childStructure instanceof EPStructureElement) {
 			//save eventual changes
@@ -811,15 +812,19 @@ public class EPStructureManager extends BasicManager {
 			//refresh internal link to its root element
 			((EPStructureElement)childStructure).setRoot((EPStructureElement) parentStructure);
 			
-			((EPStructureElement)parentStructure).getInternalChildren().add(link);
+			if (destinationPos == -1) {
+				((EPStructureElement)parentStructure).getInternalChildren().add(link);
+			} else {
+				((EPStructureElement)parentStructure).getInternalChildren().add(destinationPos, link);
+			}
 		}
 	}
 	
-	protected boolean moveStructureToNewParentStructure(PortfolioStructure structToBeMvd,	PortfolioStructure oldParStruct, PortfolioStructure newParStruct){
+	protected boolean moveStructureToNewParentStructure(PortfolioStructure structToBeMvd,	PortfolioStructure oldParStruct, PortfolioStructure newParStruct, int destinationPos){
 		if (structToBeMvd == null || oldParStruct == null || newParStruct == null) throw new NullPointerException();
 		try { // try catch, as used in d&d TOC-tree, should still continue on error
 			removeStructure(oldParStruct, structToBeMvd);
-			addStructureToStructure(newParStruct, structToBeMvd);
+			addStructureToStructure(newParStruct, structToBeMvd, destinationPos);
 		} catch (Exception e) {
 			logError("could not move structure " + structToBeMvd.getKey() + " from " + oldParStruct.getKey() + " to " + newParStruct.getKey(), e);
 			return false;
@@ -983,9 +988,24 @@ public class EPStructureManager extends BasicManager {
 		}
 	}
 	
-	private int indexOf(List<EPStructureToStructureLink> artefactLinks, PortfolioStructure structure) {
+	protected boolean reOrderStructures(PortfolioStructure parent, PortfolioStructure orderSubject, int orderDest){
+		EPStructureElement structureEl = (EPStructureElement)dbInstance.loadObject((EPStructureElement)parent);
+		List<EPStructureToStructureLink> structureLinks = structureEl.getInternalChildren();
+
+		int oldPos = indexOf(structureLinks, orderSubject);		
+		if (oldPos != orderDest && oldPos != -1) {
+			EPStructureToStructureLink link = structureLinks.remove(oldPos);
+			while (orderDest > structureLinks.size()) orderDest--; // place at end
+			structureLinks.add(orderDest, link);			
+			dbInstance.updateObject(structureEl);
+			return true;
+		}
+		return false;
+	}
+	
+	private int indexOf(List<EPStructureToStructureLink> structLinks, PortfolioStructure structure) {
 		int count = 0;
-		for(EPStructureToStructureLink link:artefactLinks) {
+		for(EPStructureToStructureLink link:structLinks) {
 			if(link.getChild().getKey().equals(structure.getKey())) {
 				return count;
 			}

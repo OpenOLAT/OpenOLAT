@@ -206,10 +206,19 @@ public class EPFrontendManager extends BasicManager {
 	 * @param newParStruct
 	 * @return true if no exception occured
 	 */
-	public boolean moveStructureToNewParentStructure(PortfolioStructure structToBeMvd, PortfolioStructure oldParStruct, PortfolioStructure newParStruct){
-		return structureManager.moveStructureToNewParentStructure(structToBeMvd, oldParStruct, newParStruct);
+	public boolean moveStructureToNewParentStructure(PortfolioStructure structToBeMvd, PortfolioStructure oldParStruct, PortfolioStructure newParStruct, int destinationPos){
+		return structureManager.moveStructureToNewParentStructure(structToBeMvd, oldParStruct, newParStruct, destinationPos);
 	}
 	
+	/**
+	 * move a structures order within the same parent, allows manual sorting.
+	 * @param structToBeMvd
+	 * @param destinationPos where it should be placed
+	 * @return true if it went ok, false otherwise
+	 */
+	public boolean moveStructureToPosition(PortfolioStructure structToBeMvd, int destinationPos){
+		return structureManager.reOrderStructures(loadStructureParent(structToBeMvd), structToBeMvd, destinationPos);
+	}
 	
 	/**
 	 * set the reflexion for the link structureElement <-> artefact
@@ -765,7 +774,7 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public PortfolioStructure createAndPersistPortfolioStructureElement(PortfolioStructure root, String title, String description) {
 		EPStructureElement newStruct = (EPStructureElement) structureManager.createPortfolioStructure(root, title, description);
-		if (root != null) structureManager.addStructureToStructure(root, newStruct);
+		if (root != null) structureManager.addStructureToStructure(root, newStruct, -1);
 		structureManager.savePortfolioStructure(newStruct);
 		return newStruct;
 	}
@@ -779,7 +788,7 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public PortfolioStructure createAndPersistPortfolioPage(PortfolioStructure root, String title, String description) {
 		EPPage newPage = (EPPage) structureManager.createPortfolioPage(root, title, description);
-		if (root != null) structureManager.addStructureToStructure(root, newPage);
+		if (root != null) structureManager.addStructureToStructure(root, newPage, -1);
 		structureManager.savePortfolioStructure(newPage);
 		return newPage;
 	}
