@@ -50,11 +50,18 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 		if (val instanceof ArrayList){
 			@SuppressWarnings("unchecked")
 			ArrayList<Identity> allIdents = (ArrayList<Identity>) val;
-			Integer row = Integer.parseInt(action);
+			Integer row = null;
+			try {
+				row = Integer.parseInt(action);
+			} catch (Exception e) {
+				// do nothing with that
+			} 
+			
 			StringBuilder buf = new StringBuilder();
 			
-			if (renderer!=null) {
+			if (renderer!=null && row!=null) {
 				// if no renderer is set, then we assume it's a table export - in which case we don't want the htmls (<b>)
+				// no row might occur during table-search
 				sb.append("<span class=\"projmgrrowcontent\"");
 				sb.append("id=\"" + PROJECTMANAGER_COLUMN_ROW_IDENT + row + "\">");
 			}
@@ -66,7 +73,7 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 			}
 			sb.append(buf.substring(0, buf.length() - 2));
 			
-			if (renderer!=null) {
+			if (renderer!=null && row!=null) {
 				sb.append("</span>");
 			}			
 		}
