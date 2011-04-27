@@ -118,7 +118,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		myStream.alias("structureToArtefact", EPStructureToArtefactLink.class);
 		myStream.alias("structureToStructure", EPStructureToStructureLink.class);
 		myStream.alias("collectionRestriction", CollectRestriction.class);
-		myStream.omitField(EPStructuredMapTemplate.class, "ownerGroup");
+		myStream.omitField(EPAbstractMap.class, "ownerGroup"); // see also OLAT-6344
 		myStream.addDefaultImplementation(PersistentList.class, List.class);
 		myStream.addDefaultImplementation(ArrayList.class, List.class);
 		myStream.registerConverter(new CollectionConverter(myStream.getMapper()) {
@@ -278,7 +278,10 @@ public class PortfolioHandler implements RepositoryHandler {
 			//prepare decoding with xstream
 			byte[] outArray = out.toByteArray();
 			String xml = new String(outArray);
-			return (PortfolioStructure)myStream.fromXML(xml);
+			PortfolioStructure struct = (PortfolioStructure) myStream.fromXML(xml);
+			// OLAT-6344: reset ownerGroup from earlier exports. A new group is created by import in ePFMgr.importPortfolioMapTemplate() later on anyway.
+			((EPAbstractMap) struct).setOwnerGroup(null); 
+			return struct;
 		} catch (IOException e) {
 			log.error("Cannot export this map: " + fMapXml, e);
 		}
