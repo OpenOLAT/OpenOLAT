@@ -50,7 +50,7 @@ import com.ibm.icu.util.Calendar;
 public class DeadlineController extends FormBasicController {
 	
 	private DateChooser deadlineChooser;
-	private final EPStructuredMap map;
+	private EPStructuredMap map;
 	private final EPFrontendManager ePFMgr;
 	
 	public DeadlineController(UserRequest ureq, WindowControl wControl, EPStructuredMap map) {
@@ -93,6 +93,7 @@ public class DeadlineController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Date newDeadLine = deadlineChooser.getDate();
+		map = (EPStructuredMap) ePFMgr.loadPortfolioStructureByKey(map.getKey()); // OLAT-6335: refresh map in case it was changed meanwhile
 		map.setDeadLine(newDeadLine);
 		map.setStatus(StructureStatusEnum.OPEN);
 		ePFMgr.savePortfolioStructure(map);
