@@ -210,7 +210,7 @@ public class NavigationHandler {
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
 			} else if (!CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).isEnabled()) {
 				Translator pT = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
-				Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, pT.translate("course.building.block.disabled"));
+				Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, pT.translate("course.building.block.disabled.user"));
 				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
 				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
 			}	else { // access ok
