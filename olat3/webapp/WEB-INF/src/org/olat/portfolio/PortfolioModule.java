@@ -23,14 +23,30 @@ package org.olat.portfolio;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.collaboration.CollaborationTools;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.DeletableGroupData;
+import org.olat.group.DeletableReference;
+import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.ElementType;
+import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.properties.NarrowedPropertyManager;
+import org.olat.properties.Property;
+import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,7 +57,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * Initial Date:  11.06.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff {
+public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, UserDataDeletable, DeletableGroupData {
 	
 	private List<EPArtefactHandler<?>> artefactHandlers = new ArrayList<EPArtefactHandler<?>>();
 
@@ -49,6 +65,10 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff {
 	private VFSContainer portfolioRoot;
 	private List<String> availableMapStyles = new ArrayList<String>();
 	private boolean offerPublicMapList;
+	
+	public PortfolioModule(){
+		BusinessGroupManagerImpl.getInstance().registerDeletableGroupDataListener(this);		
+	}
 	
 	@Override
 	public void init() {
@@ -237,4 +257,50 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff {
 	public boolean isOfferPublicMapList() {
 		return offerPublicMapList;
 	}
+	
+	/**
+	 * [spring]
+	 * 
+	 * @param userDeletionManager
+	 */
+	@Autowired(required = true)
+	public void setUserDeletionManager(final UserDeletionManager userDeletionManager) {
+		userDeletionManager.registerDeletableUserData(this);
+	}
+
+	// used for user deletion
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr.deleteUsersArtefacts(identity);
+		
+		List<PortfolioStructure> userPersonalMaps = ePFMgr.getStructureElementsForUser(identity, ElementType.DEFAULT_MAP, ElementType.STRUCTURED_MAP);
+		for (PortfolioStructure portfolioStructure : userPersonalMaps) {
+			
+			ePFMgr.deletePortfolioStructure(portfolioStructure);
+		}
+		
+	}
+
+	// used for group deletion
+	@Override
+	public DeletableReference checkIfReferenced(BusinessGroup group, Locale locale) {
+		return DeletableReference.createNoDeletableReference(); // dont show special reference info, just delete a linked map
+	}
+
+	// used for group deletion
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(group);
+		final Property mapKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_PORTFOLIO);
+		if (mapKeyProperty != null) {
+			final Long mapKey = mapKeyProperty.getLongValue();
+			final PortfolioStructure map = ePFMgr.loadPortfolioStructureByKey(mapKey);
+			ePFMgr.deletePortfolioStructure(map);
+			return true;
+		}
+		return false;
+	}
+	
 }

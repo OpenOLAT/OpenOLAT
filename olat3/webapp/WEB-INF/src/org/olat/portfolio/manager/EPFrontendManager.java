@@ -153,7 +153,7 @@ public class EPFrontendManager extends BasicManager {
 
 	/**
 	 * delete an artefact and also its vfs-artefactContainer
-	 * 
+	 * all used tags will also be deleted.
 	 * @param artefact
 	 */
 	public void deleteArtefact(AbstractArtefact artefact) {
@@ -164,6 +164,17 @@ public class EPFrontendManager extends BasicManager {
 		// load again as session might be closed between
 		artefact = artefactManager.loadArtefactByKey(artefact.getKey());
 		artefactManager.deleteArtefact(artefact);
+	}
+	
+	/**
+	 * delete all artefacts from this users including used tags for them
+	 * @param ident
+	 */
+	public void deleteUsersArtefacts(Identity ident){
+		List<AbstractArtefact> userArtefacts = artefactManager.getArtefactPoolForUser(ident);
+		for (AbstractArtefact abstractArtefact : userArtefacts) {
+			deleteArtefact(abstractArtefact);
+		}
 	}
 	
 	public boolean isArtefactClosed(AbstractArtefact artefact) {

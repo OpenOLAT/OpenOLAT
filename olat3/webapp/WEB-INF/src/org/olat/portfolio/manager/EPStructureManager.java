@@ -25,10 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
@@ -37,9 +35,12 @@ import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
+import org.olat.core.commons.services.commentAndRating.impl.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -67,6 +68,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -87,6 +89,7 @@ public class EPStructureManager extends BasicManager {
 	private RepositoryManager repositoryManager;
 	private OLATResourceManager resourceManager;
 	private BaseSecurity securityManager;
+	private EPPolicyManager policyManager;
 
 	/**
 	 * 
@@ -117,6 +120,11 @@ public class EPStructureManager extends BasicManager {
 	 */
 	public void setRepositoryManager(RepositoryManager repositoryManager) {
 		this.repositoryManager = repositoryManager;
+	}
+	
+	@Autowired(required = true)
+	public void setpolicyManager(final EPPolicyManager policyManager) {
+		this.policyManager = policyManager;
 	}
 	
 	/**
@@ -932,6 +940,18 @@ public class EPStructureManager extends BasicManager {
 		
 		// remove collect restriction
 		struct.getCollectRestrictions().clear();
+		
+		// remove sharings
+		if (struct instanceof EPAbstractMap){
+			List<EPMapPolicy> noMorePol = new ArrayList<EPMapPolicy>();
+			policyManager.updateMapPolicies((PortfolioStructureMap) struct, noMorePol);
+		}
+		
+		// remove comments and ratings
+		CommentAndRatingService commentAndRatingService = null;
+		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
+		commentAndRatingService.init(struct.getOlatResource(), null, new CommentAndRatingDefaultSecurityCallback(null, true, false));
+		commentAndRatingService.deleteAllIgnoringSubPath();
 		
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
