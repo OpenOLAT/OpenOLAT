@@ -65,7 +65,7 @@ public class CreateStructureMapTemplateController extends BasicController implem
 			templateOres = eSTMgr.createPortfolioMapTemplateResource();
 			addCallback.setDisplayName(translate(templateOres.getResourceableTypeName()));
 			addCallback.setResourceable(templateOres);
-			addCallback.setResourceName("-");
+			addCallback.setResourceName(translate("EPStructuredMapTemplate"));
 			addCallback.finished(ureq);
 		}
 	}
