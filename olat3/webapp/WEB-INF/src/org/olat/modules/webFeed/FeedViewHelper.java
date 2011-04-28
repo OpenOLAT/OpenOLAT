@@ -32,6 +32,8 @@ import java.util.Locale;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -44,6 +46,7 @@ import org.olat.modules.webFeed.models.Enclosure;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.models.ItemPublishDateComparator;
+import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.repository.RepoJumpInHandlerFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -325,7 +328,15 @@ public class FeedViewHelper {
 			jumpInLink = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(repositoryEntry, nodeId);
 		} else {
 			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(feed, false);
-			jumpInLink = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(repositoryEntry);
+			if (repositoryEntry != null){
+				jumpInLink = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(repositoryEntry);
+			} else {
+				// its a liveblog-feed
+				final BusinessControlFactory bCF = BusinessControlFactory.getInstance();
+				String feedBP = LiveBlogArtefactHandler.LIVEBLOG + feed.getResourceableId() + "]";
+				final List<ContextEntry> ceList = bCF.createCEListFromString(feedBP);
+				jumpInLink = bCF.getAsURIString(ceList, true);
+			}
 		}
 		return jumpInLink;
 	}

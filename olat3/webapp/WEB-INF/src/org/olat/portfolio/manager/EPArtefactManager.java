@@ -504,14 +504,20 @@ public class EPArtefactManager extends BasicManager {
 	}
 	
 	protected List<AbstractArtefact> loadArtefactsByBusinessPath(String businessPath, Identity author){
-		if (author == null) return null;
 		if (!StringHelper.containsNonWhitespace(businessPath)) return null;
 		StringBuilder sb = new StringBuilder();
-		sb.append("select artefact from ").append(AbstractArtefact.class.getName()).append(" artefact").append(" where artefact.businessPath=:bpath and artefact.author=:ident");
+		sb.append("select artefact from ").append(AbstractArtefact.class.getName()).append(" artefact")
+		.append(" where artefact.businessPath=:bpath");
+		
+		if (author != null) {
+			 sb.append(" and artefact.author=:ident");
+		}
 
 		DBQuery query = dbInstance.createQuery(sb.toString());
 		query.setString("bpath", businessPath);
-		query.setEntity("ident", author);
+		if (author != null) {
+			query.setEntity("ident", author);
+		}
 
 		@SuppressWarnings("unchecked")
 		List<AbstractArtefact> artefacts = query.list();

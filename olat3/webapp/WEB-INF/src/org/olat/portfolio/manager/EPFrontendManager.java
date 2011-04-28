@@ -56,6 +56,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -280,10 +281,11 @@ public class EPFrontendManager extends BasicManager {
 	}
 
 	/**
-	 * load all artefacts with given businesspath from given identity
-	 * this mostly is just to lookup for existance of already collected artefacts from same source
+	 * load all artefacts with given businesspath.
+	 * setting an Identity to restrict to is optional.
+	 * this mostly is just to lookup for existence of already collected artefacts from same source
 	 * @param businessPath
-	 * @param author
+	 * @param author (optional)
 	 * @return
 	 */
 	public List<AbstractArtefact> loadArtefactsByBusinessPath(String businessPath, Identity author){
@@ -1094,6 +1096,28 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root, Identity identity) {
 		return structureManager.importPortfolioMapTemplate(root, identity);
+	}
+	
+	
+	/**
+	 * check if given identity has access to this feed.
+	 * reverse lookup feed -> artefact -> shared map
+	 * @param feed
+	 * @param identity
+	 * @return
+	 */
+	public boolean checkFeedAccess(OLATResourceable feed, Identity identity){
+		String feedBP = LiveBlogArtefactHandler.LIVEBLOG + feed.getResourceableId() + "]";
+		List<AbstractArtefact> artefact = loadArtefactsByBusinessPath(feedBP, null);
+		if (artefact != null && artefact.size() == 1) {
+			List<PortfolioStructure> linkedMaps = getReferencedMapsForArtefact(artefact.get(0));
+			for (PortfolioStructure map : linkedMaps) {
+				if (isMapVisible(identity, map)){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	// not yet available

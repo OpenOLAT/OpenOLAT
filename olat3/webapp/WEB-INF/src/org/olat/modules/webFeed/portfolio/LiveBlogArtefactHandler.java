@@ -36,6 +36,7 @@ import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
+import org.olat.modules.webFeed.ui.FeedItemDisplayConfig;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
 import org.olat.portfolio.EPAbstractHandler;
@@ -56,7 +57,7 @@ import org.olat.search.service.SearchResourceContext;
  */
 public class LiveBlogArtefactHandler extends EPAbstractHandler<LiveBlogArtefact> {
 
-	private static final String LIVEBLOG = "[LiveBlog:";
+	public static final String LIVEBLOG = "[LiveBlog:";
 	
 	private FeedManager manager;
 
@@ -85,7 +86,8 @@ public class LiveBlogArtefactHandler extends EPAbstractHandler<LiveBlogArtefact>
 		String businessPath = artefact.getBusinessPath();
 		Long resid = Long.parseLong(businessPath.substring(10, businessPath.length() - 1));
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(resid, BlogFileResource.TYPE_NAME);
-		FeedMainController detailsController = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(ores, ureq, wControl, callback);
+		FeedItemDisplayConfig displayConfig = new FeedItemDisplayConfig(false, false, readOnlyMode);
+		FeedMainController detailsController = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(ores, ureq, wControl, callback, displayConfig);
 		return detailsController;
 	}
 
@@ -107,7 +109,8 @@ public class LiveBlogArtefactHandler extends EPAbstractHandler<LiveBlogArtefact>
 		String businessPath = artefact.getBusinessPath();
 		Long resid = Long.parseLong(businessPath.substring(10, businessPath.length() - 1));
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(resid, BlogFileResource.TYPE_NAME);
-		return BlogUIFactory.getInstance(ureq.getLocale()).createMainController(ores, ureq, wControl, callback);
+		FeedItemDisplayConfig displayConfig = new FeedItemDisplayConfig(false, true, true);
+		return BlogUIFactory.getInstance(ureq.getLocale()).createMainController(ores, ureq, wControl, callback, displayConfig);
 	}
 
 	@Override

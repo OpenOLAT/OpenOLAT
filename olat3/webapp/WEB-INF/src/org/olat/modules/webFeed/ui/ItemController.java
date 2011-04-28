@@ -60,9 +60,10 @@ public class ItemController extends BasicController implements Activateable {
 	/**
 	 * @param ureq
 	 * @param wControl
+	 * @param displayConfig 
 	 */
 	public ItemController(UserRequest ureq, WindowControl wControl, Item item, Feed feed, FeedViewHelper helper, FeedUIFactory uiFactory,
-			FeedSecurityCallback callback, Link editButton, Link deleteButton, Controller artefactLink) {
+			FeedSecurityCallback callback, Link editButton, Link deleteButton, Controller artefactLink, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
 		setTranslator(uiFactory.getTranslator());
 		VelocityContainer vcItem = uiFactory.createItemVelocityContainer(this);
@@ -84,8 +85,8 @@ public class ItemController extends BasicController implements Activateable {
 			DateComponentFactory.createDateComponentWithYear("dateComp", item.getDate(), vcItem);
 		}
 		// Add rating and commenting controller - only when configured
-		CommentAndRatingService commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
-		if (commentAndRatingService != null) {				
+		final CommentAndRatingService commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
+		if (commentAndRatingService != null && displayConfig.isShowCRInDetails()) {
 			commentAndRatingService.init(getIdentity(), feed, item.getGuid(), callback.mayEditMetadata(), ureq.getUserSession().getRoles().isGuestOnly());
 			commentsCtr = commentAndRatingService.createUserCommentsAndRatingControllerExpandable(ureq, getWindowControl());
 			listenTo(commentsCtr);

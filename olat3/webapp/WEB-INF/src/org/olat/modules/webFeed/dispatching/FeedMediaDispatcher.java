@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
@@ -55,6 +56,7 @@ import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
+import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
@@ -264,7 +266,9 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 	 */
 	private boolean hasAccess(Identity identity, String token, ICourse course, CourseNode node) {
 		boolean hasAccess = false;
-		if (allowsGuestAccess(course)) {
+		final RepositoryManager resMgr = RepositoryManager.getInstance();
+		final RepositoryEntry repoEntry = resMgr.lookupRepositoryEntry(course, false);
+		if (allowsGuestAccess(repoEntry)) {
 			hasAccess = true;
 		} else {
 			IdentityEnvironment ienv = new IdentityEnvironment();
@@ -292,15 +296,23 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 	 */
 	private boolean hasAccess(Identity identity, String token, OLATResourceable feed) {
 		boolean hasAccess = false;
-		if (allowsGuestAccess(feed)) {
+		RepositoryManager resMgr = RepositoryManager.getInstance();
+		RepositoryEntry repoEntry = resMgr.lookupRepositoryEntry(feed, false);
+		if (allowsGuestAccess(repoEntry)) {
 			hasAccess = true;
 		} else if (identity != null) {
-			RepositoryManager resMgr = RepositoryManager.getInstance();
-			RepositoryEntry repoEntry = resMgr.lookupRepositoryEntry(feed, false);
-			Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
-			boolean isAllowedToLaunch = resMgr.isAllowedToLaunch(identity, roles, repoEntry);
-			if (isAllowedToLaunch && validAuthentication(identity, token)) {
-				hasAccess = true;
+			if (repoEntry != null){
+				final Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
+				final boolean isAllowedToLaunch = resMgr.isAllowedToLaunch(identity, roles, repoEntry);
+				if (isAllowedToLaunch && validAuthentication(identity, token)) {
+					hasAccess = true;
+				}
+			} else {
+				// no repository entry -> could be a feed without a repository-entry (ePortfolio-Blog-feed)
+				EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+				if (ePFMgr.checkFeedAccess(feed, identity)){
+					return validAuthentication(identity, token);
+				}
 			}
 		}
 		return hasAccess;
@@ -327,11 +339,9 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 	 * @param feed
 	 * @return true if the feed allows guest access.
 	 */
-	private boolean allowsGuestAccess(OLATResourceable res) {
+	private boolean allowsGuestAccess(final RepositoryEntry repoEntry) {
 		boolean guestsAllowed = false;
-		RepositoryManager resMgr = RepositoryManager.getInstance();
-		RepositoryEntry repoEntry = resMgr.lookupRepositoryEntry(res, false);
-		if (repoEntry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+		if (repoEntry != null && repoEntry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
 			guestsAllowed = true;
 		}
 		return guestsAllowed;
