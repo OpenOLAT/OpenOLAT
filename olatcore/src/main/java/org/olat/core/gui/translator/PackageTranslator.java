@@ -41,6 +41,7 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	private Translator fallBackTranslator;
 	private String packageName;
 	private Locale locale;
+	private int fallBackLevel = 0;
 
 	private PackageTranslator(String packageName, Locale locale, boolean fallBack, Translator fallBackTranslator) {
 		this.locale = locale;
@@ -60,12 +61,40 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	
 	/**
 	 * cascade two translators
+	 * do not use this with multiple cascaded translators! they are lost with this method!
+	 * 
 	 * @param main
 	 * @param fallback
 	 * @return
 	 */
 	public static Translator cascadeTranslators(PackageTranslator main, Translator fallback){
 		return new PackageTranslator(main.packageName, main.locale, fallback);
+	}
+	
+	/**
+	 * recursively cascade with all fallbacks up to maxDeep levels
+	 * @param main
+	 * @param fallback
+	 * @return
+	 */
+	public Translator cascadeTranslatorsWithAllFallback(PackageTranslator main, Translator fallback){
+		if (this.fallBackTranslator instanceof PackageTranslator && main.fallBackTranslator != fallback){
+			PackageTranslator tempTrans = (PackageTranslator) this.fallBackTranslator;
+			PackageTranslator oldPos = this;
+			int maxDeep = 4;
+			while (tempTrans != null && maxDeep > 0) {
+				oldPos = tempTrans;
+				tempTrans = (PackageTranslator) tempTrans.fallBackTranslator;
+				maxDeep--;
+			}
+			if (fallback != oldPos.fallBackTranslator && oldPos != oldPos.fallBackTranslator) oldPos.fallBackTranslator = fallback;
+			return main;
+		} 
+		return cascadeTranslators(main, fallback);		
+	}
+	
+	public void setFallBack(PackageTranslator fallback){
+		this.fallBackTranslator = fallback;
 	}
 
 	/**
@@ -159,7 +188,11 @@ public class PackageTranslator extends LogDelegator implements Translator {
 		String val = i18n.getLocalizedString(packageName, key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 		if (val == null) {
 			// if not found, try the fallBackTranslator
-			if (fallBackTranslator != null) {
+			if (isLogDebugEnabled()) {
+				logDebug("could not translate key: " + key + " in package: " + packageName + " with actual translator at level: " + fallBackLevel + " -> try with fallback");
+			}
+			if (fallBackTranslator != null && this != fallBackTranslator && fallBackLevel < 10 && !fallBack) {
+				fallBackLevel++;
 				val = fallBackTranslator.translate(key, args, fallBackToDefaultLocale);
 			} else if (fallBack) { // both fallback and fallbacktranslator does not
 				// make sense; latest translator in chain should
@@ -170,6 +203,9 @@ public class PackageTranslator extends LogDelegator implements Translator {
 					val = i18n.getLocalizedString(I18nModule.getCoreFallbackBundle(), key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 				}
 			}
+		} 
+		if (val != null){
+			fallBackLevel = 0;
 		}
 		return val;
 	}

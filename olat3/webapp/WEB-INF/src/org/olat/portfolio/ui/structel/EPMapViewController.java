@@ -92,9 +92,9 @@ public class EPMapViewController extends BasicController {
 		
 		// if this is a structured map (assigned from a template) do a sync first
 		if (map instanceof EPStructuredMap && (map.getStatus() == null || !map.getStatus().equals(StructureStatusEnum.CLOSED) )){
+			map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructureByKey(map.getKey());
 			boolean syncOk = ePFMgr.synchronizeStructuredMapToUserCopy(map);
 			if (syncOk) showInfo("synced.map.success");
-			map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructureByKey(map.getKey());
 		}
 		
 		if(EPSecurityCallbackFactory.isLockNeeded(secCallback)) {
