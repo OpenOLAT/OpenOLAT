@@ -162,11 +162,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 		// set the formtranslator, and parent
 		Translator itemTranslator = formComp.getTranslator();
-		if(formComp.getTranslator()!=null && itemTranslator instanceof PackageTranslator){
-			//let the FormItem provide a more specialized translator
-			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = itemPt.cascadeTranslatorsWithAllFallback((PackageTranslator) itemTranslator, translator);
-		}else{
+		if (itemTranslator != null && itemTranslator instanceof PackageTranslator) {
+			// let the FormItem provide a more specialized translator
+			PackageTranslator itemPt = (PackageTranslator) itemTranslator;
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
+		} else {
 			itemTranslator = translator;
 		}
 		formComp.setTranslator(itemTranslator);
@@ -248,7 +248,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		if(formComp.getTranslator()!=null && itemTranslator instanceof PackageTranslator){
 			//let the FormItem provide a more specialized translator
 			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = itemPt.cascadeTranslatorsWithAllFallback(itemPt, translator);
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
 		}else{
 			itemTranslator = translator;
 		}
@@ -294,7 +294,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		if(with.getTranslator()!=null && itemTranslator instanceof PackageTranslator){
 			//let the FormItem provide a more specialized translator
 			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = itemPt.cascadeTranslatorsWithAllFallback(itemPt, translator);
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
 		}else{
 			itemTranslator = translator;
 		}

@@ -78,7 +78,7 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	 * @return
 	 */
 	public Translator cascadeTranslatorsWithAllFallback(PackageTranslator main, Translator fallback){
-		if (this.fallBackTranslator instanceof PackageTranslator && main.fallBackTranslator != fallback){
+		if (this.fallBackTranslator instanceof PackageTranslator && main.fallBackTranslator != fallback && this.fallBackTranslator != fallback){
 			PackageTranslator tempTrans = (PackageTranslator) this.fallBackTranslator;
 			PackageTranslator oldPos = this;
 			int maxDeep = 4;
@@ -87,14 +87,12 @@ public class PackageTranslator extends LogDelegator implements Translator {
 				tempTrans = (PackageTranslator) tempTrans.fallBackTranslator;
 				maxDeep--;
 			}
-			if (fallback != oldPos.fallBackTranslator && oldPos != oldPos.fallBackTranslator) oldPos.fallBackTranslator = fallback;
+			if (fallback != oldPos.fallBackTranslator && oldPos != oldPos.fallBackTranslator) {
+				oldPos.fallBackTranslator = fallback;
+			}
 			return main;
 		} 
 		return cascadeTranslators(main, fallback);		
-	}
-	
-	public void setFallBack(PackageTranslator fallback){
-		this.fallBackTranslator = fallback;
 	}
 
 	/**
@@ -191,7 +189,7 @@ public class PackageTranslator extends LogDelegator implements Translator {
 			if (isLogDebugEnabled()) {
 				logDebug("could not translate key: " + key + " in package: " + packageName + " with actual translator at level: " + fallBackLevel + " -> try with fallback");
 			}
-			if (fallBackTranslator != null && this != fallBackTranslator && fallBackLevel < 10 && !fallBack) {
+			if (fallBackTranslator != null && fallBackLevel < 10) {
 				fallBackLevel++;
 				val = fallBackTranslator.translate(key, args, fallBackToDefaultLocale);
 			} else if (fallBack) { // both fallback and fallbacktranslator does not
@@ -221,7 +219,12 @@ public class PackageTranslator extends LogDelegator implements Translator {
 		sb.append(NO_TRANSLATION_ERROR_PREFIX).append(key);
 		sb.append(": in ").append(packageName);
 		sb.append(" (fallback:").append(fallBack);
-		String babel = fallBackTranslator == null ? "-" : fallBackTranslator.toString();
+		String babel;
+		if (fallBackTranslator instanceof PackageTranslator) {
+			babel = ((PackageTranslator)fallBackTranslator).packageName + " " + fallBackTranslator.toString();
+		} else {
+			babel = fallBackTranslator == null ? "-" : fallBackTranslator.toString();
+		}
 		sb.append(", fallBackTranslator:").append(babel);
 		sb.append(") for locale ").append(locale);
 		OLATRuntimeException ore = new OLATRuntimeException("transl dummy",null);
@@ -261,6 +264,15 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	 */
 	public String getPackageName() {
 		return packageName;
+	}
+	
+	@Override
+	public String toString(){		
+		return "PackageTranslator for package: " + packageName + " is fallback: " + fallBack + " next child if any: \n " + ((this.fallBackTranslator != null && this.fallBackTranslator == this) ? "recurse itself !" : this.fallBackTranslator);
+	}
+	
+	public boolean isStacked(){
+		return this.fallBackTranslator != null;
 	}
 	
 }
