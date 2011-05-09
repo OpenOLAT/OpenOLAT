@@ -173,8 +173,10 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public void deleteUsersArtefacts(Identity ident){
 		List<AbstractArtefact> userArtefacts = artefactManager.getArtefactPoolForUser(ident);
-		for (AbstractArtefact abstractArtefact : userArtefacts) {
-			deleteArtefact(abstractArtefact);
+		if (userArtefacts != null){
+			for (AbstractArtefact abstractArtefact : userArtefacts) {
+				deleteArtefact(abstractArtefact);
+			}
 		}
 	}
 	
