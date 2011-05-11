@@ -1119,6 +1119,10 @@ public class EPFrontendManager extends BasicManager {
 					return true;
 				}
 			}
+			// see OLAT-6282: allow the owner of the artefact to view the feed, even if its not any longer in any map.
+			if (linkedMaps.size() == 0 && artefact.get(0).getAuthor().equalsByPersistableKey(identity)){
+				return true;
+			}
 		}
 		return false;
 	}
