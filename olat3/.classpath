@@ -7,14 +7,11 @@
 	<classpathentry kind="var" path="M2_REPO/edenlib/edenlib/1.3/edenlib-1.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/transaction/jta/1.1/jta-1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/activemq/activeio-core/3.1.0/activeio-core-3.1.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/activemq/activemq-core/5.2.0/activemq-core-5.2.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/owaspantisamy/antisamy/1.3/antisamy-1.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
 	<classpathentry kind="var" path="M2_REPO/asm/asm/3.1/asm-3.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/beanshell/bsh-core/2.0b4/bsh-core-2.0b4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/camel/camel-core/1.5.0/camel-core-1.5.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/cglib/cglib/2.2/cglib-2.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/codepoints/codepoints/1.0.3/codepoints-1.0.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar"/>
@@ -49,7 +46,6 @@
 	<classpathentry kind="var" path="M2_REPO/jdom/jdom/1.0/jdom-1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jfree/jfreechart/1.0.1/jfreechart-1.0.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jgrapht/jgrapht/0.6.0/jgrapht-0.6.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/jgroups/jgroups/2.6.7.GA/jgroups-2.6.7.GA.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/neemsoft/jmep/unknown/jmep-unknown-patched.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/json/json/20080701/json-20080701.jar"/>
 	<classpathentry kind="var" path="M2_REPO/net/sf/jsr107cache/jsr107cache/1.0/jsr107cache-1.0.jar"/>
@@ -59,19 +55,11 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/lucene/lucene-spellchecker/3.0.2/lucene-spellchecker-3.0.2.jar" sourcepath="/M2_REPO/org/apache/lucene/lucene-spellchecker/3.0.2/lucene-spellchecker-3.0.2-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/mysql/mysql-connector-java/5.0.8/mysql-connector-java-5.0.8.jar"/>
 	<classpathentry kind="var" path="M2_REPO/tomcat/naming-resources/5.5.15/naming-resources-5.5.15.jar"/>
-	<classpathentry kind="var" path="M2_REPO/net/sourceforge/nekohtml/nekohtml/1.9.11/nekohtml-1.9.11.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/olat/testutils/olat-codepoints-full/olat-codepoints-full.jar/olat-codepoints-full-olat-codepoints-full.jar.jar"/>
 	<classpathentry kind="var" path="M2_REPO/olat-extension-springtest/olat-extension-springtest/1.1/olat-extension-springtest-1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/opensaml/opensaml/1.1/opensaml-1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/oro/oro/2.0.8/oro-2.0.8.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/fontbox/1.4.0/fontbox-1.4.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/jempbox/1.4.0/jempbox-1.4.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/pdfbox/1.4.0/pdfbox-1.4.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/ch/ethz/pfplms-scorm/unknown/pfplms-scorm-unknown-patched.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.5-FINAL/poi-3.5-FINAL.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/poi/ooxml-schemas/1.0/ooxml-schemas-1.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml/3.5-FINAL/poi-ooxml-3.5-FINAL.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-scratchpad/3.5-FINAL/poi-scratchpad-3.5-FINAL.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/xmlbeans/xmlbeans/2.3.0/xmlbeans-2.3.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/quartz/quartz/1.5.2/quartz-1.5.2.jar"/>
@@ -85,18 +73,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-log4j12/1.5.11/slf4j-log4j12-1.5.11.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jivesoftware/smack/3.1.0/smack-3.1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jivesoftware/smackx/3.1.0/smackx-3.1.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-aop/3.0.0.RELEASE/spring-aop-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-asm/3.0.0.RELEASE/spring-asm-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-beans/3.0.0.RELEASE/spring-beans-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-context/3.0.0.RELEASE/spring-context-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-context-support/3.0.0.RELEASE/spring-context-support-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-core/3.0.0.RELEASE/spring-core-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-expression/3.0.0.RELEASE/spring-expression-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-jdbc/3.0.0.RELEASE/spring-jdbc-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-tx/3.0.0.RELEASE/spring-tx-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-web/3.0.0.RELEASE/spring-web-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-orm/3.0.0.RELEASE/spring-orm-3.0.0.RELEASE.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/3.0.0.RELEASE/spring-test-3.0.0.RELEASE.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/velocity/velocity/1.6.2/velocity-1.6.2.jar"/>
 	<classpathentry kind="var" path="M2_REPO/xalan/xalan/2.6.0/xalan-2.6.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/xerces/xercesImpl/2.9.1/xercesImpl-2.9.1.jar"/>
@@ -106,7 +82,6 @@
 	<classpathentry kind="var" path="M2_REPO/junit/junit/4.5/junit-4.5.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/thoughtworks/xstream/xstream/1.3.1/xstream-1.3.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/mail/mail/1.4.3/mail-1.4.3.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/basiclti/basiclti-util/1.4-SNAPSHOT/basiclti-util-1.4-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/hsqldb/hsqldb/2.0.0-rc8/hsqldb-2.0.0-rc8.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mockito/mockito-all/1.8.1/mockito-all-1.8.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.5.1/jackson-mapper-asl-1.5.1.jar"/>
@@ -135,5 +110,25 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/axis2/axis2/1.4.1/axis2-1.4.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/ws/commons/axiom/axiom-api/1.2.8/axiom-api-1.2.8.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/ws/commons/axiom/axiom-impl/1.2.8/axiom-impl-1.2.8.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-aop/3.0.5.RELEASE/spring-aop-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-asm/3.0.5.RELEASE/spring-asm-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-beans/3.0.5.RELEASE/spring-beans-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-context/3.0.5.RELEASE/spring-context-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-tx/3.0.5.RELEASE/spring-tx-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-test/3.0.5.RELEASE/spring-test-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-core/3.0.5.RELEASE/spring-core-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-web/3.0.5.RELEASE/spring-web-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/activemq/activemq-core/5.3.2/activemq-core-5.3.2.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/sakaiproject/basiclti/basiclti-util/1.4/basiclti-util-1.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-jdbc/3.0.5.RELEASE/spring-jdbc-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-context-support/3.0.5.RELEASE/spring-context-support-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/sourceforge/jexcelapi/jxl/2.6.10/jxl-2.6.10.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.7/poi-3.7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml-schemas/3.7/poi-ooxml-schemas-3.7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml/3.7/poi-ooxml-3.7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/sourceforge/nekohtml/nekohtml/1.9.12/nekohtml-1.9.12.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-orm/3.0.5.RELEASE/spring-orm-3.0.5.RELEASE.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/pdfbox/1.5.0/pdfbox-1.5.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-scratchpad/3.7/poi-scratchpad-3.7.jar"/>
 	<classpathentry kind="output" path="olat/target/olat/WEB-INF/classes"/>
 </classpath>
