@@ -179,6 +179,8 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 		// main panel
 		mainPanel = new Panel("mainPanel");
 		
+		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		
 		// main velocity controller
 		vcMain = createVelocityContainer("indexWeekly");
 		thisWeekLink = LinkFactory.createLink("cal.thisweek", vcMain, this);
@@ -200,13 +202,15 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 		weeklyCalendar = new WeeklyCalendarComponent("weeklyCalendar", allCalendarWrappers, 7, getTranslator(), eventAlwaysVisible);
 		weeklyCalendar.addListener(this);
 
-	  // subscription, see OLAT-3861
-		SubscriptionProvider provider = new SubscriptionProviderImpl(caller, calendarWrappers.get(0));
-		subsContext = provider.getSubscriptionContext();
-		// if sc is null, then no subscription is desired
-		if (subsContext != null) {
-			csc = provider.getContextualSubscriptionController(ureq, getWindowControl());
-			vcMain.put("calsubscription", csc.getInitialComponent());
+	  /// subscription, see OLAT-3861
+		if(!isGuest){
+			final SubscriptionProvider provider = new SubscriptionProviderImpl(caller, calendarWrappers.get(0));
+			subsContext = provider.getSubscriptionContext();
+			// if sc is null, then no subscription is desired
+			if (subsContext != null) {
+				csc = provider.getContextualSubscriptionController(ureq, getWindowControl());
+				vcMain.put("calsubscription", csc.getInitialComponent());
+			}
 		}
 
 		ComponentUtil.registerForValidateEvents(vcMain, this);
@@ -223,7 +227,7 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 		vcMain.put("importedCalendarConfig", importedCalendarConfig.getInitialComponent());
 
 		// calendar subscription
-		if (calendarSubscription == null) {
+		if (calendarSubscription == null || isGuest) {
 			vcMain.contextPut("hasSubscription", Boolean.FALSE);
 		} else {
 			vcMain.contextPut("hasSubscription", Boolean.TRUE);
