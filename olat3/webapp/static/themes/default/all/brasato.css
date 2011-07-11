@@ -1181,7 +1181,7 @@
 	
 	div.b_tags { margin: 2em 0; }
 	div.b_tags div { padding: 0.5em 0 0 20px; }
-	div.b_tags span.b_tag { font-size: 80%; padding: 5px 2px 5px 2px;}
+	div.b_tags span.b_tag { font-size: 80%; padding: 5px 2px 5px 2px;line-height:3em; white-space: nowrap;}
 	
 	div.o_ep_toc_editor div.b_subcl{ min-height: 35em;  }
 	div.o_ep_struct_editor div.b_subcr{ min-height: 35em; background: #FFF; padding-right: 1em; overflow-x: auto; }
