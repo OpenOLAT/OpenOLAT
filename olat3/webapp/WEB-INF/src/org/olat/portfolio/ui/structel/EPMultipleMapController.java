@@ -167,12 +167,18 @@ public class EPMultipleMapController extends BasicController implements Activate
 				vLink.setUserObject(map);
 				vLink.setCustomEnabledLinkCSS("b_with_small_icon_right b_open_icon");
 				
-				boolean myMaps = (option.equals(EPMapRunViewOption.MY_DEFAULTS_MAPS) || option.equals(EPMapRunViewOption.MY_EXERCISES_MAPS));
 				//can always try to delete your own map, but exercise only if the course was deleted
 				vC.remove(vC.getComponent(DELETE_LINK_PREFIX + i)); // remove as update could require hiding it
-				if(myMaps) {
-					Link dLink = LinkFactory.createCustomLink(DELETE_LINK_PREFIX + i, "delMap" + map.getResourceableId(), "delete.map",
-							Link.LINK, vC, this);
+				// can always try to delete your own map, but exercise only if the course was deleted
+				final boolean myMaps = (option.equals(EPMapRunViewOption.MY_DEFAULTS_MAPS) || option.equals(EPMapRunViewOption.MY_EXERCISES_MAPS));
+				boolean addDeleteLink = myMaps;
+				
+				if((map instanceof EPStructuredMap) && (((EPStructuredMap) map).getReturnDate() != null)){
+						addDeleteLink = false; //it's a portfolio-task that was already handed in, so do not display delete-link
+				}
+				
+				if (addDeleteLink) {
+					final Link dLink = LinkFactory.createCustomLink(DELETE_LINK_PREFIX + i, "delMap" + map.getResourceableId(), "delete.map", Link.LINK, vC, this);
 					dLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
 					dLink.setUserObject(map);
 				}
