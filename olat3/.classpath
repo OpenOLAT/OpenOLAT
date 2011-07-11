@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="resources/" kind="src" path="webapp/WEB-INF/src"/>
+	<classpathentry kind="src" output="olat/target/olat/static" path="static"/>
 	<classpathentry kind="src" path="coreresources"/>
 	<classpathentry kind="src" path="corejava"/>
 	<classpathentry kind="var" path="M2_REPO/javax/sql/jdbc-stdext/2.0/jdbc-stdext-2.0.jar"/>
