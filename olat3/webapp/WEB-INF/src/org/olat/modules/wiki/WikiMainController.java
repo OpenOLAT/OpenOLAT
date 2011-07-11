@@ -672,6 +672,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				//convert wiki into IMS content package and copy to users home folder
 				WikiToCPExport utils = new WikiToCPExport(ores, ident, getTranslator());
 				utils.archiveWikiToCP();
+				showInfo("wiki.exported.done.infomessage");
 			}
 		}
 
