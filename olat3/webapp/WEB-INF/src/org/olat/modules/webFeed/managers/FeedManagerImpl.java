@@ -38,6 +38,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
@@ -1209,6 +1210,9 @@ public abstract class FeedManagerImpl extends FeedManager {
 	 */
 	public LockResult acquireLock(OLATResourceable feed, Item item, Identity identity) {
 		String key = itemKey(item, feed);
+		if (key.length() >= OresHelper.ORES_TYPE_LENGTH) {
+			key = Encoder.encrypt(key);
+		}
 		OLATResourceable itemResource = OresHelper.createOLATResourceableType(key);
 		LockResult lockResult = coordinator.getLocker().acquireLock(itemResource, identity, key);
 		return lockResult;
