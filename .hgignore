@@ -38,3 +38,10 @@ CVS/*
 .DS_Store
 
 
+
+syntax: regexp
+^olat3/\.settings$
+syntax: regexp
+^olat3/\.classpath$
+syntax: regexp
+^olat3/\.project$
