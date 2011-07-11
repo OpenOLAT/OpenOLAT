@@ -28,6 +28,7 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.download.DownloadComponent;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -93,16 +94,13 @@ public class BCPeekviewController extends BasicController implements Controller 
 			// Add link to jump to course node
 			if (leaf instanceof LocalFileImpl) {
 				LocalFileImpl localFile = (LocalFileImpl) leaf;
-				String relPath = localFile.getBasefile().getAbsolutePath().substring(rootFolder.getBasefile().getAbsolutePath().length());
-				Link nodeLink = LinkFactory.createLink("nodeLink_" + (i+1), peekviewVC, this);
-				nodeLink.setCustomDisplayText(leaf.getName());
 				int lastDot = localFile.getName().lastIndexOf(".");
 				String cssClass = "";
 				if (lastDot > 0 ) {
 					cssClass = "b_filetype_" + localFile.getName().substring(lastDot+1);
 				}
-				nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_filetype_file o_gotoNode " + cssClass);
-				nodeLink.setUserObject(relPath);				
+				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, leaf.getName(), translate("preview.downloadfile"), "b_filetype_file o_gotoNode " + cssClass);
+				peekviewVC.put("nodeLinkDL_"+(i+1),dlComp);
 			} else {
 				// hu? don't konw how to work with non-local impls
 			}
