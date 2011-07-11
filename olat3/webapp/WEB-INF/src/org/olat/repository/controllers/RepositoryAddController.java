@@ -365,6 +365,13 @@ public class RepositoryAddController extends BasicController {
 		String resName = addCallback.getResourceName();
 		if (resName == null) resName = "";
 		addedEntry.setResourcename(resName);
+		
+		String resDescription = addCallback.getDescription();
+		if(resDescription == null){
+			resDescription = "";
+		}
+		addedEntry.setDescription(resDescription);
+		
     // Do set access for owner at the end, because unfinished course should be invisible
 		// addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 		addedEntry.setAccess(0);//Access for nobody

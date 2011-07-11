@@ -40,7 +40,8 @@ public class RepositoryAddCallback {
 	private OLATResourceable resourceable;
 	private String resourceName;
 	private String displayName;
-	
+	private String description;
+
 	protected RepositoryAddCallback() {
 		// only allow to be instantiated without addController by repository itself.
 	}
@@ -92,6 +93,21 @@ public class RepositoryAddCallback {
 			throw new AssertException("DisplayName is limited to 100 characters.");
 		this.displayName = displayName;
 	}
+	
+	
+	/**
+	 * 
+	 * @param description
+	 */
+	public void setDescription(final String description){
+		this.description = description;
+	}
+	
+	
+	protected String getDescription() {
+		return description;
+	}
+	
 	
 	/**
 	 * Call finished() upon success. Must have set all data before calling finished.
