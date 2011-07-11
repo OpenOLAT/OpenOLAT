@@ -56,6 +56,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
@@ -263,7 +264,22 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
-		return StatusDescription.NOERROR;
+		ModuleConfiguration config = getModuleConfiguration();
+		StatusDescription sd = StatusDescription.NOERROR;
+		if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))){
+			String fileName = (String) config.get(STCourseNodeEditController.CONFIG_KEY_FILE);
+			if (fileName == null || !StringHelper.containsNonWhitespace(fileName)){
+				String shortKey = "error.missingfile.short";
+				String longKey = "error.missingfile.long";
+				String[] params = new String[] { this.getShortTitle() };
+				String translPackage = Util.getPackageName(SPEditController.class);
+				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+				sd.setDescriptionForUnit(getIdent());
+				// set which pane is affected by error
+				sd.setActivateableViewIdentifier(STCourseNodeEditController.PANE_TAB_ST_CONFIG);                                
+			}                       
+		}
+		return sd;
 	}
 
 	/**
