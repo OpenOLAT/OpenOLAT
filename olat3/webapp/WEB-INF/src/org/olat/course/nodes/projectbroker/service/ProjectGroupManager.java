@@ -11,6 +11,7 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupAddResponse;
 
 public interface ProjectGroupManager {
 
@@ -95,7 +96,7 @@ public interface ProjectGroupManager {
 	 * @param isAcceptSelectionManually
 	 * @return
 	 */
-	public boolean acceptCandidates(List<Identity> identities, Project project, Identity actionIdentity, boolean autoSignOut, boolean isAcceptSelectionManually);
+	public BusinessGroupAddResponse acceptCandidates(List<Identity> identities, Project project, Identity actionIdentity, boolean autoSignOut, boolean isAcceptSelectionManually);
 
 	/**
 	 * Add identities as candidates.
