@@ -38,6 +38,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.EPSecurityCallback;
@@ -67,6 +69,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 	private static final String CMD_CHOOSE = "choose";
 	private static final String CMD_UNLINK = "unlink";
 	private static final String CMD_REFLEXION = "refl";
+	private static final String CMD_DELETEARTEFACT = "delartf";
 	private static final String CMD_TITLE = "title";
 	private static final String CMD_MOVE = "move";
 	private VelocityContainer vC;
@@ -79,6 +82,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 	private boolean artefactChooseMode;
 	private EPSecurityCallback secCallback;
 	private PortfolioModule portfolioModule;
+	private DialogBoxController deleteDialogController;
 	private EPCollectStepForm04 moveTreeCtrl;
 	private CloseableModalWindowWrapperController moveTreeBox;
 
@@ -157,7 +161,12 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 			}
 			artefactListTblCtrl.addColumnDescriptor(true, staticDescr);
 		}
-
+		
+		if(struct == null){
+			staticDescr = new StaticColumnDescriptor(CMD_DELETEARTEFACT, "delete.artefact", translate("delete.artefact"));
+			artefactListTblCtrl.addColumnDescriptor(true,staticDescr);
+		}
+				
 		if (artefactChooseMode) {
 			staticDescr = new StaticColumnDescriptor(CMD_CHOOSE, "table.header.choose", translate("choose.artefact"));
 			artefactListTblCtrl.addColumnDescriptor(true, staticDescr);
@@ -224,6 +233,9 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, struct));
 				} else if (CMD_MOVE.equals(action)){
 					showMoveTree(ureq, artefact);
+				} else if (CMD_DELETEARTEFACT.equals(action)){
+					deleteDialogController = activateYesNoDialog(ureq, translate("delete.artefact"),translate("delete.artefact.text",artefact.getTitle()), deleteDialogController);
+					deleteDialogController.setUserObject(artefact);
 				}
 			}
 		} else if (source == moveTreeCtrl && event.getCommand().equals(EPStructureChangeEvent.CHANGED)){
@@ -232,7 +244,19 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 			showInfo("artefact.moved", newStruct.getTitle());
 			fireEvent(ureq, event);
 			moveTreeBox.deactivate();
+		} else if(source == deleteDialogController){
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				AbstractArtefact artefact2delete = (AbstractArtefact)deleteDialogController.getUserObject();
+				ePFMgr.deleteArtefact(artefact2delete);
+				ArtefactTableDataModel model = (ArtefactTableDataModel)  artefactListTblCtrl.getTableDataModel();
+				model.getObjects().remove(artefact2delete);
+				artefactListTblCtrl.modelChanged();
+				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.REMOVED, struct));
+			}
+			removeAsListenerAndDispose(deleteDialogController);
+			deleteDialogController = null;
 		}
+		
 		super.event(ureq, source, event);
 	}
 	
