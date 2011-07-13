@@ -17,7 +17,7 @@
 		#if ($owners.get($index)) <p>$r.translate("map.owners", $owners.get($index)) </p> #end
 		<p>$amounts.get($index)
 		#if ($deadLines.get($index)) <br/> $r.translate("map.deadline", "$r.formatDate($deadLines.get($index))")  #end
-		#if ($restriStats.get($index)) <br/> $r.translate("map.restriction.stats", $restriStats.get($index))  #end
+		#if ($restriStats.get($index)) <br/> $r.translate("map.restriction.overview", $restriStats.get($index))  #end
 		</p>
 		#if($r.available($viewLink))  $r.render($viewLink) </br>#end
 		#if($r.get($courseLink))

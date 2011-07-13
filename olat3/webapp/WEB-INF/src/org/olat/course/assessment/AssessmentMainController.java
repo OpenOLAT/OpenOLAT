@@ -923,7 +923,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		} else {
 			wrapper.contextPut("courseNode", this.currentCourseNode);
 			// push node css class
-			wrapper.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfiguration(currentCourseNode.getType()).getIconCSSClass());
+			wrapper.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(currentCourseNode.getType()).getIconCSSClass());
 
 		}
 		wrapper.put("content", content);

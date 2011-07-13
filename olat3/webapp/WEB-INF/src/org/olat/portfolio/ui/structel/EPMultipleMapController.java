@@ -152,7 +152,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 		List<Integer> childAmount = new ArrayList<Integer>(userMaps.size());
 		List<String> mapStyles = new ArrayList<String>(userMaps.size());
 		List<Date> deadLines = new ArrayList<Date>(userMaps.size());
-		List<String[]> restriStats = new ArrayList<String[]>(userMaps.size());
+		List<String> restriStats = new ArrayList<String>(userMaps.size());
 		List<String> owners = new ArrayList<String>(userMaps.size());
 		List<String> amounts = new ArrayList<String>(userMaps.size());
 		
@@ -226,8 +226,21 @@ public class EPMultipleMapController extends BasicController implements Activate
 						logDebug("  in loop : looked up course at : ", String.valueOf(System.currentTimeMillis()));
 					}
 					// get some stats about the restrictions if available
-					String[] stats = ePFMgr.getRestrictionStatisticsOfMap(structMap);					
-					restriStats.add(stats);
+					String[] stats = ePFMgr.getRestrictionStatisticsOfMap(structMap);
+					int toCollect = 0;
+					if (stats != null){
+						try {
+							toCollect = Integer.parseInt(stats[1]) - Integer.parseInt(stats[0]);		
+						} catch (Exception e) {
+							// do nothing
+							toCollect = 0;
+						}
+					}
+					if (toCollect != 0) {
+						restriStats.add(String.valueOf(toCollect));
+					} else {
+						restriStats.add(null);
+					}
 					if (isLogDebugEnabled()) {
 						logDebug("  in loop : calculated restriction statistics at : ", String.valueOf(System.currentTimeMillis()));
 					}											

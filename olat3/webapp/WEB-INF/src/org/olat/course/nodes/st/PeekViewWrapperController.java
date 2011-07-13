@@ -72,7 +72,7 @@ public class PeekViewWrapperController extends BasicController {
 		nodeLink = LinkFactory.createLink("nodeLink", peekViewWrapperVC, this);
 		nodeLink.setCustomDisplayText(courseNode.getShortTitle());
 		// Add css class for course node type
-		String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass();
+		String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
 		nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_gotoNode " + iconCSSClass);
 		nodeLink.setUserObject(courseNode.getIdent());
 		// Add optional peekViewController

@@ -143,7 +143,7 @@ public class AssessmentEditController extends BasicController {
 			// push node for page header
 			detailView.contextPut("courseNode", courseNode);
 			// push node css class
-			detailView.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
+			detailView.contextPut("courseNodeCss", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 
 			// push infos about users groups
 			List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingLearningGroupsFromAllContexts(
