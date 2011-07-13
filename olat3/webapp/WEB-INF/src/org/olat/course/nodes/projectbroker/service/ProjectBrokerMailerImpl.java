@@ -39,6 +39,12 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.ProjectBrokerCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.properties.Property;
 
 
 /**
@@ -117,7 +123,29 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
         pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
         pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
 	}
+	
+	public MailerResult sendProjectDeletedEmailToManager(Identity changer, Project project, Translator pT) {
+		return sendEmailProjectChanged(project.getProjectLeaderGroup(), changer, project, 
+        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
+        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
+	}
 
+	public MailerResult sendProjectDeletedEmailToAccountManagers(Identity changer, Project project, CourseEnvironment courseEnv, CourseNode node, Translator pT){
+		Long groupKey = null;
+		Property accountManagerGroupProperty = courseEnv.getCoursePropertyManager().findCourseNodeProperty(node, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+		// Check if account-manager-group-key-property already exist
+		if (accountManagerGroupProperty != null) {
+			groupKey = accountManagerGroupProperty.getLongValue();
+		} 
+		if (groupKey != null) {
+			BusinessGroup		accountManagerGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(groupKey, false);
+			return sendEmailProjectChanged(accountManagerGroup.getPartipiciantGroup(), changer, project, 
+	        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
+	        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());
+    }
+	  
+		return null;
+	}
 	
 	public MailTemplate createRemoveAsCandiadateMailTemplate(Project project, Identity projectManager, Translator pT) {
 		return createProjectChangeMailTemplate( project, projectManager, pT.translate(KEY_REMOVE_CANDIDATE_EMAIL_SUBJECT), pT.translate(KEY_REMOVE_CANDIDATE_EMAIL_BODY), pT.getLocale());
@@ -232,6 +260,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			}
 		};
 	}
+
 	
 
 }

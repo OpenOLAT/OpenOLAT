@@ -200,6 +200,10 @@ public class ProjectDetailsDisplayController extends BasicController {
 			}
 			// send email before delete project with group
 			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectDeletedEmailToParticipants(ureq.getIdentity(), project, this.getTranslator());
+			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectDeletedEmailToManager(ureq.getIdentity(), project, this.getTranslator());
+			//now send email to PB-accountmanager
+			ProjectBrokerManagerFactory.getProjectBrokerEmailer().sendProjectDeletedEmailToAccountManagers(ureq.getIdentity(), project, courseEnv, courseNode, getTranslator());
+			
 			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProject(project, deleteGroup, courseEnv, courseNode);
 			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			showInfo("project.deleted.msg", project.getTitle());

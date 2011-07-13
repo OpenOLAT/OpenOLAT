@@ -26,6 +26,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 
 
 /**
@@ -87,7 +89,27 @@ public interface ProjectBrokerMailer {
 	 * @return
 	 */
 	public MailerResult sendProjectDeletedEmailToParticipants(Identity identity, Project project, Translator pT);
-
+	
+	/**
+	 * Send 'Deleted Project' email to participants.
+	 * @param identity
+	 * @param project
+	 * @param pT
+	 * @return
+	 */
+	public MailerResult sendProjectDeletedEmailToManager(Identity identity, Project project, Translator pT);
+	
+	
+	/**
+	 * Send'Deleted Project' email to accountManagers ( "Themenverantwortliche" / "topic authors" )
+	 * 
+	 * @param identity
+	 * @param project
+	 * @param pT
+	 * @return
+	 */
+	public MailerResult sendProjectDeletedEmailToAccountManagers(Identity changer, Project project,CourseEnvironment courseEnv,  CourseNode node , Translator pT);
+	
 	/**
 	 * Create mail-template which can be used when a candidate will be removed.
 	 * @param project
