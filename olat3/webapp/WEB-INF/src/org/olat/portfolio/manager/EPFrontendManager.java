@@ -707,6 +707,34 @@ public class EPFrontendManager extends BasicManager {
 	public List<AbstractArtefact> getArtefacts(PortfolioStructure structure) {
 		return structureManager.getArtefacts(structure);
 	}
+	
+	/**
+	 * get statistics about how much of the required (min, equal) collect-restrictions have been fulfilled.
+	 * 
+	 * @param structure
+	 * @return array with "done" at 0 and "to be done" at 1, or "null" if no restrictions apply
+	 */
+	public String[] getRestrictionStatistics(PortfolioStructure structure) {
+		Integer[] stats = structureManager.getRestrictionStatistics(structure);
+		if(stats == null) {
+			return null;
+		} else {
+			return new String[]{stats[0].toString(), stats[1].toString()};
+		}
+	}
+	
+	/**
+	 * same as getRestrictionStatistics(PortfolioStructure structure) but recursively for a map.
+	 * get statistics about how much of the required (min, equal) collect-restrictions have been fulfilled.
+	 * 
+	 * @param structure
+	 * @return array with "done" at 0 and "to be done" at 1, or "null" if no restrictions apply
+	 */
+	public String[] getRestrictionStatisticsOfMap(final PortfolioStructureMap structure) {
+		Integer[] stats = structureManager.getRestrictionStatisticsOfMap(structure, 0, 0);
+		
+		return new String[]{stats[0].toString(), stats[1].toString()};
+	}
 
 	/**
 	 * Check the collect restriction against the structure element

@@ -586,6 +586,47 @@ public class EPStructureManager extends BasicManager {
 		getLogger().error("A structure child has more than one parent");
 		return null;
 	}
+	
+	protected Integer[] getRestrictionStatistics(PortfolioStructure structure) {
+		if (structure instanceof EPStructureElement) {
+			EPStructureElement structEl = (EPStructureElement) structure;
+			structEl = (EPStructureElement) loadPortfolioStructureByKey(structEl.getKey());
+			final List<CollectRestriction> restrictions = structEl.getCollectRestrictions();
+
+			if (restrictions != null && !restrictions.isEmpty()) {
+				int todo = 0;
+				int done = 0;
+				List<AbstractArtefact> artefacts = getArtefacts(structEl);
+				for (CollectRestriction cR : restrictions) {
+					if (RestrictionsConstants.MIN.equals(cR.getRestriction()) || RestrictionsConstants.EQUAL.equals(cR.getRestriction())) {
+						todo += cR.getAmount();
+						int actualCRCount = countRestrictionType(artefacts, cR);
+						done += actualCRCount;
+					}
+				}
+				return new Integer[] { done, todo };
+			}
+		}
+		return null;
+	}
+	
+	// count recursively
+	protected Integer[] getRestrictionStatisticsOfMap(PortfolioStructure structureMap, int done, int todo) {
+		final List<PortfolioStructure> children = loadStructureChildren(structureMap);
+		for (final PortfolioStructure child : children) {			
+			Integer[] childStat = getRestrictionStatisticsOfMap(child, done, todo);
+			done = childStat[0];
+			todo = childStat[1];
+		}	
+		// summarize
+		Integer[] statsArr = getRestrictionStatistics(structureMap);
+		if (statsArr != null){
+			done += statsArr[0];
+			todo += statsArr[1];			
+		}
+
+		return new Integer[] {done, todo};
+	}
 
 	/**
 	 * Add a link between a structure element and an artefact

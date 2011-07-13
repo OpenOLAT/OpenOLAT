@@ -152,6 +152,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 		List<Integer> childAmount = new ArrayList<Integer>(userMaps.size());
 		List<String> mapStyles = new ArrayList<String>(userMaps.size());
 		List<Date> deadLines = new ArrayList<Date>(userMaps.size());
+		List<String[]> restriStats = new ArrayList<String[]>(userMaps.size());
 		List<String> owners = new ArrayList<String>(userMaps.size());
 		List<String> amounts = new ArrayList<String>(userMaps.size());
 		
@@ -224,8 +225,15 @@ public class EPMultipleMapController extends BasicController implements Activate
 					if (isLogDebugEnabled()) {
 						logDebug("  in loop : looked up course at : ", String.valueOf(System.currentTimeMillis()));
 					}
-				}	else {
-					deadLines.add(null);	
+					// get some stats about the restrictions if available
+					String[] stats = ePFMgr.getRestrictionStatisticsOfMap(structMap);					
+					restriStats.add(stats);
+					if (isLogDebugEnabled()) {
+						logDebug("  in loop : calculated restriction statistics at : ", String.valueOf(System.currentTimeMillis()));
+					}											
+				} else {
+					deadLines.add(null);
+					restriStats.add(null);
 				}
 				
 				// show owner on shared maps
@@ -254,6 +262,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 		}
 		vC.contextPut("owners", owners);
 		vC.contextPut("deadLines", deadLines);
+		vC.contextPut("restriStats", restriStats);
 		vC.contextPut("mapStyles", mapStyles);
 		vC.contextPut("childAmount", childAmount);
 		vC.contextPut("artefactAmount", artAmount);

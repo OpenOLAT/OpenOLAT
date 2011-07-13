@@ -229,7 +229,8 @@ public class EPMapViewController extends BasicController {
 			confirmationSubmissionCtr = activateYesNoDialog(ureq, title, text, confirmationSubmissionCtr);
 		} else {
 			String title = translate("map.submit.assess.restriction.error.title");
-			String text = translate("map.submit.assess.restriction.error.description");
+			String[] stats = ePFMgr.getRestrictionStatisticsOfMap(map);
+			String text = translate("map.submit.assess.restriction.error.description") + "<br/>" +  translate("map.submit.assess.restriction.error.hint", stats);
 			confirmationSubmissionCtr = activateYesNoDialog(ureq, title, text, confirmationSubmissionCtr);
 			confirmationSubmissionCtr.setCssClass("b_warning_icon");
 		}
