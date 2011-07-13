@@ -1045,7 +1045,8 @@
 	div.b_portfolio_toc .type_artefact { font-style: italic; }	
 	.b_portfolio_toc .type_map, .b_portfolio_toc .type_page, .b_portfolio_toc .type_struct, .b_portfolio_toc .type_artefact { background-position: center left; background-repeat: no-repeat; padding-left: 20px; } 
 	
-	 a.b_eportfolio_add { background: url(../images/brasato/eportfolio/ep_add_icon.png) top left no-repeat; display:block; width:16px; height:16px; float:right; padding-right:2px; }
+	 a.b_eportfolio_add { background: url(../images/brasato/eportfolio/ep_add_icon.png) top left no-repeat; display:block; width:16px; height:16px;}
+	 td a.b_eportfolio_add {  float:right; padding-right:2px; }
 	 a.b_eportfolio_add:hover { background: url(../images/brasato/eportfolio/ep_add_icon_over.png) top left no-repeat; display:block; width:16px; height:16px; }
 	 a.b_eportfolio_add_again, span.b_eportfolio_add_again { background: url(../images/brasato/eportfolio/ep_add_again_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
 	 a.b_eportfolio_add_again:hover, span.b_eportfolio_add_again:hover { background: url(../images/brasato/eportfolio/ep_add_again_icon_over.png) top left no-repeat; display:block; width:16px; height:16px; }
