@@ -277,7 +277,7 @@ public class EPTOCController extends BasicController {
 					// refresh the view
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else if (structureClicked != null) {
-					if ((structureClicked instanceof EPPage || structureClicked instanceof EPStructureElement)
+					if ((structureClicked instanceof EPPage)
 							&& !(structureClicked instanceof EPAbstractMap)) {
 						PortfolioStructure ps = structureClicked;
 						while (ePFMgr.loadStructureParent(ps) != null) {
@@ -291,6 +291,12 @@ public class EPTOCController extends BasicController {
 						} else {
 							showError("last.page.not.deletable");
 						}
+					} else if(structureClicked instanceof EPStructureElement 
+							&& !(structureClicked instanceof EPAbstractMap)) {
+						//structures should always be deletable
+						eSTMgr.removeStructureRecursively(structureClicked);
+						// refresh the view
+						fireEvent(ureq, Event.CHANGED_EVENT);
 					} else {
 						showInfo("element.not.deletable");
 					}
