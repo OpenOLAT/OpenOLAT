@@ -35,9 +35,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackFactory;
@@ -178,7 +182,6 @@ public class EPMapViewController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == editButton){
@@ -205,7 +208,11 @@ public class EPMapViewController extends BasicController {
 		} else if(source == backLink) {
 			fireEvent(ureq, new EPMapEvent(EPStructureEvent.CLOSE, map));
 		} else if(source == submitAssessLink) {
-			submitAssess(ureq);
+			if (preCheckMapSubmit()){
+				submitAssess(ureq);
+			} else {
+				showWarning("map.cannot.submit.nomore.coursenode");
+			}
 		} 
 	}
 	
@@ -220,6 +227,20 @@ public class EPMapViewController extends BasicController {
 		} while (current != null);
 
 		return null;
+	}
+	
+	private boolean preCheckMapSubmit(){
+		EPStructuredMap submittedMap = (EPStructuredMap) map;
+		try {
+			EPTargetResource resource = submittedMap.getTargetResource();
+			OLATResourceable courseOres = resource.getOLATResourceable();
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			CourseNode courseNode = course.getRunStructure().getNode(resource.getSubPath());
+			if (courseNode==null) return false;
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 	
 	protected void submitAssess(UserRequest ureq) {

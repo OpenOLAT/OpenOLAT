@@ -1039,15 +1039,16 @@ public class EPFrontendManager extends BasicManager {
 		
 		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(submittedMap.getOwnerGroup());
 		for(Identity owner:owners) {
-			IdentityEnvironment ienv = new IdentityEnvironment(); 
-			ienv.setIdentity(owner);
-			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-			if(logActivity) {
-				am.incrementNodeAttempts(courseNode, owner, uce);
-			} else {
-				am.incrementNodeAttemptsInBackground(courseNode, owner, uce);
+			if (courseNode != null) { // courseNode might have been deleted meanwhile
+				IdentityEnvironment ienv = new IdentityEnvironment(); 
+				ienv.setIdentity(owner);
+				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+				if(logActivity) {
+					am.incrementNodeAttempts(courseNode, owner, uce);
+				} else {
+					am.incrementNodeAttemptsInBackground(courseNode, owner, uce);
+				}
 			}
-			
 			assessmentNotificationsHandler.markPublisherNews(owner, course.getResourceableId());
 			logAudit("Map " + map + " from " + owner.getName() + " has been submitted.");
 		}
