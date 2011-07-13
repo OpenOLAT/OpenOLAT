@@ -77,7 +77,7 @@ public class CourseInternalLinkTreeModel extends CustomLinkTreeModel {
 		GenericTreeNode treeNode = new GenericTreeNode();
 		treeNode.setIdent(courseNode.getIdent());
 		treeNode.setTitle(courseNode.getShortTitle());
-		treeNode.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
+		treeNode.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 		// go through all children and add them as converted tree nodes
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);

@@ -148,10 +148,12 @@ public class BusinessGroupFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener, UserRequest ureq) {
 		// Create the business group name input text element
 		if (bulkMode) {
-			businessGroupName = uifactory.addTextElement("create.form.title.bgnames", "create.form.title.bgnames", 1024, "", formLayout);
+			businessGroupName = uifactory.addTextElement("create.form.title.bgnames", "create.form.title.bgnames", 10 * BusinessGroup.MAX_GROUP_NAME_LENGTH, "", formLayout);
 			businessGroupName.setExampleKey("create.form.message.example.group", null);
 		} else {
 			businessGroupName = uifactory.addTextElement("create.form.title.bgname", "create.form.title.bgname", BusinessGroup.MAX_GROUP_NAME_LENGTH, "", formLayout);
+			businessGroupName.setNotLongerThanCheck(BusinessGroup.MAX_GROUP_NAME_LENGTH, "create.form.error.nameTooLong");
+			businessGroupName.setRegexMatchCheck(BusinessGroup.VALID_GROUPNAME_REGEXP, "create.form.error.illegalName");
 		}
 		businessGroupName.setMandatory(true);
 
@@ -233,8 +235,8 @@ public class BusinessGroupFormController extends FormBasicController {
 			boolean nameTooLong = false;
 			for (int i = 0; i < activeSelection.length; i++) {
 				String currentName = activeSelection[i].trim();
-				if(currentName.length()>BusinessGroup.MAX_GROUP_NAME_LENGTH) {
-					nameTooLong = true;
+				if (currentName.getBytes().length > BusinessGroup.MAX_GROUP_NAME_LENGTH) {
+					nameTooLong = true;					
 				} else if ((currentName).matches(BusinessGroup.VALID_GROUPNAME_REGEXP)) {							
 					validNames.add(currentName);
 				} else {
@@ -246,7 +248,7 @@ public class BusinessGroupFormController extends FormBasicController {
 				businessGroupName.setErrorKey("create.form.error.illegalName", new String[] {});
 				return false;
 			} else if(nameTooLong) {
-				businessGroupName.setErrorKey("create.form.error.nameTooLong", new String[] {});
+				businessGroupName.setErrorKey("create.form.error.nameTooLong", new String[] { BusinessGroup.MAX_GROUP_NAME_LENGTH + ""});
 				return false;
 			}	else if (wrongNames.size() == 1) {
 				// one invalid name
@@ -259,13 +261,7 @@ public class BusinessGroupFormController extends FormBasicController {
 				return false;
 			}
 		} else {
-			if(businessGroupName.getValue().length()>BusinessGroup.MAX_GROUP_NAME_LENGTH) {
-				businessGroupName.setErrorKey("create.form.error.nameTooLong", new String[] {});
-				return false;
-			} else if (!businessGroupName.getValue().matches(BusinessGroup.VALID_GROUPNAME_REGEXP)) {
-				businessGroupName.setErrorKey("create.form.error.illegalName", new String[] {});
-				return false;
-			}
+			if (businessGroupName.hasError()) return false; // auto-validations from form, return false, because of that clearError()-calls everywhere...
 		}
 		// all group name tests passed
 		businessGroupName.clearError();

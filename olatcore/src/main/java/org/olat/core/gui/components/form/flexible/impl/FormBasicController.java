@@ -89,9 +89,16 @@ public abstract class FormBasicController extends BasicController {
 		constructorInit(pageName);
 	}
 
+	/** pay attention when using this with stacked translators, they may get lost somehow!
+	* until a translator-fix: use something like:
+	* Translator pT = Util.createPackageTranslator(Alabla.class, ureq.getLocale(), getTranslator());
+	* this.setTranslator(pT);
+	*/
 	public FormBasicController(UserRequest ureq, WindowControl wControl, String pageName, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
 		constructorInit(pageName);
+		//TODO: Translator-fix: flc , mainForm also needs to know about the new Translator
+//		setTranslator(getTranslator()); 
 	}
 
 	protected FormBasicController(UserRequest ureq, WindowControl wControl, int layout){
@@ -451,6 +458,9 @@ public abstract class FormBasicController extends BasicController {
 	protected void setTranslator(Translator translator) {
 		super.setTranslator(translator);
 		flc.setTranslator(translator);
+		// TODO: translator-fix: mainform is missing the new translator!!
+//		((FormWrapperContainer)mainForm.getInitialComponent()).setTranslator(translator);
+//		mainForm.getFormLayout().setTranslator(translator);
 	}
 
 	/**

@@ -152,7 +152,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @see org.olat.core.gui.components.form.flexible.FormContainer#add(java.lang.String,
 	 *      org.olat.core.gui.components.form.flexible.FormComponentImpl)
 	 */
-	@SuppressWarnings("unchecked")
 	public void add(FormItem formComp) {
 		add(formComp.getName(), formComp);
 	}
@@ -163,11 +162,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 		// set the formtranslator, and parent
 		Translator itemTranslator = formComp.getTranslator();
-		if(formComp.getTranslator()!=null && itemTranslator instanceof PackageTranslator){
-			//let the FormItem provide a more specialized translator
-			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = itemPt.cascadeTranslators(itemPt, translator);
-		}else{
+		if (itemTranslator != null && itemTranslator instanceof PackageTranslator) {
+			// let the FormItem provide a more specialized translator
+			PackageTranslator itemPt = (PackageTranslator) itemTranslator;
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
+		} else {
 			itemTranslator = translator;
 		}
 		formComp.setTranslator(itemTranslator);
@@ -249,7 +248,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		if(formComp.getTranslator()!=null && itemTranslator instanceof PackageTranslator){
 			//let the FormItem provide a more specialized translator
 			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = itemPt.cascadeTranslators(itemPt, translator);
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
 		}else{
 			itemTranslator = translator;
 		}
@@ -295,7 +294,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		if(with.getTranslator()!=null && itemTranslator instanceof PackageTranslator){
 			//let the FormItem provide a more specialized translator
 			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = itemPt.cascadeTranslators(itemPt, translator);
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
 		}else{
 			itemTranslator = translator;
 		}

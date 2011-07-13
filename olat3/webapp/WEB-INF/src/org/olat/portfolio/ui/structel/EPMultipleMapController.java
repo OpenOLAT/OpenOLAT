@@ -152,6 +152,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 		List<Integer> childAmount = new ArrayList<Integer>(userMaps.size());
 		List<String> mapStyles = new ArrayList<String>(userMaps.size());
 		List<Date> deadLines = new ArrayList<Date>(userMaps.size());
+		List<String> restriStats = new ArrayList<String>(userMaps.size());
 		List<String> owners = new ArrayList<String>(userMaps.size());
 		List<String> amounts = new ArrayList<String>(userMaps.size());
 		
@@ -167,12 +168,18 @@ public class EPMultipleMapController extends BasicController implements Activate
 				vLink.setUserObject(map);
 				vLink.setCustomEnabledLinkCSS("b_with_small_icon_right b_open_icon");
 				
-				boolean myMaps = (option.equals(EPMapRunViewOption.MY_DEFAULTS_MAPS) || option.equals(EPMapRunViewOption.MY_EXERCISES_MAPS));
 				//can always try to delete your own map, but exercise only if the course was deleted
 				vC.remove(vC.getComponent(DELETE_LINK_PREFIX + i)); // remove as update could require hiding it
-				if(myMaps) {
-					Link dLink = LinkFactory.createCustomLink(DELETE_LINK_PREFIX + i, "delMap" + map.getResourceableId(), "delete.map",
-							Link.LINK, vC, this);
+				// can always try to delete your own map, but exercise only if the course was deleted
+				final boolean myMaps = (option.equals(EPMapRunViewOption.MY_DEFAULTS_MAPS) || option.equals(EPMapRunViewOption.MY_EXERCISES_MAPS));
+				boolean addDeleteLink = myMaps;
+				
+				if((map instanceof EPStructuredMap) && (((EPStructuredMap) map).getReturnDate() != null)){
+						addDeleteLink = false; //it's a portfolio-task that was already handed in, so do not display delete-link
+				}
+				
+				if (addDeleteLink) {
+					final Link dLink = LinkFactory.createCustomLink(DELETE_LINK_PREFIX + i, "delMap" + map.getResourceableId(), "delete.map", Link.LINK, vC, this);
 					dLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
 					dLink.setUserObject(map);
 				}
@@ -218,8 +225,28 @@ public class EPMultipleMapController extends BasicController implements Activate
 					if (isLogDebugEnabled()) {
 						logDebug("  in loop : looked up course at : ", String.valueOf(System.currentTimeMillis()));
 					}
-				}	else {
-					deadLines.add(null);	
+					// get some stats about the restrictions if available
+					String[] stats = ePFMgr.getRestrictionStatisticsOfMap(structMap);
+					int toCollect = 0;
+					if (stats != null){
+						try {
+							toCollect = Integer.parseInt(stats[1]) - Integer.parseInt(stats[0]);		
+						} catch (Exception e) {
+							// do nothing
+							toCollect = 0;
+						}
+					}
+					if (toCollect != 0) {
+						restriStats.add(String.valueOf(toCollect));
+					} else {
+						restriStats.add(null);
+					}
+					if (isLogDebugEnabled()) {
+						logDebug("  in loop : calculated restriction statistics at : ", String.valueOf(System.currentTimeMillis()));
+					}											
+				} else {
+					deadLines.add(null);
+					restriStats.add(null);
 				}
 				
 				// show owner on shared maps
@@ -248,6 +275,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 		}
 		vC.contextPut("owners", owners);
 		vC.contextPut("deadLines", deadLines);
+		vC.contextPut("restriStats", restriStats);
 		vC.contextPut("mapStyles", mapStyles);
 		vC.contextPut("childAmount", childAmount);
 		vC.contextPut("artefactAmount", artAmount);

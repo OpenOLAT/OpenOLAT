@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -45,7 +46,7 @@ public abstract class AbstractIndexer implements Indexer {
 	
 	private static final OLog log = Tracing.createLoggerFor(AbstractIndexer.class);
 	
-	protected Map<String,Indexer> childIndexers = new HashMap<String,Indexer>();
+	public Map<String,Indexer> childIndexers = new HashMap<String,Indexer>();
 	
 
 	/**
@@ -99,11 +100,28 @@ public abstract class AbstractIndexer implements Indexer {
 			OLATResourceable ores = contextEntry.getOLATResourceable();
 		  String type = ores.getResourceableTypeName();
 			Indexer indexer = this.childIndexers.get(type);
+			if (indexer == null) {
+				// loop in child-indexers to check access for businesspath not stacked as on index-run
+				for (Entry<String, Indexer> entSet : childIndexers.entrySet()) {
+					AbstractIndexer childIndexer = entSet.getValue() instanceof AbstractIndexer ? (AbstractIndexer) entSet.getValue() : null;					
+					Indexer foundSubChildIndexer = childIndexer == null ? null : childIndexer.getChildIndexers().get(type);
+					if (foundSubChildIndexer != null) {
+						if (log.isDebug()) log.debug("took a childindexer for ores= " + ores + " not directly linked (means businesspath is not the same stack as indexer -> childindexer). type= " +type + " . indexer parent-type not on businesspath=" + childIndexer.getSupportedTypeName());
+						return foundSubChildIndexer.checkAccess(contextEntry, businessControl, identity, roles);
+					}
+				}				
+				log.error("could not find an indexer for type="+type + " businessControl="+businessControl + " identity=" + identity);
+				return false;
+			}
 			return indexer.checkAccess(contextEntry, businessControl, identity, roles);
 		} else {
 			// rearch the end context entry list 
 			return true;
 		}
+	}
+	
+	public Map<String, Indexer> getChildIndexers(){
+		return this.childIndexers;
 	}
 	
 }

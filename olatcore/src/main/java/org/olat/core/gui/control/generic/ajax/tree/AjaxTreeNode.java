@@ -55,7 +55,8 @@ public class AjaxTreeNode extends JSONObject {
 
 	public static String CONF_ID = "id";
 
-	public static String CONF_LEAF = "leaf";	// false: adds + icon next to item
+	/** false: adds + icon next to item */
+	public static String CONF_LEAF = "leaf";
 
 	public static String CONF_QTIP = "qtip";
 
@@ -68,12 +69,20 @@ public class AjaxTreeNode extends JSONObject {
 	public static String CONF_UIPROVIDER = "uiProvider";
 
 	public static String CONF_DISABLED = "disabled";
-		
-	public static String CONF_EXPANDED = "expanded"; // true to start the node expanded
+	
+	/** true to start the node expanded */
+	public static String CONF_EXPANDED = "expanded"; 
+	
+	/** force to show +/- icon */
+	public static String CONF_EXPANDABLE = "expandable";
 
+	/** disallow element itself as target but allow to add/move children (allowdrop=true) */
+	public static String CONF_ISTARGET = "isTarget";
+	
 	// custom attributes
 	
-	public static String CONF_IS_TYPE_LEAF = "isTypeLeaf"; // orders leafs below folders
+  /** orders leafs below folders */
+	public static String CONF_IS_TYPE_LEAF = "isTypeLeaf"; 
 	
 	/**
 	 * Constructor

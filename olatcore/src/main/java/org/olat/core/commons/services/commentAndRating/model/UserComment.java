@@ -20,6 +20,8 @@
  */
 package org.olat.core.commons.services.commentAndRating.model;
 
+import java.util.Date;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
@@ -84,5 +86,7 @@ public interface UserComment extends CreateInfo, Persistable {
 	 * @param parentComment The parent comment if this is a reply
 	 */
 	public void setParent(UserComment parentComment);
+	
+	public void setCreationDate(Date date);
 	
 }

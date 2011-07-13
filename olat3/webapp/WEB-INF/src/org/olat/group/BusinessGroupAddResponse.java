@@ -43,7 +43,7 @@ public class BusinessGroupAddResponse {
 	/* Output-list of Identity which are added */
 	private List<Identity> identitiesWithoutPermission;
 
-	BusinessGroupAddResponse() {
+	public BusinessGroupAddResponse() {
 		addedIdentities = new ArrayList<Identity>();
 		identitiesAlreadyInGroup = new ArrayList<Identity>();
 		identitiesWithoutPermission = new ArrayList<Identity>();

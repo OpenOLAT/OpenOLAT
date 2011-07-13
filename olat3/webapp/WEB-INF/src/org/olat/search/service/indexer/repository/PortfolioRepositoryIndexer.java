@@ -30,6 +30,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
@@ -58,6 +59,8 @@ public class PortfolioRepositoryIndexer extends AbstractIndexer implements Index
 	public final static String ORES_TYPE_EP = "EPStructuredMapTemplate";
 	
 	private EPStructureManager structureManager;
+
+	private PortfolioModule portfolioModule;
 	
 	/**
 	 * [used by Spring]
@@ -67,6 +70,14 @@ public class PortfolioRepositoryIndexer extends AbstractIndexer implements Index
 		this.structureManager = structureManager;
 	}
 
+	/**
+	 * [used by Spring]
+	 * @param portfolioModule
+	 */
+	public void setPortfolioModule(PortfolioModule portfolioModule) {
+		this.portfolioModule = portfolioModule;
+	}
+	
 	@Override
 	public String getSupportedTypeName() {
 		return ORES_TYPE_EP;
@@ -75,6 +86,7 @@ public class PortfolioRepositoryIndexer extends AbstractIndexer implements Index
 	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object object, OlatFullIndexer indexWriter)
 	throws IOException, InterruptedException {
+		if(!portfolioModule.isEnabled()) return;
 		if (log.isDebug()) log.debug("Index portfolio templates...");
 		
 		RepositoryEntry repositoryEntry = (RepositoryEntry)object;

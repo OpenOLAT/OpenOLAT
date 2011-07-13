@@ -41,12 +41,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.xml.XStreamHelper;
@@ -72,6 +74,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.references.ReferenceManager;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
@@ -115,7 +118,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		myStream.alias("structureToArtefact", EPStructureToArtefactLink.class);
 		myStream.alias("structureToStructure", EPStructureToStructureLink.class);
 		myStream.alias("collectionRestriction", CollectRestriction.class);
-		myStream.omitField(EPStructuredMapTemplate.class, "ownerGroup");
+		myStream.omitField(EPAbstractMap.class, "ownerGroup"); // see also OLAT-6344
 		myStream.addDefaultImplementation(PersistentList.class, List.class);
 		myStream.addDefaultImplementation(ArrayList.class, List.class);
 		myStream.registerConverter(new CollectionConverter(myStream.getMapper()) {
@@ -181,6 +184,13 @@ public class PortfolioHandler implements RepositoryHandler {
 			EPStructuredMapTemplate exercise = (EPStructuredMapTemplate)map;
 			if (ePFMgr.isTemplateInUse(exercise, null, null, null)) return false;
 		}
+		ReferenceManager refM = ReferenceManager.getInstance();
+		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
+		if (referencesSummary != null) {
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
+			wControl.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
+			return false;
+		}		
 		return true;
 	}
 
@@ -268,7 +278,10 @@ public class PortfolioHandler implements RepositoryHandler {
 			//prepare decoding with xstream
 			byte[] outArray = out.toByteArray();
 			String xml = new String(outArray);
-			return (PortfolioStructure)myStream.fromXML(xml);
+			PortfolioStructure struct = (PortfolioStructure) myStream.fromXML(xml);
+			// OLAT-6344: reset ownerGroup from earlier exports. A new group is created by import in ePFMgr.importPortfolioMapTemplate() later on anyway.
+			((EPAbstractMap) struct).setOwnerGroup(null); 
+			return struct;
 		} catch (IOException e) {
 			log.error("Cannot export this map: " + fMapXml, e);
 		}

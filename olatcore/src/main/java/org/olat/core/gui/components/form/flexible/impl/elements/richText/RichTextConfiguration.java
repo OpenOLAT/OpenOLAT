@@ -201,6 +201,9 @@ public class RichTextConfiguration implements Disposable {
 	public static final String CONTEXTMENU_PLUGIN = "contextmenu";
 	public static final String SAFARI_PLUGIN = "safari";
 	public static final String INLINEPOPUPS = "inlinepopups";
+	public static final String TABFOCUS_PLUGIN = "tabfocus";
+	public static final String TABFOCUS_SETTINGS = "tab_focus";
+	public static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	//
 	// Gecko only features, optional
 	public static final String GECKO_SPELLCHECK = "gecko_spellcheck";
@@ -651,6 +654,7 @@ public class RichTextConfiguration implements Disposable {
 		// Plugins without buttons
 		setNoneditableContentEnabled(true, null);
 		setContextMenuEnabled(true);
+		setTabFocusEnabled(true);
 	}
 
 	
@@ -673,6 +677,23 @@ public class RichTextConfiguration implements Disposable {
 		}
 	}
 
+	/**
+	 * Enable the tabfocus plugin
+	 * 
+	 * if enabled its possible to enter/leave the tinyMCE-editor with TAB-key.
+	 * drawback is, that you cannot enter tabs in the editor itself or navigate over buttons!
+	 * see http://bugs.olat.org/jira/browse/OLAT-6242
+	 * @param tabFocusEnabled
+	 */
+	public void setTabFocusEnabled(boolean tabFocusEnabled){
+		if (tabFocusEnabled){
+			setQuotedConfigValue(TABFOCUS_SETTINGS, TABFOCUS_SETTINGS_PREV_NEXT);
+			plugins.add(TABFOCUS_PLUGIN);
+		} else {
+			plugins.remove(TABFOCUS_PLUGIN);
+		}
+	}
+	
 	/**
 	 * Configure the tinymce windowing system
 	 * 

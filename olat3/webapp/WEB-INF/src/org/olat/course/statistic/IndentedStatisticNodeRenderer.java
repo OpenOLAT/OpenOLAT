@@ -104,7 +104,7 @@ public class IndentedStatisticNodeRenderer implements CustomCellRenderer {
 			return;
 		}
 		
-		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type).getIconCSSClass();
+		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type).getIconCSSClass();
 		
 		
 		appendIndent(sb,indent);

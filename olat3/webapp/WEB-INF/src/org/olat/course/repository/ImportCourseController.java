@@ -22,6 +22,7 @@
 package org.olat.course.repository;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -228,9 +229,16 @@ public class ImportCourseController extends BasicController implements IAddContr
 				return;
 			}
 			callback.setResourceable(newCourseResource);
-			 // Set title of root node. do not call course.getTitle() at this point.
-			callback.setDisplayName(course.getEditorTreeModel().getRootNode().getTitle());
 			callback.setResourceName(fCourseImportZIP.getName());
+			
+			final File exportDir = new File(course.getCourseBaseContainer().getBasefile(),"/exportd/");
+			if(exportDir.exists() && exportDir.canRead()){
+				final RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(exportDir);
+				callback.setDisplayName(importExport.getDisplayName());
+				callback.setDescription(importExport.getDescription());
+			}else{
+				logError("Directory "+exportDir.getAbsolutePath()+" not found", new FileNotFoundException());
+			}
 			// collect all nodes
 			collectNodesAsList((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), nodeList);
 			nodeListPos = 0;

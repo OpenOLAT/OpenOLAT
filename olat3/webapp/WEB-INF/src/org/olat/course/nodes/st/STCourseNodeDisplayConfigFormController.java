@@ -168,6 +168,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		displayTwoColumns = formFact
 				.addCheckboxesVertical("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" }, null, 1);
 		displayTwoColumns.setLabel("displayTwoColumns", null);
+		displayTwoColumns.addActionListener(this, FormEvent.ONCLICK);
 		if (columnsConfig == 2) {
 			displayTwoColumns.selectAll();
 		}

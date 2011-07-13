@@ -61,6 +61,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.core.id.OLATResourceable;
 
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * Description:<br>
@@ -104,7 +105,9 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private CloseableModalController cmc;
 
 	public ENEditGroupAreaFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, CourseEditorEnv cev) {
-		super(ureq, wControl, null, Util.createPackageTranslator(Condition.class, ureq.getLocale()));
+		super(ureq, wControl, null);
+		Translator pT = Util.createPackageTranslator(Condition.class, ureq.getLocale(), getTranslator());
+		this.setTranslator(pT);
 		
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		groupConfigChangeEventOres = OresHelper.createOLATResourceableType(MultiUserEvent.class);

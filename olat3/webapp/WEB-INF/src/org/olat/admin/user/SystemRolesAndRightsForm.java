@@ -23,7 +23,6 @@ package org.olat.admin.user;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -64,8 +63,6 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	private SingleSelection statusRE;
 	
 	private Identity identity;
-	private String iname;
-	private Map configuration;
 	private boolean iAmOlatAdmin, isAdmin, isUserManager, isAuthor, isGroupManager, isGuestOnly, isInstitutionalResourceManager;
 	private boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig, canInstitutionalResourceManagerByConfig;
 
@@ -139,7 +136,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 			roleValues.add(translate("rightsForm.isGroupmanager"));
 		}
 
-		if (iAmOlatAdmin || canGuestsByConfig) {
+		if (iAmOlatAdmin || canAuthorsByConfig) {
 			roleKeys.add(KAUTHOR);
 			roleValues.add(translate("rightsForm.isAuthor"));
 		}

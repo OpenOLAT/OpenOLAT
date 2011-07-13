@@ -70,12 +70,17 @@ public abstract class FeedUIFactory {
 	/* used for course node */
 	public FeedMainController createMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback,
 			Long courseId, String nodeId) {
-		return new FeedMainController(ores, ureq, wControl, courseId, nodeId, this, callback);
+		return new FeedMainController(ores, ureq, wControl, courseId, nodeId, this, callback, null);
 	}
 
 	public FeedMainController createMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback) {
-		return new FeedMainController(ores, ureq, wControl, null, null, this, callback);
-	}	
+		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, null);
+	}
+	
+	// with specific FeedItemDisplayConfig
+	public FeedMainController createMainController(final OLATResourceable ores, final UserRequest ureq, final WindowControl wControl, final FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
+		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig);
+	}
 	
 	public abstract IAddController createAddController(RepositoryAddCallback addCallback, UserRequest ureq, WindowControl wControl);
 	

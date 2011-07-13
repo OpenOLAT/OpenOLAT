@@ -101,6 +101,20 @@ public class NewControllerFactory extends LogDelegator {
 	}
 
 	/**
+	 * Check first context entry can be launched
+	 * a further check is mostly not possible, as it gets validated through the BC-stack while building the controller-chain
+	 * 
+	 * return true: if this will be launchable at least for the first step.
+	 */
+	public boolean validateCEWithContextControllerCreator(final UserRequest ureq, final WindowControl wControl, ContextEntry ce){
+		String firstType = ce.getOLATResourceable().getResourceableTypeName();
+		if (canLaunch(firstType)){
+			return contextEntryControllerCreators.get(firstType).validateContextEntryAndShowError(ce, ureq, wControl);
+		}
+		return false;
+	}
+
+	/**
 	 * Launch a controller in a tab or site in the given window from a user
 	 * request url
 	 * 

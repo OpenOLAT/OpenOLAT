@@ -84,7 +84,7 @@ public class EPViewModeController extends FormBasicController {
 		String[] theValues = new String[]{translate("view.mode.table"), translate("view.mode.details")};
 		
 		viewRadio = uifactory.addRadiosHorizontal("view.mode", formLayout, theKeys, theValues);
-		viewRadio.addActionListener(this, FormEvent.ONCHANGE);
+		viewRadio.addActionListener(this, FormEvent.ONCLICK);
 		if (userPrefsMode != null) viewRadio.select(userPrefsMode, true);
 		else viewRadio.select(VIEWMODE_DETAILS, true);
 	}

@@ -5,6 +5,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/webapp/WEB-INF/src"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/coreresources"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/corejava"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/static"/>
         <property name="context-root" value="olat3"/>
         <property name="java-output-path"/>
     </wb-module>

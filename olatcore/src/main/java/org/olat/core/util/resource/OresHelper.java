@@ -35,7 +35,7 @@ import org.olat.core.util.Encoder;
  * @author Felix Jost
  */
 public class OresHelper {
-	private static final int ORES_TYPE_LENGTH = 50; 
+	public static final int ORES_TYPE_LENGTH = 50; 
 	private static final int ORES_TYPE_SUBTYPELENGTH = 15; // so 35 remain for the class name (without package) 
 
 	/**

@@ -93,12 +93,13 @@ public class EPTOCController extends BasicController {
 		eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
 		this.rootNode = rootNode;
 		AjaxTreeModel treeModel = buildTreeModel();
-		treeCtr = new TreeController(ureq, getWindowControl(), translate("toc.root"), treeModel, null);
+		treeCtr = new TreeController(ureq, getWindowControl(), translate("toc.root"), treeModel, "myjsCallback");
 		treeCtr.setTreeSorting(false, false, false);
 		listenTo(treeCtr);
 		tocV.put("tocTree", treeCtr.getInitialComponent());		
-		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "deleteButton", Link.LINK_CUSTOM_CSS, tocV, this);
-		delButton.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
+		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, tocV, this);
+		delButton.setTooltip(translate("deleteButton"), false);
+		delButton.setCustomEnabledLinkCSS("b_delete_icon b_eportfolio_del_link ");
 		tocV.put("deleteButton", delButton);		
 
 		if(selectedEl == null) {
@@ -186,19 +187,23 @@ public class EPTOCController extends BasicController {
 					if (structs != null && structs.size() != 0) { 
 						for (PortfolioStructure portfolioStructure : structs) {
 							String childNodeId = String.valueOf(portfolioStructure.getKey());
-							child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle());
 							boolean hasStructureChild = eSTMgr.countStructureChildren(portfolioStructure) > 0;
 							boolean hasArtefacts = eSTMgr.countArtefacts(portfolioStructure) > 0;
 							boolean hasChilds = hasStructureChild || hasArtefacts;
-							
-							//TODO: epf: RH: seems to be a bug, nothing can be dropped on a leaf, why that??
+							child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle());
+							if (isLogDebugEnabled()){
+								child = new AjaxTreeNode(childNodeId, portfolioStructure.getTitle() + "drop:" + !isRoot + "drag:" + !isRoot + "leaf:"+!hasChilds);
+							}
+							// seems to be a bug, nothing can be dropped on a leaf, therefore we need to tweak with expanded/expandable ourself!
 //							child.put(AjaxTreeNode.CONF_LEAF, !hasChilds);
 							child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, !hasChilds);
 							child.put(AjaxTreeNode.CONF_ALLOWDRAG, !isRoot);
-							boolean isOpen = hasStructureChild ;
-							//boolean isOpen =(((EPStructureElement) portfolioStructure).getChildren().size() != 0);
-							child.put(AjaxTreeNode.CONF_EXPANDED, isOpen);
-							child.put(AjaxTreeNode.CONF_ALLOWDROP, !isRoot );
+				
+							child.put(AjaxTreeNode.CONF_EXPANDED, hasStructureChild);
+							child.put(AjaxTreeNode.CONF_EXPANDABLE, hasChilds);
+							child.put(AjaxTreeNode.CONF_ALLOWDROP, true);
+							child.put(AjaxTreeNode.CONF_ISTARGET, !isRoot); 
+							
 							child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
 							String description = FilterFactory.getHtmlTagAndDescapingFilter().filter(portfolioStructure.getDescription());
 							child.put(AjaxTreeNode.CONF_QTIP, description);
@@ -247,12 +252,13 @@ public class EPTOCController extends BasicController {
 		return model;
 	}
 	
-	public void update(PortfolioStructure structure) {
+	public void update(UserRequest ureq, PortfolioStructure structure) {
 		String path = idToPath.get(structure.getKey());
 		if(path != null) {
 			treeCtr.reloadPath(path);
 			treeCtr.selectPath(path);
 		}
+		refreshAddElements(ureq, structure);
 	}
 
 	/**
@@ -272,7 +278,7 @@ public class EPTOCController extends BasicController {
 					// refresh the view
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else if (structureClicked != null) {
-					if ((structureClicked instanceof EPPage || structureClicked instanceof EPStructureElement)
+					if ((structureClicked instanceof EPPage)
 							&& !(structureClicked instanceof EPAbstractMap)) {
 						PortfolioStructure ps = structureClicked;
 						while (ePFMgr.loadStructureParent(ps) != null) {
@@ -286,6 +292,12 @@ public class EPTOCController extends BasicController {
 						} else {
 							showError("last.page.not.deletable");
 						}
+					} else if(structureClicked instanceof EPStructureElement 
+							&& !(structureClicked instanceof EPAbstractMap)) {
+						//structures should always be deletable
+						eSTMgr.removeStructureRecursively(structureClicked);
+						// refresh the view
+						fireEvent(ureq, Event.CHANGED_EVENT);
 					} else {
 						showInfo("element.not.deletable");
 					}
@@ -335,7 +347,8 @@ public class EPTOCController extends BasicController {
 			MoveTreeNodeEvent moveEvent = (MoveTreeNodeEvent) event;
 			String movedNode = moveEvent.getNodeId();
 			String oldParent = moveEvent.getOldParentNodeId();
-			String newParent = moveEvent.getNewParentNodeId();			
+			String newParent = moveEvent.getNewParentNodeId();
+			int newPos = moveEvent.getPosition();
 			boolean isArtefactNode = movedNode.startsWith(ARTEFACT_NODE_IDENTIFIER);
 			if (isArtefactNode) {
 				String nodeId = getArtefactIdFromNodeId(movedNode);
@@ -354,7 +367,7 @@ public class EPTOCController extends BasicController {
 				}
 			} else {
 				if (checkNewStructureTarget(movedNode, oldParent, newParent)){
-					if (moveStructureToNewParent(movedNode, oldParent, newParent)) {
+					if (moveStructureToNewParent(movedNode, oldParent, newParent, newPos)) {
 						if (isLogDebugEnabled()) logInfo("moved structure " + movedNode + " from structure " + oldParent + " to " + newParent, null);
 						moveEvent.setResult(true, null, null);
 						// refresh the view
@@ -451,32 +464,24 @@ public class EPTOCController extends BasicController {
 	 */	
 	private boolean checkNewStructureTarget(String subjectStructId, String oldParStructId, String newParStructId){
 		PortfolioStructure structToBeMvd;
-		PortfolioStructure oldParStruct;
 		PortfolioStructure newParStruct;
+		if (oldParStructId.equals(newParStructId)) return true; // seems only to be a move in order
 		if (newParStructId.equals(ROOT_NODE_IDENTIFIER)) return false;
 		try {
 			structToBeMvd = ePFMgr.loadPortfolioStructureByKey(new Long(subjectStructId));
-			oldParStruct = ePFMgr.loadPortfolioStructureByKey(new Long(oldParStructId));
 			newParStruct = ePFMgr.loadPortfolioStructureByKey(new Long(newParStructId));
 		} catch (Exception e) {
 			logError("could not check for valid structure target", e);
 			return false;
 		}
-		if (newParStruct instanceof EPAbstractMap) return false;
-		if (oldParStruct.getKey().equals(newParStruct.getKey())) return false;
 		if (structToBeMvd instanceof EPPage && newParStruct instanceof EPPage) return false;
 		if (structToBeMvd instanceof EPStructureElement && !(newParStruct instanceof EPPage)) return false;
-		
-		// how to allow changing of order??
-		//TODO: epf: RH: allow move, it seems this needs to fix in js on gui
-//		if (structToBeMvd instanceof EPPage && (newParStruct instanceof EPPage || newParStruct instanceof ) return false;
-//		if (structToBeMvd instanceof EPStructureElement) return true; 
-		
+
 		return true;
 	}
 	
 	// really do the move
-	private boolean moveStructureToNewParent(String subjectStructId, String oldParStructId, String newParStructId){
+	private boolean moveStructureToNewParent(String subjectStructId, String oldParStructId, String newParStructId, int newPos){
 		PortfolioStructure structToBeMvd;
 		PortfolioStructure oldParStruct;
 		PortfolioStructure newParStruct;
@@ -488,7 +493,13 @@ public class EPTOCController extends BasicController {
 			logError("could not load: structure to be moved, old or new structure while trying to move", e);
 			return false;
 		}
-		return ePFMgr.moveStructureToNewParentStructure(structToBeMvd, oldParStruct, newParStruct);		
+		
+		if (oldParStructId.equals(newParStructId)) {
+			// this is only a position move
+			return ePFMgr.moveStructureToPosition(structToBeMvd, newPos);
+		}
+		
+		return ePFMgr.moveStructureToNewParentStructure(structToBeMvd, oldParStruct, newParStruct, newPos);		
 	}
 
 	/**

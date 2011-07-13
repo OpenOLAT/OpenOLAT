@@ -29,6 +29,7 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
@@ -110,7 +111,9 @@ public class NodeEvaluation extends GenericNode {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(courseNode.getShortTitle());
 			gtn.setAltText(courseNode.getLongTitle());
-			String nodeCssClass = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass();
+			String type = courseNode.getType();
+			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
+			String nodeCssClass = cnConfig.getIconCSSClass();
 			gtn.setIconCssClass(nodeCssClass);
 			gtn.setUserObject(this); // the current NodeEval is set into the treenode
 																// as the userobject

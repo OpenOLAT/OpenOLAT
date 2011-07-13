@@ -1,23 +1,23 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <p>
-*/ 
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <p>
+ */
 
 package org.olat.modules.wiki;
 
@@ -54,22 +54,23 @@ import org.olat.repository.RepositoryManager;
 
 /**
  * Description:<br>
- * To generate an snapshot of the current wiki users can export it in an offlinereadeble html export.
- * The export contains also an IMS content package manifest and therefore can be reimported as an
- * static html content which is no longer editable back into OLAT or any other IMS CP capable LMS.
+ * To generate an snapshot of the current wiki users can export it in an
+ * offlinereadeble html export. The export contains also an IMS content package
+ * manifest and therefore can be reimported as an static html content which is
+ * no longer editable back into OLAT or any other IMS CP capable LMS.
  * <P>
  * Initial Date: Aug 7, 2006 <br>
  * 
  * @author guido
  */
 public class WikiToCPExport {
-	
+
 	public static final String WIKI_MANIFEST_IDENTIFIER = "wiki_cp_export_v1";
 	private OLATResourceable ores;
 	private Identity ident;
 	private Translator trans;
 	private JFlexParser parser;
-	
+
 	/**
 	 * 
 	 * @param ores
@@ -80,81 +81,82 @@ public class WikiToCPExport {
 		this.ores = ores;
 		this.ident = ident;
 		this.trans = trans;
-		
+
 		StaticExportWikiDataHandler datahandler = new StaticExportWikiDataHandler();
 		datahandler.setWiki(ores);
-	
+
 		ParserInput parserInput = new ParserInput();
-    parserInput.setWikiUser(null);
-    parserInput.setAllowSectionEdit(false);
-    parserInput.setDepth(10);
-    parserInput.setContext("");
-    //input.setTableOfContents(null);
-    parserInput.setLocale(new Locale("en"));
-    parserInput.setVirtualWiki("");
-    parserInput.setTopicName("dummy");
-    parserInput.setUserIpAddress("0.0.0.0");
-    parserInput.setDataHandler(datahandler);
-		
+		parserInput.setWikiUser(null);
+		parserInput.setAllowSectionEdit(false);
+		parserInput.setDepth(10);
+		parserInput.setContext("");
+		// input.setTableOfContents(null);
+		parserInput.setLocale(new Locale("en"));
+		parserInput.setVirtualWiki("");
+		parserInput.setTopicName("dummy");
+		parserInput.setUserIpAddress("0.0.0.0");
+		parserInput.setDataHandler(datahandler);
+
 		parser = new JFlexParser(parserInput);
 	}
-	
+
 	/**
 	 * 
 	 *
 	 */
 	public void archiveWikiToCP() {
-		LocalFolderImpl tempFolder =  new OlatRootFolderImpl("/tmp/"+ident.getKey()+"-"+ores.getResourceableId(), null);
+		LocalFolderImpl tempFolder = new OlatRootFolderImpl("/tmp/" + ident.getKey() + "-" + ores.getResourceableId(), null);
 		if (tempFolder.resolve("imsmanifest.xml") != null) {
-			tempFolder.delete(); //delete all content if already exists...
-			tempFolder =  new OlatRootFolderImpl("/tmp/"+ident.getKey()+"-"+ores.getResourceableId(), null);
+			tempFolder.delete(); // delete all content if already exists...
+			tempFolder = new OlatRootFolderImpl("/tmp/" + ident.getKey() + "-" + ores.getResourceableId(), null);
 		}
 		Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
 		String dateStamp = Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
-		LocalFolderImpl exportDir =  new OlatRootFolderImpl(FolderConfig.getUserHomes() +"/"+ ident.getName() +"/private/archive/wiki-export-"+dateStamp+".zip", null);
-		
-		//create the ims manifest
+		LocalFolderImpl exportDir = new OlatRootFolderImpl(FolderConfig.getUserHomes() + "/" + ident.getName()
+				+ "/private/archive/wiki-export-" + dateStamp + ".zip", null);
+
+		// create the ims manifest
 		StringBuilder sb = createIMSManifest(wiki, ident);
 		VFSLeaf manifest = tempFolder.createChildLeaf("imsmanifest.xml");
 		copyMediaFiles(WikiManager.getInstance().getMediaFolder(ores), tempFolder);
 		FileUtils.save(manifest.getOutputStream(false), sb.toString(), "utf-8");
-		
-		//create the javascript mapping file
+
+		// create the javascript mapping file
 		StringBuilder jsContent = createJsMappingContent(wiki);
 		VFSLeaf jsFile = tempFolder.createChildLeaf("mapping.js");
 		FileUtils.save(jsFile.getOutputStream(false), jsContent.toString(), "utf-8");
-		
+
 		renderWikiToHtmlFiles(ores, tempFolder);
 		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(tempFolder.getBasefile(), exportDir.getBasefile(), null);
 		tempFolder.delete();
 	}
-	
+
 	private StringBuilder createJsMappingContent(Wiki wiki) {
 		StringBuilder sb = new StringBuilder();
 		List pages = wiki.getPagesByDate();
-		
-		//create javascript assoz. array
+
+		// create javascript assoz. array
 		sb.append("var mappings = new Array();\n");
-		for (Iterator iter = pages.iterator(); iter.hasNext();) {
-			WikiPage page = (WikiPage) iter.next();
-			sb.append("mappings[\"").append(page.getPageName()).append("\"] = ");
+		for (final Iterator iter = pages.iterator(); iter.hasNext();) {
+			final WikiPage page = (WikiPage) iter.next();
+			sb.append("mappings[\"").append(page.getPageName().replace("&", "%26").toLowerCase(Locale.ENGLISH)).append("\"] = ");
 			sb.append("\"").append(page.getPageId()).append(".html\"\n");
 		}
-		
-		//create function
+
+		// create function
 		sb.append("function mapLinks() {");
-			sb.append("var anchors = document.getElementsByTagName(\"a\");");
-			sb.append("for (var i=0; i<anchors.length; i++) {");
-				sb.append("var anchor = anchors[i];");
-				sb.append("var href = anchor.getAttribute(\"href\");");
-				sb.append("if (href && href.indexOf(\"//Media\") >= 0) { anchor.setAttribute(\"href\", href.substr(8)); }");
-					sb.append("else if (href && href.substr(0,2).indexOf(\"//\") != -1) {");
-						sb.append("anchor.setAttribute(\"href\", mappings[decodeURI(href.substr(2))]);");
-					sb.append("}");
-				sb.append("}");
-			sb.append("}");
+		sb.append("var anchors = document.getElementsByTagName(\"a\");");
+		sb.append("for (var i=0; i<anchors.length; i++) {");
+		sb.append("var anchor = anchors[i];");
+		sb.append("var href = anchor.getAttribute(\"href\");");
+		sb.append("if (href && href.indexOf(\"//Media\") >= 0) { anchor.setAttribute(\"href\", href.substr(8)); }");
+		sb.append("else if (href && href.substr(0,2).indexOf(\"//\") != -1) {");
+		sb.append("anchor.setAttribute(\"href\", mappings[decodeURI(href.substr(2)).toLowerCase()]);");
+		sb.append("}");
+		sb.append("}");
+		sb.append("}");
 		sb.append("window.onload = mapLinks;");
-		
+
 		return sb;
 	}
 
@@ -169,22 +171,20 @@ public class WikiToCPExport {
 	private StringBuilder createIMSManifest(Wiki wiki, Identity ident) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-		sb.append("<manifest xmlns=\"http://www.imsglobal.org/xsd/imscp_v1p1\" " +
-				"xmlns:imsmd=\"http://www.imsglobal.org/xsd/imsmd_v1p2\" " +
-				"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-				"identifier=\"");
+		sb.append("<manifest xmlns=\"http://www.imsglobal.org/xsd/imscp_v1p1\" " + "xmlns:imsmd=\"http://www.imsglobal.org/xsd/imsmd_v1p2\" "
+				+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + "identifier=\"");
 		sb.append(WIKI_MANIFEST_IDENTIFIER);
-		sb.append("\" xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd " +
-				"http://www.imsglobal.org/xsd/imsmd_v1p2 imsmd_v1p2p2.xsd\">");
-		
+		sb.append("\" xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd "
+				+ "http://www.imsglobal.org/xsd/imsmd_v1p2 imsmd_v1p2p2.xsd\">");
+
 		sb.append("<metadata><imsmd:lom><imsmd:general>");
 		sb.append("<imsmd:identifier></imsmd:identifier>");
 		sb.append("<imsmd:title><imsmd:langstring xml:lang=\"de\">");
-				sb.append("");
+		sb.append("");
 		sb.append("</imsmd:langstring></imsmd:title>");
 		sb.append("<imsmd:language>de</imsmd:language>");
 		sb.append("<imsmd:description><imsmd:langstring xml:lang=\"de\">");
-				sb.append("Exported wiki from the OLAT Learning Management System");
+		sb.append("Exported wiki from the OLAT Learning Management System");
 		sb.append("</imsmd:langstring></imsmd:description>");
 		sb.append("<imsmd:keyword><imsmd:langstring xml:lang=\"de\">OLAT Wiki export</imsmd:langstring></imsmd:keyword>");
 		sb.append("</imsmd:general>");
@@ -201,50 +201,52 @@ public class WikiToCPExport {
 		sb.append("<imsmd:value><imsmd:langstring xml:lang=\"x-none\">Author</imsmd:langstring></imsmd:value>");
 		sb.append("</imsmd:role>");
 		sb.append("<imsmd:centity><imsmd:vcard>");
-				sb.append(ident.getUser().getProperty(UserConstants.FIRSTNAME, trans.getLocale())).append(" ").append(ident.getUser().getProperty(UserConstants.LASTNAME, trans.getLocale()));
+		sb.append(ident.getUser().getProperty(UserConstants.FIRSTNAME, trans.getLocale())).append(" ")
+				.append(ident.getUser().getProperty(UserConstants.LASTNAME, trans.getLocale()));
 		sb.append("</imsmd:vcard></imsmd:centity>");
 		sb.append("<imsmd:date><imsmd:datetime>");
-				sb.append(Formatter.formatDatetime(new Date(System.currentTimeMillis())));
+		sb.append(Formatter.formatDatetime(new Date(System.currentTimeMillis())));
 		sb.append("</imsmd:datetime></imsmd:date>");
 		sb.append("</imsmd:contribute>");
 		sb.append("</imsmd:lifecycle>");
 		sb.append("<imsmd:technical><imsmd:format>text/html</imsmd:format></imsmd:technical>");
 		sb.append("</imsmd:lom></metadata>");
-			
+
 		sb.append("<organizations default=\"");
 		sb.append(CPCore.OLAT_ORGANIZATION_IDENTIFIER);
 		sb.append("\">");
-    sb.append("<organization identifier=\"");
+		sb.append("<organization identifier=\"");
 		sb.append(CPCore.OLAT_ORGANIZATION_IDENTIFIER);
 		sb.append("\" structure=\"hierarchical\">");
 		sb.append("<title>");
 		String name = "";
-		if( WikiManager.getInstance().isGroupContextWiki(ores)) {
+		if (WikiManager.getInstance().isGroupContextWiki(ores)) {
 			BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(ores.getResourceableId(), true);
 			name = group.getName();
-			sb.append(trans.translate("wiki.exported.from.group", new String[]{name}));
+			sb.append(trans.translate("wiki.exported.from.group", new String[] { name }));
 		} else {
 			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
 			name = entry.getDisplayname();
-			sb.append(trans.translate("wiki.exported.from.repository", new String[]{name}));
+			sb.append(trans.translate("wiki.exported.from.repository", new String[] { name }));
 		}
 		sb.append("</title>");
-		
+
 		createItems(sb, wiki);
 		sb.append("</organization></organizations>");
-		
+
 		sb.append("<resources>");
 		createResources(sb, wiki);
 		sb.append("</resources>");
-		
+
 		sb.append("</manifest>"); // close manifest
 		return sb;
 	}
 
 	private void createItems(StringBuilder sb, Wiki wiki) {
-		//<item identifier="ITEM-Einleitung" identifierref="Resource-Einleitung" isvisible="true">
-		//	<title>Einleitung</title>
-		//</item>
+		// <item identifier="ITEM-Einleitung" identifierref="Resource-Einleitung"
+		// isvisible="true">
+		// <title>Einleitung</title>
+		// </item>
 		List<WikiPage> topLevelPages = new ArrayList<WikiPage>();
 		topLevelPages.add(wiki.getPage(WikiPage.WIKI_INDEX_PAGE));
 		WikiPage pageAtoZ = wiki.getPage(WikiPage.WIKI_A2Z_PAGE);
@@ -301,15 +303,16 @@ public class WikiToCPExport {
 		if (page.getPageName().equals(WikiPage.WIKI_A2Z_PAGE)) sb.append(trans.translate("navigation.a-z"));
 		else if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) sb.append(trans.translate("navigation.menu"));
 		else if (page.getPageName().equals(WikiPage.WIKI_INDEX_PAGE)) sb.append(trans.translate("navigation.mainpage"));
-		else sb.append(page.getPageName());
+		else sb.append("<![CDATA[" + page.getPageName() + "]]>");
 		sb.append("</title>");
 		return sb;
 	}
 
 	private void createResources(StringBuilder sb, Wiki wiki) {
-		//<resource identifier="Resource-Einleitung" type="text/html" href="einleitung.html">
-		//<file href="einleitung.html" />
-		//</resource>
+		// <resource identifier="Resource-Einleitung" type="text/html"
+		// href="einleitung.html">
+		// <file href="einleitung.html" />
+		// </resource>
 		List pageNames = wiki.getPagesByDate();
 		for (Iterator iter = pageNames.iterator(); iter.hasNext();) {
 			WikiPage page = (WikiPage) iter.next();
@@ -319,7 +322,7 @@ public class WikiToCPExport {
 			sb.append("</resource>");
 		}
 	}
-	
+
 	private void renderWikiToHtmlFiles(OLATResourceable ores, VFSContainer tempFolder) {
 		WikiManager wikiManager = WikiManager.getInstance();
 		Wiki wiki = wikiManager.getOrLoadWiki(ores);
@@ -335,25 +338,25 @@ public class WikiToCPExport {
 			sb.append("<script type=\"text/javascript\" src=\"cp_offline_menu_mat/wiki.js\"></script>\n");
 			sb.append("<script type=\"text/javascript\" src=\"mapping.js\"></script>\n");
 			sb.append("<link rel=\"StyleSheet\" href=\"cp_offline_menu_mat/wiki.css\" type=\"text/css\" media=\"screen, print\">\n");
-			
+
 			sb.append("</head>\n");
 			sb.append("<body>\n");
 			sb.append("<h3>");
-			if(page.getPageName().equals(WikiPage.WIKI_A2Z_PAGE)) sb.append(trans.translate("navigation.a-z"));
-			else if(page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) sb.append(trans.translate("navigation.menu"));
+			if (page.getPageName().equals(WikiPage.WIKI_A2Z_PAGE)) sb.append(trans.translate("navigation.a-z"));
+			else if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) sb.append(trans.translate("navigation.menu"));
 			else sb.append(page.getPageName());
 			sb.append("</h3>");
 			sb.append("<hr><div id=\"olat-wiki\">");
-			VFSLeaf file = tempFolder.createChildLeaf(page.getPageId()+".html");
+			VFSLeaf file = tempFolder.createChildLeaf(page.getPageId() + ".html");
 			try {
 				ParserDocument doc = parser.parseHTML(page.getContent());
 				sb.append(doc.getContent());
 			} catch (Exception e) {
-				throw new OLATRuntimeException("error while parsing from wiki to cp. ores:"+ores.getResourceableId(), e);
+				throw new OLATRuntimeException("error while parsing from wiki to cp. ores:" + ores.getResourceableId(), e);
 			}
 			sb.append("</div></body></html>");
 			FileUtils.save(file.getOutputStream(false), sb.toString(), "utf-8");
 		}
-		
+
 	}
 }

@@ -20,6 +20,8 @@
  */
 package org.olat.core.commons.services.commentAndRating.impl;
 
+import java.util.Date;
+
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
@@ -156,6 +158,11 @@ public class UserCommentImpl extends PersistentObject implements UserComment {
 	 */
 	public void setParent(UserComment parentComment) {
 		this.parent = parentComment;
+	}
+
+	@Override
+	public void setCreationDate(Date date) {
+		this.creationDate = date;	
 	}
 
 }

@@ -1,0 +1,6 @@
+$r.translate("projectlist.callout.intro")
+<ul>
+#foreach($identityLink in $identLinks)
+	<li>$r.render($identityLink.componentName)</li>
+#end
+</ul>

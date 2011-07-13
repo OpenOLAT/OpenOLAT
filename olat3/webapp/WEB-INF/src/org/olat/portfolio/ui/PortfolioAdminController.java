@@ -115,6 +115,7 @@ public class PortfolioAdminController extends FormBasicController  {
 		if(source == portfolioEnabled) {
 			boolean enabled = portfolioEnabled.isSelected(0);
 			portfolioModule.setEnabled(enabled);
+			showWarning("portfolio.module.change.warning");
 		} else if(handlersEnabled.contains(source)) {
 			EPArtefactHandler<?> handler = (EPArtefactHandler<?>)source.getUserObject();
 			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);

@@ -30,6 +30,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
@@ -53,6 +54,7 @@ public class PortfolioCourseNodeIndexer implements CourseNodeIndexer {
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.PortfolioCourseNode";
 	
 	private EPStructureManager structureManager;
+	private PortfolioModule portfolioModule;
 	
 /**
  * [used by Spring]
@@ -60,6 +62,14 @@ public class PortfolioCourseNodeIndexer implements CourseNodeIndexer {
  */
 	public void setStructureManager(EPStructureManager structureManager) {
 		this.structureManager = structureManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param portfolioModule
+	 */
+	public void setPortfolioModule(PortfolioModule portfolioModule) {
+		this.portfolioModule = portfolioModule;
 	}
 
 	@Override
@@ -70,6 +80,8 @@ public class PortfolioCourseNodeIndexer implements CourseNodeIndexer {
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 	throws IOException, InterruptedException {
+		if(!portfolioModule.isEnabled()) return;
+		
     PortfolioCourseNode portfolioNode = (PortfolioCourseNode)courseNode;
 		RepositoryEntry repoEntry = portfolioNode.getReferencedRepositoryEntry();
 		if(repoEntry != null) {

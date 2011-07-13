@@ -116,8 +116,9 @@ public class IdentityIndexer extends AbstractIndexer {
 	 * 
 	 * @param indexerList
 	 */
-	public void setIndexerList(List indexerList) {
+	public void setIndexerList(List<Indexer> indexerList) {
 		this.indexerList = indexerList;
+		super.setIndexerList(indexerList);
 	}
 
 	/**

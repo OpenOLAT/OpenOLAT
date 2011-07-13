@@ -49,6 +49,7 @@ import org.olat.resource.OLATResource;
 public class CreateStructureMapTemplateController extends BasicController implements IAddController {
 	private OLATResource templateOres;
 	private final EPStructureManager eSTMgr;
+	private boolean isNewTemplateAndGetsAPage = false; 
 
 	/**
 	 * Constructor
@@ -61,11 +62,12 @@ public class CreateStructureMapTemplateController extends BasicController implem
 		super(ureq, wControl);
 		eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
 		if (addCallback != null) {
-			//create a new template
+			// create a new template
+			isNewTemplateAndGetsAPage = true;
 			templateOres = eSTMgr.createPortfolioMapTemplateResource();
 			addCallback.setDisplayName(translate(templateOres.getResourceableTypeName()));
 			addCallback.setResourceable(templateOres);
-			addCallback.setResourceName("-");
+			addCallback.setResourceName(translate("EPStructuredMapTemplate"));
 			addCallback.finished(ureq);
 		}
 	}
@@ -105,8 +107,10 @@ public class CreateStructureMapTemplateController extends BasicController implem
 		Translator pt = Util.createPackageTranslator(EPCreateMapController.class, getLocale(), getTranslator());
 		String title = pt.translate("new.page.title");
 		String description = pt.translate("new.page.desc");
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		ePFMgr.createAndPersistPortfolioPage(mapTemp, title, description);
+		if (isNewTemplateAndGetsAPage){ // no additional page when this is a copy.
+			EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+			ePFMgr.createAndPersistPortfolioPage(mapTemp, title, description);
+		}
 	}
 
 	/**

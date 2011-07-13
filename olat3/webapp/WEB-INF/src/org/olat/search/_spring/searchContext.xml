@@ -138,6 +138,7 @@
 										<bean id="scormCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ScormCourseNodeIndexer" scope="prototype"/>
 										<bean id="portfolioCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.PortfolioCourseNodeIndexer" scope="prototype">
 											<property name="structureManager" ref="epStructureManager"/>
+											<property name="portfolioModule" ref="portfolioModule"/>
 										</bean>
 										<bean id="infoCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.InfoCourseNodeIndexer" scope="prototype">
 											<property name="infoMessageManager" ref="infoMessageManager"/>
@@ -164,6 +165,7 @@
 							</bean>
 							<bean id="portfolioRepositoryIndexer" class="org.olat.search.service.indexer.repository.PortfolioRepositoryIndexer" scope="prototype">
 								<property name="structureManager" ref="epStructureManager"/>
+								<property name="portfolioModule" ref="portfolioModule"/>
 							</bean>
 						</list>
 		          </property>

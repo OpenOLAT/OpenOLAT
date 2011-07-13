@@ -303,7 +303,8 @@ public class ForumController extends BasicController implements GenericEventList
 					scrollToCurrentMessage();					
 				} else {
 					// message not found, do nothing. Load normal start screen
-					logDebug("Invalid messageId=" , ores.getResourceableId().toString());
+					showError("deleteok");
+					logDebug("Invalid messageId=", ores.getResourceableId().toString());
 				}
 			} else {
 				//FIXME:chg: Should not happen, occurs when course-node are called
@@ -924,7 +925,7 @@ public class ForumController extends BasicController implements GenericEventList
 		for(Mark mark:markList) {
 			marks.put(mark.getResSubPath(), mark);
 		}
-		List<MarkResourceStat> statList =  markingService.getMarkManager().getStats(forumOres, markResSubPath, ureq.getIdentity());
+		List<MarkResourceStat> statList =  markingService.getMarkManager().getStats(forumOres, markResSubPath, null);
 		Map<String,MarkResourceStat> stats = new HashMap<String,MarkResourceStat>(statList.size() * 2 + 1);
 		for(MarkResourceStat stat:statList) {
 			stats.put(stat.getSubPath(), stat);

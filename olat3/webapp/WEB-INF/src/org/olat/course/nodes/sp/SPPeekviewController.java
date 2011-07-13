@@ -61,31 +61,32 @@ public class SPPeekviewController extends BasicController {
 		super(ureq, wControl);
 		// just display the page
 		String file = config.getStringValue(SPEditController.CONFIG_KEY_FILE);
-		String fileLC = file.toLowerCase();
-		if (fileLC.endsWith(".html") || fileLC.endsWith(".htm") || fileLC.endsWith(".xhtml")) {
-			// Render normal view but scaled down to 75%
-			SinglePageController spController =  new SinglePageController(ureq, wControl, 
-					userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), 
-					file, null, 
-					config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS), ores);		
-			// but add scaling to fit preview into minimized space
-			spController.setScaleFactorAndHeight(0.75f, 400, true);
-			listenTo(spController);
-			putInitialPanel(spController.getInitialComponent());
-		} else {
-			// Render a download link for file
-			VFSContainer courseFolder = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-			VFSItem downloadItem = courseFolder.resolve(file);
-			if (file != null && downloadItem instanceof VFSLeaf) {
-				DownloadComponent downloadComp = new DownloadComponent("downloadComp",  (VFSLeaf) downloadItem);
-				VelocityContainer peekviewVC = createVelocityContainer("peekview");
-				peekviewVC.put("downloadComp", downloadComp);
-				putInitialPanel(peekviewVC);
+		Component resPanel = new Panel("empty"); // empty panel to use if no file could be found
+		if (file != null) {
+			String fileLC = file.toLowerCase();
+			if (fileLC.endsWith(".html") || fileLC.endsWith(".htm") || fileLC.endsWith(".xhtml")) {
+				// Render normal view but scaled down to 75%
+				SinglePageController spController =  new SinglePageController(ureq, wControl, 
+						userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), 
+						file, null, 
+						config.getBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS), ores);		
+				// but add scaling to fit preview into minimized space
+				spController.setScaleFactorAndHeight(0.75f, 400, true);
+				listenTo(spController);
+				resPanel = spController.getInitialComponent();
 			} else {
-				// boy, can't find file, use an empty panel
-				putInitialPanel(new Panel("empty"));
+				// Render a download link for file
+				VFSContainer courseFolder = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
+				VFSItem downloadItem = courseFolder.resolve(file);
+				if (file != null && downloadItem instanceof VFSLeaf) {
+					DownloadComponent downloadComp = new DownloadComponent("downloadComp",  (VFSLeaf) downloadItem);
+					VelocityContainer peekviewVC = createVelocityContainer("peekview");
+					peekviewVC.put("downloadComp", downloadComp);
+					resPanel = peekviewVC;
+				} 
 			}
 		}
+		putInitialPanel(resPanel);
 	}
 
 	/**

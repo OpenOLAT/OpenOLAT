@@ -43,7 +43,7 @@
 	<variableList>
 		<variable>
 			<name>LOC_MERCURIAL_BASE</name>
-			<value>file:/Users/rhaag/workspace/OLAT-7.1.x/</value>
+			<value>file:/Users/strentini/workspace/OLAT-7.1.x/</value>
 		</variable>
 	</variableList>
 </projectDescription>

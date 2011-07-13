@@ -64,7 +64,7 @@ import org.olat.modules.ModuleConfiguration;
 public class STCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	private static final String PANE_TAB_ST_SCORECALCULATION = "pane.tab.st_scorecalculation";
-	private static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
+	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	
 	/** configuration key for the filename */
@@ -294,6 +294,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 					// Let other config values from old config setup remain in config,
 					// maybe used when user switches back to other config (OLAT-5610)
 				}
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			
 		} else if (source == scoreEasyForm) {

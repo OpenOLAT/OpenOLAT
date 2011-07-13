@@ -37,6 +37,7 @@ import org.olat.portfolio.ui.EPMapRunController;
 import org.olat.portfolio.ui.EPMapRunViewOption;
 import org.olat.portfolio.ui.PortfolioAdminController;
 import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
+import org.olat.portfolio.ui.artefacts.edit.EPReflexionWrapperController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactViewController;
 import org.olat.portfolio.ui.artefacts.view.EPMultiArtefactsController;
 import org.olat.portfolio.ui.artefacts.view.EPMultipleArtefactSmallReadOnlyPreviewController;
@@ -187,13 +188,17 @@ public class EPUIFactory {
 		return null;
 	}
 	
-	
-	public void createPermissionView() {
-		//
-	}
-
-	public void createPortfolioViewForPermittedUsers() {
-		//
+	/**
+	 * get the correct reflexion popup depending on permissions and mode as also context
+	 * @param ureq
+	 * @param wControl
+	 * @param secCallback
+	 * @param artefact
+	 * @param struct - might be null -> means not linked to a structure
+	 * @return
+	 */
+	public static Controller getReflexionPopup(UserRequest ureq, WindowControl wControl, EPSecurityCallback secCallback, AbstractArtefact artefact, PortfolioStructure struct){
+		return new EPReflexionWrapperController(ureq, wControl, secCallback, artefact, struct);
 	}
 
 

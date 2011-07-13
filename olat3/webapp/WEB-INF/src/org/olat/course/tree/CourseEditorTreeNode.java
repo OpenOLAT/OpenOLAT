@@ -27,6 +27,7 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
@@ -119,7 +120,8 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	 * @see org.olat.core.gui.components.tree.TreeNode#getIconCssClass()
 	 */
 	public String getIconCssClass() {
-		return CourseNodeFactory.getInstance().getCourseNodeConfiguration(cn.getType()).getIconCSSClass();
+		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(cn.getType());
+		return cnConfig.getIconCSSClass();
 	}
 
 	/**

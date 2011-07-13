@@ -59,7 +59,7 @@ public class IndentedNodeRenderer implements CustomCellRenderer {
 		Integer indent = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
 		String type = (String)  nodeData.get(AssessmentHelper.KEY_TYPE);
 
-		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type).getIconCSSClass();
+		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type).getIconCSSClass();
 		String title = (String)  nodeData.get(AssessmentHelper.KEY_TITLE_SHORT);
 		String altText = (String)  nodeData.get(AssessmentHelper.KEY_TITLE_LONG);
 		

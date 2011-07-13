@@ -172,7 +172,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		// init the first page either startpage or an other page identified by initial page name
 		if (initialPageName != null && wiki.pageExists(WikiManager.generatePageId(initialPageName))) page = wiki.getPage(initialPageName, true);
-		else page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE);
+		else {
+			page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE);
+			if (initialPageName != null) showError("wiki.error.page.not.found");
+		}
 		this.pageId = page.getPageId();
 		
 		WikiPage menuPage = getWiki().getPage(WikiPage.WIKI_MENU_PAGE);
@@ -672,6 +675,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				//convert wiki into IMS content package and copy to users home folder
 				WikiToCPExport utils = new WikiToCPExport(ores, ident, getTranslator());
 				utils.archiveWikiToCP();
+				showInfo("wiki.exported.done.infomessage");
 			}
 		}
 

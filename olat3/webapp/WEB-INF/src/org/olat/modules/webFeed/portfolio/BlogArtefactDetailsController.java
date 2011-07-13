@@ -23,7 +23,10 @@ package org.olat.modules.webFeed.portfolio;
 
 import java.io.InputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -31,13 +34,16 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -62,9 +68,21 @@ public class BlogArtefactDetailsController extends BasicController {
 		mainVC = createVelocityContainer("post");
 		
 		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
-		VFSContainer artefactContainer = ePFMgr.getArtefactContainer(artefact);
+		final VFSContainer artefactContainer = ePFMgr.getArtefactContainer(artefact);
+		
 		VFSLeaf itemXml = (VFSLeaf)artefactContainer.resolve(BlogArtefact.BLOG_FILE_NAME);
 		if(itemXml != null) {
+			
+			String mapperBase = registerMapper(new Mapper() {			
+				@SuppressWarnings("unused")
+				@Override
+				public MediaResource handle(String relPath, HttpServletRequest request) {
+					VFSItem currentItem = artefactContainer.resolve(relPath);
+					VFSMediaResource vmr = new VFSMediaResource((VFSLeaf)currentItem);
+					return vmr;
+				}
+			});
+
 			InputStream in = itemXml.getInputStream();
 			
 			XStream xstream = XStreamHelper.createXStreamInstance();
@@ -80,7 +98,7 @@ public class BlogArtefactDetailsController extends BasicController {
 			mainVC.contextPut("readOnlyMode", readOnlyMode);
 			
 			mainVC.contextPut("item", item);
-			mainVC.contextPut("helper", new ItemHelper(""));
+			mainVC.contextPut("helper", new ItemHelper(mapperBase));
 			
 		// Add date component
 			if(item.getDate() != null) {
@@ -113,8 +131,7 @@ public class BlogArtefactDetailsController extends BasicController {
 			String itemContent = item.getContent();
 			if (itemContent != null) {
 				//Add relative media base to media elements to display internal media files
-				String basePath = baseUri + "/" + item.getGuid();
-				Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(basePath);
+				Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(baseUri);
 				itemContent = mediaUrlFilter.filter(itemContent);
 			}
 			return itemContent;
@@ -124,8 +141,7 @@ public class BlogArtefactDetailsController extends BasicController {
 			String itemDescription = item.getDescription();
 			if (itemDescription != null) {
 				//Add relative media base to media elements to display internal media files
-				String basePath = baseUri + "/" + item.getGuid();
-				Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(basePath);
+				Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(baseUri);
 				itemDescription = mediaUrlFilter.filter(itemDescription);
 			}
 			return itemDescription;

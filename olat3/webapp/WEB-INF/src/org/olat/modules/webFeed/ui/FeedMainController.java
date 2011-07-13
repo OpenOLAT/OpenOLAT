@@ -85,7 +85,7 @@ public class FeedMainController extends BasicController implements Activateable,
 	 */
 	public FeedMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedUIFactory uiFactory,
 			FeedSecurityCallback callback) {
-		this(ores, ureq, wControl, null, null, uiFactory, callback);
+		this(ores, ureq, wControl, null, null, uiFactory, callback, null);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class FeedMainController extends BasicController implements Activateable,
 	 *          preview and no editing functionality is enabled.
 	 */
 	public FeedMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, Long courseId, String nodeId,
-			FeedUIFactory uiFactory, FeedSecurityCallback callback) {
+			FeedUIFactory uiFactory, FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
 		this.uiFactory = uiFactory;
 		this.callback = callback;
@@ -106,7 +106,7 @@ public class FeedMainController extends BasicController implements Activateable,
 		feed = feedManager.getFeed(ores);
 		helper = new FeedViewHelper(feed, getIdentity(), uiFactory.getTranslator(), courseId, nodeId, callback);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
-		display(ureq, wControl);		
+		display(ureq, wControl, displayConfig);
 		// do logging
 		ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_READ, getClass(), LoggingResourceable.wrap(feed));
 	}
@@ -120,7 +120,7 @@ public class FeedMainController extends BasicController implements Activateable,
 	 * @param previewMode
 	 * @param isCourseNode
 	 */
-	private void display(UserRequest ureq, WindowControl wControl) {
+	private void display(UserRequest ureq, WindowControl wControl, FeedItemDisplayConfig displayConfig) {
 		vcMain = createVelocityContainer("feed_main");
 
 		vcInfo = uiFactory.createInfoVelocityContainer(this);
@@ -144,7 +144,7 @@ public class FeedMainController extends BasicController implements Activateable,
 
 		vcMain.put("info", vcInfo);
 
-		itemsCtr = new ItemsController(ureq, wControl, feed, helper, uiFactory, callback, vcRightCol);
+		itemsCtr = new ItemsController(ureq, wControl, feed, helper, uiFactory, callback, vcRightCol, displayConfig);
 		listenTo(itemsCtr);
 		vcMain.put("items", itemsCtr.getInitialComponent());
 

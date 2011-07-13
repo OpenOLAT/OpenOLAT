@@ -26,18 +26,24 @@ import java.io.InputStream;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.portfolio.EPAbstractHandler;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
 
 import com.thoughtworks.xstream.XStream;
@@ -69,8 +75,9 @@ public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 	@Override
 	public void prefillArtefactAccordingToSource(AbstractArtefact artefact, Object source) {
 		super.prefillArtefactAccordingToSource(artefact, source);
+		Feed feed = null;
 		if (source instanceof Feed) {
-			Feed feed = (Feed)source;
+			feed = (Feed)source;
 			String subPath = getItemUUID(artefact.getBusinessPath());
 			for(Item item:feed.getItems()) {
 				if(subPath.equals(item.getGuid())) {
@@ -79,6 +86,29 @@ public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 			}
 			artefact.setSignature(70); 
 		}
+		String origBPath = artefact.getBusinessPath();
+		String artSource = "";
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(origBPath);
+		if (origBPath.contains(CourseNode.class.getSimpleName())){
+			// blog-post from inside a course, rebuild "course-name - feed-name"
+			OLATResourceable ores = bc.popLauncherContextEntry().getOLATResourceable();
+			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(ores.getResourceableId());
+			artSource = repoEntry.getDisplayname();
+			if (feed!=null) {
+				artSource += " - " + feed.getTitle();
+			}
+		} else if (origBPath.contains(RepositoryEntry.class.getSimpleName())){
+			// blog-post from blog-LR, only get name itself
+			if (feed!=null) {
+				artSource = feed.getTitle();
+			}			
+		} else {
+			// collecting a post from live-blog, [Identity:xy]
+			if (feed!=null) {
+				artSource = feed.getTitle();
+			}			
+		}		
+		artefact.setSource(artSource);
 	}
 
 	private void prefillBlogArtefact(AbstractArtefact artefact, Feed feed, Item item) {

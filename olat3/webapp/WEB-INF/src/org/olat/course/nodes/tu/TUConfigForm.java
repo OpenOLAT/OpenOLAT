@@ -199,7 +199,7 @@ public class TUConfigForm extends FormBasicController {
 		Boolean iframe = cfg.getBooleanEntry(CONFIG_IFRAME);
 		Boolean extern = cfg.getBooleanEntry(CONFIG_EXTERN);
 		if (tunnel == null && iframe == null && extern == null) {				// nothing saved yet
-			return OPTION_TUNNEL_THROUGH_OLAT_INLINE;
+			return OPTION_TUNNEL_THROUGH_OLAT_IFRAME;
 		} else {																												// something is saved ...
 			if (extern != null && extern.booleanValue()) {								// ... it was extern...
 				return OPTION_SHOW_IN_NEW_BROWSER_WINDOW;

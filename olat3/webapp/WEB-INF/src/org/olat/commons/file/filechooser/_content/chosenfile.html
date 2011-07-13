@@ -27,7 +27,11 @@
 			<p>
 				$r.translate("no.file.chosen")
 			</p>
-			$r.render("command.choosecreatefile")
+			#if (!$!quotaover) 
+				$r.render("command.choosecreatefile")
+			#else
+				$!quotaover 
+			#end
 		#end
 		
 		<br>

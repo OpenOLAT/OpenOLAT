@@ -65,29 +65,6 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 	}
 
 	/**
-	 * @uml.property  name="order"
-	 */
-	private String order;
-
-	/**
-	 * Getter of the property <tt>order</tt>
-	 * @return  Returns the order.
-	 * @uml.property  name="order"
-	 */
-	public String getOrder() {
-		return order;
-	}
-
-	/**
-	 * Setter of the property <tt>order</tt>
-	 * @param order  The order to set.
-	 * @uml.property  name="order"
-	 */
-	public void setOrder(String order) {
-		this.order = order;
-	}
-
-	/**
 	 * @uml.property  name="title"
 	 */
 	private String title;

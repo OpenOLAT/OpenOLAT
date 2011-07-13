@@ -25,10 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
@@ -37,9 +35,12 @@ import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
+import org.olat.core.commons.services.commentAndRating.impl.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -67,6 +68,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -87,6 +89,7 @@ public class EPStructureManager extends BasicManager {
 	private RepositoryManager repositoryManager;
 	private OLATResourceManager resourceManager;
 	private BaseSecurity securityManager;
+	private EPPolicyManager policyManager;
 
 	/**
 	 * 
@@ -117,6 +120,11 @@ public class EPStructureManager extends BasicManager {
 	 */
 	public void setRepositoryManager(RepositoryManager repositoryManager) {
 		this.repositoryManager = repositoryManager;
+	}
+	
+	@Autowired(required = true)
+	public void setpolicyManager(final EPPolicyManager policyManager) {
+		this.policyManager = policyManager;
 	}
 	
 	/**
@@ -578,6 +586,47 @@ public class EPStructureManager extends BasicManager {
 		getLogger().error("A structure child has more than one parent");
 		return null;
 	}
+	
+	protected Integer[] getRestrictionStatistics(PortfolioStructure structure) {
+		if (structure instanceof EPStructureElement) {
+			EPStructureElement structEl = (EPStructureElement) structure;
+			structEl = (EPStructureElement) loadPortfolioStructureByKey(structEl.getKey());
+			final List<CollectRestriction> restrictions = structEl.getCollectRestrictions();
+
+			if (restrictions != null && !restrictions.isEmpty()) {
+				int todo = 0;
+				int done = 0;
+				List<AbstractArtefact> artefacts = getArtefacts(structEl);
+				for (CollectRestriction cR : restrictions) {
+					if (RestrictionsConstants.MIN.equals(cR.getRestriction()) || RestrictionsConstants.EQUAL.equals(cR.getRestriction())) {
+						todo += cR.getAmount();
+						int actualCRCount = countRestrictionType(artefacts, cR);
+						done += actualCRCount;
+					}
+				}
+				return new Integer[] { done, todo };
+			}
+		}
+		return null;
+	}
+	
+	// count recursively
+	protected Integer[] getRestrictionStatisticsOfMap(PortfolioStructure structureMap, int done, int todo) {
+		final List<PortfolioStructure> children = loadStructureChildren(structureMap);
+		for (final PortfolioStructure child : children) {			
+			Integer[] childStat = getRestrictionStatisticsOfMap(child, done, todo);
+			done = childStat[0];
+			todo = childStat[1];
+		}	
+		// summarize
+		Integer[] statsArr = getRestrictionStatistics(structureMap);
+		if (statsArr != null){
+			done += statsArr[0];
+			todo += statsArr[1];			
+		}
+
+		return new Integer[] {done, todo};
+	}
 
 	/**
 	 * Add a link between a structure element and an artefact
@@ -639,13 +688,16 @@ public class EPStructureManager extends BasicManager {
 	}
 	
 	protected boolean moveArtefactFromStructToStruct(AbstractArtefact artefact, PortfolioStructure oldParStruct, PortfolioStructure newParStruct) {
-		EPStructureElement oldEPSt = (EPStructureElement)oldParStruct;
+		EPStructureElement oldEPSt = (EPStructureElement)dbInstance.loadObject((EPStructureElement)oldParStruct);
 		Identity author = oldEPSt.getInternalArtefacts().get(0).getAuthor();
 		if (author == null) return false; // old model without author, doesn't work!
+		
+		String reflexion = getReflexionForArtefactToStructureLink(artefact, oldParStruct);
 		
 		removeArtefactFromStructure(artefact, oldParStruct);
 		boolean allOk = false;
 		allOk = addArtefactToStructure(author, artefact, newParStruct);
+		if (allOk) return setReflexionForArtefactToStructureLink(artefact, newParStruct, reflexion);
 		return allOk;
 	}
 	
@@ -793,8 +845,9 @@ public class EPStructureManager extends BasicManager {
   * Add a child structure to the parent structure.
   * @param parentStructure
   * @param childStructure
+  * @param destinationPos set to -1 to append at the end!
   */
-	public void addStructureToStructure(PortfolioStructure parentStructure, PortfolioStructure childStructure) {
+	public void addStructureToStructure(PortfolioStructure parentStructure, PortfolioStructure childStructure, int destinationPos) {
 		if (parentStructure == null || childStructure == null) throw new NullPointerException();
 		if(childStructure instanceof EPStructureElement) {
 			//save eventual changes
@@ -808,15 +861,19 @@ public class EPStructureManager extends BasicManager {
 			//refresh internal link to its root element
 			((EPStructureElement)childStructure).setRoot((EPStructureElement) parentStructure);
 			
-			((EPStructureElement)parentStructure).getInternalChildren().add(link);
+			if (destinationPos == -1) {
+				((EPStructureElement)parentStructure).getInternalChildren().add(link);
+			} else {
+				((EPStructureElement)parentStructure).getInternalChildren().add(destinationPos, link);
+			}
 		}
 	}
 	
-	protected boolean moveStructureToNewParentStructure(PortfolioStructure structToBeMvd,	PortfolioStructure oldParStruct, PortfolioStructure newParStruct){
+	protected boolean moveStructureToNewParentStructure(PortfolioStructure structToBeMvd,	PortfolioStructure oldParStruct, PortfolioStructure newParStruct, int destinationPos){
 		if (structToBeMvd == null || oldParStruct == null || newParStruct == null) throw new NullPointerException();
 		try { // try catch, as used in d&d TOC-tree, should still continue on error
 			removeStructure(oldParStruct, structToBeMvd);
-			addStructureToStructure(newParStruct, structToBeMvd);
+			addStructureToStructure(newParStruct, structToBeMvd, destinationPos);
 		} catch (Exception e) {
 			logError("could not move structure " + structToBeMvd.getKey() + " from " + oldParStruct.getKey() + " to " + newParStruct.getKey(), e);
 			return false;
@@ -919,11 +976,37 @@ public class EPStructureManager extends BasicManager {
 		
 		// remove from parent
 		PortfolioStructure parent = loadStructureParent(struct);
+		if (parent == null && struct.getRoot() != null) parent = struct.getRoot();
 		removeStructure(parent, struct);
+		
+		// remove collect restriction
+		struct.getCollectRestrictions().clear();
+		
+		// remove sharings
+		if (struct instanceof EPAbstractMap){
+			List<EPMapPolicy> noMorePol = new ArrayList<EPMapPolicy>();
+			policyManager.updateMapPolicies((PortfolioStructureMap) struct, noMorePol);
+		}
+		
+		// remove comments and ratings
+		CommentAndRatingService commentAndRatingService = null;
+		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
+		commentAndRatingService.init(struct.getOlatResource(), null, new CommentAndRatingDefaultSecurityCallback(null, true, false));
+		commentAndRatingService.deleteAllIgnoringSubPath();
 		
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
 		dbInstance.deleteObject(struct);		
+		if (struct instanceof EPAbstractMap){
+			EPAbstractMap esmap = (EPAbstractMap)struct;
+			SecurityGroup securityGroup = esmap.getOwnerGroup();
+			if (securityGroup!=null) {
+				securityManager.deleteSecurityGroup(securityGroup);
+				resourceManager.deleteOLATResourceable(securityGroup);
+			}
+		}
+		
+		resourceManager.deleteOLATResourceable(struct);
 	}
 	
 	
@@ -966,9 +1049,24 @@ public class EPStructureManager extends BasicManager {
 		}
 	}
 	
-	private int indexOf(List<EPStructureToStructureLink> artefactLinks, PortfolioStructure structure) {
+	protected boolean reOrderStructures(PortfolioStructure parent, PortfolioStructure orderSubject, int orderDest){
+		EPStructureElement structureEl = (EPStructureElement)dbInstance.loadObject((EPStructureElement)parent);
+		List<EPStructureToStructureLink> structureLinks = structureEl.getInternalChildren();
+
+		int oldPos = indexOf(structureLinks, orderSubject);		
+		if (oldPos != orderDest && oldPos != -1) {
+			EPStructureToStructureLink link = structureLinks.remove(oldPos);
+			while (orderDest > structureLinks.size()) orderDest--; // place at end
+			structureLinks.add(orderDest, link);			
+			dbInstance.updateObject(structureEl);
+			return true;
+		}
+		return false;
+	}
+	
+	private int indexOf(List<EPStructureToStructureLink> structLinks, PortfolioStructure structure) {
 		int count = 0;
-		for(EPStructureToStructureLink link:artefactLinks) {
+		for(EPStructureToStructureLink link:structLinks) {
 			if(link.getChild().getKey().equals(structure.getKey())) {
 				return count;
 			}
@@ -990,10 +1088,10 @@ public class EPStructureManager extends BasicManager {
 		//reconnect to the session
 		EPStructureElement sourceEl = (EPStructureElement)source;
 		targetEl.setStyle(sourceEl.getStyle());
-		copyEPStructureElementRecursively(sourceEl, targetEl, withArtefacts);
+		copyEPStructureElementRecursively(sourceEl, targetEl, withArtefacts, true);
 	}
 	
-	private void copyEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {
+	private void copyEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts, boolean cloneRestrictions) {
 		//needed if the sourceEl come from a link. Hibernate doesn't initialize the list properly
 		sourceEl = (EPStructureElement)dbInstance.loadObject(sourceEl);
 		if(withArtefacts) {
@@ -1008,7 +1106,7 @@ public class EPStructureManager extends BasicManager {
 		//clone the links
 		List<EPStructureToStructureLink> childLinks = sourceEl.getInternalChildren();
 		for(EPStructureToStructureLink childLink:childLinks) {
-			copy(childLink, targetEl, withArtefacts, false); 
+			copy(childLink, targetEl, withArtefacts, false, cloneRestrictions); 
 		}
 		
 		savePortfolioStructure(targetEl);
@@ -1032,43 +1130,43 @@ public class EPStructureManager extends BasicManager {
 	}
 	
 	/**
-	 * This sync method only sync the structure of the tree and no content.
-	 * TODO: epf: SR sync collect restriction, title, description, representation-mode (table/miniview) also pay attention to this on copy and import!
+	 * This sync method syncs the structure of the tree, collect restriction, title, description, representation-mode (table/miniview) 
+	 * 
 	 * @param sourceEl
 	 * @param targetEl
 	 * @param withArtefacts
 	 */
-	private void syncEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {
-		if(withArtefacts) {
-			syncArtefacts(sourceEl, targetEl);
-		}
-		
+	private void syncEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {		
 		List<EPStructureToStructureLink> sourceRefLinks = new ArrayList<EPStructureToStructureLink>(sourceEl.getInternalChildren());
 		List<EPStructureToStructureLink> targetRefLinks = new ArrayList<EPStructureToStructureLink>(targetEl.getInternalChildren());
 
 		Comparator<EPStructureToStructureLink> COMPARATOR = new KeyStructureToStructureLinkComparator();
 
 		//remove deleted elements
-		List<EPStructureToStructureLink> linksToDelete = new ArrayList<EPStructureToStructureLink>();
 		for(Iterator<EPStructureToStructureLink> targetIt=targetEl.getInternalChildren().iterator(); targetIt.hasNext(); ) {
 			EPStructureToStructureLink targetLink = targetIt.next();
 			int index = indexOf(sourceRefLinks, targetLink, COMPARATOR);
 			if(index < 0) {
-				linksToDelete.add(targetLink);
 				targetIt.remove();
+				removeStructureRecursively(targetLink.getChild());
 			}
 		}
 		
 		//add new element
-		Set<Long> newSourceRefLinkKeys = new HashSet<Long>();
 		for(EPStructureToStructureLink sourceRefLink:sourceRefLinks) {
 			int index = indexOf(targetRefLinks, sourceRefLink, COMPARATOR);
 			if(index < 0) {
-				//create a new structure element
-				copy(sourceRefLink, targetEl, withArtefacts, false); 
-				newSourceRefLinkKeys.add(sourceRefLink.getKey());
+				//create a new structure element, dont clone restriction!
+				copy(sourceRefLink, targetEl, withArtefacts, false, false); 
 			}
 		}
+		
+		//sync attributes, representation and collect restrictions
+		copyOrUpdateCollectRestriction(sourceEl, targetEl, true);
+		targetEl.setArtefactRepresentationMode(sourceEl.getArtefactRepresentationMode());
+		targetEl.setStyle(sourceEl.getStyle());
+		targetEl.setTitle(sourceEl.getTitle());
+		targetEl.setDescription(sourceEl.getDescription());		
 		
 		//at this point, we must have the same content in the two list
 		//but with perhaps other ordering: reorder
@@ -1105,13 +1203,6 @@ public class EPStructureManager extends BasicManager {
 		}
 		return -1;
 	}
-
-	private void syncArtefacts(EPStructureElement sourceEl, EPStructureElement targetEl) {
-		List<EPStructureToArtefactLink> artefactLinks = sourceEl.getInternalArtefacts();
-		for(EPStructureToArtefactLink artefactLink:artefactLinks) {
-			//TODO
-		}
-	}
 	
 	/**
 	 * Copy/Import structure elements recursively
@@ -1119,8 +1210,9 @@ public class EPStructureManager extends BasicManager {
 	 * @param targetEl
 	 * @param withArtefacts Copy the artefacts
 	 * @param importEl Don't load elements from the DB
+	 * @param cloneRestrictions should the collect-restrictions be applied? you could also do this manually by copyCollectRestriction()
 	 */
-	private void copy(EPStructureToStructureLink refLink, EPStructureElement targetEl, boolean withArtefacts, boolean importEl) {
+	private void copy(EPStructureToStructureLink refLink, EPStructureElement targetEl, boolean withArtefacts, boolean importEl, boolean cloneRestrictions) {
 		EPStructureElement childSourceEl = (EPStructureElement)refLink.getChild();
 		EPStructureElement clonedChildEl = instantiateClone(refLink.getChild());
 		if(clonedChildEl == null) {
@@ -1140,13 +1232,13 @@ public class EPStructureManager extends BasicManager {
 			} else {
 				clonedChildEl.setRootMap(targetEl.getRootMap());
 			}
-			clonedChildEl.setStructureElSource(childSourceEl.getKey());
+			if (!importEl) clonedChildEl.setStructureElSource(childSourceEl.getKey());
 			
-			copyCollectRestriction(childSourceEl, clonedChildEl);
+			if (cloneRestrictions) copyOrUpdateCollectRestriction(childSourceEl, clonedChildEl, true);
 			if(importEl) {
 				importEPStructureElementRecursively(childSourceEl, clonedChildEl);
 			} else {
-				copyEPStructureElementRecursively(childSourceEl, clonedChildEl, withArtefacts);
+				copyEPStructureElementRecursively(childSourceEl, clonedChildEl, withArtefacts, cloneRestrictions);
 			}
 
 			EPStructureToStructureLink link = new EPStructureToStructureLink();
@@ -1180,13 +1272,26 @@ public class EPStructureManager extends BasicManager {
 		return targetEl;
 	}
 	
-	private void copyCollectRestriction(PortfolioStructure source, PortfolioStructure target) {
-		if(source == null || target == null ||source.getCollectRestrictions() == null
-				|| source.getCollectRestrictions().isEmpty()) {
+	/**
+	 * 
+	 * @param source
+	 * @param target
+	 * @param update if true, the old existing restrictions will be overwritten
+	 */
+	private void copyOrUpdateCollectRestriction(PortfolioStructure source, PortfolioStructure target, boolean update) {
+		if(source == null || target == null) {
+			return;
+		}
+		List<CollectRestriction> targetRestrictions = target.getCollectRestrictions();
+		if ((source.getCollectRestrictions() == null || source.getCollectRestrictions().isEmpty()) && (target.getCollectRestrictions() != null && !target.getCollectRestrictions().isEmpty()) && update){
+			// remove former existing restrictions
+			targetRestrictions.clear();
 			return;
 		}
 		
-		List<CollectRestriction> targetRestrictions = target.getCollectRestrictions();
+		if (update) {
+			targetRestrictions.clear();
+		} 
 		for(CollectRestriction sourceRestriction: source.getCollectRestrictions()) {
 			CollectRestriction targetRestriction = new CollectRestriction();
 			targetRestriction.setArtefactType(sourceRestriction.getArtefactType());
@@ -1388,7 +1493,7 @@ public class EPStructureManager extends BasicManager {
 		el.setStructureElSource(template.getKey());
 		
 		if(template != null) {
-			copyCollectRestriction(template, el);
+			copyOrUpdateCollectRestriction(template, el, false);
 		}
 		
 		EPTargetResource targetResource = el.getTargetResource();
@@ -1475,7 +1580,10 @@ public class EPStructureManager extends BasicManager {
 		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
 		
 		fillStructureElement(el, root.getTitle(), root.getDescription());
+		EPStructuredMapTemplate rootTemp = (EPStructuredMapTemplate) root;
+		rootTemp.setStructureElSource(null);
 		
+		el.setStyle(((EPStructureElement)root).getStyle()); 
 		importEPStructureElementRecursively((EPStructureElement)root, el);
 		
 		//create an empty security group
@@ -1491,7 +1599,9 @@ public class EPStructureManager extends BasicManager {
 		//clone the links
 		List<EPStructureToStructureLink> childLinks = sourceEl.getInternalChildren();
 		for(EPStructureToStructureLink childLink:childLinks) {
-			copy(childLink, targetEl, false, true); 
+			EPStructureElement childSourceEl = (EPStructureElement) childLink.getChild();
+			childSourceEl.setStructureElSource(null); // remove source-info on imports.
+			copy(childLink, targetEl, false, true, true); 
 		}
 		
 		savePortfolioStructure(targetEl);
@@ -1678,14 +1788,17 @@ public class EPStructureManager extends BasicManager {
 
 
 	protected boolean setReflexionForArtefactToStructureLink(AbstractArtefact artefact, PortfolioStructure structure, String reflexion) {
-		//EPStructureElement structureEl = (EPStructureElement) structure;
 		EPStructureElement structureEl = (EPStructureElement)dbInstance.loadObject((EPStructureElement)structure);
 		List<EPStructureToArtefactLink> links = structureEl.getInternalArtefacts();
 		boolean changed = false;
 		for (EPStructureToArtefactLink epStructureToArtefactLink : links) {
 			if (epStructureToArtefactLink.getArtefact().getKey().equals(artefact.getKey())){
 				epStructureToArtefactLink.setReflexion(reflexion);
-				dbInstance.updateObject(epStructureToArtefactLink);
+				if(epStructureToArtefactLink.getKey() == null) {
+					dbInstance.saveObject(epStructureToArtefactLink);
+				} else {
+					dbInstance.updateObject(epStructureToArtefactLink);
+				}
 				changed = true;
 				break;
 			}

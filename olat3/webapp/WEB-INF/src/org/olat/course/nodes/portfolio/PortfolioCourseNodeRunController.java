@@ -135,10 +135,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			deadlineDateText = uifactory.addStaticTextElement("deadline", deadLineLabel, deadLineInfo, formLayout);			
 		}
 		
-		if(template == null) {
-			String msg = translate("map.unavailable");
-			uifactory.addStaticTextElement("map.unavailable", msg, formLayout);
-		} else {
+		if(template != null) {
 			updateUI();
 		}
 	}

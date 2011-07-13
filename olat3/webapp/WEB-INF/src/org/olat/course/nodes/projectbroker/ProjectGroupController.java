@@ -141,11 +141,13 @@ public class ProjectGroupController extends BasicController {
 			ProjectBrokerManagerFactory.getProjectGroupManager().removeCandidates(((IdentitiesRemoveEvent)event).getRemovedIdentities(), project);
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		} else if (event instanceof IdentitiesMoveEvent) {
-			IdentitiesMoveEvent identitiesMoveEvent = (IdentitiesMoveEvent) event;
-			ProjectBrokerManagerFactory.getProjectGroupManager().acceptCandidates(identitiesMoveEvent.getChosenIdentities(), project, urequest.getIdentity(), 
-					                        projectBrokerModuleConfiguration.isAutoSignOut(), projectBrokerModuleConfiguration.isAcceptSelectionManually());
-			identitiesMoveEvent.setMovedIdentities(identitiesMoveEvent.getChosenIdentities());
-			identitiesMoveEvent.setNotMovedIdentities(new ArrayList());
+			final IdentitiesMoveEvent identitiesMoveEvent = (IdentitiesMoveEvent) event;
+			//OLAT-6342: check identity not in group first!
+			List<Identity> moveIdents = identitiesMoveEvent.getChosenIdentities();
+			BusinessGroupAddResponse response = ProjectBrokerManagerFactory.getProjectGroupManager().acceptCandidates(moveIdents, project, urequest.getIdentity(),
+					projectBrokerModuleConfiguration.isAutoSignOut(), projectBrokerModuleConfiguration.isAcceptSelectionManually());
+			identitiesMoveEvent.setMovedIdentities(response.getAddedIdentities());
+			identitiesMoveEvent.setNotMovedIdentities(response.getIdentitiesAlreadyInGroup());
 			// send mail for all of them
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			MailTemplate mailTemplate = identitiesMoveEvent.getMailTemplate();

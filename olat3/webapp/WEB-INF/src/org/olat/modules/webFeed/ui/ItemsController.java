@@ -105,18 +105,43 @@ public class ItemsController extends BasicController {
 	// Only one lock variable is needed, since only one item can be edited
 	// at a time.
 	private LockResult lock;
+	private FeedItemDisplayConfig displayConfig;
 	public static Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
 	public static Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
 
 	/**
-	 * Constructor
-	 * 
+	 * default constructor, with full FeedItemDisplayConfig
 	 * @param ureq
-	 * @param control
+	 * @param wControl
+	 * @param feed
+	 * @param helper
+	 * @param uiFactory
+	 * @param callback
+	 * @param vcRightColumn
 	 */
-	public ItemsController(UserRequest ureq, WindowControl wControl, Feed feed, FeedViewHelper helper, FeedUIFactory uiFactory,
-			FeedSecurityCallback callback, VelocityContainer vcRightColumn) {
+	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed, final FeedViewHelper helper, final FeedUIFactory uiFactory,
+			final FeedSecurityCallback callback, final VelocityContainer vcRightColumn) {
+		this(ureq, wControl, feed, helper, uiFactory, callback, vcRightColumn, null);
+	}
+	
+	/**
+	 * load items with a given displayconfig
+	 * @param ureq
+	 * @param wControl
+	 * @param feed
+	 * @param helper
+	 * @param uiFactory
+	 * @param callback
+	 * @param vcRightColumn
+	 * @param displayConfig
+	 */
+	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed, final FeedViewHelper helper, final FeedUIFactory uiFactory,
+			final FeedSecurityCallback callback, final VelocityContainer vcRightColumn, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
+		if (displayConfig == null) {
+			displayConfig = new FeedItemDisplayConfig(true, true, true);
+		}
+		this.displayConfig = displayConfig;
 		this.feedResource = feed;
 		this.helper = helper;
 		this.uiFactory = uiFactory;
@@ -145,7 +170,9 @@ public class ItemsController extends BasicController {
 		// Add item details page link
 		createItemLinks(feed);
 		// Add item user comments link and rating
-		createCommentsAndRatingsLinks(ureq, feed);
+		if (displayConfig.isShowCRInMinimized()) {
+			createCommentsAndRatingsLinks(ureq, feed);
+		}
 		// Add date components
 		createDateComponents(ureq, feed);
 
@@ -154,7 +181,9 @@ public class ItemsController extends BasicController {
 		allItemsCount = items.size();
 		naviCtr = new YearNavigationController(ureq, wControl, getTranslator(), items);
 		listenTo(naviCtr);
-		vcRightColumn.put("navi", naviCtr.getInitialComponent());
+		if (displayConfig.isShowDateNavigation()){
+			vcRightColumn.put("navi", naviCtr.getInitialComponent());
+		}
 
 		mainPanel = new Panel("mainPanel");
 		mainPanel.setContent(vcItems);
@@ -686,7 +715,7 @@ public class ItemsController extends BasicController {
 		Controller artefactLink =  getArtefactLinkByUserObject(item);
 		FeedManager feedManager = FeedManager.getInstance();
 		Feed feed = feedManager.getFeed(feedResource);
-		itemCtr = new ItemController(ureq, getWindowControl(), item, feed, helper, uiFactory, callback, editButton, deleteButton, artefactLink);
+		itemCtr = new ItemController(ureq, getWindowControl(), item, feed, helper, uiFactory, callback, editButton, deleteButton, artefactLink, displayConfig);
 		listenTo(itemCtr);
 		mainPanel.setContent(itemCtr.getInitialComponent());
 		return itemCtr;

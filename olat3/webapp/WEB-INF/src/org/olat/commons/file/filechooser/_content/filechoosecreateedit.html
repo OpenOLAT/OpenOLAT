@@ -2,18 +2,25 @@
 	<strong>$r.translate("file"):</strong>
 	$r.translate("folder.displayname")$chosenFile
 #end
+#if (!$!quotaover) 
 <fieldset>
 	<legend>$r.translate("command.newfile")</legend>
 	$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-newfile.html", "help.choose.htmlfile")
 	$r.render("newfileform")
 </fieldset>
+#else
+	<br/><br/>
+	$!quotaover 
+#end
 <fieldset>
 	<legend>$r.translate("label.choosefile")</legend>
 	$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-multi.html", "help.choose.file")
 	$r.render("command.choosefile")
 </fieldset>
+#if (!$!quotaover) 
 <fieldset>
 	<legend>$r.translate("label.zipupload")</legend>
 	$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-upload.html", "help.choose.fileupload")
 	$r.render("upl")
 </fieldset>
+#end
