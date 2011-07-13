@@ -97,8 +97,9 @@ public class EPTOCController extends BasicController {
 		treeCtr.setTreeSorting(false, false, false);
 		listenTo(treeCtr);
 		tocV.put("tocTree", treeCtr.getInitialComponent());		
-		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "deleteButton", Link.LINK_CUSTOM_CSS, tocV, this);
-		delButton.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
+		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, tocV, this);
+		delButton.setTooltip(translate("deleteButton"), false);
+		delButton.setCustomEnabledLinkCSS("b_delete_icon b_eportfolio_del_link ");
 		tocV.put("deleteButton", delButton);		
 
 		if(selectedEl == null) {

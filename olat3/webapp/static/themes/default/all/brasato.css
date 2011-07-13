@@ -1068,7 +1068,10 @@
 		
 	.b_eportfolio_map { background: white; padding: 1.5em; min-height: 30em;}
 	.b_eportfolio_map .b_ep_relative { position: relative; }
-	.b_eportfolio_map a.b_eportfolio_add_link { float: right; display:inline; background-repeat:no-repeat; margin-left: 0.5em; width: 16px; height: 16px; }
+	.b_eportfolio_toolbar div {display:inline;}
+	.b_eportfolio_toolbar {text-align:right; width:100%; border-bottom: 1px solid #acaaaa; padding: 1px 2px 4px 2px; margin-bottom: 6px;}
+	.b_eportfolio_map a.b_eportfolio_add_link, .b_eportfolio_map a.b_eportfolio_del_link { float:right; display:inline; background-repeat:no-repeat; margin-left: 0.5em; width: 16px; height: 16px; text-decoration:none;}
+	.b_eportfolio_toolbar  a.b_eportfolio_add_link, .b_eportfolio_map a.b_eportfolio_del_link { float:none; display:inline-block; background-repeat:no-repeat; margin-left: 0;margin-right: 0.5em; width: 16px; height: 16px; text-decoration:none;}
 	.b_eportfolio_map div.b_eportfolio_add_link { float:left; display:inline; margin-top:2px; }
 	.o_ep_toc_editor .b_eportfolio_add_link { float: left; }
 	.b_eportfolio_map .b_eportfolio_add_link:hover { text-decoration: none; }
