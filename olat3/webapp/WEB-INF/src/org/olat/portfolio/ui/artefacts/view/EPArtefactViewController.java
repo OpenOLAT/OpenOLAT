@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -211,7 +212,7 @@ public class EPArtefactViewController extends FormBasicController {
 
 		// build link to original source
 		if (StringHelper.containsNonWhitespace(artefact.getBusinessPath())) {
-			String sourceLink = createLinkToArtefactSource(artefact.getBusinessPath());
+			String sourceLink = createLinkToArtefactSource(ureq, artefact.getBusinessPath());
 			flc.contextPut("artefactSourceLink", sourceLink);			
 		}
 		
@@ -267,11 +268,12 @@ public class EPArtefactViewController extends FormBasicController {
 		return busLink;
 	}
 
-	private String createLinkToArtefactSource(String businessPath){
+	private String createLinkToArtefactSource(UserRequest ureq, String businessPath){
 		BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
 		List<ContextEntry> ceList = bCF.createCEListFromString(businessPath);
+		boolean valid = NewControllerFactory.getInstance().validateCEWithContextControllerCreator(ureq, getWindowControl(), ceList.get(0));
 		String busLink = bCF.getAsURIString(ceList, true); 
-		if (StringHelper.containsNonWhitespace(busLink)){
+		if (valid && StringHelper.containsNonWhitespace(busLink)){
 			return "<a href=\"" + busLink + "\">" + translate("artefact.open.source") + "</a>";
 		} else return translate("artefact.no.source");
 	}

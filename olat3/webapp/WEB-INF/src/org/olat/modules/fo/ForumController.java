@@ -303,7 +303,8 @@ public class ForumController extends BasicController implements GenericEventList
 					scrollToCurrentMessage();					
 				} else {
 					// message not found, do nothing. Load normal start screen
-					logDebug("Invalid messageId=" , ores.getResourceableId().toString());
+					showError("deleteok");
+					logDebug("Invalid messageId=", ores.getResourceableId().toString());
 				}
 			} else {
 				//FIXME:chg: Should not happen, occurs when course-node are called

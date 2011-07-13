@@ -45,6 +45,7 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupFactory;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -245,23 +246,28 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
 	}
 
-	public boolean acceptCandidates(final List<Identity> identities, final Project project, final Identity actionIdentity, final boolean autoSignOut, final boolean isAcceptSelectionManually) {
+	public BusinessGroupAddResponse acceptCandidates(final List<Identity> identities, final Project project, final Identity actionIdentity, final boolean autoSignOut, final boolean isAcceptSelectionManually) {
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 		final Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
+		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
-				for (Identity identity : identities ) {
-					BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-					BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
-					BusinessGroupManagerImpl.getInstance().addParticipantAndFireEvent(actionIdentity, identity, reloadedProject.getProjectGroup(), flags, false);
-					logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
-					// fireEvents ?
+				for (final Identity identity : identities) {
+					if (!BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, reloadedProject.getProjectGroup().getPartipiciantGroup())) {
+						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
+						final BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
+						BusinessGroupManagerImpl.getInstance().addParticipantAndFireEvent(actionIdentity, identity, reloadedProject.getProjectGroup(), flags, false);
+						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
+						response.getAddedIdentities().add(identity);
+					} else {
+						response.getIdentitiesAlreadyInGroup().add(identity);
+					}				
 				}
 				return Boolean.TRUE;
 			}
 		});// end of doInSync
 		if (autoSignOut && result.booleanValue()) {
-			ProjectBrokerManagerFactory.getProjectBrokerManager().signOutFormAllCandidateList(identities, reloadedProject.getProjectBroker().getKey());
+			ProjectBrokerManagerFactory.getProjectBrokerManager().signOutFormAllCandidateList(response.getAddedIdentities(), reloadedProject.getProjectBroker().getKey());
 		}
 		if (isAcceptSelectionManually && (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) 
 				&& reloadedProject.getSelectedPlaces() >= reloadedProject.getMaxMembers()) {
@@ -270,7 +276,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		}
 
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
-		return  result.booleanValue();
+		return response;
 	}
 
 	@Override
