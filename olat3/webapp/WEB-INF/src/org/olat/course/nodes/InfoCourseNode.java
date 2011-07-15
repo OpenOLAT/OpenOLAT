@@ -22,11 +22,16 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.olat.commons.info.manager.InfoMessageFrontendManager;
+import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.util.Util;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -194,5 +199,23 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 		
 		boolean admin = (getPreConditionAdmin().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionAdmin()));
 		nodeEval.putAccessStatus(ADMIN_CONDITION_ID, admin);
+	}
+	
+		@Override
+	/**
+	 * is called when deleting this node, clean up info-messages and subscriptions!
+	 */
+	public void cleanupOnDelete(ICourse course) {
+		// delete infoMessages and subscriptions (OLAT-6171)
+		List<InfoMessage>  messages = InfoMessageFrontendManager.getInstance().loadInfoMessageByResource(course,null, null, null, null, 0, 0);
+		InfoMessageFrontendManager infoMessageManager = InfoMessageFrontendManager.getInstance();
+		for (InfoMessage im : messages) {
+			infoMessageManager.deleteInfoMessage(im);
+		}
+		
+		final SubscriptionContext subscriptionContext = CourseModule.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);
+		NotificationsManager notifManagar =  NotificationsManager.getInstance();
+		notifManagar.delete(subscriptionContext);
+		super.cleanupOnDelete(course);
 	}
 }
