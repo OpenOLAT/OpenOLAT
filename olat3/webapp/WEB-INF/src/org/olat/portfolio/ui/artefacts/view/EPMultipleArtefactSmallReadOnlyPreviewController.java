@@ -42,11 +42,10 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 /**
  * Description:<br>
  * show minimal set of artefact details in small preview controllers.
- * if an artefact handler provides a special preview, use this instead the generic artefact-view
- * used inside maps.
- * 
+ * if an artefact handler provides a special preview, use this instead the generic artefact-view used inside maps.
  * <P>
- * Initial Date:  17.11.2010 <br>
+ * Initial Date: 17.11.2010 <br>
+ * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicController implements EPMultiArtefactsController {
@@ -54,6 +53,7 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 	private List<AbstractArtefact> artefacts;
 	private PortfolioModule portfolioModule;
 	private ArrayList<Controller> artefactCtrls;
+	private ArrayList<Controller> optionLinkCtrls;
 	private VelocityContainer vC;
 	private PortfolioStructure struct;
 	private EPSecurityCallback secCallback;
@@ -72,6 +72,8 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 	
 	private void init(UserRequest ureq) {
 		if (artefactCtrls != null) disposeArtefactControllers();
+		if( optionLinkCtrls != null) disposeOptionLinkControllers();
+		optionLinkCtrls = new ArrayList<Controller>();
 		artefactCtrls = new ArrayList<Controller>();
 		List<List<Panel>> artefactCtrlCompLines = new ArrayList<List<Panel>>();
 		List<Panel> artefactCtrlCompLine = new ArrayList<Panel>();
@@ -113,6 +115,13 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 				if(special) {//need a flag in a lopp for the velociy template
 					vC.put("specialartCtrl" + i, artefactCtrlComponent);
 				}
+
+				//add the optionsLink to the artefact
+				EPArtefactViewOptionsLinkController optionsLinkCtrl = new EPArtefactViewOptionsLinkController(ureq, getWindowControl(), artefact, secCallback, struct);
+				vC.put("optionsLink"+i,optionsLinkCtrl.getInitialComponent());
+				listenTo(optionsLinkCtrl);
+				optionLinkCtrls.add(optionsLinkCtrl);
+				
 				i++;
 			}
 		}
@@ -133,6 +142,19 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 		}
 	}
 
+	/**
+	 * dispose the list that holds optionLinkControlllers
+	 */
+	private void disposeOptionLinkControllers(){
+		if (optionLinkCtrls != null) {
+			for (Controller optionCtrl : optionLinkCtrls) {
+				removeAsListenerAndDispose(optionCtrl);
+				optionCtrl = null;
+			}
+			optionLinkCtrls = null;
+		}
+	}
+	
 	/**
 	 * @see org.olat.portfolio.ui.artefacts.view.EPMultiArtefactsController#setNewArtefactsList(org.olat.core.gui.UserRequest, java.util.List)
 	 */
@@ -166,6 +188,7 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 	@Override
 	protected void doDispose() {
 		disposeArtefactControllers();
+		disposeOptionLinkControllers();
 	}
 
 }

@@ -153,6 +153,9 @@ public class EPStructureElementsController extends BasicController {
 			
 			// something changed
 			initForm(ureq);
+
+			//pass it on, parent controllers (EPPageViewController)  might need to update 
+			fireEvent(ureq, changeEvent);
 		}
 	}
 
