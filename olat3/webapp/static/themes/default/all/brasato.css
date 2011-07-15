@@ -1031,7 +1031,7 @@
 	.b_ep_multiartefacts div.b_artefact_count { margin: 1em 0 1em 0;}
 	
 	a.b_ep_options { background: url(../images/brasato/preferences.png) top left no-repeat; width:16px; height:16px; display: block;}
-	a.b_ep_options:hover { background: url(../images/brasato/preferences_over.png) top left no-repeat; width:16px; height:16px; display: block;}
+	a.b_ep_options:hover { background: url(../images/brasato/preferences_over.png) top left no-repeat; width:16px; height:16px; display: block;text-decoration:none;}
 	.b_ep_liveblog_icon { background-image: url(../images/brasato/eportfolio/ep_liveblog_icon.png); }
 	
 	div.b_portfolio_toc ul { margin: 0; }
