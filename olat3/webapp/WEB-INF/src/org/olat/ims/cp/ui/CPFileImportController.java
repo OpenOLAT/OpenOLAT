@@ -89,6 +89,16 @@ public class CPFileImportController extends FormBasicController {
 		extensions.add("ppt");
 		initForm(ureq);
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		String fileName = file.getUploadFileName();
+		if (fileName == null) {
+			file.setErrorKey("cpfileuploadcontroller.noFileChosen", null);
+			return false;
+		}
+		return super.validateFormLogic(ureq);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
