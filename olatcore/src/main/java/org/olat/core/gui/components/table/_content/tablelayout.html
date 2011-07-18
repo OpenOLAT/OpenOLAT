@@ -60,11 +60,11 @@
 			</div>
 		#end
 		#if ($tableConfig.isPreferencesOffered())
-			<a href="$r.commandURIbg("cmd.changecols")" $r.bgTarget() class="b_table_prefs" title="$r.translateInAttribute("table.changecols")">&nbsp;</a>
+			$r.render("prefLink")
 		#end
 		
 		#if ($tableConfig.isDownloadOffered())	
-			<a href="$r.commandURIbg("cmd.download")" $r.bgTarget() class="b_table_download" title="$r.translateInAttribute("table.download")">&nbsp;</a>
+			$r.render("downloadLink")
 		#end
 		</div>
 	</div>

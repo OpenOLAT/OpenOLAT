@@ -44,7 +44,7 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.AutoCompleterContro
 import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.PackageTranslator;
@@ -100,7 +100,7 @@ import org.olat.core.util.filter.FilterFactory;
  * Opens a modal dialog for choosing which columns to hide or show.
  * <p>
  * 
- * @author Felix Jost, Florian Gnägi
+ * @author Felix Jost, Florian Gn√§gi
  */
 public class TableController extends BasicController {
 	
@@ -148,10 +148,13 @@ public class TableController extends BasicController {
 	private ShortName activeFilter;
 
 	private boolean tablePrefsInitialized = false;
-	private CloseableModalController cmc;
+	private CloseableCalloutWindowController cmc;
 	private Controller tableSearchController;
 
 	private Link resetLink;
+	
+	private Link preferenceLink;
+	private Link downloadLink;
 
 	/**
 	 * Constructor for the table controller using the table filter.
@@ -238,6 +241,12 @@ public class TableController extends BasicController {
 
 		contentVc.contextPut("tableConfig", tableConfig);
 		contentVc.contextPut(VC_VAR_HAS_TABLE_SEARCH, Boolean.FALSE);
+
+		//preference + download links
+		preferenceLink = LinkFactory.createCustomLink("prefLink", "cmd.changecols", "", Link.NONTRANSLATED, contentVc, this);
+		preferenceLink.setCustomEnabledLinkCSS("b_table_prefs");
+		downloadLink = LinkFactory.createCustomLink("downloadLink", "cmd.download", "", Link.NONTRANSLATED, contentVc, this);
+		downloadLink.setCustomEnabledLinkCSS("b_table_download");
 		
 		putInitialPanel(contentVc);
 	}
@@ -339,6 +348,16 @@ public class TableController extends BasicController {
 			}
 		} else if (source == contentVc) {
 			handleCommandsOfTableVcContainer(ureq, event); 
+		} else if(source == preferenceLink && tableConfig.getPreferencesKey() != null){
+			colsChoice = getColumnListAndTheirVisibility();
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableCalloutWindowController(ureq, getWindowControl(), colsChoice, preferenceLink , "TITLE", true, "");
+			listenTo(cmc);
+			cmc.activate();
+		} else if(source == downloadLink && tableConfig.isDownloadOffered() ){
+			TableExporter tableExporter = tableConfig.getDownloadOffered();
+			MediaResource mr = tableExporter.export(table);
+			ureq.getDispatchResult().setResultingMediaResource(mr);
 		} else if (source == colsChoice) {
 			if (event == Choice.EVNT_VALIDATION_OK) {
 				//sideeffect on table and prefs
@@ -355,17 +374,7 @@ public class TableController extends BasicController {
 	private void handleCommandsOfTableVcContainer(final UserRequest ureq,	final Event event) {
 		// links of this vc container coming in
 		String cmd = event.getCommand();
-		if (cmd.equals("cmd.changecols") && tableConfig.getPreferencesKey() != null) {
-			colsChoice = getColumnListAndTheirVisibility();
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), "close", colsChoice,true,translate("title.changecols"));
-			listenTo(cmc);
-			cmc.activate();
-		} else if (cmd.equals("cmd.download") && tableConfig.isDownloadOffered()) {
-			TableExporter tableExporter = tableConfig.getDownloadOffered();
-			MediaResource mr = tableExporter.export(table);
-			ureq.getDispatchResult().setResultingMediaResource(mr);
-		} else if (cmd.equals(CMD_FILTER_NOFILTER)) {
+		if (cmd.equals(CMD_FILTER_NOFILTER)) {
 			// update new filter value
 			setActiveFilter(null);
 			fireEvent(ureq, EVENT_NOFILTER_SELECTED);
