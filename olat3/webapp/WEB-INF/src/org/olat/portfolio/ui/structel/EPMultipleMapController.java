@@ -81,6 +81,10 @@ public class EPMultipleMapController extends BasicController implements Activate
 	private static final String DELETE_LINK_PREFIX = "deleteLink";
 	private static final String COPY_LINK_PREFIX = "copyLink";
 	private static final String SHARE_LINK_PREFIX = "shareLink";
+	private static final String PAGING_LINK_PREFIX = "pageLink";
+	
+	private static final int ITEMS_PER_PAGE = 9;
+	
 	private VelocityContainer vC;
 	private EPFrontendManager ePFMgr;
 	private DialogBoxController delMapCtrl;
@@ -97,6 +101,13 @@ public class EPMultipleMapController extends BasicController implements Activate
 	private long start;
 	private PortfolioModule portfolioModule;
 	
+//	components for paging
+	private Link forwardLink;
+	private int currentPageNum = 1;
+	private int currentPagingFrom = 0;
+	private int currentPagingTo = ITEMS_PER_PAGE;
+	private boolean pagingAvailable = false;
+	
 	public EPMultipleMapController(UserRequest ureq, WindowControl control, EPMapRunViewOption option, Identity mapOwner) {
 		super(ureq, control);
 
@@ -110,6 +121,50 @@ public class EPMultipleMapController extends BasicController implements Activate
 		myPanel = putInitialPanel(vC);
 	}
 
+	
+	
+	/**
+	 * returns a List of PortfolioStructures to display, depending on options (all OLAT-wide shared maps, only shared to me, paging)
+	 * 
+	 * @return
+	 */
+	private List<PortfolioStructure> getUsersStructsToDisplay(){
+		pagingAvailable = false;
+		// get maps for this user
+		List<PortfolioStructure> allUsersStruct;
+		switch (option) {
+			case OTHER_MAPS:// same as OTHERS_MAPS
+			case OTHERS_MAPS:
+				vC.remove(vC.getComponent(RESTRICT_LINK));
+				if (restrictShareView) {
+					if (portfolioModule.isOfferPublicMapList()) {
+						LinkFactory.createCustomLink(RESTRICT_LINK, "change", "restrict.show.all", Link.LINK, vC, this);
+					}
+					allUsersStruct = ePFMgr.getStructureElementsFromOthersWithoutPublic(getIdentity(), mapOwner, ElementType.STRUCTURED_MAP, ElementType.DEFAULT_MAP);
+				} else {
+					if (portfolioModule.isOfferPublicMapList()) {
+						LinkFactory.createCustomLink(RESTRICT_LINK, "change", "restrict.show.limited", Link.LINK, vC, this);
+					}
+					// this query can be quite time consuming, if fetching all structures -> do paging
+					currentPagingFrom = (currentPageNum-1)*ITEMS_PER_PAGE;
+					currentPagingTo = currentPagingFrom+ITEMS_PER_PAGE;
+					allUsersStruct = ePFMgr.getStructureElementsFromOthers(getIdentity(), mapOwner, currentPagingFrom, currentPagingTo ,ElementType.STRUCTURED_MAP, ElementType.DEFAULT_MAP);
+					pagingAvailable = true;
+				}
+				break;
+			case MY_EXERCISES_MAPS:
+				allUsersStruct = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.STRUCTURED_MAP);
+				break;
+			default:// MY_DEFAULTS_MAPS
+				allUsersStruct = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.DEFAULT_MAP);
+		}
+		if (isLogDebugEnabled()) {
+			logDebug("got all structures to see at: ", String.valueOf(System.currentTimeMillis()));
+		}
+		return allUsersStruct;
+	}
+	
+	
 	/**
 	 * 
 	 */
@@ -118,35 +173,44 @@ public class EPMultipleMapController extends BasicController implements Activate
 			start = System.currentTimeMillis();
 			logDebug("start loading map overview at : ", String.valueOf(start));
 		}
-		// get maps for this user
-		List<PortfolioStructure> allUsersStruct;
-		switch(option) {
-			case OTHER_MAPS://same as OTHERS_MAPS
-			case OTHERS_MAPS:
-				vC.remove(vC.getComponent(RESTRICT_LINK));
-				if (restrictShareView) {
-					if (portfolioModule.isOfferPublicMapList()) LinkFactory.createCustomLink(RESTRICT_LINK, "change", "restrict.show.all", Link.LINK, vC, this);
-					allUsersStruct = ePFMgr.getStructureElementsFromOthersWithoutPublic(getIdentity(), mapOwner, ElementType.STRUCTURED_MAP, ElementType.DEFAULT_MAP);
-				} else {
-					if (portfolioModule.isOfferPublicMapList()) LinkFactory.createCustomLink(RESTRICT_LINK, "change", "restrict.show.limited", Link.LINK, vC, this);
-					allUsersStruct = ePFMgr.getStructureElementsFromOthers(getIdentity(), mapOwner, ElementType.STRUCTURED_MAP, ElementType.DEFAULT_MAP);
-				}
-				break;
-			case MY_EXERCISES_MAPS:
-				allUsersStruct = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.STRUCTURED_MAP);
-				break;
-			default://MY_DEFAULTS_MAPS
-				allUsersStruct = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.DEFAULT_MAP);
-		}
-		if (isLogDebugEnabled()) {
-			logDebug("got all structures to see at: ", String.valueOf(System.currentTimeMillis()));
-		}
 		
+		List<PortfolioStructure> allUsersStruct = getUsersStructsToDisplay();
 		userMaps = new ArrayList<PortfolioStructureMap>();
 		if (allUsersStruct.isEmpty()) {
 			vC.contextPut("noMaps", true);
 			return;
 		} else vC.contextRemove("noMaps");
+		
+		//remove forward link (maybe it's not needed (last page) )
+		if(forwardLink != null)
+			vC.remove(forwardLink);
+		
+		// now add paging-components if necessary and wanted
+		int elementCount   = ePFMgr.countStructureElementsFromOthers(getIdentity(), mapOwner, ElementType.DEFAULT_MAP);
+		if(pagingAvailable && elementCount > ITEMS_PER_PAGE){
+			vC.contextPut("showPaging", true);
+			
+			int additionalPage = ((elementCount % ITEMS_PER_PAGE) > 0)?1:0;
+			int pageCount = (elementCount/ITEMS_PER_PAGE) + additionalPage;
+			List<Component> pagingLinks = new ArrayList<Component>();
+			for(int i = 1; i < pageCount+1; i++){
+				Link pageLink = LinkFactory.createCustomLink(PAGING_LINK_PREFIX+i, "switchPage", String.valueOf(i), Link.NONTRANSLATED, vC, this);
+				pageLink.setUserObject(new Integer(i));
+				pagingLinks.add(pageLink);
+				if(i == currentPageNum){
+					pageLink.setEnabled(false);
+				}
+			}
+			
+			vC.contextPut("pageLinks",pagingLinks);
+			
+			if(currentPageNum < pageCount){
+				forwardLink = LinkFactory.createCustomLink("forwardLink", "pagingFWD", "table.forward", Link.LINK, vC, this);
+				forwardLink.setCustomEnabledLinkCSS("b_map_page_forward");
+			}
+		}
+
+		//now display the maps
 		
 		List<String> artAmount = new ArrayList<String>(userMaps.size());
 		List<Integer> childAmount = new ArrayList<Integer>(userMaps.size());
@@ -304,6 +368,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
 			Link srcLink = (Link) source;
+			if (srcLink.getUserObject() instanceof PortfolioStructureMap) {
 			PortfolioStructureMap selMap = (PortfolioStructureMap) srcLink.getUserObject();
 			if (srcLink.getComponentName().startsWith(VIEW_LINK_PREFIX)) {
 				activateMap(ureq, selMap);
@@ -327,7 +392,20 @@ public class EPMultipleMapController extends BasicController implements Activate
 				restrictShareView = !restrictShareView;
 				initOrUpdateMaps(ureq);
 			}
-		} 
+		} else{
+			if( srcLink.equals(forwardLink)){
+				currentPageNum++;
+				initOrUpdateMaps(ureq);
+			} else if (srcLink.getComponentName().startsWith(PAGING_LINK_PREFIX)){
+				Integer page = (Integer) srcLink.getUserObject();
+				currentPageNum = page.intValue();
+				initOrUpdateMaps(ureq);
+			} else if (srcLink.getComponentName().equals(RESTRICT_LINK)) {
+				restrictShareView = !restrictShareView;
+				initOrUpdateMaps(ureq);
+			}
+		}
+		}
 	}
 	
 	private void deleteMap(UserRequest ureq, PortfolioStructureMap map) {

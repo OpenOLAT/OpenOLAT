@@ -1,5 +1,16 @@
 #if ($r.available("restrictLink")) <p>$r.render("restrictLink") </p>#end
 #if(!$noMaps)
+
+#if($!showPaging)
+	<div class="b_map_page">
+		#foreach($pageLink in $pageLinks)
+			$r.render($pageLink.componentName)
+		#end
+		
+		#if($r.available("forwardLink"))$r.render("forwardLink")#end
+	</div>
+#end
+
 <ul class="b_eportfolio_maps">
 	#foreach($map in $userMaps)
 	#set($viewLink = "viewLink$velocityCount")
@@ -29,6 +40,17 @@
 	</li>
 	#end
 </ul>
+
+#if($!showPaging)
+	<div class="b_map_page">
+		#foreach($pageLink in $pageLinks)
+			$r.render($pageLink.componentName)
+		#end
+		
+		#if($r.available("forwardLink"))$r.render("forwardLink")#end
+	</div>
+#end
+
 #else
 	<br/>
 	$r.translate("no.maps.found")

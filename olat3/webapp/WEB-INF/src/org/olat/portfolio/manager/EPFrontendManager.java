@@ -664,15 +664,43 @@ public class EPFrontendManager extends BasicManager {
 		return structureManager.getStructureElementsForUser(identity, type);
 	}
 	
-/**
- * Get all Structure-Elements linked which the identity can see over a policy,
- * @param ident The identity which what see maps
- * @param chosenOwner Limit maps from this identity
- * @param type Limit maps to this or these types
- * @return
- */
-	public List<PortfolioStructure> getStructureElementsFromOthers(Identity ident, Identity chosenOwner, ElementType... type) {
-		return structureManager.getStructureElementsFromOthers(ident, chosenOwner, type);
+	/**
+	 * Get all Structure-Elements linked which the identity can see over a policy,
+	 * 
+	 * @param ident The identity which what see maps
+	 * @param chosenOwner Limit maps from this identity
+	 * @param type Limit maps to this or these types
+	 * @return
+	 */
+	public List<PortfolioStructure> getStructureElementsFromOthers(final Identity ident, final Identity chosenOwner, final ElementType... type) {
+		return structureManager.getStructureElementsFromOthersLimited(ident, chosenOwner, 0, 0, type);
+	}
+	
+	/**
+	 * Get part of the Structure-Elements linked which the identity can see over a policy.
+	 * The range of elements returned is specified by limitFrom and limitTo (used for paging)
+	 * 
+	 * @param ident The identity which what see maps
+	 * @param chosenOwner Limit maps from this identity
+	 * @param limitFrom  Limit maps  
+	 * @param limitTo   Limit maps
+	 * @param type Limit maps to this or these types
+	 * @return
+	 */
+	public List<PortfolioStructure> getStructureElementsFromOthers(final Identity ident, final Identity chosenOwner, int limitFrom, int limitTo, final ElementType... type) {
+		return structureManager.getStructureElementsFromOthersLimited(ident, chosenOwner, limitFrom, limitTo, type);
+	}
+	
+	/**
+	 * Get the number of all Structure-Elements linked which the identity can see over a policy,
+	 * 
+	 * @param ident The identity which what see maps
+	 * @param chosenOwner Limit maps from this identity
+	 * @param type Limit maps to this or these types
+	 * @return
+	 */
+	public int countStructureElementsFromOthers(final Identity ident, final Identity chosenOwner, final ElementType... types) {
+		return   structureManager.countStructureElementsFromOthers(ident, chosenOwner, types);
 	}
 
 	/**

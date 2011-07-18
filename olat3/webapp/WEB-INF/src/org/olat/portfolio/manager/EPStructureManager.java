@@ -266,57 +266,89 @@ public class EPStructureManager extends BasicManager {
 		return count.intValue() == 1;
 	}
 	
-	protected List<PortfolioStructure> getStructureElementsFromOthers(Identity ident, Identity choosenOwner, ElementType... types){
+	/**
+	 * 
+	 * @param select
+	 * @param ident
+	 * @param choosenOwner
+	 * @param limitFrom
+	 * @param limitTo
+	 * @param types
+	 * @return
+	 */
+	private StringBuilder buildStructureElementsFromOthersLimitedQuery(String select,final Identity ident, final Identity choosenOwner ,final ElementType... types){
 		StringBuilder sb = new StringBuilder();
-		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl ");
+		
+		sb.append("select ").append(select).append(" from ");
+		
+		sb.append(EPStructureElement.class.getName()).append(" stEl ");
 		sb.append(" inner join stEl.olatResource as oRes ");
-		sb.append(" where oRes in ( " )
-			.append("  select policy.olatResource from")
-			.append("  ").append(PolicyImpl.class.getName()).append(" as policy, ")
-			.append("  ").append(SecurityGroupImpl.class.getName()).append(" as sgi,") 
-			.append("  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-			.append("  where sgi = policy.securityGroup")//implicit inner join
-			.append("  and (sgmsi.securityGroup = sgi and sgmsi.identity =:ident) ")//member of the security group
-			.append("  and (policy.from is null or policy.from<=:date)")
-			.append("  and (policy.to is null or policy.to>=:date)")
-			.append(" )");
-		
-		//remove owner
-		sb.append(" and stEl.ownerGroup not in ( " )
-			.append("select sgi2.key from")
-			.append(" org.olat.basesecurity.SecurityGroupImpl as sgi2,") 
-			.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi2 ")
-			.append(" where sgmsi2.securityGroup = sgi2 and sgmsi2.identity =:ident")
-			.append(" )");
-		
-		if(choosenOwner != null) {
-			sb.append(" and stEl.ownerGroup in ( " )
-				.append("select sgi.key from")
-				.append(" org.olat.basesecurity.SecurityGroupImpl as sgi,") 
-				.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ")
-				.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:owner")
+		sb.append(" where oRes in ( ").append("  select policy.olatResource from").append("  ").append(PolicyImpl.class.getName()).append(" as policy, ").append("  ")
+				.append(SecurityGroupImpl.class.getName()).append(" as sgi,").append("  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+				.append("  where sgi = policy.securityGroup")// implicit inner join
+				.append("  and (sgmsi.securityGroup = sgi and sgmsi.identity =:ident) ")// member of the security group
+				.append("  and (policy.from is null or policy.from<=:date)").append("  and (policy.to is null or policy.to>=:date)").append(" )");
+
+		// remove owner
+		sb.append(" and stEl.ownerGroup not in ( ").append("select sgi2.key from").append(" org.olat.basesecurity.SecurityGroupImpl as sgi2,")
+				.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi2 ").append(" where sgmsi2.securityGroup = sgi2 and sgmsi2.identity =:ident")
 				.append(" )");
+
+		if (choosenOwner != null) {
+			sb.append(" and stEl.ownerGroup in ( ").append("select sgi.key from").append(" org.olat.basesecurity.SecurityGroupImpl as sgi,")
+					.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ").append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:owner")
+					.append(" )");
 		}
-		if(types != null && types.length > 0) {
+		if (types != null && types.length > 0) {
 			sb.append(" and stEl.class in (");
 			boolean first = true;
-			for(ElementType type:types) {
-				if(first) first = false;
-				else sb.append(",");
+			for (final ElementType type : types) {
+				if (first) {
+					first = false;
+				} else {
+					sb.append(",");
+				}
 				sb.append(getImplementation(type).getName());
 			}
 			sb.append(")");
 		}
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setEntity("ident", ident);
-		query.setDate("date", new Date());
-		if(choosenOwner != null) {
-			query.setEntity("owner", choosenOwner);
+		return sb;
+	}
+	
+	protected int countStructureElementsFromOthers(final Identity ident, final Identity choosenOwner ,final ElementType... types){
+			StringBuilder sb = buildStructureElementsFromOthersLimitedQuery("count(*)", ident, choosenOwner, types);
+			final DBQuery query = dbInstance.createQuery(sb.toString());
+			query.setEntity("ident", ident);
+			query.setDate("date", new Date());
+			if (choosenOwner != null) {
+				query.setEntity("owner", choosenOwner);
+			}
+
+			@SuppressWarnings("unchecked")
+			final List<Long> resultList = query.list();
+			if(resultList.size()>0) return resultList.get(0).intValue();
+			return 0;
+	}
+	
+	protected List<PortfolioStructure> getStructureElementsFromOthersLimited(final Identity ident, final Identity choosenOwner ,final int limitFrom, final int limitTo,final ElementType... types){
+		final StringBuilder sb = buildStructureElementsFromOthersLimitedQuery("stEl", ident, choosenOwner, types);
+		final DBQuery query = dbInstance.createQuery(sb.toString());
+		
+		//limits
+		if(limitTo > 0 && (limitFrom < limitTo)){
+			query.setFirstResult(limitFrom);
+			query.setMaxResults(limitTo-limitFrom);
 		}
 		
+		query.setEntity("ident", ident);
+		query.setDate("date", new Date());
+		if (choosenOwner != null) {
+			query.setEntity("owner", choosenOwner);
+		}
+
 		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> pStructs = query.list();
+		final List<PortfolioStructure> pStructs = query.list();
 		return pStructs;
 	}
 	
