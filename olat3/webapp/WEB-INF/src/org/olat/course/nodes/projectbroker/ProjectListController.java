@@ -234,13 +234,18 @@ public class ProjectListController extends BasicController implements GenericEve
 			handleTableEvent(urequest, (TableEvent)event);
 		} else if ( (source == projectController) && (event == Event.BACK_EVENT) ) {
 			mainPanel.popContent();
-			updateProjectListModelOf(tableController, urequest.getIdentity());
-		}	else if ( (source == projectController) && (event instanceof CancelNewProjectEvent) ) {
-			CancelNewProjectEvent cancelEvent = (CancelNewProjectEvent)event;
-			getLogger().info("event form cancelled => delete project");
-			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProject(cancelEvent.getProject(), true, userCourseEnv.getCourseEnvironment(), nodeEvaluation.getCourseNode());
-			mainPanel.popContent();
-			updateProjectListModelOf(tableController, urequest.getIdentity());
+		} else if ((source == projectController) && (event instanceof ProjectBrokerEditorEvent)) {
+			final ProjectBrokerEditorEvent pbEditEvent = (ProjectBrokerEditorEvent) event;
+			if (pbEditEvent.isCancelEvent()){
+				getLogger().info("event form cancelled => delete project");
+				ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProject(pbEditEvent.getProject(), true, userCourseEnv.getCourseEnvironment(),
+						nodeEvaluation.getCourseNode());
+				mainPanel.popContent();
+				updateProjectListModelOf(tableController, urequest.getIdentity());
+			} else if (pbEditEvent.isCreateEvent() || pbEditEvent.isDeletedEvent()){
+				mainPanel.popContent();
+				updateProjectListModelOf(tableController, urequest.getIdentity());			
+			}
 		}	
 	}
 
