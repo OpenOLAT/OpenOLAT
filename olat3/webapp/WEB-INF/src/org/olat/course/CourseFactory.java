@@ -440,9 +440,6 @@ public class CourseFactory extends BasicManager {
 
 		OLATResourceable targetRes = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes.getResourceableId());
-		// Put new course in course cache
-		putCourseInCache(targetRes.getResourceableId(), targetCourse);
-
 		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
 		
 		synchronized (sourceCourse) { // o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
