@@ -709,7 +709,7 @@ public class FileUtils {
 	public static boolean isDirectoryAndNotEmpty(File directory){
 		String[] content = directory.list();
 		if(content == null) return false;
-		return (content.length > 1); 
+		return (content.length > 0); 
 	}
 	
 	/**
