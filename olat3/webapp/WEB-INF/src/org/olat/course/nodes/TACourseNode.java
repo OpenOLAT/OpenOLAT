@@ -48,6 +48,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
@@ -886,7 +887,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 				String zipName = ExportUtil.createFileNameWithTimeStamp(this.getIdent(), "zip");
 				
 			  java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-			  String exportDirName = "task_" + this.getShortName() + "_" + formatter.format(new Date(System.currentTimeMillis()));
+			  String exportDirName = "task_" + StringHelper.transformDisplayNameToFileSystemName(this.getShortName()) + "_" + formatter.format(new Date(System.currentTimeMillis()));
 			  File fDropBoxArchiveDir = new File(fArchiveDirectory, exportDirName);
 			  if (!fDropBoxArchiveDir.exists()) {
 				  fDropBoxArchiveDir.mkdir();
