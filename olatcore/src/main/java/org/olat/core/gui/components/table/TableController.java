@@ -351,7 +351,7 @@ public class TableController extends BasicController {
 		} else if(source == preferenceLink && tableConfig.getPreferencesKey() != null){
 			colsChoice = getColumnListAndTheirVisibility();
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableCalloutWindowController(ureq, getWindowControl(), colsChoice, preferenceLink , "TITLE", true, "");
+			cmc = new CloseableCalloutWindowController(ureq, getWindowControl(), colsChoice, preferenceLink , translate("title.changecols"), true, "");
 			listenTo(cmc);
 			cmc.activate();
 		} else if(source == downloadLink && tableConfig.isDownloadOffered() ){
