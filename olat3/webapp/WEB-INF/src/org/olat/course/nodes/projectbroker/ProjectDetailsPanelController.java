@@ -76,7 +76,7 @@ public class ProjectDetailsPanelController extends BasicController {
 
 		detailsPanel = new Panel("projectdetails_panel");
 		runController = new ProjectDetailsDisplayController(ureq, wControl, project, courseEnv, courseNode, projectBrokerModuleConfiguration);
-		runController.addControllerListener(this);
+		listenTo(runController);
 		detailsPanel.setContent(runController.getInitialComponent());
 
 		editVC = createVelocityContainer("editProject");
@@ -102,23 +102,25 @@ public class ProjectDetailsPanelController extends BasicController {
 			if (editController != null) editController.doDispose();
 			openEditController(ureq);
 		} else if ((source == editController) && event == Event.DONE_EVENT) {
-			// switch back from edit mode to display-mode 
+			// switch back from edit mode to display-mode
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 			detailsPanel.popContent();
-			if (runController != null) {
-				runController.dispose();
-			}
+			removeAsListenerAndDispose(runController);
 			runController = new ProjectDetailsDisplayController(ureq, this.getWindowControl(), project, courseEnv, courseNode, projectBrokerModuleConfiguration);
-			runController.addControllerListener(this);
+			listenTo(runController);
 			detailsPanel.setContent(runController.getInitialComponent());
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else if ( (source == runController) && (event == Event.BACK_EVENT) ) {
-			// go back to project-list 
-			fireEvent(ureq, Event.BACK_EVENT);
-		} else if ( (source == editController) && (event == Event.CANCELLED_EVENT) ) {
+			if (newCreatedProject){
+				fireEvent(ureq, new ProjectBrokerEditorEvent(project, ProjectBrokerEditorEvent.CREATED_NEW_PROJECT));
+			} else {
+				fireEvent(ureq, new ProjectBrokerEditorEvent(project, ProjectBrokerEditorEvent.CHANGED_PROJECT));				
+			}
+		} else if (source == runController) {
+			// go back to project-list, pass event
+			fireEvent(ureq, event);
+		} else if ((source == editController) && (event == Event.CANCELLED_EVENT)) {
 			if (newCreatedProject) {
-	 			// from cancelled and go back to project-list 
-				fireEvent(ureq, new CancelNewProjectEvent(project));
+				// from cancelled and go back to project-list
+				fireEvent(ureq, new ProjectBrokerEditorEvent(project, ProjectBrokerEditorEvent.CANCEL_NEW_PROJECT));
 			}
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		}

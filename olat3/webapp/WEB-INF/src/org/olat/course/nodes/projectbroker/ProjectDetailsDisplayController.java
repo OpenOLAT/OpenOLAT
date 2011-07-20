@@ -207,7 +207,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteProject(project, deleteGroup, courseEnv, courseNode);
 			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			showInfo("project.deleted.msg", project.getTitle());
-			fireEvent(ureq, Event.BACK_EVENT);
+			fireEvent(ureq, new ProjectBrokerEditorEvent(project, ProjectBrokerEditorEvent.DELETED_PROJECT));
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		}
 
