@@ -744,18 +744,48 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 
 			// copy dropboxes to tmp dir
 			if (dropboxDir.exists()) {
-				FileUtils.copyDirContentsToDir(dropboxDir, new File(tmpDirPath + "/dropboxes"),false, "archive projectbroker dropboxes" );
-				fileList.add("dropboxes");
-			  //dropboxes exists, so there is something to archive
-				dataFound |= true;
+				System.out.println("Handling dropBox-Dir: "+dropboxDir.getAbsolutePath());
+				//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
+				boolean validDropboxesfound = false; 
+				File[] themaFolderArray = dropboxDir.listFiles();
+				for(File themaFolder: themaFolderArray){
+					File[] userFolderArray = themaFolder.listFiles();
+					if(userFolderArray==null) continue;
+					for(File userFolder : userFolderArray){
+						if(userFolder.isDirectory() && !FileUtils.isDirectoryEmpty(userFolder)){
+							validDropboxesfound= true;
+							File source = new File(dropboxDir+"/"+themaFolder.getName()+"/"+userFolder.getName());
+							File target = new File(tmpDirPath+"/dropboxes/"+themaFolder.getName()+"/"+userFolder.getName()) ;
+							FileUtils.copyDirContentsToDir(source, target,false, "archive projectbroker dropboxes ");
+						}
+					}
+				}
+				
+				if(validDropboxesfound){
+					// dropboxes exists, so there is something to archive
+					fileList.add("dropboxes");
+					dataFound |= true;
+				}
 			}
 			
 			// copy returnboxes to tmp dir
 			if (returnboxDir.exists()) {
-				FileUtils.copyDirContentsToDir(returnboxDir , new File(tmpDirPath + "/returnboxes"), false, "archive projectbroker returnboxes");
-				fileList.add("returnboxes");
-			  //returnboxes exists, so there is something to archive
-				dataFound |= true;
+				boolean validReturnboxesfound = false; 
+				File[] themaFolderArray = returnboxDir.listFiles();
+				for(File themaFolder: themaFolderArray){
+						if(themaFolder.isDirectory() && !FileUtils.isDirectoryEmpty(themaFolder)){
+							validReturnboxesfound = true;
+							File source = new File(returnboxDir+"/"+themaFolder.getName());
+							File target = new File(tmpDirPath + "/returnboxes/"+themaFolder.getName());
+							System.out.println("copy "+source.getAbsolutePath()+" to "+target.getAbsolutePath());
+							FileUtils.copyDirContentsToDir(source , target , false, "archive projectbroker returnboxes");
+					}
+				}
+				if(validReturnboxesfound){
+					fileList.add("returnboxes");
+					//returnboxes exists, so there is something to archive
+					dataFound |= true;
+				}
 			}
 			
 			if(dataFound) {
