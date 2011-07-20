@@ -744,7 +744,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 
 			// copy dropboxes to tmp dir
 			if (dropboxDir.exists()) {
-				System.out.println("Handling dropBox-Dir: "+dropboxDir.getAbsolutePath());
 				//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
 				boolean validDropboxesfound = false; 
 				File[] themaFolderArray = dropboxDir.listFiles();
@@ -777,7 +776,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 							validReturnboxesfound = true;
 							File source = new File(returnboxDir+"/"+themaFolder.getName());
 							File target = new File(tmpDirPath + "/returnboxes/"+themaFolder.getName());
-							System.out.println("copy "+source.getAbsolutePath()+" to "+target.getAbsolutePath());
 							FileUtils.copyDirContentsToDir(source , target , false, "archive projectbroker returnboxes");
 					}
 				}
