@@ -231,7 +231,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 			callback.setResourceable(newCourseResource);
 			callback.setResourceName(fCourseImportZIP.getName());
 			
-			final File exportDir = new File(course.getCourseBaseContainer().getBasefile(),"/exportd/");
+			final File exportDir = new File(course.getCourseBaseContainer().getBasefile(), "/"+ICourse.EXPORTED_DATA_FOLDERNAME);
 			if(exportDir.exists() && exportDir.canRead()){
 				final RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(exportDir);
 				callback.setDisplayName(importExport.getDisplayName());
