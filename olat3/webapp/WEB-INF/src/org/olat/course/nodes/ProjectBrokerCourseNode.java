@@ -751,7 +751,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 					File[] userFolderArray = themaFolder.listFiles();
 					if(userFolderArray==null) continue;
 					for(File userFolder : userFolderArray){
-						if(userFolder.isDirectory() && !FileUtils.isDirectoryEmpty(userFolder)){
+						if(FileUtils.isDirectoryAndNotEmpty(userFolder)){
 							validDropboxesfound= true;
 							File source = new File(dropboxDir+"/"+themaFolder.getName()+"/"+userFolder.getName());
 							File target = new File(tmpDirPath+"/dropboxes/"+themaFolder.getName()+"/"+userFolder.getName()) ;
@@ -772,7 +772,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 				boolean validReturnboxesfound = false; 
 				File[] themaFolderArray = returnboxDir.listFiles();
 				for(File themaFolder: themaFolderArray){
-						if(themaFolder.isDirectory() && !FileUtils.isDirectoryEmpty(themaFolder)){
+						if(FileUtils.isDirectoryAndNotEmpty(themaFolder)){
 							validReturnboxesfound = true;
 							File source = new File(returnboxDir+"/"+themaFolder.getName());
 							File target = new File(tmpDirPath + "/returnboxes/"+themaFolder.getName());

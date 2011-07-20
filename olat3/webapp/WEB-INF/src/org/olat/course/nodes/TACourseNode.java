@@ -844,7 +844,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 				File[] dropBoxContent = dropboxDir.listFiles();
 				boolean validDropboxesfound = false;
 				for (File file : dropBoxContent) {
-					if(file.isDirectory() && !FileUtils.isDirectoryEmpty(file)){
+					if(FileUtils.isDirectoryAndNotEmpty(file)){
 						validDropboxesfound = true;
 						FileUtils.copyDirContentsToDir(file, new File(tmpDirPath + "/dropboxes/"+file.getName()), false, "archive task course node dropboxes "+file.getName());
 					}
