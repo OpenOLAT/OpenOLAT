@@ -701,6 +701,18 @@ public class FileUtils {
 	}
 
 	/**
+	 * checks whether the given Directory contains any files or sub-directories
+	 * throws a IllegalArgumentException if given File-Object is not a directory
+	 * 
+	 * @return returns true if given directory contains any files or subdirectories
+	 */
+	public static boolean isDirectoryEmpty(File directory){
+		String[] content = directory.list();
+		if(content == null)new IllegalArgumentException("Given File is not a directory");
+		return (content.length < 1); 
+	}
+	
+	/**
 	 * @param is the inputstream to close, may also be null
 	 */
 	public static void closeSafely(InputStream is) {
