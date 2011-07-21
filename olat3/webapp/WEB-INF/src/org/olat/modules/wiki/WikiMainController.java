@@ -153,6 +153,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private static final String MEDIA_FILE_DELETIONDATE = "deleted.at";
 	private static final String MEDIA_FILE_DELETED_BY = "deleted.by";
 	
+//	indicates if user is already on image-detail-view-page (OLAT-6233)
+	private boolean isImageDetailView = false;
+	
 	private CloseableModalController cmc;
 	
 	WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, WikiSecurityCallback securityCallback , String initialPageName) {
@@ -414,11 +417,20 @@ public class WikiMainController extends BasicController implements CloneableCont
 			} else if (event instanceof RequestMediaEvent) {
 				deliverMediaFile(ureq, event.getCommand());
 			} else if (event instanceof RequestImageEvent) {
-				WikiPage imagePage = new WikiPage(event.getCommand());
-				imagePage.setContent("[[Image:"+event.getCommand()+"]]");
-				articleContent.contextPut("page", imagePage);
-				wikiArticleComp.setWikiContent(imagePage.getContent());
-				setTabsEnabled(false);
+				// OLAT-6233 if image-view page is shown 2nd time (click on image ), return to content-wiki-page 
+				// instead of linking to the image-view-page itself
+				if(isImageDetailView){
+					page = wiki.getPage(pageId,true);
+					updatePageContext(ureq, page);
+					isImageDetailView = false;
+				}else{
+					final WikiPage imagePage = new WikiPage(event.getCommand());
+					imagePage.setContent("[[Image:" + event.getCommand() + "]]");
+					articleContent.contextPut("page", imagePage);
+					wikiArticleComp.setWikiContent(imagePage.getContent());
+					setTabsEnabled(false);
+					isImageDetailView = true;
+				}
 			}
 		} else if (source == navigationContent ) {
 			/*************************************************************************
@@ -627,6 +639,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 * BreadCrump controller events
 			 ************************************************************************/
 			page = wiki.getPage(event.getCommand(), true);
+			pageId = page.getPageId();
 			updatePageContext(ureq, page);
 			setTabsEnabled(true);
 			breadCrumpCtr.addLink(page.getPageName(), page.getPageName());
