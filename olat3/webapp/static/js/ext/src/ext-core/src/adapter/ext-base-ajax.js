@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -244,7 +244,7 @@ Ext.lib.Ajax = function() {
         try {
             http = new XMLHttpRequest();
         } catch(e) {
-            for (var i = 0; i < activeX.length; ++i) {
+            for (var i = Ext.isIE6 ? 1 : 0; i < activeX.length; ++i) {
                 try {
                     http = new ActiveXObject(activeX[i]);
                     break;

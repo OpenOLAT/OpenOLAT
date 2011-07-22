@@ -927,8 +927,6 @@ function showMessageBox(type, title, message, buttonCallback){
 			buttons: Ext.MessageBox.OK,
 			fn: buttonCallback
 		});
-		msg.toFront();
-		
 	}
 }
 

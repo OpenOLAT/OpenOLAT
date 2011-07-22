@@ -16,6 +16,9 @@
 	/* make IE render images nicely, default rendering is ugly */
 	img { -ms-interpolation-mode:bicubic; }
 	
+	/* IE6 fix wrong positioning of modal overlay which breaks callout windows */
+	* html div.b_modal_overlay {position: absolute;}	
+	
 		
 }
 

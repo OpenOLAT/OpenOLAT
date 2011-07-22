@@ -1,4 +1,4 @@
-Currently OLAT uses ExtJS in version 3.3.1
+Currently OLAT uses ExtJS in version 3.4.0
 
 When updating the EXTJS library make sure you do the following:
 
@@ -16,3 +16,36 @@ first CSS declarations. Best is to compare with latest from repository:
 olatcore/src/main/java/org/olat/core/commons/chiefcontrollers/_content/body.html
 olatcore/src/main/java/org/olat/core/gui/exception/_content/exception_page.html
 olatcore/src/main/java/org/olat/core/gui/control/generic/iframe/IFrameDisplayController.java
+
+4) Test with different browsers: Safari, Chrome, Firefox 3.6/4/5, IE7/8/9
+a) Test that correct version is loaded by the browser
+- Shift-reload the login page
+- Open http://localhost:8080/olat/raw/20110720/js/ext/pkgs/ext-core-debug.js and check if the version mentioned above is there and not an old version
+
+b) Demo Site tests:
+- Resize menu width
+- Flexi forms -> with sub-workflow -> Choose => callout window appears
+- Flexi forms -> A more advanced form => 2 HTML editor input fields appear and work, date chooser works  (no side effects to TinyMCE/DateChooser)
+- WindowControl => info/warn/error messages work
+- Tool tips => different tool-tips work
+- Floating panels => different floating panel work
+- Errors -> throw a nullpointer => no extjs js errors in code
+- Ajax Tree => Tree works, sort/unsort works, inline editing works, selection of a node works, removing of a node works
+- File chooser => browsing in tree works with mouse or keyboard
+- TextBoxList => works as expected (no side effects to prototype)
+- Callout Windows -> different callout windows 
+- Autocompletion -> live user search
+
+c) IFrame test:
+- Open single page in course which has a glossary configured
+- Enable and disable the glossary and open some more single pages in the course => glossary explanations work
+- Browse some pages in a CP
+
+d) Real world tests:
+- Home -> user live search
+- Repository -> All courses -> table live search
+- Repository -> Course details page -> add course to catalog, move course in catalog
+- CP editor -> create pages, move pages in tree, edit page name in tree
+- HTML editor -> embedd image using media browser
+- E-Portfolio -> callout windows at various locations
+- Chat -> open buddy list in window, open chat in window
