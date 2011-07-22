@@ -17,6 +17,9 @@
 	
 	div.b_closablewapper_handle { height: 2em; }
 	
+	/* IE6 fix wrong positioning of modal overlay which breaks callout windows */
+	* html div.b_modal_overlay {position: absolute;}	
+	
 	/* min-height fix IE6 */
 	* div.b_form div.b_form_general_error { height: 32px;}
 	/* 3-pixel job bug fix for IE6 and IE7: set hasLayout=true and remove margin */
