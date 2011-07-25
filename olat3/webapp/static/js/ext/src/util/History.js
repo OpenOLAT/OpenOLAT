@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -19,8 +19,13 @@ Ext.History = (function () {
     var currentToken;
 
     function getHash() {
-        var href = location.href, i = href.indexOf("#");
-        return i >= 0 ? href.substr(i + 1) : null;
+        var href = location.href, i = href.indexOf("#"),
+            hash = i >= 0 ? href.substr(i + 1) : null;
+             
+        if (Ext.isGecko) {
+            hash = decodeURIComponent(hash);
+        }
+        return hash;
     }
 
     function doSave() {
@@ -69,7 +74,7 @@ Ext.History = (function () {
             if (newtoken !== token) {
                 token = newtoken;
                 handleStateChange(token);
-                top.location.hash = token;
+                location.hash = token;
                 hash = token;
                 doSave();
             } else if (newHash !== hash) {
@@ -185,7 +190,7 @@ tabPanel.on('tabchange', function(tabPanel, tab){
             if (Ext.isIE) {
                 return updateIFrame(token);
             } else {
-                top.location.hash = token;
+                location.hash = token;
                 return true;
             }
         },

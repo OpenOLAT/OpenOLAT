@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -567,6 +567,8 @@ Ext.menu.Menu = Ext.extend(Ext.Container, {
 
     // private
     getMenuItem : function(config) {
+        config.ownerCt = this;
+        
         if (!config.isXType) {
             if (!config.xtype && Ext.isBoolean(config.checked)) {
                 return new Ext.menu.CheckItem(config);

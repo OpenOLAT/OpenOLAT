@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -64,7 +66,6 @@ public class CPFileImportController extends FormBasicController {
 	private static final String ALL = "all";
 	private static final String[] prefixes = new String[] { "." };
 	private static final VFSItemFilter excludeMetaFilesFilter = new VFSItemExcludePrefixFilter(prefixes);
-	private static final List<String> extensions = new ArrayList<String>();
 
 	private FileElement file;
 	private FormLink cancelButton;
@@ -82,12 +83,21 @@ public class CPFileImportController extends FormBasicController {
 		super(ureq, control);
 		this.cp = cp;
 		this.currentPage = currentPage;
-		extensions.add("html");
-		extensions.add("pdf");
-		extensions.add("doc");
-		extensions.add("xls");
-		extensions.add("ppt");
+		
+		//need a translation from FileUploadController (avoiding key-duplicates)
+		setTranslator(new PackageTranslator(FileUploadController.class.getPackage().getName(), getLocale(), getTranslator()));
+		
 		initForm(ureq);
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		String fileName = file.getUploadFileName();
+		if (fileName == null) {
+			file.setErrorKey("NoFileChosen", null);
+			return false;
+		}
+		return super.validateFormLogic(ureq);
 	}
 
 	/**

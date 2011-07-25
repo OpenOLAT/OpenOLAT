@@ -338,9 +338,8 @@ public class DropboxController extends BasicController {
 	}
 	
 	private String getConfirmation(UserRequest ureq, String filename) {
-    // grab standard text
-		String confirmation = translate("conf.stdtext");
-		config.set(TACourseNode.CONF_DROPBOX_CONFIRMATION, confirmation);
+	  //grab confirmation-text from bb-config
+		String confirmation = config.getStringValue(TACourseNode.CONF_DROPBOX_CONFIRMATION);
 		
 		Context c = new VelocityContext();
 		Identity identity = ureq.getIdentity();

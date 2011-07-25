@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -1504,11 +1504,16 @@ sortInfo: {
      * @private
      * Update a record within the store with a new reference
      */
-    doUpdate : function(rec){
-        this.data.replace(rec.id, rec);
-        if(this.snapshot){
-            this.snapshot.replace(rec.id, rec);
+    doUpdate: function(rec){
+        var id = rec.id;
+        // unjoin the old record
+        this.getById(id).join(null);
+        
+        this.data.replace(id, rec);
+        if (this.snapshot) {
+            this.snapshot.replace(id, rec);
         }
+        rec.join(this);
         this.fireEvent('update', this, rec, Ext.data.Record.COMMIT);
     },
 
@@ -2016,7 +2021,6 @@ sortInfo: {
         if (success === true) {
             try {
                 this.reader.realize(rs, data);
-                this.reMap(rs);
             }
             catch (e) {
                 this.handleException(e);
@@ -3117,6 +3121,7 @@ Ext.data.DataReader.prototype = {
             rs.data = data;
 
             rs.commit();
+            rs.store.reMap(rs);
         }
     },
 

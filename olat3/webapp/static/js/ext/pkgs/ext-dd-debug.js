@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -2097,7 +2097,7 @@ Ext.dd.DragDropMgr = function() {
                 return null;
             }
 
-            var el = oDD.getEl(), pos, x1, x2, y1, y2, t, r, b, l;
+            var el = oDD.getEl(), pos, x1, x2, y1, y2, t, r, b, l, region;
 
             try {
                 pos= Ext.lib.Dom.getXY(el);
@@ -2117,7 +2117,22 @@ Ext.dd.DragDropMgr = function() {
             b = y2 + oDD.padding[2];
             l = x1 - oDD.padding[3];
 
-            return new Ext.lib.Region( t, r, b, l );
+            region = new Ext.lib.Region( t, r, b, l );
+            /*
+             * The code below is to ensure that large scrolling elements will
+             * only have their visible area recognized as a drop target, otherwise it 
+             * can potentially erronously register as a target when the element scrolls
+             * over the top of something below it.
+             */
+            el = Ext.get(el.parentNode);
+            while (el && region) {
+	            if (el.isScrollable()) {
+	                // check whether our element is visible in the view port:
+	                region = region.intersect(el.getRegion());
+	            }
+	            el = el.parent();
+            }
+            return region;
         },
 
         /**
@@ -2186,6 +2201,9 @@ Ext.dd.DragDropMgr = function() {
          * @static
          */
         _onUnload: function(e, me) {
+            Event.removeListener(document, "mouseup",   this.handleMouseUp, this);
+            Event.removeListener(document, "mousemove", this.handleMouseMove, this);
+            Event.removeListener(window,   "resize",    this._onResize, this);
             Ext.dd.DragDropMgr.unregAll();
         },
 

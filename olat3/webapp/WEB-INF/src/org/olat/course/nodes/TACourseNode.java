@@ -48,6 +48,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
@@ -840,10 +841,21 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			}
 			// copy dropboxes to tmp dir
 			if (dropboxDir.exists()) {
-				FileUtils.copyDirContentsToDir(dropboxDir, new File(tmpDirPath + "/dropboxes"),false, "archive task course node dropboxes" );
-				fileList.add("dropboxes");
-				//dropboxes exists, so there is something to archive
-				dataFound = true;
+			//OLAT-6362 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
+				File[] dropBoxContent = dropboxDir.listFiles();
+				boolean validDropboxesfound = false;
+				for (File file : dropBoxContent) {
+					if(FileUtils.isDirectoryAndNotEmpty(file)){
+						validDropboxesfound = true;
+						FileUtils.copyDirContentsToDir(file, new File(tmpDirPath + "/dropboxes/"+file.getName()), false, "archive task course node dropboxes "+file.getName());
+					}
+				}
+				
+				if(validDropboxesfound){
+					// dropboxes exists and at least one is not empty, so there is something to archive
+					dataFound = true;
+					fileList.add("dropboxes");
+				}
 			}
 			// copy only the choosen task to user taskfolder, loop over all users
 			String taskfolderPath = FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(),this);
@@ -875,7 +887,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 				String zipName = ExportUtil.createFileNameWithTimeStamp(this.getIdent(), "zip");
 				
 			  java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH_mm_ss_SSS");
-			  String exportDirName = "task_" + this.getShortName() + "_" + formatter.format(new Date(System.currentTimeMillis()));
+			  String exportDirName = "task_" + StringHelper.transformDisplayNameToFileSystemName(this.getShortName()) + "_" + formatter.format(new Date(System.currentTimeMillis()));
 			  File fDropBoxArchiveDir = new File(fArchiveDirectory, exportDirName);
 			  if (!fDropBoxArchiveDir.exists()) {
 				  fDropBoxArchiveDir.mkdir();

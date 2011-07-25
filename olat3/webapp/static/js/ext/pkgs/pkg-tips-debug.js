@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -664,7 +664,7 @@ myGrid.on('render', function(grid) {
 
     // private
     adjustPosition : function(x, y){
-        if(this.contstrainPosition){
+        if(this.constrainPosition){
             var ay = this.targetXY[1], h = this.getSize().height;
             if(y <= ay && (y+h) >= ay){
                 y = ay-h-5;

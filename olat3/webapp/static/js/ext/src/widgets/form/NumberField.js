@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -140,8 +140,8 @@ Ext.form.NumberField = Ext.extend(Ext.form.TextField,  {
     },
 
     setValue : function(v) {
-        v = this.fixPrecision(v);
     	v = Ext.isNumber(v) ? v : parseFloat(String(v).replace(this.decimalSeparator, "."));
+        v = this.fixPrecision(v);
         v = isNaN(v) ? '' : String(v).replace(".", this.decimalSeparator);
         return Ext.form.NumberField.superclass.setValue.call(this, v);
     },

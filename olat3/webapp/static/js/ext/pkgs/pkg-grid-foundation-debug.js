@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -42,7 +42,7 @@ var grid = new Ext.grid.GridPanel({
                 header: 'Last Updated', width: 135, dataIndex: 'lastChange',
                 xtype: 'datecolumn', format: 'M d, Y'
             }
-        ],
+        ]
     }),
     {@link #viewConfig}: {
         {@link Ext.grid.GridView#forceFit forceFit}: true,
@@ -4134,7 +4134,7 @@ Ext.grid.PivotGridView = Ext.extend(Ext.grid.GridView, {
             rowBuffer     = [],
             meta          = {},
             tstyle        = 'width:' + this.getGridInnerWidth() + 'px;',
-            colBuffer, column, i;
+            colBuffer, colCount, column, i, row;
         
         startRow = startRow || 0;
         endRow   = Ext.isDefined(endRow) ? endRow : rowCount - 1;
@@ -4144,15 +4144,13 @@ Ext.grid.PivotGridView = Ext.extend(Ext.grid.GridView, {
             colCount  = row.length;
             colBuffer = [];
             
-            rowIndex = startRow + i;
-
             //build up each column's HTML
-            for (j = 0; j < colCount; j++) {
-                cell = row[j];
-
+            for (var j = 0; j < colCount; j++) {
+                
+                meta.id    = i + '-' + j;
                 meta.css   = j === 0 ? 'x-grid3-cell-first ' : (j == (colCount - 1) ? 'x-grid3-cell-last ' : '');
                 meta.attr  = meta.cellAttr = '';
-                meta.value = cell;
+                meta.value = row[j];
 
                 if (Ext.isEmpty(meta.value)) {
                     meta.value = '&#160;';
@@ -4285,6 +4283,24 @@ Ext.grid.PivotGridView = Ext.extend(Ext.grid.GridView, {
     getTotalColumnHeaderHeight: function() {
         return this.getColumnHeaders().length * 21;
     },
+    
+    /**
+     * Inherit docs
+     * @private
+     * @param {HTMLElement} el
+     */
+    getCellIndex : function(el) {
+        if (el) {
+            var match = el.className.match(this.colRe),
+                data;
+ 
+            if (match && (data = match[1])) {
+                return parseInt(data.split('-')[1], 10);
+            }
+        }
+        return false;
+    },
+    
     
     /**
      * @private
@@ -4691,6 +4707,7 @@ Ext.grid.PivotAxis = Ext.extend(Ext.Component, {
         var tuples     = this.getTuples(),
             rowCount   = tuples.length,
             dimensions = this.dimensions,
+            dimension,
             colCount   = dimensions.length,
             headers    = [],
             tuple, rows, currentHeader, previousHeader, span, start, isLast, changed, i, j;
@@ -6983,7 +7000,7 @@ Ext.grid.ActionColumn = Ext.extend(Ext.grid.Column, {
             meta.css += ' x-action-col-cell';
             for (i = 0; i < l; i++) {
                 item = items[i];
-                v += '<img alt="' + me.altText + '" src="' + (item.icon || Ext.BLANK_IMAGE_URL) +
+                v += '<img alt="' + (item.altText || me.altText) + '" src="' + (item.icon || Ext.BLANK_IMAGE_URL) +
                     '" class="x-action-col-icon x-action-col-' + String(i) + ' ' + (item.iconCls || '') +
                     ' ' + (Ext.isFunction(item.getClass) ? item.getClass.apply(item.scope||this.scope||this, arguments) : '') + '"' +
                     ((item.tooltip) ? ' ext:qtip="' + item.tooltip + '"' : '') + ' />';

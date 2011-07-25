@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -150,11 +150,16 @@ Ext.menu.BaseItem = Ext.extend(Ext.Component, {
         var pm = this.parentMenu;
         if(this.hideOnClick){
             if(pm.floating){
-                pm.hide.defer(this.clickHideDelay, pm, [true]);
+                this.clickHideDelayTimer = pm.hide.defer(this.clickHideDelay, pm, [true]);
             }else{
                 pm.deactivateActive();
             }
         }
+    },
+    
+    beforeDestroy: function(){
+        clearTimeout(this.clickHideDelayTimer);
+        Ext.menu.BaseItem.superclass.beforeDestroy.call(this);    
     },
 
     // private. Do nothing

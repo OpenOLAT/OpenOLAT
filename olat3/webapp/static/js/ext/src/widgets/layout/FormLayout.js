@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -317,12 +317,18 @@ new Ext.Template(
      * @return {Object} An object hash containing the properties required to render the Field.
      */
     getTemplateArgs: function(field) {
-        var noLabelSep = !field.fieldLabel || field.hideLabel;
+        var noLabelSep = !field.fieldLabel || field.hideLabel,
+            itemCls = (field.itemCls || this.container.itemCls || '') + (field.hideLabel ? ' x-hide-label' : '');
+
+        // IE9 quirks needs an extra, identifying class on wrappers of TextFields
+        if (Ext.isIE9 && Ext.isIEQuirks && field instanceof Ext.form.TextField) {
+            itemCls += ' x-input-wrapper';
+        }
 
         return {
             id            : field.id,
             label         : field.fieldLabel,
-            itemCls       : (field.itemCls || this.container.itemCls || '') + (field.hideLabel ? ' x-hide-label' : ''),
+            itemCls       : itemCls,
             clearCls      : field.clearCls || 'x-form-clear-left',
             labelStyle    : this.getLabelStyle(field.labelStyle),
             elementStyle  : this.elementStyle || '',

@@ -701,6 +701,18 @@ public class FileUtils {
 	}
 
 	/**
+	 * checks whether the given File is a Directory and if it contains any files or sub-directories
+	 * 
+	 * 
+	 * @return returns true if given File-object is a directory and contains any files or subdirectories 
+	 */
+	public static boolean isDirectoryAndNotEmpty(File directory){
+		String[] content = directory.list();
+		if(content == null) return false;
+		return (content.length > 0); 
+	}
+	
+	/**
 	 * @param is the inputstream to close, may also be null
 	 */
 	public static void closeSafely(InputStream is) {

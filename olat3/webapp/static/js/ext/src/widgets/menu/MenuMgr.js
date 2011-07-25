@@ -1,6 +1,6 @@
 /*!
- * Ext JS Library 3.3.1
- * Copyright(c) 2006-2010 Sencha Inc.
+ * Ext JS Library 3.4.0
+ * Copyright(c) 2006-2011 Sencha Inc.
  * licensing@sencha.com
  * http://www.sencha.com/license
  */
@@ -10,17 +10,20 @@
  * @singleton
  */
 Ext.menu.MenuMgr = function(){
-   var menus, active, groups = {}, attached = false, lastShow = new Date();
+   var menus, 
+       active, 
+       map,
+       groups = {}, 
+       attached = false, 
+       lastShow = new Date();
+   
 
    // private - called when first menu is created
    function init(){
        menus = {};
        active = new Ext.util.MixedCollection();
-       Ext.getDoc().addKeyListener(27, function(){
-           if(active.length > 0){
-               hideAll();
-           }
-       });
+       map = Ext.getDoc().addKeyListener(27, hideAll);
+       map.disable();
    }
 
    // private
@@ -39,6 +42,7 @@ Ext.menu.MenuMgr = function(){
    function onHide(m){
        active.remove(m);
        if(active.length < 1){
+           map.disable();
            Ext.getDoc().un("mousedown", onMouseDown);
            attached = false;
        }
@@ -50,6 +54,7 @@ Ext.menu.MenuMgr = function(){
        lastShow = new Date();
        active.add(m);
        if(!attached){
+           map.enable();
            Ext.getDoc().on("mousedown", onMouseDown);
            attached = true;
        }

@@ -1,4 +1,16 @@
+#if ($collectwizard)
+<script type="text/javascript">
+<!--
+//resize the window if collector-wizard is shown
+Ext.onReady(function(){
+	window.resizeTo(1100,650);
+});
+//-->
+</script>
+#end
+
 <div class="o_efficiencystatement">
+	$r.render("collectArtefactLink")
 	<h3 class="b_with_small_icon_left o_efficiencystatement_icon">$r.translate("efficiencystatement.title")</h3>
 	
 	<table class="b_table">
