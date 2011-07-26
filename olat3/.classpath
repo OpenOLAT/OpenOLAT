@@ -8,7 +8,7 @@
 	<classpathentry kind="var" path="M2_REPO/edenlib/edenlib/1.3/edenlib-1.3.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/transaction/jta/1.1/jta-1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar"/>
-	<classpathentry kind="var" path="M2_REPO/owaspantisamy/antisamy/1.3/antisamy-1.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/owasp/antisamy/antisamy/1.4.4/antisamy-1.4.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar"/>
 	<classpathentry kind="var" path="M2_REPO/asm/asm/3.1/asm-3.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/beanshell/bsh-core/2.0b4/bsh-core-2.0b4.jar"/>
@@ -127,7 +127,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi/3.7/poi-3.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml-schemas/3.7/poi-ooxml-schemas-3.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-ooxml/3.7/poi-ooxml-3.7.jar"/>
-	<classpathentry kind="var" path="M2_REPO/net/sourceforge/nekohtml/nekohtml/1.9.12/nekohtml-1.9.12.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/sourceforge/nekohtml/nekohtml/1.9.14/nekohtml-1.9.14.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/springframework/spring-orm/3.0.5.RELEASE/spring-orm-3.0.5.RELEASE.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/pdfbox/pdfbox/1.5.0/pdfbox-1.5.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/poi/poi-scratchpad/3.7/poi-scratchpad-3.7.jar"/>
