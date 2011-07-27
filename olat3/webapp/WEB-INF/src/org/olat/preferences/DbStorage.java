@@ -21,7 +21,12 @@
  */
 package org.olat.preferences;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.olat.core.id.Identity;
+import org.olat.core.logging.AssertException;
+import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesStorage;
 import org.olat.core.util.xml.XStreamHelper;
@@ -35,7 +40,7 @@ import org.olat.properties.PropertyManager;
  * 
  * @author Felix Jost
  */
-public class DbStorage implements PreferencesStorage {
+public class DbStorage extends LogDelegator implements PreferencesStorage{
 
 	static final String USER_PROPERTY_KEY = "v2guipreferences";
 	
@@ -52,8 +57,26 @@ public class DbStorage implements PreferencesStorage {
 	 * @param identity
 	 * @return
 	 */
-	private DbPrefs getPreferencesFor(Identity identity) {
-		Property guiProperty = PropertyManager.getInstance().findProperty(identity, null, null, null, USER_PROPERTY_KEY);
+	private DbPrefs getPreferencesFor(final Identity identity) {
+		 Property guiProperty = null; 
+		 try { 
+			 guiProperty = PropertyManager.getInstance().findProperty(identity, null, null, null, USER_PROPERTY_KEY); 
+		 } catch (AssertException e) {
+			 // OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
+			 List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
+			 if (guiPropertyList != null && guiPropertyList.size() > 0) {
+				 logError("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
+				 guiProperty = guiPropertyList.get(0);
+				 Iterator<Property> iterator = guiPropertyList.iterator();
+				 iterator.next();
+				 while (iterator.hasNext()) { 
+					 Property property = (Property) iterator.next(); 
+					 PropertyManager.getInstance().deleteProperty(property); 				 
+					 logInfo("Will delete old property: " + property.getTextValue()); 
+				 } 
+			 }
+		 }
+		
 		if (guiProperty == null) {
 			return createEmptyDbPrefs(identity,false);
 		} else {

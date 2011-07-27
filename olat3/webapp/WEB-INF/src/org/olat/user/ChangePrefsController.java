@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.UserSession;
 
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
@@ -133,10 +134,15 @@ class SpecialPrefsForm extends FormBasicController {
 	private String[] keys, values;
 	private boolean useAjaxCheckbox = false;
 	
-	public SpecialPrefsForm(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
+	public SpecialPrefsForm(final UserRequest ureq, final WindowControl wControl, final Identity changeableIdentity) {
 		super(ureq, wControl);
 		tobeChangedIdentity = changeableIdentity;
-		prefs = PreferencesFactory.getInstance().getPreferencesFor(tobeChangedIdentity, false);
+		// OLAT-6429 load GUI prefs from user session for myself and from factory for other users (as user manager)
+		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
+			prefs = ureq.getUserSession().getGuiPreferences();
+		} else {
+			prefs = PreferencesFactory.getInstance().getPreferencesFor(tobeChangedIdentity, false);			
+		}
 		// The ajax configuration is only for user manager (technical stuff)
 		useAjaxCheckbox = ureq.getUserSession().getRoles().isUserManager();
 		// initialize checkbox keys depending on useAjaxCheckbox flag
@@ -158,6 +164,15 @@ class SpecialPrefsForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		// OLAT-6429 don't change another users GUI prefs when he is logged in 
+		if (!ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
+			if (UserSession.getSignedOnIdentity(tobeChangedIdentity.getName()) != null) {
+				showError("error.user.logged.in", tobeChangedIdentity.getName());
+				prefsElement.reset();
+				return;
+			}
+		}
+
 		if (useAjaxCheckbox) {
 			prefs.putAndSave(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
 		}
