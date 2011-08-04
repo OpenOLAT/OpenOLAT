@@ -559,7 +559,8 @@ public class ForumController extends BasicController implements GenericEventList
 			currentMsg = msgEditCtr.getMessageBackAfterEdit();
 			currentMsg.setModifier(ureq.getIdentity());			
 			
-			fm.updateMessage(currentMsg, null);
+			final boolean changeLastModifiedDate = true; // OLAT-6295
+			fm.updateMessage(currentMsg, changeLastModifiedDate, null);
 			// if notification is enabled -> notify the publisher about news
 			if (subsContext != null) {
 				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
@@ -1484,9 +1485,10 @@ public class ForumController extends BasicController implements GenericEventList
 			currentMsg = fm.loadMessage(msg.getKey());
 			Status status = Status.getStatus(currentMsg.getStatusCode());
 			status.setClosed(closed);
-			if(currentMsg.getParent()==null) {
-			  currentMsg.setStatusCode(Status.getStatusCode(status));
-			  fm.updateMessage(currentMsg, new ForumChangedEvent("close"));
+			if (currentMsg.getParent() == null) {
+				currentMsg.setStatusCode(Status.getStatusCode(status));
+				final boolean changeLastModifiedDate = !closed; //OLAT-6295
+				fm.updateMessage(currentMsg, changeLastModifiedDate, new ForumChangedEvent("close"));
 			}
 			// do logging
 			ILoggingAction loggingAction;
@@ -1518,7 +1520,8 @@ public class ForumController extends BasicController implements GenericEventList
 			status.setHidden(hidden);
 			if(currentMsg.getParent()==null) {
 			  currentMsg.setStatusCode(Status.getStatusCode(status));
-			  fm.updateMessage(currentMsg, new ForumChangedEvent("hide"));			  
+			  final boolean changeLastModifiedDate = !hidden; //OLAT-6295
+			  fm.updateMessage(currentMsg, changeLastModifiedDate, new ForumChangedEvent("hide"));
 			}
 			// do logging
 			ILoggingAction loggingAction;
