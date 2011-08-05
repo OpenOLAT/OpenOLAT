@@ -274,8 +274,6 @@ public class SecureWebdavServlet
 	        
     		String method = req.getMethod();
 	      String path = getRelativePath(req);
-	      
-	      System.out.println(method + " " + path);
 	
 	      // OLAT-6294 alsways set encoding to UTF-8, overwritten later when a resource is different
 	      resp.setCharacterEncoding("UTF-8");
