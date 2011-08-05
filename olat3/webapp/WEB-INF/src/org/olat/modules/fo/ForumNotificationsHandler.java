@@ -95,7 +95,8 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 					} else {
 						name = NotificationHelper.getFormatedName(creator);
 					}
-					String desc = translator.translate("notifications.entry", new String[] { title, name });	
+					final String descKey = "notifications.entry" + (mInfo.getCreationDate().equals(mInfo.getLastModified()) ? "" : ".modified");
+					final String desc = translator.translate(descKey, new String[] { title, name });
 					String urlToSend = null;
 					if(p.getBusinessPath() != null) {
 						urlToSend = NotificationHelper.getURLFromBusinessPathString(p, businessControlString + mInfo.getKey().toString() + "]");

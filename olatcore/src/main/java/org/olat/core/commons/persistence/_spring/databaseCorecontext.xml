@@ -95,7 +95,14 @@
 	<property name="sessionFactory" ref="sessionFactory"/>
 </bean>
 
-
+<bean id="persistenceHelper" class="org.olat.core.commons.persistence.PersistenceHelper">
+	<constructor-arg>
+		<props>
+			<prop key="dbvendor">${db.vendor}</prop>
+	        <prop key="mysqloptions">${db.url.options.mysql}</prop>
+	    </props>
+	</constructor-arg>
+</bean>
 
 <bean id="mysqlHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 	<constructor-arg>

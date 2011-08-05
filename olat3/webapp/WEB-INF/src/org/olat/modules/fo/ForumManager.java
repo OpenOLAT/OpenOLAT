@@ -320,14 +320,23 @@ public class ForumManager extends BasicManager {
 	}
 
 	/**
-	 * Update message and fire MultiUserEvent, if any provided.
-	 * If a not null ForumChangedEvent object is provided, then fire event to listeners.
+	 * Update message and fire MultiUserEvent, if any provided. If a not null
+	 * ForumChangedEvent object is provided, then fire event to listeners.
+	 * 
 	 * @param m
+	 * @param updateLastModifiedDate
+	 *            true: the last modified date is updated to trigger a
+	 *            notification; false: last modified date is not modified and no
+	 *            notification is sent
 	 * @param event
 	 */
-	public void updateMessage(Message m, ForumChangedEvent event) {
+	public void updateMessage(final Message m, final boolean updateLastModifiedDate, final ForumChangedEvent event) {
 		updateCounters(m);
-		m.setLastModified(new Date());
+		// OLAT-6295 Only update last modified for the operations edit(update), show, and open. 
+		// Don't update the last modified date for the operations close, hide, move and split.
+		if (updateLastModifiedDate) {
+			m.setLastModified(new Date());
+		}
 		DBFactory.getInstance().updateObject(m);
 		if (event!=null) {
 	    CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new ForumChangedEvent("hide"), m.getForum());	   
@@ -488,20 +497,21 @@ public class ForumManager extends BasicManager {
 
 			Iterator<Message> messageIterator = subthreadList.iterator();
 			Message firstMessage = null;
-			DB db = DBFactory.getInstance();
+			final DB db = DBFactory.getInstance();
+			final boolean changeLastModifiedDate = false; // OLAT-6295
 			if (messageIterator.hasNext()) {
 				firstMessage = messageIterator.next();
 				firstMessage = (Message) db.loadObject(firstMessage);
 				firstMessage.setParent(null);
 				firstMessage.setThreadtop(null);
-				this.updateMessage(firstMessage, new ForumChangedEvent("split"));
+				this.updateMessage(firstMessage, changeLastModifiedDate, new ForumChangedEvent("split"));
 				newTopMessage = firstMessage;
 			}
 			while (firstMessage != null && messageIterator.hasNext()) {
 				Message message = messageIterator.next();
 				message = (Message) db.loadObject(message);
 				message.setThreadtop(firstMessage);
-				this.updateMessage(message, null);
+				this.updateMessage(message, changeLastModifiedDate, null);
 			}	
 		}		
 		return newTopMessage;
@@ -522,17 +532,19 @@ public class ForumManager extends BasicManager {
 		this.getSubthread(msg, oldThreadList, subThreadList);
 		// one has to set a new parent for all childs of the moved message
 		// first message of sublist has to get the parent from the moved message
-		for(Message childMessage : subThreadList) {
-			childMessage = (Message)db.loadObject(childMessage);
+		final boolean changeLastModifiedDate = false; // OLAT-6295
+		for (Message childMessage : subThreadList) {
+			childMessage = (Message) db.loadObject(childMessage);
 			childMessage.setParent(msg.getParent());
-			updateMessage(childMessage, null);
+			updateMessage(childMessage, changeLastModifiedDate, null);
 		}
 		// now move the message to the choosen thread
-		Message oldMessage = (Message)db.loadObject(msg);
+		final Message oldMessage = (Message) db.loadObject(msg);
 		Message message = createMessage();
 		message.setCreator(oldMessage.getCreator());
 		message.setForum(oldMessage.getForum());
 		message.setModifier(oldMessage.getModifier());
+		message.setLastModified(oldMessage.getLastModified()); // OLAT-6295
 		message.setTitle(oldMessage.getTitle());
 		message.setBody(oldMessage.getBody());
 		message.setThreadtop(topMsg);
