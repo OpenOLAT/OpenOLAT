@@ -269,12 +269,17 @@ public class SecureWebdavServlet
         throws ServletException, IOException {
     	boolean success = false;
     	try {
-    			Tracing.setUreq(req);
-    			I18nManager.attachI18nInfoToThread(req);
+    		Tracing.setUreq(req);
+    		I18nManager.attachI18nInfoToThread(req);
 	        
-    			String method = req.getMethod();
-	        String path = getRelativePath(req);
+    		String method = req.getMethod();
+	      String path = getRelativePath(req);
+	      
+	      System.out.println(method + " " + path);
 	
+	      // OLAT-6294 alsways set encoding to UTF-8, overwritten later when a resource is different
+	      resp.setCharacterEncoding("UTF-8");
+
 	        if (debug > 0) {
 	            Tracing.logDebug("[" + method + "] " + path, SecureWebdavServlet.class);
 	        }
@@ -941,6 +946,10 @@ public class SecureWebdavServlet
         DirContext resources = getResources(req);
         VFSDirContext vfsContext = (VFSDirContext) resources;
         String destinationPath = req.getHeader("Destination");
+		// First decode URL
+		destinationPath = RequestUtil.URLDecode(destinationPath, "UTF8");
+		// Then normalize to NFC form for comparison
+		destinationPath = normalize(destinationPath);
         if (!vfsContext.canWrite(destinationPath)) {
           resp.sendError(WebdavStatus.SC_FORBIDDEN);
           return;        	
@@ -1731,8 +1740,10 @@ public class SecureWebdavServlet
             }
         }
 				
-        destinationPath = 
-            RequestUtil.URLDecode(normalize(destinationPath), "UTF8");
+		// First decode URL
+		destinationPath = RequestUtil.URLDecode(destinationPath, "UTF8");
+		// Then normalize to NFC form for comparison
+		destinationPath = normalize(destinationPath);
 
         if (debug > 0)
             Tracing.logDebug("Dest path :" + destinationPath, SecureWebdavServlet.class);

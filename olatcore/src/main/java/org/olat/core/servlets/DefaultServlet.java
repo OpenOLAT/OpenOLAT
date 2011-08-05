@@ -91,10 +91,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -119,6 +120,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.olat.core.commons.servlets.util.URLEncoder;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.servlets.FastHttpDateFormat;
 import org.olat.core.util.servlets.Globals;
 import org.olat.core.util.servlets.MD5Encoder;
@@ -814,14 +816,21 @@ public class DefaultServlet
         if (normalized == null)
             return (null);
 
-				if (decode) {
-					try { // we need to decode potential UTF-8 characters in the URL
-						normalized = new String(normalized.getBytes(), "UTF-8");
-					} catch (UnsupportedEncodingException e) {}
-				}
+    /////
+     // OLAT-6294 Commented decoding code block 
+     // Never decode URL as URL encoding must be set to UTF-8 on
+     // the connector level which leads to a double decoding which breaks
+     // umlaute in WebDAV		
+//     		if (decode) {
+//     			try { // we need to decode potential UTF-8 characters in the URL
+//     				normalized = new String(normalized.getBytes(), "UTF-8");
+//     			} catch (UnsupportedEncodingException e) {}
+//     		}
+     /////	
+     		// Normalize the unicode characters for comparison with file system
+     		normalized = Normalizer.normalize(normalized, Form.NFC);
 
-        if (normalized.equals("/."))
-            return "/";
+        if (normalized.equals("/.")) return "/";
 
         // Normalize the slashes and add leading slash if necessary
         if (normalized.indexOf('\\') >= 0)
@@ -1057,9 +1066,8 @@ public class DefaultServlet
             if (resourceInfo.collection) {
 
                 if (content) {
-                    // Serve the directory browser
-                    resourceInfo.setStream
-                        (render(request.getContextPath(), resourceInfo));
+					// Serve the directory browser
+					resourceInfo.setStream(render(request.getContextPath() + "/webdav", resourceInfo));
                 }
 
             }
@@ -1401,20 +1409,21 @@ public class DefaultServlet
         sb.append("<head>\r\n");
         sb.append("<title>");
         sb.append(name);
-        sb.append("</title>\r\n");
-        sb.append("<STYLE><!--");
-        sb.append("H1{font-family : sans-serif,Arial,Tahoma;color : white;background-color : #0086b2;} ");
-        sb.append("H3{font-family : sans-serif,Arial,Tahoma;color : white;background-color : #0086b2;} ");
-        sb.append("BODY{font-family : sans-serif,Arial,Tahoma;color : black;background-color : white;} ");
-        sb.append("B{color : white;background-color : #0086b2;} ");
-        sb.append("A{color : black;} ");
-        sb.append("HR{color : #0086b2;} ");
-        sb.append("--></STYLE> ");
-        sb.append("</head>\r\n");
-        sb.append("<body>");
-        sb.append("<h1>");
-        sb.append(name);
-
+		sb.append("</title>\r\n");
+		sb.append("<STYLE><!--");
+		sb.append("H1{font-family : Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; color : white;background-color : #96A4BA;} ");
+		sb.append("H3{font-family : Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; color : white;background-color : #96A4BA;} ");
+		sb.append("BODY{font-family : Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; color : black;background-color : white;} ");
+		sb.append("A{color : #2A518D;} ");
+		sb.append("HR{color : #0086b2;} ");
+		sb.append("--></STYLE> ");
+		sb.append("</head>\r\n");
+		sb.append("<body>");
+		sb.append("<h1>");
+		sb.append(name);
+		sb.append("&nbsp;");
+		sb.append("</h1>");
+		
         // Render the link to our parent (if required)
         String parentDirectory = name;
         if (parentDirectory.endsWith("/")) {
@@ -1422,23 +1431,19 @@ public class DefaultServlet
                 parentDirectory.substring(0, parentDirectory.length() - 1);
         }
         int slash = parentDirectory.lastIndexOf('/');
-        if (slash >= 0) {
-            String parent = name.substring(0, slash);
-            sb.append(" - <a href=\"");
-            sb.append(rewriteUrl(contextPath));
-            if (parent.equals(""))
-                parent = "/";
-            sb.append(rewriteUrl(parent));
-            if (!parent.endsWith("/"))
-                sb.append("/");
-            sb.append("\">");
-            sb.append("<b>");
-            sb.append(parent);
-            sb.append("</b>");
-            sb.append("</a>");
-        }
+		if (slash >= 0) {
+			String parent = name.substring(0, slash);
+			sb.append("<p><a href=\"");
+			sb.append(rewriteUrl(contextPath));
+			if (parent.equals("")) parent = "/";
+			sb.append(rewriteUrl(parent));
+			if (!parent.endsWith("/")) sb.append("/");
+			sb.append("\">");
+			sb.append("Back to ");
+			sb.append(parent);
+			sb.append("</a></p>");
+		}
 
-        sb.append("</h1>");
         sb.append("<HR size=\"1\" noshade>");
 
         sb.append("<table width=\"100%\" cellspacing=\"0\"" +
@@ -1482,13 +1487,12 @@ public class DefaultServlet
                 sb.append(">\r\n");
                 shade = !shade;
 
-                sb.append("<td align=\"left\">&nbsp;&nbsp;\r\n");
-                sb.append("<a href=\"");
-                sb.append(rewriteUrl(contextPath));
-                resourceName = rewriteUrl(name + resourceName);
-                sb.append(resourceName);
-                if (childResourceInfo.collection)
-                    sb.append("/");
+				sb.append("<td align=\"left\">&nbsp;&nbsp;\r\n");
+				sb.append("<a href=\"");
+				sb.append(rewriteUrl(contextPath));
+				resourceName = rewriteUrl(name + "/" + resourceName);
+				sb.append(resourceName);
+                if (childResourceInfo.collection) sb.append("/");
                 sb.append("\"><tt>");
                 sb.append(trimmed);
                 if (childResourceInfo.collection)
@@ -1516,8 +1520,8 @@ public class DefaultServlet
         // Render the page footer
         sb.append("</table>\r\n");
 
-        sb.append("<HR size=\"1\" noshade>");
-        sb.append("<h3>").append(ServerInfo.getServerInfo()).append("</h3>");
+		sb.append("<HR size=\"1\" noshade>");
+		sb.append("<h3>").append(Settings.getFullVersionInfo()).append("</h3>");
         sb.append("</body>\r\n");
         sb.append("</html>\r\n");
 
