@@ -23,8 +23,10 @@ package org.olat.portfolio.model.structel;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.portfolio.model.restriction.CollectRestriction;
 import org.olat.resource.OLATResource;
@@ -84,7 +86,8 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 	 * @uml.property  name="title"
 	 */
 	public void setTitle(String title) {
-		this.title = title;
+		// OLAT-6439 truncate to allowed database limit
+		this.title = PersistenceHelper.truncateStringDbSave(title, 512, true);
 	}
 
 	/**
@@ -107,7 +110,8 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 	 * @uml.property  name="description"
 	 */
 	public void setDescription(String description) {
-		this.description = description;
+		// OLAT-6439 truncate to allowed database limit
+		this.description = PersistenceHelper.truncateStringDbSave(description, 2024, true);
 	}
 	
 	
@@ -120,9 +124,7 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 		} else if(desc.length() > 50) {
 			//to remain valid html: remove html tags
 			desc = FilterFactory.getHtmlTagAndDescapingFilter().filter(desc);
-			if(desc.length() > 50) {
-				desc = desc.substring(0, 50) + "...";
-			}
+			desc = Formatter.truncate(desc, 50);
 		}
 		return desc;
 	}
