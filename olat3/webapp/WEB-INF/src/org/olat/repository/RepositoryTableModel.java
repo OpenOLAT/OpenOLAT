@@ -112,6 +112,10 @@ public class RepositoryTableModel extends DefaultTableDataModel implements Table
 					case RepositoryEntry.ACC_OWNERS_AUTHORS: return translator.translate("table.header.access.author");
 					case RepositoryEntry.ACC_USERS: return translator.translate("table.header.access.user");
 					case RepositoryEntry.ACC_USERS_GUESTS: return translator.translate("table.header.access.guest");
+					default:						
+						// OLAT-6272 in case of broken repo entries with no access code
+						// return error instead of nothing
+						return "ERROR";
 				}
 			}
 			case 4: return re.getCreationDate();
