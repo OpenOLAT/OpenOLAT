@@ -419,7 +419,7 @@ public class FolderRunController extends BasicController implements Activateable
 				}
 			}
 			VFSItem vfsItem = folderComponent.getRootContainer().resolve(path.endsWith("/") ? path.substring(0, path.length()-1) : path);
-			if (!(vfsItem instanceof VFSContainer)) {
+			if (vfsItem != null && !(vfsItem instanceof VFSContainer)) {
 				// could be a file - create the mapper - otherwise don't create one if it's a directory
 				
 				// Create a mapper to deliver the auto-download of the file. We have to

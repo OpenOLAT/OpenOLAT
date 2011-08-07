@@ -53,6 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -123,6 +124,24 @@ public class InfoDisplayController extends FormBasicController {
 		}
 		
 		initForm(ureq);
+		
+		// OLAT-6302 when a specific message is shown display the page that
+		// contains the message. Jump in e.g. from portlet
+		ContextEntry ce = wControl.getBusinessControl().popLauncherContextEntry();
+		if (ce != null) { // a context path is left for me
+			OLATResourceable businessPathResource = ce.getOLATResourceable();
+			String typeName = businessPathResource.getResourceableTypeName();
+			if ("InfoMessage".equals(typeName)) {
+				Long messageId = businessPathResource.getResourceableId();
+				if (messageId != null && messageId.longValue() > 0) {
+					// currently no pageing is implemented, just page with all entries
+					maxResults = -1;
+					after = null;
+				}
+			}
+		}
+		
+		// now load with configuration
 		loadMessages();
 	}
 	
