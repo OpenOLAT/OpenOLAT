@@ -25,8 +25,9 @@
 #if (!$isGuest)
 	<li id="o_topnav_logout">
 		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
+		## except for the onolatunload() method which must be executed to correctly finish SCORM modules (OLAT-6255)
 		## must be on one line to work with inline translation tool
-		<a id="b_logout" href="$r.commandURI("logout")" title="$r.translateInAttribute("topnav.logout.alt")"><span class="b_logout_icon">$r.translate("topnav.logout")</span></a>
+		<a id="b_logout" href="$r.commandURI("logout")" title="$r.translateInAttribute("topnav.logout.alt")" onclick="if (window.olatonunload) {olatonunload();}"><span class="b_logout_icon">$r.translate("topnav.logout")</span></a>
 	</li>
 #else
 	<li id="o_topnav_login">
