@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -181,7 +182,9 @@ class FeedFormController extends FormBasicController {
 		this.setFormTitle("feed.edit");
 		// this.setFormContextHelp(packageName, pageName, hoverTextKey);
 
-		title = uifactory.addTextElement("title", "feed.title.label", 256, feed.getTitle(), this.flc);
+		// title might be longer from external source
+		String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 256, true);
+		title = uifactory.addTextElement("title", "feed.title.label", 256, saveTitle, this.flc);
 		title.setMandatory(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
