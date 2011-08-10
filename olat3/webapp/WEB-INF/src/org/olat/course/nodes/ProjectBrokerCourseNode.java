@@ -772,11 +772,15 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 				boolean validReturnboxesfound = false; 
 				File[] themaFolderArray = returnboxDir.listFiles();
 				for(File themaFolder: themaFolderArray){
-						if(FileUtils.isDirectoryAndNotEmpty(themaFolder)){
+					File[] userFolderArray = themaFolder.listFiles();
+					if(userFolderArray==null) continue;
+					for(File userFolder : userFolderArray){
+						if(FileUtils.isDirectoryAndNotEmpty(userFolder)){
 							validReturnboxesfound = true;
-							File source = new File(returnboxDir+"/"+themaFolder.getName());
-							File target = new File(tmpDirPath + "/returnboxes/"+themaFolder.getName());
+							File source = new File(returnboxDir+"/"+themaFolder.getName()+"/"+userFolder.getName());
+							File target = new File(tmpDirPath + "/returnboxes/"+themaFolder.getName()+"/"+userFolder.getName()) ;
 							FileUtils.copyDirContentsToDir(source , target , false, "archive projectbroker returnboxes");
+						}
 					}
 				}
 				if(validReturnboxesfound){
