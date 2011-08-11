@@ -389,13 +389,39 @@ public class ListRenderer {
 
 		// Info link
 		if (canWrite) {
+			sb.append("<table class=\"b_briefcase_actions\"><tr><td>");
+
+			// versions action
+			if (canVersion) {
+				// Versions link
+				if (lockedForUser) {
+					sb.append("<span ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate("versions")))
+							.append("\" class=\" b_small_icon b_briefcase_versions_dis_icon\">&#160;</span>");
+				} else {
+					sb.append("<a href=\"");
+					ubu.buildURI(sb, new String[] { PARAM_VERID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
+							: AJAXFlags.MODE_NORMAL);
+					sb.append("\"");
+					if (iframePostEnabled) { // add ajax iframe target
+						StringOutput so = new StringOutput();
+						ubu.appendTarget(so);
+						sb.append(so.toString());
+					}
+					sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate("versions")))
+							.append("\" class=\" b_small_icon b_briefcase_versions_icon\">&#160;</a>");
+				}
+			} else {
+				sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");									
+			}
+			sb.append("</td><td>");
+
+			// content edit action
 			String nameLowerCase = name.toLowerCase();
-			if (!lockedForUser &&
-					(nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm") || nameLowerCase.endsWith(".txt")
-							|| nameLowerCase.endsWith(".css"))) {
-				
+			if (!lockedForUser && (nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm") || nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css"))) {
+
 				sb.append("<a href=\"");
-				ubu.buildURI(sb, new String[] { PARAM_CONTENTEDITID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+				ubu.buildURI(sb, new String[] { PARAM_CONTENTEDITID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
+						: AJAXFlags.MODE_NORMAL);
 				sb.append("\"");
 				if (iframePostEnabled) { // add ajax iframe target
 					StringOutput so = new StringOutput();
@@ -403,76 +429,68 @@ public class ListRenderer {
 					sb.append(so.toString());
 				}
 				sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate("editor")));
-				sb.append("\" class=\"b_small_icon b_briefcase_edit_file_icon\"></a>");
+				sb.append("\" class=\"b_small_icon b_briefcase_edit_file_icon\">&#160;</a>");
+			} else {
+				sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");	
 			}
+			sb.append("</td><td>");
 			
-			boolean canMetaData = MetaInfoHelper.canMetaInfo(child);
-			if(canMetaData) {
-				if(lockedForUser) {
-				// Metadata link disabled... 
-					sb.append("<span ext:qtip=\"")
-						.append(StringEscapeUtils.escapeHtml(translator.translate("edit")))
-						.append("\" class=\" b_small_icon b_briefcase_edit_meta_dis_icon\">&#160;</span>");
-				} else {
-					// Metadata edit link... also handles rename for non-OlatRelPathImpls
-					sb.append("<a href=\"");
-					ubu.buildURI(sb, new String[] { PARAM_EDTID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-					sb.append("\"");
-					if (iframePostEnabled) { // add ajax iframe target
-						StringOutput so = new StringOutput();
-						ubu.appendTarget(so);
-						sb.append(so.toString());
-					}
-					sb.append(" ext:qtip=\"")
-						.append(StringEscapeUtils.escapeHtml(translator.translate("mf.edit")))
-						.append("\" class=\" b_small_icon b_briefcase_edit_meta_icon\"></a>");
-				}
-			}
-			
+			// eportfolio collect action
 			// get a link for adding a file to ePortfolio, if file-owner is the current user
-			if(canAddToEPortfolio && !isContainer){
+			if (canAddToEPortfolio && !isContainer) {
 				if (metaInfo != null) {
 					Identity author = metaInfo.getAuthorIdentity();
 					if (author != null && fc.getIdentityEnvironnement().getIdentity().getKey().equals(author.getKey())) {
 						sb.append("<a href=\"");
-						ubu.buildURI(sb, new String[] { PARAM_EPORT }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+						ubu.buildURI(sb, new String[] { PARAM_EPORT }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
+								: AJAXFlags.MODE_NORMAL);
 						sb.append("\"");
 						if (iframePostEnabled) { // add ajax iframe target
 							StringOutput so = new StringOutput();
 							ubu.appendTarget(so);
 							sb.append(so.toString());
 						}
-						sb.append(" ext:qtip=\"")
-							.append(StringEscapeUtils.escapeHtml(translator.translate("eportfolio")))
-							.append("\" class=\" b_small_icon b_eportfolio_add\"></a>");
+						sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate("eportfolio")))
+								.append("\" class=\" b_small_icon b_eportfolio_add\">&#160;</a>");
+					} else {
+						sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");					
 					}
 				}
+			} else {
+				sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");									
 			}
-			
-			if(canVersion) {
-				//Versions link
-				if(lockedForUser) {
-					sb.append("<span ext:qtip=\"")
-						.append(StringEscapeUtils.escapeHtml(translator.translate("versions")))
-						.append("\" class=\" b_small_icon b_briefcase_versions_dis_icon\">&#160;</span>");
+			sb.append("</td><td>");
+
+			// meta edit action (rename etc)
+			boolean canMetaData = MetaInfoHelper.canMetaInfo(child);
+			if (canMetaData) {
+				if (lockedForUser) {
+					// Metadata link disabled...
+					sb.append("<span ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate("edit")))
+							.append("\" class=\" b_small_icon b_briefcase_edit_meta_dis_icon\">&#160;</span>");
 				} else {
+					// Metadata edit link... also handles rename for non-OlatRelPathImpls
 					sb.append("<a href=\"");
-					ubu.buildURI(sb, new String[] { PARAM_VERID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+					ubu.buildURI(sb, new String[] { PARAM_EDTID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
+							: AJAXFlags.MODE_NORMAL);
 					sb.append("\"");
 					if (iframePostEnabled) { // add ajax iframe target
 						StringOutput so = new StringOutput();
 						ubu.appendTarget(so);
 						sb.append(so.toString());
 					}
-					sb.append(" ext:qtip=\"")
-						.append(StringEscapeUtils.escapeHtml(translator.translate("versions")))
-						.append("\" class=\" b_small_icon b_briefcase_versions_icon\"></a>");
+					sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate("mf.edit")))
+							.append("\" class=\" b_small_icon b_briefcase_edit_meta_icon\">&#160;</a>");
 				}
+			} else {
+				sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");					
 			}
+			
+			sb.append("</td></tr></table>");
 		} else {
 			sb.append("&nbsp;");
 		}
-		
+
 		sb.append("</td></tr>");
 	}
 }

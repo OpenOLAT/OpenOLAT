@@ -141,19 +141,11 @@ public class TUConfigForm extends FormBasicController {
 
 		fullURI = getFullURL(proto, host, port, uri, query).toString();
 		
-		selectableValues = new String[] {
-				OPTION_TUNNEL_THROUGH_OLAT_INLINE,
-				OPTION_TUNNEL_THROUGH_OLAT_IFRAME,
-				OPTION_SHOW_IN_OLAT_IN_AN_IFRAME,
-				OPTION_SHOW_IN_NEW_BROWSER_WINDOW
-		};
-		
-		selectableLabels = new String[] {
-				translate(NLS_OPTION_TUNNEL_INLINE_LABEL),
-				translate(NLS_OPTION_TUNNEL_IFRAME_LABEL),
-				translate(NLS_OPTION_OLAT_IFRAME_LABEL),
-				translate(NLS_OPTION_EXTERN_PAGE_LABEL)
-		};
+		selectableValues = new String[] { OPTION_TUNNEL_THROUGH_OLAT_IFRAME, OPTION_SHOW_IN_OLAT_IN_AN_IFRAME,
+				OPTION_SHOW_IN_NEW_BROWSER_WINDOW, OPTION_TUNNEL_THROUGH_OLAT_INLINE };
+
+		selectableLabels = new String[] { translate(NLS_OPTION_TUNNEL_IFRAME_LABEL), translate(NLS_OPTION_OLAT_IFRAME_LABEL),
+				translate(NLS_OPTION_EXTERN_PAGE_LABEL), translate(NLS_OPTION_TUNNEL_INLINE_LABEL) };
 		
 		initForm (ureq);
 	}
@@ -299,7 +291,7 @@ public class TUConfigForm extends FormBasicController {
 	
 	private void update () {
 		// Checkbox 'page password protected' only visible when OPTION_TUNNEL_THROUGH_OLAT_INLINE or OPTION_TUNNEL_THROUGH_OLAT_IFRAME
-		checkboxPagePasswordProtected.setVisible( selectables.isSelected(0) || selectables.isSelected(1) );
+		checkboxPagePasswordProtected.setVisible( selectables.isSelected(0) || selectables.isSelected(3) );
 		if (checkboxPagePasswordProtected.isSelected(0) && checkboxPagePasswordProtected.isVisible()) {
 			tuser.setVisible(true);
 			tpass.setVisible(true);

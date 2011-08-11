@@ -530,15 +530,19 @@
 	div.b_briefcase_foldercomp table.b_briefcase_filetable td input.b_checkbox { margin: 0 4px 0 0;}
 	div.b_briefcase_foldercomp table.b_briefcase_filetable td a:hover, div.b_briefcase_foldercomp table.b_briefcase_filetable td a:focus { background-color: transparent;}
 	div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_last_child  { padding-left: 0;}
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon { float: left; margin-right: 3px; background-image: url(../images/brasato/page_edit.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon:hover { float: left; background-image: url(../images/brasato/page_edit_over.png); }	
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon { float: right; background-image: url(../images/brasato/edit_metadata.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon:hover { float: right; background-image: url(../images/brasato/edit_metadata_over.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_edit_meta_dis_icon { float: right; background-image: url(../images/brasato/edit_metadata_dis.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon { float: right; margin-right:3px; background-image: url(../images/brasato/versions.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon:hover { float: right; margin-right:3px; background-image: url(../images/brasato/versions_hover.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon { float: right; margin-right:3px; background-image: url(../images/brasato/versions_dis.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon { float: left; margin-right:3px; background-image: url(../images/brasato/locked.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable table.b_briefcase_actions { border: 0; padding: 0; margin:0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable table.b_briefcase_actions td { border: 0; padding: 0 0 0 3px; margin:0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable table.b_briefcase_actions tr { border: 0; padding: 0; margin:0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon {background-image: url(../images/brasato/page_edit.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon:hover {background-image: url(../images/brasato/page_edit_over.png); }	
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon {background-image: url(../images/brasato/edit_metadata.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon:hover {background-image: url(../images/brasato/edit_metadata_over.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_edit_meta_dis_icon {background-image: url(../images/brasato/edit_metadata_dis.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon {background-image: url(../images/brasato/versions.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon:hover {background-image: url(../images/brasato/versions_hover.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon {background-image: url(../images/brasato/versions_dis.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon {background-image: url(../images/brasato/locked.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_noicon { }	
 	div.b_briefcase_preview { background-color:white; width:200px; height:200px; border:1px solid #8EAACE; margin-top: 2px; }
 	
 	div.b_briefcase div.b_briefcase_searchcomp { float:left; display:inline; margin:0.5em 0; width:14em; }

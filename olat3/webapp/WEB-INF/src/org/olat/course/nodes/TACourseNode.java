@@ -836,8 +836,10 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			fileList.add(fileName);
 			// copy solutions to tmp dir
 			if (solutionDir.exists()) {
-				FileUtils.copyDirContentsToDir(solutionDir ,new File(tmpDirPath + "/solutions"),false, "archive task course node solutions" );
-				fileList.add("solutions");
+				if(FileUtils.isDirectoryAndNotEmpty(solutionDir)){
+					FileUtils.copyDirContentsToDir(solutionDir, new File(tmpDirPath + "/solutions"), false, "archive task course node solutions");
+					fileList.add("solutions");
+				}
 			}
 			// copy dropboxes to tmp dir
 			if (dropboxDir.exists()) {
@@ -877,10 +879,21 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			
 			// copy returnboxes to tmp dir
 			if (returnboxDir.exists()) {
-				FileUtils.copyDirContentsToDir(returnboxDir , new File(tmpDirPath + "/returnboxes"), false, "archive task course node returnboxes");
-				fileList.add("returnboxes");
-			  //returnboxes exists, so there is something to archive
-				dataFound |= true;
+				//OLAT-6362 archive only existing returnboxes -> prevent empty folders in archive
+				File[] returnBoxContent = returnboxDir.listFiles();
+				boolean validReturnboxesfound = false;
+				for (File file : returnBoxContent) {
+					if(FileUtils.isDirectoryAndNotEmpty(file)){
+						validReturnboxesfound = true;
+						FileUtils.copyDirContentsToDir(file, new File(tmpDirPath + "/returnboxes/"+file.getName()), false, "archive task course node returnboxes "+file.getName());
+					}
+				}
+				
+				if(validReturnboxesfound){
+					// returnboxes exists and at least one is not empty, so there is something to archive
+					dataFound = true;
+					fileList.add("returnboxes");
+				}
 			}
 			
 			if(dataFound) {

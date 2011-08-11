@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
@@ -732,8 +733,10 @@ public abstract class FeedManagerImpl extends FeedManager {
 			Date whenTheFeedWasLastModified = feed.getLastModified();
 			if (whenTheFeedWasLastModified != null && entry.getLastModified().before(whenTheFeedWasLastModified)) {
 				// feed is newer than repository entry, update repository entry
-				entry.setDisplayname(feed.getTitle());
-				entry.setDescription(feed.getDescription());
+				String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 100, true);
+				entry.setDisplayname(saveTitle);
+				String saveDesc = PersistenceHelper.truncateStringDbSave(feed.getDescription(), 16777210, true);
+				entry.setDescription(saveDesc);
 				// Update the image
 				VFSContainer repoHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()));
 				String imageFilename = RepositoryEntryImageController.getImageFilename(entry);
