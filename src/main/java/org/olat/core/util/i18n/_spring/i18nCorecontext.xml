@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+<context:annotation-config />
+
+<bean id="I18nManager" class="org.olat.core.util.i18n.I18nManager" />
+
+<bean id="i18nModule" class="org.olat.core.util.i18n.I18nModule" destroy-method="destroy" depends-on="I18nManager, org.olat.core.util.WebappHelper">
+	<constructor-arg ref="coordinatorManager" />
+      <property name="persistedProperties">
+		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+		    <constructor-arg index="0" ref="coordinatorManager"/>
+		    <constructor-arg index="1" ref="i18nModule" />
+		  </bean>
+	  </property>
+      
+</bean>
+                
+       <bean id="triggerI18nModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" ref="i18nModule" />
+        <property name="targetMethod" value="init" />
+        <property name="arguments">
+                    <value>
+	                      <!-- 
+			Default setting for enabled languages: comma separated list of lang keys. Set to 'all' to 
+			enable all languages that can be found in the source code 
+			Example:
+			<enabledLanguages>en,de,fr,it,es,da,cs,el,ru,pl,zh_CN,zh_TW,lt,fa,pt_PT,pt_BR,tr,hu,sq,in,ar,rm,af,iw,vi,mn</enabledLanguages>
+			or
+			<enabledLanguages>all</enabledLanguages>
+			NOTE: this default setting will be overridden by the values configured in 
+			olatdata/system/configuration/org.olat.core.util.i18n.I18nModule.properties
+		-->
+                         enabledLanguages=${enabledLanguages}
+                         <!-- 
+			Default setting for the system default locale to use: language of login page 
+			NOTE: this default setting will be overridden by the values configured in 
+			olatdata/system/configuration/org.olat.core.util.i18n.I18nModule.properties
+		-->
+                         defaultLanguage=${defaultlang}
+                         <!--
+			The language that is used as a fallback in case the system does not find a key in the 
+			users language nor in the default language. Note that in this language
+			all keys must exist! Since developers only add the 'de' and 'en' keys it is strongly recommended 
+			that you don't set it to any other value that this. If unsure, use the default 'de'.
+		-->	
+                         fallbackLanguage=${fallbacklang}
+                         <!-- 
+			The application fallback bundle contains the common words used everywhere in your web application. 
+			During translation, when a translation is not found, the system checks if the fallback bundle contains
+			the translation. Here you find things you often use in your application. 
+			If unsure, leave default value. 
+		-->
+                         applicationFallbackBundle=org.olat
+                         <!-- 
+			The olatcore fallback bundle contains the common words used everywhere in the core framework. 
+			During translation, when a translation is not found, the system checks if the fallback bundle contains
+			the translation. Here you find things like 'yes', 'no' etc. Normally you don't change this.			
+			In the fallback chain the system first checks for the application fallback and as last option it then 
+			checks for the olatcore fallback
+			If unsure, leave default value. 
+		-->
+                         coreFallbackBundle=org.olat.core
+                         <!-- 
+			Name of the overlay that should be used to customize the language. E.g. if your overlay 
+			files are labelled "de__customizing" you must set "customizing" here. The overlay properties files are
+			stored in olatdata/customizing/lang/overlay/*
+			If unsure, leave default value. 
+		--> 
+                         overlayName=customizing
+                         <!-- 
+			Enable or disable the customizing overlay feature. If set to true it is not possible to customize
+			the interface text elements. If unsure, set to true.
+		-->
+                         overlayEnabled=true
+                         <!-- 
+			Whether to cache i18n properties files (recommended in production). 
+			If unsure, set to true. 	
+		-->
+                         cachingEnabled=${localization.cache}
+                         <!-- 
+			Define language selection list style on login page. true=drop-box, false=in one line. 
+			If unsure, leave default value. 
+		-->
+                         dropDownListEnabled=true
+                         <!-- 
+			Enable the translation tool. This is only enabled on the official OLAT translation server
+			at translation.olat.org. If you want to setup your own translation server you must specify
+			the following path in order to work properly:
+			i18n.application.src.dir		: path to the source of your application code, typically olat3/webapp/WEB-INF/src
+			i18n.application.opt.src.dir	: path to the source of your application i18n files, typically olat3_i18n/src/main/java
+			i18n.core.src.dir				: path to the source of the framework core code, typically olatcore/src/main/java
+			i18n.core.opt.src.dir			: path to the source of the framework i18n files, typically olatcore_i18n/src/main/java
+			In most cases you can set this value to disabled and ignore the application and core src path. 
+			You can still use the translation tool to customize the languages using the overlay feature
+			If unsure, set to disabled in the olat.local.properties.
+			
+			Values are disabled / enabled, this is also used to enable the translation status job.
+			see your olat.properties or olat.local.properties for the value set.
+		-->
+                         transToolEnabled=${is.translation.server}
+                         transToolApplicationSrcPath=${i18n.application.src.dir}
+                         transToolApplicationOptSrcPath=${i18n.application.opt.src.dir}
+                         <!-- 
+			The languages that serve as a base in the translation tool. Note that in those languages 
+			all keys must exist! Since developers only add the 'de' and 'en' keys it is strongly recommended 
+			that you don't set it to any other value that this. If unsure, use the default 'en,de'.
+		-->
+                         transToolReferenceLanguages=de,en
+	                </value>
+                </property>
+</bean>
+
+</beans>

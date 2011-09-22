@@ -1,5 +1,0 @@
-#Build properties
-#Thu Nov 05 03:28:04 CET 2009
-build.number=2238
-build.date=05.11.2009 03\:28\:04
-build.version=6.3.0
