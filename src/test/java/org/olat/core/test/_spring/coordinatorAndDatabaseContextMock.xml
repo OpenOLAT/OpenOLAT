@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+<context:annotation-config />
+<bean id="cacheConfig" class="org.olat.core.util.cache.n.CacheConfig">
+	<property name="childrenConfig"><map></map></property>
+</bean>
+			
+<bean id="org.olat.core.util.cache.n.impl.svm.SingleVMCacher" class="org.olat.core.util.cache.n.impl.svm.SingleVMCacher" init-method="init">
+	<property name="rootConfig" ref="cacheConfig"/>
+</bean>
+
+<bean id="database" class="org.olat.core.commons.persistence.DBImpl"></bean>
+<bean id="pessimisticLockManager" class="org.olat.resource.lock.pessimistic.PessimisticLockManager"/>
+<bean id="org.olat.commons.coordinate.cluster.ClusterSyncer" class="org.olat.commons.coordinate.cluster.ClusterSyncer" >
+		<constructor-arg index="0" ref="pessimisticLockManager" />
+		<property name="executionTimeThreshold" value="1000" />
+		<property name="dbInstance" ref="database"></property>
+</bean>
+
+<bean id="coordinatorManager" class="org.olat.core.util.coordinate.CoordinatorManagerImpl">
+		<property name="coordinator" ref="org.olat.core.util.coordinate.SingleVMCoordinator"/>
+</bean>
+
+
+<bean id="org.olat.core.util.coordinate.SingleVMCoordinator" class="org.olat.commons.coordinate.singlevm.SingleVMCoordinator" >
+		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer"/>
+  		<property name="cacher" ref="org.olat.core.util.cache.n.impl.svm.SingleVMCacher"/>
+  		<property name="eventBus" ref="eventBus" />
+</bean>
+
+<bean id="eventBus" class="org.olat.commons.coordinate.singlevm.SingleVMEventBus" />
+
+</beans>

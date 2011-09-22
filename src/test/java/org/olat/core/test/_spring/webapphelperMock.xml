@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<bean id ="org.olat.core.util.WebappHelper" class="org.olat.core.util.WebappHelper"  init-method="init" destroy-method="destroy">
+				<!-- relative path from the webapp directory to the source directory (only relavant for development/debuging mode) -->
+				<property name="relPathToSrc" value="" />
+				<!-- set to jar when olatcore is used as jar or to absolute path pointing to olatcore 
+					source during development. This field is modified automatically by build.xml -->
+				<property name="coreSourcePath" value="${olatcore.src}" />
+				<property name="instanceId" value="myolat"/>
+				<property name="nodeId" value="1"/>
+				<property name="userDataRoot" value=""/>
+				<property name="mailConfig">
+					<map>
+						<entry key="mailhost" value="mail.uzh.ch"/>
+						<entry key="mailTimeout" value="5000"/> <!-- timeout in milliseconds -->
+						<entry key="smtpUser" value=""/>
+						<entry key="smtpPwd" value=""/>
+						<entry key="sslEnabled" value="false"/>
+						<entry key="sslCheckCertificate" value="false"/>
+						<entry key="mailFrom" value=""/>
+						<entry key="mailSupport" value=""/>
+					</map>
+				</property>
+				<property name="defaultCharset" value="de" />
+				<property name="version" value="1234" />
+				<property name="applicationName" value="olat" />
+			</bean>
+			
+			
+			
+			
+			
+			
+			<bean class="org.olat.core.helpers.Settings"  depends-on="org.olat.core.util.WebappHelper" init-method="init" destroy-method="destroy">
+				<property name="persistedProperties">
+					<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+						<constructor-arg index="0" ref="coordinatorManager" />
+						<constructor-arg index="1" ref="org.olat.core.helpers.Settings" />
+					</bean>
+				</property>
+				<property name="serverconfig">
+					<map>
+						<entry key="server_name" value="REPLACE" />
+						<entry key="server_fqdn" value="localhost" />
+						<entry key="server_securePort" value="443" />
+						<entry key="server_insecurePort" value="80" />
+						<!-- Static global-mappers files (path /g/**) can be delivered directly from apache 
+				     		 olat-application must copy all needed static files from classes/core to apache
+				     		 static directory (static/g/..) . 
+				     		 Apache and mod_jk must be configurated to filter '/g/**' path -->
+						<entry key="server_modjk_enabled" value="false" />
+						<entry key="server_core_jar_name" value="olatcore-1.0-SNAPSHOT.jar" />
+						<entry key="serverContextPath" value="/olat"/>
+					</map>
+				</property>			
+				<!-- true enable debug mode, not for production mode but for productive hours ;) -->
+				<property name="debug" value="true" />
+				<!-- if readOnlyDebug, then no file changes can be made in the debug mode -->
+				<property name="readOnlyDebug" value="false" />
+				<!-- 
+					For Performance and/or Functional Tests. 
+					if allowLoadtestMode is set to true, it is possible to switch a session to  loadtest mode
+					using the url parameter ?loadtest  and ?noloadtest even without logging in.
+					Thus the same urls can be reused over and over again, which is needed for tools like JMeter or such.
+					- Not to be used for productive mode! (no double post checks, asynchronous inline rendering does not work etc.)-	 
+				-->
+				<property name="allowLoadtestMode" value="${allow.loadtest.mode}" />
+				<property name="ajaxGloballyOn" value="true" />
+				<property name="ajaxBlacklistedUserAgents">
+					<list>
+						<value>.*WebKit/5[01].*</value> 		<!-- older than safari 3.0 -->
+						<value>.*MSIE [2345].*</value>			<!-- older than IE 6.0 -->
+						<value>.*Firefox/[1].*</value>			<!-- older than FF 2.0  -->
+						<value>.*Opera/[45678].*</value>		<!-- older than Opera 9 -->
+						<value>.*Gecko/200[0123456].*</value>	<!-- Gecko engine older than 2006  -->
+						<value>.*Lynx.*</value>					<!-- Lynx console browser (no js) -->
+					</list>
+				</property>
+				<property name="guiThemeIdentifyer" value="default" />				
+				<property name="version" value="1234" />
+				<property name="applicationName" value="olat" />
+				<property name="clusterMode" value="singlevm"/>
+				<property name="nodeId" value="1"/>
+			</bean>
+			
+			
+			
+			
+
+</beans>
