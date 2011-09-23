@@ -1,0 +1,44 @@
+<div class="o_projectbroker_peekview b_clearfix">
+#if ( $myProjects.size() > 0 )
+	<div class="o_projectbroker_peekview_title">
+		$r.translate("peekview.selected.project.title")
+	</div>
+	#foreach( $project in $myProjects ) 	
+		<div class="o_projectbroker_peekview_project">
+		<h5>
+			$r.render("nodeLink_${project.getKey()}")
+		</h5>
+		</div>
+	#end
+	#if ($peekviewMoreProjects)
+		<div class="o_projectbroker_peekview_more_projects">
+			$r.translate("peekview.more.project")
+		</div>
+	#end
+#else
+	#if ($myCoachedProjects.size() == 0)
+		<div class="o_projectbroker_peekview_title">
+			$r.translate("peekview.no.selected.projects")
+		</div>
+	#end
+#end
+
+#if ($myCoachedProjects.size() > 0)
+	<div class="o_projectbroker_peekview_title">
+		$r.translate("peekview.coached.project.title")
+	</div>
+	#foreach( $coachedProject in $myCoachedProjects ) 	
+		<div class="o_projectbroker_peekview_project">
+		<h5>
+			$r.render("coachedNodeLink_${coachedProject.getKey()}")
+		</h5>
+		</div>
+	#end
+	#if ($peekviewMoreCoachedProjects)
+		<div class="o_projectbroker_peekview_more_projects">
+			$r.translate("peekview.more.coached.project")
+		</div>
+	#end
+	
+#end
+</div>
