@@ -781,12 +781,12 @@
 			<version>1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jivesoftware</groupId>
+			<groupId>org.igniterealtime.smack</groupId>
 			<artifactId>smack</artifactId>
 			<version>3.2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jivesoftware</groupId>
+			<groupId>org.igniterealtime.smack</groupId>
 			<artifactId>smackx</artifactId>
 			<version>3.2.1</version>
 		</dependency>
@@ -974,7 +974,7 @@
 			<version>1.9.14</version>
 		</dependency>
 		<dependency>
-			<groupId>owaspantisamy</groupId>
+			<groupId>org.owasp.antisamy</groupId>
 			<artifactId>antisamy</artifactId>
 			<version>1.4.4</version>
 		</dependency>

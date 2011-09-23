@@ -23,16 +23,9 @@
 package org.olat.admin.jmx;
 
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
-import org.jboss.cache.Cache;
-import org.jboss.cache.CacheFactory;
-import org.jboss.cache.DefaultCacheFactory;
-import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 /**
  * Helper class to register all JBoss Tree Cache MBeans at JMX Server.
@@ -49,9 +42,11 @@ public class JBossTreeCacheJmxRegistrationManager {
 	}
 	/**
 	 * Register StatisticsService as MBean for JMX support.
+	 * @param <Cache>
 	 * @param mySessionFactory
 	 */
-	private void registerAllJBossTreeCacheMBeans() {
+	private <Cache> void registerAllJBossTreeCacheMBeans() {
+		/* fxdiff: FXOLAT-243
 	    try {
 		    log.info("start to register all JBoss Treecache MBeans...");
 		    CacheFactory factory = new DefaultCacheFactory();
@@ -65,6 +60,7 @@ public class JBossTreeCacheJmxRegistrationManager {
 	    } catch (NoSuchBeanDefinitionException e) {
 	    	log.warn("JMX-Error : Can not register as MBean, NoSuchBeanDefinitionException=", e);
 	    }
+	    */
 	}
 	
 	
