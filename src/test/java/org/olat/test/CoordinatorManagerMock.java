@@ -18,7 +18,7 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.core.test;
+package org.olat.test;
 
 import org.mockito.Mockito;
 import org.olat.core.util.coordinate.Coordinator;

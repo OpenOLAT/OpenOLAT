@@ -18,7 +18,7 @@
  * University of Zurich, Switzerland.
  * <p>
  */
-package org.olat.core.test;
+package org.olat.test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

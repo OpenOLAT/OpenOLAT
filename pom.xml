@@ -4,10 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.olat</groupId>
 	<artifactId>OLAT-LMS</artifactId>
-	<version>7.2.0.0-SNAPSHOT</version>
+	<version>7.1.2.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OLAT LMS</name>
-	<url>http://www.olat.org/</url>
+	<url>http://www.openolat.org</url>
 	<description>
   Welcome to the OLAT (Online Learning And Training) Developer Project Site.  This site
   contains materials chiefly of concern to developers (e.g., unit testing and SCA output etc.)
@@ -122,17 +122,12 @@
 	</distributionManagement>
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://bugs.olat.org/jira/secure/Dashboard.jspa</url>
+		<url>http://jira.openolat.org</url>
 	</issueManagement>
-	<ciManagement>
-		<system>Hudson</system>
-		<url>http://hudson.olat.uzh.ch/hudson</url>
-		<!-- notifiers are not required -->
-	</ciManagement>
 	<scm>
-		<connection>scm:hg:http://hg.olat.org/repos</connection>
-		<developerConnection>scm:hg:http://hg.olat.org/repos</developerConnection>
-		<url>http://hg.olat.org/repos</url>
+		<connection>scm:hg:http://hg.openolat.org</connection>
+		<developerConnection>scm:hg:http://hg.openolat.org</developerConnection>
+		<url>http://hg.openolat.org</url>
 	</scm>
 	<mailingLists>
 		<mailingList>
@@ -207,8 +202,43 @@
 			<name>OLAT Maven Repository</name>
 			<url>http://repo.olat.org/nexus/content/groups/public</url>
 		</repository>
+		<repository>
+			<id>nexus.codehaus.org</id>
+			<name>Codehaus nexus repo</name>
+			<url>https://nexus.codehaus.org/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>repo.olat.org1</id>
+			<name>OLAT Maven Repository1</name>
+			<url>http://repo.olat.org/nexus/content/repositories/dependencies</url>
+		</repository>
+		<repository>
+			<id>repo.olat.org2</id>
+			<name>OLAT Maven Repository2</name>
+			<url>http://repo.olat.org/nexus/content/repositories/releases</url>
+		</repository>
+		<repository>
+			<id>olat-plugin-repo</id>
+			<url>http://repo.olat.org/nexus</url>
+		</repository>
+		<repository>
+			<id>java.net</id>
+			<url>http://download.java.net/maven/2</url>
+		</repository>		
 	</repositories>
 	<pluginRepositories>
+		<pluginRepository>
+			<id>java-net-plugin-repo</id>
+			<name>Java net Maven plugin repository</name>
+			<url>http://download.java.net/maven/2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+			</snapshots>
+		</pluginRepository>
 		<pluginRepository>
 			<id>olat-plugin-repo</id>
 			<name>OLAT Maven plugin repository</name>
@@ -221,7 +251,7 @@
 				<!-- The frequency for downloading updates - can be "always", "daily" 
 					(default), "interval:XXX" (in minutes) or "never" (only if it doesn't exist 
 					locally). -->
-				<updatePolicy>never</updatePolicy>
+				<updatePolicy>daily</updatePolicy>
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
@@ -753,12 +783,12 @@
 		<dependency>
 			<groupId>org.jivesoftware</groupId>
 			<artifactId>smack</artifactId>
-			<version>3.1.0</version>
+			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jivesoftware</groupId>
 			<artifactId>smackx</artifactId>
-			<version>3.1.0</version>
+			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -773,28 +803,32 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.5-FINAL</version>
+			<version>3.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
-			<version>3.5-FINAL</version>
+			<version>3.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
-			<version>3.5-FINAL</version>
+			<version>3.7</version>
 			<exclusions>
 				<exclusion><!-- included in jdk 1.6 -->
 					<groupId>stax</groupId>
 					<artifactId>stax-api</artifactId>
+				</exclusion>
+				<exclusion><!-- included in jdk 1.6 -->
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-stax-api_1.0_spec</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.4.0</version>
+			<version>1.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
@@ -816,6 +850,7 @@
 			<artifactId>jgrapht</artifactId>
 			<version>0.6.0</version>
 		</dependency>
+		<!-- fxdiff: FXOLAT-243 remove dependency to jbosscache (only for cluster + deprecated by JBoss)
 		<dependency>
 			<groupId>org.jboss</groupId>
 			<artifactId>jboss-common-core</artifactId>
@@ -829,8 +864,8 @@
 		<dependency>
 			<groupId>org.jboss.cache</groupId>
 			<artifactId>jbosscache-core</artifactId>
-			<version>3.2.2.GA</version> <!-- cache is used in webdav session cache -->
-		</dependency>
+			<version>3.2.2.GA</version>
+		</dependency>-->
 		<dependency>
 			<groupId>reload-diva</groupId>
 			<artifactId>reload-diva</artifactId>
@@ -873,18 +908,20 @@
 			<artifactId>gnu-regexp</artifactId>
 			<version>1.1.4</version>
 		</dependency>
+		<!-- fxdiff: FXOLAT-243 library is in JDK
 		<dependency>
 			<groupId>javax.sql</groupId>
 			<artifactId>jdbc-stdext</artifactId>
 			<version>2.0</version>
-		</dependency>
+		</dependency> -->		
 		<dependency>
 			<!-- DO NOT UPDATE! -->
 			<!-- Due to our special setup where we use the jdbc driver to convert 
 				from utf-8 to iso we cannot update this lib at the moment. -->
+			<!-- fxdiff: we use the new one, it works! -->
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.0.8</version>
+			<version>5.1.11</version>
 		</dependency>
 		<dependency>
 			<groupId>postgresql</groupId>
@@ -934,12 +971,12 @@
 		<dependency>
 			<groupId>net.sourceforge.nekohtml</groupId>
 			<artifactId>nekohtml</artifactId>
-			<version>1.9.11</version>
+			<version>1.9.14</version>
 		</dependency>
 		<dependency>
 			<groupId>owaspantisamy</groupId>
 			<artifactId>antisamy</artifactId>
-			<version>1.3</version>
+			<version>1.4.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -950,13 +987,13 @@
 		<dependency>
 			<groupId>batik</groupId>
 			<artifactId>batik-css</artifactId>
-			<version>1.6</version>
+			<version>1.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>batik</groupId>
 			<artifactId>batik-util</artifactId>
-			<version>1.6</version>
+			<version>1.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -967,7 +1004,7 @@
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
-			<version>1.0</version>
+			<version>1.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>wsdl4j</groupId>
@@ -1114,7 +1151,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.3.1</version>
+			<version>1.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>cos</groupId>
@@ -1135,6 +1172,13 @@
 			<groupId>xerces</groupId>
 			<artifactId>xercesImpl</artifactId>
 			<version>2.9.1</version>
+			<!-- fxdiff: FXOLAT-243  prevents duplicate -->
+			<exclusions>
+  				<exclusion>
+  					<groupId>xerces</groupId>
+						<artifactId>xmlParserAPIs</artifactId>
+  				</exclusion>
+  			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>xml-apis</groupId>
@@ -1145,6 +1189,13 @@
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4.3</version>
+			<!-- fxdiff: FXOLAT-243 included in JDK 1.6 -->
+			<exclusions>
+				<exclusion>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
+				</exclusion>
+			</exclusions>			
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
@@ -1350,6 +1401,8 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.1</version>
+			<!-- fxdiff: FXOLAT-243  only for testing purpose -->
+			<scope>test</scope>
 		</dependency>
 
 

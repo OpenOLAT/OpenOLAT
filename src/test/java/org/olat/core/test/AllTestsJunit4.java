@@ -18,7 +18,7 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.test;
+package org.olat.core.test;
 
 /**
  * Description:<br>
