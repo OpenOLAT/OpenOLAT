@@ -174,8 +174,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
+	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(File, ICourse)
 	 */
 	public void exportNode(File exportDirectory, ICourse course) {
 		RepositoryEntry re = WikiEditController.getWikiReference(getModuleConfiguration(), false);
@@ -189,9 +188,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	
 
 	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
+	 * @see org.olat.course.nodes.GenericCourseNode#importNode(File, ICourse, boolean, UserRequest, WindowControl)
 	 */
 	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
 		File importSubdir = new File(importDirectory, getIdent());
@@ -242,10 +239,6 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
   	return false;
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
 	public Condition getPreConditionEdit() {
 		if (preConditionEdit == null) {
 			preConditionEdit = new Condition();

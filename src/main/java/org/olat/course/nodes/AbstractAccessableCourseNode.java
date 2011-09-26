@@ -57,17 +57,13 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 
 	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
+	 * @see org.olat.course.nodes.CourseNode#createEditController(UserRequest, WindowControl, ICourse, UserCourseEnvironment)
 	 */
 	abstract public TabbableController createEditController(UserRequest ureq, WindowControl wControl, ICourse course,
 			UserCourseEnvironment euce);
 
 	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
+	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation, String)
 	 */
 	abstract public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd);

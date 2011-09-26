@@ -306,11 +306,11 @@
 									<filtering>true</filtering>
 								</resource>
 								<resource>
-								<directory>src/main/profile</directory>
-								<includes>
-									<include>${os.property.file}</include>
-								</includes>
-								<filtering>true</filtering>
+									<directory>src/main/profile</directory>
+									<includes>
+										<include>${os.property.file}</include>
+									</includes>
+									<filtering>true</filtering>
 								</resource>
 							</resources>
 							
@@ -375,8 +375,22 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
-					<version>2.7</version>
+					<version>2.8</version>
 					<configuration>
+				        <linkedResources>
+			                <linkedResource>
+		                        <name>static</name>
+		                        <type>2</type>
+		                        <location>${basedir}/src/main/webapp/static</location>
+			                </linkedResource>
+			               	<linkedResource>
+		                        <name>/src/main/java/olat.local.properties</name>
+		                        <type>1</type>
+		                        <location>${basedir}/olat.local.properties</location>
+                			</linkedResource>
+				        </linkedResources>				        
+				        
+                        
 						<wtpversion>2.0</wtpversion>
 						<!-- context name for servlet container e.g. localhost:8080/olat -->
 						<wtpContextName>olat</wtpContextName>
@@ -388,7 +402,6 @@
 				<plugin>
 					<artifactId>maven-site-plugin</artifactId>
 					<version>2.2</version>
-
 				</plugin>
 				<!-- Surefire plugin used to execute unit tests.
 				"mvn -DskipTests=false test" to run all tests
@@ -473,7 +486,7 @@
 						</execution>
 					</executions>
 					<configuration>
-						<srcdir>${basedir}/../webapp/WEB-INF/src/</srcdir>
+						<srcdir>${basedir}/src/</srcdir>
 						<includes>
 							<include>org/olat/restapi/**/*VO.java</include>
 							<include>org/olat/user/restapi/**/*VO.java</include>
@@ -568,7 +581,7 @@
 								<properties>
 									<property>
 										<name>applicationDocsFile</name>
-										<value>${basedir}/../webapp/WEB-INF/src/org/olat/restapi/support/application-doc.xml</value>
+										<value>${basedir}/src/org/olat/restapi/support/application-doc.xml</value>
 									</property>
 								</properties>
 							</wadlGeneratorDescription>
@@ -577,7 +590,7 @@
 								<properties>
 									<property>
 										<name>grammarsFile</name>
-										<value>${basedir}/../webapp/WEB-INF/src/org/olat/restapi/support/application-grammars.xml</value>
+										<value>${basedir}/src/org/olat/restapi/support/application-grammars.xml</value>
 									</property>
 								</properties>
 							</wadlGeneratorDescription>
@@ -612,7 +625,7 @@
 											<include>application.wadl</include>
 										</includes>
 										<outputDir>${project.build.outputDirectory}</outputDir>
-										<stylesheet>${basedir}/../webapp/WEB-INF/src/org/olat/restapi/support/wadl_documentation.xsl</stylesheet>
+										<stylesheet>${basedir}/src/org/olat/restapi/support/wadl_documentation.xsl</stylesheet>
 										<fileMappers>
 											<fileMapper
 												implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">

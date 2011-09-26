@@ -78,13 +78,9 @@ localization.cache=false
 user.generateTestUsers=false
 # When running in eclipse use "INFO, syslog, A1", for production use "INFO, syslog"
 log.rootCategory = INFO, syslog, A1
-# how to load the brasato "framework" - usually "jar" suffices but
-# for developers project sources are also possible e.g., 
-# e.g. C:/eclipse/workspace/olatcore/src/main/java/
-# or /home/myuser/workspaces/olatcore/src/main/java
-olatcore.src=/home/roman/workspace/OLAT-7.1.x/olatcore/src/main/java
+
 # relative path to 
-relpathto.src=../../../webapp/WEB-INF/src
+relpathto.src=../../../src
 
 
 # if enabled then the IM Server must be running before OLAT is started!

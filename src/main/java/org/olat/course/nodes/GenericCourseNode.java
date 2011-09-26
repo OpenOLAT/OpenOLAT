@@ -89,17 +89,17 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			UserCourseEnvironment euce);
 
 	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 *      
-	 *      ATTENTION:
-	 *      all course nodes must call updateModuleConfigDefaults(false) here
+	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest,
+	 *      WindowControl, UserCourseEnvironment, NodeEvaluation, String)
+	 * 
+	 *      ATTENTION: all course nodes must call
+	 *      updateModuleConfigDefaults(false) here
 	 */
-	public abstract NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd);
-	
+	public abstract NodeRunConstructionResult createNodeRunConstructionResult(
+			UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne,
+			String nodecmd);
+
 	protected String getDefaultTitleOption() {
 		return CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT;
 	}
@@ -110,9 +110,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Override this method with a specific implementation if you have
 	 * something interesting to show in the peekview
 	 * 
-	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
+	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation)
 	 */
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
