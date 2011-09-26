@@ -283,6 +283,13 @@
 					values -->
 				<filtering>false</filtering>
 			</resource>
+			<!-- TODO: RH: include static to react on changes during devel, target not working!
+			<resource>
+				<directory>src/main/webapp/static</directory>
+				<targetPath>${project.build.directory}/static</targetPath>
+				<filtering>false</filtering>
+			</resource>
+			 -->
 		</resources>
 		<plugins>
 			<plugin>
@@ -388,6 +395,11 @@
 		                        <type>1</type>
 		                        <location>${basedir}/olat.local.properties</location>
                 			</linkedResource>
+                			<linkedResource>
+                				<name>/src/main/java/maven.build.properties</name>
+                				<type>1</type>
+                				<location>${basedir}/target/${artifactId}-${project.version}/WEB-INF/classes/maven.build.properties</location>
+                			</linkedResource>
 				        </linkedResources>				        
 				        
                         
@@ -413,7 +425,7 @@
 					<version>2.5</version>
 					<configuration>
 						<testFailureIgnore>true</testFailureIgnore>
-						<skipTests>true</skipTests>
+						<skipTests>${skipTests}</skipTests>
 						<excludes>
 							<!-- TODO:gs -->
 							<exclude>**/TestTable.java</exclude>
