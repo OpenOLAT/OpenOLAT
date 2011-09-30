@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+<context:annotation-config />
+
+<!-- ####################################### -->
+<!-- # VIRTUAL CLASSROOM SERVICE PROVIDERS # -->
+<!-- ####################################### -->
+
+	<!-- Activation of the providers -->
+	<bean id="vcProviderFactory" class="de.bps.course.nodes.vc.provider.VCProviderFactory" scope="singleton">
+		<property name="registeredProviders">
+			<list value-type="de.bps.course.nodes.vc.provider.VCProvider">
+				<ref bean="adobeProvider" />
+				<ref bean="wimbaProvider" />
+				<ref bean="viteroProvider" />
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Definition of the providers -->
+	<bean id="wimbaProvider" class="de.bps.course.nodes.vc.provider.wimba.WimbaClassroomProvider">
+		<property name="enabled" value="${vc.winba.enabled}" />
+		<property name="providerId" value="wimba" />
+		<property name="displayName" value="Wimba Classroom" />
+		<property name="protocol" value="${vc.winba.protocol}" />
+		<property name="port" value="${vc.winba.port}" />
+		<property name="baseUrl" value="${vc.winba.baseurl}" />
+		<property name="adminLogin" value="${vc.winba.adminlogin}" />
+		<property name="adminPassword" value="${vc.winba.adminpassword}" />
+		<!-- Options -->
+		<property name="defaultConfig">
+			<ref bean="wimbaDefaultConfig" />
+		</property>
+	</bean>
+	
+	<bean id="adobeProvider" class="de.bps.course.nodes.vc.provider.adobe.AdobeConnectProvider">
+		<property name="enabled" value="${vc.adobe.enabled}" />
+		<property name="providerId" value="adobe" />
+		<property name="displayName" value="Adobe Connect" />
+		<property name="protocol" value="${vc.adobe.protocol}" />
+		<property name="port" value="${vc.adobe.port}" />
+		<property name="baseUrl" value="${vc.adobe.baseurl}" />
+		<property name="adminLogin" value="${vc.adobe.adminlogin}" />
+		<property name="adminPassword" value="${vc.adobe.adminpassword}" />
+		<property name="accountId" value="${vc.adobe.accountid}" />
+		<property name="templates"><!-- optional -->
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry value="Standardmeetingvorlage" key="4711" />
+			</map>
+		</property>
+		<property name="showOptions" value="${vc.adobe.showoptions}" />
+		<!-- type of user accounts, allowed values are: guest, user -->
+		<property name="userType" value="${vc.adobe.usertype}" />
+		<!-- Options -->
+		<property name="defaultConfig">
+			<ref bean="adobeDefaultConfig" />
+		</property>
+	</bean>
+
+<!-- ################################## -->
+<!-- # VIRTUAL CLASSROOM SERVICE JOBS # -->
+<!-- ################################## -->
+
+	<!-- Activation of the service jobs -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<!-- <ref local="adobeCleanupJob" /> -->
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Definition of the service jobs -->
+	<bean id="adobeCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    	<property name="jobDetail">
+    		<bean class="org.springframework.scheduling.quartz.JobDetailBean">
+				<property name="jobClass" value="de.bps.course.nodes.vc.provider.adobe.AdobeConnectCleanupJob" />
+				<property name="jobDataAsMap">
+				    <map>
+						<entry key="providerId" value="adobe" />
+						<entry key="daysToKeep" value="1" />
+						<entry key="cleanupMeetings" value="true" />
+						<entry key="cleanupModerators" value="false" />
+				    </map>
+			  	</property>
+			</bean>
+    	</property>
+    	<property name="cronExpression" value="0 0 2 * * ?"/><!-- 2am, daily -->
+	</bean>
+	
+</beans>
