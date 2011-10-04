@@ -13,6 +13,26 @@ import de.bps.course.nodes.vc.DefaultVCConfiguration;
  */
 public class ViteroBookingConfiguration extends DefaultVCConfiguration {
 
+	private static final long serialVersionUID = 7658813481281328834L;
+	
+	private int bookingId;
+	
+
+	public int getBookingId() {
+		return bookingId;
+	}
+
+	public void setBookingId(int bookingId) {
+		this.bookingId = bookingId;
+	}
+	
+	
+
+	@Override
+	public boolean isUseMeetingDates() {
+		return true;
+	}
+
 	@Override
 	public boolean isConfigValid() {
 		return true;

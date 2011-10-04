@@ -9,6 +9,15 @@
 	<!-- Definition of the providers -->
 	<bean id="viteroProvider" class="com.frentix.olat.vc.provider.vitero.ViteroBookingProvider">
 		<property name="enabled" value="${vc.vitero.enabled}" />
+		<property name="providerId" value="vitero" />
+		<property name="displayName" value="Vitero" />
+		<property name="protocol" value="${vc.vitero.protocol}" />
+		<property name="port" value="${vc.vitero.port}" />
+		<property name="baseUrl" value="${vc.vitero.baseurl}" />
+		<property name="contextPath" value="${vc.vitero.contextPath}" />
+		<property name="adminLogin" value="${vc.vitero.adminlogin}" />
+		<property name="adminPassword" value="${vc.vitero.adminpassword}" />
+		<property name="customerId" value="${vc.vitero.customerid}" />
 	</bean>
 
 	
