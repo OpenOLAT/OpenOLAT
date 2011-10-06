@@ -21,6 +21,9 @@
 package org.olat.restapi.repository;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
+import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
 import java.io.File;
 import java.io.InputStream;
@@ -28,6 +31,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,6 +47,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -61,6 +66,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 
@@ -275,6 +281,39 @@ public class RepositoryEntryResource {
     FileUtils.createEmptyFile(tmpFile);
     return tmpFile;
   }
+  
+  /**
+	 * Delete a course by id
+ * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+ * @response.representation.404.doc The course not found
+	 * @param courseId The course resourceable's id
+	 * @param request The HTTP request
+	 * @return It returns the XML representation of the <code>Structure</code>
+	 *         object representing the course.
+	 */
+	@DELETE
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response deleteCourse(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+		if(re == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!isAuthorEditor(re, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		UserRequest ureq = getUserRequest(request);
+		
+		//fxdiff
+		ErrorWindowControl error = new ErrorWindowControl();
+		RepositoryManager rm = RepositoryManager.getInstance();
+		rm.deleteRepositoryEntryWithAllData(ureq, error, re);
+		
+		return Response.ok().build();
+	}
 
   private RepositoryEntry lookupRepositoryEntry(String key) {
     Long repoEntryKey = longId(key);

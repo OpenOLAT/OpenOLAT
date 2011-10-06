@@ -42,6 +42,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
@@ -55,11 +56,13 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
@@ -73,8 +76,12 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
@@ -100,6 +107,12 @@ public class CourseWebService {
 	
 	private static final String VERSION = "1.0";
 	
+	public static CacheControl cc = new CacheControl();
+
+	static {
+		cc.setMaxAge(-1);
+	}
+
 	/**
 	 * The version of the Course Web Service
    * @response.representation.200.mediaType text/plain
@@ -227,6 +240,78 @@ public class CourseWebService {
 		return Response.ok(vo).build();
 	}
 	
+  /**
+   * Export the course
+   * @response.representation.200.mediaType application/zip
+   * @response.representation.200.doc The course as a ZIP file
+   * @response.representation.401.doc Not authorized to export the course
+   * @response.representation.404.doc The course not found
+   * @param courseId The course resourceable's id
+	 * @return It returns the <code>CourseVO</code> object representing the course.
+	 */
+
+	
+	@GET
+	@Path("file")
+	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
+	public Response getRepoFileById(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		ICourse course = loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry re = rm.lookupRepositoryEntry(course, true);
+		if (re == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+		if (typeToDownload == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		OLATResource ores = OLATResourceManager.getInstance().findResourceable(re.getOlatResource());
+		if (ores == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		Identity identity = getIdentity(request);
+		boolean isAuthor = RestSecurityHelper.isAuthor(request);
+		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(identity, re);
+		if (!(isAuthor | isOwner)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload(re);
+		if (!canDownload) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
+
+		boolean isAlreadyLocked = typeToDownload.isLocked(ores);
+		LockResult lockResult = null;
+		try {
+			lockResult = typeToDownload.acquireLock(ores, identity);
+			if (lockResult == null || (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				MediaResource mr = typeToDownload.getAsMediaResource(ores);
+				if (mr != null) {
+					RepositoryManager.getInstance().incrementDownloadCounter(re);
+					return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
+				} else {
+					return Response.serverError().status(Status.NO_CONTENT).build();
+				}
+			} else {
+				return Response.serverError().status(Status.CONFLICT).build();
+			}
+		} finally {
+			if ((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				typeToDownload.releaseLock(lockResult);
+			}
+		}
+	}
 
 	/**
 	 * Delete a course by id
@@ -251,8 +336,14 @@ public class CourseWebService {
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		//FIXME: this does not remove all data from the database, see repositoryManger
-		CourseFactory.deleteCourse(course);
+		UserRequest ureq = getUserRequest(request);
+		
+		//fxdiff
+		ErrorWindowControl error = new ErrorWindowControl();
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry re = rm.lookupRepositoryEntry(course, true);
+		rm.deleteRepositoryEntryWithAllData(ureq, error, re);
+		
 		return Response.ok().build();
 	}
 	
