@@ -21,7 +21,6 @@
 			<list value-type="de.bps.course.nodes.vc.provider.VCProvider">
 				<ref bean="adobeProvider" />
 				<ref bean="wimbaProvider" />
-				<ref bean="viteroProvider" />
 			</list>
 		</property>
 	</bean>
