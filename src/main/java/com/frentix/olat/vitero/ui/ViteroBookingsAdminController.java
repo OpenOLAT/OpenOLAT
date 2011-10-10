@@ -76,8 +76,9 @@ public class ViteroBookingsAdminController extends BasicController {
 		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
-		
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("start", "start", translate("start")));
+		StaticColumnDescriptor startRoom = new StaticColumnDescriptor("start", "start", translate("start"));
+		startRoom.setIsPopUpWindowAction(true, "");
+		tableCtr.addColumnDescriptor(startRoom);
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "delete", translate("delete")));
 
 		reloadModel();

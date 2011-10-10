@@ -26,6 +26,7 @@ import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -119,14 +120,34 @@ public class ViteroManager extends BasicManager {
 			groupRequest.setEnd(format(end));
 			
 			request.setGetBookableRoomsForGroupRequest(groupRequest);
-			
-			
+
 			LicenceServiceStub.GetBookableRoomsForGroupResponse response = licenceWs.getBookableRoomsForGroup(request);
 			Rooms_type0 rooms = response.getRooms();
 			int[] roomSize = rooms.getRoomsize();
 			System.out.println(roomSize);
 		} catch (RemoteException e) {
 			logError("", e);
+		}
+	}
+	
+	public List<ViteroBooking> getBookingByDate(Date start, Date end) {
+		try {
+			BookingServiceStub bookingWs = getBookingWebService();
+			BookingServiceStub.GetBookingListByDateRequest dateRequest = new BookingServiceStub.GetBookingListByDateRequest();
+			dateRequest.setStart(format(start));
+			dateRequest.setEnd(format(end));
+			BookingServiceStub.GetBookingListByDateResponse response = bookingWs.getBookingListByDate(dateRequest);
+			
+			BookingServiceStub.Bookinglist bookingList = response.getGetBookingListByDateResponse();
+			Booking[] bookings = bookingList.getBooking();
+			return convert(bookings);
+		} catch(AxisFault f) {
+			String msg = f.getFaultDetailElement().toString();
+			logError(msg, f);
+			return Collections.emptyList();
+		} catch (RemoteException e) {
+			logError("Cannot get bookings by date", e);
+			return Collections.emptyList();
 		}
 	}
 	
@@ -187,7 +208,6 @@ public class ViteroManager extends BasicManager {
 			SessionCodeServiceStub.Sessioncode_type2 code = new SessionCodeServiceStub.Sessioncode_type2();
 			code.setBookingid(booking.getBookingId());
 			code.setUserid(userId);
-			
 		
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
@@ -199,6 +219,23 @@ public class ViteroManager extends BasicManager {
 			SessionCodeServiceStub.CreatePersonalBookingSessionCodeResponse response = sessionCodeWs.createPersonalBookingSessionCode(codeRequest);
 			Codetype myCode = response.getCreatePersonalBookingSessionCodeResponse();
 			return myCode.getCode();
+		} catch(AxisFault f) {
+			String msg = f.getFaultDetailElement().toString();
+			if(msg.contains("<errorCode>303</errorCode>")) {
+				logError("Invalid attribute", f);
+			} else if(msg.contains("<errorCode>304</errorCode>")) {
+				logError("Invalid time zone", f);
+			} else if(msg.contains("<errorCode>53</errorCode>")) {
+				logError("User does not exist", f);
+			} else if(msg.contains("<errorCode>506</errorCode>") || msg.contains("<errorCode>509</errorCode>")) {
+				logError("Booking does not exist", f);
+			} else if(msg.contains("<errorCode>153</errorCode>")) {
+				logError("User not assigned to group!", f);
+			} else {
+				logError(msg, f);
+			}
+			logError(msg, f);
+			return null;
 		} catch (RemoteException e) {
 			logError("", e);
 			return null;
@@ -716,7 +753,9 @@ public class ViteroManager extends BasicManager {
 	protected String getStartPoint(String sessionCode) {
 		UriBuilder builder = UriBuilder.fromUri(viteroModule.getVmsURI() );
 	    builder.path("start.html");
-	    builder.queryParam("sessionCode", sessionCode);
+	    if(StringHelper.containsNonWhitespace(sessionCode)) {
+	    	builder.queryParam("sessionCode", sessionCode);
+	    }
 	    return builder.build().toString();
 	}
 	

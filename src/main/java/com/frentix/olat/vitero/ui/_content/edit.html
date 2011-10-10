@@ -4,17 +4,11 @@
 	<table>
 		<tr>
 			<td>$r.translate("vc.table.begin")</td>
-			<td colspan="3">$r.translate("vc.table.duration")</td>
+			<td>$r.translate("vc.table.end")</td>
+			<td colspan="2"></td>
 		</tr>
 		
 		#foreach($bookingDisplay in $bookingDisplays)
-
-			<tr>
-				<td><div class="b_form_error">#if($f.hasError($begin))$r.formatDateAndTime($bookingDisplay.start)#end</div></td>
-				<td><div class="b_form_error">#if($f.hasError($duration))$r.render($durationErr)#end</div></td>
-				<td></td>
-				<td></td>
-			</tr>
 			<tr>
 				<td>$r.formatDateAndTime($bookingDisplay.begin)</td>
 				<td>$r.formatDateAndTime($bookingDisplay.end)</td>
@@ -28,5 +22,5 @@
 		#end
 	</table>
 
-	$r.render("vc.booking.new")
+	$r.render("buttons-cont")
 </fieldset>

@@ -20,73 +20,67 @@
  */
 package com.frentix.olat.vitero.ui;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.media.RedirectMediaResource;
-import org.olat.core.id.OLATResourceable;
-import org.olat.group.BusinessGroup;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.model.ViteroBooking;
+import com.ibm.icu.util.Calendar;
 
 /**
  * 
  * Description:<br>
  * 
  * <P>
- * Initial Date: 6 oct. 2011 <br>
- * 
+ * Initial Date:  10 oct. 2011 <br>
+ *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ViteroBookingsController extends BasicController {
-
-	private final VelocityContainer runVC;
+public class ViteroRoomsOverviewController extends BasicController {
+	
 	private final TableController tableCtr;
 	private final ViteroManager viteroManager;
-
-	public ViteroBookingsController(UserRequest ureq, WindowControl wControl,
-			BusinessGroup group, OLATResourceable ores) {
+	
+	public ViteroRoomsOverviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
-		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
-
-		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
-		TableDataModel tableData = new ViteroBookingDataModel(bookings);
-
+		
+		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
+		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
-		tableConfig.setColumnMovingOffered(true);
+		tableConfig.setDownloadOffered(true);
+		tableConfig.setColumnMovingOffered(false);
 		tableConfig.setSortingEnabled(true);
-		tableCtr = new TableController(tableConfig, ureq, wControl, getTranslator());
+		tableConfig.setDisplayTableHeader(true);
+		tableConfig.setDisplayRowCount(false);
+		tableConfig.setPageingEnabled(false);
+		
+		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
+		listenTo(tableCtr);
+		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
 		
-		StaticColumnDescriptor startRoom = new StaticColumnDescriptor("start", "start", translate("start"));
-		startRoom.setIsPopUpWindowAction(true, "");
-		tableCtr.addColumnDescriptor(startRoom);
-
-		tableCtr.setTableDataModel(tableData);
-		tableCtr.setSortColumn(1, true);// timeframe
-		listenTo(tableCtr);
-
-		runVC = createVelocityContainer("run");
-		runVC.put("bookings", tableCtr.getInitialComponent());
-
-		putInitialPanel(runVC);
+		Calendar cal = Calendar.getInstance();
+		Date begin = cal.getTime();
+		cal.add(Calendar.DATE, 2);
+		Date end = cal.getTime();
+		
+		List<ViteroBooking> bookings = viteroManager.getBookingByDate(begin, end);
+		ViteroBookingDataModel tableModel = new ViteroBookingDataModel(bookings);
+		tableCtr.setTableDataModel(tableModel);
+		
+		putInitialPanel(tableCtr.getInitialComponent());
 	}
 	
 	@Override
@@ -96,27 +90,11 @@ public class ViteroBookingsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// nothing to do
+		//
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == tableCtr) {
-			if(event instanceof TableEvent) {
-				TableEvent e = (TableEvent)event;
-				int row = e.getRowId();
-				ViteroBooking booking = (ViteroBooking)tableCtr.getTableDataModel().getObject(row);
-				if("start".equals(e.getActionId())) {
-					openVitero(ureq, booking);
-				}
-			}
-		}
-		super.event(ureq, source, event);
-	}
+
 	
-	protected void openVitero(UserRequest ureq, ViteroBooking booking) {
-		String url = viteroManager.getURLToBooking(ureq.getIdentity(), booking);
-		RedirectMediaResource redirect = new RedirectMediaResource(url);
-		ureq.getDispatchResult().setResultingMediaResource(redirect); 
-	}
+	
+
 }

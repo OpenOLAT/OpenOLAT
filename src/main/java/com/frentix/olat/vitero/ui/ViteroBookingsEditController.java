@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -57,11 +58,13 @@ import com.frentix.olat.vitero.model.ViteroBooking;
 public class ViteroBookingsEditController extends FormBasicController {
 
 	private FormLink newButton;
+	private FormLink occupiedRoomsLink;
 	private final List<BookingDisplay> bookingDisplays = new ArrayList<BookingDisplay>();
 
 	private CloseableModalController cmc;
 	private DialogBoxController dialogCtr;
 	private ViteroBookingEditController bookingController;
+	private ViteroRoomsOverviewController roomsOverviewController;
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -81,8 +84,10 @@ public class ViteroBookingsEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		reloadModel();
 		
-		newButton = uifactory.addFormLink("vc.booking.new", formLayout, Link.BUTTON);
-		uifactory.addFormSubmitButton("subm", formLayout);
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons-cont", getTranslator());
+		formLayout.add(buttonLayout);
+		newButton = uifactory.addFormLink("vc.booking.new", buttonLayout, Link.BUTTON);
+		occupiedRoomsLink = uifactory.addFormLink("vc.booking.roomsOverview", buttonLayout, Link.BUTTON);
 	}
 
 	@Override
@@ -111,6 +116,8 @@ public class ViteroBookingsEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == newButton) {
 			newBooking(ureq);
+		} else if (source == occupiedRoomsLink) {
+			occupiedRooms(ureq);
 		} else if (source instanceof FormLink) {
 			for(BookingDisplay display: bookingDisplays) {
 				if(display.getDeleteButton() == source) {
@@ -146,6 +153,18 @@ public class ViteroBookingsEditController extends FormBasicController {
 				deleteBooking(ureq, booking);
 			}
 		}
+	}
+	
+	protected void occupiedRooms(UserRequest ureq) {
+		removeAsListenerAndDispose(bookingController);
+
+		roomsOverviewController = new ViteroRoomsOverviewController(ureq, getWindowControl());			
+		listenTo(roomsOverviewController);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomsOverviewController.getInitialComponent(), true, translate("vc.booking.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
