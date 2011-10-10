@@ -8,20 +8,19 @@
 		</tr>
 		
 		#foreach($bookingDisplay in $bookingDisplays)
-	
-			#set( $begin = $bookingDisplay.calenderBegin.component.componentName)
-			#set( $beginErr = $begin + "_ERROR" )
-			#set( $duration = $bookingDisplay.durationEl.component.componentName)
-			#set( $durationErr = $duration + "_ERROR" )
+
 			<tr>
-				<td><div class="b_form_error">#if($f.hasError($begin))$r.render($beginErr)#end</div></td>
+				<td><div class="b_form_error">#if($f.hasError($begin))$r.formatDateAndTime($bookingDisplay.start)#end</div></td>
 				<td><div class="b_form_error">#if($f.hasError($duration))$r.render($durationErr)#end</div></td>
 				<td></td>
 				<td></td>
 			</tr>
 			<tr>
-				<td>$r.render($begin)</td>
-				<td>$r.render($duration)</td>
+				<td>$r.formatDateAndTime($bookingDisplay.begin)</td>
+				<td>$r.formatDateAndTime($bookingDisplay.end)</td>
+				<td>
+					$r.render($bookingDisplay.editButton.component.componentName)
+				</td>
 				<td>
 					$r.render($bookingDisplay.deleteButton.component.componentName)
 				</td>

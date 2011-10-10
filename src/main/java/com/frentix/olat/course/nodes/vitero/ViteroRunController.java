@@ -25,7 +25,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.ICourse;
+import org.olat.core.id.OLATResourceable;
 
 import com.frentix.olat.vitero.ui.ViteroBookingsController;
 
@@ -43,10 +43,10 @@ public class ViteroRunController extends BasicController {
 	private final ViteroBookingsController bookingsController;
 
 
-  public ViteroRunController(UserRequest ureq, WindowControl wControl, ICourse course) {
+  public ViteroRunController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
     super(ureq, wControl);
     
-    bookingsController = new ViteroBookingsController(ureq, wControl, null, course);
+    bookingsController = new ViteroBookingsController(ureq, wControl, null, ores);
     listenTo(bookingsController);
     
     putInitialPanel(bookingsController.getInitialComponent());

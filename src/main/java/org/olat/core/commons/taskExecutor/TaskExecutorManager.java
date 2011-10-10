@@ -52,6 +52,10 @@ public class TaskExecutorManager extends BasicManager {
 		return INSTANCE;
 	}
 	
+	public void destroy() {
+		taskExecutor.shutDown();
+	}
+	
 	/**
 	 * runs the task and wraps it in a new runnable to catch uncatched errors
 	 * and may close db sessions used in the task.

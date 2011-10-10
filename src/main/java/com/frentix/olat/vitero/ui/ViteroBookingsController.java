@@ -64,7 +64,7 @@ public class ViteroBookingsController extends BasicController {
 
 		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
 
-		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores, getIdentity());
+		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
 		TableDataModel tableData = new ViteroBookingDataModel(bookings);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -72,13 +72,12 @@ public class ViteroBookingsController extends BasicController {
 		tableConfig.setColumnMovingOffered(true);
 		tableConfig.setSortingEnabled(true);
 		tableCtr = new TableController(tableConfig, ureq, wControl, getTranslator());
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin",
-				ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("open", "vc.table.open", translate("vc.table.open")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("start", "start", translate("start")));
 
 		tableCtr.setTableDataModel(tableData);
-		tableCtr.setSortColumn(2, true);// timeframe
+		tableCtr.setSortColumn(1, true);// timeframe
 		listenTo(tableCtr);
 
 		runVC = createVelocityContainer("run");

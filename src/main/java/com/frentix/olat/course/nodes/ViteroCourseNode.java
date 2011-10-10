@@ -27,10 +27,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -46,7 +48,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
-import com.frentix.olat.course.nodes.vitero.ViteroBookingConfiguration;
 import com.frentix.olat.course.nodes.vitero.ViteroEditController;
 import com.frentix.olat.course.nodes.vitero.ViteroRunController;
 import com.frentix.olat.vitero.manager.ViteroManager;
@@ -73,24 +74,6 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 		super(TYPE);
 	}
 
-	/**
-	 * To support different virtual classroom implementations it's necessary to
-	 * check whether the persisted configuration suits to the actual virtual
-	 * classroom implementation or not. If not a new one will be created and
-	 * persisted.
-	 * 
-	 * @param provider
-	 * @return the persisted configuration or a fresh one
-	 */
-	private ViteroBookingConfiguration handleConfig(final ViteroManager provider) {
-		ViteroBookingConfiguration config = (ViteroBookingConfiguration) getModuleConfiguration().get(CONF_VC_CONFIGURATION);
-		if (config == null) {
-			config = new ViteroBookingConfiguration();
-		}
-		getModuleConfiguration().set(CONF_VC_CONFIGURATION, config);
-		return config;
-	}
-
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		// no update to default config necessary
@@ -101,12 +84,8 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv) {
 		updateModuleConfigDefaults(false);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
-		// load and check configuration
-		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
-		ViteroBookingConfiguration config = handleConfig(provider);
-
 		// create edit controller
-		ViteroEditController childTabCntrllr = new ViteroEditController(ureq, wControl, this, course, userCourseEnv, provider, config);
+		ViteroEditController childTabCntrllr = new ViteroEditController(ureq, wControl, this, course, userCourseEnv);
 		
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode,
 				course.getCourseEnvironment().getCourseGroupManager(), userCourseEnv, childTabCntrllr);
@@ -135,11 +114,12 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 				}
 			}
 		}
-		// load configuration
-		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
-		ViteroBookingConfiguration config = handleConfig(provider);
 		// create run controller
-		Controller runCtr = new ViteroRunController(ureq, wControl, null);
+		
+		Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
+		
+		Controller runCtr = new ViteroRunController(ureq, wControl, ores);
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vc_icon");
 		return new NodeRunConstructionResult(controller);
 	}
@@ -157,31 +137,19 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 		StatusDescription status = StatusDescription.NOERROR;
-		
-		// load configuration
-		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
-		ViteroBookingConfiguration config = handleConfig(provider);
-		boolean invalid = !provider.isConfigValid(config);
-		if (invalid) {
-			String[] params = new String[] { this.getShortTitle() };
-			String shortKey = "error.config.short";
-			String longKey = "error.config.long";
-			String translationPackage = ViteroEditController.class.getPackage().getName();
-			status = new StatusDescription(ValidationStatus.ERROR, shortKey, longKey, params, translationPackage);
-			status.setDescriptionForUnit(getIdent());
-			status.setActivateableViewIdentifier(ViteroEditController.PANE_TAB_VCCONFIG);
-		}
-		
 		return status;
 	}
-
+	
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
@@ -190,9 +158,8 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	public void cleanupOnDelete(ICourse course) {
 		// load configuration
 		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
-		ViteroBookingConfiguration config = handleConfig(provider);
 		// remove meeting
-		provider.removeTeaRoom(course.getResourceableId() + "_" + this.getIdent(), config);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
+		provider.deleteBookings(null, ores);
 	}
-
 }

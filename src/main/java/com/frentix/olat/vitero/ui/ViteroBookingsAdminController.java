@@ -20,6 +20,8 @@
  */
 package com.frentix.olat.vitero.ui;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -72,14 +74,13 @@ public class ViteroBookingsAdminController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
 		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin",
-				ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("open", "vc.table.open", translate("vc.table.open")));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "vc.table.delete", translate("vc.table.delete")));
 		
-		ViteroBookingDataModel tableModel = new ViteroBookingDataModel();
-		tableCtr.setTableDataModel(tableModel);
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("start", "start", translate("start")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "delete", translate("delete")));
+
+		reloadModel();
 		
 		putInitialPanel(tableCtr.getInitialComponent());
 	}
@@ -101,7 +102,7 @@ public class ViteroBookingsAdminController extends BasicController {
 				TableEvent e = (TableEvent)event;
 				int row = e.getRowId();
 				ViteroBooking booking = (ViteroBooking)tableCtr.getTableDataModel().getObject(row);
-				if("open".equals(e.getActionId())) {
+				if("start".equals(e.getActionId())) {
 					openVitero(ureq, booking);
 				} else if("delete".equals(e.getActionId())) {
 					confirmDeleteVitero(ureq, booking);
@@ -121,6 +122,7 @@ public class ViteroBookingsAdminController extends BasicController {
 		} else {
 			showError("vc.table.delete");
 		}
+		reloadModel();
 	}
 	
 	protected void confirmDeleteVitero(UserRequest ureq, ViteroBooking booking) {
@@ -135,5 +137,10 @@ public class ViteroBookingsAdminController extends BasicController {
 		RedirectMediaResource redirect = new RedirectMediaResource(url);
 		ureq.getDispatchResult().setResultingMediaResource(redirect);
 	}
-
+	
+	protected void reloadModel() {
+		List<ViteroBooking> bookings = viteroManager.getBookings();
+		ViteroBookingDataModel tableModel = new ViteroBookingDataModel(bookings);
+		tableCtr.setTableDataModel(tableModel);
+	}
 }

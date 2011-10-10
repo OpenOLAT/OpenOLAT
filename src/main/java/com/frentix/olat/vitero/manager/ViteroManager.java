@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -43,8 +44,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
@@ -53,13 +52,13 @@ import org.olat.user.DisplayPortraitManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.frentix.olat.course.nodes.vitero.ViteroBookingConfiguration;
 import com.frentix.olat.vitero.ViteroModule;
 import com.frentix.olat.vitero.manager.stubs.BookingServiceStub;
 import com.frentix.olat.vitero.manager.stubs.BookingServiceStub.Booking;
 import com.frentix.olat.vitero.manager.stubs.BookingServiceStub.Bookinglist;
 import com.frentix.olat.vitero.manager.stubs.BookingServiceStub.Bookingtype;
 import com.frentix.olat.vitero.manager.stubs.CustomerServiceStub;
+import com.frentix.olat.vitero.manager.stubs.GroupServiceStub;
 import com.frentix.olat.vitero.manager.stubs.LicenceServiceStub;
 import com.frentix.olat.vitero.manager.stubs.LicenceServiceStub.Rooms_type0;
 import com.frentix.olat.vitero.manager.stubs.MtomServiceStub;
@@ -83,18 +82,15 @@ import com.thoughtworks.xstream.XStream;
 @Service
 public class ViteroManager extends BasicManager {
 	
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmm");
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	
 	private static final String VMS_PROVIDER = "VMS";
 	private static final String VMS_CATEGORY = "vitero-category";
-	private static final String COLLABORATION_TOOL_PROP_NAME = "collaboration-tool";
 	
 	@Autowired
 	private ViteroModule viteroModule;
 	@Autowired
 	private PropertyManager propertyManager;
-	@Autowired
-	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -134,10 +130,32 @@ public class ViteroManager extends BasicManager {
 		}
 	}
 	
-	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores, Identity identity) {
+	public List<ViteroBooking> getBookingInFutures(Identity identity) {
 		int userId = getVmsUserId(identity);
 		Booking[] bookings = getBookingInFutureByCustomerId(userId);
 		return convert(bookings);
+	}
+	
+	public List<ViteroBooking> getBookings() {
+		List<Property> properties = propertyManager.listProperties(null, null, null, VMS_CATEGORY, null);
+		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
+		for(Property property:properties) {
+			String bookingStr = property.getTextValue();
+			ViteroBooking booking = deserializeViteroBooking(bookingStr);
+			bookings.add(booking);
+		}
+		return bookings;
+	}
+	
+	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores) {
+		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
+		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
+		for(Property property:properties) {
+			String bookingStr = property.getTextValue();
+			ViteroBooking booking = deserializeViteroBooking(bookingStr);
+			bookings.add(booking);
+		}
+		return bookings;
 	}
 	
 	public String getURLToBooking(Identity identity, ViteroBooking booking) {
@@ -301,27 +319,116 @@ public class ViteroManager extends BasicManager {
 			return false;
 		}
 	}
+	
+	public ViteroBooking createBooking() {
+		ViteroBooking booking = new ViteroBooking();
+		
+		booking.setBookingId(-1);
+		booking.setGroupId(-1);
+		
+		Calendar cal = Calendar.getInstance();
+		int minute = cal.get(Calendar.MINUTE);
+		if(minute < 10) {
+			cal.set(Calendar.MINUTE, 15);
+		} else if (minute < 25) {
+			cal.set(Calendar.MINUTE, 30);
+		} else if (minute < 40) {
+			cal.set(Calendar.MINUTE, 45);
+		} else {
+			cal.add(Calendar.HOUR, 1);
+			cal.set(Calendar.MINUTE, 0);
+		}
 
-	public boolean createRoom(BusinessGroup group, OLATResourceable ores, Date begin, Date end, ViteroBookingConfiguration config) {
-		ViteroBookingConfiguration vConfig = (ViteroBookingConfiguration)config;
-		Bookingtype booking = getBookingById(vConfig.getBookingId());
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		
+		booking.setStart(cal.getTime());
+		booking.setStartBuffer(0);
+		cal.add(Calendar.HOUR, 1);
+		booking.setEnd(cal.getTime());
+		booking.setEndBuffer(0);
+		
+		List<Integer> roomSizes = getLicencedRoomSizes();
+		if(!roomSizes.isEmpty()) {
+			booking.setRoomSize(roomSizes.get(0));
+		}
+		return booking;
+	}
+	
+	public List<Integer> getLicencedRoomSizes() {
+		List<Integer> roomSizes = new ArrayList<Integer>();
+		try {
+			LicenceServiceStub licenceWs = getLicenceWebService();
+			LicenceServiceStub.GetModulesForCustomerRequest licenceRequest = new LicenceServiceStub.GetModulesForCustomerRequest();
+			licenceRequest.setCustomerid(viteroModule.getCustomerId());
+			
+			LicenceServiceStub.GetModulesForCustomerResponse response = licenceWs.getModulesForCustomer(licenceRequest);
+			LicenceServiceStub.Modulestype modules = response.getGetModulesForCustomerResponse();
+			LicenceServiceStub.Modules_type0 modulesType = modules.getModules();
+			for(LicenceServiceStub.Module_type0 module:modulesType.getModule()) {
+				if("ROOM".equals(module.getType())) {
+					Integer roomSize = module.getRoomsize();
+					if(!roomSizes.contains(roomSize)) {
+						roomSizes.add(roomSize);
+					}
+				}
+			}
+		} catch (RemoteException e) {
+			logError("Cannot get licence for customer: " + viteroModule.getCustomerId(), e);
+		}
+		return roomSizes;
+	}
+	
+	public int createGroup() {
+		try {
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.CreateGroupRequest createRequest = new GroupServiceStub.CreateGroupRequest();
+			GroupServiceStub.Groupnamecustomerid groupInfos = new GroupServiceStub.Groupnamecustomerid();
+			groupInfos.setGroupname("OLAT-" + UUID.randomUUID().toString());
+			groupInfos.setCustomerid(viteroModule.getCustomerId());
+			createRequest.setGroup(groupInfos);
+			
+			GroupServiceStub.CreateGroupResponse response = groupWs.createGroup(createRequest);
+			GroupServiceStub.Groupid groupId = response.getCreateGroupResponse();
+			
+			return groupId.getGroupid();
+		} catch (RemoteException e) {
+			logError("Cannot create a group.", e);
+			return -1;
+		}
+	}
+	
+	public boolean updateBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking) {
+		//TODO
+		return false;
+	}
+
+	public boolean createBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking) {
+		Bookingtype booking = getBookingById(vBooking.getBookingId());
 		if(booking != null) {
-			logInfo("Booking already exists: " + vConfig.getBookingId());
+			logInfo("Booking already exists: " + vBooking.getBookingId());
 			return true;
 		}
 
 		try {
+			//a group per meeting
+			int groupId = createGroup();
+			if(groupId < 0) {
+				return false;
+			}
+			vBooking.setGroupId(groupId);
+			
+			//create the meeting with the new group
 			BookingServiceStub bookingWs = getBookingWebService();
 			BookingServiceStub.CreateBookingRequest createRequest = new BookingServiceStub.CreateBookingRequest();
-			
 			BookingServiceStub.Newbookingtype newBooking = new BookingServiceStub.Newbookingtype();
 			//mandatory
-			newBooking.setStart(format(begin));
-			newBooking.setEnd(format(end));
-			newBooking.setStartbuffer(15);
-			newBooking.setEndbuffer(15);
-			newBooking.setGroupid(1);
-			newBooking.setRoomsize(20);
+			newBooking.setStart(format(vBooking.getStart()));
+			newBooking.setEnd(format(vBooking.getEnd()));
+			newBooking.setStartbuffer(vBooking.getStartBuffer());
+			newBooking.setEndbuffer(vBooking.getEndBuffer());
+			newBooking.setGroupid(groupId);
+			newBooking.setRoomsize(vBooking.getRoomSize());
 			
 			//optional
 			/*
@@ -348,8 +455,25 @@ public class ViteroManager extends BasicManager {
 			int bookingId = response.getBookingid();
 			
 			if(!bookingCollision && !moduleCollision) {
-				vConfig.setBookingId(bookingId);
+				vBooking.setBookingId(bookingId);
+				getOrCreateProperty(group, ores, vBooking);
 				return true;
+			}
+			return false;
+		} catch(AxisFault f) {
+			String msg = f.getFaultDetailElement().toString();
+			if(msg.contains("<errorCode>502</errorCode>")) {
+				logError("Invalid module selection!", f);
+			} else if(msg.contains("<errorCode>505</errorCode>")) {
+				logError("Booking in the past!", f);
+			} else if(msg.contains("<errorCode>505</errorCode>")) {
+				logError("Booking in the past!", f);
+			} else if(msg.contains("<errorCode>501</errorCode>")) {
+				logError("Booking collision!", f);
+			} else if(msg.contains("<errorCode>703</errorCode>")) {
+				logError("License/customer expired!", f);
+			} else {
+				logError(msg, f);
 			}
 			return false;
 		} catch (RemoteException e) {
@@ -360,34 +484,64 @@ public class ViteroManager extends BasicManager {
 	
 	public boolean deleteBooking(ViteroBooking vBooking) {
 		try {
-			Bookingtype booking = getBookingById(vBooking.getBookingId());
-			if(booking == null) {
-				//already deleted, do nothing
-				return true;
-			}
-
 			BookingServiceStub bookingWs = getBookingWebService();
 			BookingServiceStub.DeleteBookingRequest deleteRequest = new BookingServiceStub.DeleteBookingRequest();
 			deleteRequest.setBookingid(vBooking.getBookingId());
+
 			BookingServiceStub.DeleteBookingResponse response = bookingWs.deleteBooking(deleteRequest);
-			
 			BigInteger state = response.getDeletestate();
+			deleteGroup(vBooking);
+			deleteProperty(vBooking);
 			return state != null;
-			
+		} catch(AxisFault f) {
+			String msg = f.getFaultDetailElement().toString();
+			if(msg.contains("<errorCode>509</errorCode>") || msg.contains("<errorCode>506</errorCode>")) {
+				//why is vms sending this error if it deletes the room???
+				deleteGroup(vBooking);
+				deleteProperty(vBooking);
+			} else {
+				logError(f.getFaultDetailElement().toString(), f);
+			}
+			return false;
 		} catch (RemoteException e) {
 			logError("", e);
 			return false;
 		}
 	}
 	
-	public boolean isConfigValid(ViteroBookingConfiguration config) {
-		return true;
+	public boolean deleteGroup(ViteroBooking vBooking) {
+		try {
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.DeleteGroupRequest deleteRequest = new GroupServiceStub.DeleteGroupRequest();
+			GroupServiceStub.Groupid groupId = new GroupServiceStub.Groupid();
+			groupId.setGroupid(vBooking.getGroupId());
+			deleteRequest.setDeleteGroupRequest(groupId);
+			groupWs.deleteGroup(deleteRequest);
+			return true;
+		} catch(AxisFault f) {
+			String msg = f.getFaultDetailElement().toString();
+			if(msg.contains("<errorCode>151</errorCode>")) {
+				logError("Group doesn't exist!", f);
+			} else if(msg.contains("<errorCode>303</errorCode>")) {
+				logError("Group id <= 0!", f);
+			} else {
+				logError(msg, f);
+			}
+			return false;
+		} catch (RemoteException e) {
+			logError("Cannot delete group: " + vBooking.getGroupId(), e);
+			return false;
+		}
+		
 	}
-
-
-
-	public boolean removeTeaRoom(String roomId, ViteroBookingConfiguration config) {
-		return false;
+	
+	public void deleteBookings(BusinessGroup group, OLATResourceable ores) {
+		
+	}
+	
+	protected void deleteProperty(ViteroBooking vBooking) {
+		String bookingId = Integer.toString(vBooking.getBookingId());
+		propertyManager.deleteProperties(null, null, null, VMS_CATEGORY, bookingId);
 	}
 	
 	protected Booking[] getBookingInFutureByCustomerId(int userId) {
@@ -430,30 +584,19 @@ public class ViteroManager extends BasicManager {
 		return vb;
 	}
 	
-	protected void createTeaRoom(final BusinessGroup group, final OLATResourceable courseResource) {
-		OLATResourceable ores = group == null ? courseResource : group;
-		
-		
-		
-		Property prop = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Property>() {
-			public Property execute() {
-				Property prop = null;
-				return prop;
-			}
-		});
+	protected Property getProperty(final BusinessGroup group, final OLATResourceable courseResource) {
+		return propertyManager.findProperty(null, group, courseResource, VMS_CATEGORY, null);
 	}
 	
-	protected Property getProperty(final BusinessGroup group, final OLATResourceable courseResource, String subName) {
-		if(group != null && !StringHelper.containsNonWhitespace(subName)) {
-			subName = COLLABORATION_TOOL_PROP_NAME;
+	protected Property getOrCreateProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
+		Property property = getProperty(group, courseResource);
+		if(property == null) {
+			String serialized = serializeViteroBooking(booking);
+			String bookingId = Integer.toString(booking.getBookingId());
+			Long groupId = new Long(booking.getGroupId());
+			property = propertyManager.createPropertyInstance(null, group, courseResource, VMS_CATEGORY, bookingId, null, groupId, null, serialized);
+			propertyManager.saveProperty(property);
 		}
-		return propertyManager.findProperty(null, group, courseResource, VMS_CATEGORY, subName);
-	}
-	
-	protected Property getOrCreateProperty(final BusinessGroup group, final OLATResourceable courseResource, String subName) {
-		Property property = getProperty(group, courseResource, subName);
-		
-		
 		return property;
 	}
 
@@ -516,6 +659,17 @@ public class ViteroManager extends BasicManager {
 			return licenceWs;
 		} catch (AxisFault e) {
 			logError("Cannot create licence ws.", e);
+			return null;
+		}
+	}
+	
+	protected GroupServiceStub getGroupWebService() {
+		try {
+			GroupServiceStub groupWs = new GroupServiceStub(getVmsEndPoint());
+			SecurityHeader.addAdminSecurityHeader(viteroModule, groupWs);
+			return groupWs;
+		} catch (AxisFault e) {
+			logError("Cannot create group ws.", e);
 			return null;
 		}
 	}

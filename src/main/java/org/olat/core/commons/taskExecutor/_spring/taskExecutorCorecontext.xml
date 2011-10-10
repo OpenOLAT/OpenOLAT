@@ -11,7 +11,7 @@
 <context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
 <context:annotation-config />
 
-<bean id="taskExecutorManager" class="org.olat.core.commons.taskExecutor.TaskExecutorManager" >
+<bean id="taskExecutorManager" class="org.olat.core.commons.taskExecutor.TaskExecutorManager" destroy-method="destroy">
 	<constructor-arg index="0">
 		<bean class="org.olat.core.commons.taskExecutor.ThreadPoolTaskExecutor">
 			<!-- poolSize -->

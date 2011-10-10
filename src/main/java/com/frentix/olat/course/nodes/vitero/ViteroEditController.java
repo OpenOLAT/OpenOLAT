@@ -20,8 +20,6 @@
  */
 package com.frentix.olat.course.nodes.vitero;
 
-import java.util.Date;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -33,6 +31,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -41,8 +41,6 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 import com.frentix.olat.course.nodes.ViteroCourseNode;
-import com.frentix.olat.vitero.manager.ViteroManager;
-import com.frentix.olat.vitero.model.ViteroBooking;
 import com.frentix.olat.vitero.ui.ViteroBookingsEditController;
 
 /**
@@ -70,13 +68,11 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 	
 	// runtime data
 	private ViteroCourseNode courseNode;
-	private ViteroBookingConfiguration config;
 
 	public ViteroEditController(UserRequest ureq, WindowControl wControl, ViteroCourseNode courseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv, ViteroManager provider, ViteroBookingConfiguration config) {
+			ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
-		this.config = config;
 
 		editVc = this.createVelocityContainer("edit");
 
@@ -84,9 +80,10 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 		accessibilityCondContr = new ConditionEditController(ureq, wControl, course.getCourseEnvironment().getCourseGroupManager(),
 				accessCondition, "accessabilityConditionForm", AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
 				userCourseEnv);
-		this.listenTo(accessibilityCondContr);
-		
-		editForm = new ViteroBookingsEditController(ureq, wControl);
+		listenTo(accessibilityCondContr);
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
+		editForm = new ViteroBookingsEditController(ureq, wControl, null, ores);
 		listenTo(editForm);
 		editVc.put("editForm", editForm.getInitialComponent());
 	}
@@ -131,39 +128,11 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == editForm) {
-			courseNode.getModuleConfiguration().set(ViteroCourseNode.CONF_VC_CONFIGURATION, config);
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		} else if (source == yesNoDelete) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				//provider.removeClassroom(null, config);
 				reset(ureq);
 			}
-		} else if(source == yesNoUpdate) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				Date allBegin = null, allEnd = null;
-				if(config.getMeetingDates() != null) {
-					for(ViteroBooking date : config.getMeetingDates()) {
-						Date begin = date.getStart();
-						Date end = date.getEnd();
-						allBegin = allBegin == null ? begin : begin.before(allBegin) ? begin : allBegin;
-						allEnd = allEnd == null ? end : end.after(allEnd) ? end : allEnd;
-					}
-				}
-				/*boolean success = provider.updateClassroom(roomId, courseNode.getShortTitle(), courseNode.getLongTitle(), allBegin, allEnd, config);
-				if(success) {
-					getWindowControl().setInfo(translate("success.update.room"));
-				} else {
-					getWindowControl().setError(translate("error.update.room"));
-				}*/
-			}
-		} else if(event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
-			// something has changed, maybe the title or description, thus ask to update
-			/*if(provider.existsClassroom(roomId, config)) {
-				removeAsListenerAndDispose(yesNoUpdate);
-				yesNoUpdate = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), translate("sync.meeting.title"), translate("sync.meeting.text"));
-				listenTo(yesNoUpdate);
-				yesNoUpdate.activate();
-			}*/
 		}
 	}
 	

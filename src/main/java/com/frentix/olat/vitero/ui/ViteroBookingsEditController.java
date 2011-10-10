@@ -21,24 +21,28 @@
 package com.frentix.olat.vitero.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OLATResourceable;
 import org.olat.course.editor.NodeEditController;
+import org.olat.group.BusinessGroup;
 
+import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
 /**
@@ -56,20 +60,26 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private final List<BookingDisplay> bookingDisplays = new ArrayList<BookingDisplay>();
 
 	private CloseableModalController cmc;
+	private DialogBoxController dialogCtr;
 	private ViteroBookingEditController bookingController;
+	
+	private final BusinessGroup group;
+	private final OLATResourceable ores;
+	private final ViteroManager viteroManager;
 
-	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl) {
+	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores) {
 		super(ureq, wControl, "edit");
+		
+		this.group = group;
+		this.ores = ores;
+		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;
-			layoutContainer.contextPut("bookingDisplays", bookingDisplays);
-		}
+		reloadModel();
 		
 		newButton = uifactory.addFormLink("vc.booking.new", formLayout, Link.BUTTON);
 		uifactory.addFormSubmitButton("subm", formLayout);
@@ -78,6 +88,18 @@ public class ViteroBookingsEditController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		// nothing to dispose
+	}
+	
+	protected void reloadModel() {
+		bookingDisplays.clear(); 
+		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
+		for(ViteroBooking booking:bookings) {
+			BookingDisplay display = new BookingDisplay(booking);
+			display.setDeleteButton(uifactory.addFormLink("delete", flc, Link.BUTTON));
+			display.setEditButton(uifactory.addFormLink("edit", flc, Link.BUTTON));
+			bookingDisplays.add(display);
+		}
+		flc.contextPut("bookingDisplays", bookingDisplays);
 	}
 
 	@Override
@@ -92,10 +114,15 @@ public class ViteroBookingsEditController extends FormBasicController {
 		} else if (source instanceof FormLink) {
 			for(BookingDisplay display: bookingDisplays) {
 				if(display.getDeleteButton() == source) {
-					removeBooking(ureq, display);
+					confirmDeleteBooking(ureq, display);
+					break;
+				} else if(display.getEditButton() == source) {
+					ViteroBooking viteroBooking = display.getMeeting();
+					editBooking(ureq, viteroBooking);
 					break;
 				}
 			}
+			reloadModel();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -112,16 +139,35 @@ public class ViteroBookingsEditController extends FormBasicController {
 			cmc.deactivate();
 			removeAsListenerAndDispose(bookingController);
 			removeAsListenerAndDispose(cmc);
+			reloadModel();
+		} else if(source == dialogCtr) {
+			if (DialogBoxUIFactory.isOkEvent(event)) {
+				ViteroBooking booking = (ViteroBooking)dialogCtr.getUserObject();
+				deleteBooking(ureq, booking);
+			}
 		}
 	}
-
-	protected void removeBooking(UserRequest ureq, BookingDisplay bookingDisplay) {
-		
+	
+	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
+		if( viteroManager.deleteBooking(booking)) {
+			showInfo("vc.table.delete");
+		} else {
+			showError("vc.table.delete");
+		}
+		reloadModel();
 	}
 
-	protected void newBooking(UserRequest ureq) {
+	protected void confirmDeleteBooking(UserRequest ureq, BookingDisplay bookingDisplay) {
+		String title = translate("vc.table.delete");
+		String text = translate("vc.table.delete.confirm");
+		dialogCtr = activateOkCancelDialog(ureq, title, text, dialogCtr);
+		dialogCtr.setUserObject(bookingDisplay.getMeeting());
+	}
+	
+	protected void editBooking(UserRequest ureq, ViteroBooking viteroBooking) {
 		removeAsListenerAndDispose(bookingController);
-		bookingController = new ViteroBookingEditController(ureq, getWindowControl());			
+
+		bookingController = new ViteroBookingEditController(ureq, getWindowControl(), group, ores, viteroBooking);			
 		listenTo(bookingController);
 		
 		removeAsListenerAndDispose(cmc);
@@ -130,12 +176,15 @@ public class ViteroBookingsEditController extends FormBasicController {
 		cmc.activate();
 	}
 
-	public class BookingDisplay {
+	protected void newBooking(UserRequest ureq) {
+		ViteroBooking viteroBooking = viteroManager.createBooking();
+		editBooking(ureq, viteroBooking);
+	}
 
+	public class BookingDisplay {
 		private final ViteroBooking meeting;
-		private DateChooser calenderBegin;
-		private TextElement durationEl;
 		private FormLink deleteButton;
+		private FormLink editButton;
 		
 		public BookingDisplay(ViteroBooking meeting) {
 			this.meeting = meeting;
@@ -145,20 +194,12 @@ public class ViteroBookingsEditController extends FormBasicController {
 			return meeting;
 		}
 
-		public DateChooser getCalenderBegin() {
-			return calenderBegin;
+		public Date getBegin() {
+			return meeting.getStart();
 		}
-
-		public void setCalenderBegin(DateChooser calenderBegin) {
-			this.calenderBegin = calenderBegin;
-		}
-
-		public TextElement getDurationEl() {
-			return durationEl;
-		}
-
-		public void setDurationEl(TextElement durationEl) {
-			this.durationEl = durationEl;
+		
+		public Date getEnd() {
+			return meeting.getEnd();
 		}
 
 		public FormLink getDeleteButton() {
@@ -167,6 +208,14 @@ public class ViteroBookingsEditController extends FormBasicController {
 
 		public void setDeleteButton(FormLink deleteButton) {
 			this.deleteButton = deleteButton;
+		}
+
+		public FormLink getEditButton() {
+			return editButton;
+		}
+
+		public void setEditButton(FormLink editButton) {
+			this.editButton = editButton;
 		}
 	}
 }
