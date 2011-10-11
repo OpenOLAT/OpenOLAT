@@ -102,12 +102,6 @@ public class ViteroBookingDataModel implements TableDataModel {
 	public Object createCopyWithEmptyList() {
 		return new ViteroBookingDataModel();
 	}
-	
-	public enum Sign {
-		signin,
-		signout,
-		no,
-	}
 
 	public enum Column {
 		begin,

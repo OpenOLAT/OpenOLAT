@@ -47,9 +47,10 @@ public class SignColumnDescriptor extends DefaultColumnDescriptor {
 
 	@Override
 	public String getAction(int row) {
-		Object state = getTable().getTableDataModel().getValueAt(row, getDataColumn());
-		if(state instanceof ViteroBookingDataModel.Sign) {
-			ViteroBookingDataModel.Sign sign = (ViteroBookingDataModel.Sign)state;
+		int sortedRow = table.getSortedRow(row);
+		Object state = getTable().getTableDataModel().getValueAt(sortedRow, getDataColumn());
+		if(state instanceof Sign) {
+			Sign sign = (Sign)state;
 			switch(sign) {
 				case signin: return sign.name();
 				case signout: return sign.name();
@@ -61,9 +62,10 @@ public class SignColumnDescriptor extends DefaultColumnDescriptor {
 
 	@Override
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
-		Object state = getTable().getTableDataModel().getValueAt(row, getDataColumn());
-		if(state instanceof ViteroBookingDataModel.Sign) {
-			ViteroBookingDataModel.Sign sign = (ViteroBookingDataModel.Sign)state;
+		int sortedRow = table.getSortedRow(row);
+		Object state = getTable().getTableDataModel().getValueAt(sortedRow, getDataColumn());
+		if(state instanceof Sign) {
+			Sign sign = (Sign)state;
 			switch(sign) {
 				case signin: sb.append(translator.translate("signin")); break;
 				case signout: sb.append(translator.translate("signout")); break;

@@ -53,36 +53,15 @@ import com.frentix.olat.vitero.ui.ViteroBookingDataModel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ViteroPeekViewController extends BasicController {
-	
-	private TableController tableController;
-	
-	private final ViteroManager viteroManager;
-	private final OLATResourceable ores;
+
 
 	public ViteroPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 
-		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
-		ores = OresHelper.createOLATResourceableInstance(CourseModule.class,
+		ViteroManager viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class,
 				userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
-		init(ureq);
-		
-
-		putInitialPanel(tableController.getInitialComponent());
-	}
-
-	@Override
-	protected void doDispose() {
-	//
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-	//
-	}
-
-	private void init(UserRequest ureq) {
 		List<ViteroBooking> bookings = viteroManager.getBookings(null, ores);
 		List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
 		FilterBookings.filterMyFutureBookings(bookings, myBookings);
@@ -97,14 +76,24 @@ public class ViteroPeekViewController extends BasicController {
 		tableConfig.setDownloadOffered(false);
 		tableConfig.setSortingEnabled(false);
 		
-		removeAsListenerAndDispose(tableController);
-		tableController = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-		listenTo(tableController);
+		TableController tableCtrl = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
+		listenTo(tableCtrl);
 		
-		// dummy header key, won't be used since setDisplayTableHeader is set to
-		// false
-		tableController.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
-		tableController.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
-		tableController.setTableDataModel(new ViteroBookingDataModel(bookings));
+		// dummy header key, won't be used since setDisplayTableHeader is set to false
+		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
+		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
+		tableCtrl.setTableDataModel(new ViteroBookingDataModel(bookings));
+
+		putInitialPanel(tableCtrl.getInitialComponent());
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 }

@@ -53,10 +53,11 @@ public class StartColumnDescriptor extends DefaultColumnDescriptor {
 
 	@Override
 	public String getAction(int row) {
-		ViteroBooking booking = (ViteroBooking)getTable().getTableDataModel().getObject(row);
+		int sortedRow = table.getSortedRow(row);
+		ViteroBooking booking = (ViteroBooking)getTable().getTableDataModel().getObject(sortedRow);
 		if(viteroManager.canGoBooking(booking)) {
-			Object state = getTable().getTableDataModel().getValueAt(row, ViteroBookingDataModel.Column.sign.ordinal());
-			if(ViteroBookingDataModel.Sign.signout.equals(state)) {
+			Object state = getTable().getTableDataModel().getValueAt(sortedRow, ViteroBookingDataModel.Column.sign.ordinal());
+			if(Sign.signout.equals(state)) {
 				return super.getAction(row);
 			}
 		}
@@ -65,10 +66,11 @@ public class StartColumnDescriptor extends DefaultColumnDescriptor {
 
 	@Override
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
-		ViteroBooking booking = (ViteroBooking)getTable().getTableDataModel().getObject(row);
+		int sortedRow = table.getSortedRow(row);
+		ViteroBooking booking = (ViteroBooking)getTable().getTableDataModel().getObject(sortedRow);
 		if(viteroManager.canGoBooking(booking)) {
-			Object state = getTable().getTableDataModel().getValueAt(row, ViteroBookingDataModel.Column.sign.ordinal());
-			if(ViteroBookingDataModel.Sign.signout.equals(state)) {
+			Object state = getTable().getTableDataModel().getValueAt(sortedRow, ViteroBookingDataModel.Column.sign.ordinal());
+			if(Sign.signout.equals(state)) {
 				sb.append(translator.translate(getHeaderKey()));
 			}
 		}

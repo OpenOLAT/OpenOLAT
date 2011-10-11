@@ -5,7 +5,7 @@
 		<tr>
 			<td>$r.translate("vc.table.begin")</td>
 			<td>$r.translate("vc.table.end")</td>
-			<td colspan="2"></td>
+			<td colspan="3"></td>
 		</tr>
 		
 		#foreach($bookingDisplay in $bookingDisplays)
@@ -14,6 +14,9 @@
 				<td>$r.formatDateAndTime($bookingDisplay.end)</td>
 				<td>
 					$r.render($bookingDisplay.editButton.component.componentName)
+				</td>
+				<td>
+					$r.render($bookingDisplay.usersButton.component.componentName)
 				</td>
 				<td>
 					$r.render($bookingDisplay.deleteButton.component.componentName)

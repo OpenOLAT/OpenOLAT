@@ -65,6 +65,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private DialogBoxController dialogCtr;
 	private ViteroBookingEditController bookingController;
 	private ViteroRoomsOverviewController roomsOverviewController;
+	private ViteroUserToGroupController usersController;
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -102,6 +103,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 			BookingDisplay display = new BookingDisplay(booking);
 			display.setDeleteButton(uifactory.addFormLink("delete", flc, Link.BUTTON));
 			display.setEditButton(uifactory.addFormLink("edit", flc, Link.BUTTON));
+			display.setUsersButton(uifactory.addFormLink("users", flc, Link.BUTTON));
 			bookingDisplays.add(display);
 		}
 		flc.contextPut("bookingDisplays", bookingDisplays);
@@ -126,6 +128,10 @@ public class ViteroBookingsEditController extends FormBasicController {
 				} else if(display.getEditButton() == source) {
 					ViteroBooking viteroBooking = display.getMeeting();
 					editBooking(ureq, viteroBooking);
+					break;
+				} else if(display.getUsersButton() == source) {
+					ViteroBooking viteroBooking = display.getMeeting();
+					usersBooking(ureq, viteroBooking);
 					break;
 				}
 			}
@@ -183,6 +189,11 @@ public class ViteroBookingsEditController extends FormBasicController {
 		dialogCtr.setUserObject(bookingDisplay.getMeeting());
 	}
 	
+	protected void newBooking(UserRequest ureq) {
+		ViteroBooking viteroBooking = viteroManager.createBooking();
+		editBooking(ureq, viteroBooking);
+	}
+	
 	protected void editBooking(UserRequest ureq, ViteroBooking viteroBooking) {
 		removeAsListenerAndDispose(bookingController);
 
@@ -194,16 +205,24 @@ public class ViteroBookingsEditController extends FormBasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
+	protected void usersBooking(UserRequest ureq, ViteroBooking viteroBooking) {
+		removeAsListenerAndDispose(usersController);
 
-	protected void newBooking(UserRequest ureq) {
-		ViteroBooking viteroBooking = viteroManager.createBooking();
-		editBooking(ureq, viteroBooking);
+		usersController = new ViteroUserToGroupController(ureq, getWindowControl(), group, ores, viteroBooking);			
+		listenTo(usersController);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersController.getInitialComponent(), true, translate("vc.booking.title"));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	public class BookingDisplay {
 		private final ViteroBooking meeting;
 		private FormLink deleteButton;
 		private FormLink editButton;
+		private FormLink usersButton;
 		
 		public BookingDisplay(ViteroBooking meeting) {
 			this.meeting = meeting;
@@ -235,6 +254,14 @@ public class ViteroBookingsEditController extends FormBasicController {
 
 		public void setEditButton(FormLink editButton) {
 			this.editButton = editButton;
+		}
+
+		public FormLink getUsersButton() {
+			return usersButton;
+		}
+
+		public void setUsersButton(FormLink usersButton) {
+			this.usersButton = usersButton;
 		}
 	}
 }

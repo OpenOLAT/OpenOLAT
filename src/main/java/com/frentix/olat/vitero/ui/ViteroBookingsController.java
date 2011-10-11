@@ -135,7 +135,7 @@ public class ViteroBookingsController extends BasicController {
 	}
 	
 	protected void signInVitero(UserRequest ureq, ViteroBooking booking) {
-		boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity());
+		boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity(), null);
 		if(ok) {
 			showInfo("signin.ok");
 		} else {

@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -53,6 +52,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +70,9 @@ import com.frentix.olat.vitero.manager.stubs.SessionCodeServiceStub;
 import com.frentix.olat.vitero.manager.stubs.SessionCodeServiceStub.Codetype;
 import com.frentix.olat.vitero.manager.stubs.UserServiceStub;
 import com.frentix.olat.vitero.manager.stubs.UserServiceStub.Userid;
+import com.frentix.olat.vitero.manager.stubs.UserServiceStub.Userlist;
+import com.frentix.olat.vitero.manager.stubs.UserServiceStub.Usertype;
+import com.frentix.olat.vitero.model.GroupRole;
 import com.frentix.olat.vitero.model.ViteroBooking;
 import com.ibm.icu.util.Calendar;
 import com.thoughtworks.xstream.XStream;
@@ -98,6 +101,8 @@ public class ViteroManager extends BasicManager {
 	private PropertyManager propertyManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private UserManager userManager;
 	
 	private XStream xStream;
 
@@ -262,6 +267,40 @@ public class ViteroManager extends BasicManager {
 			return null;
 		} catch (RemoteException e) {
 			logError("", e);
+			return null;
+		}
+	}
+	
+	public List<Identity> getIdentitiesInBooking(ViteroBooking booking) {
+		Usertype[] vmsUsers = getVmsUsersByGroup(booking.getGroupId());
+		List<Identity> identities = new ArrayList<Identity>();
+		if(vmsUsers != null) {
+			for(Usertype vmsUser:vmsUsers) {
+				String email = vmsUser.getEmail();
+				Identity id = userManager.findIdentityByEmail(email);
+				if(id != null) {
+					identities.add(id);
+				}
+			}	
+		}
+		return identities;
+	}
+	
+	protected Usertype[] getVmsUsersByGroup(int groupId) {
+		try {
+			UserServiceStub userWs = getUserWebService();
+			UserServiceStub.GetUserListByGroupRequest listRequest = new UserServiceStub.GetUserListByGroupRequest();
+			listRequest.setGroupid(groupId);
+			UserServiceStub.GetUserListByGroupResponse response = userWs.getUserListByGroup(listRequest);
+			Userlist userList = response.getGetUserListByGroupResponse();
+			Usertype[] userTypes = userList.getUser();
+			return userTypes;
+		} catch(AxisFault f) {
+			String msg = f.getFaultDetailElement().toString();
+			logError(msg, f);
+			return null;
+		} catch (RemoteException e) {
+			logError("Cannot get the lsit of users in group: " + groupId, e);
 			return null;
 		}
 	}
@@ -462,7 +501,7 @@ public class ViteroManager extends BasicManager {
 		}
 	}
 	
-	public boolean addToRoom(ViteroBooking booking, Identity identity) {
+	public boolean addToRoom(ViteroBooking booking, Identity identity, GroupRole role) {
 		try {
 			int userId = getVmsUserId(identity);
 			if(userId < 0) {
@@ -474,9 +513,19 @@ public class ViteroManager extends BasicManager {
 			GroupServiceStub.Groupiduserid groupuserId = new GroupServiceStub.Groupiduserid();
 			groupuserId.setGroupid(booking.getGroupId());
 			groupuserId.setUserid(userId);
-			
+
 			addRequest.setAddUserToGroupRequest(groupuserId);
 			groupWs.addUserToGroup(addRequest);
+			
+			if(role != null) {
+				groupWs = getGroupWebService();
+				GroupServiceStub.ChangeGroupRoleRequest roleRequest = new GroupServiceStub.ChangeGroupRoleRequest();
+				roleRequest.setGroupid(booking.getGroupId());
+				roleRequest.setUserid(userId);
+				roleRequest.setRole(role.getVmsValue());
+				groupWs.changeGroupRole(roleRequest);
+			}
+			
 			return true;
 		} catch(AxisFault f) {
 			String msg = f.getFaultDetailElement().toString();
