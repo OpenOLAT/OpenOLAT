@@ -26,7 +26,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
@@ -41,7 +40,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.model.StartBookingComparator;
 import com.frentix.olat.vitero.model.ViteroBooking;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -56,16 +58,18 @@ public class ViteroBookingsController extends BasicController {
 
 	private final VelocityContainer runVC;
 	private final TableController tableCtr;
+	
+	private final BusinessGroup group;
+	private final OLATResourceable ores;
 	private final ViteroManager viteroManager;
 
 	public ViteroBookingsController(UserRequest ureq, WindowControl wControl,
 			BusinessGroup group, OLATResourceable ores) {
 		super(ureq, wControl);
 
+		this.ores = ores;
+		this.group = group;
 		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
-
-		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
-		TableDataModel tableData = new ViteroBookingDataModel(bookings);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
@@ -75,11 +79,14 @@ public class ViteroBookingsController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
 		
-		StaticColumnDescriptor startRoom = new StaticColumnDescriptor("start", "start", translate("start"));
+		StartColumnDescriptor startRoom = new StartColumnDescriptor("start", "start", ureq.getLocale(), viteroManager, getTranslator());
 		startRoom.setIsPopUpWindowAction(true, "");
 		tableCtr.addColumnDescriptor(startRoom);
+		
+		tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", ViteroBookingDataModel.Column.sign.ordinal(), ureq.getLocale(), getTranslator()));
 
-		tableCtr.setTableDataModel(tableData);
+		loadModel();
+		
 		tableCtr.setSortColumn(1, true);// timeframe
 		listenTo(tableCtr);
 
@@ -108,10 +115,43 @@ public class ViteroBookingsController extends BasicController {
 				ViteroBooking booking = (ViteroBooking)tableCtr.getTableDataModel().getObject(row);
 				if("start".equals(e.getActionId())) {
 					openVitero(ureq, booking);
+				} else if("signin".equals(e.getActionId())) {
+					signInVitero(ureq, booking);
+				} else if("signout".equals(e.getActionId())) {
+					signOutVitero(ureq, booking);
 				}
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	protected void loadModel() {
+		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
+		List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
+		FilterBookings.filterMyFutureBookings(bookings, myBookings);
+		Collections.sort(bookings, new StartBookingComparator());
+		TableDataModel tableData = new ViteroBookingDataModel(bookings, myBookings);
+		tableCtr.setTableDataModel(tableData);
+	}
+	
+	protected void signInVitero(UserRequest ureq, ViteroBooking booking) {
+		boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity());
+		if(ok) {
+			showInfo("signin.ok");
+		} else {
+			showError("signin.nok");
+		}
+		loadModel();
+	}
+	
+	protected void signOutVitero(UserRequest ureq, ViteroBooking booking) {
+		boolean ok = viteroManager.removeFromRoom(booking, ureq.getIdentity());
+		if(ok) {
+			showInfo("signout.ok");
+		} else {
+			showError("signout.nok");
+		}
+		loadModel();
 	}
 	
 	protected void openVitero(UserRequest ureq, ViteroBooking booking) {

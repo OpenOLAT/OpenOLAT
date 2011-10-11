@@ -38,6 +38,8 @@ import com.frentix.olat.vitero.model.ViteroBooking;
 public class ViteroBookingDataModel implements TableDataModel {
 	
 	private List<ViteroBooking> bookings;
+	private List<ViteroBooking> signedInBookings;
+	
 	
 	public ViteroBookingDataModel() {
 		//
@@ -45,6 +47,11 @@ public class ViteroBookingDataModel implements TableDataModel {
 	
 	public ViteroBookingDataModel(List<ViteroBooking> bookings) {
 		this.bookings = bookings;
+	}
+	
+	public ViteroBookingDataModel(List<ViteroBooking> bookings, List<ViteroBooking> signedInBookings) {
+		this.bookings = bookings;
+		this.signedInBookings = signedInBookings;
 	}
 
 	@Override
@@ -68,6 +75,20 @@ public class ViteroBookingDataModel implements TableDataModel {
 		switch(Column.values()[col]) {
 			case begin: return booking.getStart();
 			case end: return booking.getEnd();
+			case sign: {
+				boolean auto = booking.isAutoSignIn();
+				if(auto) {
+					if(signedInBookings != null) {
+						for(ViteroBooking signedInBooking: signedInBookings) {
+							if(booking.getBookingId() == signedInBooking.getBookingId()) {
+								return Sign.signout;
+							}
+						}
+					}
+					return Sign.signin;
+				}
+				return Sign.no;
+			}
 			default: return "";
 		}
 	}
@@ -81,10 +102,17 @@ public class ViteroBookingDataModel implements TableDataModel {
 	public Object createCopyWithEmptyList() {
 		return new ViteroBookingDataModel();
 	}
+	
+	public enum Sign {
+		signin,
+		signout,
+		no,
+	}
 
 	public enum Column {
 		begin,
 		end,
 		open,
+		sign,
 	}
 }

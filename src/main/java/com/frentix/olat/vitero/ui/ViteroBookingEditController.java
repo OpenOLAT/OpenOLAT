@@ -27,6 +27,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -56,9 +57,13 @@ public class ViteroBookingEditController extends FormBasicController {
 	private SingleSelection endBufferEl;
 	private SingleSelection roomSizeEl;
 	
+	private MultipleSelectionElement autoSignIn;
+	
 	private static final String[] bufferKeys = new String[]{"0", "15", "30", "45", "60"};
 	private static final String[] bufferValues = bufferKeys;
 	private final String[] roomSizes;
+	private static final String[] autoSignInKeys = new String[]{"on"};
+	private final String[] autoSignInValues;
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -81,36 +86,50 @@ public class ViteroBookingEditController extends FormBasicController {
 			roomSizes[i++] = size.toString();
 		}
 		
+		autoSignInValues = new String[]{ translate("enabled") };
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		boolean editable = booking.getBookingId() <= 0;
+		
 		//begin
 		beginChooser = uifactory.addDateChooser("vc.table.begin", "", formLayout);
 		beginChooser.setDisplaySize(21);
 		beginChooser.setDateChooserTimeEnabled(true);
 		beginChooser.setMandatory(true);
 		beginChooser.setDate(booking.getStart());
+		beginChooser.setEnabled(editable);
 		//end
 		endChooser = uifactory.addDateChooser("vc.table.end", "", formLayout);
 		endChooser.setDisplaySize(21);
 		endChooser.setDateChooserTimeEnabled(true);
 		endChooser.setMandatory(true);
 		endChooser.setDate(booking.getEnd());
+		endChooser.setEnabled(editable);
 		
 		//buffer start
 		beginBufferEl = uifactory.addDropdownSingleselect("vc.table.beginBuffer", formLayout, bufferKeys, bufferValues, null);
 		beginBufferEl.select(Integer.toString(booking.getStartBuffer()), true);
+		beginBufferEl.setEnabled(editable);
 		
 		//buffer end
 		endBufferEl = uifactory.addDropdownSingleselect("vc.table.endBuffer", formLayout, bufferKeys, bufferValues, null);
 		endBufferEl.select(Integer.toString(booking.getEndBuffer()), true);
+		endBufferEl.setEnabled(editable);
 		
 		//room size
 		roomSizeEl = uifactory.addDropdownSingleselect("vc.table.roomSize", formLayout, roomSizes, roomSizes, null);
 		if(booking.getRoomSize() > 0) {
 			roomSizeEl.select(Integer.toString(booking.getRoomSize()), true);
+		}
+		roomSizeEl.setEnabled(editable);
+		
+		autoSignIn = uifactory.addCheckboxesHorizontal("vc.autoSignIn", formLayout, autoSignInKeys, autoSignInValues, null);
+		if(booking.isAutoSignIn()) {
+			autoSignIn.select(autoSignInKeys[0], true);
 		}
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -133,9 +152,33 @@ public class ViteroBookingEditController extends FormBasicController {
 		boolean allOk = true;
 
 		Date begin = beginChooser.getDate();
-
-		Date end = endChooser.getDate();
+		beginChooser.clearError();
+		if(begin == null) {
+			beginChooser.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		} else if(new Date().after(begin)) {
+			beginChooser.setErrorKey("vc.check.bookingInPast", null);
+			allOk = false;
+		}
 		
+		Date end = endChooser.getDate();
+		endChooser.clearError();
+		if(end == null) {
+			endChooser.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		} else if(new Date().after(begin)) {
+			beginChooser.setErrorKey("vc.check.bookingInPast", null);
+			allOk = false;
+		} else if(end.before(begin)) {
+			beginChooser.setErrorKey("vc.check.bookingInPast", null);
+			allOk = false;
+		}
+		
+		roomSizeEl.clearError();
+		if(!roomSizeEl.isOneSelected()) {
+			roomSizeEl.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		}
 		
 		return allOk && super.validateFormLogic(ureq);
 	}
@@ -166,17 +209,26 @@ public class ViteroBookingEditController extends FormBasicController {
 		}
 		booking.setRoomSize(roomSize);
 		
+		boolean auto = autoSignIn.isMultiselect() && autoSignIn.isSelected(0);
+		booking.setAutoSignIn(auto);
+		
 		if(booking.getBookingId() >= 0) {
-			viteroManager.updateBooking(group, ores, booking);
+			ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, booking);
+			if(updatedBooking != null) {
+				showInfo("vc.check.ok");
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				showError("vc.check.nok");
+			}
 		} else {
 			if(viteroManager.createBooking(group, ores, booking)) {
 				showInfo("vc.check.ok");
+				fireEvent(ureq, Event.DONE_EVENT);
 			} else {
 				showError("vc.check.nok");
 			}
 		}
 
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

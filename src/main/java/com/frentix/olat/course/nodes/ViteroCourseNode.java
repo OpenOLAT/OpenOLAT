@@ -49,6 +49,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 import com.frentix.olat.course.nodes.vitero.ViteroEditController;
+import com.frentix.olat.course.nodes.vitero.ViteroPeekViewController;
 import com.frentix.olat.course.nodes.vitero.ViteroRunController;
 import com.frentix.olat.vitero.manager.ViteroManager;
 
@@ -125,9 +126,8 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		return null;
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		return new ViteroPeekViewController(ureq, wControl, userCourseEnv);
 	}
 
 	@Override

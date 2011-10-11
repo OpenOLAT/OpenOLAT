@@ -20,10 +20,8 @@
  */
 package com.frentix.olat.course.nodes.vitero;
 
-import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.extensions.ExtensionResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -70,24 +68,7 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 		return super.isEnabled();
 	}
 
-	public ExtensionResource getExtensionCSS() {
-		return null;
-	}
-
-	public List getExtensionResources() {
-		return null;
-	}
-
 	public String getName() {
 		return getAlias();
 	}
-
-	public void setup() {
-		// no special setup necessary
-	}
-
-	public void tearDown() {
-		// no special tear down necessary
-	}
-
 }

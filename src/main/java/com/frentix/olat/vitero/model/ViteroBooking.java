@@ -40,6 +40,8 @@ public class ViteroBooking {
 	private Date end;
 	private int endBuffer;
 	private int roomSize;
+	private boolean autoSignIn;
+	private String timeZoneId;
 	
 	public ViteroBooking() {
 		// nothing to do
@@ -68,8 +70,6 @@ public class ViteroBooking {
 	public void setRoomSize(int roomSize) {
 		this.roomSize = roomSize;
 	}
-	
-	
 
 	public int getStartBuffer() {
 		return startBuffer;
@@ -87,8 +87,6 @@ public class ViteroBooking {
 		this.start = start;
 	}
 	
-	
-	
 	public int getEndBuffer() {
 		return endBuffer;
 	}
@@ -103,5 +101,21 @@ public class ViteroBooking {
 	
 	public void setEnd(Date end) {
 		this.end = end;
+	}
+
+	public String getTimeZoneId() {
+		return timeZoneId;
+	}
+
+	public void setTimeZoneId(String timeZoneId) {
+		this.timeZoneId = timeZoneId;
+	}
+
+	public boolean isAutoSignIn() {
+		return autoSignIn;
+	}
+
+	public void setAutoSignIn(boolean autoSignIn) {
+		this.autoSignIn = autoSignIn;
 	}
 }

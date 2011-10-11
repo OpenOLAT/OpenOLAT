@@ -34,31 +34,30 @@ import com.frentix.olat.vitero.ui.ViteroBookingsController;
  * Description:<br>
  * 
  * <P>
- * Initial Date:  6 oct. 2011 <br>
- *
+ * Initial Date: 6 oct. 2011 <br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ViteroRunController extends BasicController {
 
 	private final ViteroBookingsController bookingsController;
 
+	public ViteroRunController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
+		super(ureq, wControl);
 
-  public ViteroRunController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
-    super(ureq, wControl);
-    
-    bookingsController = new ViteroBookingsController(ureq, wControl, null, ores);
-    listenTo(bookingsController);
-    
-    putInitialPanel(bookingsController.getInitialComponent());
-  }
+		bookingsController = new ViteroBookingsController(ureq, wControl, null, ores);
+		listenTo(bookingsController);
 
-  @Override
-  protected void event(UserRequest ureq, Component source, Event event) {
-    //nothing to do
-  }
+		putInitialPanel(bookingsController.getInitialComponent());
+	}
 
-  @Override
-  protected void doDispose() {
-	  //nothing to do
-  }
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		// nothing to do
+	}
+
+	@Override
+	protected void doDispose() {
+		// nothing to do
+	}
 }

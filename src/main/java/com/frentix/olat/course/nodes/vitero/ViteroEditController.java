@@ -74,7 +74,6 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 
-		editVc = this.createVelocityContainer("edit");
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, wControl, course.getCourseEnvironment().getCourseGroupManager(),
@@ -85,7 +84,9 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
 		editForm = new ViteroBookingsEditController(ureq, wControl, null, ores);
 		listenTo(editForm);
-		editVc.put("editForm", editForm.getInitialComponent());
+		
+		editVc = createVelocityContainer("edit");
+		editVc.put("editRooms", editForm.getInitialComponent());
 	}
 
 	@Override
