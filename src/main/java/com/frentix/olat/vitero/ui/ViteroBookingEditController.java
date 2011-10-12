@@ -20,6 +20,7 @@
  */
 package com.frentix.olat.vitero.ui;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
 /**
@@ -78,14 +80,20 @@ public class ViteroBookingEditController extends FormBasicController {
 		this.booking = booking;
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		
-		List<Integer> sizes = viteroManager.getLicencedRoomSizes();
+		List<Integer> sizes;
+		try {
+			sizes = viteroManager.getLicencedRoomSizes();
+			
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+			sizes = Collections.emptyList();
+		}
 		roomSizes = new String[sizes.size()];
 		
 		int i=0;
 		for(Integer size:sizes) {
 			roomSizes[i++] = size.toString();
 		}
-		
 		autoSignInValues = new String[]{ translate("enabled") };
 		
 		initForm(ureq);
@@ -212,21 +220,25 @@ public class ViteroBookingEditController extends FormBasicController {
 		boolean auto = autoSignIn.isMultiselect() && autoSignIn.isSelected(0);
 		booking.setAutoSignIn(auto);
 		
-		if(booking.getBookingId() >= 0) {
-			ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, booking);
-			if(updatedBooking != null) {
-				showInfo("vc.check.ok");
-				fireEvent(ureq, Event.DONE_EVENT);
+		try {
+			if(booking.getBookingId() >= 0) {
+				ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, booking);
+				if(updatedBooking != null) {
+					showInfo("vc.check.ok");
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else {
+					showError("vc.check.nok");
+				}
 			} else {
-				showError("vc.check.nok");
+				if(viteroManager.createBooking(group, ores, booking)) {
+					showInfo("vc.check.ok");
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else {
+					showError("vc.check.nok");
+				}
 			}
-		} else {
-			if(viteroManager.createBooking(group, ores, booking)) {
-				showInfo("vc.check.ok");
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else {
-				showError("vc.check.nok");
-			}
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
 
 	}

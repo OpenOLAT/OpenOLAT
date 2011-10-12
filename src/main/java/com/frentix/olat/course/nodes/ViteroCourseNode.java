@@ -160,6 +160,6 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		// remove meeting
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-		provider.deleteBookings(null, ores);
+		provider.deleteAll(null, ores);
 	}
 }

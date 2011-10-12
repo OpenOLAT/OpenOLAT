@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.RedirectMediaResource;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
 /**
@@ -118,12 +119,16 @@ public class ViteroBookingsAdminController extends BasicController {
 	}
 	
 	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
-		if( viteroManager.deleteBooking(booking)) {
-			showInfo("vc.table.delete");
-		} else {
-			showError("vc.table.delete");
+		try {
+			if( viteroManager.deleteBooking(booking)) {
+				showInfo("vc.table.delete");
+			} else {
+				showError("vc.table.delete");
+			}
+			reloadModel();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
-		reloadModel();
 	}
 	
 	protected void confirmDeleteVitero(UserRequest ureq, ViteroBooking booking) {
@@ -134,13 +139,17 @@ public class ViteroBookingsAdminController extends BasicController {
 	}
 	
 	protected void openVitero(UserRequest ureq, ViteroBooking booking) {
-		String url = viteroManager.getURLToBooking(ureq.getIdentity(), booking);
-		RedirectMediaResource redirect = new RedirectMediaResource(url);
-		ureq.getDispatchResult().setResultingMediaResource(redirect);
+		try {
+			String url = viteroManager.getURLToBooking(ureq.getIdentity(), booking);
+			RedirectMediaResource redirect = new RedirectMediaResource(url);
+			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 	}
 	
 	protected void reloadModel() {
-		List<ViteroBooking> bookings = viteroManager.getBookings();
+		List<ViteroBooking> bookings = viteroManager.getBookings(null, null);
 		ViteroBookingDataModel tableModel = new ViteroBookingDataModel(bookings);
 		tableCtr.setTableDataModel(tableModel);
 	}

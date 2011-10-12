@@ -47,12 +47,11 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.GroupRole;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
@@ -135,28 +134,40 @@ public class ViteroUserToGroupController extends BasicController {
 	}
 	
 	private void signIn(UserRequest ureq, Identity identity) {
-		ResourceMembers members = ((UserToGroupDataModel)tableCtlr.getTableDataModel()).getMembers();
-		boolean upgrade = members.getCoaches().contains(identity) || members.getOwners().contains(identity);
-		GroupRole role = upgrade ? GroupRole.teamleader : null;
-		if(viteroManager.addToRoom(booking, identity, role)) {
-			showInfo("signin.ok");
-		} else {
-			showInfo("signin.nok");
+		try {
+			ResourceMembers members = ((UserToGroupDataModel)tableCtlr.getTableDataModel()).getMembers();
+			boolean upgrade = members.getCoaches().contains(identity) || members.getOwners().contains(identity);
+			GroupRole role = upgrade ? GroupRole.teamleader : null;
+			if(viteroManager.addToRoom(booking, identity, role)) {
+				showInfo("signin.ok");
+			} else {
+				showInfo("signin.nok");
+			}
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
 	}
 	
 	private void signOut(UserRequest ureq, Identity identity) {
-		if(viteroManager.removeFromRoom(booking, identity)) {
-			showInfo("signout.ok");
-		} else {
-			showInfo("signout.nok");
+		try {
+			if(viteroManager.removeFromRoom(booking, identity)) {
+				showInfo("signout.ok");
+			} else {
+				showInfo("signout.nok");
+			}
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
 	}
 
 	private void loadModel() {
-		List<Identity> identitiesInGroup = viteroManager.getIdentitiesInBooking(booking);
-		ResourceMembers members = getIdentitiesInResource();
-		tableCtlr.setTableDataModel(new UserToGroupDataModel(members, identitiesInGroup));
+		try {
+			List<Identity> identitiesInGroup = viteroManager.getIdentitiesInBooking(booking);
+			ResourceMembers members = getIdentitiesInResource();
+			tableCtlr.setTableDataModel(new UserToGroupDataModel(members, identitiesInGroup));
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 	}
 	
 	private ResourceMembers getIdentitiesInResource() {

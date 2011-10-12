@@ -44,6 +44,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.group.BusinessGroup;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
 /**
@@ -174,12 +175,16 @@ public class ViteroBookingsEditController extends FormBasicController {
 	}
 	
 	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
-		if( viteroManager.deleteBooking(booking)) {
-			showInfo("vc.table.delete");
-		} else {
-			showError("vc.table.delete");
+		try {
+			if( viteroManager.deleteBooking(booking)) {
+				showInfo("vc.table.delete");
+			} else {
+				showError("vc.table.delete");
+			}
+			reloadModel();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
-		reloadModel();
 	}
 
 	protected void confirmDeleteBooking(UserRequest ureq, BookingDisplay bookingDisplay) {
@@ -190,8 +195,12 @@ public class ViteroBookingsEditController extends FormBasicController {
 	}
 	
 	protected void newBooking(UserRequest ureq) {
-		ViteroBooking viteroBooking = viteroManager.createBooking();
-		editBooking(ureq, viteroBooking);
+		try {
+			ViteroBooking viteroBooking = viteroManager.createBooking();
+			editBooking(ureq, viteroBooking);
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 	}
 	
 	protected void editBooking(UserRequest ureq, ViteroBooking viteroBooking) {

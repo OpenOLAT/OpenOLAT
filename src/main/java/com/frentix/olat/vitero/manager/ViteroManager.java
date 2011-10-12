@@ -29,8 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.activation.DataHandler;
@@ -39,6 +40,7 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.axis2.AxisFault;
+import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
@@ -94,6 +96,7 @@ public class ViteroManager extends BasicManager {
 	
 	private static final String VMS_PROVIDER = "VMS";
 	private static final String VMS_CATEGORY = "vitero-category";
+	private static final String VMS_CATEGORY_ZOMBIE = "vitero-category-zombie";
 	
 	@Autowired
 	private ViteroModule viteroModule;
@@ -120,31 +123,13 @@ public class ViteroManager extends BasicManager {
 		this.viteroModule = module;
 	}
 	
-	public void getLicence(Date begin, Date end) {
-		try {
-			LicenceServiceStub licenceWs = getLicenceWebService();
-			LicenceServiceStub.GetBookableRoomsForGroupRequest request = new LicenceServiceStub.GetBookableRoomsForGroupRequest();
-			LicenceServiceStub.Grouprequesttype groupRequest = new LicenceServiceStub.Grouprequesttype();
-			groupRequest.setStart(format(begin));
-			groupRequest.setEnd(format(end));
-			
-			request.setGetBookableRoomsForGroupRequest(groupRequest);
-
-			LicenceServiceStub.GetBookableRoomsForGroupResponse response = licenceWs.getBookableRoomsForGroup(request);
-			Rooms_type0 rooms = response.getRooms();
-			int[] roomSize = rooms.getRoomsize();
-			System.out.println(roomSize);
-		} catch (RemoteException e) {
-			logError("", e);
-		}
-	}
-	
 	public List<ViteroBooking> getBookingByDate(Date start, Date end) {
 		try {
 			BookingServiceStub bookingWs = getBookingWebService();
 			BookingServiceStub.GetBookingListByDateRequest dateRequest = new BookingServiceStub.GetBookingListByDateRequest();
 			dateRequest.setStart(format(start));
 			dateRequest.setEnd(format(end));
+			dateRequest.setTimezone(viteroModule.getTimeZoneId());
 			BookingServiceStub.GetBookingListByDateResponse response = bookingWs.getBookingListByDate(dateRequest);
 			
 			BookingServiceStub.Bookinglist bookingList = response.getGetBookingListByDateResponse();
@@ -177,49 +162,11 @@ public class ViteroManager extends BasicManager {
 		return false;
 	}
 	
-	public List<ViteroBooking> getBookingInFutures(Identity identity) {
-		int userId = getVmsUserId(identity);
-		Booking[] bookings = getBookingInFutureByCustomerId(userId);
-		return convert(bookings);
-	}
-	
-	public List<ViteroBooking> getBookings() {
-		List<Property> properties = propertyManager.listProperties(null, null, null, VMS_CATEGORY, null);
-		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
-		for(Property property:properties) {
-			String bookingStr = property.getTextValue();
-			ViteroBooking booking = deserializeViteroBooking(bookingStr);
-			bookings.add(booking);
-		}
-		return bookings;
-	}
-	
-	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores) {
-		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
-		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
-		for(Property property:properties) {
-			String bookingStr = property.getTextValue();
-			ViteroBooking booking = deserializeViteroBooking(bookingStr);
-			bookings.add(booking);
-		}
-		return bookings;
-	}
-	
-	public String getURLToBooking(Identity identity, ViteroBooking booking) {
+	public String getURLToBooking(Identity identity, ViteroBooking booking)
+	throws VmsNotAvailableException {
 		String sessionCode = createSessionCode(identity, booking);
 		String url = getStartPoint(sessionCode);
 		return url;
-	}
-	
-	public String serializeViteroBooking(ViteroBooking booking) {
-		StringWriter writer = new StringWriter();
-		xStream.marshal(booking, new CompactWriter(writer));
-		writer.flush();
-		return writer.toString();
-	}
-	
-	public ViteroBooking deserializeViteroBooking(String booking) {
-		return (ViteroBooking)xStream.fromXML(booking);
 	}
 	
 	/**
@@ -228,7 +175,8 @@ public class ViteroManager extends BasicManager {
 	 * @param booking
 	 * @return
 	 */
-	protected String createSessionCode(Identity identity, ViteroBooking booking) {
+	protected String createSessionCode(Identity identity, ViteroBooking booking)
+	throws VmsNotAvailableException {
 		try {
 			int userId = getVmsUserId(identity);
 			SessionCodeServiceStub sessionCodeWs = this.getSessionCodeWebService();
@@ -237,6 +185,7 @@ public class ViteroManager extends BasicManager {
 			SessionCodeServiceStub.Sessioncode_type2 code = new SessionCodeServiceStub.Sessioncode_type2();
 			code.setBookingid(booking.getBookingId());
 			code.setUserid(userId);
+			code.setTimezone(viteroModule.getTimeZoneId());
 		
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
@@ -249,29 +198,25 @@ public class ViteroManager extends BasicManager {
 			Codetype myCode = response.getCreatePersonalBookingSessionCodeResponse();
 			return myCode.getCode();
 		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>303</errorCode>")) {
-				logError("Invalid attribute", f);
-			} else if(msg.contains("<errorCode>304</errorCode>")) {
-				logError("Invalid time zone", f);
-			} else if(msg.contains("<errorCode>53</errorCode>")) {
-				logError("User does not exist", f);
-			} else if(msg.contains("<errorCode>506</errorCode>") || msg.contains("<errorCode>509</errorCode>")) {
-				logError("Booking does not exist", f);
-			} else if(msg.contains("<errorCode>153</errorCode>")) {
-				logError("User not assigned to group!", f);
-			} else {
-				logError(msg, f);
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 53: logError("User does not exist.", f); break;
+				case 153: logError("User not assigned to group.", f); break;
+				case 303: logError("Invalid attribute.", f); break; 
+				case 304: logError("Invalid time zone.", f); break;
+				case 506:
+				case 509: logError("Booking does not exist.", f); break;
+				default: logAxisError("Cannot create session code.", f);
 			}
-			logError(msg, f);
 			return null;
 		} catch (RemoteException e) {
-			logError("", e);
+			logError("Cannot create session code.", e);
 			return null;
 		}
 	}
 	
-	public List<Identity> getIdentitiesInBooking(ViteroBooking booking) {
+	public List<Identity> getIdentitiesInBooking(ViteroBooking booking) 
+	throws VmsNotAvailableException {
 		Usertype[] vmsUsers = getVmsUsersByGroup(booking.getGroupId());
 		List<Identity> identities = new ArrayList<Identity>();
 		if(vmsUsers != null) {
@@ -286,7 +231,8 @@ public class ViteroManager extends BasicManager {
 		return identities;
 	}
 	
-	protected Usertype[] getVmsUsersByGroup(int groupId) {
+	protected Usertype[] getVmsUsersByGroup(int groupId)
+	throws VmsNotAvailableException {
 		try {
 			UserServiceStub userWs = getUserWebService();
 			UserServiceStub.GetUserListByGroupRequest listRequest = new UserServiceStub.GetUserListByGroupRequest();
@@ -296,16 +242,19 @@ public class ViteroManager extends BasicManager {
 			Usertype[] userTypes = userList.getUser();
 			return userTypes;
 		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			logError(msg, f);
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot get the list of users in group: " + groupId, f);
+			}
 			return null;
 		} catch (RemoteException e) {
-			logError("Cannot get the lsit of users in group: " + groupId, e);
+			logError("Cannot get the list of users in group: " + groupId, e);
 			return null;
 		}
 	}
 	
-	public int getVmsUserId(Identity identity) {
+	protected int getVmsUserId(Identity identity) 
+	throws VmsNotAvailableException {
 		int userId;
 		Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
 		if(authentication == null) {
@@ -319,7 +268,8 @@ public class ViteroManager extends BasicManager {
 		return userId;
 	}
 	
-	protected int createVmsUser(Identity identity) {
+	protected int createVmsUser(Identity identity)
+	throws VmsNotAvailableException {
 		try {
 			UserServiceStub userWs = getUserWebService();
 			UserServiceStub.CreateUserRequest createRequest = new UserServiceStub.CreateUserRequest();
@@ -340,6 +290,7 @@ public class ViteroManager extends BasicManager {
 			//optional
 			user.setLocale("en");
 			user.setPcstate("NOT_TESTED");
+			user.setTimezone(viteroModule.getTimeZoneId());
 			
 			String street = olatUser.getProperty(UserConstants.STREET, null);
 			if(StringHelper.containsNonWhitespace(street)) {
@@ -370,15 +321,10 @@ public class ViteroManager extends BasicManager {
 			if(StringHelper.containsNonWhitespace(phoneOffice)) {
 				user.setPhone(phoneOffice);
 			}
-			
 			/*
 			user.setTitle("");
 			user.setCompany("");
-			user.setTimezone("");
 			*/
-			TimeZone.getDefault().getID();
-			
-			
 			user.setTechnicalnote("Generated by OpenOLAT");
 			
 			createRequest.setUser(user);
@@ -386,17 +332,22 @@ public class ViteroManager extends BasicManager {
 			Userid userId = response.getCreateUserResponse();
 			
 			storePortrait(identity, userId.getUserid());
-
 			return userId.getUserid();
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot create vms user.", f);
+			}
+			return -1;
 		} catch (RemoteException e) {
 			logError("Cannot create vms user.", e);
 			return -1;
 		}
 	}
 	
-	protected boolean storePortrait(Identity identity, int userId) {
+	protected boolean storePortrait(Identity identity, int userId)
+	throws VmsNotAvailableException {
 		try {
-
 			File portraitDir = DisplayPortraitManager.getInstance().getPortraitDir(identity);
 			File portrait = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
 			if(portrait.exists()) {
@@ -417,13 +368,206 @@ public class ViteroManager extends BasicManager {
 				return true;
 			}
 			return false;
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot store the portrait of " + userId, f);
+			}
+			return false;
 		} catch (RemoteException e) {
-			logError("", e);
+			logError("Cannot store the portrait of " + userId, e);
 			return false;
 		}
 	}
 	
-	public ViteroBooking createBooking() {
+	public List<Integer> getLicencedRoomSizes() 
+	throws VmsNotAvailableException {
+		List<Integer> roomSizes = new ArrayList<Integer>();
+		try {
+			LicenceServiceStub licenceWs = getLicenceWebService();
+			LicenceServiceStub.GetModulesForCustomerRequest licenceRequest = new LicenceServiceStub.GetModulesForCustomerRequest();
+			licenceRequest.setCustomerid(viteroModule.getCustomerId());
+			
+			LicenceServiceStub.GetModulesForCustomerResponse response = licenceWs.getModulesForCustomer(licenceRequest);
+			LicenceServiceStub.Modulestype modules = response.getGetModulesForCustomerResponse();
+			LicenceServiceStub.Modules_type0 modulesType = modules.getModules();
+			for(LicenceServiceStub.Module_type0 module:modulesType.getModule()) {
+				if("ROOM".equals(module.getType())) {
+					Integer roomSize = module.getRoomsize();
+					if(!roomSizes.contains(roomSize)) {
+						roomSizes.add(roomSize);
+					}
+				}
+			}
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 303: logError("ids <=0 or invalid attributs", f); break;
+				default: logAxisError("Cannot get licence for customer: " + viteroModule.getCustomerId(), f);
+			}
+		} catch (RemoteException e) {
+			logError("Cannot get licence for customer: " + viteroModule.getCustomerId(), e);
+		}
+		return roomSizes;
+	}
+	
+	public List<Integer> getLicenceForAvailableRooms(Date begin, Date end) 
+	throws VmsNotAvailableException {
+		List<Integer> roomSizes = new ArrayList<Integer>();
+		try {
+			LicenceServiceStub licenceWs = getLicenceWebService();
+			LicenceServiceStub.GetBookableRoomsForGroupRequest request = new LicenceServiceStub.GetBookableRoomsForGroupRequest();
+			LicenceServiceStub.Grouprequesttype groupRequest = new LicenceServiceStub.Grouprequesttype();
+			groupRequest.setStart(format(begin));
+			groupRequest.setEnd(format(end));
+			
+			request.setGetBookableRoomsForGroupRequest(groupRequest);
+
+			LicenceServiceStub.GetBookableRoomsForGroupResponse response = licenceWs.getBookableRoomsForGroup(request);
+			Rooms_type0 rooms = response.getRooms();
+			for(int roomSize : rooms.getRoomsize()) {
+				if(!roomSizes.contains(roomSize)) {
+					roomSizes.add(roomSize);
+				}
+			}
+			
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot get licence for available room by dates.", f);
+			}
+		} catch (RemoteException e) {
+			logError("Cannot get licence for available room by dates.", e);
+		}
+		return roomSizes;
+	}
+	
+	public int createGroup()
+	throws VmsNotAvailableException {
+		try {
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.CreateGroupRequest createRequest = new GroupServiceStub.CreateGroupRequest();
+			GroupServiceStub.Groupnamecustomerid groupInfos = new GroupServiceStub.Groupnamecustomerid();
+			groupInfos.setGroupname("OLAT-" + UUID.randomUUID().toString());
+			groupInfos.setCustomerid(viteroModule.getCustomerId());
+			createRequest.setGroup(groupInfos);
+			
+			GroupServiceStub.CreateGroupResponse response = groupWs.createGroup(createRequest);
+			GroupServiceStub.Groupid groupId = response.getCreateGroupResponse();
+			
+			return groupId.getGroupid();
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot create a group",f);
+			}
+			return -1;
+		} catch (RemoteException e) {
+			logError("Cannot create a group.", e);
+			return -1;
+		}
+	}
+	
+	public boolean deleteGroup(ViteroBooking vBooking)
+	throws VmsNotAvailableException {
+		try {
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.DeleteGroupRequest deleteRequest = new GroupServiceStub.DeleteGroupRequest();
+			GroupServiceStub.Groupid groupId = new GroupServiceStub.Groupid();
+			groupId.setGroupid(vBooking.getGroupId());
+			deleteRequest.setDeleteGroupRequest(groupId);
+			groupWs.deleteGroup(deleteRequest);
+			return true;
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 151: logError("Group doesn't exist!", f); break;
+				case 303: logError("Group id <= 0!", f);
+				default: logAxisError("Cannot delete group: " + vBooking.getGroupId(), f);
+			}
+			return false;
+		} catch (RemoteException e) {
+			logError("Cannot delete group: " + vBooking.getGroupId(), e);
+			return false;
+		}
+	}
+	
+	public boolean addToRoom(ViteroBooking booking, Identity identity, GroupRole role)
+	throws VmsNotAvailableException {
+		try {
+			int userId = getVmsUserId(identity);
+			if(userId < 0) {
+				return false;
+			}
+			
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.AddUserToGroupRequest addRequest = new GroupServiceStub.AddUserToGroupRequest();
+			GroupServiceStub.Groupiduserid groupuserId = new GroupServiceStub.Groupiduserid();
+			groupuserId.setGroupid(booking.getGroupId());
+			groupuserId.setUserid(userId);
+
+			addRequest.setAddUserToGroupRequest(groupuserId);
+			groupWs.addUserToGroup(addRequest);
+			
+			if(role != null) {
+				groupWs = getGroupWebService();
+				GroupServiceStub.ChangeGroupRoleRequest roleRequest = new GroupServiceStub.ChangeGroupRoleRequest();
+				roleRequest.setGroupid(booking.getGroupId());
+				roleRequest.setUserid(userId);
+				roleRequest.setRole(role.getVmsValue());
+				groupWs.changeGroupRole(roleRequest);
+			}
+			
+			return true;
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 53: logError("The user doesn ́t exist!", f); break;
+				case 103: logError("The user is not attached to the customer (to which this group belongs)", f); break;
+				case 151: logError("The group doesn ́t exist", f); break;
+				case 303: logError("An id <= 0", f); break;
+				default: logAxisError("Cannot add an user to a group", f);
+			}
+			return false;
+		} catch (RemoteException e) {
+			logError("Cannot add an user to a group", e);
+			return false;
+		}
+	}
+	
+	public boolean removeFromRoom(ViteroBooking booking, Identity identity)
+	throws VmsNotAvailableException {
+		try {
+			int userId = getVmsUserId(identity);
+			if(userId < 0) {
+				return true;//nothing to remove
+			}
+			
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.RemoveUserFromGroupRequest removeRequest = new GroupServiceStub.RemoveUserFromGroupRequest();
+			GroupServiceStub.Groupiduserid groupuserId = new GroupServiceStub.Groupiduserid();
+			groupuserId.setGroupid(booking.getGroupId());
+			groupuserId.setUserid(userId);
+			removeRequest.setRemoveUserFromGroupRequest(groupuserId);
+			groupWs.removeUserFromGroup(removeRequest);
+			return true;
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 53: logError("The user doesn ́t exist!", f); break;
+				case 151: logError("The group doesn ́t exist", f); break;
+				case 303: logError("An id <= 0", f); break;
+				default: logAxisError("Cannot remove an user from a group", f);
+			}
+			return false;
+		} catch (RemoteException e) {
+			logError("Cannot remove an user from a group", e);
+			return false;
+		}
+	}
+	
+	public ViteroBooking createBooking()
+	throws VmsNotAvailableException {
 		ViteroBooking booking = new ViteroBooking();
 		
 		booking.setBookingId(-1);
@@ -457,145 +601,9 @@ public class ViteroManager extends BasicManager {
 		}
 		return booking;
 	}
-	
-	public List<Integer> getLicencedRoomSizes() {
-		List<Integer> roomSizes = new ArrayList<Integer>();
-		try {
-			LicenceServiceStub licenceWs = getLicenceWebService();
-			LicenceServiceStub.GetModulesForCustomerRequest licenceRequest = new LicenceServiceStub.GetModulesForCustomerRequest();
-			licenceRequest.setCustomerid(viteroModule.getCustomerId());
-			
-			LicenceServiceStub.GetModulesForCustomerResponse response = licenceWs.getModulesForCustomer(licenceRequest);
-			LicenceServiceStub.Modulestype modules = response.getGetModulesForCustomerResponse();
-			LicenceServiceStub.Modules_type0 modulesType = modules.getModules();
-			for(LicenceServiceStub.Module_type0 module:modulesType.getModule()) {
-				if("ROOM".equals(module.getType())) {
-					Integer roomSize = module.getRoomsize();
-					if(!roomSizes.contains(roomSize)) {
-						roomSizes.add(roomSize);
-					}
-				}
-			}
-		} catch (RemoteException e) {
-			logError("Cannot get licence for customer: " + viteroModule.getCustomerId(), e);
-		}
-		return roomSizes;
-	}
-	
-	public int createGroup() {
-		try {
-			GroupServiceStub groupWs = getGroupWebService();
-			GroupServiceStub.CreateGroupRequest createRequest = new GroupServiceStub.CreateGroupRequest();
-			GroupServiceStub.Groupnamecustomerid groupInfos = new GroupServiceStub.Groupnamecustomerid();
-			groupInfos.setGroupname("OLAT-" + UUID.randomUUID().toString());
-			groupInfos.setCustomerid(viteroModule.getCustomerId());
-			createRequest.setGroup(groupInfos);
-			
-			GroupServiceStub.CreateGroupResponse response = groupWs.createGroup(createRequest);
-			GroupServiceStub.Groupid groupId = response.getCreateGroupResponse();
-			
-			return groupId.getGroupid();
-		} catch (RemoteException e) {
-			logError("Cannot create a group.", e);
-			return -1;
-		}
-	}
-	
-	public boolean addToRoom(ViteroBooking booking, Identity identity, GroupRole role) {
-		try {
-			int userId = getVmsUserId(identity);
-			if(userId < 0) {
-				return false;
-			}
-			
-			GroupServiceStub groupWs = getGroupWebService();
-			GroupServiceStub.AddUserToGroupRequest addRequest = new GroupServiceStub.AddUserToGroupRequest();
-			GroupServiceStub.Groupiduserid groupuserId = new GroupServiceStub.Groupiduserid();
-			groupuserId.setGroupid(booking.getGroupId());
-			groupuserId.setUserid(userId);
 
-			addRequest.setAddUserToGroupRequest(groupuserId);
-			groupWs.addUserToGroup(addRequest);
-			
-			if(role != null) {
-				groupWs = getGroupWebService();
-				GroupServiceStub.ChangeGroupRoleRequest roleRequest = new GroupServiceStub.ChangeGroupRoleRequest();
-				roleRequest.setGroupid(booking.getGroupId());
-				roleRequest.setUserid(userId);
-				roleRequest.setRole(role.getVmsValue());
-				groupWs.changeGroupRole(roleRequest);
-			}
-			
-			return true;
-		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>53</errorCode>")) {
-				logError("The user doesn ́t exist!", f);
-			} else if(msg.contains("<errorCode>103</errorCode>")) {
-				logError("The user is not attached to the customer (to which this group belongs)", f);
-			} else if(msg.contains("<errorCode>151</errorCode>")) {
-				logError("The group doesn ́t exist", f);
-			}  else if(msg.contains("<errorCode>303</errorCode>")) {
-				logError("An id <= 0", f);
-			} else {
-				logError(msg, f);
-			}
-			return false;
-		} catch (RemoteException e) {
-			logError("Cannot add an user to a group", e);
-			return false;
-		}
-	}
-	
-	public boolean removeFromRoom(ViteroBooking booking, Identity identity) {
-		try {
-			int userId = getVmsUserId(identity);
-			if(userId < 0) {
-				return true;//nothing to remove
-			}
-			
-			GroupServiceStub groupWs = getGroupWebService();
-			GroupServiceStub.RemoveUserFromGroupRequest removeRequest = new GroupServiceStub.RemoveUserFromGroupRequest();
-			GroupServiceStub.Groupiduserid groupuserId = new GroupServiceStub.Groupiduserid();
-			groupuserId.setGroupid(booking.getGroupId());
-			groupuserId.setUserid(userId);
-			removeRequest.setRemoveUserFromGroupRequest(groupuserId);
-			groupWs.removeUserFromGroup(removeRequest);
-			return true;
-		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>53</errorCode>")) {
-				logError("The user doesn ́t exist!", f);
-			} else if(msg.contains("<errorCode>151</errorCode>")) {
-				logError("The group doesn ́t exist", f);
-			}  else if(msg.contains("<errorCode>303</errorCode>")) {
-				logError("An id <= 0", f);
-			} else {
-				logError(msg, f);
-			}
-			return false;
-		} catch (RemoteException e) {
-			logError("Cannot add an user to a group", e);
-			return false;
-		}
-	}
-	
-	public ViteroBooking updateBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking) {
-		Bookingtype bookingType = getBookingById(vBooking.getBookingId());
-		if(bookingType == null) {
-			logInfo("Booking doesn't exist: " + vBooking.getBookingId());
-			return null;
-		}
-		
-		Booking booking = bookingType.getBooking();
-		//set the vms values
-		update(vBooking, booking);
-		//update the property
-		updateProperty(group, ores, vBooking);
-		return vBooking;
-	}
-
-	public boolean createBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking) {
+	public boolean createBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking)
+	throws VmsNotAvailableException {
 		Bookingtype booking = getBookingById(vBooking.getBookingId());
 		if(booking != null) {
 			logInfo("Booking already exists: " + vBooking.getBookingId());
@@ -637,10 +645,8 @@ public class ViteroManager extends BasicManager {
 			newBooking.setPcstateokrequired(false);
 			newBooking.setRepetitionpattern("once");
 			newBooking.setRepetitionenddate("");
-			
 			*/
-			//newBooking.setTimezone("Africa/Ceuta");
-			newBooking.setTimezone("Africa/Ceuta");
+			newBooking.setTimezone(viteroModule.getTimeZoneId());
 			
 			createRequest.setBooking(newBooking);
 
@@ -656,30 +662,48 @@ public class ViteroManager extends BasicManager {
 			}
 			return false;
 		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>502</errorCode>")) {
-				logError("Invalid module selection!", f);
-			} else if(msg.contains("<errorCode>505</errorCode>")) {
-				logError("Booking in the past!", f);
-			} else if(msg.contains("<errorCode>505</errorCode>")) {
-				logError("Booking in the past!", f);
-			} else if(msg.contains("<errorCode>501</errorCode>")) {
-				logError("Booking collision!", f);
-			} else if(msg.contains("<errorCode>703</errorCode>")) {
-				logError("License/customer expired!", f);
-			} else if(msg.contains("<errorCode>304</errorCode>")) {
-				logError("Invalid time zone!", f);
-			} else {
-				logError(msg, f);
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 304: logError("Invalid time zone!", f); break;
+				case 501: logError("Booking collision!", f); break;
+				case 502: logError("Invalid module selection!", f); break;
+				case 505: logError("Booking in the past!", f); break;
+				case 703: logError("License/customer expired!", f); break;
+				default: logAxisError("Cannot create a booking.", f);
 			}
 			return false;
 		} catch (RemoteException e) {
-			logError("", e);
+			logError("Cannot create a booking.", e);
 			return false;
 		}
 	}
 	
-	public boolean deleteBooking(ViteroBooking vBooking) {
+	/**
+	 * There is not update on vms. We can only update some OLAT specific options.
+	 * @param group
+	 * @param ores
+	 * @param vBooking
+	 * @return
+	 * @throws VmsNotAvailableException
+	 */
+	public ViteroBooking updateBooking(BusinessGroup group, OLATResourceable ores, ViteroBooking vBooking)
+	throws VmsNotAvailableException {
+		Bookingtype bookingType = getBookingById(vBooking.getBookingId());
+		if(bookingType == null) {
+			logInfo("Booking doesn't exist: " + vBooking.getBookingId());
+			return null;
+		}
+		
+		Booking booking = bookingType.getBooking();
+		//set the vms values
+		update(vBooking, booking);
+		//update the property
+		updateProperty(group, ores, vBooking);
+		return vBooking;
+	}
+	
+	public boolean deleteBooking(ViteroBooking vBooking)
+	throws VmsNotAvailableException {
 		try {
 			BookingServiceStub bookingWs = getBookingWebService();
 			BookingServiceStub.DeleteBookingRequest deleteRequest = new BookingServiceStub.DeleteBookingRequest();
@@ -691,153 +715,116 @@ public class ViteroManager extends BasicManager {
 			deleteProperty(vBooking);
 			return state != null;
 		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>509</errorCode>") || msg.contains("<errorCode>506</errorCode>")) {
-				//why is vms sending this error if it deletes the room???
-				deleteGroup(vBooking);
-				deleteProperty(vBooking);
-			} else {
-				logError(f.getFaultDetailElement().toString(), f);
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 506:
+				case 509: {
+					deleteGroup(vBooking);
+					deleteProperty(vBooking);
+					break;
+				}
+				default: {
+					logAxisError("Cannot delete a booking.", f);
+				}
 			}
 			return false;
 		} catch (RemoteException e) {
-			logError("", e);
+			logError("Cannot delete a booking.", e);
 			return false;
 		}
 	}
 	
-	public boolean deleteGroup(ViteroBooking vBooking) {
+	public void deleteAll(BusinessGroup group, OLATResourceable ores) {
 		try {
-			GroupServiceStub groupWs = getGroupWebService();
-			GroupServiceStub.DeleteGroupRequest deleteRequest = new GroupServiceStub.DeleteGroupRequest();
-			GroupServiceStub.Groupid groupId = new GroupServiceStub.Groupid();
-			groupId.setGroupid(vBooking.getGroupId());
-			deleteRequest.setDeleteGroupRequest(groupId);
-			groupWs.deleteGroup(deleteRequest);
-			return true;
-		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>151</errorCode>")) {
-				logError("Group doesn't exist!", f);
-			} else if(msg.contains("<errorCode>303</errorCode>")) {
-				logError("Group id <= 0!", f);
-			} else {
-				logError(msg, f);
+			List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
+			for(Property property:properties) {
+				String bookingStr = property.getTextValue();
+				ViteroBooking booking = deserializeViteroBooking(bookingStr);
+				deleteBooking(booking);
 			}
-			return false;
-		} catch (RemoteException e) {
-			logError("Cannot delete group: " + vBooking.getGroupId(), e);
-			return false;
+		} catch (VmsNotAvailableException e) {
+			logError("", e);
+			markAsZombie(group, ores);
 		}
-		
 	}
 	
-	public void deleteBookings(BusinessGroup group, OLATResourceable ores) {
-		
+	private final void markAsZombie(BusinessGroup group, OLATResourceable ores) {
+		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
+		for(Property property:properties) {
+			property.setName(VMS_CATEGORY_ZOMBIE);
+			propertyManager.updateProperty(property);
+		}
 	}
 	
-	protected void deleteProperty(ViteroBooking vBooking) {
-		String bookingId = Integer.toString(vBooking.getBookingId());
-		propertyManager.deleteProperties(null, null, null, VMS_CATEGORY, bookingId);
+	public void slayZombies() {
+		List<Property> properties = propertyManager.listProperties(null, null, null, VMS_CATEGORY_ZOMBIE, null);
+		for(Property property:properties) {
+			try {
+				String bookingStr = property.getTextValue();
+				ViteroBooking booking = deserializeViteroBooking(bookingStr);
+				deleteBooking(booking);
+			} catch (VmsNotAvailableException e) {
+				//try later
+				logDebug("Cannot clean-up vitero room, vms not available");
+			} catch (Exception e) {
+				logError("", e);
+			}
+		}
 	}
 	
-	public String getTimeZoneId() {
-		return "Africa/Ceuta";
+	public List<ViteroBooking> getBookingInFutures(Identity identity)
+	throws VmsNotAvailableException {
+		int userId = getVmsUserId(identity);
+		Booking[] bookings = getBookingInFutureByCustomerId(userId);
+		return convert(bookings);
 	}
 	
-	protected Booking[] getBookingInFutureByCustomerId(int userId) {
+	/**
+	 * Return the 
+	 * @param group The group (optional)
+	 * @param ores The OLAT resourceable (of the course) (optional)
+	 * @return
+	 */
+	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores) {
+		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
+		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
+		for(Property property:properties) {
+			String bookingStr = property.getTextValue();
+			ViteroBooking booking = deserializeViteroBooking(bookingStr);
+			bookings.add(booking);
+		}
+		return bookings;
+	}
+	
+	protected Booking[] getBookingInFutureByCustomerId(int userId)
+	throws VmsNotAvailableException {
 		try {
 			BookingServiceStub bookingWs = getBookingWebService();
 			BookingServiceStub.GetBookingListByUserInFutureRequest request = new BookingServiceStub.GetBookingListByUserInFutureRequest();
 			request.setUserid(userId);
-			request.setTimezone(getTimeZoneId());
+			request.setTimezone(viteroModule.getTimeZoneId());
 			
 			BookingServiceStub.GetBookingListByUserInFutureResponse response = bookingWs.getBookingListByUserInFuture(request);
 			Bookinglist bookingList = response.getGetBookingListByUserInFutureResponse();
 			
 			return bookingList.getBooking();
 		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			if(msg.contains("<errorCode>304</errorCode>")) {
-				logError("Invalid time zone!", f);
-			} else if(msg.contains("<errorCode>53</errorCode>")) {
-				logError("The user does not exist!", f);
-			} else if(msg.contains("<errorCode>303</errorCode>")) {
-				logError("ids <= 0!", f);
-			} else {
-				logError(msg, f);
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 53: logError("The user does not exist!", f); break;
+				case 303: logError("ids <= 0!", f); break;
+				case 304: logError("Invalid time zone!", f); break;
+				default: logAxisError("Cannot get booking in future for custom: " + userId, f);
 			}
-			logError(msg, f);
 			return null;
 		} catch (RemoteException e) {
-			logError("", e);
+			logError("Cannot get booking in future for custom: " + userId, e);
 			return null;
 		}
 	}
-	
-	protected List<ViteroBooking> convert(Booking[] bookings) {
-		List<ViteroBooking> viteroBookings = new ArrayList<ViteroBooking>();
-		
-		if(bookings != null && bookings.length > 0) {
-			for(Booking b:bookings) {
-				viteroBookings.add(convert(b));
-			}
-		}
 
-		return viteroBookings;
-	}
-	
-	protected ViteroBooking convert(Booking booking) {
-		ViteroBooking vb = new ViteroBooking();
-		return update(vb, booking);
-	}
-	
-	protected ViteroBooking update(ViteroBooking vb, Booking booking) {
-		vb.setBookingId(booking.getBookingid());
-		vb.setGroupId(booking.getGroupid());
-		vb.setRoomSize(booking.getRoomsize());
-		vb.setStart(parse(booking.getStart()));
-		vb.setStartBuffer(booking.getEndbuffer());
-		vb.setEnd(parse(booking.getEnd()));
-		vb.setEndBuffer(booking.getStartbuffer());
-		return vb;
-	}
-	
-	protected Property getProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
-		String propertyName = Integer.toString(booking.getBookingId());
-		return propertyManager.findProperty(null, group, courseResource, VMS_CATEGORY, propertyName);
-	}
-	
-	protected Property getOrCreateProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
-		Property property = getProperty(group, courseResource, booking);
-		if(property == null) {
-			property = createProperty(group, courseResource, booking);
-			propertyManager.saveProperty(property);
-		}
-		return property;
-	}
-	
-	protected Property updateProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
-		Property property = getProperty(group, courseResource, booking);
-		if(property == null) {
-			property = createProperty(group, courseResource, booking);
-			propertyManager.saveProperty(property);
-		} else {
-			String serialized = serializeViteroBooking(booking);
-			property.setTextValue(serialized);
-			propertyManager.updateProperty(property);
-		}
-		return property;
-	}
-	
-	protected Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
-		String serialized = serializeViteroBooking(booking);
-		String bookingId = Integer.toString(booking.getBookingId());
-		Long groupId = new Long(booking.getGroupId());
-		return propertyManager.createPropertyInstance(null, group, courseResource, VMS_CATEGORY, bookingId, null, groupId, null, serialized);
-	}
-	
-	protected Bookingtype getBookingById(int id) {
+	protected Bookingtype getBookingById(int id)
+	throws VmsNotAvailableException {
 		if(id < 0) return null;
 		
 		try {
@@ -849,13 +836,31 @@ public class ViteroManager extends BasicManager {
 			BookingServiceStub.GetBookingByIdResponse response = bookingWs.getBookingById(bookingByIdRequest);
 			Bookingtype booking = response.getGetBookingByIdResponse();
 			return booking;
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				case 303: logError("ids <= 0", f); break;
+				case 506: logError("The booking does not exist", f); break;
+				default: logAxisError("Cannot get booking by id: " + id, f);
+			}
+			return null;
 		} catch (RemoteException e) {
 			logError("Cannot get booking by id: " + id, e);
 			return null;
 		}
 	}
 	
-	public boolean checkConnection(String url, String login, String password, int customerId) {
+	public boolean checkConnection() {
+		try {
+			return checkConnection(viteroModule.getVmsURI().toString(), viteroModule.getAdminLogin(), 
+					viteroModule.getAdminPassword(), viteroModule.getCustomerId());
+		} catch (VmsNotAvailableException e) {
+			return false;
+		}
+	}
+	
+	public boolean checkConnection(String url, String login, String password, int customerId)
+	throws VmsNotAvailableException {
 		try {
 			CustomerServiceStub customerWs = new CustomerServiceStub(url + "/services");
 			SecurityHeader.addAdminSecurityHeader(login, password, customerWs);
@@ -871,85 +876,179 @@ public class ViteroManager extends BasicManager {
 			CustomerServiceStub.Customertype customerType = customer.getCustomer();
 			if(customerType == null) return false;
 			return customerType.getId() > -1;
+		} catch(AxisFault f) {
+			handleAxisFault(f);
+			return false;
 		} catch (Exception e) {
 			logWarn("Error checking connection", e);
 			return false;
 		}
 	}
 	
-	protected BookingServiceStub getBookingWebService() {
-		try {
-			BookingServiceStub bookingWs = new BookingServiceStub(getVmsEndPoint());
-			SecurityHeader.addAdminSecurityHeader(viteroModule, bookingWs);
-			return bookingWs;
-		} catch (AxisFault e) {
-			logError("Cannot create booking ws.", e);
-			return null;
+	//Utilities
+	private final int handleAxisFault(final AxisFault f) 
+	throws VmsNotAvailableException {
+		if(f.getFaultDetailElement() != null) {
+			String msg = f.getFaultDetailElement().toString();
+			int beginIndex = msg.indexOf("<errorCode>");
+			int endIndex = msg.indexOf("</errorCode>");
+			String errorCode = msg.substring(beginIndex + "<errorCode>".length(), endIndex);
+			int code = Integer.parseInt(errorCode);
+			return code;
+		} else if (f.getCause() instanceof ConnectTimeoutException) {
+			throw new VmsNotAvailableException(f);
 		}
+		return -1;
 	}
 	
-	protected LicenceServiceStub getLicenceWebService() {
-		try {
-			LicenceServiceStub licenceWs = new LicenceServiceStub(getVmsEndPoint());
-			SecurityHeader.addAdminSecurityHeader(viteroModule, licenceWs);
-			return licenceWs;
-		} catch (AxisFault e) {
-			logError("Cannot create licence ws.", e);
-			return null;
+	private void logAxisError(String message, AxisFault f) {
+		StringBuilder sb = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(message)) {
+			sb.append(message);
 		}
+		
+		if(f.getFaultDetailElement() != null) {
+			if(sb.length() > 0) sb.append(" -> ");
+			sb.append(f.getFaultDetailElement().toString());
+		}
+		
+		if(StringHelper.containsNonWhitespace(f.getMessage())) {
+			if(sb.length() > 0) sb.append(" -> ");
+			sb.append(f.getMessage());
+		}
+
+		logError(sb.toString(), f);
 	}
 	
-	protected GroupServiceStub getGroupWebService() {
-		try {
-			GroupServiceStub groupWs = new GroupServiceStub(getVmsEndPoint());
-			SecurityHeader.addAdminSecurityHeader(viteroModule, groupWs);
-			return groupWs;
-		} catch (AxisFault e) {
-			logError("Cannot create group ws.", e);
-			return null;
+	private final List<ViteroBooking> convert(Booking[] bookings) {
+		List<ViteroBooking> viteroBookings = new ArrayList<ViteroBooking>();
+		
+		if(bookings != null && bookings.length > 0) {
+			for(Booking b:bookings) {
+				viteroBookings.add(convert(b));
+			}
 		}
+
+		return viteroBookings;
 	}
 	
-	protected UserServiceStub getUserWebService() {
-		try {
-			UserServiceStub userWs = new UserServiceStub(getVmsEndPoint());
-			SecurityHeader.addAdminSecurityHeader(viteroModule, userWs);
-			return userWs;
-		} catch (AxisFault e) {
-			logError("Cannot create user ws.", e);
-			return null;
-		}
+	private final ViteroBooking convert(Booking booking) {
+		ViteroBooking vb = new ViteroBooking();
+		return update(vb, booking);
 	}
 	
-	protected MtomServiceStub getMtomWebService() {
-		try {
-			MtomServiceStub mtomWs = new MtomServiceStub(getVmsEndPoint());
-			SecurityHeader.addAdminSecurityHeader(viteroModule, mtomWs);
-			return mtomWs;
-		} catch (AxisFault e) {
-			logError("Cannot create user ws.", e);
-			return null;
-		}
+	private final ViteroBooking update(ViteroBooking vb, Booking booking) {
+		vb.setBookingId(booking.getBookingid());
+		vb.setGroupId(booking.getGroupid());
+		vb.setRoomSize(booking.getRoomsize());
+		vb.setStart(parse(booking.getStart()));
+		vb.setStartBuffer(booking.getEndbuffer());
+		vb.setEnd(parse(booking.getEnd()));
+		vb.setEndBuffer(booking.getStartbuffer());
+		return vb;
 	}
 	
-	protected SessionCodeServiceStub getSessionCodeWebService() {
-		try {
-			SessionCodeServiceStub sessionCodeWs = new SessionCodeServiceStub(getVmsEndPoint());
-			SecurityHeader.addAdminSecurityHeader(viteroModule, sessionCodeWs);
-			return sessionCodeWs;
-		} catch (AxisFault e) {
-			logError("Cannot create user ws.", e);
-			return null;
+	//Properties
+	private final Property getProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
+		String propertyName = Integer.toString(booking.getBookingId());
+		return propertyManager.findProperty(null, group, courseResource, VMS_CATEGORY, propertyName);
+	}
+	
+	private final Property getOrCreateProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
+		Property property = getProperty(group, courseResource, booking);
+		if(property == null) {
+			property = createProperty(group, courseResource, booking);
+			propertyManager.saveProperty(property);
 		}
+		return property;
+	}
+	
+	private final Property updateProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
+		Property property = getProperty(group, courseResource, booking);
+		if(property == null) {
+			property = createProperty(group, courseResource, booking);
+			propertyManager.saveProperty(property);
+		} else {
+			String serialized = serializeViteroBooking(booking);
+			property.setTextValue(serialized);
+			propertyManager.updateProperty(property);
+		}
+		return property;
+	}
+	
+	private final Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, ViteroBooking booking) {
+		String serialized = serializeViteroBooking(booking);
+		String bookingId = Integer.toString(booking.getBookingId());
+		Long groupId = new Long(booking.getGroupId());
+		return propertyManager.createPropertyInstance(null, group, courseResource, VMS_CATEGORY, bookingId, null, groupId, null, serialized);
+	}
+	
+	private final void deleteProperty(ViteroBooking vBooking) {
+		String bookingId = Integer.toString(vBooking.getBookingId());
+		propertyManager.deleteProperties(null, null, null, VMS_CATEGORY, bookingId);
+	}
+	
+	private final String serializeViteroBooking(ViteroBooking booking) {
+		StringWriter writer = new StringWriter();
+		xStream.marshal(booking, new CompactWriter(writer));
+		writer.flush();
+		return writer.toString();
+	}
+	
+	private final ViteroBooking deserializeViteroBooking(String booking) {
+		return (ViteroBooking)xStream.fromXML(booking);
+	}
+	
+	//Factories for service stubs
+	private final  BookingServiceStub getBookingWebService() 
+	throws AxisFault {
+		BookingServiceStub bookingWs = new BookingServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, bookingWs);
+		return bookingWs;
+	}
+	
+	private final LicenceServiceStub getLicenceWebService()
+	throws AxisFault {
+		LicenceServiceStub licenceWs = new LicenceServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, licenceWs);
+		return licenceWs;
+	}
+	
+	private final GroupServiceStub getGroupWebService()
+	throws AxisFault {
+		GroupServiceStub groupWs = new GroupServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, groupWs);
+		return groupWs;
+	}
+	
+	private final UserServiceStub getUserWebService()
+	throws AxisFault {
+		UserServiceStub userWs = new UserServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, userWs);
+		return userWs;
+	}
+	
+	private final MtomServiceStub getMtomWebService() 
+	throws AxisFault {
+		MtomServiceStub mtomWs = new MtomServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, mtomWs);
+		return mtomWs;
+	}
+	
+	private final SessionCodeServiceStub getSessionCodeWebService()
+	throws AxisFault {
+		SessionCodeServiceStub sessionCodeWs = new SessionCodeServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, sessionCodeWs);
+		return sessionCodeWs;
 	}
 
-	protected String getVmsEndPoint() {
+	private final String getVmsEndPoint() {
 	    UriBuilder builder = UriBuilder.fromUri(viteroModule.getVmsURI());
 	    builder.path("services");
 	    return builder.build().toString();
 	}
 	
-	protected String getStartPoint(String sessionCode) {
+	private final String getStartPoint(String sessionCode) {
 		UriBuilder builder = UriBuilder.fromUri(viteroModule.getVmsURI() );
 	    builder.path("start.html");
 	    if(StringHelper.containsNonWhitespace(sessionCode)) {
@@ -958,11 +1057,11 @@ public class ViteroManager extends BasicManager {
 	    return builder.build().toString();
 	}
 	
-	protected synchronized String format(Date date) {
+	private final synchronized String format(Date date) {
 		return dateFormat.format(date);
 	}
 	
-	protected synchronized Date parse(String dateString) {
+	private final synchronized Date parse(String dateString) {
 		try {
 			return dateFormat.parse(dateString);
 		} catch (ParseException e) {

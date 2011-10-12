@@ -73,7 +73,7 @@
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-				<!-- <ref local="adobeCleanupJob" /> -->
+				<!--  <ref local="adobeCleanupJob" /> -->
 			</list>
 		</property>
 	</bean>

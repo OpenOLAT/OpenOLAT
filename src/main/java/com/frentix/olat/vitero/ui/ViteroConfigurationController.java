@@ -22,6 +22,7 @@ package com.frentix.olat.vitero.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.TimeZone;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,7 +41,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 
 import com.frentix.olat.vitero.ViteroModule;
+import com.frentix.olat.vitero.ViteroTimezoneIDs;
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 
 /**
  * 
@@ -61,8 +65,9 @@ public class ViteroConfigurationController extends FormBasicController {
 	private TextElement passwordEl;
 	private TextElement customerIdEl;
 	private MultipleSelectionElement viteroEnabled;
+	private SingleSelection timeZoneEl;
 
-	private static String[] enabledKeys = new String[]{"on"};
+	private static final String[] enabledKeys = new String[]{"on"};
 	private String[] enabledValues;
 	
 	public ViteroConfigurationController(UserRequest ureq, WindowControl wControl, ViteroModule viteroModule) {
@@ -91,6 +96,22 @@ public class ViteroConfigurationController extends FormBasicController {
 			
 			//spacer
 			uifactory.addSpacerElement("Spacer", moduleFlc, false);
+			
+			String[] timeZoneKeys = ViteroTimezoneIDs.TIMEZONE_IDS;
+			String[] timeZoneValues = new String[timeZoneKeys.length];
+			int i=0;
+			for(String timeZoneKey:timeZoneKeys) {
+				TimeZone timezone = TimeZone.getTimeZone(timeZoneKey);
+				if(timezone == null) {
+					timeZoneValues[i++] = timeZoneKey;
+				} else {
+					String value = timezone.getDisplayName(false, TimeZone.LONG);
+					timeZoneValues[i++] = value;
+				}
+			}
+
+			timeZoneEl = uifactory.addDropdownSingleselect("vc.olatTimeZone", moduleFlc, timeZoneKeys, timeZoneValues, null);
+			timeZoneEl.select(viteroModule.getTimeZoneId(), true);
 			
 			//account configuration
 			String vmsUri = viteroModule.getVmsURI().toString();
@@ -130,6 +151,11 @@ public class ViteroConfigurationController extends FormBasicController {
 			
 			String customerId = customerIdEl.getValue();
 			viteroModule.setCustomerId(Integer.parseInt(customerId));
+			
+			if(timeZoneEl.isOneSelected()) {
+				String timeZoneId = timeZoneEl.getSelectedKey();
+				viteroModule.setTimeZoneId(timeZoneId);
+			}
 		} catch (URISyntaxException e) {
 			logError("", e);
 			urlEl.setErrorKey("vc.check.url.invalid", null);
@@ -207,11 +233,17 @@ public class ViteroConfigurationController extends FormBasicController {
 		String password = passwordEl.getValue();
 		String customerId = customerIdEl.getValue();
 
-		boolean ok = viteroManager.checkConnection(url, login, password, Integer.parseInt(customerId));
-		if(ok) {
-			showInfo("vc.check.ok");
-		} else {
-			showError("vc.check.nok");
+		try {
+			boolean ok = viteroManager.checkConnection(url, login, password, Integer.parseInt(customerId));
+			if(ok) {
+				showInfo("vc.check.ok");
+			} else {
+				showError("vc.check.nok");
+			}
+		} catch (NumberFormatException e) {
+			showError("vc.check.customer.invalid");
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
 	}
 }

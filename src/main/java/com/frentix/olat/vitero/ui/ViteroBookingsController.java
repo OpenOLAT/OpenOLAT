@@ -40,6 +40,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.StartBookingComparator;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
@@ -126,37 +127,56 @@ public class ViteroBookingsController extends BasicController {
 	}
 	
 	protected void loadModel() {
-		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
-		List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
-		FilterBookings.filterMyFutureBookings(bookings, myBookings);
-		Collections.sort(bookings, new StartBookingComparator());
-		TableDataModel tableData = new ViteroBookingDataModel(bookings, myBookings);
-		tableCtr.setTableDataModel(tableData);
+		try {
+			List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
+			List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
+			FilterBookings.filterMyFutureBookings(bookings, myBookings);
+			Collections.sort(bookings, new StartBookingComparator());
+			TableDataModel tableData = new ViteroBookingDataModel(bookings, myBookings);
+			tableCtr.setTableDataModel(tableData);
+		} catch (VmsNotAvailableException e) {
+			TableDataModel tableData = new ViteroBookingDataModel();
+			tableCtr.setTableDataModel(tableData);
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 	}
 	
 	protected void signInVitero(UserRequest ureq, ViteroBooking booking) {
-		boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity(), null);
-		if(ok) {
-			showInfo("signin.ok");
-		} else {
-			showError("signin.nok");
+		try {
+			boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity(), null);
+			if(ok) {
+				showInfo("signin.ok");
+			} else {
+				showError("signin.nok");
+			}
+			loadModel();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
-		loadModel();
+		
 	}
 	
 	protected void signOutVitero(UserRequest ureq, ViteroBooking booking) {
-		boolean ok = viteroManager.removeFromRoom(booking, ureq.getIdentity());
-		if(ok) {
-			showInfo("signout.ok");
-		} else {
-			showError("signout.nok");
+		try {
+			boolean ok = viteroManager.removeFromRoom(booking, ureq.getIdentity());
+			if(ok) {
+				showInfo("signout.ok");
+			} else {
+				showError("signout.nok");
+			}
+			loadModel();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
-		loadModel();
 	}
 	
 	protected void openVitero(UserRequest ureq, ViteroBooking booking) {
-		String url = viteroManager.getURLToBooking(ureq.getIdentity(), booking);
-		RedirectMediaResource redirect = new RedirectMediaResource(url);
-		ureq.getDispatchResult().setResultingMediaResource(redirect); 
+		try {
+			String url = viteroManager.getURLToBooking(ureq.getIdentity(), booking);
+			RedirectMediaResource redirect = new RedirectMediaResource(url);
+			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		} 
 	}
 }

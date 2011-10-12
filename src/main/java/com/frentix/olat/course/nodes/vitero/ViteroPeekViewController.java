@@ -38,6 +38,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.StartBookingComparator;
 import com.frentix.olat.vitero.model.ViteroBooking;
 import com.frentix.olat.vitero.ui.FilterBookings;
@@ -62,10 +63,16 @@ public class ViteroPeekViewController extends BasicController {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class,
 				userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
-		List<ViteroBooking> bookings = viteroManager.getBookings(null, ores);
-		List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
-		FilterBookings.filterMyFutureBookings(bookings, myBookings);
-		Collections.sort(bookings, new StartBookingComparator());
+		List<ViteroBooking> bookings;
+		try {
+			bookings = viteroManager.getBookings(null, ores);
+			List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
+			FilterBookings.filterMyFutureBookings(bookings, myBookings);
+			Collections.sort(bookings, new StartBookingComparator());
+		} catch (VmsNotAvailableException e) {
+			bookings = Collections.emptyList();
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));

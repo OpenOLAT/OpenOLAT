@@ -21,6 +21,7 @@
 package com.frentix.olat.vitero;
 
 import java.net.URI;
+import java.text.ParseException;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -28,6 +29,13 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.util.StringHelper;
+import org.quartz.CronTrigger;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+
+import com.frentix.olat.vitero.manager.ViteroZombieSlayerJob;
+import com.ibm.icu.util.Calendar;
 
 /**
  * 
@@ -48,6 +56,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	private static final String ADMIN_LOGIN = "adminLogin";
 	private static final String ADMIN_PASSWORD = "adminPassword";
 	private static final String CUSTOMER_ID = "customerId";
+	private static final String OLAT_TIMEZONE_ID = "olatTimeZoneId";
 	
 	private boolean enabled;
 	private String displayName;
@@ -58,6 +67,14 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	private String adminLogin;
 	private String adminPassword;
 	private int customerId;
+	private String olatTimeZoneId;
+	
+	private String cronExpression;
+	private final Scheduler scheduler;
+	
+	public ViteroModule(Scheduler scheduler) {
+		this.scheduler = scheduler;
+	}
 	
 	@Override
 	public void init() {
@@ -94,6 +111,12 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(customerIdObj)) {
 			customerId = Integer.parseInt(customerIdObj);
 		}
+		String olatTimeZoneIdObj = getStringPropertyValue(OLAT_TIMEZONE_ID, true);
+		if(StringHelper.containsNonWhitespace(olatTimeZoneIdObj)) {
+			olatTimeZoneId = olatTimeZoneIdObj;
+		}
+		
+		initCronJob();
 	}
 
 	@Override
@@ -106,6 +129,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 		adminLogin = getStringConfigParameter(ADMIN_LOGIN, "admin", false);
 		adminPassword = getStringConfigParameter(ADMIN_PASSWORD, "007", false);
 		customerId = Integer.parseInt(getStringConfigParameter(CUSTOMER_ID, "1", false));
+		olatTimeZoneId = getStringConfigParameter(OLAT_TIMEZONE_ID, "Africa/Ceuta", false);
 	}
 
 	@Override
@@ -113,11 +137,39 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 		init();
 	}
 	
+	private void initCronJob() {
+		try {
+			if(scheduler.getTrigger("Vitero_Cleaner_Cron_Job", Scheduler.DEFAULT_GROUP) == null) {
+				JobDetail jobDetail = new JobDetail("Vitero_Cleaner_Cron_Job", Scheduler.DEFAULT_GROUP, ViteroZombieSlayerJob.class);
+				CronTrigger trigger = new CronTrigger();
+				
+				Calendar cal = Calendar.getInstance();
+				cal.add(Calendar.SECOND, 30);
+				trigger.setStartTime(cal.getTime());
+				trigger.setName("Vitero_Cleaner_Cron_Trigger");
+				trigger.setCronExpression(cronExpression);
+				scheduler.scheduleJob(jobDetail, trigger);
+			}
+		} catch (ParseException e) {
+			logError("Cannot start the Quartz Job which clean the Vitero rooms", e);
+		} catch (SchedulerException e) {
+			logError("Cannot start the Quartz Job which clean the Vitero rooms", e);
+		}
+	}
+	
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
 	
+	public String getCronExpression() {
+		return cronExpression;
+	}
+
+	public void setCronExpression(String cronExpression) {
+		this.cronExpression = cronExpression;
+	}
+
 	public URI getVmsURI() {
 		UriBuilder builder = UriBuilder.fromUri(getProtocol() + "://" + getBaseUrl());
 		if(getPort() > 0) {
@@ -149,6 +201,18 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 
 	public void setEnabled(boolean enabled) {
 		setBooleanProperty(ENABLED, enabled, true);
+	}
+	
+	/**
+	 * Return the time zone of OLAT within the IDS allowed by Vitero
+	 * @return
+	 */
+	public String getTimeZoneId() {
+		return olatTimeZoneId;
+	}
+	
+	public void setTimeZoneId(String timeZoneId) {
+		setStringProperty(OLAT_TIMEZONE_ID, timeZoneId, true);
 	}
 
 	public String getProtocol() {

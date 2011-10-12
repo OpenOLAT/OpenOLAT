@@ -13,6 +13,9 @@
 
 	<!-- Definition of the providers -->
 	<bean id="viteroModule" class="com.frentix.olat.vitero.ViteroModule">
+		<constructor-arg index="0" ref="schedulerFactoryBean"/>
+		<property name="cronExpression" value="*/15 * * * * ?" />
+		
 		<property name="persistedProperties">
 	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
 	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
@@ -37,6 +40,7 @@
 				adminLogin=${vc.vitero.adminlogin}
 				adminPassword=${vc.vitero.adminpassword}
 				customerId=${vc.vitero.customerid}
+				olatTimeZoneId=${vc.vitero.olatTimeZoneId}
 			</value>
 		</property>
 	</bean>
@@ -58,7 +62,5 @@
 			</list>
 		</property>
 		<property name="order" value="39" />
-	</bean> 
-
-	
+	</bean>
 </beans>

@@ -20,8 +20,6 @@
  */
 package com.frentix.olat.vitero.manager;
 
-import java.util.Date;
-
 import com.frentix.olat.vitero.ViteroModule;
 import com.frentix.olat.vitero.manager.stubs.BookingServiceStub.Bookingtype;
 
@@ -40,7 +38,7 @@ public class ViteroTestMain {
 	private final ViteroManager manager;
 	
 	public ViteroTestMain() {
-		module = new ViteroModule();
+		module = new ViteroModule(null);
 		module.setAdminLogin("admin");
 		module.setAdminPassword("007");
 		module.setProtocol("http");
@@ -63,14 +61,22 @@ public class ViteroTestMain {
 	}
 	
 	public void testGetBookingById(int id) {
-		Bookingtype type = manager.getBookingById(id);
-		System.out.println(type.getBooking().getBookingid());
+		try {
+			Bookingtype type = manager.getBookingById(id);
+			System.out.println(type.getBooking().getBookingid());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void testGetLicense() {
 		
-		manager.getLicence(new Date(), new Date());
-		System.out.println("Licence");
+		try {
+			manager.getLicencedRoomSizes();
+			System.out.println("Licence");
+		} catch (VmsNotAvailableException e) {
+			e.printStackTrace();
+		}
 	}
 	
 
