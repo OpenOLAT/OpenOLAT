@@ -53,9 +53,7 @@ public class AdobeConnectCleanupJob extends QuartzJobBean {
 		AdobeConnectProvider adobe = null;
 		
 		boolean success = VCProviderFactory.existsProvider(providerId);
-		if(!success) {
-			throw new JobExecutionException("Invalid configuration: defined a virtual classroom cleanup job for non existing provider \"" + providerId + "\"");
-		}
+		if(!success) return;//same as dummy job
 		
 		try {
 			adobe = (AdobeConnectProvider) VCProviderFactory.createProvider(providerId);
@@ -63,9 +61,9 @@ public class AdobeConnectCleanupJob extends QuartzJobBean {
 			throw new JobExecutionException("Invalid configuration: defined a virtual classroom cleanup job and provider implementation doesn't fit");
 		}
 		
-		success = adobe.isProviderAvailable();
+		success = adobe.isProviderAvailable() && adobe.isEnabled();
 		if(!success) {
-			logger.error("Tried to cleanup Adobe Connect meetings but it's actually not available");
+			logger.debug("Tried to cleanup Adobe Connect meetings but it's actually not available");
 			return;
 		}
 

@@ -68,17 +68,6 @@
 <!-- ################################## -->
 <!-- # VIRTUAL CLASSROOM SERVICE JOBS # -->
 <!-- ################################## -->
-
-	<!-- Activation of the service jobs -->
-	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-		<property name="triggers">
-			<list>
-				<!--  <ref local="adobeCleanupJob" /> -->
-			</list>
-		</property>
-	</bean>
-	
-	<!-- Definition of the service jobs -->
 	<bean id="adobeCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerBean">
     	<property name="jobDetail">
     		<bean class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -94,6 +83,7 @@
 			</bean>
     	</property>
     	<property name="cronExpression" value="0 0 2 * * ?"/><!-- 2am, daily -->
+    	<property name="startDelay" value="45000" />
 	</bean>
 	
 </beans>
