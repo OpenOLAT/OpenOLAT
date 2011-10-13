@@ -101,7 +101,7 @@ public class ViteroBookingEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("booking.title");
+		setFormTitle("booking.admin.title");
 		boolean editable = booking.getBookingId() <= 0;
 		if(editable) {
 			setFormWarning("new.booking.warning");

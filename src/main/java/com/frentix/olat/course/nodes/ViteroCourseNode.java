@@ -50,8 +50,8 @@ import org.olat.repository.RepositoryManager;
 
 import com.frentix.olat.course.nodes.vitero.ViteroEditController;
 import com.frentix.olat.course.nodes.vitero.ViteroPeekViewController;
-import com.frentix.olat.course.nodes.vitero.ViteroRunController;
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.ui.ViteroBookingsRunController;
 
 /**
  * 
@@ -119,8 +119,8 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 		
 		Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
-		
-		Controller runCtr = new ViteroRunController(ureq, wControl, ores);
+		String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
+		Controller runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, courseTitle, moderator);
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vc_icon");
 		return new NodeRunConstructionResult(controller);
 	}

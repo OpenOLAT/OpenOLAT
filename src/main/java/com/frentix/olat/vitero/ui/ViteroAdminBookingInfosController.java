@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 
-import com.frentix.olat.vitero.ViteroModule;
 import com.frentix.olat.vitero.model.ViteroBooking;
 import com.frentix.olat.vitero.model.ViteroGroup;
 
