@@ -15,6 +15,7 @@
 	<bean id="viteroModule" class="com.frentix.olat.vitero.ViteroModule">
 		<constructor-arg index="0" ref="schedulerFactoryBean"/>
 		<property name="cronExpression" value="*/15 * * * * ?" />
+		<property name="deleteVmsUserOnUserDelete" value="${vc.vitero.deleteVmsUserOnUserDelete}" />
 		
 		<property name="persistedProperties">
 	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 

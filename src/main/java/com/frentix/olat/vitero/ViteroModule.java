@@ -71,6 +71,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	
 	private String cronExpression;
 	private final Scheduler scheduler;
+	private boolean deleteVmsUserOnUserDelete;
 	
 	public ViteroModule(Scheduler scheduler) {
 		this.scheduler = scheduler;
@@ -161,13 +162,25 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
 	}
-	
-	public String getCronExpression() {
-		return cronExpression;
+
+	public boolean isDeleteVmsUserOnUserDelete() {
+		return deleteVmsUserOnUserDelete;
 	}
 
+	/**
+	 * [user by String]
+	 * @param cronExpression
+	 */
 	public void setCronExpression(String cronExpression) {
 		this.cronExpression = cronExpression;
+	}
+	
+	/**
+	 * [user by Spring]
+	 * @param deleteVmsUserOnUserDelete
+	 */
+	public void setDeleteVmsUserOnUserDelete(boolean deleteVmsUserOnUserDelete) {
+		this.deleteVmsUserOnUserDelete = deleteVmsUserOnUserDelete;
 	}
 
 	public URI getVmsURI() {

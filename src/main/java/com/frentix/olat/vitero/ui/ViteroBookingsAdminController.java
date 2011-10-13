@@ -38,7 +38,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -68,7 +67,7 @@ public class ViteroBookingsAdminController extends BasicController {
 	private DialogBoxController dialogCtr;
 	private final TableController tableCtr;
 	private CloseableModalController cmc;
-	private ViteroRawBookingInformationController infoController;
+	private ViteroAdminBookingInfosController infoController;
 	
 	public ViteroBookingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -93,9 +92,6 @@ public class ViteroBookingsAdminController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.resource", ViteroBookingDataModel.Column.resource.ordinal(), "resource", ureq.getLocale()));
 
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("infos", "table.action", translate("booking.infos")));
-		StartColumnDescriptor startRoom = new StartColumnDescriptor("table.action", "start", getLocale(), viteroManager, getTranslator());
-		startRoom.setIsPopUpWindowAction(true, "");
-		tableCtr.addColumnDescriptor(startRoom);
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.action", translate("delete")));
 		
 		tableCtr.setSortColumn(0, false);
@@ -122,9 +118,7 @@ public class ViteroBookingsAdminController extends BasicController {
 				TableEvent e = (TableEvent)event;
 				int row = e.getRowId();
 				ViteroBooking booking = (ViteroBooking)tableCtr.getTableDataModel().getObject(row);
-				if("start".equals(e.getActionId())) {
-					openVitero(ureq, booking);
-				} else if("delete".equals(e.getActionId())) {
+				if("delete".equals(e.getActionId())) {
 					confirmDeleteVitero(ureq, booking);
 				} else if("infos".equals(e.getActionId())) {
 					openInfoBox(ureq, booking);
@@ -171,7 +165,7 @@ public class ViteroBookingsAdminController extends BasicController {
 		
 		try {
 			ViteroGroup group = viteroManager.getGroup(booking.getGroupId());
-			infoController = new ViteroRawBookingInformationController(ureq, getWindowControl(), booking, group);
+			infoController = new ViteroAdminBookingInfosController(ureq, getWindowControl(), booking, group);
 			listenTo(infoController);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), infoController.getInitialComponent(), true, translate("booking.raw.title"));
@@ -200,16 +194,6 @@ public class ViteroBookingsAdminController extends BasicController {
 		String text = translate("delete.confirm");
 		dialogCtr = activateOkCancelDialog(ureq, title, text, dialogCtr);
 		dialogCtr.setUserObject(booking);
-	}
-	
-	protected void openVitero(UserRequest ureq, ViteroBooking booking) {
-		try {
-			String url = viteroManager.getURLToBooking(ureq.getIdentity(), booking);
-			RedirectMediaResource redirect = new RedirectMediaResource(url);
-			ureq.getDispatchResult().setResultingMediaResource(redirect);
-		} catch (VmsNotAvailableException e) {
-			showError(VmsNotAvailableException.I18N_KEY);
-		}
 	}
 	
 	protected void reloadModel() {

@@ -39,6 +39,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.httpclient.ConnectTimeoutException;
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
@@ -52,6 +53,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,6 +79,7 @@ import com.frentix.olat.vitero.model.GroupRole;
 import com.frentix.olat.vitero.model.ViteroBooking;
 import com.frentix.olat.vitero.model.ViteroCustomer;
 import com.frentix.olat.vitero.model.ViteroGroup;
+import com.frentix.olat.vitero.model.ViteroUser;
 import com.ibm.icu.util.Calendar;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.CompactWriter;
@@ -91,7 +94,7 @@ import com.thoughtworks.xstream.io.xml.CompactWriter;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ViteroManager extends BasicManager {
+public class ViteroManager extends BasicManager implements UserDataDeletable {
 	
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	
@@ -107,6 +110,8 @@ public class ViteroManager extends BasicManager {
 	private BaseSecurity securityManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 	
 	private XStream xStream;
 
@@ -119,6 +124,8 @@ public class ViteroManager extends BasicManager {
 		xStream = XStreamHelper.createXStreamInstance();
 		xStream.alias("vBooking", ViteroBooking.class);
 		xStream.omitField(ViteroBooking.class, "property");
+		
+		userDeletionManager.registerDeletableUserData(this);
 	}
 	
 	public void setViteroModule(ViteroModule module) {
@@ -201,7 +208,7 @@ public class ViteroManager extends BasicManager {
 	protected String createSessionCode(Identity identity, ViteroBooking booking)
 	throws VmsNotAvailableException {
 		try {
-			int userId = getVmsUserId(identity);
+			int userId = getVmsUserId(identity, true);
 			SessionCodeServiceStub sessionCodeWs = this.getSessionCodeWebService();
 			SessionCodeServiceStub.CreatePersonalBookingSessionCodeRequest codeRequest = new SessionCodeServiceStub.CreatePersonalBookingSessionCodeRequest();
 			
@@ -254,6 +261,11 @@ public class ViteroManager extends BasicManager {
 		return identities;
 	}
 	
+	public List<ViteroUser> getUsersOf(ViteroBooking booking) 
+	throws VmsNotAvailableException {
+		return convert(getVmsUsersByGroup(booking.getGroupId()));
+	}
+	
 	protected Usertype[] getVmsUsersByGroup(int groupId)
 	throws VmsNotAvailableException {
 		try {
@@ -276,14 +288,18 @@ public class ViteroManager extends BasicManager {
 		}
 	}
 	
-	protected int getVmsUserId(Identity identity) 
+	protected int getVmsUserId(Identity identity, boolean create) 
 	throws VmsNotAvailableException {
 		int userId;
 		Authentication authentication = securityManager.findAuthentication(identity, VMS_PROVIDER);
 		if(authentication == null) {
-			userId =  createVmsUser(identity);
-			if(userId > 0) {
-				securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(userId), "");
+			if(create) {
+				userId =  createVmsUser(identity);
+				if(userId > 0) {
+					securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, Integer.toString(userId), "");
+				}
+			} else {
+				userId = -1;
 			}
 		} else {
 			userId = Integer.parseInt(authentication.getAuthusername());
@@ -403,6 +419,40 @@ public class ViteroManager extends BasicManager {
 		}
 	}
 	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		if(!viteroModule.isDeleteVmsUserOnUserDelete()) return;
+		
+		try {
+			int userId = getVmsUserId(identity, false);
+			if(userId > 0) {
+				deleteVmsUser(userId);
+			}
+		} catch (VmsNotAvailableException e) {
+			logError("Cannot delete a vms user after a OLAT user deletion.", e);
+		}
+	}
+	
+	protected void deleteVmsUser(int userId) 
+	throws VmsNotAvailableException {
+		try {
+			UserServiceStub userWs = getUserWebService();
+			UserServiceStub.DeleteUserRequest delRequest = new UserServiceStub.DeleteUserRequest();
+			UserServiceStub.Userid userIdType = new UserServiceStub.Userid();
+			userIdType.setUserid(userId);
+			delRequest.setDeleteUserRequest(userIdType);
+			userWs.deleteUser(delRequest);
+			
+		} catch (AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot delete vms user: " + userId, f);
+			}
+		} catch(RemoteException e) {
+			logError("Cannot delete vms user: " + userId, e);
+		}
+	}
+
 	public List<Integer> getLicencedRoomSizes() 
 	throws VmsNotAvailableException {
 		List<Integer> roomSizes = new ArrayList<Integer>();
@@ -543,7 +593,7 @@ public class ViteroManager extends BasicManager {
 	public boolean addToRoom(ViteroBooking booking, Identity identity, GroupRole role)
 	throws VmsNotAvailableException {
 		try {
-			int userId = getVmsUserId(identity);
+			int userId = getVmsUserId(identity, true);
 			if(userId < 0) {
 				return false;
 			}
@@ -585,11 +635,16 @@ public class ViteroManager extends BasicManager {
 	
 	public boolean removeFromRoom(ViteroBooking booking, Identity identity)
 	throws VmsNotAvailableException {
+		int userId = getVmsUserId(identity, true);
+		if(userId < 0) {
+			return true;//nothing to remove
+		}
+		return removeFromRoom(booking, userId);
+	}
+	
+	public boolean removeFromRoom(ViteroBooking booking, int userId)
+	throws VmsNotAvailableException {
 		try {
-			int userId = getVmsUserId(identity);
-			if(userId < 0) {
-				return true;//nothing to remove
-			}
 			
 			GroupServiceStub groupWs = getGroupWebService();
 			GroupServiceStub.RemoveUserFromGroupRequest removeRequest = new GroupServiceStub.RemoveUserFromGroupRequest();
@@ -823,9 +878,12 @@ public class ViteroManager extends BasicManager {
 	
 	public List<ViteroBooking> getBookingInFutures(Identity identity)
 	throws VmsNotAvailableException {
-		int userId = getVmsUserId(identity);
-		Booking[] bookings = getBookingInFutureByCustomerId(userId);
-		return convert(bookings);
+		int userId = getVmsUserId(identity, false);
+		if(userId > 0) {
+			Booking[] bookings = getBookingInFutureByCustomerId(userId);
+			return convert(bookings);
+		}
+		return Collections.emptyList();
 	}
 	
 	/**
@@ -1022,6 +1080,25 @@ public class ViteroManager extends BasicManager {
 		customer.setCustomerId(customerType.getId());
 		customer.setName(customerType.getDisplayname());
 		return customer;
+	}
+	
+	private final List<ViteroUser> convert(Usertype[] userTypes) {
+		List<ViteroUser> vUsers = new ArrayList<ViteroUser>();
+		if(userTypes != null) {
+			for(Usertype userType:userTypes) {
+				vUsers.add(convert(userType));
+			}
+		}
+		return vUsers;
+	}
+	
+	private final ViteroUser convert(Usertype userType) {
+		ViteroUser vu = new ViteroUser();
+		vu.setUserId(userType.getId());
+		vu.setFirstName(userType.getFirstname());
+		vu.setLastName(userType.getSurname());
+		vu.setEmail(userType.getEmail());
+		return vu;
 	}
 	
 	//Properties

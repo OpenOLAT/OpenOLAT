@@ -40,7 +40,7 @@ import com.frentix.olat.vitero.model.ViteroGroup;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ViteroRawBookingInformationController extends FormBasicController {
+public class ViteroAdminBookingRawInfosController extends FormBasicController {
 	
 	private final ViteroGroup group;
 	private final ViteroBooking booking;
@@ -48,7 +48,7 @@ public class ViteroRawBookingInformationController extends FormBasicController {
 	private static final String[] autoSignInKeys = new String[]{"on"};
 	private final String[] autoSignInValues;
 	
-	public ViteroRawBookingInformationController(UserRequest ureq, WindowControl wControl, ViteroBooking booking,
+	public ViteroAdminBookingRawInfosController(UserRequest ureq, WindowControl wControl, ViteroBooking booking,
 			ViteroGroup group) {
 		super(ureq, wControl);
 		
@@ -62,9 +62,6 @@ public class ViteroRawBookingInformationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("booking.infos");
-		setFormDescription("booking.raw.intro");
-		
 		uifactory.addStaticTextElement("booking.id", Integer.toString(booking.getBookingId()), formLayout);
 		uifactory.addStaticTextElement("booking.begin", formatter.formatDateAndTime(booking.getStart()), formLayout);
 		uifactory.addStaticTextElement("booking.end", formatter.formatDateAndTime(booking.getEnd()), formLayout);
