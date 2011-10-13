@@ -21,9 +21,12 @@
 package com.frentix.olat.vitero.ui;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -31,15 +34,19 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
@@ -49,6 +56,8 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.manager.VmsNotAvailableException;
@@ -74,7 +83,8 @@ public class ViteroUserToGroupController extends BasicController {
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	
-	private TableController tableCtlr;
+	private final TableController tableCtr;
+	private final VelocityContainer mainVC;
 	
 	public ViteroUserToGroupController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, ViteroBooking booking) {
 		super(ureq, wControl);
@@ -85,22 +95,42 @@ public class ViteroUserToGroupController extends BasicController {
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		repositoryManager = RepositoryManager.getInstance();
 		securityManager = BaseSecurityManager.getInstance();
+		
+		mainVC = createVelocityContainer("user_admin");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
 		
-		removeAsListenerAndDispose(tableCtlr);
-		tableCtlr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-		listenTo(tableCtlr);
+		Translator trans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
+		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans, true);
+		listenTo(tableCtr);
 		
-		tableCtlr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", Col.firstName.ordinal(), null, ureq.getLocale()));
-		tableCtlr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", Col.lastName.ordinal(), null, ureq.getLocale()));
-		tableCtlr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", Col.email.ordinal(), null, ureq.getLocale()));
-		tableCtlr.addColumnDescriptor(new SignColumnDescriptor("vc.table.end", Col.sign.ordinal(), ureq.getLocale(), getTranslator()));
+		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.firstName.ordinal(), UserConstants.FIRSTNAME, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.lastName.ordinal(), UserConstants.LASTNAME, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.email.ordinal(), UserConstants.EMAIL, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("user.role", Col.role.ordinal(),null, ureq.getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new RoleCellRenderer(getTranslator())));
+		tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", Col.sign.ordinal(), ureq.getLocale(), getTranslator()));
+		
+		tableCtr.addMultiSelectAction("signin", "signin");
+		tableCtr.addMultiSelectAction("signout", "signout");
+		tableCtr.addMultiSelectAction("reload", "reload");
+		tableCtr.setMultiSelect(true);
 		
 		loadModel();
+		mainVC.put("userTable", tableCtr.getInitialComponent());
 		
-		putInitialPanel(tableCtlr.getInitialComponent());
+		putInitialPanel(mainVC);
+	}
+	
+	private ColumnDescriptor getColumnDescriptor(int pos, String attrName, Locale locale) {
+		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getAllUserPropertyHandlers();
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			if(handler.getName().equals(attrName)) {
+				return handler.getColumnDescriptor(pos, null, locale);
+			}
+		}
+		return null;
 	}
 	
 	@Override
@@ -115,16 +145,28 @@ public class ViteroUserToGroupController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == tableCtlr) {
+		if(source == tableCtr) {
 			if(event instanceof TableEvent) {
 				TableEvent e = (TableEvent)event;
 				int row = e.getRowId();
-				Identity identity = (Identity)tableCtlr.getTableDataModel().getObject(row);
+				Identity identity = (Identity)tableCtr.getTableDataModel().getObject(row);
 				if("signin".equals(e.getActionId())) {
-					signIn(ureq, identity);
-					loadModel();
+					signIn(ureq, Collections.singletonList(identity));
 				} else if("signout".equals(e.getActionId())) {
-					signOut(ureq, identity);
+					signOut(ureq, Collections.singletonList(identity));
+				}
+			} else if(event instanceof TableMultiSelectEvent) {
+				TableMultiSelectEvent e = (TableMultiSelectEvent)event;
+				List<Identity> identities = new ArrayList<Identity>();
+				for (int i = e.getSelection().nextSetBit(0); i >= 0; i = e.getSelection().nextSetBit(i + 1)) {
+					Identity identity = (Identity)tableCtr.getTableDataModel().getObject(i);
+					identities.add(identity);
+				}
+				if("signin".equals(e.getAction())) {
+					signIn(ureq, identities);
+				} else if("signout".equals(e.getAction())) {
+					signOut(ureq, identities);
+				} else if("reload".equals(e.getAction())) {
 					loadModel();
 				}
 			}
@@ -133,28 +175,38 @@ public class ViteroUserToGroupController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void signIn(UserRequest ureq, Identity identity) {
+	private void signIn(UserRequest ureq, List<Identity> identities) {
 		try {
-			ResourceMembers members = ((UserToGroupDataModel)tableCtlr.getTableDataModel()).getMembers();
-			boolean upgrade = members.getCoaches().contains(identity) || members.getOwners().contains(identity);
-			GroupRole role = upgrade ? GroupRole.teamleader : null;
-			if(viteroManager.addToRoom(booking, identity, role)) {
-				showInfo("signin.ok");
-			} else {
-				showInfo("signin.nok");
+			ResourceMembers members = ((UserToGroupDataModel)tableCtr.getTableDataModel()).getMembers();
+			
+			for(Identity identity:identities) {
+				boolean upgrade = members.getCoaches().contains(identity) || members.getOwners().contains(identity);
+				GroupRole role = upgrade ? GroupRole.teamleader : null;
+				if(viteroManager.addToRoom(booking, identity, role)) {
+					showInfo("signin.ok");
+				} else {
+					showInfo("signin.nok");
+					break;
+				}
 			}
+			
+			loadModel();
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}
 	}
 	
-	private void signOut(UserRequest ureq, Identity identity) {
+	private void signOut(UserRequest ureq, List<Identity> identities) {
 		try {
-			if(viteroManager.removeFromRoom(booking, identity)) {
-				showInfo("signout.ok");
-			} else {
-				showInfo("signout.nok");
+			for(Identity identity:identities) {
+				if(viteroManager.removeFromRoom(booking, identity)) {
+					showInfo("signout.ok");
+				} else {
+					showInfo("signout.nok");
+					break;
+				}
 			}
+			loadModel();
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}
@@ -164,7 +216,10 @@ public class ViteroUserToGroupController extends BasicController {
 		try {
 			List<Identity> identitiesInGroup = viteroManager.getIdentitiesInBooking(booking);
 			ResourceMembers members = getIdentitiesInResource();
-			tableCtlr.setTableDataModel(new UserToGroupDataModel(members, identitiesInGroup));
+			tableCtr.setTableDataModel(new UserToGroupDataModel(members, identitiesInGroup));
+			
+			int numOfFreePlaces = booking.getRoomSize() - identitiesInGroup.size();
+			mainVC.contextPut("freePlaces", new String[]{Integer.toString(numOfFreePlaces)});
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}
@@ -252,7 +307,7 @@ public class ViteroUserToGroupController extends BasicController {
 
 		@Override
 		public int getColumnCount() {
-			return 4;
+			return 5;
 		}
 
 		@Override
@@ -267,6 +322,12 @@ public class ViteroUserToGroupController extends BasicController {
 				case firstName: return identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
 				case lastName: return identity.getUser().getProperty(UserConstants.LASTNAME, null);
 				case email: return identity.getUser().getProperty(UserConstants.EMAIL, null);
+				case role: {
+					if(members == null) return null;
+					if(members.owners.contains(identity)) return "owner";
+					if(members.coaches.contains(identity)) return "coach";
+					return null;
+				}
 				case sign: {
 					if(identitiesInGroup.contains(identity)) {
 						return Sign.signout;
@@ -297,6 +358,7 @@ public class ViteroUserToGroupController extends BasicController {
 		firstName,
 		lastName,
 		email,
+		role,
 		sign,
 	}
 }

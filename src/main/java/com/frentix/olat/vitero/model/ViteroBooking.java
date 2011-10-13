@@ -22,6 +22,8 @@ package com.frentix.olat.vitero.model;
 
 import java.util.Date;
 
+import org.olat.properties.Property;
+
 /**
  * 
  * Description:<br>
@@ -42,11 +44,32 @@ public class ViteroBooking {
 	private int roomSize;
 	private boolean autoSignIn;
 	private String timeZoneId;
+
+	private String resourceName;
+	
+	private Property property;
+	
 	
 	public ViteroBooking() {
 		// nothing to do
 	}
-	
+
+	public String getResourceName() {
+		return resourceName;
+	}
+
+	public void setResourceName(String resourceName) {
+		this.resourceName = resourceName;
+	}
+
+	public Property getProperty() {
+		return property;
+	}
+
+	public void setProperty(Property property) {
+		this.property = property;
+	}
+
 	public int getBookingId() {
 		return bookingId;
 	}

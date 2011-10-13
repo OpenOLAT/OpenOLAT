@@ -18,7 +18,14 @@
  * http://www.frentix.com<br>
  * <p>
  */
-package com.frentix.olat.vitero.manager;
+package com.frentix.olat.vitero.ui;
+
+import java.util.Locale;
+
+import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -29,26 +36,18 @@ package com.frentix.olat.vitero.manager;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class VmsNotAvailableException extends Exception {
+public class RoleCellRenderer implements CustomCellRenderer {
 	
-	private static final long serialVersionUID = 3260533359384969602L;
+	private Translator translator;
 	
-	public static final String I18N_KEY = "error.vmsNotAvailable";
-
-	public VmsNotAvailableException() {
-		//
-	}
-	
-	public VmsNotAvailableException(String message) {
-		super(message);
-	}
-	
-	public VmsNotAvailableException(String message, Exception cause) {
-		super(message, cause);
-	}
-	
-	public VmsNotAvailableException(Exception cause) {
-		super(cause);
+	protected RoleCellRenderer(Translator translator) {
+		this.translator = translator;
 	}
 
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		if("owner".equals(val) || "coach".equals(val)) {
+			sb.append(translator.translate("role.teamLeader"));
+		}
+	}
 }

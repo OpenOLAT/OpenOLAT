@@ -66,7 +66,7 @@ public class ViteroAdminController extends BasicController  {
 		accountLink = LinkFactory.createLink("vitero.account", mainVC, this);
 		segmentView.addSegment(accountLink, true);
 		
-		bookingsLink = LinkFactory.createLink("vc.booking.title", mainVC, this);
+		bookingsLink = LinkFactory.createLink("booking.title", mainVC, this);
 		segmentView.addSegment(bookingsLink, false);
 		
 		doOpenAccountSettings(ureq);

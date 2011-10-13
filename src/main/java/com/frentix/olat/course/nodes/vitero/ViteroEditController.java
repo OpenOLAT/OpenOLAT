@@ -28,8 +28,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
@@ -58,16 +56,12 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
 	final static String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
 
-	// GUI
 	private VelocityContainer editVc;
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
 	private ViteroBookingsEditController editForm;
-	private DialogBoxController yesNoUpdate;
-	private DialogBoxController yesNoDelete;
-	
-	// runtime data
-	private ViteroCourseNode courseNode;
+
+	private final ViteroCourseNode courseNode;
 
 	public ViteroEditController(UserRequest ureq, WindowControl wControl, ViteroCourseNode courseNode,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
@@ -82,7 +76,7 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 		listenTo(accessibilityCondContr);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(course.getResourceableTypeName(), course.getResourceableId());
-		editForm = new ViteroBookingsEditController(ureq, wControl, null, ores);
+		editForm = new ViteroBookingsEditController(ureq, wControl, null, ores, course.getCourseTitle());
 		listenTo(editForm);
 		
 		editVc = createVelocityContainer("edit");
@@ -105,14 +99,6 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 			removeAsListenerAndDispose(editForm);
 			editForm = null;
 		}
-		if(yesNoDelete != null) {
-			removeAsListenerAndDispose(yesNoDelete);
-			yesNoDelete = null;
-		}
-		if(yesNoUpdate != null) {
-			removeAsListenerAndDispose(yesNoUpdate);
-			yesNoUpdate = null;
-		}
 	}
 
 	@Override
@@ -129,35 +115,8 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == editForm) {
-			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-		} else if (source == yesNoDelete) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				reset(ureq);
-			}
+			//nothing to do
 		}
-	}
-	
-	private void reset(UserRequest ureq) {
-		removeAsListenerAndDispose(editForm);
-		// prepare new edit view
-/*
-		config = provider.createNewConfiguration();
-		// create room if configured to do it immediately
-		if(config.isCreateMeetingImmediately()) {
-			// here, the config is empty in any case, thus there are no start and end dates
-			provider.createClassroom(roomId, courseNode.getShortName(), courseNode.getLongTitle(), null, null, config);
-		}
-		editForm = new ViteroEditForm(ureq, getWindowControl(), provider.getTemplates(), (DefaultVCConfiguration) config);
-		listenTo(editForm);
-		editVc.put("editForm", editForm.getInitialComponent());
-		listenTo(configCtr);
-		editVc.put("configCtr", configCtr.getInitialComponent());
-		editVc.setDirty(true);
-		// save the minimal config
-		courseNode.getModuleConfiguration().set(VCCourseNode.CONF_VC_CONFIGURATION, config);
-		
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-		*/
 	}
 
 	public void addTabs(TabbedPane tabbedPane) {
@@ -165,6 +124,5 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
 				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), editVc);
-
 	}
 }

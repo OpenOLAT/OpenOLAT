@@ -29,9 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.activation.DataHandler;
@@ -65,6 +63,7 @@ import com.frentix.olat.vitero.manager.stubs.BookingServiceStub.Bookinglist;
 import com.frentix.olat.vitero.manager.stubs.BookingServiceStub.Bookingtype;
 import com.frentix.olat.vitero.manager.stubs.CustomerServiceStub;
 import com.frentix.olat.vitero.manager.stubs.GroupServiceStub;
+import com.frentix.olat.vitero.manager.stubs.GroupServiceStub.Completegrouptype;
 import com.frentix.olat.vitero.manager.stubs.LicenceServiceStub;
 import com.frentix.olat.vitero.manager.stubs.LicenceServiceStub.Rooms_type0;
 import com.frentix.olat.vitero.manager.stubs.MtomServiceStub;
@@ -76,6 +75,8 @@ import com.frentix.olat.vitero.manager.stubs.UserServiceStub.Userlist;
 import com.frentix.olat.vitero.manager.stubs.UserServiceStub.Usertype;
 import com.frentix.olat.vitero.model.GroupRole;
 import com.frentix.olat.vitero.model.ViteroBooking;
+import com.frentix.olat.vitero.model.ViteroCustomer;
+import com.frentix.olat.vitero.model.ViteroGroup;
 import com.ibm.icu.util.Calendar;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.CompactWriter;
@@ -117,6 +118,7 @@ public class ViteroManager extends BasicManager {
 	public void init() {
 		xStream = XStreamHelper.createXStreamInstance();
 		xStream.alias("vBooking", ViteroBooking.class);
+		xStream.omitField(ViteroBooking.class, "property");
 	}
 	
 	public void setViteroModule(ViteroModule module) {
@@ -167,6 +169,27 @@ public class ViteroManager extends BasicManager {
 		String sessionCode = createSessionCode(identity, booking);
 		String url = getStartPoint(sessionCode);
 		return url;
+	}
+	
+	public List<ViteroCustomer> getCustomers() 
+	throws VmsNotAvailableException {
+		try {
+			CustomerServiceStub customerWs = getCustomerWebService();
+			CustomerServiceStub.GetCustomerListRequest listRequest = new CustomerServiceStub.GetCustomerListRequest();
+			listRequest.setGetCustomerListRequest(new EmptyOMElement());
+			CustomerServiceStub.GetCustomerListResponse response = customerWs.getCustomerList(listRequest);
+			CustomerServiceStub.Customertype[] customerTypes = response.getCustomer();
+			return convert(customerTypes);
+		} catch (AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot get the list of customers.", f);
+			}
+			return Collections.emptyList();
+		} catch (RemoteException e) {
+			logError("Cannot get the list of customers.", e);
+			return Collections.emptyList();
+		}
 	}
 	
 	/**
@@ -468,6 +491,31 @@ public class ViteroManager extends BasicManager {
 		}
 	}
 	
+	public ViteroGroup getGroup(int id)
+	throws VmsNotAvailableException {
+		try {
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.GetGroupRequest getRequest = new GroupServiceStub.GetGroupRequest();
+			GroupServiceStub.Groupid groupId = new GroupServiceStub.Groupid();
+			groupId.setGroupid(id);
+			getRequest.setGetGroupRequest(groupId);
+			
+			GroupServiceStub.GetGroupResponse response = groupWs.getGroup(getRequest);
+			GroupServiceStub.Group group = response.getGetGroupResponse();
+			GroupServiceStub.Completegrouptype groupType = group.getGroup();
+			return convert(groupType);
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot create a group",f);
+			}
+			return null;
+		} catch (RemoteException e) {
+			logError("Cannot create a group.", e);
+			return null;
+		}
+	}
+	
 	public boolean deleteGroup(ViteroBooking vBooking)
 	throws VmsNotAvailableException {
 		try {
@@ -566,12 +614,13 @@ public class ViteroManager extends BasicManager {
 		}
 	}
 	
-	public ViteroBooking createBooking()
+	public ViteroBooking createBooking(String resourceName)
 	throws VmsNotAvailableException {
 		ViteroBooking booking = new ViteroBooking();
 		
 		booking.setBookingId(-1);
 		booking.setGroupId(-1);
+		booking.setResourceName(resourceName);
 		
 		Calendar cal = Calendar.getInstance();
 		int minute = cal.get(Calendar.MINUTE);
@@ -721,7 +770,7 @@ public class ViteroManager extends BasicManager {
 				case 509: {
 					deleteGroup(vBooking);
 					deleteProperty(vBooking);
-					break;
+					return true;//ok, vms deleted, group deleted...
 				}
 				default: {
 					logAxisError("Cannot delete a booking.", f);
@@ -791,6 +840,7 @@ public class ViteroManager extends BasicManager {
 		for(Property property:properties) {
 			String bookingStr = property.getTextValue();
 			ViteroBooking booking = deserializeViteroBooking(bookingStr);
+			booking.setProperty(property);
 			bookings.add(booking);
 		}
 		return bookings;
@@ -948,6 +998,32 @@ public class ViteroManager extends BasicManager {
 		return vb;
 	}
 	
+	private final ViteroGroup convert(Completegrouptype groupType) {
+		ViteroGroup vg = new ViteroGroup();
+		vg.setGroupId(groupType.getId());
+		vg.setName(groupType.getName());
+		int numOfParticipants = groupType.getParticipant() == null ? 0 : groupType.getParticipant().length;
+		vg.setNumOfParticipants(numOfParticipants);
+		return vg;
+	}
+	
+	private final List<ViteroCustomer> convert(CustomerServiceStub.Customertype[] customerTypes) {
+		List<ViteroCustomer> customers = new ArrayList<ViteroCustomer>();
+		if(customerTypes != null) {
+			for(CustomerServiceStub.Customertype customerType: customerTypes) {
+				customers.add(convert(customerType));
+			}
+		}
+		return customers;
+	}
+	
+	private final ViteroCustomer convert(CustomerServiceStub.Customertype customerType) {
+		ViteroCustomer customer = new ViteroCustomer();
+		customer.setCustomerId(customerType.getId());
+		customer.setName(customerType.getDisplayname());
+		return customer;
+	}
+	
 	//Properties
 	private final Property getProperty(final BusinessGroup group, final OLATResourceable courseResource, final ViteroBooking booking) {
 		String propertyName = Integer.toString(booking.getBookingId());
@@ -1005,6 +1081,13 @@ public class ViteroManager extends BasicManager {
 		BookingServiceStub bookingWs = new BookingServiceStub(getVmsEndPoint());
 		SecurityHeader.addAdminSecurityHeader(viteroModule, bookingWs);
 		return bookingWs;
+	}
+	
+	private final  CustomerServiceStub getCustomerWebService() 
+	throws AxisFault {
+		CustomerServiceStub customerWs = new CustomerServiceStub(getVmsEndPoint());
+		SecurityHeader.addAdminSecurityHeader(viteroModule, customerWs);
+		return customerWs;
 	}
 	
 	private final LicenceServiceStub getLicenceWebService()

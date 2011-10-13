@@ -23,6 +23,8 @@ package com.frentix.olat.vitero.ui;
 import java.util.List;
 
 import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.util.StringHelper;
+import org.olat.properties.Property;
 
 import com.frentix.olat.vitero.model.ViteroBooking;
 
@@ -75,6 +77,24 @@ public class ViteroBookingDataModel implements TableDataModel {
 		switch(Column.values()[col]) {
 			case begin: return booking.getStart();
 			case end: return booking.getEnd();
+			case roomSize: {
+				int roomSize = booking.getRoomSize();
+				if(roomSize > 0) {
+					return Integer.toString(roomSize);
+				}
+				return "-";
+			}
+			case resource: {
+				Property property = booking.getProperty();
+				if(property.getGrp() != null) {
+					return property.getGrp().getName();
+				} else if(StringHelper.containsNonWhitespace(booking.getResourceName())) {
+					return booking.getResourceName();
+				} else if(StringHelper.containsNonWhitespace(property.getResourceTypeName())) {
+					return property.getResourceTypeName() + "(" + property.getResourceTypeId() + ")";
+				}
+				return "";
+			}
 			case sign: {
 				boolean auto = booking.isAutoSignIn();
 				if(auto) {
@@ -106,6 +126,8 @@ public class ViteroBookingDataModel implements TableDataModel {
 	public enum Column {
 		begin,
 		end,
+		roomSize,
+		resource,
 		open,
 		sign,
 	}

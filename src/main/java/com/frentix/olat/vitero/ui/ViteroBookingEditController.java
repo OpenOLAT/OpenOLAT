@@ -101,17 +101,21 @@ public class ViteroBookingEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("booking.title");
 		boolean editable = booking.getBookingId() <= 0;
+		if(editable) {
+			setFormWarning("new.booking.warning");
+		}
 		
 		//begin
-		beginChooser = uifactory.addDateChooser("vc.table.begin", "", formLayout);
+		beginChooser = uifactory.addDateChooser("booking.begin", "", formLayout);
 		beginChooser.setDisplaySize(21);
 		beginChooser.setDateChooserTimeEnabled(true);
 		beginChooser.setMandatory(true);
 		beginChooser.setDate(booking.getStart());
 		beginChooser.setEnabled(editable);
 		//end
-		endChooser = uifactory.addDateChooser("vc.table.end", "", formLayout);
+		endChooser = uifactory.addDateChooser("booking.end", "", formLayout);
 		endChooser.setDisplaySize(21);
 		endChooser.setDateChooserTimeEnabled(true);
 		endChooser.setMandatory(true);
@@ -119,23 +123,23 @@ public class ViteroBookingEditController extends FormBasicController {
 		endChooser.setEnabled(editable);
 		
 		//buffer start
-		beginBufferEl = uifactory.addDropdownSingleselect("vc.table.beginBuffer", formLayout, bufferKeys, bufferValues, null);
+		beginBufferEl = uifactory.addDropdownSingleselect("booking.beginBuffer", formLayout, bufferKeys, bufferValues, null);
 		beginBufferEl.select(Integer.toString(booking.getStartBuffer()), true);
 		beginBufferEl.setEnabled(editable);
 		
 		//buffer end
-		endBufferEl = uifactory.addDropdownSingleselect("vc.table.endBuffer", formLayout, bufferKeys, bufferValues, null);
+		endBufferEl = uifactory.addDropdownSingleselect("booking.endBuffer", formLayout, bufferKeys, bufferValues, null);
 		endBufferEl.select(Integer.toString(booking.getEndBuffer()), true);
 		endBufferEl.setEnabled(editable);
 		
 		//room size
-		roomSizeEl = uifactory.addDropdownSingleselect("vc.table.roomSize", formLayout, roomSizes, roomSizes, null);
+		roomSizeEl = uifactory.addDropdownSingleselect("booking.roomSize", formLayout, roomSizes, roomSizes, null);
 		if(booking.getRoomSize() > 0) {
 			roomSizeEl.select(Integer.toString(booking.getRoomSize()), true);
 		}
 		roomSizeEl.setEnabled(editable);
 		
-		autoSignIn = uifactory.addCheckboxesHorizontal("vc.autoSignIn", formLayout, autoSignInKeys, autoSignInValues, null);
+		autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues, null);
 		if(booking.isAutoSignIn()) {
 			autoSignIn.select(autoSignInKeys[0], true);
 		}
@@ -165,7 +169,7 @@ public class ViteroBookingEditController extends FormBasicController {
 			beginChooser.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		} else if(new Date().after(begin)) {
-			beginChooser.setErrorKey("vc.check.bookingInPast", null);
+			beginChooser.setErrorKey("error.bookingInPast", null);
 			allOk = false;
 		}
 		
@@ -175,10 +179,10 @@ public class ViteroBookingEditController extends FormBasicController {
 			endChooser.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		} else if(new Date().after(begin)) {
-			beginChooser.setErrorKey("vc.check.bookingInPast", null);
+			beginChooser.setErrorKey("error.bookingInPast", null);
 			allOk = false;
 		} else if(end.before(begin)) {
-			beginChooser.setErrorKey("vc.check.bookingInPast", null);
+			beginChooser.setErrorKey("error.bookingInPast", null);
 			allOk = false;
 		}
 		
@@ -224,17 +228,17 @@ public class ViteroBookingEditController extends FormBasicController {
 			if(booking.getBookingId() >= 0) {
 				ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, booking);
 				if(updatedBooking != null) {
-					showInfo("vc.check.ok");
+					showInfo("check.ok");
 					fireEvent(ureq, Event.DONE_EVENT);
 				} else {
-					showError("vc.check.nok");
+					showError("check.nok");
 				}
 			} else {
 				if(viteroManager.createBooking(group, ores, booking)) {
-					showInfo("vc.check.ok");
+					showInfo("check.ok");
 					fireEvent(ureq, Event.DONE_EVENT);
 				} else {
-					showError("vc.check.nok");
+					showError("check.nok");
 				}
 			}
 		} catch (VmsNotAvailableException e) {

@@ -57,7 +57,7 @@ public class ViteroRoomsOverviewController extends BasicController {
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"));
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setColumnMovingOffered(false);
 		tableConfig.setSortingEnabled(true);
@@ -68,8 +68,9 @@ public class ViteroRoomsOverviewController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
 		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.roomSize", ViteroBookingDataModel.Column.roomSize.ordinal(), null, ureq.getLocale()));
 		
 		Calendar cal = Calendar.getInstance();
 		Date begin = cal.getTime();

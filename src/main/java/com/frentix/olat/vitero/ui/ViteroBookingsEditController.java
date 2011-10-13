@@ -68,15 +68,17 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private ViteroRoomsOverviewController roomsOverviewController;
 	private ViteroUserToGroupController usersController;
 	
+	private final String resourceName;
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final ViteroManager viteroManager;
 
-	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores) {
+	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, String resourceName) {
 		super(ureq, wControl, "edit");
 		
 		this.group = group;
 		this.ores = ores;
+		this.resourceName = resourceName;
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 
 		initForm(ureq);
@@ -88,8 +90,8 @@ public class ViteroBookingsEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons-cont", getTranslator());
 		formLayout.add(buttonLayout);
-		newButton = uifactory.addFormLink("vc.booking.new", buttonLayout, Link.BUTTON);
-		occupiedRoomsLink = uifactory.addFormLink("vc.booking.roomsOverview", buttonLayout, Link.BUTTON);
+		newButton = uifactory.addFormLink("new", buttonLayout, Link.BUTTON);
+		occupiedRoomsLink = uifactory.addFormLink("roomsOverview", buttonLayout, Link.BUTTON);
 	}
 
 	@Override
@@ -169,17 +171,17 @@ public class ViteroBookingsEditController extends FormBasicController {
 		listenTo(roomsOverviewController);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomsOverviewController.getInitialComponent(), true, translate("vc.booking.title"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomsOverviewController.getInitialComponent(), true, translate("roomsOverview"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
 	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
 		try {
-			if( viteroManager.deleteBooking(booking)) {
-				showInfo("vc.table.delete");
+			if(viteroManager.deleteBooking(booking)) {
+				showInfo("delete.ok");
 			} else {
-				showError("vc.table.delete");
+				showError("delete.nok");
 			}
 			reloadModel();
 		} catch (VmsNotAvailableException e) {
@@ -188,15 +190,15 @@ public class ViteroBookingsEditController extends FormBasicController {
 	}
 
 	protected void confirmDeleteBooking(UserRequest ureq, BookingDisplay bookingDisplay) {
-		String title = translate("vc.table.delete");
-		String text = translate("vc.table.delete.confirm");
+		String title = translate("delete");
+		String text = translate("delete.confirm");
 		dialogCtr = activateOkCancelDialog(ureq, title, text, dialogCtr);
 		dialogCtr.setUserObject(bookingDisplay.getMeeting());
 	}
 	
 	protected void newBooking(UserRequest ureq) {
 		try {
-			ViteroBooking viteroBooking = viteroManager.createBooking();
+			ViteroBooking viteroBooking = viteroManager.createBooking(resourceName);
 			editBooking(ureq, viteroBooking);
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
@@ -210,7 +212,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		listenTo(bookingController);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), bookingController.getInitialComponent(), true, translate("vc.booking.title"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bookingController.getInitialComponent(), true, translate("edit"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -222,7 +224,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		listenTo(usersController);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersController.getInitialComponent(), true, translate("vc.booking.title"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), usersController.getInitialComponent(), true, translate("users"));
 		listenTo(cmc);
 		cmc.activate();
 	}

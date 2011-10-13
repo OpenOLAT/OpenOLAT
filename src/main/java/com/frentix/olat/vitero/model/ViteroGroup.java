@@ -18,37 +18,45 @@
  * http://www.frentix.com<br>
  * <p>
  */
-package com.frentix.olat.vitero.manager;
+package com.frentix.olat.vitero.model;
 
 /**
  * 
  * Description:<br>
  * 
  * <P>
- * Initial Date:  12 oct. 2011 <br>
+ * Initial Date:  13 oct. 2011 <br>
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class VmsNotAvailableException extends Exception {
+public class ViteroGroup {
 	
-	private static final long serialVersionUID = 3260533359384969602L;
+	private int groupId;
+	private String name;
+	private int numOfParticipants;
 	
-	public static final String I18N_KEY = "error.vmsNotAvailable";
-
-	public VmsNotAvailableException() {
-		//
+	
+	public int getGroupId() {
+		return groupId;
 	}
 	
-	public VmsNotAvailableException(String message) {
-		super(message);
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 	
-	public VmsNotAvailableException(String message, Exception cause) {
-		super(message, cause);
+	public String getName() {
+		return name;
 	}
 	
-	public VmsNotAvailableException(Exception cause) {
-		super(cause);
+	public void setName(String name) {
+		this.name = name;
 	}
-
+	
+	public int getNumOfParticipants() {
+		return numOfParticipants;
+	}
+	
+	public void setNumOfParticipants(int numOfParticipants) {
+		this.numOfParticipants = numOfParticipants;
+	}
 }

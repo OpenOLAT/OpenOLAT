@@ -22,6 +22,7 @@ package com.frentix.olat.vitero.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.CoreSpringFactory;
@@ -44,6 +45,9 @@ import com.frentix.olat.vitero.ViteroModule;
 import com.frentix.olat.vitero.ViteroTimezoneIDs;
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.manager.VmsNotAvailableException;
+import com.frentix.olat.vitero.model.ViteroCustomer;
+
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 
@@ -67,8 +71,12 @@ public class ViteroConfigurationController extends FormBasicController {
 	private MultipleSelectionElement viteroEnabled;
 	private SingleSelection timeZoneEl;
 
+	private SingleSelection customersEl;
+
 	private static final String[] enabledKeys = new String[]{"on"};
 	private String[] enabledValues;
+	private String[] customerKeys;
+	private String[] customerValues;
 	
 	public ViteroConfigurationController(UserRequest ureq, WindowControl wControl, ViteroModule viteroModule) {
 		super(ureq, wControl, "adminconfig");
@@ -77,6 +85,20 @@ public class ViteroConfigurationController extends FormBasicController {
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		
 		enabledValues = new String[]{translate("enabled")};
+		
+		try {
+			List<ViteroCustomer> customers = viteroManager.getCustomers();
+			customerKeys = new String[customers.size()];
+			customerValues = new String[customers.size()];
+			int i=0;
+			for(ViteroCustomer customer:customers) {
+				customerKeys[i] = Integer.toString(customer.getCustomerId());
+				customerValues[i++] = customer.getName();
+			}
+		} catch (VmsNotAvailableException e) {
+			customerKeys = new String[0];
+			customerValues = new String[0];
+		}
 		
 		initForm(ureq);
 	}
@@ -110,25 +132,30 @@ public class ViteroConfigurationController extends FormBasicController {
 				}
 			}
 
-			timeZoneEl = uifactory.addDropdownSingleselect("vc.olatTimeZone", moduleFlc, timeZoneKeys, timeZoneValues, null);
+			timeZoneEl = uifactory.addDropdownSingleselect("option.olatTimeZone", moduleFlc, timeZoneKeys, timeZoneValues, null);
 			timeZoneEl.select(viteroModule.getTimeZoneId(), true);
 			
 			//account configuration
 			String vmsUri = viteroModule.getVmsURI().toString();
-			urlEl = uifactory.addTextElement("vitero-url", "vc.vitero.baseurl", 255, vmsUri, moduleFlc);
+			urlEl = uifactory.addTextElement("vitero-url", "option.baseurl", 255, vmsUri, moduleFlc);
 			urlEl.setDisplaySize(60);
 			String login = viteroModule.getAdminLogin();
-			loginEl = uifactory.addTextElement("vitero-login", "vc.vitero.adminlogin", 32, login, moduleFlc);
+			loginEl = uifactory.addTextElement("vitero-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = viteroModule.getAdminPassword();
-			passwordEl = uifactory.addPasswordElement("vitero-password", "vc.vitero.adminpassword", 32, password, moduleFlc);
+			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, password, moduleFlc);
 			String customerId = Integer.toString(viteroModule.getCustomerId());
-			customerIdEl = uifactory.addTextElement("vitero-customerId", "vc.vitero.customerId", 32, customerId, moduleFlc);
+			customerIdEl = uifactory.addTextElement("vitero-customerId", "option.customerId", 32, customerId, moduleFlc);
+			
+			customersEl = uifactory.addDropdownSingleselect("option.customerId", moduleFlc, customerKeys, customerValues, null);
+			if(StringHelper.containsNonWhitespace(customerId) && Arrays.asList(customerKeys).contains(customerId)) {
+				customersEl.select(customerId, true);
+			}
 
 			//buttons save - check
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
 			moduleFlc.add(buttonLayout);
 			uifactory.addFormSubmitButton("save", buttonLayout);
-			checkLink = uifactory.addFormLink("vc.check", buttonLayout, Link.BUTTON);
+			checkLink = uifactory.addFormLink("check", buttonLayout, Link.BUTTON);
 		}
 	}
 	
@@ -158,10 +185,10 @@ public class ViteroConfigurationController extends FormBasicController {
 			}
 		} catch (URISyntaxException e) {
 			logError("", e);
-			urlEl.setErrorKey("vc.check.url.invalid", null);
+			urlEl.setErrorKey("error.url.invalid", null);
 		} catch(NumberFormatException e) {
 			logError("", e);
-			urlEl.setErrorKey("vc.check.customer.invalid", null);
+			urlEl.setErrorKey("error.customer.invalid", null);
 		}
 	}
 
@@ -175,7 +202,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			try {
 				new URI(url);
 			} catch(Exception e) {
-				urlEl.setErrorKey("vc.check.url.invalid", null);
+				urlEl.setErrorKey("error.url.invalid", null);
 				allOk = false;
 			}
 		} else {
@@ -203,7 +230,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			try {
 				Integer.parseInt(customerId);
 			} catch(Exception e) {
-				customerIdEl.setErrorKey("vc.check.customer.invalid", null);
+				customerIdEl.setErrorKey("error.customer.invalid", null);
 				allOk = false;
 			}
 		} else {
@@ -236,12 +263,12 @@ public class ViteroConfigurationController extends FormBasicController {
 		try {
 			boolean ok = viteroManager.checkConnection(url, login, password, Integer.parseInt(customerId));
 			if(ok) {
-				showInfo("vc.check.ok");
+				showInfo("check.ok");
 			} else {
-				showError("vc.check.nok");
+				showError("check.nok");
 			}
 		} catch (NumberFormatException e) {
-			showError("vc.check.customer.invalid");
+			showError("error.customer.invalid");
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}

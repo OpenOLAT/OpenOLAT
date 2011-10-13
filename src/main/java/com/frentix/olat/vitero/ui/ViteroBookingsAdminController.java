@@ -22,6 +22,7 @@ package com.frentix.olat.vitero.ui;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -34,13 +35,22 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.ViteroBooking;
+import com.frentix.olat.vitero.model.ViteroGroup;
 
 /**
  * 
@@ -57,6 +67,8 @@ public class ViteroBookingsAdminController extends BasicController {
 	
 	private DialogBoxController dialogCtr;
 	private final TableController tableCtr;
+	private CloseableModalController cmc;
+	private ViteroRawBookingInformationController infoController;
 	
 	public ViteroBookingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -64,7 +76,7 @@ public class ViteroBookingsAdminController extends BasicController {
 		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"));
 		tableConfig.setDownloadOffered(true);
 		tableConfig.setColumnMovingOffered(false);
 		tableConfig.setSortingEnabled(true);
@@ -75,12 +87,18 @@ public class ViteroBookingsAdminController extends BasicController {
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(tableCtr);
 		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
-		StaticColumnDescriptor startRoom = new StaticColumnDescriptor("start", "start", translate("start"));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.roomSize", ViteroBookingDataModel.Column.roomSize.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.resource", ViteroBookingDataModel.Column.resource.ordinal(), "resource", ureq.getLocale()));
+
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("infos", "table.action", translate("booking.infos")));
+		StartColumnDescriptor startRoom = new StartColumnDescriptor("table.action", "start", getLocale(), viteroManager, getTranslator());
 		startRoom.setIsPopUpWindowAction(true, "");
 		tableCtr.addColumnDescriptor(startRoom);
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "delete", translate("delete")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.action", translate("delete")));
+		
+		tableCtr.setSortColumn(0, false);
 
 		reloadModel();
 		
@@ -108,6 +126,10 @@ public class ViteroBookingsAdminController extends BasicController {
 					openVitero(ureq, booking);
 				} else if("delete".equals(e.getActionId())) {
 					confirmDeleteVitero(ureq, booking);
+				} else if("infos".equals(e.getActionId())) {
+					openInfoBox(ureq, booking);
+				} else if("resource".equals(e.getActionId())) {
+					openResource(ureq, booking);
 				}
 			}
 		} else if(source == dialogCtr) {
@@ -115,15 +137,57 @@ public class ViteroBookingsAdminController extends BasicController {
 				ViteroBooking booking = (ViteroBooking)dialogCtr.getUserObject();
 				deleteBooking(ureq, booking);
 			}
+		} else if (source == cmc ) {
+			removeAsListenerAndDispose(infoController);
+			removeAsListenerAndDispose(cmc);
+		} else if (source == infoController) {
+			cmc.deactivate();
+			removeAsListenerAndDispose(infoController);
+			removeAsListenerAndDispose(cmc);
+			reloadModel();
+		}
+	}
+	
+	protected void openResource(UserRequest ureq, ViteroBooking booking) {
+		Property prop = booking.getProperty();
+		if(prop != null) {
+			String url;
+			if(prop.getGrp() != null) {
+				url = "[BusinessGroup:" + prop.getGrp().getKey() + "]";
+			} else {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(prop.getResourceTypeName(), prop.getResourceTypeId());
+				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+				url = "[RepositoryEntry:" + re.getKey() + "]";
+			}
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
+		}
+	}
+	
+	protected void openInfoBox(UserRequest ureq, ViteroBooking booking) {
+		removeAsListenerAndDispose(infoController);
+		removeAsListenerAndDispose(cmc);
+		
+		try {
+			ViteroGroup group = viteroManager.getGroup(booking.getGroupId());
+			infoController = new ViteroRawBookingInformationController(ureq, getWindowControl(), booking, group);
+			listenTo(infoController);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), infoController.getInitialComponent(), true, translate("booking.raw.title"));
+			listenTo(cmc);
+			cmc.activate();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
 	}
 	
 	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
 		try {
 			if( viteroManager.deleteBooking(booking)) {
-				showInfo("vc.table.delete");
+				showInfo("delete.ok");
 			} else {
-				showError("vc.table.delete");
+				showError("delete.nok");
 			}
 			reloadModel();
 		} catch (VmsNotAvailableException e) {
@@ -132,8 +196,8 @@ public class ViteroBookingsAdminController extends BasicController {
 	}
 	
 	protected void confirmDeleteVitero(UserRequest ureq, ViteroBooking booking) {
-		String title = translate("vc.table.delete");
-		String text = translate("vc.table.delete.confirm");
+		String title = translate("delete");
+		String text = translate("delete.confirm");
 		dialogCtr = activateOkCancelDialog(ureq, title, text, dialogCtr);
 		dialogCtr.setUserObject(booking);
 	}

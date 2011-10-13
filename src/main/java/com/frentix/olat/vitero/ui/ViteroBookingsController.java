@@ -73,12 +73,12 @@ public class ViteroBookingsController extends BasicController {
 		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"));
 		tableConfig.setColumnMovingOffered(true);
 		tableConfig.setSortingEnabled(true);
 		tableCtr = new TableController(tableConfig, ureq, wControl, getTranslator());
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
+		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
 		
 		StartColumnDescriptor startRoom = new StartColumnDescriptor("start", "start", ureq.getLocale(), viteroManager, getTranslator());
 		startRoom.setIsPopUpWindowAction(true, "");
