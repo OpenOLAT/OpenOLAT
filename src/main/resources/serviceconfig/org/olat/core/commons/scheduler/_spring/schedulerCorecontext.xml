@@ -23,6 +23,7 @@ How to add a new job:
 
 
 <!-- this tells spring to create the quartz scheduler -->
+<!-- 
 <bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 	<property name="quartzProperties">
 		<props>
@@ -31,11 +32,11 @@ How to add a new job:
 	</property>
 	<property name="triggers">
         <list>
-        	<!-- Include every bean here that should be scheduled -->
-            <!-- <ref bean="cronTrigger" /> -->
+        	
         </list>
     </property>
 </bean>
+-->
 
 <!-- Example bean for cron style scheduling--> 
 <!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
