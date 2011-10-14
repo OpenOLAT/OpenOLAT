@@ -14,7 +14,7 @@
 	<!-- Definition of the providers -->
 	<bean id="viteroModule" class="com.frentix.olat.vitero.ViteroModule">
 		<constructor-arg index="0" ref="schedulerFactoryBean"/>
-		<property name="cronExpression" value="*/15 * * * * ?" />
+		<property name="cronExpression" value="0 15 */12 * * ?" />
 		<property name="deleteVmsUserOnUserDelete" value="${vc.vitero.deleteVmsUserOnUserDelete}" />
 		
 		<property name="persistedProperties">

@@ -67,7 +67,6 @@ public class ViteroConfigurationController extends FormBasicController {
 	private TextElement urlEl;
 	private TextElement loginEl;
 	private TextElement passwordEl;
-	private TextElement customerIdEl;
 	private MultipleSelectionElement viteroEnabled;
 	private SingleSelection timeZoneEl;
 
@@ -144,8 +143,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			String password = viteroModule.getAdminPassword();
 			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, password, moduleFlc);
 			String customerId = Integer.toString(viteroModule.getCustomerId());
-			customerIdEl = uifactory.addTextElement("vitero-customerId", "option.customerId", 32, customerId, moduleFlc);
-			
+
 			customersEl = uifactory.addDropdownSingleselect("option.customerId", moduleFlc, customerKeys, customerValues, null);
 			if(StringHelper.containsNonWhitespace(customerId) && Arrays.asList(customerKeys).contains(customerId)) {
 				customersEl.select(customerId, true);
@@ -176,7 +174,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			String password = passwordEl.getValue();
 			viteroModule.setAdminPassword(password);
 			
-			String customerId = customerIdEl.getValue();
+			String customerId = customersEl.getSelectedKey();
 			viteroModule.setCustomerId(Integer.parseInt(customerId));
 			
 			if(timeZoneEl.isOneSelected()) {
@@ -223,18 +221,18 @@ public class ViteroConfigurationController extends FormBasicController {
 			passwordEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		}
-		
-		String customerId = customerIdEl.getValue();
-		customerIdEl.clearError();
-		if(StringHelper.containsNonWhitespace(customerId)) {
+
+		customersEl.clearError();
+		if(customersEl.isOneSelected()) {
 			try {
+				String customerId = customersEl.getSelectedKey();
 				Integer.parseInt(customerId);
 			} catch(Exception e) {
-				customerIdEl.setErrorKey("error.customer.invalid", null);
+				customersEl.setErrorKey("error.customer.invalid", null);
 				allOk = false;
 			}
 		} else {
-			customerIdEl.setErrorKey("form.legende.mandatory", null);
+			customersEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		}
 		
@@ -258,7 +256,7 @@ public class ViteroConfigurationController extends FormBasicController {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
 		String password = passwordEl.getValue();
-		String customerId = customerIdEl.getValue();
+		String customerId = customersEl.isOneSelected() ? customersEl.getSelectedKey() : "";
 
 		try {
 			boolean ok = viteroManager.checkConnection(url, login, password, Integer.parseInt(customerId));

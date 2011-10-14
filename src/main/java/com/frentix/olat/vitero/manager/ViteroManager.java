@@ -1210,7 +1210,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	
 	private final String getStartPoint(String sessionCode) {
 		UriBuilder builder = UriBuilder.fromUri(viteroModule.getVmsURI() );
-	    builder.path("start.html");
+	    builder.path("start.htm");
 	    if(StringHelper.containsNonWhitespace(sessionCode)) {
 	    	builder.queryParam("sessionCode", sessionCode);
 	    }
