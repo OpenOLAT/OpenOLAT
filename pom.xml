@@ -192,6 +192,31 @@
 				<os.property.file>win.properties</os.property.file>
 			</properties>
 		</profile>
+
+		<profile>
+			<id>documentation</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.sun.tools.jxc.maven2</groupId>
+						<artifactId>maven-jaxb-schemagen-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>com.sun.jersey.contribs</groupId>
+						<artifactId>maven-wadl-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>xml-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		
 	</profiles>
 	<repositories>
 		<repository>
@@ -617,7 +642,7 @@
 								<properties>
 									<property>
 										<name>applicationDocsFile</name>
-										<value>${basedir}/src/org/olat/restapi/support/application-doc.xml</value>
+										<value>src/main/java/org/olat/restapi/support/application-doc.xml</value>
 									</property>
 								</properties>
 							</wadlGeneratorDescription>
@@ -626,7 +651,7 @@
 								<properties>
 									<property>
 										<name>grammarsFile</name>
-										<value>${basedir}/src/org/olat/restapi/support/application-grammars.xml</value>
+										<value>src/main/java/org/olat/restapi/support/application-grammars.xml</value>
 									</property>
 								</properties>
 							</wadlGeneratorDescription>
@@ -660,8 +685,8 @@
 										<includes>
 											<include>application.wadl</include>
 										</includes>
-										<outputDir>${project.build.outputDirectory}</outputDir>
-										<stylesheet>${basedir}/src/org/olat/restapi/support/wadl_documentation.xsl</stylesheet>
+										<outputDir>src/main/java/org/olat/restapi/api/_content/</outputDir>
+										<stylesheet>src/main/java/org/olat/restapi/support/wadl_documentation.xsl</stylesheet>
 										<fileMappers>
 											<fileMapper
 												implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">

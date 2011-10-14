@@ -28,6 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * 
@@ -62,7 +63,10 @@ public class ApiWebService {
 	@Path("doc")
 	@Produces(MediaType.TEXT_HTML)
 	public Response getHtmlDoc() {
-		InputStream in = ApiWebService.class.getResourceAsStream("../../../../application.html");
+		InputStream in = ApiWebService.class.getResourceAsStream("_content/application.html");
+		if(in == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 		return Response.ok(in).build();
 	}
 	
@@ -77,6 +81,9 @@ public class ApiWebService {
 	@Produces("image/jpeg")
 	public Response getImage1(@PathParam("filename") String filename) {
 		InputStream in = ApiWebService.class.getResourceAsStream("_content/" + filename);
+		if(in == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
 		return Response.ok(in).build();
 	}
 	
