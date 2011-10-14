@@ -82,7 +82,8 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	public final static String HOST = "localhost";
 	public final static String PROTOCOL = "http";
 
-	private GrizzlyWebServer webServer;
+	private static boolean webServerStarted = false;
+	private static GrizzlyWebServer webServer;
 	
 	@Autowired
 	private RestModule restModule;
@@ -99,19 +100,21 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	 * Instantiates the Grizzly Web Server
 	 */
 	private void instantiateGrizzlyWebServer() {
-		webServer = new GrizzlyWebServer(PORT);
-		ServletAdapter sa = new ServletAdapter();
-		Servlet servletInstance = null;
-		try {
-			servletInstance = (HttpServlet)Class.forName("com.sun.jersey.spi.container.servlet.ServletContainer").newInstance();
-		} catch (Exception ex) {
-			log.error("Cannot instantiate the Grizzly Servlet Container", ex);
+		if(webServer == null) {
+			webServer = new GrizzlyWebServer(PORT);
+			ServletAdapter sa = new ServletAdapter();
+			Servlet servletInstance = null;
+			try {
+				servletInstance = (HttpServlet)Class.forName("com.sun.jersey.spi.container.servlet.ServletContainer").newInstance();
+			} catch (Exception ex) {
+				log.error("Cannot instantiate the Grizzly Servlet Container", ex);
+			}
+			sa.setServletInstance(servletInstance);
+			sa.addFilter(new RestApiLoginFilter(), "jerseyfilter", null);
+			sa.addInitParameter("javax.ws.rs.Application", OlatRestApplication.class.getName());
+			sa.setContextPath("/" + CONTEXT_PATH);
+			webServer.addGrizzlyAdapter(sa, null);
 		}
-		sa.setServletInstance(servletInstance);
-		sa.addFilter(new RestApiLoginFilter(), "jerseyfilter", null);
-    sa.addInitParameter("javax.ws.rs.Application", OlatRestApplication.class.getName());
-		sa.setContextPath("/" + CONTEXT_PATH);
-		webServer.addGrizzlyAdapter(sa, null);
 	}
 	
 	protected URI getBaseURI() {
@@ -129,7 +132,9 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
   	
 		log.info("Starting the Grizzly Web Container...");
 		try {
-			webServer.start();
+			if(!webServerStarted) {
+				webServer.start();
+			}
 		} catch (IOException ex) {
 			log.error("Cannot start the Grizzly Web Container");
 		}
@@ -144,8 +149,8 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
   @After
   public void tearDown() throws Exception {
 		log.info("Stopping the Grizzly Web Container...");
-		webServer.stop();
-		webServer.getSelectorThread().stopEndpoint();
+		//webServer.stop();
+		//webServer.getSelectorThread().stopEndpoint();
   }
   
   /**

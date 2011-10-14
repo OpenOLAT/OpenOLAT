@@ -12,10 +12,7 @@
 
 <bean id="org.olat.core.util.WebappHelper" class="org.olat.core.util.WebappHelper"  init-method="init" destroy-method="destroy">
 				<!-- relative path from the webapp directory to the source directory (only relavant for development/debuging mode) -->
-				<property name="relPathToSrc" value="" />
-				<!-- set to jar when olatcore is used as jar or to absolute path pointing to olatcore 
-					source during development. This field is modified automatically by build.xml -->
-				<property name="coreSourcePath" value="${olatcore.src}" />
+				<property name="fullPathToSrc" value="${project.build.home.directory}/src/main/java" />
 				<property name="instanceId" value="myolat"/>
 				<property name="nodeId" value="1"/>
 				<property name="userDataRoot" value=""/>

@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -64,7 +65,8 @@ public class NoteTest extends OlatTestCase implements OLATResourceable {
 			try {
 				nm = NoteManager.getInstance();
 				// identity with null User should be ok for test case
-				identity = JunitTestHelper.createAndPersistIdentityAsUser("foo");
+				String name = UUID.randomUUID().toString().replace("-", "");
+				identity = JunitTestHelper.createAndPersistIdentityAsUser(name);
 				res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
 				OLATResourceManager.getInstance().saveOLATResource(res);
 				
@@ -107,7 +109,7 @@ public class NoteTest extends OlatTestCase implements OLATResourceable {
 	    
 	    nm.deleteNote(note);
 	    
-	    List notes = nm.listUserNotes(identity);
+	    List<Note> notes = nm.listUserNotes(identity);
 	    assertTrue(notes.size()==0);
 	   
 	}

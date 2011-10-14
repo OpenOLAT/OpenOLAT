@@ -291,6 +291,21 @@
 			</resource>
 			 -->
 		</resources>
+    <testResources>
+      <!-- Same comment as for src/main/java also applies to src/test/java -->
+      <testResource>
+        <directory>src/test/java</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <!-- when enabled resources will be searched and variables replaces with 
+					values -->
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -426,13 +441,22 @@
 					<configuration>
 						<testFailureIgnore>true</testFailureIgnore>
 						<skipTests>${skipTests}</skipTests>
+            <argLine>-XX:MaxPermSize=256m -Xmx1024m -Xms1024m</argLine>
+            <systemPropertyVariables>
+							<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
+						</systemPropertyVariables>
 						<excludes>
 							<!-- TODO:gs -->
 							<exclude>**/TestTable.java</exclude>
 							<exclude>**/TestUser*</exclude>
 							<exclude>**/TestIdentity.java</exclude>
 							<exclude>**/TestTextCase*</exclude>
+							<exclude>**/*PerformanceTest.java</exclude>
 						</excludes>
+						<includes>
+              <include>**/AllTestsOlatCoreJunit4.java</include>
+              <include>**/AllTestsJunit4.java</include>
+            </includes>
 
 						<!-- To run a single test add -Dtest=TestClass... test mvn -Dtest=TestSquare,TestCi*le 
 							test NOTE: Running a single test runs always twice, no idea why To run the 

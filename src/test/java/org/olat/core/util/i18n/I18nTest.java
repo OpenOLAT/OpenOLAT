@@ -467,6 +467,7 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	@Test public void testGetPropertyFile() {
 		if (I18nModule.isTransToolEnabled()) {
 			File baseDir = I18nModule.getPropertyFilesBaseDir(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
+			assertNotNull(baseDir);
 			File file = i18nMgr.getPropertiesFile(i18nMgr.getLocaleOrDefault("de"), "org.olat.core", baseDir);
 			assertTrue(file.exists());
 			// test get metadata file

@@ -11,6 +11,6 @@
 <context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
 <context:annotation-config />
 
-<bean id="coordinatorManager" class="org.olat.core.test.CoordinatorManagerMock" />
+<bean id="coordinatorManager" class="org.olat.test.CoordinatorManagerMock" />
 
 </beans>

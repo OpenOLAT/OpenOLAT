@@ -129,7 +129,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	private I18nModule(CoordinatorManager coordinatorManager) {
 		super();
 		this.coordinatorManager = coordinatorManager;
-		if (INSTANCE != null) { throw new OLATRuntimeException("Tried to construct I18nModule, but module was already loaded!", null); }
+		if (INSTANCE != null && !Settings.isJUnitTest()) { throw new OLATRuntimeException("Tried to construct I18nModule, but module was already loaded!", null); }
 		INSTANCE = this;
 	}
 

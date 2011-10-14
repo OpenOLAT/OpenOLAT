@@ -65,7 +65,7 @@ public class UserNodeAuditManagerTest extends OlatTestCase  {
 		}
 	}
 
-	@After
+	//@After
 	public void tearDown() throws Exception {			
 		//remove demo course on file system
 		//FIXME: this does not remove all data from the database, see repositoryManger
