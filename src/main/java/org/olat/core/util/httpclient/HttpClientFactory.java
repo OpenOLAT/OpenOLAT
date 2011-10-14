@@ -46,6 +46,13 @@ public class HttpClientFactory {
 		// accepts self signed certificates
 		Protocol.registerProtocol("https", new Protocol("https", new EasySSLProtocolSocketFactory(), 443));
 	}
+	
+	/**
+	 * [used by Spring]
+	 */
+	public void destroy() {
+		MultiThreadedHttpConnectionManager.shutdownAll();
+	}
 
 	/**
 	 * A HttpClient without basic authentication and no host or port setting. Can

@@ -14,4 +14,8 @@
 	<constructor-arg value="${node.id}" />
 </bean>
 
+	<bean id="httpClientFactory" class="org.olat.core.util.httpclient.HttpClientFactory" destroy-method="destroy">
+
+	</bean>
+
 </beans>
