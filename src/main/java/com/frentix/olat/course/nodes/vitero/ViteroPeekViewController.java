@@ -75,7 +75,7 @@ public class ViteroPeekViewController extends BasicController {
 		}
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("table.empty"));
 		tableConfig.setDisplayTableHeader(false);
 		tableConfig.setCustomCssClass("b_portlet_table");
 		tableConfig.setDisplayRowCount(false);

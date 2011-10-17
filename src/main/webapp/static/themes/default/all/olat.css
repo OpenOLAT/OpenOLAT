@@ -336,6 +336,8 @@
 	.o_vc_icon { background-image: url(../images/olat/vc.png)!important }
 	a.o_vc_icon:hover { background-image: url(../images/olat/vc_over.png)!important }
 	/* </OLATCE-103> */
+	.o_vitero_icon { background-image: url(../images/olat/vitero.png)!important }
+	a.o_vitero_icon:hover { background-image: url(../images/olat/vitero_over.png)!important }
 	.o_ep_icon, .o_EPStructuredMapTemplate_icon { background-image: url(../images/brasato/eportfolio/ep_icon.png)!important}
 	a.o_ep_icon:hover { background-image: url(../images/brasato/eportfolio/ep_icon_over.png)!important}
 	.o_infomsg_icon { background-image: url(../images/olat/infomessage.png)!important}

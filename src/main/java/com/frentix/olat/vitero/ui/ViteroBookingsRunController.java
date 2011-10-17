@@ -65,7 +65,9 @@ public class ViteroBookingsRunController extends BasicController {
 		this.ores = ores;
 		this.resourceName = resourceName;
 		
-		if(admin) {
+		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+		
+		} else if(admin) {
 			mainVC = createVelocityContainer("run_admin");
 			
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);

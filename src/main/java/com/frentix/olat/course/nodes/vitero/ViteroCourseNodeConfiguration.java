@@ -46,7 +46,7 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	}
 
 	public String getIconCSSClass() {
-		return "o_vc_icon";
+		return "o_vitero_icon";
 	}
 
 	public CourseNode getInstance() {
@@ -54,7 +54,7 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	}
 
 	public String getLinkCSSClass() {
-		return "o_vc_icon";
+		return "o_vitero_icon";
 	}
 
 	public String getLinkText(Locale locale) {
