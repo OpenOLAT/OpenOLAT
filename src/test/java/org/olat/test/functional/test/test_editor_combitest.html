@@ -1,0 +1,1429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="" />
+<title>test_editor_create_test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">test_editor_create_test</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>http://demo.olat.org/olat/dmz/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Online Learning And Training</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=dmz::username()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::username()</td>
+	<td>author01</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::password()</td>
+	<td>olat</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dmz::login()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::toolbox_create_test()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_title()</td>
+	<td>TestTest7</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=learningResources::dialog_description()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_description()</td>
+	<td>Selenium Test 1</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_startYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=New section)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_section_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_section_title()</td>
+	<td>Test section</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_section_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=New question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td>Single Choice Question</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_metadata_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_addMultipleChoice()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::toolbox_add_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td>Multiple Choice Question</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_metadata_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_addKprim()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::toolbox_add_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td>Kprim Question</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_metadata_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_addGapText()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::toolbox_add_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td>Gap Text Question</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_metadata_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Single Choice Question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_tabQuestionAnswers()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickQuestion()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Is Kristina expecting a boy or a girl?</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswer(indexOfAnswer=1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>boy</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_addNewAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswer(indexOfAnswer=2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>girl</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_setCorrectSc(indexOfAnswer=2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Multiple Choice Question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_tabQuestionAnswers()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickQuestion()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>What does Kristina like for breakfast?</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswerMc(indexOfAnswer=1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Nussbrötli</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_addNewAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswerMc(indexOfAnswer=2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Gipfeli</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_addNewAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswerMc(indexOfAnswer=3)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>doppelter Espresso</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_addNewAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswerMc(indexOfAnswer=4)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Latte Macchiato</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_setCorrectMc(indexOfAnswer=4)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Kprim Question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_tabQuestionAnswers()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickQuestion()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Which specialities are from Sweden?</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswer(indexOfAnswer=1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Princess Tarta</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswer(indexOfAnswer=2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Spekemat</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswer(indexOfAnswer=3)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Klipfisk</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickAnswer(indexOfAnswer=4)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Koetbullar</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_setCorrectKprim(indexOfAnswer=1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_setCorrectKprim(indexOfAnswer=4)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_setIncorrectKprim(indexOfAnswer=2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_setIncorrectKprim(indexOfAnswer=3)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Gap Text Question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_tabQuestionAnswers()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_clickTextElement(indexOfTextElement=1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_questionField()</td>
+	<td>Name of Kristinas boy:</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_editMaterial_saveAndback()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_addNewBlank()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_questionAnswers_blankField(indexOfElement=2)</td>
+	<td>Nils</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td>TODO</td>
+	<td></td>
+</tr>
+<!--new sections, move, copy, delete items-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::menu_myEntries()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::content_clickCourseEntry(nameOfCourse=TestTest7)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::toolbox_learningResource_editContent()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=TestTest7)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_test_necessaryPassingScore()</td>
+	<td>4.0</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_test_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Test section)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_Change_changeDelete()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td>Section cannot be deleted.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::dialog_clickOk()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_addSection()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_section_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_section_title()</td>
+	<td>Second section</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_section_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=New question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_Change_changeDelete()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td>Question cannot be deleted.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::dialog_clickOk()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Test section)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Gap Text Question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_Change_changeCopy()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_add_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=testEditor::content_metadata_title()</td>
+	<td>Second gap</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_metadata_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_tabQuestionAnswers()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=testEditor::content_questionAnswers_capitalization(indexOfElement=2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::content_questionAnswers_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=Second section)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::menu_link(link=New question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_Change_changeDelete()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::dialog_clickYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextNotPresent</td>
+	<td>New question</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::toolbox_editorTools_closeEditor()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=testEditor::dialog_clickSave()</td>
+	<td></td>
+</tr>
+<!--author creates course and inserts test-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::toolbox_create_course()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_title()</td>
+	<td>CourseForTest</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_description()</td>
+	<td>I don't know what to type here</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_startYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertSelfTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_clickInsertCourseElement()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbSelfTest_tabSelfTestConfiguration()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbSelfTest_chooseFile()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::commons_chooseLr_myEntries()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::commons_chooseLr_chooseTest(nameOfTest=TestTest7)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbSelfTest_layoutParameters_allowCancelYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbSelfTest_layoutParameters_allowSuspendYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_allowMenuNavigationNo()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_showMenuNavigationNo()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbSelfTest_layoutParameters_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_clickInsertCourseElement()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbTest_tabTestConfiguration()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbTest_chooseFile()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::commons_chooseLr_myEntries()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::commons_chooseLr_chooseTest(nameOfTest=TestTest7)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_allowCancelNo()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_allowSuspendNo()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_maximumNrOfApproach()</td>
+	<td>label=2 x</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_displayresultsOnTestHomepageYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbTest_layoutParameters_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_editorTools_publish()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_selectall()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::publishDialog_courseAccessDropDown()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>ui=courseEditor::publishDialog_courseAccessDropDown()</td>
+	<td>label=All registered OLAT users</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_finish()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_editorTools_closeEditor()</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td>TODO</td>
+	<td></td>
+</tr>
+<!--student runs test-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::menu_courses()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::content_showContentOfLearningResource(nameOfLearningResource=CourseForTest)</td>
+	<td></td>
+</tr>
+<!--start with self-test-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Self-test)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=commons::start()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementPresent</td>
+	<td>ui=qti::cancelTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementPresent</td>
+	<td>ui=qti::suspendTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Second section</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Second gap</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=qti::testGapItemFormElement(text=Name of Kristinas boy:)</td>
+	<td>nils</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Actual score: 1 / 5</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Gap Text Question</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=qti::testGapItemFormElement(text=Name of Kristinas boy:)</td>
+	<td>nils</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Actual score: 1 / 5</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Kprim Question</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementPlus(text=Princess Tarta)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementMinus(text=Spekemat)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementMinus(text=Klipfisk)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementPlus(text=Koetbullar)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Actual score: 2 / 5</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Multiple Choice Question</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testItemFormElement(text=Nussbrötli)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testItemFormElement(text=Latte Macchiato)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Actual score: 3 / 5</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Single Choice Question</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testItemFormElement(text=girl)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Actual score: 4 / 5</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td>Your results were saved.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::closeTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Self-test)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>4.000</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Passed</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementNotPresent</td>
+	<td>ui=qti::showHideResults(text=Show results)</td>
+	<td></td>
+</tr>
+<!--continue with test first run-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Test)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=commons::start()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementNotPresent</td>
+	<td>ui=qti::cancelTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementNotPresent</td>
+	<td>ui=qti::suspendTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::menuItem(titleOfItem=Second gap)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=qti::testGapItemFormElement(text=Name of Kristinas boy:)</td>
+	<td>nils</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::menuItem(titleOfItem=Gap Text Question)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=qti::testGapItemFormElement(text=Name of Kristinas boy:)</td>
+	<td>nils</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::menuItem(titleOfItem=Kprim Question )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementPlus(text=Princess Tarta)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementMinus(text=Spekemat)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementPlus(text=Klipfisk)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testKprimItemFormElementMinus(text=Koetbullar)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::menuItem(titleOfItem=Multiple Choice Question )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testItemFormElement(text=Nussbrötli)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testItemFormElement(text=Latte Macchiato)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::menuItem(titleOfItem=Single Choice Question )</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=qti::testItemFormElement(text=girl)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::saveAnswer()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::finishTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td>Your results were saved</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::closeTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Test)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>3.000</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Failed</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementPresent</td>
+	<td>ui=qti::showHideResults(text=Show results)</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--run test for second time-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=commons::start()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::finishTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td>Your results were saved</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=qti::closeTest()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Test)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>0.000</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Failed</td>
+	<td></td>
+</tr>
+<!--run test for third time-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Test)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertElementNotPresent</td>
+	<td>ui=commons::start()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>You cannot launch this test anymore.</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://demo.olat.org/olat/dmz//olat/dmz//" />
+<title>TestAssessmentTest_01</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">TestAssessmentTest_01</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>http://demo.olat.org/olat/dmz//olat/dmz///olat/dmz/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=dmz::username()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::username()</td>
+	<td>author03</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=dmz::password()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::password()</td>
+	<td>olat</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dmz::login()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::menu_courses()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::content_clickCourseEntry(nameOfCourse=AssessmentTool)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::content_showContent()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::toolbox_courseTools_assessmentTool()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_selectType(text=As per user)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_selectUser(username=student03)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_selectAssessmentCourseNode(title=Test 0)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=course::assessment_setScore()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=course::assessment_setScore()</td>
+	<td>3</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_back()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_selectType(text=As per user)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_selectUser(username=student2)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_selectAssessmentCourseNode(title=Test 1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=course::assessment_setScore()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=course::assessment_setScore()</td>
+	<td>4</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::assessment_closeAssessmentTool()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::closeCourse(nameOfCourse=AssessmentTool)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::logOut()</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+	<pageset name="learningResources" description="Learning Resources">
+		<pageset name="menu" description="the left hand menu">
+			<default-testcase testcase="login/tabs::learningResources" final-command="clickAndWait"/>
+			<!-- <xpath-ui-element name="learningResources" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Learning resources']" description="left navigation link 'Learning resources'"/> asa unused -->
+		    <xpath-ui-element name="catalog" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Catalog']" description="left navigation link 'Catalog'"/>
+			<xpath-ui-element name="searchForm" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Search form']" description="left navigation link 'Search form'"/>
+			<xpath-ui-element name="myEntries" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='My entries']" description="left navigation link 'My entries'"/>
+			<xpath-ui-element name="courses" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Courses']" description="left navigation link 'Courses'"/>
+			<xpath-ui-element name="coursesMenuItemSelected" xpath="//a[@class=' b_tree_selected b_tree_l1' and descendant-or-self::text()='Courses']"  description="menu item courses is selected"/>
+		    <!-- <xpath-ui-element name="tests" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Tests']" description="left navigation link 'Tests'"/> asa unused -->
+		    <!-- <xpath-ui-element name="questionnaires" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Questionnaires']" description="left navigation link 'Questionnaires'"/> asa unused -->
+		    <!-- <xpath-ui-element name="cpLearningContent" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='CP learning content']" description="left navigation link 'CP learning content'"/> asa unused -->
+		    <!-- <xpath-ui-element name="scormLearningContent" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='SCORM learning content']" description="left navigation link 'SCORM learning content'"/> asa unused -->
+		    <!-- <xpath-ui-element name="resourceFolder" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Resource folder']" description="left navigation link 'Resource folder'"/> asa unused -->
+			<xpath-ui-element name="wikis" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Wikis']" description="left navigation link 'Wikis'"/>
+		    <!-- <xpath-ui-element name="glossary" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Glossary']" description="left navigation link 'Glossary'"/> asa unused -->
+			<!--  new lrs for 6.3-->
+			<xpath-ui-element name="blog" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Blogs']" description="left navigation link 'Blogs'"/>
+			<xpath-ui-element name="podcast" xpath="//body[//*[@class='b_nav_site b_nav_active o_site_repository']]//div[@class='b_tree']//a[descendant-or-self::text()='Podcasts']" description="left navigation link 'Podcasts'"/>
+		
+		</pageset>
+		
+		<pageset name="content" description="the (center) content area">
+			<testcase-macro name="login">
+				<call-macro name="login"/>
+			</testcase-macro>
+			<testcase-macro name="listDemoCourse">
+				<selenium command="clickAndWait" target="tabs::learningResources"/>
+				<selenium command="clickAndWait" target="learningResources::menu_searchForm"/>
+				<selenium command="type" target="learningResources::content_searchForm_titleField" value="Demo Course"/>
+				<selenium command="clickAndWait" target="learningResources::content_searchForm_search"/>
+			</testcase-macro>
+			<xpath-ui-element name="firstLearningResourceInTable" xpath="//div[h4/text()='Learning resources']//table//tr[1]//td[5]//a"  description="refers to the first learning resource click in the table"/>
+			<!-- se clickCourseEntry sollte gelöscht werden -->
+			<xpath-ui-element name="clickCourseEntry" xpath="//a[contains(text(), '&quot; + nameOfCourse + &quot;')]" description="Click on the title of a course" testcase="login/listDemoCourse/learningResources::content_clickCourseEntry(nameOfCourse=Demo Course)">
+				<parameter name="nameOfCourse" description="the name of the course"/>
+			</xpath-ui-element>
+			<xpath-ui-element name="clickLearningResource" xpath="//table//a[contains(text(), '&quot; + nameOfLearningResource + &quot;')]" description="Click on the title of a Learning resource" testcase="login/listDemoCourse/learningResources::content_clickLearningResource(nameOfLearningResource=Demo Course)">
+				<parameter name="nameOfLearningResource" description="the name of the Learning resource">
+					<defaultValue value="Demo Course" />
+					<defaultValue value="Demo course wiki" />
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="clickCatalogEntry" xpath="//table//a[contains(*//text(), '&quot; + nameOfLearningResource + &quot;')]" description="Click on the title of a Learning resource" testcase="login/listDemoCourse/learningResources::content_clickLearningResource(nameOfLearningResource=Demo Course)">
+				<parameter name="nameOfLearningResource" description="the name of the Learning resource" />
+			</xpath-ui-element>
+			<!-- ki <xpath-ui-element name="goToContentOfLearningResource" xpath="//a[descendant-or-self::text()='&quot; + nameOfLearningResource + &quot;']/../..//a[descendant-or-self::text()='Go to content']" description="The Go to content link in a Learning Resources Table"> 
+			    <parameter name="nameOfLearningResource" description="the name of the Learning resource">
+					<defaultValue value="Demo Course" />
+					<defaultValue value="Demo course wiki" />
+				</parameter>
+			</xpath-ui-element>-->
+			
+			<xpath-ui-element name="showDetailedView" xpath="//a[starts-with(text(), '&quot; + nameOfLearningResource + &quot;')]/../..//a[descendant-or-self::text()='Detailed view']" description="The Detailed view link in a Learning Resources Table, for the resource starting-with nameOfLearningResource"> 
+			    <parameter name="nameOfLearningResource" description="the name of the Learning resource">
+					<defaultValue value="Demo Course" />					
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="showContent" xpath="//a[descendant-or-self::text()='Show content' and @class='b_button']" description="The Show Content button in a Course Detailed View"/>
+			<xpath-ui-element name="selectedAccessLabel" xpath="//div[contains(.//label/text(), 'Access have')]//div[contains(@class,'b_form_selection_element')][.//input[@checked='checked']]//label" description="The label with the selected access rule" />
+			<!-- <link-ui-element name="additionalInformation" link="Additional information" description="Additional Information Link"/> asa unused -->
+			<pageset name="searchForm" description="learning resources search form">
+				<!-- <xpath-ui-element name="titleField" xpath="//form[@name='searchform']//input[@name='cif_displayname']" description="title of learning resource field"></xpath-ui-element> unused  -->
+				<!-- <xpath-ui-element name="authorField" xpath="//form[@name='searchform']//input[@name='cif_author']"  description="author of learning resource field"></xpath-ui-element> unused -->
+				<xpath-ui-element name="courseType" xpath="//input[@type='checkbox' and @value='CourseModule']" description="course type checkbox"/>
+				<!-- <xpath-ui-element name="descriptionField" xpath="//form[@name='searchform']//input[@name='cif_description']"  description="description of learning resource field"></xpath-ui-element> asa unused -->
+				<!-- <xpath-ui-element name="search" xpath="//form[@name='searchform']//input[@value='Search']"  description="search button learning resources search map"></xpath-ui-element> unused  -->
+			</pageset>
+			<pageset name="courseTable" description="courses table">
+				<xpath-ui-element name="selectCourse" xpath="//form//table//tr[&quot; + index + &quot;]/td[2]//a" description="select course in table">
+					<parameter name="index" description="row in table"/>
+				</xpath-ui-element>				
+			</pageset>
+		</pageset>
+		
+		<pageset name="toolbox" description="the toolbox area to the right">
+			<pageset name="import" description="the import toolbox to the right">
+				<default-testcase testcase="login/tabs::learningResources/learningResources::menu_myEntries" final-command="clickAndWait"/>
+				<xpath-ui-element name="course" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Course']" description="the import course link in the import toolbox"/>
+	               <xpath-ui-element name="cpLearningContent" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='CP learning content']" description="the import CP learning content link in the import toolbox"/>			
+	               <!-- <xpath-ui-element name="scormLearningContent" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='SCORM learning content']" description="the import SCORM learning content link in the import toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="test" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Test']" description="the import Test link in the import toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="questionnaire" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Questionnaire']" description="the import questionnaire link in the import toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="wiki" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Wiki']" description="the import Wiki link in the import toolbox"/>  asa unused -->
+			    <!-- <xpath-ui-element name="glossary" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Glossary']" description="the import glossary link in the import toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="otherFormats" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Other formats']" description="the import other formats link in the import toolbox"/>  asa unused -->
+				<!-- new for 6.3-->
+				<xpath-ui-element name="blog" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Blog']" description="the import blog link in the create toolbox"/>			
+				<xpath-ui-element name="podcast" xpath="//div[@class='b_toolbox'][descendant::text()='Import']//a[descendant::text()='Podcast']" description="the import podcast link in the create toolbox"/>			
+			</pageset>
+			<pageset name="create" description="the create toolbox to the right">
+				<default-testcase testcase="login/tabs::learningResources/learningResources::menu_myEntries" final-command="clickAndWait"/>
+				<xpath-ui-element name="course" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Course']" description="the create course link in the create toolbox"/>
+	               <xpath-ui-element name="test" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[contains(descendant::text(), 'Test')]" description="the create test link in the create toolbox"/>			
+	            <xpath-ui-element name="questionnaire" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Questionnaire']" description="the create questionnaire link in the create toolbox"/>			
+	            <xpath-ui-element name="resourceFolder" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Resource folder']" description="the create resource folder link in the create toolbox"/>			
+	            <xpath-ui-element name="wiki" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Wiki']" description="the create wiki link in the create toolbox"/>			
+				<xpath-ui-element name="glossary" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Glossary']" description="the create glossary link in the create toolbox"/>
+				<!-- new for 6.3-->
+				<xpath-ui-element name="blog" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Blog']" description="the create blog link in the create toolbox"/>			
+				<xpath-ui-element name="podcast" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[descendant::text()='Podcast']" description="the create podcast link in the create toolbox"/>
+				<xpath-ui-element name="createCP" xpath="//div[@class='b_toolbox'][descendant::text()='Create']//a[contains(./text(), 'CP')]" description="create CP link"/>			
+			</pageset> 
+			<pageset name="delete" description="the delete toolbox to the right">
+			    <!-- <xpath-ui-element name="learningResources" xpath="//div[@class='b_toolbox'][descendant::text()='Delete']//a[descendant::text()='Learning resources']" description="the delete learning resources link in the create toolbox"/>  asa unused -->
+			</pageset>
+			<pageset name="category" description="the catagory toolbox to the right, menu catalog">
+			    <!-- <xpath-ui-element name="modifyData" xpath="//div[@class='b_toolbox'][descendant::text()='Category']//a[descendant::text()='Modify data']" description="the modify data link in the catagory toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="nominateAdministrator" xpath="//div[@class='b_toolbox'][descendant::text()='Category']//a[descendant::text()='Nominate administrator']" description="the nominate administrator link in the catagory toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="contactAdministrator" xpath="//div[@class='b_toolbox'][descendant::text()='Category']//a[descendant::text()='Contact administrator']" description="the contact administrator link in the catagory toolbox"/> asa unused -->
+			</pageset>
+			<pageset name="add" description="the add toolbox to the right, menu catalog">
+			    <!-- <xpath-ui-element name="subCategory" xpath="//div[@class='b_toolbox'][descendant::text()='Add']//a[descendant::text()='Sub-category']" description="the sub-category link in the add toolbox"/> asa unused -->
+			    <!-- <xpath-ui-element name="learningResource" xpath="//div[@class='b_toolbox'][descendant::text()='Add']//a[descendant::text()='Learning resource']" description="the learning resource link in the add toolbox"/> asa unused -->
+			</pageset>
+			<pageset name="learningResource" description="the Learning resource toolbox to the right">
+			    <!-- <xpath-ui-element name="showContent" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Show content']" description="the show content link in the learning resource toolbox"/> asa unused -->
+			    <xpath-ui-element name="exportContent" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Export content']" description="the edit content link in the learning resource toolbox"/>
+			    <!-- <xpath-ui-element name="setBookmark" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Set bookmark']" description="the set bookmark link in the learning resource toolbox"/> asa unused -->			   
+			    <xpath-ui-element name="editContent" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Edit content']" description="the edit content link in the learning resource toolbox"/>
+			    <!-- <xpath-ui-element name="modifyDescription" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Modify description']" description="the modify description link in the learning resource toolbox"/> asa unused -->
+			    <xpath-ui-element name="modifyProperties" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Modify settings']" description="the modify properties link in the learning resource toolbox"/>
+				<xpath-ui-element name="copy" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Copy']" description="the copy link in the learning resource toolbox"/>
+	               <xpath-ui-element name="delete" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Delete']" description="the delete link in the learning resource toolbox"/>
+			    <xpath-ui-element name="assignOwners" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Manage owners']" description="the Assign owners link in the learning resource toolbox"/>
+			    <xpath-ui-element name="addToCatalog" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Add to catalog']" description="Add the learning resource to catalog" />
+			    <!-- <xpath-ui-element name="closeDetailedView" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Close detailed view']" description="the close detailed view link in the learning resource toolbox"/> asa unused -->
+			    <xpath-ui-element name="closeCourse" xpath="//div[@class='b_toolbox'][descendant::text()='Learning resource']//a[descendant::text()='Close']" description="Close the course" />
+	            <pageset name="assignOwners" description="Assign owners of a learning resource">
+					<xpath-ui-element name="addOwner" xpath="//a[contains(descendant::text(), 'Add user(s)')]"  description="add user to owner list" />
+				</pageset>
+			</pageset>
+		</pageset>
+		
+		<pageset name="dialog" description="all dialogs in learning resources">
+		    <xpath-ui-element name="title" xpath="//fieldset[./legend='Information on this entry']//input[@type='text']" description="title input field"/>
+			<xpath-ui-element name="description" xpath="//body[@id='tinymce']" description="description input field"/>
+		    <!-- <xpath-ui-element name="next" xpath="//div[@class='b_button_group']//input[@value='Next']" description="Course title and description - next"/> asa unused -->				
+		    <xpath-ui-element name="buttonNext" xpath="//button[.//text()='Next']" description="Course title and description - next"/>				
+			<xpath-ui-element xpath="//div[contains(.//text(), 'Do you want to start the editor?')]/..//a[.//text()='Yes']" name="startYes" description="confirm yes of dialog when starting the editor"></xpath-ui-element>
+			<xpath-ui-element xpath="//div[contains(.//text(), 'Do you want to start the editor?')]/..//a[.//text()='No']" name="startNo" description="confirm no of dialog when not starting the editor"></xpath-ui-element>	
+		    <!-- <xpath-ui-element xpath="//div[contains(.//text(), 'Do you really want to delete this learning resource?')]/..//a[.//text()='Yes']" name="deleteYes" description="confirm yes of dialog when deleting a learning resource"></xpath-ui-element> asa unused -->
+	        <!-- <xpath-ui-element xpath="//div[contains(.//text(), 'Do you really want to delete this learning resource?')]/..//a[.//text()='No']" name="deleteNo" description="confirm no of dialog when deleting a learning resource"></xpath-ui-element> asa unused -->
+			
+			 <xpath-ui-element name="yes" xpath="//div[@class='b_button_group']//a[descendant::text()='Yes']" description="the Yes button on the 'Configuration changed' dialog"/>
+			 <xpath-ui-element name="catalogRoot" xpath="//div[contains(@class, 'b_modal_area')]//div[@id='extdd-1']//a[contains(@class, 'x-tree-node-anchor')]" description="Select the catalog root for inserting course" />
+	    </pageset>
+	    
+	    <pageset name="courseImport" description="the course import dialog">
+	    	<xpath-ui-element name="uploadFile" xpath="//a[contains(./span/text(),'Upload file')]" description="the upload file button"/>
+	    	<xpath-ui-element name="fileChooser" xpath="//fieldset[//text()='File upload']//input[@class='b_fileinput_realchooser']" description="the file choose input field"/>
+	        <!-- <xpath-ui-element name="fileChooserSave" xpath="//fieldset[./legend/text()='File upload']//input[@value='Save']" description="the save button under the file chooser input field"/> asa unused -->
+	    	<xpath-ui-element name="importReferencesImport" xpath="//div[./h4/text()='Learning resource of type Add course']//ul/li//a[.//text()='Import']" description="the import button in the import-reference dialog"/>
+	    	<xpath-ui-element name="importReferencesContinue" xpath="//div[@class='b_window' and .//text()='Learning resource of type Add course']//a[./span/text()='Continue course import']" description="the continue course import button in the import-reference dialog"/>
+	    	<xpath-ui-element name="wizardShowDetailsView" xpath="//input[@value='dv']" description="show detail view radio button"></xpath-ui-element>
+	    	<xpath-ui-element name="wizardStartCourseEditor" xpath="//input[@value='ce']" description="start course editor radio button"></xpath-ui-element>
+	    </pageset>	    
+	    <pageset name="courseWizard" description="the course wizard dialog">
+	    	<xpath-ui-element name="selectWizardRadio" xpath="//input[@value='sw']"  description="start the course wizard" />
+	    	<xpath-ui-element name="createSinglePage" xpath="//input[@value='sp']" description="create a single page" />
+	    	<xpath-ui-element name="createEnrollment" xpath="//input[@value='en']" description="create an enrollment" />
+	    	<xpath-ui-element name="editEnrollmentLink" xpath="//div[@class='b_wizard']//table//a[span/text()='Edit']" description="edit the enrollment" />
+	    	<xpath-ui-element name="createDownloadFolder" xpath="//input[@value='bc']" description="create a download folder" />
+	    	<xpath-ui-element name="createForum" xpath="//input[@value='fo']" description="create a forum" />
+	    	<xpath-ui-element name="createContactForm" xpath="//input[@value='co']" description="create a contact form" />
+	    	<pageset name="editEnrollment" description="the Overlay for editing the enrollment">
+	    		<xpath-ui-element name="number_learningGroups" xpath="//div[contains(@class,'b_modal_area')]//form//input[@type='text']" description="textfield for number of learning groups" />
+	    		<xpath-ui-element name="number_learningGroups" xpath="//div[contains(@class,'b_modal_area')]//form//input[@type='text' and @value='25']" description="textfield for number participants" />
+	    		<xpath-ui-element name="accessLimit" xpath="//input[@name='accessLimit']" description="checkbox for setting only registered users" />
+	    		<xpath-ui-element name="selectSP" xpath="//input[@value='Information page']" description="select information page" />
+	    		<xpath-ui-element name="selectBC" xpath="//input[@value='Download folder']" description="select download folder" />
+	    		<xpath-ui-element name="selectFO" xpath="//input[@value='Forum']" description="select information page" />
+	    		<xpath-ui-element name="selectCO" xpath="//input[@value='E-mail']" description="select information page" />
+	    	</pageset>
+	    	<xpath-ui-element name="catalogRoot" xpath="//div[contains(@class, 'b_wizard')]//a[contains(@class, 'x-tree-node-anchor') and //text()='CATALOG ROOT']"  description="Select the catalog root for inserting course" />
+	    </pageset>
+	   	<pageset name="closeCourseWizard" description="The Wizard to close a course">
+	    	<xpath-ui-element name="cleanCatalog" xpath="//input[contains(@value,'form.clean.catalog')]" description="The checkbox to clean catalog" />
+	    	<xpath-ui-element name="cleanGroup" xpath="//input[contains(@value,'form.clean.groups')]" description="the checkbox to clean groups" />
+		</pageset>	    
+	   
+	</pageset>
+	<pageset name="learningResourcesModifieProperties" description="modifie properties of a learing resource">
+		<!--  <xpath-ui-element name="repoEntryAccess" xpath="//select[@name='cif_access']"  description="repo entry access dropdown" /> unused -->
+		<xpath-ui-element name="accessOnlyOwners" xpath="//fieldset[./legend='Settings regarding learning resources']//input[@class='b_radio' and @name='cif_access' and @value='1']" description="access - only owners radio button"/>
+		<xpath-ui-element name="accessOwnersAndAuthors" xpath="//fieldset[./legend='Settings regarding learning resources']//input[@class='b_radio' and @name='cif_access' and @value='2']" description="access - owners and authors radio button"/>
+		<xpath-ui-element name="accessAllRegistered" xpath="//fieldset[./legend='Settings regarding learning resources']//input[@class='b_radio' and @name='cif_access' and @value='3']" description="access - all registered users radio button"/>
+		<xpath-ui-element name="accessRegisteredAndGuests" xpath="//fieldset[./legend='Settings regarding learning resources']//input[@class='b_radio' and @name='cif_access' and @value='4']" description="access - registered users and guests radio button"/>		
+		<xpath-ui-element name="evidenceOfAchievement" xpath="//a[descendant::text()='Evidence of achievement']"  description="select Evidence of achievement tab" />		
+		<xpath-ui-element name="evidenceOfAchievementEnabled" xpath="//input[@name='isOn']"  description="Evidence of achievement enabled/disabled checkbox" />
+	</pageset>
+	
+	<pageset name="blog" description="blog resource links">
+		<xpath-ui-element name="create" xpath="//a[@class='b_button' and .//text()='Create your own entries']" description="create your own entries"/>
+		<xpath-ui-element name="createNewEntry" xpath="//a[.//text()='Create new entry']" description="Create new entry"/>
+		<xpath-ui-element name="editEntry" xpath="//a[contains(.//text(),'Edit entry') and ancestor::div//h5[contains(.//text(),'&quot; + entryTitle + &quot;')]]" description="edit entry">
+		  <parameter name="entryTitle" description="entry title"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="draft" xpath="//div[@class='o_post b_clearfix o_draft']//h5[contains(.//text(),'&quot; + entryTitle + &quot;')]" description="draft with title">
+		  <parameter name="entryTitle" description="entry title"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="addComment" xpath="//a[@class='b_comments' and ancestor::div//h5[contains(.//text(),'&quot; + entryTitle + &quot;')]]" description="comments link">
+		  <parameter name="entryTitle" description="comments link label"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="includeExternal" xpath="//a[contains(.//text(),'Include an')]" description="include an external already existing blog"></xpath-ui-element>
+		<xpath-ui-element name="edit" xpath="//a[@class='b_button b_small' and .//text()='Edit blog']" description="edit blog button"></xpath-ui-element>
+		<xpath-ui-element name="blogEntryDescriptionFrame" xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Description']//div[@class='b_form_element']//iframe" description="description textarea of the blog"/>
+		<xpath-ui-element name="blogEntryContentFrame" xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Content']//div[@class='b_form_element']//iframe" description="content textarea of the blog"/>
+	</pageset>
+	
+	<pageset name="podcast" description="podcast resource links">
+		<xpath-ui-element name="create" xpath="//a[@class='b_button' and .//text()='Create your own episode']" description="create your own entries"></xpath-ui-element>
+		<xpath-ui-element name="addEpisode" xpath="//a[.//text()='Add episode']" description="Add episode button"/>
+		<!--  <xpath-ui-element name="editEpisode" xpath="//a[contains(.//text(),'Create') and ancestor::div[contains(@class,'o_podcast_episode')]//h5[contains(.//text(),'&quot; + episodeTitle + &quot;')]]"  description="create or edit podcast episode">
+		  <parameter name="episodeTitle" description=""></parameter>
+		</xpath-ui-element>-->
+		<xpath-ui-element name="editEpisode" xpath="//a[contains(.//text(),'Create')]" description="create or edit episode"></xpath-ui-element>
+		<xpath-ui-element name="addComment" xpath="//a[@class='b_comments' and ancestor::div//h5[contains(.//text(),'&quot; + entryTitle + &quot;')]]" description="comments link">
+      <parameter name="entryTitle" description="comments link label"/>
+    </xpath-ui-element>
+		<xpath-ui-element name="includeExternal" xpath="//a[contains(.//text(),'Include an')]" description="include an external already existing blog"></xpath-ui-element>
+		<xpath-ui-element name="edit" xpath="//a[@class='b_button b_small' and .//text()='Edit Podcast']" description="edit blog button"></xpath-ui-element>
+	</pageset>
+	
+	<pageset name="cpEditor" description="content package editor paths">
+	    <xpath-ui-element name="menuTreeLink" xpath="//div[@class='o_cpeditor_menu_tree']//a[./span/text()='&quot; + link + &quot;']" description="a page node link in the cp editor, containing the linkText" >
+		  <parameter name="link" description="The text of the link"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="selectedTreeNodeExpanded" xpath="//div[@class='x-tree-node-el x-unselectable x-tree-node-expanded x-tree-selected']//a[./span/text()='&quot; + link + &quot;']" description="a selected expanded node link in the cp editor, containing the linkText" >
+		  <parameter name="link" description="The text of the link"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="selectedTreeNodeLeaf" xpath="//div[@class='x-tree-node-el x-tree-node-leaf x-unselectable x-tree-selected']//a[./span/text()='&quot; + link + &quot;']" description="a selected leaf node link in the cp editor, containing the linkText" >
+		  <parameter name="link" description="The text of the link"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="addPage" xpath="//a[@class='o_cpeditor_new']" description="add page button"></xpath-ui-element>
+		<xpath-ui-element name="editPageProperties" xpath="//a[@class='o_cpeditor_edit']"  description="edit page properties button"></xpath-ui-element>
+		<xpath-ui-element name="metadataTitleInput" xpath="//fieldset[//text()='Edit metadata']//input[@type='text']" description="metadata title input field"></xpath-ui-element>
+		<xpath-ui-element name="saveAndClose" xpath="//a[@class='b_button' and contains(.//text(),'Save and close')]" description="save and close button"></xpath-ui-element>
+		<xpath-ui-element name="copyPage" xpath="//a[@class='o_cpeditor_copy']" description="copy page button"></xpath-ui-element>
+		<xpath-ui-element name="importPage" xpath="//a[@class='o_cpeditor_import']" description="import page button"></xpath-ui-element>
+		<xpath-ui-element name="deletePage" xpath="//a[@class='o_cpeditor_delete']"  description=" delete page button"></xpath-ui-element>
+		<xpath-ui-element name="preview" xpath="//a[@class='o_cpeditor_preview']" description="preview page button"></xpath-ui-element>
+		<xpath-ui-element name="dragAndDropSrcObject" xpath="//ul[@class='x-tree-node-ct']//a[contains(.//text(),'&quot; + link + &quot;')]"  description="locator of object to be drag">
+			<parameter name="link" description="link title"></parameter>
+		</xpath-ui-element>
+		<xpath-ui-element name="uploadFile" xpath="//a[contains(./span/text(),'Upload file')]" description="the upload file button"/>
+		<xpath-ui-element name="imageDescription" xpath="//input[@id='alt']" description="image description"/>
+		<xpath-ui-element name="insertImage" xpath="//input[@id='insert']" description="insert image button"/>
+	</pageset>
+</ui-map-include>

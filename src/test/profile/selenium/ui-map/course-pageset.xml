@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+
+	<pageset name="course" description="An opened course">
+
+		<pageset name="menu" description="the left hand menu">
+			<xpath-ui-element name="root"
+				xpath="//a[contains(.//text(),'&quot; + nameOfCourse + &quot;')]"
+				description="The root link (named after the short title of the course, with tooltip title)">
+				<parameter name="nameOfCourse" description="the name of the course">
+					<defaultValue value="Demo course wiki"/>
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="link" xpath="//div[@class='b_tree']//a[.//text()='&quot; + link + &quot;']" description="a course node link in the courserun, containing the linkText" >
+				<parameter name="link" description="The text of the link"/>
+			</xpath-ui-element>
+			<xpath-ui-element name="forum"
+				xpath="//div[@class='b_tree']//a[descendant::text()='Forum']"
+				description="Course node 'Forum'"/>
+			<xpath-ui-element name="structureNode"
+				xpath="//div[@class='b_tree']//a[contains(descendant::text(), 'Structure')]"
+				description="Course node 'Structure'"/>
+			<!-- ld: courseNode replaces the structureNode and forum, fix test cases before removal!  -->
+			<xpath-ui-element name="courseNode"
+				xpath="//div[@class='b_tree']//a[contains(descendant::text(), '&quot; + titleOfNode + &quot;')]"
+				description="Click on the course node with the given title">
+				<parameter name="titleOfNode" description="the title of the course node">
+					<defaultValue value="Structure"/>
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="positionedCourseElem" xpath="//div[@class='b_tree']//ul[contains(@class,'b_tree_l1')]/li[&quot; + index + &quot;]//a" description="course element identified by the index value">
+				<parameter name="index" description="root's child index"/>
+			</xpath-ui-element>
+		</pageset>
+
+		<!--TODO se evtl. xpath-ui-element links?-->
+
+		<pageset name="toolbox" description="the toolbox area to the right">
+			<pageset name="courseTools" description="the course tools toolbox">
+				<link-ui-element name="courseEditor" link="Course editor"
+					description="Course editor Link"/>
+				<link-ui-element name="groupManagement" link="Group management"
+					description="Group Management link"/>
+				<link-ui-element name="rightsManagement" link="Rights management"
+				    description="Rights Management link"/>
+			    <!-- <link-ui-element name="archiveTool" link="Archive tool"
+					description="Archive Tool link"/> asa unused -->
+				<link-ui-element name="assessmentTool" link="Assessment tool"
+					description="Assessment tool link"/>
+			</pageset>
+
+		    <pageset name="generalTools" description="general course tools toolbox">
+			    <!-- <link-ui-element name="calendar" link="Calendar"
+			        description="Calendar link"/> asa unused -->
+				<!-- <link-ui-element name="glossary" link="Glossary"
+					description="Glossary link"/> asa unused -->
+				<link-ui-element name="detailedView" link="Detailed view"
+					description="Detailed view link"/>
+				<!-- <link-ui-element name="personalNotes" link="Personal notes"
+					description="Personal notes link"/> asa unused -->
+				<link-ui-element name="setBookmark" link="Set bookmark"
+					description="Set bookmark link"/>
+				<!-- <xpath-ui-element xpath="//div[@class='b_toolbox'][descendant::text()='General']//a[.//text()='Enter course chat...']" 
+					name="enterCourseChat" description="the Enter Course Chat link"/> asa unused -->
+			</pageset>
+
+			<pageset name="myGroupsTools" description="group links toolbox">
+				<xpath-ui-element name="tutoredGroups"
+					xpath="//div[@class='b_toolbox']//a[@class='b_toolbox_link' and descendant::text()='&quot; + nameOfGroup + &quot;']"
+					description="tutored groups">
+					<parameter name="nameOfGroup" description="the name of the group"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="myLearningGroups"
+					xpath="//div[@class='b_toolbox'][descendant::text()='My learning groups']//a[contains(descendant::text(), '&quot; + nameOfGroup + &quot;')]"
+					description="my learning groups">
+					<parameter name="nameOfGroup" description="the name of the group"/>
+				</xpath-ui-element>
+			</pageset>
+		</pageset>
+
+		<pageset name="content" description="the (center) content area">
+			<xpath-ui-element name="contentElement" xpath="//div[@class='o_course_run']" description="content of the course element"/>
+			<pageset name="forum" description="forum in content area">
+				<xpath-ui-element name="displayForum"
+					xpath="//div[@class='b_button_group']//a[.//text()='Display forum']"
+					description="Display forum after node selection"/>
+
+				<xpath-ui-element name="newTopic" xpath="link=Open new topic"
+					description="Open new topic"/>
+				<!-- <xpath-ui-element name="archiveForum" xpath="link=Archive forum"
+					description="Archive forum"/> asa unused -->
+				<xpath-ui-element name="replyWithQuotation" xpath="link=Reply with quotation"
+					description="Reply with quot. to forum message"/>
+				<xpath-ui-element name="replyWithoutQuotation" xpath="link=Reply without quotation"
+					description="Reply w/o quot. to forum message"/>
+				<xpath-ui-element name="delete" xpath="link=Delete"
+					description="Delete forum message"/>
+				<xpath-ui-element name="deleteYes" xpath="link=Yes"
+					description="Confirm Yes delete forum message"/>
+				<!-- <xpath-ui-element name="deleteNo" xpath="link=No"
+					description="Confirm No delete forum message"/> asa unused -->
+				<xpath-ui-element name="edit" xpath="link=Edit" description="Edit forum message"/>				
+				<xpath-ui-element name="deleteFile" xpath="//table//tr/td[contains(descendant::text(), '&quot; + nameOfFile + &quot;')]/../td//a[.//text()='Delete']"
+					description="delete file from forum message">
+					<parameter name="nameOfFile" description="the name of the file"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="typeMsgTitle"
+					xpath="//div[@class='b_form_element b_form_vertical']//input[@type='text']"
+					description="Forum - enter message title text"/>
+				<xpath-ui-element name="clickMsgBody"
+					xpath="//body[@id='tinymce']"
+					description="Forum - enter message body text"/>
+				<!-- <xpath-ui-element name="cancel"
+					xpath="//div[@class='b_button_group']//input[@value='Cancel']"
+					description="Forum - cancel message"/> asa unused -->
+				<xpath-ui-element name="save"
+					xpath="//div[@class='b_button_group']//button[@value='Save']"
+					description="Forum - save message"/>
+				<xpath-ui-element name="collectAsArtefact" xpath="//*[ @class and contains( concat( ' ', normalize-space(@class), ' ' ), ' b_eportfolio_add ' ) ]"
+					description="Collect post as artefact for ePortfolio"/>				
+				<!-- <xpath-ui-element name="archiveThread" xpath="link=Archive thread"
+					description="Archive forum thread"/> asa unused -->
+				<!-- <xpath-ui-element name="closeDiscussion" xpath="link=Close discussion"
+					description="Close discussion"/> asa unused -->
+				<!-- <xpath-ui-element name="hideDiscussion" xpath="link=Hide discussion"
+					description="Hide discussion"/> asa unused -->
+				<!-- <xpath-ui-element name="showDiscussion" xpath="link=Show discussion"
+					description="Show discussion"/> asa unused -->
+
+				<xpath-ui-element name="viewTopic"
+					xpath="//form[contains(@name, 'tb_ms')]//a[.//text()='&quot;+nameOfTopic+&quot;']"
+					description="Click on discussion topic">
+					<parameter name="nameOfTopic" description="the name of the topic"/>
+				</xpath-ui-element>
+				<!--TODO se
+					<xpath-ui-element name="showPreview" xpath="link=Show preview" description="Show preview of forum message"/>
+				-->
+
+			</pageset>
+
+			<pageset name="enrollment" description="the entrolment content area">
+				<xpath-ui-element name="enrolOnGroup"
+					xpath="//form/div/table/tbody/tr[./td//text()='&quot; + nameOfGroup + &quot;']//a[.//text()='Enrol']"
+					 description="enrol on a particular group">
+					<parameter name="nameOfGroup" description="the name of the group"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="enrolledOrNot"
+					xpath="//form/div/table/tbody/tr[./td//text()='&quot; + nameOfGroup + &quot;']//td[.//text()='enrolled' or .//text()='Not enrolled']"
+					description="enrolled on a particular group">
+					<parameter name="nameOfGroup" description="the name of the group"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="cancelEnrolment"
+					xpath="//form/div/table/tbody/tr[./td//text()='&quot; + nameOfGroup + &quot;']//a[contains(.//text(),'Cancel')]"
+					 description="cancel enrolment on a particular group">
+					<parameter name="nameOfGroup" description="the name of the group"/>				
+				</xpath-ui-element>
+				<xpath-ui-element name="enrolmentType"
+					xpath="//div[@class='o_course_run_statusinfo' or @class='o_course_run_groupinfo']"
+					 description="Course element of the type Enrolment - info"/>
+				
+			</pageset>
+			<pageset name="fileDialog" description="the file dialog content area">
+				<xpath-ui-element
+					xpath="//div[@class='b_titled_wrapper o_course_run']//a[.//text()='Upload file']"
+					name="uploadFile" description="the upload button for files">
+				</xpath-ui-element>
+			</pageset>
+			<!-- new for 6.3-->
+			<pageset name="blog" description="the blog content area">
+				<!-- links in blog run-->
+				<xpath-ui-element xpath="//div[@class='b_button_group']//a[.//text()='Edit blog']" name="editBlog" description="the edit blog button"/>
+				<xpath-ui-element xpath="//div[@class='b_button_group']//a[.//text()='Create your own entries']" name="createOwnEntries" description="the create own entries button"/>
+				<xpath-ui-element xpath="//div[@class='b_button']//a[.//text()='Include an external blog already existing']" name="includeExtBlog" description="the include an external blog button"/>
+				<xpath-ui-element xpath="//div[@class='b_form_element']//a[.//text()='URL']" name="blogURL" description="URL field"/>
+				
+				<xpath-ui-element xpath="//div[@class='b_form_element']//a[.//text()='Title']" name="entryTitle" description="entry title field"/>
+				<!-- LD: how to define these two fields?
+				<xpath-ui-element xpath="'Description'" name="entryDescription" description="entry description field"/>
+				<xpath-ui-element xpath="'Content'" name="entryContent" description="entry content field"/>
+				-->
+				<xpath-ui-element xpath="//div[@class='b_button_group']//a[.//text()='Publish']" name="publishEntry" description="the publish entry button"/>
+				<xpath-ui-element xpath="//div[@class='b_button_group']//a[.//text()='Save draft']" name="saveDraft" description="the save draft button"/>
+				<xpath-ui-element xpath="//div[@class='b_button_group']//a[.//text()='Cancel']" name="cancel" description="the cancel button"/>
+				
+				
+				<xpath-ui-element xpath="//div[@class='b_button_group']//a[.//text()='Create new entry']" name="createEntry" description="the create new entry button"/>
+				<xpath-ui-element xpath="//div[@class='b_button b_xsmall']//a[.//text()='Edit entry']" name="editEntry" description="the edit entry button"/>
+				<xpath-ui-element xpath="//div[@class='b_button_b_xsmall']//a[.//text()='Delete']" name="deleteEntry" description="the delete button"/>
+				<!-- LD: how to define these links?
+				<xpath-ui-element xpath="'Read more']" name="readMore" description="the read more link"/>
+				// ld: comment function same for podcast, xpath Comments(0) with counter of number of comments
+				<xpath-ui-element xpath="'Comments']" name="comments" description="the comments link"/>
+				<xpath-ui-element xpath="'Add your comment']" name="addComment" description="the add your comment link"/>
+				-->
+				<xpath-ui-element xpath="//div[@class='b_button_b_xsmall']//a[.//text()='Reply']" name="reply" description="the reply button"/>
+				<xpath-ui-element xpath="//div[@class='b_button_b_xsmall']//a[.//text()='Delete']" name="deleteComment" description="the delete button"/>
+				<!-- LD: im ui:commons?
+				<xpath-ui-element xpath="'Save']" name="saveComment" description="the save comment button"/>
+				<xpath-ui-element xpath="'Cancel']" name="cancelComment" description="the cancel comment button"/>
+				-->
+			</pageset>
+			
+			<pageset name="scorm" description="scorm">
+				<xpath-ui-element name="scormPreview"
+					xpath="//div[@class='b_form_element']//button[@value='Show SCORM learning content']"
+					description="show SCORM content button">
+				</xpath-ui-element>	
+				<link-ui-element name="back" link="Back" description="The Back button"/>	
+			</pageset>
+			<pageset name="assessment" description="assessment course element">
+				<xpath-ui-element name="summaryOfScore"
+					xpath="//div[@class='o_course_run_scoreinfo' and .//text()='Summary of score']"
+					description="Summary of score title"/>
+			</pageset>
+			<pageset name="lti" description="lti xpaths">
+			  <xpath-ui-element name="launch" xpath="//input[@name='ext_basiclti_submit']" description="launch button"/>
+			</pageset>
+			<!-- for test see qti-pageset.xml-->
+			<xpath-ui-element name="passedFailedStatus"
+				xpath="//div[@class='o_course_run_scoreinfo']//td[contains(descendant::text(), 'Status')]/../td[2]/span/text()"
+				description="course scoreEvaluation info: Passed/Failed"/>
+		</pageset>
+
+		<pageset name="assessment" description="AssessmentTool links">
+			<xpath-ui-element name="tableFilterForm" xpath="//div[@class='b_table_filter']//form[@name='tablefilter']" description="The Assessment overview table filter"/>	
+			<xpath-ui-element name="selectType"
+				xpath="//div[@class='b_tree']//a[./text()='&quot; + text + &quot;']"
+				description="select the left hand menu link with the given text">
+				<parameter name="text" description="the text of the left hand menu link">
+					<defaultValue value="As per user"/>
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="selectUser"
+				xpath="//table//a[./text()='&quot; + username + &quot;']"
+				description="select the user with the given username">
+				<parameter name="username" description="username">
+					<defaultValue value="test"/>
+				</parameter>
+			</xpath-ui-element>
+			<!-- It is assumed that each course element has a unique title within the current course -->
+			<xpath-ui-element name="scoreInTable"
+				xpath="//td[contains(descendant::text(), '&quot; + title + &quot;')]/../td[4]/text()"
+				description="score xpath for the specified test course element in the assessment overview">
+				<parameter name="title" description="the title of the test course node">
+					<defaultValue value="Test"/>
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="attemptsInTable"
+				xpath="//td[contains(descendant::text(), '&quot; + title + &quot;')]/../td[3]/text()"
+				description="attempts xpath for the specified test course element in the assessment overview">
+				<parameter name="title" description="the title of the test course node">
+					<defaultValue value="Test"/>
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="passedStatusInTable"
+				xpath="//td[contains(descendant::text(), '&quot; + title + &quot;')]/../td[5]//text()"
+				description="passed/failed xpath for the specified test course element in the assessment overview">
+				<parameter name="title" description="the title of the test course node">
+					<defaultValue value="Test"/>
+				</parameter>
+			</xpath-ui-element>
+			
+			<xpath-ui-element name="selectAssessmentCourseNode"
+				xpath="//td[contains(descendant::text(), '&quot; + title + &quot;')]/../td[6]/a[.//text()='Select']"
+				description="'Select' link of the asssessment course node">
+				<parameter name="title" description="the title of the test course node">
+					<defaultValue value="Bewertung"/>
+				</parameter>
+			</xpath-ui-element>
+			<!-- AssessementForm start -->
+			<xpath-ui-element name="setPassedNoInfo"
+				xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Passed']//div[@class='b_form_element']//input[@name='passed' and @value='undefined']"
+				description="'Passed' no information"/>		
+			<xpath-ui-element name="setPassedYes"
+				xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Passed']//div[@class='b_form_element']//input[@name='passed' and @value='true']"
+				description="'Passed' Yes"/>	
+			<xpath-ui-element name="setPassedNo"
+				xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Passed']//div[@class='b_form_element']//input[@name='passed' and @value='false']"
+				description="'Passed' no information"/>				
+			<xpath-ui-element name="minMaxScore"
+				xpath="//div[@class='b_form_element_wrapper b_clearfix' and .//text()='&quot; + title + &quot;']//div[@class='b_form_element']//span/text()"
+				description="Minimum/maximum score in AssessmentForm">		
+				<parameter name="title" description="the label: Minimum score or Maximum score">
+					<defaultValue value="Minimum score:"/>
+				</parameter>
+			</xpath-ui-element>			
+			<xpath-ui-element name="coachComment" xpath="//div[@class='b_form_element']//textarea[@name='coachcomment']" description="Comments for other coaches textarea"/>
+			<!-- AssessementForm end -->		
+			<xpath-ui-element name="startBulkAssessment"
+				xpath="//a[contains(descendant::text(), 'Start bulk assessment')]"
+				description="Start bulk assessment wizard"/>
+			<xpath-ui-element name="selectAssessmentCourseNodeInWizard"
+				xpath="//td[descendant::text()='&quot; + title + &quot;']/../td[2]/a[contains(descendant::text(), 'Select')]"
+				description="'Select' link of the course node">
+				<parameter name="title" description="the title of the test course node">
+					<defaultValue value="Bewertung"/>
+				</parameter>
+			</xpath-ui-element>
+			<xpath-ui-element name="bulkAssessmentValues"
+					xpath="//div[@class='b_form_element']//textarea"
+					description="username and score values"/>
+			<xpath-ui-element name="closeBulkAssessmentWizard"
+					xpath="//fieldset[./legend[contains(.//text(),'Step 6')]]//a[contains(descendant::text(), 'Close')]"
+					description="close wizard"/>
+					
+			<xpath-ui-element xpath="//div[@class='b_toolbox'][descendant::text()='Assessment tool']//a[descendant::text()='Close']" 
+				name="closeAssessmentTool" description="close the assessment tool"></xpath-ui-element>
+				
+			<!--  mmw: beispiel bitte stehen lassen. sonst marions notizbuch entsprechend anpassen -->
+			<xpath-ui-element xpath="link=Close" name="alsoCloseAssessmentTool" description="plan B of close the assessment tool"></xpath-ui-element>
+
+		</pageset>
+		
+		<pageset name="disposed" description="disposed course">
+			<xpath-ui-element name="closeAndRestart" xpath="//a[descendant::text()='Close course and restart']" description="Comments for users textarea"/>
+		</pageset>
+
+	</pageset>
+
+</ui-map-include>

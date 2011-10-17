@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map>
+	<testcase-macro name="login">
+		<call-macro name="adminlogin"/>
+	</testcase-macro>
+	<testcase-macro name="loginDeutsch">
+		<call-macro name="adminloginDeutsch"/>
+	</testcase-macro>
+
+	<include file="dmz-pageset.xml"/>
+	<include file="tabs-pageset.xml"/>	
+	<include file="home-pageset.xml"/>	
+	<include file="groups-pageset.xml"/>
+	<include file="group-pageset.xml"/>
+	<include file="groupManagement-pageset.xml"/>
+	<include file="learningResources-pageset.xml"/>
+	<include file="commons-pageset.xml"/>	
+	<include file="course-pageset.xml"/>	
+	<include file="courseEditor-pageset.xml"/>
+	<include file="testEditor-pageset.xml"/>	
+	<include file="groupAdministration-pageset.xml"/>
+	<include file="userAdministration-pageset.xml"/>
+	<include file="qti-pageset.xml"/>
+	<include file="systemAdministration-pageset.xml"/>
+	<include file="projectBroker-pageset.xml"/>
+	<include file="infoMessage-pageset.xml"/>
+	<include file="portfolio-pageset.xml"/>
+	<include file="rightsManagement-pageset.xml" />
+</ui-map>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+	<pageset name="qti" description="Test run links">	
+		<xpath-ui-element name="showHideResults" xpath="//div[@class='o_course_run_scoreinfo']/..//a[@class='b_button' and descendant::text()='&quot; + text + &quot;']" description="Show/Hide results button on test start page">
+			<parameter name="text" description="the text of button">
+				<defaultValue value="Show results" />		
+				<defaultValue value="Hide results" />				
+			</parameter>
+		</xpath-ui-element>		
+		<xpath-ui-element name="menuItem" xpath="//div[@class='o_qti_menu_item']//a[@title='&quot; + titleOfItem + &quot;']" description="Click on qti menu item with the given title">		
+			<parameter name="titleOfItem" description="the title of the qti menu item">
+					<defaultValue value="Single Choice" />					
+			</parameter>
+		</xpath-ui-element>
+		<xpath-ui-element name="saveAnswer" xpath="//input[@value='Save answer ']" description="Click 'Save answer ' button"/>
+		<xpath-ui-element name="finishTest" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Finish test ')]" description="Click 'Finish test' button"/>
+		<xpath-ui-element name="cancelTest" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Cancel test ')]" description="button cancel test"/>
+		<xpath-ui-element name="suspendTest" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Suspend test ')]" description="button suspend test"/>
+		<xpath-ui-element name="achievedScore" xpath="//td[contains(descendant::text(), 'Achieved score')]/../td[3]/text()" description="find the score xpath - at the end of test run - before close test"/>
+		<xpath-ui-element name="closeTest" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Close')]" description="Click 'Close' button in test"/>
+		<xpath-ui-element name="yourScore" xpath="//td[contains(descendant::text(), 'Your score: ')]/../td[2]/text()" description="find the score xpath - test course node selected"/>
+		<xpath-ui-element name="yourStatus" xpath="//td[contains(descendant::text(), 'Status: ')]/../td[2]/span/text()" description="find the status xpath - test course node selected"/>
+		<xpath-ui-element name="commentFromTutor" xpath="//td[contains(descendant::text(), 'Comment')]/../td[2]/text()" description="find the status xpath - test course node selected"/>
+		
+		<xpath-ui-element name="finishQuestionnaire" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Finish questionnaire')]" description="Click 'Finish questionnaire' button"/>
+		<xpath-ui-element name="cancelQuestionnaire" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Cancel questionnaire')]" description="button cancel questionnaire"/>
+		<xpath-ui-element name="suspendQuestionnaire" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Suspend questionnaire ')]" description="button suspend questionnaire"/>
+		<!-- <xpath-ui-element name="closeQuestionnaire" xpath="//div[@id='o_qti_run']//a[@class='b_button'][contains(descendant::text(), 'Close')]" description="Click 'Close' button in questionnaire"/> asa unused -->
+		<xpath-ui-element name="testItemFormElement" xpath="//div[@class='o_qti_item_choice']/div[@class='o_qti_item_choice_option']/div[@class='o_qti_item_choice_option_value' and .//text()='&quot; + text + &quot;']/../div[@class='o_qti_item_choice_option_input']/input" description="select the form element with the given text">		
+			<parameter name="text" description="the text of the form element">
+					<defaultValue value="Antwort 1" />					
+			</parameter>
+		</xpath-ui-element>
+		<link-ui-element name="next" link="Next" description="The next link"/>
+	
+		<xpath-ui-element name="testKprimItemFormElementPlus" xpath="//table[@class='o_qti_item_kprim']//tr//td[descendant::text()='&quot; + text + &quot;']/..//td[1]/input[@class='b_radio']" 
+					  description="the text of the kprim item plus">
+			<parameter name="text" description="the text of the kprim element">
+				<defaultValue value="Antwort 1" />					
+			</parameter>
+		</xpath-ui-element>
+		<xpath-ui-element name="testKprimItemFormElementMinus" xpath="//table[@class='o_qti_item_kprim']//tr//td[descendant::text()='&quot; + text + &quot;']/..//td[2]/input[@class='b_radio']" 
+						  description="the text of the kprim item minus">
+			<parameter name="text" description="the text of the kprim element">
+				<defaultValue value="Antwort 1" />					
+			</parameter>
+		</xpath-ui-element>
+		<xpath-ui-element name="testGapItemFormElement" xpath="//div[@class='o_qti_item']//span[@class='o_qti_item_mattext' and descendant::text()='&quot; + text + &quot;']/following-sibling::input[1]" description="type in gap">
+			<parameter name="text" description="the text that precedes the gap">
+				<defaultValue value="abc" />					
+			</parameter>
+		</xpath-ui-element>
+		<xpath-ui-element name="questionnaireEssayTextArea" xpath="//div[@class='o_qti_item']//textarea" description="the textarea for the essay"/>
+	</pageset>
+</ui-map-include>

@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="" />
+<title>course_run_concurrent_edit_course_nodes</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">course_run_concurrent_edit_course_nodes</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>http://demo.olat.org/olat/dmz/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Online Learning And Training</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=dmz::username()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::username()</td>
+	<td>author01</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::password()</td>
+	<td>olat</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dmz::login()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::toolbox_create_wiki()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_title()</td>
+	<td>concurrent edit</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_description()</td>
+	<td>selenium</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::menu_learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::toolbox_create_course()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=learningResources::dialog_title()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_title()</td>
+	<td>concurrent edit course</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=learningResources::dialog_description()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=learningResources::dialog_description()</td>
+	<td>selenium</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_startYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertForum()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_clickInsertCourseElement()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertWiki()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_insertAsRootsFirstChild()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_insertCourseElements_clickInsertCourseElement()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbWiki_tabWikiLearningContent()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbWiki_chooseWiki()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbWiki_chooseWikiSearch_myEntries()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::content_bbWiki_chooseWikiSearch_chooseWiki(nameOfWiki=concurrent edit)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_editorTools_publish()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_selectall()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=courseEditor::publishDialog_courseAccessDropDown()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>ui=courseEditor::publishDialog_courseAccessDropDown()</td>
+	<td>label=All registered OLAT users</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_finish()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_editorTools_closeEditor()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::content_showContent()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Wiki)</td>
+	<td></td>
+</tr>
+<!--now student opens course and wiki-->
+<tr>
+	<td>click</td>
+	<td>ui=dmz::username()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::username()</td>
+	<td>student01</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::password()</td>
+	<td>olat</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dmz::login()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::learningResources()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::menu_courses()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::content_showContentOfLearningResource(nameOfLearningResource=concurrent edit course)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Wiki)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=wiki::sideNavigation_searchInput()</td>
+	<td>Deleteconcurrency</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::sideNavigation_createOrSearch()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::sideNavigation_clickAWikiPage(nameOfWikiPage=Deleteconcurrency)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::topNavigation_editPage()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=wiki::edit_editFormTextarea()</td>
+	<td>Deleteconcurrency test entry</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=learningResources::dialog_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::sideNavigation_index()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::topNavigation_editPage()</td>
+	<td></td>
+</tr>
+<!--both try to edit index wiki page-->
+<!--student goes to page version tab-->
+<tr>
+	<td>click</td>
+	<td>ui=wiki::sideNavigation_from a-z()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::sideNavigation_clickAWikiPage(nameOfWikiPage=Deleteconcurrency)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::topNavigation_versions()</td>
+	<td></td>
+</tr>
+<!--author goes to page edit tab, deletes-->
+<tr>
+	<td>click</td>
+	<td>ui=wiki::topNavigation_editPage()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::edit_deletePage()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dialog::OK()</td>
+	<td></td>
+</tr>
+<!--student goes to tab article-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=wiki::topNavigation_article()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>This article has been deleted and cannot be displayed anymore.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Forum)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::content_forum_newTopic()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=course::content_forum_typeMsgTitle()</td>
+	<td>test entry concurrent edit</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=course::content_forum_clickMsgBody()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=course::content_forum_clickMsgBody()</td>
+	<td>forum message editing</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::content_forum_save()</td>
+	<td></td>
+</tr>
+<!--author opens forum and deletes message-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Forum)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::content_forum_viewTopic(nameOfTopic=test entry concurrent edit)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::content_forum_delete()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::content_forum_deleteYes()</td>
+	<td></td>
+</tr>
+<!--student tries to edit forum message-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::content_forum_edit()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td>You must not edit this message.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Forum)</td>
+	<td></td>
+</tr>
+<!--author removes forum-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::toolbox_courseTools_courseEditor()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::menu_link(link=Forum)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_modifyTools_delete()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dialog::Yes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_editorTools_publish()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_selectall()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_next()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::publishDialog_finish()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=courseEditor::toolbox_editorTools_closeEditor()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::toolbox_generalTools_detailedView()</td>
+	<td></td>
+</tr>
+<!--student should get message to restart course-->
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=course::menu_link(link=Forum)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>Please close this course and restart.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::closeCourse(nameOfCourse=concurrent edit course)</td>
+	<td></td>
+</tr>
+<!--author deletes course-->
+
+</tbody></table>
+</body>
+</html>

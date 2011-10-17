@@ -1,0 +1,72 @@
+<!--
+	The document root. The root is a simple <ui-map> element
+-->
+
+<!ELEMENT ui-map-include (pageset*|testcase-macro*|include*)+>
+
+<!ELEMENT include EMPTY>
+
+<!ATTLIST include
+	file CDATA #REQUIRED>
+	
+<!ELEMENT pageset (pageset*|default-testcase*|testcase-macro*|xpath-ui-element*|link-ui-element*|var-link-ui-element*)*>
+
+<!ATTLIST pageset 
+	name CDATA #REQUIRED
+	description CDATA #REQUIRED>
+
+<!ELEMENT default-testcase EMPTY>
+
+<!ATTLIST default-testcase
+	testcase CDATA #REQUIRED
+	final-command CDATA #REQUIRED>
+
+<!ELEMENT testcase-macro (call-macro*|selenium*)+>
+
+<!ATTLIST testcase-macro
+	name CDATA #REQUIRED>
+
+<!ELEMENT call-macro EMPTY>
+
+<!ATTLIST call-macro
+	name CDATA #REQUIRED>
+
+<!ELEMENT selenium EMPTY>
+
+<!ATTLIST selenium
+	command CDATA #REQUIRED
+	target CDATA #REQUIRED
+	value CDATA #IMPLIED>
+
+<!ELEMENT xpath-ui-element (parameter*)>
+
+<!ATTLIST xpath-ui-element
+	xpath CDATA #REQUIRED
+	name CDATA #REQUIRED
+	description CDATA #REQUIRED
+	testcase CDATA #IMPLIED>
+
+<!ELEMENT link-ui-element EMPTY>
+
+<!ATTLIST link-ui-element
+	link CDATA #REQUIRED
+	name CDATA #REQUIRED
+	description CDATA #REQUIRED>
+
+<!ELEMENT var-link-ui-element EMPTY>
+
+<!ATTLIST var-link-ui-element
+	name CDATA #REQUIRED
+	linkparam CDATA #REQUIRED
+	description CDATA #REQUIRED>
+	
+<!ELEMENT parameter (defaultValue*)>
+
+<!ATTLIST parameter
+	name CDATA #REQUIRED
+	description CDATA #REQUIRED>
+	
+<!ELEMENT defaultValue EMPTY>
+
+<!ATTLIST defaultValue
+	value CDATA #REQUIRED>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+	<!-- Info message -->
+	<pageset name="infoMessage" description="Info message links">
+		<xpath-ui-element name="createMessage" xpath="//div[@class='b_float_right o_infomsg_create_button']//a[@class='b_button']" description="create message button"/>
+		<xpath-ui-element name="finishMessage" xpath="//a[@class='b_button b_wizard_button_finish']" description="finish message button"/>
+		<!-- ltere Mitteilungen anzeigen  -->
+		<xpath-ui-element name="olderMessage" xpath="//a[contains(.//text(),'Show older messages')]"  description="show older messages"></xpath-ui-element>
+		<xpath-ui-element name="currentMessage" xpath="//a[contains(.//text(),'Show new messages')]"  description="show current messages"></xpath-ui-element>
+	
+		<xpath-ui-element  name="messageTitle" xpath="//div[@class='o_infomsg b_clearfix']//h5[descendant::text()='&quot; + titleOfMessage + &quot;']" description="title of the message">
+      <parameter name="titleOfMessage" description="title of the message"/>
+    </xpath-ui-element>
+		
+		<xpath-ui-element name="editFirstMessage" xpath="//div[@class='o_infomsg b_clearfix'][1]//a[contains(.//text(),'Edit')]"  description="edit first messages"></xpath-ui-element>
+		<xpath-ui-element name="deleteFirstMessage" xpath="//div[@class='o_infomsg b_clearfix'][1]//a[contains(.//text(),'Delete')]"  description="delete first messages"></xpath-ui-element>
+
+		<xpath-ui-element name="messageInEdition" xpath="//div[@class='b_window_content_wrapper']//legend[contains(.//text(),'Create message')]"  description="is message edited"></xpath-ui-element>
+		<xpath-ui-element name="messageAlreadyEdited" xpath="//span[contains(.//text(),'This message is being edited by user')]"  description="edit first messages"></xpath-ui-element>
+
+
+	</pageset>
+	
+</ui-map-include>

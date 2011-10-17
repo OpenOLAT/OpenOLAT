@@ -1,0 +1,928 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+	<pageset name="courseEditor" description="A course opened in the editor">
+		<pageset name="menu" description="the left hand menu">
+			<xpath-ui-element name="link" xpath="//div[@class='b_tree']//a[contains(.//text(),'&quot; + link + &quot;')]" description="a course node link in the courseeditor, containing the linkText" >
+				<parameter name="link" description="The text of the link"/>
+			</xpath-ui-element>
+		</pageset>
+		<pageset name="content" description="the (center) content area">
+			<pageset name="TitleDescription" description="tab title and description">
+				<!-- <xpath-ui-element name="tabTitleDescription"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Title and description']"
+					description="Tab Title and description"/> asa unused -->
+				<xpath-ui-element name="shortTitle" xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Short title']//div[@class='b_form_element']//input[@type='text']"
+					description="The Short title input field"/>
+				<!-- <xpath-ui-element name="title" xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Title']//div[@class='b_form_element']//input[@type='text']"
+					description="The Title input field"/> asa unused -->
+				<xpath-ui-element name="save"
+					xpath="//div[@class='b_form_element']//button[.//text()='Save']"
+					description="The Save button"/>
+			</pageset>
+			<pageset name="visibility" description="tab visibility">
+				<xpath-ui-element name="tabVisibility"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Visibility']"
+					description="Tab visibility"/>
+
+				<xpath-ui-element name="blockedForLearners"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='coachExclusive']"
+					description="Checkbox blocked for learners"/>
+				<xpath-ui-element name="dependingDate"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='dateSwitch']"
+					description="Checkbox depending on date"/>
+				<xpath-ui-element name="startDate"
+					xpath="//div[@class='b_form_subform']//div[@class='b_form_element_wrapper b_clearfix' and .//text()='from']//input"
+					description="Start date field"/>
+				<xpath-ui-element name="endDate"
+					xpath="//div[@class='b_form_subform']//div[@class='b_form_element_wrapper b_clearfix' and .//text()='to']//input"
+					description="End date field"/>
+				<xpath-ui-element name="dependingGroup"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='groupSwitch']"
+					description="Checkbox depending on group"/>
+				<!-- <xpath-ui-element name="learningGroup"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Only for learning groups']//input"
+					description="form field learning group"/> asa unused -->
+
+				<!-- <xpath-ui-element name="createLearningGroup"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Only for learning groups']//a[./span/text()='Create']"
+					description="create a new learning group"/> asa unused -->
+				<xpath-ui-element name="selectLearningGroup"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Only for learning groups']//a[./span/text()='Select']"
+					description="select an existing learning group"/>
+				<!-- <xpath-ui-element name="learningArea"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Only for learning areas']//input"
+					description="form field learning area"/> asa unused -->
+				<!-- <xpath-ui-element name="createLearningArea"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Only for learning areas']//a[./span/text()='Create']"
+					description="create a new learning area"/> asa unused -->
+				<!-- <xpath-ui-element name="selectLearningArea"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Only for learning areas']//a[./span/text()='Select']"
+					description="select an existing learning area"/> asa unused -->
+
+				<xpath-ui-element name="dependingAssessment"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='assessmentSwitch']"
+					description="Checkbox depending on assessment"/>
+				<xpath-ui-element name="selectElement"
+					xpath="//fieldset[./legend/text()='Visibility']//select[@name='nodePassed_SELBOX']"
+					description="Dropdown select course elment"/>
+				<!-- <xpath-ui-element name="valueCheck"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='assessmentTypeSwitch' and @value='score']"
+					description="Radio Button value check with value 'passed'"/> asa unused -->
+				<!-- <xpath-ui-element name="passedCheck"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='assessmentTypeSwitch' and @value='passed']"
+					description="Radio Button value check with value 'score'"/> asa unused -->
+				<!-- <xpath-ui-element name="passingScore"
+					xpath="//fieldset[./legend/text()='Visibility']//div[./div/div/div/label/text()='Passing score']//input"
+					description="Field passing score"/> asa unused -->
+				<!-- <xpath-ui-element name="applyRulesForOwners"
+					xpath="//fieldset[./legend/text()='Visibility']//input[@name='applyRulesForCoach']"
+					description="Checkbox apply rules also for owners and tutors"/> asa unused -->
+				<xpath-ui-element name="save"
+					xpath="//fieldset[./legend/text()='Visibility']//button[@value='Save']"
+					description="save button tab visibility"/>													
+				<xpath-ui-element name="saveInfo"
+					xpath="//fieldset[./legend/text()='Information if visible and no access']//button[@value='Save']"
+					description="save button info field"/>		
+						
+			</pageset>
+			<pageset name="access" description="tab access">
+				<!-- TODO sr/ki add links-->
+				<xpath-ui-element name="tabAccess"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Access']"
+					description="Tab access"/>
+				<xpath-ui-element name="save"
+					xpath="//fieldset[./legend/text()='Access']//button[@value='Save']"
+					description="general save button tab visibility"/>
+				<xpath-ui-element name="blockedForLearnersReadAndWrite"
+					xpath="//fieldset[./legend/text()='Read and write (up/download)']//input[@name='coachExclusive']"
+					description="Checkbox blocked for learners in field Read and write (up and download)"/>
+				<xpath-ui-element name="saveReadAndWrite"
+					xpath="//fieldset[./legend/text()='Read and write (up/download)']//button[@value='Save']"
+					description="save button tab access read and write"/>
+				<xpath-ui-element name="blockedForLearnersReadOnly"
+					xpath="//fieldset[./legend/text()='Read only (download)']//input[@name='coachExclusive']"
+					description="Checkbox blocked for learners in field Read only (download)"/>
+					
+				<xpath-ui-element name="blockedForLearners"
+          xpath="//fieldset[./legend/text()='&quot; + fieldsetLegend + &quot;']//input[@name='coachExclusive']"
+          description="Checkbox blocked for learners in field Read only (download)">
+          <parameter name="fieldsetLegend" description="fieldset legend text"/>
+        </xpath-ui-element>
+        <xpath-ui-element name="saveAccess" xpath="//fieldset[./legend/text()='&quot; + fieldsetLegend + &quot;']//button[@value='Save']" description="save access">
+          <parameter name="fieldsetLegend" description="save access for the specified fieldset"></parameter>
+        </xpath-ui-element>
+
+				<xpath-ui-element name="saveReadOnly"
+					xpath="//fieldset[./legend/text()='Read only (download)']//button[@value='Save']"
+					description="save button tab access read only"/>
+
+				<xpath-ui-element name="dependingDate"
+					xpath="//fieldset[./legend/text()='Access']//input[@name='dateSwitch']"
+					description="Checkbox depending on date"/>
+				<xpath-ui-element name="startDate"
+					xpath="//div[@class='b_form_subform']//div[@class='b_form_element_wrapper b_clearfix' and .//text()='from']//input"
+					description="Start date field"/>
+				<xpath-ui-element name="endDate"
+					xpath="//div[@class='b_form_subform']//div[@class='b_form_element_wrapper b_clearfix' and .//text()='to']//input"
+					description="End date field"/>
+				<xpath-ui-element name="dependingGroup"
+					xpath="//fieldset[./legend/text()='Access']//input[@name='groupSwitch']"
+					description="Checkbox depending on group"/>
+				<!-- <xpath-ui-element name="learningGroup"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Only for learning groups']//input"
+					description="form field learning group"/> asa unused -->
+
+				<!-- <xpath-ui-element name="createLearningGroup"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Only for learning groups']//a[./span/text()='Create']"
+					description="create a new learning group"/> asa unused -->
+				<xpath-ui-element name="selectLearningGroup"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Only for learning groups']//a[./span/text()='Select']"
+					description="select an existing learning group"/>
+				<!-- <xpath-ui-element name="learningArea"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Only for learning areas']//input"
+					description="form field learning area"/> asa unused -->
+				<!-- <xpath-ui-element name="createLearningArea"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Only for learning areas']//a[./span/text()='Create']"
+					description="create a new learning area"/> asa unused -->
+				<!-- <xpath-ui-element name="selectLearningArea"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Only for learning areas']//a[./span/text()='Select']"
+					description="select an existing learning area"/> asa unused -->
+
+				<!-- <xpath-ui-element name="dependingAssessment"
+					xpath="//fieldset[./legend/text()='Access']//input[@name='assessmentSwitch']"
+					description="Checkbox depending on assessment"/> asa unused -->
+				<!-- <xpath-ui-element name="selectElement"
+					xpath="//fieldset[./legend/text()='Access']//select[@name='nodePassed_SELBOX']"
+					description="Dropdown select course elment"/> asa unused -->
+				<!-- <xpath-ui-element name="valueCheck"
+					xpath="//fieldset[./legend/text()='Access']//input[@name='assessmentTypeSwitch' and @value='score']"
+					description="Radio Button value check with value 'passed'"/> asa unused -->
+				<!-- <xpath-ui-element name="passedCheck"
+					xpath="//fieldset[./legend/text()='Access']//input[@name='assessmentTypeSwitch' and @value='passed']"
+					description="Radio Button value check with value 'score'"/> asa unused -->
+				<!-- <xpath-ui-element name="passingScore"
+					xpath="//fieldset[./legend/text()='Access']//div[./div/div/div/label/text()='Passing score']//input"
+					description="Field passing score"/> asa unused -->
+				<!-- <xpath-ui-element name="applyRulesForOwners"
+					xpath="//fieldset[./legend/text()='Access']//input[@name='applyRulesForCoach']"
+					description="Checkbox apply rules also for owners and tutors"/> asa unused -->
+
+
+			</pageset>
+			<pageset name="visibilityOrAccess" description="common paths for visibility or access">
+				<xpath-ui-element name="displayExpertMode" xpath="//a[.//text()='Display expert mode']" description="display expert mode button"/>
+				<xpath-ui-element name="displaySimpleMode" xpath="//a[.//text()='Display simple mode']" description="display simple mode button"/>
+				<xpath-ui-element name="saveVisibilityExpertRule" xpath="//fieldset[./legend/text()='Visibility']//button[@value='Save']" description="save visibility expert rule"/>
+				<xpath-ui-element name="saveAccessExpertRule" xpath="//fieldset[./legend/text()='Access']//button[@value='Save']" description="save accesss expert rule"/>				
+			</pageset>
+			<pageset name="bbStructure" description="configuration of structure">
+				<xpath-ui-element name="scoreTab"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Score']"
+					description="score tab link"/>
+				<xpath-ui-element name="minimumScore"
+					xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Minimum score']//div[@class='b_form_element']//input[@type='text']"
+					description="minimum score input form element"/>
+			</pageset>
+			<pageset name="bbSinglePage" description="configuration of single page">
+				<!-- TODO sr/ki add links-->
+				<xpath-ui-element name="tabPageContent"
+					xpath="//div[preceding-sibling::h4[contains(@class,'o_sp_icon')]]//div[@class='b_tabbedpane_tabs']//a[.//text()='Page content']"
+					description="Tab page content (single page)"/>
+				<xpath-ui-element name="replacePage"
+					xpath="//div[contains(@class, 'b_tabbedpane_content_inner')]//a[contains(@href, 'command.changefile')]"
+					description="Replace HTML-page"/>
+				<!-- <xpath-ui-element name="openPageInEditor"
+					xpath="//div[contains(@class, 'b_tabbedpane_content_inner')]//a[contains(@href, 'command.edit')]"
+					description="Open page in editor"/> asa unused -->
+				<xpath-ui-element name="previewSinglePage"
+					xpath="//div[contains(@class, 'b_tabbedpane_content_inner')]//a[contains(@href, 'command.preview')]"
+					description="Show preview of attached single page"/>
+				<xpath-ui-element name="selectOrCreatePage"
+					xpath="//div[contains(@class, 'b_tabbedpane_content_inner')]//a[contains(@href, 'command.choosecreatefile')]"
+					description="Select or create page"/>					
+				<xpath-ui-element name="saveAndClose" xpath="//a[.//text()='Save and close']" description="Save and close button"/>
+				
+			</pageset>
+			<pageset name="bbExternalPage" description="configuration of external page">
+				<!-- TODO sr/ki add links-->
+				<!-- <xpath-ui-element name="tabPageContent"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Page content']"
+					description="Tab page content (external page)"/> asa unused -->				
+			</pageset>
+			<pageset name="bbCP" description="configuration of CP">				
+				<xpath-ui-element name="tabLearningContentCP"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Learning content']"
+					description="Tab learning content (CP)"/>
+				<xpath-ui-element name="selectCreateImportCP"
+						xpath="//fieldset[./legend/text()='Select CP learning content']//a[@class='b_button b_small']"
+						description="button select, create or import CP"/>
+			</pageset>
+			<pageset name="bbForum" description="configuration of SCORM">
+				<!-- TODO sr/ki add links-->
+				<!-- <xpath-ui-element name="tabLearningContentScorm"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Learning content']"
+					description="Tab learning content (Scorm)"/> asa unused -->
+			</pageset>
+			<pageset name="bbWiki" description="configuration of wiki ">
+				<xpath-ui-element name="tabWikiLearningContent"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Wiki learning content']"
+					description="Tab wiki learning content"/>
+				<xpath-ui-element name="chooseWiki"
+					xpath="//fieldset[./legend/text()='Select Wiki']//a[@class='b_button b_small']"
+					description="button choose wiki"/>
+				<!-- <xpath-ui-element name="replaceWiki"
+					xpath="//fieldset[./legend/text()='Select Wiki']//a[.//text()='Replace Wiki ']"
+					description="button replace wiki"/> asa unused -->
+
+				<!-- TODO se evtl auslagern da dieser search screen auch bei anderen bausteinen (test, fragebogen) kommt -->
+
+
+			</pageset>
+			<pageset name="bbFileDialog" description="configuration of file dialog">
+				<!-- TODO sr/ki add links-->
+				<!-- <xpath-ui-element name="tabForumStorage"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Forum/storage configuration']"
+					description="Tab Forum/storage configuration"/> asa unused -->
+			</pageset>
+			<pageset name="bbFolder" description="configuration of folder">
+				<!-- TODO sr/ki add links-->
+				<xpath-ui-element name="tabFolderConfiguration"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Folder configuration']"
+					description="Tab folder configuration)"/>
+			</pageset>
+			<pageset name="bbAssessment" description="configuration of assessment">
+				<!-- TODO sr/ki add links-->
+				<xpath-ui-element name="tabAssessment"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Assessment']"
+					description="Tab assessment"/>
+			</pageset>
+			<pageset name="bbTask" description="configuration of task">
+				<!-- TODO sr/ki add links-->
+				<!-- <xpath-ui-element name="tabSubElements"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Sub-elements']"
+					description="Tab sub-elements"/> asa unused -->
+				<!-- <xpath-ui-element name="tabAssignment"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Assignment']"
+					description="Tab assignment"/> asa unused -->
+				<!-- <xpath-ui-element name="tabHandingIn"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Handing in']"
+					description="Tab handing in"/> asa unused -->
+				<!-- <xpath-ui-element name="tabAssessment"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Assessment']"
+					description="Tab assessment"/> asa unused -->
+				<!-- <xpath-ui-element name="tabSampleSolution"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Sample solution']"
+					description="Tab sample solution"/> asa unused -->
+			</pageset>
+			<pageset name="bbTest" description="configuration of test">
+				<xpath-ui-element name="tabTestConfiguration"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Test configuration']"
+					description="Tab test configuration"/>
+				<xpath-ui-element name="chooseFile"
+					xpath="//fieldset[./legend/text()='Test']//a[.//text()='Choose, create or import file']"
+					description="Button choose file"/>
+				<pageset name="layoutParameters" description="section layout parameters">
+					<xpath-ui-element name="limitNumOfAttempts" xpath="//div[@class='b_form_element']//input[@name='limitAttempts']" description="limit number of attempts checkbox"/>
+					<xpath-ui-element name="showMenuNavigation" xpath="//div[@class='b_form_element']//input[@name='qti_displayMenu']" description="showMenuNavigation checkbox"/>
+					<xpath-ui-element name="allowMenuNavigation" xpath="//div[@class='b_form_element']//input[@name='qti_enableMenu']" description="allowMenuNavigation checkbox"/>
+					<xpath-ui-element name="allowCancel" xpath="//div[@class='b_form_element']//input[@name='qti_enableCancel']"  description="allowCancel checkbox"/>
+					<xpath-ui-element name="allowSuspend" xpath="//div[@class='b_form_element']//input[@name='qti_enableSuspend']" description="allowSuspend checkbox"/>
+					<xpath-ui-element name="displayResultsOnTestHomepage" xpath="//div[@class='b_form_element']//input[@name='qti_enableResultsOnHomePage']" description="displayResultsOnTestHomepage checkbox"/>
+				
+					<!-- <xpath-ui-element name="allowMenuNavigationYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableMenu' and @value='y']"
+						description="Radio Button (Yes) allow menu navigation"/>
+					<xpath-ui-element name="allowMenuNavigationNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableMenu' and @value='n']"
+						description="Radio Button (No) allow menu navigation"/> 
+					<xpath-ui-element name="showMenuNavigationYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayMenu' and @value='y']"
+						description="Radio Button (Yes) show menu navigation"/>
+					<xpath-ui-element name="showMenuNavigationNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayMenu' and @value='n']"
+						description="Radio Button (No) show menu navigation"/>  
+					<xpath-ui-element name="clusteringOfQuestions"
+						xpath="//select[@name='qti_form_sequence']"
+						description="Dropdown clustering of questions"/>
+					<xpath-ui-element name="showNrOfQuestionsYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableQuestionProgress' and @value='y']"
+						description="Radio Button (Yes) show number of questions"/>
+					<xpath-ui-element name="showNrOfQuestionsNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableQuestionProgress' and @value='n']"
+						description="Radio Button (No) show number of questions"/>
+					<xpath-ui-element name="showQuestionTitleYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayQuestionTitle' and @value='y']"
+						description="Radio Button (Yes) show question title"/>
+					<xpath-ui-element name="showQuestionTitleNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayQuestionTitle' and @value='n']"
+						description="Radio Button (No) show question title"/> 
+					<xpath-ui-element name="allowCancelYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableCancel' and @value='y']"
+						description="Radio Button (Yes) allow to cancel"/>
+					<xpath-ui-element name="allowCancelNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableCancel' and @value='n']"
+						description="Radio Button (No) allow to cancel"/>
+					<xpath-ui-element name="allowSuspendYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableSuspend' and @value='y']"
+						description="Radio Button (Yes) allow to suspend"/>
+					<xpath-ui-element name="allowSuspendNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableSuspend' and @value='n']"
+						description="Radio Button (No) allow to suspend"/>
+					<xpath-ui-element name="maximumNrOfApproach"
+						xpath="//select[@name='qti_form_attempts']"
+						description="Dropdown max number of approaches"/>
+					<xpath-ui-element name="showScoreInTestYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableScoreProgress' and @value='y']"
+						description="Radio Button (Yes) show score in test"/>
+					<xpath-ui-element name="showScoreInTestNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableScoreProgress' and @value='n']"
+						description="Radio Button (No) show score in test"/>
+					<xpath-ui-element name="displayScoreOnTestHomepageYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_scoreInfo' and @value='y']"
+						description="Radio Button (Yes) display score on test homepage"/>
+					<xpath-ui-element name="displayScoreOnTestHomepageNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_scoreInfo' and @value='n']"
+						description="Radio Button (No) display score on test homepage"/>
+					<xpath-ui-element name="showResultsAfterTestSubmittedYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnFinish' and @value='y']"
+						description="Radio Button (Yes) display results after test has been submitted"/>
+					<xpath-ui-element name="showResultsAfterTestSubmittedNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnFinish' and @value='n']"
+						description="Radio Button (No) display results after test has been submitted"/>
+					<xpath-ui-element name="displayresultsOnTestHomepageYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnHomePage' and @value='y']"
+						description="Radio Button (Yes) display results on test homepage"/>
+					<xpath-ui-element name="displayresultsOnTestHomepageNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnHomePage' and @value='n']"
+						description="Radio Button (No) display results on test homepage"/>
+					<xpath-ui-element name="displayDependingDateYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_showresult' and @value='y']"
+						description="Radio Button (Yes) display depending on date"/>
+					<xpath-ui-element name="displayDependingDateNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_showresult' and @value='n']"
+						description="Radio Button (No) display depending on date"/>
+					<xpath-ui-element name="overviewResults"
+						xpath="//select[@name='qti_form_summary']"
+						description="Dropdown overview results"/> 
+					<xpath-ui-element name="save"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@value='Save']"
+						description="save button layout parameters"/> -->
+					<!-- <xpath-ui-element name="startDate"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti.form.date.start']"
+						description="Field start date"/> asa unused -->
+					<!-- <xpath-ui-element name="endDate"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti.form.date.end']"
+						description="Field end date"/> asa unused -->
+				</pageset>
+			</pageset>
+			<pageset name="bbSelfTest" description="configuration of self-test">
+				<xpath-ui-element name="tabSelfTestConfiguration"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Self-test configuration']"
+					description="Tab self-test configuration"/>
+				<xpath-ui-element name="chooseFile"
+					xpath="//fieldset[./legend/text()='Self-test']//a[.//text()='Choose, create or import file']"
+					description="Button choose file"/>
+				<!-- <pageset name="layoutParameters" description="section layout parameters">
+					<xpath-ui-element name="allowMenuNavigationYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableMenu' and @value='y']"
+						description="Radio Button (Yes) allow menu navigation"/>
+					<xpath-ui-element name="allowMenuNavigationNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableMenu' and @value='n']"
+						description="Radio Button (No) allow menu navigation"/>
+					<xpath-ui-element name="showMenuNavigationYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayMenu' and @value='y']"
+						description="Radio Button (Yes) show menu navigation"/>
+					<xpath-ui-element name="showMenuNavigationNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayMenu' and @value='n']"
+						description="Radio Button (No) show menu navigation"/>
+					<xpath-ui-element name="clusteringOfQuestions"
+						xpath="//select[@name='qti_form_sequence']"
+						description="Dropdown clustering of questions"/>
+					<xpath-ui-element name="showNrOfQuestionsYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableQuestionProgress' and @value='y']"
+						description="Radio Button (Yes) show number of questions"/>
+					<xpath-ui-element name="showNrOfQuestionsNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableQuestionProgress' and @value='n']"
+						description="Radio Button (No) show number of questions"/>
+					<xpath-ui-element name="showQuestionTitleYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayQuestionTitle' and @value='y']"
+						description="Radio Button (Yes) show question title"/>
+					<xpath-ui-element name="showQuestionTitleNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayQuestionTitle' and @value='n']"
+						description="Radio Button (No) show question title"/>
+					<xpath-ui-element name="allowCancelYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableCancel' and @value='y']"
+						description="Radio Button (Yes) allow to cancel"/>
+					<xpath-ui-element name="allowCancelNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableCancel' and @value='n']"
+						description="Radio Button (No) allow to cancel"/>
+					<xpath-ui-element name="allowSuspendYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableSuspend' and @value='y']"
+						description="Radio Button (Yes) allow to suspend"/>
+					<xpath-ui-element name="allowSuspendNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableSuspend' and @value='n']"
+						description="Radio Button (No) allow to suspend"/>
+					<xpath-ui-element name="showScoreInTestYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableScoreProgress' and @value='y']"
+						description="Radio Button (Yes) show score in test"/>
+					<xpath-ui-element name="showScoreInTestNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableScoreProgress' and @value='n']"
+						description="Radio Button (No) show score in test"/>
+					<xpath-ui-element name="displayScoreOnTestHomepageYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_scoreInfo' and @value='y']"
+						description="Radio Button (Yes) display score on test homepage"/>
+					<xpath-ui-element name="displayScoreOnTestHomepageNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_scoreInfo' and @value='n']"
+						description="Radio Button (No) display score on test homepage"/>
+					<xpath-ui-element name="showResultsAfterTestSubmittedYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnFinish' and @value='y']"
+						description="Radio Button (Yes) display results after test has been submitted"/>
+					<xpath-ui-element name="showResultsAfterTestSubmittedNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnFinish' and @value='n']"
+						description="Radio Button (No) display results after test has been submitted"/>
+					<xpath-ui-element name="displayresultsOnTestHomepageYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnHomePage' and @value='y']"
+						description="Radio Button (Yes) display results on test homepage"/>
+					<xpath-ui-element name="displayresultsOnTestHomepageNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableResultsOnHomePage' and @value='n']"
+						description="Radio Button (No) display results on test homepage"/>
+					<xpath-ui-element name="displayDependingDateYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_showresult' and @value='y']"
+						description="Radio Button (Yes) display depending on date"/>
+					<xpath-ui-element name="displayDependingDateNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_showresult' and @value='n']"
+						description="Radio Button (No) display depending on date"/>
+					<xpath-ui-element name="overviewResults"
+						xpath="//select[@name='qti_form_summary']"
+						description="Dropdown overview results"/>
+					<xpath-ui-element name="save"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@value='Save']"
+						description="save button layout parameters"/>
+					<xpath-ui-element name="startDate"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti.form.date.start']"
+						description="Field start date"/>
+					<xpath-ui-element name="endDate"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti.form.date.end']"
+						description="Field end date"/>
+				</pageset>-->
+			</pageset>
+			<pageset name="bbQuestionnaire" description="configuration of questionnaire">
+				<xpath-ui-element name="tabQuestionnaireConfiguration"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Questionnaire configuration']"
+					description="Tab questionnaire configuration"/>
+				<xpath-ui-element name="chooseFile"
+					xpath="//fieldset[./legend/text()='Questionnaire']//a[@class='b_button b_small']"
+					description="Button choose file"/>
+				<!-- <pageset name="layoutParameters" description="section layout parameters">
+					<xpath-ui-element name="allowMenuNavigationYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableMenu' and @value='y']"
+						description="Radio Button (Yes) allow menu navigation"/>
+					<xpath-ui-element name="allowMenuNavigationNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableMenu' and @value='n']"
+						description="Radio Button (No) allow menu navigation"/>
+					<xpath-ui-element name="showMenuNavigationYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayMenu' and @value='y']"
+						description="Radio Button (Yes) show menu navigation"/>
+					<xpath-ui-element name="showMenuNavigationNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayMenu' and @value='n']"
+						description="Radio Button (No) show menu navigation"/>
+					<xpath-ui-element name="clusteringOfQuestions"
+						xpath="//select[@name='qti_form_sequence']"
+						description="Dropdown clustering of questions"/>
+					<xpath-ui-element name="showNrOfQuestionsYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableQuestionProgress' and @value='y']"
+						description="Radio Button (Yes) show number of questions"/>
+					<xpath-ui-element name="showNrOfQuestionsNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableQuestionProgress' and @value='n']"
+						description="Radio Button (No) show number of questions"/>
+					<xpath-ui-element name="showQuestionTitleYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayQuestionTitle' and @value='y']"
+						description="Radio Button (Yes) show question title"/>
+					<xpath-ui-element name="showQuestionTitleNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_displayQuestionTitle' and @value='n']"
+						description="Radio Button (No) show question title"/>
+					<xpath-ui-element name="allowCancelYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableCancel' and @value='y']"
+						description="Radio Button (Yes) allow to cancel"/>
+					<xpath-ui-element name="allowCancelNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableCancel' and @value='n']"
+						description="Radio Button (No) allow to cancel"/>
+					<xpath-ui-element name="allowSuspendYes"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableSuspend' and @value='y']"
+						description="Radio Button (Yes) allow to suspend"/>
+					<xpath-ui-element name="allowSuspendNo"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@name='qti_enableSuspend' and @value='n']"
+						description="Radio Button (No) allow to suspend"/>
+								<xpath-ui-element name="save"
+						xpath="//fieldset[./legend/text()='Layout parameters']//input[@value='Save']"
+						description="save button layout parameters"/>
+				</pageset> -->
+				</pageset>
+			<pageset name="bbEnrolment" description="configuration of enrolment">
+				<xpath-ui-element name="tabConfiguration"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[@class='b_tabbedpane_tabs']//a[.//text()='Configuration']"
+					description="Tab configuration"/>
+				<!-- <xpath-ui-element name="learningGroup"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[./div/div/div/label/text()='Learning groups']//input"
+					description="form field learning group"/> asa unused -->
+				<!-- <xpath-ui-element name="learningArea"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[./div/div/div/label/text()='Learning areas']//input"
+					description="form field learning area"/> asa unused -->
+
+				<!-- <xpath-ui-element name="createLearningGroup"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[./div/div/div/label/text()='Learning groups']//a[./span/text()='Create']"
+					description="create a new learning group"/> asa unused -->
+				<xpath-ui-element name="selectLearningGroup"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[./div/div/div/label/text()='Learning groups']//a[./span/text()='Select']"
+					description="select an existing learning group"/>
+				<!-- <xpath-ui-element name="createLearningArea"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[./div/div/div/label/text()='Learning areas']//a[./span/text()='Create']"
+					description="create a new learning area"/> asa unused -->
+				<xpath-ui-element name="selectLearningArea"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//div[./div/div/div/label/text()='Learning areas']//a[./span/text()='Select']"
+					description="select an existing learning area"/>
+				<!-- <xpath-ui-element name="enableCancelEnroll"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//input[@name='enableCancelEnroll']"
+					description="enable Cancel Enroll"/> asa unused -->
+				<xpath-ui-element name="save"
+					xpath="//div[contains(./h4/@class, 'o_en_icon')]//button[@value='Save']"
+					description="save button tab configuration"/>
+
+				<pageset name="selectLearningGroupDialog"
+					description="the select learning group dialog">
+					<!-- <xpath-ui-element name="create"
+						xpath="//div[@class='b_window']//a[.//text()='Create']"
+						description="create button - create a new learning group"/> asa unused -->
+					<xpath-ui-element name="checkGroup"
+						xpath="//div[@class='b_window']//input[@class='b_checkbox' and @value='&quot; + nameOfGroup + &quot;']"
+						description="check a learning group">
+						<parameter name="nameOfGroup" description="the name of the group"/>
+					</xpath-ui-element>
+					<xpath-ui-element name="apply"
+						xpath="//div[@class='b_window']//button[.//text()='Apply']"
+						description="create button - create a new learning group"/>
+					<!-- <xpath-ui-element name="cancel"
+						xpath="//div[@class='b_window']//button[.//text()='Cancel']"
+						description="create button - create a new learning group"/> asa unused -->
+				</pageset>
+
+				<pageset name="createLearningGroupDialog"
+					description="the create learning group dialog">
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//input[@id='fe_bgName']"
+						name="groupName" description="form field group name"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//textarea[@name='fe_bgWkDescription']"
+						name="groupDescription" description="form field group description"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//input[@id='fe_bgMax']"
+						name="maxParticipants" description="form field max participants"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//input[@name='enableWaitinglist']"
+						name="waitingList" description="form field waiting list"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//input[@name='enableAutoCloseRanks']"
+						name="moveUpAutomatically" description="form field move up automatically"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//input[@value='Save']"
+						name="save" description="save button description"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='groupForm']//input[@value='Cancel']"
+						name="cancel" description="cancel button description"/> asa unused -->
+				</pageset>
+
+				<pageset name="createLearningAreaDialog"
+					description="the create learning area dialog">
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='areaForm']//input[@id='name']"
+						name="name" description="form field learning area name"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='areaForm']//textarea[@name='description']"
+						name="description" description="form field description"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='areaForm']//input[@value='Save']"
+						name="save" description="save button description"/> asa unused -->
+					<!-- <xpath-ui-element
+						xpath="//div[@class='b_window']//form[@name='areaForm']//input[@value='Cancel']"
+						name="cancel" description="cancel button description"/> asa unused -->
+				</pageset>
+
+			</pageset>
+			<pageset name="bbContactForm" description="configuration of contact form">
+				<!-- TODO sr/ki add links-->
+				<!-- <xpath-ui-element name="tabRecipient"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Recipient']"
+					description="Tab recipient"/> asa unused -->
+			</pageset>	
+			<!-- new for 6.3-->
+			<pageset name="bbBlog" description="configuration of blog">
+					<xpath-ui-element name="tabBlogLearningContent"
+						xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Blog learning content']"
+						description="Tab blog learning content"/>
+					<xpath-ui-element name="selectCreateImportBlog"
+						xpath="//fieldset[./legend/text()='Select blog']//a[@class='b_button b_small']"
+						description="button select, create or import blog"/>
+					<xpath-ui-element name="editBlog"
+						xpath="//fieldset[./legend/text()='Select blog']//a[@class='b_button b_small' and .//text()='Edit']"
+						description="button edit blog"/>
+					<xpath-ui-element name="replaceBlog"
+						xpath="//fieldset[./legend/text()='Select blog']//a[@class='b_button b_small' and .//text()='Replace blog']"
+						description="button replace blog"/>
+					<xpath-ui-element name="create" xpath="//a[.//text()='Create']" description="create blog button"/>
+			</pageset>	
+			<pageset name="bbPodcast" description="configuration of podcast">
+				<xpath-ui-element name="tabPodcastLearningContent"
+					xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Podcast learning content']"
+					description="Tab podcast content"/>
+				<xpath-ui-element name="selectCreateImportPodcast"
+					xpath="//fieldset[./legend[contains(.//text(),'Select')]]//a[@class='b_button b_small']"
+					description="button select, create or import podcast"/>
+				<xpath-ui-element name="editPodcast"
+					xpath="//fieldset[./legend/text()='Select podcast']//a[@class='b_button b_small'][descendant::text()='Edit']"
+					description="button edit podcast"/>
+				<xpath-ui-element name="replacePodcast"
+					xpath="//fieldset[./legend/text()='Select Podcast']//a[.//text()='Replace Podcast']"
+					description="button replace podcast"/>
+				<xpath-ui-element name="create" xpath="//a[.//text()='Create']" description="create podcast button"/>
+			</pageset>
+			<pageset name="bbTopicAssignment" description="topic assignment links">
+				<xpath-ui-element name="tabConfig" xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Configuration']" description="configutation tab"/>
+				<xpath-ui-element name="topicsPerParticipant" xpath="//input[@name='form.options.number.of.topics.per.participant']" description="Limit topics per participant: yes or no"/>
+				<xpath-ui-element name="howManyTopicsPerParticipant" xpath="//div[@class='b_form_element_wrapper b_clearfix']//div[@class='b_form_element']//input[@type='text']" description="if limited topics per participant, how many?"/>
+				<xpath-ui-element name="topicSelectionAccept" xpath="//input[@name='form.options.selection.accept']" description="topic authors have to accept participants"/>
+				<xpath-ui-element name="onlyOneTopicAllowed" xpath="//input[@name='form.options.auto.sign.out']" description="only one topic allowed"/>
+				<xpath-ui-element name="saveConfig" xpath="//fieldset[./legend='Configuration']//button[@value='Save']"  description="save configuration - cannot use generic button"></xpath-ui-element>
+				<xpath-ui-element name="tabPersons" xpath="//div[@class='b_tabbedpane_tabs']//a[.//text()='Persons in charge']" description="tab persons in charge"/>
+			</pageset>
+			<pageset name="lti" description="lti xpaths">
+			  <xpath-ui-element name="tabPageContent"
+          xpath="//div[preceding-sibling::h4[contains(@class,'o_lti_icon')]]//div[@class='b_tabbedpane_tabs']//a[.//text()='Page content']"
+          description="Tab page content (single page)"/>
+			</pageset>
+			<pageset name="assessmentElemConfig" description="configuration of assessment course element">				
+				<xpath-ui-element name="scoreGranted"
+					xpath="//input[@name='form.score']"
+					description="Score granted - Yes/No"/>
+				<xpath-ui-element name="minimumScore"
+					xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Minimum score']//div[@class='b_form_element']//input[@type='text']"
+					description="set minimum score"/>
+				<xpath-ui-element name="maximumScore"
+					xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Maximum score']//div[@class='b_form_element']//input[@type='text']"
+					description="set maximum score"/>
+				<xpath-ui-element name="passedTypeAuto"
+					xpath="//input[@name='form.passed.type' and @value='true']"
+					description="Type of display - Automatic"/>
+				<!-- <xpath-ui-element name="passedTypeManual"
+					xpath="//input[@name='form.passed.type' and @value='false']"
+					description="Type of display - Manual by tutor"/> asa unused -->
+				<xpath-ui-element name="passedCutValue"
+					xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Passed cut value']//div[@class='b_form_element']//input[@type='text']"
+					description="set Passed cut value"/>
+				<xpath-ui-element name="passedCutValueErr"
+					xpath="//div[@class='b_form_element_wrapper b_form_error b_clearfix'][descendant::text()='Passed cut value']//div[@class='b_form_element']//input[@type='text']"
+					description="set Passed cut value"/>
+			</pageset>
+			<xpath-ui-element name="undeleteCourseElement" xpath="//a[.//text()='Restore course element']" description="Restore course element button"/>
+		</pageset>
+
+		<pageset name="toolbox" description="the toolbox area to the right">
+			<pageset name="editorTools" description="the editor tools toolbox">
+				<link-ui-element name="storageFolder" link="Storage folder"
+					description="The Storage folder link"/>
+				<link-ui-element name="coursePreview" link="Course preview"
+					description="The Course previewlink"/>
+				<link-ui-element name="publish" link="Publish" description="The Publish link"/>
+				<link-ui-element name="closeEditor" link="Close editor"
+					description="The close editor link"/>
+			</pageset>
+			<pageset name="insertCourseElements" description="the insert course elements toolbox">
+				<xpath-ui-element name="insertStructure"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Structure']"
+					description="Insert Structure course element"/>
+				<xpath-ui-element name="insertSinglePage"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Single page']"
+					description="Insert single page course element"/>
+				<xpath-ui-element name="insertExternalPage"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='External page']"
+					description="Insert external page course element"/>
+				<xpath-ui-element name="insertCP"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='CP learning content']"
+					description="Insert cp course element"/>
+				<xpath-ui-element name="insertSCORM"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='SCORM learning content']"
+					description="Insert scorm course element"/>
+				<xpath-ui-element name="insertForum"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Forum']"
+					description="Insert forum course element"/>
+				<xpath-ui-element name="insertWiki"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Wiki']"
+					description="Insert wiki course element"/>
+				<xpath-ui-element name="insertFileDialog"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='File dialog']"
+					description="Insert file dialog course element"/>
+				<xpath-ui-element name="insertFolder"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Folder']"
+					description="Insert folder course element"/>
+				<xpath-ui-element name="insertAssessment"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Assessment']"
+					description="Insert assessment course element"/>
+				<xpath-ui-element name="insertTask"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Task']"
+					description="Insert task course element"/>
+				<xpath-ui-element name="insertTest"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Test']"
+					description="Insert test course element"/>
+				<xpath-ui-element name="insertSelfTest"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Self-test']"
+					description="Insert self-test course element"/>
+				<xpath-ui-element name="insertQuestionnaire"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Questionnaire']"
+					description="Insert questionnaire course element"/>
+				<xpath-ui-element name="insertEnrolment"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Enrolment']"
+					description="Insert enrolment course element"/>
+				<xpath-ui-element name="insertContactForm"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='E-mail']"
+					description="Insert contact form course element"/>
+				<!-- new elements for 6.3-->
+				<xpath-ui-element name="insertBlog"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Blog']"
+					description="Insert contact form course element"/>
+				<xpath-ui-element name="insertPodcast"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Podcast']"
+					description="Insert contact form course element"/>
+				<xpath-ui-element name="insertTopicAssignment"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Topic assignment']"
+					description="Insert contact form course element"/>
+				<xpath-ui-element name="insertCalendar"
+					xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Calendar']"
+					description="Insert contact form course element"/>
+				<xpath-ui-element name="insertLTIPage"
+          xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='LTI page']"
+          description="Insert LTI page course element"/>
+        <xpath-ui-element name="insertInfoMessagePage"
+          xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[@class='o_infomsg_icon']"
+          description="Insert info message course element"/>
+				
+				<xpath-ui-element name="insertAsRootsFirstChild"
+					xpath="//div[@class='b_selectiontree_content']//input[@class='b_radio']"
+					description="Choose first child of root"/>
+				<xpath-ui-element name="insertAsRootsLastChild"
+					xpath="//div[@class='b_selectiontree_item'][last()]//div[@class='b_selectiontree_content']//input[@class='b_radio']"
+					description="Choose last child of root"/>
+				<xpath-ui-element name="insertAsElementsFirstChild"
+					xpath="//div[@class='b_selectiontree_item' and .//text()='&quot; + title +&quot;']/following-sibling::div[1]//input[@class='b_radio']"
+					description="Choose first child of the element with the given title">
+					<parameter name="title" description="the title of the course element"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="insertAsElementsFollowingSibling"
+					xpath="//div[@class='b_selectiontree_item' and .//text()='&quot; + title +&quot;']/following-sibling::div[2]//input[@class='b_radio']"
+					description="Choose first child of the element with the given title">
+					<parameter name="title" description="the title of the course element"/>
+				</xpath-ui-element>
+				
+				<xpath-ui-element name="clickInsertCourseElement"
+					xpath="//button[.//text()='Insert course element']"
+					description="Click Insert course element"/>
+				
+				<!-- <xpath-ui-element name="cancel" xpath="//button[.//text()='Cancel']"
+					description="Cancel Insert course element"/> asa unused -->
+			</pageset>
+			<pageset name="modifyTools" description="the modify course elements toolbox">
+				<link-ui-element name="delete" link="Delete" description="The Delete link"/>
+				<link-ui-element name="move" link="Move " description="The Move link"/>
+				<link-ui-element name="copy" link="Copy" description="The Copy link"/>
+			</pageset>
+			<!--TODO se xpaths stimmen nicht <pageset name="modifyTools" description="the modify course elements toolbox">
+				<xpath-ui-element name="delete" xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Delete']" description="Delete course element"/>
+				<xpath-ui-element name="move" xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Move']" description="Move course element"/>
+				<xpath-ui-element name="copy" xpath="//div[@class='b_toolbox'][2]//div[@class='b_toolbox_content']//a[.//text()='Copy']" description="Copy course element"/>
+			</pageset>-->
+		</pageset>
+		<pageset name="preview" description="the course preview wizard">
+			<link-ui-element name="closePreview" link="Close preview" description="The Close Preview link"/>			
+			<xpath-ui-element name="selectRole" xpath="//input[@value='&quot; + role + &quot;']" description="select role">
+				<parameter name="role" description="the title of the course element"/>
+			</xpath-ui-element>			
+			<!-- TODO se: better xpath -->
+			<xpath-ui-element name="showCoursePreview" xpath="//button[@value='Show course preview']"
+				description="the show course preview button"/>
+		</pageset>
+		<pageset name="publishDialog" description="the publish dialog">
+			<pageset name="howToPublish" description="The first page 'How to publish'">
+				<xpath-ui-element name="firstTreeCheckbox" xpath="//input[@name='seltree']"
+					description="the first element of the tree - Checkbox"/>
+			</pageset>
+			<xpath-ui-element name="selectall" xpath="//a[descendant::text()='Select all']" description="The Select all Link"/>
+			<link-ui-element name="next" link="Next" description="The Next button"/>
+			<link-ui-element name="back" link="Back" description="The Back button"/>
+			<link-ui-element name="finish" link="Finish" description="The Finish button"/>
+			<link-ui-element name="cancel" link="Cancel" description="The Cancel button"/>
+
+			<xpath-ui-element name="courseAccessDropDown" xpath="//select[contains(@name,'access') and contains(@name,'SELBOX')]"
+				description="The Course Access Drop-Down"/>
+
+
+		</pageset>
+		<pageset name="commons" description="common ui elements of course Editor">
+			<pageset name="chooseLr" description="overlay choose learning resources search form">
+				<!-- <xpath-ui-element name="allEntries"
+					xpath="//div[h3/text()='Search for referenceable learning resources']//a[.//text()='All entries']"
+					description="link all entries"/> asa unused -->
+				<xpath-ui-element name="myEntries"
+					xpath="//div[h3/text()='Search for referenceable learning resources']//a[.//text()='My entries']"
+					description="link my entries"/>
+				<xpath-ui-element name="search"
+					xpath="//div[h3/text()='Search for referenceable learning resources']//a[.//text()='Search']"
+					description="Search link"/>						
+				<!-- <xpath-ui-element name="fieldTitle"
+					xpath="//form[@name='searchform']//input[@name='cif_displayname']"
+					description="field title"/> asa unused -->
+				<!-- <xpath-ui-element name="fieldAuthor"
+					xpath="//form[@name='searchform']//input[@name='cif_author']"
+					description="field author"/> asa unused -->
+				<!-- <xpath-ui-element name="fieldDescription"
+					xpath="//form[@name='searchform']//input[@name='cif_description']"
+					description="field description"/> asa unused -->
+				<!-- <xpath-ui-element name="fieldID"
+				    xpath="//form[@name='searchform']//input[@name='cif_id']" description="field ID"/> asa unused -->
+				<!-- <xpath-ui-element name="searchButton"
+					xpath="//form[@name='searchform']//input[@value='Search']"
+					description="search button"/> asa unused -->
+				<xpath-ui-element name="chooseWiki"
+					xpath="//div[div//a[@class='b_table_download']]//table//tr[.//a/text()='&quot; + nameOfWiki +&quot;']//a[contains(text(), 'Choose Wiki')]"
+					description="link choose wiki after wiki entry">
+					<parameter name="nameOfWiki" description="the name of the wiki"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="chooseTest"
+					xpath="//div[div//a[@class='b_table_download']]//table//tr[.//a/text()='&quot; + nameOfTest +&quot;']//a[contains(text(), 'Choose test')]"
+					description="link choose test or self test after test entry">
+					<parameter name="nameOfTest" description="the name of the test"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="chooseQuestionnaire"
+					xpath="//div[div//a[@class='b_table_download']]//table//tr[.//a/text()='&quot; + nameOfQuestionnaire +&quot;']//a[contains(text(), 'Choose questionnaire')]"
+					description="link choose questionnaire after questionnaire entry">
+					<parameter name="nameOfQuestionnaire"
+						description="the name of the questionnaire"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="chooseCP"
+					xpath="//div[div//a[@class='b_table_download']]//table//tr[.//a/text()='&quot; + name +&quot;']//a[contains(text(), 'Choose CP learning content')]"
+					description="link choose CP">
+					<parameter name="name" description="the name of the CP"/>
+				</xpath-ui-element>
+				<!-- new for 6.3-->
+				<xpath-ui-element name="chooseBlog"
+					xpath="//div[div//a[@class='b_table_download']]//table//tr[.//a/text()='&quot; + nameOfBlog +&quot;']//a[contains(text(), 'Select blog')]"
+					description="link choose blog after blog entry">
+					<parameter name="nameOfBlog" description="the name of the blog"/>
+				</xpath-ui-element>
+				<xpath-ui-element name="choosePodcast"
+					xpath="//div[div//a[@class='b_table_download']]//table//tr[.//a/text()='&quot; + nameOfPodcast +&quot;']//a[contains(text(), 'Select Podcast')]"
+					description="link choose podcast after podcast entry">
+					<parameter name="nameOfPodcast" description="the name of the podcast"/>
+				</xpath-ui-element>
+			</pageset>
+			<pageset name="informationHTMLPage" description="section information (HTML page) in test, questionnaire selftest and structure tabs">
+				<!-- <xpath-ui-element name="selectCreatePage"
+					xpath="//fieldset[./legend/text()='Information (HTML page)']//a[.//text()='Select or create page']"
+					description="Button select or create page"/> asa unused -->
+				<!-- <xpath-ui-element name="openPageInEditor"
+					xpath="//fieldset[./legend/text()='Information (HTML page)']//a[.//text()='Open page in editor']"
+					description="Button open page in editor"/> asa unused -->
+				<!-- <xpath-ui-element name="replacePage"
+					xpath="//fieldset[./legend/text()='Information (HTML page)']//a[.//text()='Replace page']"
+					description="Button replace page"/> asa unused -->
+				<!-- TODO se overlay to create new page
+			<xpath-ui-element name="newHTMLpage" xpath="" description="Field new HTML page"/>
+			<xpath-ui-element name="createPage" xpath="" description="Button create html page "/>
+			<xpath-ui-element name="selectPage" xpath="" description="Button select page from storage folder"/>
+			<xpath-ui-element name="choosePage" xpath="" description="Radio Button before name of page"/>
+			<xpath-ui-element name="selectThisPage" xpath="" description="Button select this page"/>
+				-->
+			</pageset>
+			<pageset name="securitySettings" description="security settings when choosing html page for test, selftest, questionnaire or structure">
+				<!-- <xpath-ui-element name="allowLinksStorageFolderYes"
+					xpath="//fieldset[./legend/text()='Security setting']//input[@name='allowRelativeLinks' and @value='true']"
+					description="Radio Button (Yes) allow links in the entire storage folder"/> asa unused -->
+				<!-- <xpath-ui-element name="allowLinksStorageFolderNo"
+					xpath="//fieldset[./legend/text()='Security setting']//input[@name='allowRelativeLinks' and @value='false']"
+					description="Radio Button (No) allow links in the entire storage folder"/> asa unused -->
+				<!-- <xpath-ui-element name="save"
+					xpath="//fieldset[./legend/text()='Security setting']//input[@value='Save']"
+					description="save button security setting"/> asa unused -->
+			</pageset>
+			<pageset name="groupBulk" description="group bulk paths">
+				<xpath-ui-element name="createGroups" xpath="//div[@class='b_form_element_wrapper b_form_error b_clearfix'][descendant::text()='Learning groups']//div[@class='b_form_element']//a[@class='b_button']" description="create several groups"></xpath-ui-element>
+				<xpath-ui-element name="selectGroupsIfError" xpath="//div[@class='b_form_element_wrapper b_form_error b_clearfix'][descendant::text()='Learning groups']//div[@class='b_form_element']//input[@type='text']" description="select a bunch of groups if error message"></xpath-ui-element>
+			</pageset>
+
+		</pageset>
+
+
+	</pageset>
+
+
+
+</ui-map-include>

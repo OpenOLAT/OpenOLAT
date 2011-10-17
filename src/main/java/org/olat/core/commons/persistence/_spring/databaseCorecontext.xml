@@ -214,7 +214,7 @@
              <!-- TODO: may update to version 2.x of ehcache which only has the  region.factory_class property-->
             <!-- <entry key="hibernate.cache.provider_class">net.sf.ehcache.hibernate.EhCacheProvider</value></entry> -->
 			<entry key="hibernate.cache.provider_class"><value>${hibernate.caching.singlevm.class}</value></entry>
-			<entry key="hibernate.cache.use_query_cache"><value>true</value></entry>
+			<entry key="hibernate.cache.use_query_cache"><value>${hibernate.caching.use.query.cache}</value></entry>
 			<entry key="hibernate.cache.use_second_level_cache"><value>${hibernate.use.second.level.cache}</value></entry> <!-- TODO: ask christian, does this need to be false on SV mode? -->
 			<!-- <entry key="hibernate.cache.region.factory_class">org.hibernate.cache.jbc2.SharedJBossCacheRegionFactory</value></entry> -->
 			<entry key="hibernate.cache.region.factory_class"><value>${hibernate.caching.cluster.class}</value></entry>

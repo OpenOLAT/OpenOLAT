@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+>
+
+
+ 	<bean class="org.olat.test.util.setup.context.SeleniumLocallyContext" id="seleniumcontext">
+		<property name="config">
+			<map>
+				<entry key="seleniumHost" value="localhost"/>
+				
+				<!-- enable codepoints tests -->
+				<entry key="withCodepoints" value="true"/>
+				<entry key="instanceId" value="${test.env.instance.id}"/>
+				<entry key="jmsBrokerUrl" value="tcp://localhost:${test.env.jms.broker.port}"/>
+				
+				<!-- default test users (in the olat instance use the additionaUserContext.xml to add these users) -->
+				<entry key="adminUsername" value="administrator"/>
+				<entry key="adminPassword" value="olat"/>
+				<entry key="authorUsername" value="author2"/>
+				<entry key="authorPassword" value="test2011"/>
+				<entry key="studentUsername" value="learner2"/>
+				<entry key="studentPassword" value="test2011"/>
+				<entry key="guestUsername" value="guest"/>
+				<entry key="guestPassword" value="guest"/>
+				
+				<!-- olat tested instances-->
+				<entry key="multiVmOlatUrl1" value="http://localhost:${container.tomcat.one.port}/olat/dmz/"/>
+				<entry key="multiVmOlatUrl2" value="http://localhost:${container.tomcat.two.port}/olat/dmz/"/>
+				<entry key="singleVmOlatUrl" value="http://localhost:${container.tomcat.one.port}/olat/dmz/"/>
+				
+				<entry key="browserId" value="*firefox /Applications/FirefoxEnglish.app/Contents/MacOS/firefox-bin"/>
+
+   			<entry key="log4jConfigFilename" value="log4j.remote.properties"/>
+			</map>
+		</property>
+ 	</bean>
+	
+</beans>

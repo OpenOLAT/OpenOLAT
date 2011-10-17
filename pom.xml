@@ -172,7 +172,65 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
-		<skipTests>true</skipTests>
+
+    <!-- properties for testing and Q&A -->
+    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
+    <skipTests>true</skipTests>
+    <skipITs>true</skipITs>
+    <!-- properties to define the testing environment
+          values: hsql / mysql -->
+    <test.env>hsql</test.env>
+    <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
+    <test.env.db.name>olattest</test.env.db.name>
+    <test.env.db.user>olat</test.env.db.user>
+    <test.env.db.pass>olat</test.env.db.pass>
+    <test.env.db.host.port>3306</test.env.db.host.port>
+    <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
+    <test.env.instance.id>myolat</test.env.instance.id>
+    <test.env.jms.broker.port>61616</test.env.jms.broker.port>
+    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
+    <test.env.jmx.rmi.port.1>3001</test.env.jmx.rmi.port.1>
+    <test.env.jmx.rmi.port.2>3002</test.env.jmx.rmi.port.2>
+
+    <!-- this version is defined by the dependency <groupId>org.olat.testutils</groupId>   <artifactId>zipped-tomcat6x</artifactId> and the herein zipped tomcat installation -->
+    <container.tomcat.version>6.0.32</container.tomcat.version>
+    <!-- install dir is important for the -Pinstall-tomcats profile.
+         These few lines define the default tomcat installation variables for installation and running a local tomcat cluster.
+         If you want to reuse an existing tomcat installation, set the container.tomcat.*.home instead. -->
+    <container.tomcat.one.install.dir>${basedir}/cargo/tomcat/one/</container.tomcat.one.install.dir>
+    <container.tomcat.one.home>${container.tomcat.one.install.dir}/apache-tomcat-${container.tomcat.version}</container.tomcat.one.home>
+    <!-- The port.part is used in several places to create cluster which follows the template:
+         servlet port 8181
+         administration ports 8109, 8105
+         go to the src/test/profile/cluster/tomcat*/conf and lib/ to see the actual replacements.-->
+    <container.tomcat.one.port.part>81</container.tomcat.one.port.part>
+    <container.tomcat.one.port>${container.tomcat.one.port.part}${container.tomcat.one.port.part}</container.tomcat.one.port>
+    <container.tomcat.two.install.dir>${basedir}/cargo/tomcat/two/</container.tomcat.two.install.dir>
+    <container.tomcat.two.home>${container.tomcat.two.install.dir}/apache-tomcat-${container.tomcat.version}</container.tomcat.two.home>
+    <container.tomcat.two.port.part>82</container.tomcat.two.port.part>
+    <container.tomcat.two.port>${container.tomcat.two.port.part}${container.tomcat.two.port.part}</container.tomcat.two.port>
+
+    <!-- the selenium client version which is also by the maven-selenium-plugin, 
+        using the latest selenium a.k.a selenium 2.0 needs a migration of the tests and maven setup. -->
+    <selenium-client.version>1.0.2</selenium-client.version>
+    <!-- the selenium configuration needed to configure the tomcats, selenium context and maven failsafe (testng) runner.
+         The tomcat knows which user to add just for selenium testcases, see additionalUserContext.xml
+         The selenium context is defined in the defaultcontext.xml and has variable replacements as specified above.
+         The failsafe plugin uses the testng.xml file which comes from this folder.
+         In order to customize the selenium tests execution follow the steps:
+         1) copy the test/profile/selenium/config folder to a save place
+         2) edit the contents of the files (i.e. change executed seleniumtests, add firefox browser executable path to defaultcontext.xml etc.)
+         3) run maven among other parameters with -Dselenium.config.files.path="<your-path-without-special-chars>" -->
+    <selenium.config.files.path>src/test/profile/selenium/config</selenium.config.files.path>
+    <!-- proposal for setting the firefox executable path, which could be used as variable in the defaultcontext.xml
+         important if using a firefox script which does not allow to kill the firefoxes after usage. (e.g. Suse 64Bit)-->
+    <selenium.config.firefox.path>unused/by/default</selenium.config.firefox.path>
+
+    <!-- properties for debugging -->
+    <!-- for debugging reason it may be helpful to set this with 
+    -Dcargo.container.wait=true to see if the container is up and running for the seleniumtests. -->
+    <cargo.container.wait>false</cargo.container.wait>
+    <cargo.container.timeout>300000</cargo.container.timeout>
 	</properties>
 	<profiles>
 		<profile>
@@ -216,6 +274,830 @@
 				</plugins>
 			</build>
 		</profile>
+		
+
+    <profile>
+      <id>hsqlunittests</id>
+      <activation>
+        <property>
+          <name>with-hsql</name>
+        </property>
+      </activation>
+      <properties>
+        <skipTests>false</skipTests>
+        <skipITs>true</skipITs>
+        <testFailureIgnore>false</testFailureIgnore>
+        <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
+        <test.env>hsql</test.env>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.8.1</version>
+            <configuration>
+              <argLine>-Xmx1024m -Xms1024m</argLine>
+            	<systemPropertyVariables>
+								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
+							</systemPropertyVariables>
+              <testNGArtifactName>none:none</testNGArtifactName>
+              <includes>
+                <include>**/AllTestsOlatCoreJunit4.java</include>
+                <include>**/AllTestsJunit4.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.4.3</version>
+            <executions>
+              <execution>
+                <id>copy-resources-4-unittests</id>
+                <!-- hook in to copy maven.build.properties to allow test and integration-test phase run properly -->
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+                  <resources>
+                    <resource>
+                      <!-- place resources you like to get filtered an copied -->
+                      <directory>src/test/profile/${test.env}</directory>
+                      <includes>
+                        <include>olat.local.properties</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>mysqlunittests</id>
+      <activation>
+        <property>
+          <name>with-mysql</name>
+        </property>
+      </activation>
+      <properties>
+        <skipTests>false</skipTests>
+        <skipITs>true</skipITs>
+        <testFailureIgnore>false</testFailureIgnore>
+        <test.env.db.hibernate.ddl.auto> </test.env.db.hibernate.ddl.auto>
+        <test.env>mysql</test.env>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.8.1</version>
+            <configuration>
+              <argLine>-Xmx512m -Xms512m</argLine>
+              <testNGArtifactName>none:none</testNGArtifactName>
+              <includes>
+                <include>**/AllTestsOlatCoreJunit4.java</include>
+                <include>**/AllTestsJunit4.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.4.3</version>
+            <executions>
+              <execution>
+                <id>copy-resources-4-mysqlunittests</id>
+                <!-- hook in to copy maven.build.properties to allow test and integration-test phase run properly -->
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+                  <resources>
+                    <resource>
+                      <!-- place resources you like to get filtered an copied -->
+                      <directory>src/test/profile/${test.env}</directory>
+                      <includes>
+                        <include>olat.local.properties</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                    <resource>
+                      <!-- place resources you like to get filtered an copied -->
+                      <directory>src/main/resources/database/mysql</directory>
+                      <includes>
+                        <include>setupDatabase.sql</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>clean-mysql-dbsetup</id>
+      <activation>
+        <property>
+          <name>with-mysql</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.4.3</version>
+            <executions>
+              <execution>
+                <id>copy-resources-4-clean-mysql-dbsetup</id>
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+                  <resources>
+                    <resource>
+                      <!-- place resources you like to get filtered an copied -->
+                      <directory>src/main/resources/database/mysql</directory>
+                      <includes>
+                        <include>setupDatabase.sql</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <version>1.4</version>
+
+            <dependencies>
+              <dependency>
+                <!-- DO NOT UPDATE! -->
+                <!-- Due to our special setup where we use the jdbc driver to convert 
+				          from utf-8 to iso we cannot update this lib at the moment. -->
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>5.0.8</version>
+              </dependency>
+            </dependencies>
+
+            <!-- common configuration shared by all executions -->
+            <configuration>
+              <driver>com.mysql.jdbc.Driver</driver>
+              <url>jdbc:mysql://localhost:${test.env.db.host.port}/${test.env.db.name}</url>
+              <username>${test.env.db.user}</username>
+              <password>${test.env.db.pass}</password>
+              <!-- You can comment out username/password configurations and
+                   have maven to look them up in your settings.xml using ${settingsKey}
+              
+              <settingsKey>sensibleKey</settingsKey>-->
+              <!--all executions are ignored if -Dmaven.test.skip=true-->
+              <skip>${maven.test.skip}</skip>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>drop-db-before-test</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <!-- need another database to drop the targeted one -->
+                  <url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+                  <autocommit>true</autocommit>
+                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+                  <!-- ignore error when database is not avaiable -->
+                  <onError>continue</onError>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>create-db</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+                  <!-- no transaction -->
+                  <autocommit>true</autocommit>
+                  <sqlCommand>create database ${test.env.db.name}</sqlCommand>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>create-schema</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <autocommit>true</autocommit>
+                  <srcFiles>
+                    <srcFile>target/test-classes/setupDatabase.sql</srcFile>
+                  </srcFiles>
+                </configuration>
+              </execution>
+<!--
+              <execution>
+                <id>create-data</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <orderFile>ascending</orderFile>
+                  <fileset>
+                    <basedir>${basedir}</basedir>
+                    <includes>
+                      <include>src/test/sql/test-data2.sql</include>
+                      <include>src/test/sql/test-data1.sql</include>
+                    </includes>
+                  </fileset>
+                </configuration>
+              </execution>
+-->
+              <!-- drop db after test -->
+              <execution>
+                <id>drop-db-after-test</id>
+                <!-- there is no post-test phase, the next phase after "test" is "prepare-package"
+                     for integration tests running against mysql generated via setupDatabase.sql there is need
+                     to bind a similar drop/create/schema/drop to pre-integration-test and post-integration-test -->
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <autocommit>true</autocommit>
+                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+
+
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- activate this profile to unzip two tomcats instances for cluster setup, which are the configured and used with profile seleniumtests
+      bind to phase initialize and execute goal unpack
+      ... initialize is an early phase, so that unpacking does not overwrite resources copied over to the tomcats. -->
+      <id>install-tomcats</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.2</version>
+            <executions>
+              <execution>
+                <id>install-tomcat-one</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>unpack
+                  </goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.olat.testutils</groupId>
+                      <artifactId>zipped-tomcat6x</artifactId>
+                      <version>1.0</version>
+                      <type>zip</type>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>${container.tomcat.one.install.dir}</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                  <!-- other configurations here -->
+                </configuration>
+              </execution>
+              <execution>
+                <id>install-tomcat-two</id>
+                <!-- bind to initialize, that tomcats are unpacked before resources are copied over -->
+                <phase>validate</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.olat.testutils</groupId>
+                      <artifactId>zipped-tomcat6x</artifactId>
+                      <version>1.0</version>
+                      <type>zip</type>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>${container.tomcat.two.install.dir}</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                  <!-- other configurations here -->
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>debug</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <skipITs>true</skipITs>
+        <cargo.container.wait>true</cargo.container.wait>
+      </properties>
+    </profile>
+
+
+    <profile>
+      <!-- activate this profile to run Selenium based Integration Tests against a cluster running locally
+      configures:
+      - surefire-plugin to include none of the IntegrationTests
+      - failsafe-plugin to include Seleniumtests via testng.xml
+      
+      in general hooks into: (please check the profile execution against the docu)
+      - initialize
+      ... cleans the tomcats working directories.
+      - generate-resources
+      ... resources-plugin to copy the maven.build.properties and selenium specific additionalUserContext.xml and specific olat.local.properties for tomcat-one and tomcat-two.
+      ... copies jms configuration
+      - generate-test-resources
+      ... antrun-plugin to transform the olat page sets into selenium JS, creates the olat-user-extension.js file for selenium server start.
+      ... resources-plugin to copy the maven.build.properties to the test-classes tree, would be needed for failsafe *ITCase tests.
+      - pre-integration-test
+      ... selenium-maven-plugin to start the selenium server (runs in the background and logs output to target/selenium/server.log) using the generated olat-user-extension.js
+      ... starts an active mq jms for cluster instances.
+      ... cargo-maven2-plugin deploying the asset OLAT-LMS into two tomcats which must be installed beforehand with (-Pinstall-tomcats)
+      - post-integration-test
+      ... cargo-maven2-plugin stops the started tomcat(s)
+      ... stops active mq
+      ... stops selenium
+      -->
+      <id>seleniumtests</id>
+      <properties>
+        <!-- seleniumtests are started with the command mvn verify -Pseleniumtests -->
+        <skipTests>false</skipTests>
+        <skipITs>false</skipITs>
+      </properties>
+      <build>
+
+        <plugins>
+
+          <plugin>
+            <!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.7.2</version>
+            <configuration>
+              <includes>
+                <include>none</include>
+              </includes>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <phase>generate-test-resources</phase>
+                <configuration>
+                  <target unless="maven.test.skip">
+                    <echo message="Generate ../target/olat-user-extensions.js for Seleniumserverstart"/>
+                    <xslt in="${basedir}/src/test/profile/selenium/ui-map/olat-ui-map.xml" out="${basedir}/target/generated_combined_olat-ui-map.xml" style="${basedir}/src/test/profile/selenium/ui-map/resources/resolve_includes.xsl"/>
+                    <xslt in="${basedir}/target/generated_combined_olat-ui-map.xml" out="${basedir}/target/olat-ui-map.js" style="${basedir}/src/test/profile/selenium/ui-map/resources/gen_olat-ui-map.xsl">
+										</xslt>
+                    <concat destfile="${basedir}/target/olat-user-extensions.js">
+                      <fileset file="${basedir}/target/olat-ui-map.js"/>
+                      <fileset file="${basedir}/src/test/profile/selenium/ui-map/resources/rollups.js"/>
+                    </concat>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.4.3</version>
+            <executions>
+              <execution>
+                <id>tomcat-one-server_xml</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${container.tomcat.one.home}/conf/</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>src/test/profile/cluster/tomcat-one/conf</directory>
+                      <includes>
+                        <include>server.xml</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>tomcat-two-server_xml</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${container.tomcat.two.home}/conf/</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>src/test/profile/cluster/tomcat-two/conf</directory>
+                      <includes>
+                        <include>server.xml</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>seleniumtests-config-tomcat-one</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${container.tomcat.one.home}/lib/</outputDirectory>
+                  <overwrite>true</overwrite>
+                  <resources>
+                    <!-- olat.local.properties with different environments
+                      typically meant for hsql / mysql / etc.   -->
+                    <resource>
+                      <directory>src/test/profile/cluster/tomcat-one/lib</directory>
+                      <includes>
+                        <include>olat.local.properties</include>
+                        <include>treecache.xml</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                    <!-- Users to be created on OLAT startup for selenium testcases are configured in this file  -->
+                    <resource>
+                      <directory>${selenium.config.files.path}</directory>
+                      <includes>
+                        <include>additionalUserContext.xml</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>seleniumtests-config-activemq</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>cargo/</outputDirectory>
+                  <overwrite>true</overwrite>
+                  <resources>
+                    <resource>
+                      <directory>src/test/profile/cluster/activemq</directory>
+                      <includes>
+                        <include>activemq.xml</include>
+                      </includes>
+                      <filtering>true</filtering>                    
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>seleniumtests-config-tomcat-two</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${container.tomcat.two.home}/lib/</outputDirectory>
+                  <overwrite>true</overwrite>
+                  <resources>
+                    <resource>
+                      <directory>src/test/profile/cluster/tomcat-two/lib</directory>
+                      <includes>
+                        <include>olat.local.properties</include>
+                        <include>treecache.xml</include>
+                      </includes>
+                      <filtering>true</filtering>                    
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>seleniumtests-config-misc</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${selenium.config.files.path}</directory>
+                      <includes>
+                        <include>defaultcontext.xml</include>
+                        <include>testng.xml</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.activemq.tooling</groupId>
+            <artifactId>maven-activemq-plugin</artifactId>
+            <version>5.3.0</version>
+            <executions>
+              <execution>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <configUri>xbean:file:${basedir}/cargo/activemq.xml</configUri>
+                  <fork>true</fork>
+                  <systemProperties>
+			              <property>
+			                <name>org.apache.activemq.default.directory.prefix</name>
+			                <value>./target/</value>
+			              </property>
+        		      </systemProperties>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>selenium-maven-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start-server</goal>
+                </goals>
+                <configuration>
+                  <!-- run selenium server in background and log output ${basedir}target/server.log. 
+										Append to ${basedir}/target/selenium/user-extensions.js -->
+                  <background>true</background>
+                  <logOutput>true</logOutput>
+                  <userExtensions>${basedir}/target/olat-user-extensions.js</userExtensions>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.7.2</version>
+            <configuration>
+              <suiteXmlFiles>
+                <!--  Seleniumtests run with testng, the included tests are defined in the following suite xml.
+                      The file is located in src/test/resources/testng.xml. Dependencies of tests are defined
+                      over annotations. -->
+                <suiteXmlFile>target/test-classes/testng.xml</suiteXmlFile>
+              </suiteXmlFiles>
+              <testFailureIgnore>true</testFailureIgnore>
+            </configuration>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <goals>
+                  <goal>integration-test</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>verify</id>
+                <goals>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.cargo</groupId>
+            <artifactId>cargo-maven2-plugin</artifactId>
+            <configuration>Selenium
+              <container>
+                <containerId>tomcat6x</containerId>
+                <timeout>${cargo.container.timeout}</timeout>
+              </container>
+            </configuration>
+            <executions>
+              <execution>
+                <id>tomcat-one-start</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+                <configuration>
+                  <wait>false</wait>
+                  <container>
+                    <containerId>tomcat6x</containerId>
+                    <type>installed</type>
+                    <home>${container.tomcat.one.home}</home>
+                  </container>
+                  <configuration>
+                    <type>existing</type>
+                    <home>${container.tomcat.one.home}</home>
+                    <properties>
+                      <cargo.servlet.port>${container.tomcat.one.port}</cargo.servlet.port>
+                      <cargo.logging>high</cargo.logging>
+<!--
+                      <cargo.jvmargs>
+                          "-Xdebug" "-Xrunjdwp:transport=dt_socket,address=4646,server=y,suspend=n"
+                      </cargo.jvmargs>
+-->
+                    </properties>
+                    <deployables>
+                      <deployable>
+                        <groupId>org.olat</groupId>
+                        <artifactId>OLAT-LMS</artifactId>
+                        <type>war</type>
+                        <properties>
+                          <context>olat</context>
+                        </properties>
+                        <pingURL>http://localhost:${container.tomcat.one.port}/cargocpc/</pingURL>
+                        <pingTimeout>300000</pingTimeout>
+                      </deployable>
+                    </deployables>
+                  </configuration>
+                </configuration>
+              </execution>
+              <execution>
+                <id>tomcat-one-stop</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+                <configuration>
+                  <configuration>
+                    <type>existing</type>
+                    <home>${container.tomcat.one.home}</home>
+                  </configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.cargo</groupId>
+            <artifactId>cargo-maven2-plugin</artifactId>
+            <configuration>
+              <container>
+                <containerId>tomcat6x</containerId>
+                <timeout>${cargo.container.timeout}</timeout>
+              </container>
+            </configuration>
+            <executions>
+              <execution>
+                <id>tomcat-two-start</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+                <configuration>
+                  <wait>${cargo.container.wait}</wait>
+                  <container>
+                    <containerId>tomcat6x</containerId>
+                    <!--<zipUrlInstaller>
+                    <url>http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.29/bin/apache-tomcat-6.0.29.zip</url>
+                    <installDir>${container.tomcat.one.install.dir}</installDir>
+                  </zipUrlInstaller>-->
+                    <type>installed</type>
+                    <home>${container.tomcat.two.home}</home>
+                  </container>
+                  <configuration>
+                    <type>existing</type>
+                    <home>${container.tomcat.two.home}</home>
+                    <properties>
+                      <cargo.servlet.port>${container.tomcat.two.port}</cargo.servlet.port>
+                      <cargo.logging>high</cargo.logging>
+<!--
+                      <cargo.jvmargs>
+                          "-Xdebug" "-Xrunjdwp:transport=dt_socket,address=5656,server=y,suspend=n"
+                      </cargo.jvmargs>
+-->
+                    </properties>
+                    <deployables>
+                      <deployable>
+                        <groupId>org.olat</groupId>
+                        <artifactId>OLAT-LMS</artifactId>
+                        <type>war</type>
+                        <properties>
+                          <context>olat</context>
+                        </properties>
+                        <pingURL>http://localhost:${container.tomcat.two.port}/cargocpc/</pingURL>
+                        <pingTimeout>300000</pingTimeout>
+                      </deployable>
+                    </deployables>
+                  </configuration>
+                </configuration>
+              </execution>
+              <execution>
+                <id>tomcat-two-stop</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+                <configuration>
+                  <configuration>
+                    <type>existing</type>
+                    <home>${container.tomcat.two.home}</home>
+                  </configuration>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <version>2.4.1</version>
+            <executions>
+              <execution>
+                <id>clean-tomcat-directories</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>
+		                clean
+		              </goal>
+                </goals>
+                <configuration>
+                  <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                  <filesets>
+                    <fileset>
+                      <directory>${container.tomcat.one.home}/webapps/</directory>
+                      <includes>
+                        <include>olat.war</include>
+                        <include>**/olat/**</include>
+                      </includes>
+                    </fileset>
+                    <fileset>
+                      <directory>${container.tomcat.one.home}/work/</directory>
+                      <includes>
+                        <include>**/SESSIONS.ser</include>
+                      </includes>
+                    </fileset>
+                    <fileset>
+                      <directory>${container.tomcat.two.home}/webapps/</directory>
+                      <includes>
+                        <include>olat.war</include>
+                        <include>**/olat/**</include>
+                      </includes>
+                    </fileset>
+                    <fileset>
+                      <directory>${container.tomcat.two.home}/work/</directory>
+                      <includes>
+                        <include>**/SESSIONS.ser</include>
+                      </includes>
+                    </fileset>
+                  </filesets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
 		
 	</profiles>
 	<repositories>
@@ -455,42 +1337,8 @@
 					<artifactId>maven-site-plugin</artifactId>
 					<version>2.2</version>
 				</plugin>
-				<!-- Surefire plugin used to execute unit tests.
-				"mvn -DskipTests=false test" to run all tests
-				"mvn -DskipTests=false -Dtest=UserTest test" to execute a specific test -->
-				<plugin>
-					<!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.5</version>
-					<configuration>
-						<testFailureIgnore>true</testFailureIgnore>
-						<skipTests>${skipTests}</skipTests>
-            <argLine>-XX:MaxPermSize=256m -Xmx1024m -Xms1024m</argLine>
-            <systemPropertyVariables>
-							<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
-						</systemPropertyVariables>
-						<excludes>
-							<!-- TODO:gs -->
-							<exclude>**/TestTable.java</exclude>
-							<exclude>**/TestUser*</exclude>
-							<exclude>**/TestIdentity.java</exclude>
-							<exclude>**/TestTextCase*</exclude>
-							<exclude>**/*PerformanceTest.java</exclude>
-						</excludes>
-						<includes>
-              <include>**/AllTestsOlatCoreJunit4.java</include>
-              <include>**/AllTestsJunit4.java</include>
-            </includes>
-
-						<!-- To run a single test add -Dtest=TestClass... test mvn -Dtest=TestSquare,TestCi*le 
-							test NOTE: Running a single test runs always twice, no idea why To run the 
-							OLAT Test suite run: mvn -Dtest=AllTestsJunit4 test -->
-					</configuration>
-				</plugin>
 
 				<plugin>
-
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
 					<executions>
@@ -518,7 +1366,6 @@
 							</configuration>
 						</execution>
 					</executions>
-
 				</plugin>
 
 				<!-- mvn org.mortbay.jetty:jetty-maven-plugin:run will start olat with jetty 
@@ -1478,7 +2325,20 @@
 			<!-- fxdiff: FXOLAT-243  only for testing purpose -->
 			<scope>test</scope>
 		</dependency>
-
+    <!-- START selenium tests dependencies -->
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>5.14</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium.client-drivers</groupId>
+      <artifactId>selenium-java-client-driver</artifactId>
+      <version>${selenium-client.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- END selenium tests dependencies -->
 
 
 

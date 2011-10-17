@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- rename in customcontext.xml and add to the same location as defaultcontext.xml -->
+<!-- context for testing against a running olat instance e.g. http://demo.olat.org/demo/dmz/, with selenium server running locally -->
+<beans>
+ 	<bean class="org.olat.test.util.setup.context.SeleniumLocallyContext" id="seleniumcontext">
+		<property name="config">
+			<map>
+				<entry key="seleniumHost" value="localhost"/>
+				<entry key="instanceId" value="olat"/>
+				<entry key="jmsBrokerUrl" value="tcp://localhost:61616"/>						
+				<entry key="adminUsername" value="administrator"/>
+				<entry key="adminPassword" value="olat"/>
+				<entry key="authorUsername" value="author"/>
+				<entry key="authorPassword" value="test"/>
+				<entry key="studentUsername" value="test"/>
+				<entry key="studentPassword" value="test"/>
+				<entry key="guestUsername" value="guest"/>
+				<entry key="guestPassword" value="guest"/>
+				<entry key="singleVmOlatUrl" value="http://demo.olat.org/demo/dmz/"/>					
+				<entry key="multiVmOlatUrl1" value="http://demo.olat.org/demo/dmz/"/>
+				<entry key="multiVmOlatUrl2" value="http://demo.olat.org/demo/dmz/"/>				
+<!--   		<entry key="browserId" value="*firefox /usr/lib/mozilla-firefox/firefox"/> -->
+			</map>
+		</property>
+ 	</bean>			
+</beans>

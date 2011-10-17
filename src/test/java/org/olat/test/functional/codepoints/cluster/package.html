@@ -1,0 +1,34 @@
+<html>
+<head>
+</head>
+
+<body>
+
+Codepoints tests for cluster setup. They run only against an OLAT instance configured as codepoint server. (selenium-cluster or selenium-single, not OLATNG)
+<br/>
+Run a codepoint test in eclipse using your local OLAT instance:
+  
+<ul>
+	<li>start ActiveMQ</li>
+	<li> Configure your local olat with a codepoint server (enable/disable codepoint/breakpoint framework)
+	<ul><li>codepoint_server.enabled=true</li>
+	<li>codepoint.jms.broker.url=failover:(tcp://localhost:61616?wireFormat.maxInactivityDuration=0)</li>
+	<li>(instance.id=myolat) remember this since must be used in customcontext.xml </li>
+	
+	</ul>
+	</li>
+	<li>start olat and check that it really starts as a codepoint server</li>
+	<li>configure customcontext.xml, namely:
+		<ul><li>key="jmsBrokerUrl", value="tcp://localhost:61616"</li>
+		<li>key="instanceId" value="myolat"</li>
+		</ul>
+	</li>
+	
+	<li>start codepoint tests.
+	
+	</li>
+</ul>
+
+
+</body>
+</html>

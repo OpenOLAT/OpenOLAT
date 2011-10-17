@@ -1,0 +1,36 @@
+<html>
+<head>
+</head>
+
+<body>
+
+Assessment functionality tests. <br/>
+Functional tests, no codepoints, 2-node cluster setup.<br/>
+All tests need a special course imported in the tests setup.
+
+<table border="1">
+<tbody>
+<tr valign="top">
+<td>AssessmentElementTest</td><td>Tests the assessment course element, assessment tool and the evidence of achievement.
+  <br/>  
+  Test case: <br/>
+  1. author adds new Assessment course element in course and configures it. (min, max score, passed cut value, etc.) <br/>
+  2. publish course <br/>
+  3. author checks in the assessment tool the stored values for the assessment form: min/max score, passed cut value <br/>
+  4. author grants score to student, and checks if the passed is correctly computed <br/>
+  5. Student checks the score/passed info in the "Evidence of achievement".	<br/></td>
+</tr>
+<tr valign="top">
+<td>BulkAssessmentTest</td><td>Test case: <br/>
+  Tutor (node 1) opens the AssessmentTool of the COURSE_NAME, starts the bulk assessment wizard and 
+  adds score values for a ASSESSMENT_ELEM_NAME course element for 3 users enrolled into the group. 
+  The scores are: 2, 3, and 4 for STUDENT1, STUDENT2, STUDENT3.
+  <br/>
+  STUDENT2 asserts his score in course run (COURSE_NAME) for the ASSESSMENT_ELEM_NAME element,
+  and in the efficiency statement (Home/Evidences of achievement) after he logins on the cluster node 2</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

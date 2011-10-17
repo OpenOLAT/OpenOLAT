@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="" />
+<title>groups_createprojectgroup</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">groups_createprojectgroup</td></tr>
+</thead><tbody>
+<!--Create project group and check if project group is listed in group tab-->
+<tr>
+	<td>open</td>
+	<td>nightly</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Online Learning And Training</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::username()</td>
+	<td>author01</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=dmz::password()</td>
+	<td>olat</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=dmz::login()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::groups()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=groups::toolbox_create_projectGroup()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>ui=commons::createGroup_groupName()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>ui=commons::createGroup_groupName()</td>
+	<td>project group selenium 1</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=commons::createGroup_save()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::groups()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td>selenium 1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=groups::content_deleteGroup(nameOfGroup=project group selenium 1)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=groups::content_deleteYes()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextNotPresent</td>
+	<td>selenium 1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>ui=tabs::logOut()</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>OLAT - Online Learning And Training</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

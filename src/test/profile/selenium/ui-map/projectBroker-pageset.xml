@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+<!-- aka Topic assignment -->
+	<pageset name="projectBroker" description="project broker links">
+		<xpath-ui-element name="createTopic" xpath="//a[.//text()='Create Topic']" description="create topic button"/>
+		<!-- use commons::flexiForm_labeledTextInput for registration and due date starting dates -->
+		<xpath-ui-element name="registrationDeadline" xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Deadline'][1]//div[@class='b_form_element']//input[@type='text']" description="registration deadline input field"></xpath-ui-element>
+		<xpath-ui-element name="dueDeadline" xpath="//div[@class='b_form_element_wrapper b_clearfix'][descendant::text()='Deadline'][2]//div[@class='b_form_element']//input[@type='text']" description="due date deadline"></xpath-ui-element>
+		<!-- <xpath-ui-element name="deleteTopic" xpath="//a[.//text()='Delete Topic']" description="detele topic button"></xpath-ui-element> asa unused -->
+		
+		<xpath-ui-element name="doLimitVacancies" xpath="//input[@type='checkbox' and @name='detailsform.max.candidates.label']" description="do you want to limit the vacancies - checkbox"/>
+		<xpath-ui-element name="vacanciesNumber" xpath="//input[@type='text' and @size='3']" description="number of vacancies"/>
+		
+		<!-- topic table -->
+		<xpath-ui-element  name="topicLink" xpath="//form//table//a[descendant::text()='&quot; + nameOfTopic + &quot;']" description="topic link in topic table">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+		<xpath-ui-element name="selectTopic" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td/a[descendant::text()='Select']" description="select topic with the given name">
+		  <parameter name="nameOfTopic" description="the name of the topic"/>
+		</xpath-ui-element>
+		<xpath-ui-element name="hasVacancies" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td[descendant::text()='Vacancies']"  description="topic has vacancies">
+		  <parameter name="nameOfTopic" description="the name of the topic"/>
+		</xpath-ui-element>
+		
+		<xpath-ui-element name="filled" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td[descendant::text()='Filled']"  description="topic is filled">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+    <xpath-ui-element name="temporaryRegistration" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td[descendant::text()='Temporary registration']"  description="Temporary registration">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+    <xpath-ui-element name="isRegistered" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td[descendant::text()='Positive registration']"  description="Positive registration">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+    <xpath-ui-element name="checkParticipants" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td[descendant::text()='Check participants']"  description="Check participants">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+    <xpath-ui-element name="participantsAccepted" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td[descendant::text()='Participants accepted']" description="Participants accepted">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+    
+		<xpath-ui-element name="deselectTopic" xpath="//td[@class='b_align_normal b_first_child']//a[descendant::text()='&quot; + nameOfTopic + &quot;']/../..//td/a[descendant::text()='Deselect']" description="deselect topic with the given name">
+      <parameter name="nameOfTopic" description="the name of the topic"/>
+    </xpath-ui-element>
+    
+    <pageset name="folder" description="folder specifics">
+      <xpath-ui-element name="folderTab" xpath="//a[descendant::text()='Folder']"  description="folder tab"/>
+      <xpath-ui-element name="dropboxDiv" xpath="//div[@class='o_course_run_dropbox']" description="dropbox div"/>
+      <xpath-ui-element name="dropBoxFolderLink" xpath="//div[@class='o_course_run_dropbox']//a[text()='&quot; + folderName + &quot;']" description="drop box folder link">
+        <parameter name="folderName" description="user name"/>
+      </xpath-ui-element>      
+      <xpath-ui-element name="uploadFile" xpath="//a[.//text()='Upload file']" description="Link to upload a file"/> 
+      <xpath-ui-element name="uploadFileInOverlay" xpath="//div[@class='b_window_content']//a[.//text()='Upload file']" description="the upload file in an overlay"/>   
+      <xpath-ui-element name="returnboxDiv" xpath="//div[@class='o_course_run_returnbox']" description="returnbox div"/>
+      <xpath-ui-element name="returnboxFolderCheckbox" xpath="//div[@class='o_course_run_returnbox']//input[@value='&quot; + folderName + &quot;']" description="folder in return box">
+        <parameter name="folderName" description="The name of the folder"></parameter>
+      </xpath-ui-element>
+      <xpath-ui-element name="returnBoxFolderLink" xpath="//div[@class='o_course_run_returnbox']//a[text()='&quot; + folderName + &quot;']" description="return box folder link">
+        <parameter name="folderName" description="user name"/>
+      </xpath-ui-element>
+    </pageset>
+    
+    <pageset name="administrationOfParticipants" description="Administration of participants tab">
+    <xpath-ui-element name="adminTab" xpath="//div[@class='b_tabbedpane_tabs']//a[contains(.//text(),'Administration')]" description="Administration of participants tab link"/>
+    <pageset name="candidates" description="candidates table">
+      <xpath-ui-element name="checkUser" xpath="//fieldset[legend[contains(.//text(),'Candidates')]]//tr[./td//text()='&quot; + userName + &quot;']//input[@type='checkbox']" description="check candidate">
+    <parameter name="userName" description="user name"/>
+    </xpath-ui-element>
+    <xpath-ui-element name="moveToParticipants" xpath="//input[@name='move.user.waitinglist']" description="Transfer as participant"/>
+    </pageset>
+    <pageset name="participants" description="participants table">
+      <xpath-ui-element name="checkUser" xpath="//fieldset[legend[contains(.//text(),'Participants accepted')]]//tr[./td//text()='&quot; + userName + &quot;']//input[@type='checkbox']" description="check participant">
+        <parameter name="userName" description="userName"/>
+      </xpath-ui-element>
+    </pageset>
+    <pageset name="authors" description="authors table">
+      <xpath-ui-element name="checkUser" xpath="//fieldset[legend[contains(.//text(),'Topic authors')]]//tr[./td//text()='&quot; + userName + &quot;']//input[@type='checkbox']" description="check author">
+        <parameter name="userName" description="userName"/>
+      </xpath-ui-element>
+    </pageset>
+  </pageset>
+	</pageset>
+	
+	
+</ui-map-include>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+	<pageset name="userManagement" description="user management open">
+		<pageset name="menu" description="menu on the left hand side">
+			<xpath-ui-element name="userManagement" xpath="//div[@class='b_tree']//a[descendant-or-self::text()='User management']" description="user management link in the menu"/>
+			<xpath-ui-element name="userSearch" xpath="//div[@class='b_tree']//a[descendant-or-self::text()='User search']" description="user search link in the menu"/>
+			<xpath-ui-element name="createUser" xpath="//div[@class='b_tree']//a[descendant-or-self::text()='Create user']" description="create user link in the menu"/>
+			<xpath-ui-element name="importUsers" xpath="//div[@class='b_tree']//a[descendant-or-self::text()='Import users']"  description="import users link in the menu"/>
+			<xpath-ui-element name="deleteUser" xpath="//div[@class='b_tree']//a[descendant-or-self::text()='Delete user']" description="delete user link in the menu"/>
+			<xpath-ui-element name="deleteUserImmediately"  xpath="//div[@class='b_tree']//a[descendant-or-self::text()='Delete user immediately']" description="delete user immediately link in the menu"/>
+			<xpath-ui-element name="usersReplayURL" xpath="//div[@class='b_tree']//a[descendant-or-self::text()='Users ReplayURL and AJAX ']" description="users replay URL in menu"></xpath-ui-element>
+		</pageset>
+		<pageset name="content" description="content of user management">
+			<pageset name="userSearch" description="user search form">
+				<testcase-macro name="go">
+					<call-macro name="login"/>
+					<selenium command="clickAndWait" target="tabs::userManagement"/>
+				</testcase-macro>
+				<default-testcase testcase="go" final-command="type(foo)"/>
+				<!--  <xpath-ui-element name="userName" xpath="//fieldset[./legend/text()='User search']//input[@id='login']"  description="user name field"/> unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='firstName']" name="firstName" description="first name field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='lastName']" name="lastName" description="last name field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='email']" name="email" description="email field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='zipCode']" name="zipCode" description="zip code field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='region']" name="region" description="region field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='city']" name="city" description="city field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='country']" name="country" description="country field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='institutionalName']" name="institution" description="institution  field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='institutionalUserIdentifier']" name="institutionalIdentifier" description="instutition identifier field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='institutionalEmail']" name="institutionalEmail" description="instutitional email field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='orgUnit']" name="orgUnit" description="organizational unit field"/> asa unused -->
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='studySubject']" name="fieldOfStudies" description="field of studies field"/> asa unused -->
+
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@class='b_checkbox' and @value='Administrator']" name="administrator" description="the administrator checkbox" testcase="go/check(userManagement::content_userSearch_administrator)"/>
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@class='b_checkbox' and @value='Author']" name="author" description="the author checkbox" testcase="go/check(userManagement::content_userSearch_author)"/>
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@class='b_checkbox' and @value='Group manager']" name="groupManager" description="the group manager checkbox" testcase="go/check(userManagement::content_userSearch_groupManager)"/>
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@class='b_checkbox' and @value='User manager']" name="userManager" description="the user manager checkbox" testcase="go/check(userManagement::content_userSearch_userManager)"/>
+
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@class='b_checkbox' and @value='OLAT/WebDAV password ']" name="olatWebdavPassword" description="the olat/webdav password checkbox" testcase="go/check(userManagement::content_userSearch_olatWebdavPassword)"/>
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@class='b_checkbox' and @value='No authentication']" name="noAuthentication" description="the no authentication checkbox" testcase="go/check(userManagement::content_userSearch_noAuthentication)"/>
+				<xpath-ui-element xpath="//fieldset[./legend/text()='User search']//select[@name='status']" name="status" description="status dropdown" testcase="go/select(userManagement::content_userSearch_status,Active)"/>
+
+			    <!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='afterDate']" name="createdAfter" description="the created-after field"/> asa unused -->
+				<!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@id='beforeDate']" name="createdBefore" description="the created-before field"/> asa unused -->
+
+				<!-- <xpath-ui-element xpath="//fieldset[./legend/text()='User search']//input[@value='Search']" name="search" description="the search button" testcase="go/userManagement::content_userSearch_search"/> unused  -->
+			</pageset>
+			
+			<pageset name="createUser" description="create new user form">
+				<testcase-macro name="go">
+					<call-macro name="login"/>
+					<selenium command="clickAndWait" target="tabs::userManagement"/>
+					<selenium command="clickAndWait" target="userManagement::menu_createUser"/>
+				</testcase-macro>
+				<default-testcase testcase="go" final-command="type(foo)"/>
+			
+				<!-- <xpath-ui-element name="userName" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='User name']//input"  description="user name field"/>
+				<xpath-ui-element name="firstName" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='First name']//input"  description="first name field"/>
+				<xpath-ui-element name="lastName" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Last name']//input"  description="last name field"/>
+				<xpath-ui-element name="email" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='E-mail address']//input"  description="email field"/>
+				<xpath-ui-element name="institution" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Institution']//input"  description="institution field"/>
+				<xpath-ui-element name="institutionalId" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and contains(.//label/text(), 'Institution identifier')]//input"  description="institution identifier field"/>
+				<xpath-ui-element name="institutionalEmail" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Institutional e-mail']//input"  description="institutional email field"/>
+				<xpath-ui-element name="orgUnit" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Organizational unit / study group']//input"  description="organizational unit / study group field"/>
+				<xpath-ui-element name="fieldOfStudies" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Field of studies']//input"  description="field of study field"/>
+				<xpath-ui-element name="password" xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Password']//input" description="password field"/>
+				<xpath-ui-element name="verifyPassword"  xpath="//fieldset[./legend/text()='Create new user']//div[@class='b_form_element_wrapper b_clearfix' and .//label/text()='Verify password']//input" description="verify password field"/> unused  -->
+				<xpath-ui-element name="language" xpath="//select[@name='new.form.language_SELBOX']" description="select language"></xpath-ui-element>
+				<xpath-ui-element name="save" xpath="//fieldset[./legend/text()='Create new user']//button[./span/text()='Save']"  description="the save button" testcase="go/userManagement::content_createUser_save"/>
+			</pageset>
+			
+			<pageset name="userdetail" description="the detail settings of a particular user - under user management">
+				<testcase-macro name="go">
+					<call-macro name="login"/>
+					<selenium command="clickAndWait" target="tabs::userManagement"/>
+					<selenium command="clickAndWait" target="userManagement::menu_userManagement"/>
+					<selenium command="type" target="userManagement::content_userSearch_userName" value="administrator"/>
+					<selenium command="clickAndWait" target="userManagement::content_userSearch_search"/>
+					<selenium command="clickAndWait" target="ui=commons::usertable_userlist_selectUserName(nameOfUser=administrator)"/>
+				</testcase-macro>
+				<default-testcase testcase="go" final-command="clickAndWait"/>
+				<xpath-ui-element name="userProfile" xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='User profile']" description="the user profile tab link" testcase="go/userManagement::content_userdetail_systemSettings/userManagement::content_userdetail_userProfile"/>
+				<xpath-ui-element name="systemSettings" xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='System settings']" description="the system settings tab link"/>
+				<xpath-ui-element name="changePassword" xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='Change password']"  description="the change password tab link"/>
+			    <!-- <xpath-ui-element xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='Authentications']" name="authentications" description="the authentications tab link"/> asa unused -->
+				<!-- <xpath-ui-element xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='Properties']" name="properties" description="the properties tab link"/> asa unused -->
+				<!-- <xpath-ui-element xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='Rights']" name="rights" description="the rights tab link"/> asa unused -->
+				<xpath-ui-element name="roles" xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='Roles']"  description="the roles tab link"/>
+				<!-- <xpath-ui-element xpath="//div[@class='b_tabbedpane_tabs']//a[./text()='Quota']" name="quota" description="the quota tab link"/> asa unused -->
+												
+				<pageset name="changePasswordTab" description="change password tab">
+					<xpath-ui-element name="newPassword" xpath="//div[@class='b_form_element_wrapper b_clearfix' and .//text()='New password']//div[@class='b_form_element']//input[@type='password']" description="new password input"/>
+					<xpath-ui-element name="confirmPassword"  xpath="//div[@class='b_form_element_wrapper b_clearfix' and .//text()='Confirm password']//div[@class='b_form_element']//input[@type='password']" description="confirm password input"/>				
+				</pageset>
+				
+				<pageset name="roles" description="roles tab">
+					<xpath-ui-element name="isUsermanager"  xpath="//input[@name='roles' and @value='isUserManager']" description="isUsermanager checkbox"/>
+					<xpath-ui-element name="isGroupmanager" xpath="//input[@name='roles' and @value='isGroupManager']"  description="isGroupmanager checkbox"/>
+					<xpath-ui-element name="isAuthor" xpath="//input[@name='roles' and @value='isAuthor']" description="isAuthor checkbox"/>
+					<xpath-ui-element name="isAdmin" xpath="//input[@name='roles' and @value='isAdmin']"  description="isAdmin checkbox"/>					
+					<xpath-ui-element name="isLearningResourceManager" xpath="//input[@name='roles' and @value='isInstitutionalResourcemanager']" description="Learning resource manager checkbox"/>					
+					<!-- <xpath-ui-element name="save" xpath="//fieldset[contains(./legend/text(), 'Assign system roles and rights')]//input[@value='Save']"  description="the save button"/> unused  -->
+				</pageset>
+			</pageset>
+			
+			<pageset name="importUsers" description="import users links">
+				<xpath-ui-element name="startUserImport" xpath="//a[descendant::text()='Start user import ']" description="click start user import"/>
+				<xpath-ui-element name="fillTextArea" xpath="//fieldset[./legend='User import']//textarea" description="fill text area with the user table"/>
+				<xpath-ui-element name="next" xpath="//a[@class='b_button b_wizard_button_next']" description="Next button of the import users wizard"/>
+				<xpath-ui-element name="finish" xpath="//a[@class='b_button b_wizard_button_finish']" description="Finish button of the import users wizard"/>
+				<xpath-ui-element name="cancel" xpath="//a[@class='b_button b_wizard_button_cancel']" description="cancel link of the import users wizard"/>
+				<xpath-ui-element name="importWarnIcon" xpath="//span[@class='b_small_icon b_warn_icon']" description="import warn icon"/>
+			</pageset>
+			
+			<pageset name="usersReplayURL" description="replay URL ans AJAX OFF">
+				<xpath-ui-element name="userReplayTextArea" xpath="//textarea[@name='bulkuserreplay.tt']"  description="user replay text area"></xpath-ui-element>
+			</pageset>
+		</pageset>
+	</pageset>
+</ui-map-include>

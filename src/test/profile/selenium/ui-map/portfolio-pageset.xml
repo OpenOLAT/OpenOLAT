@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+
+		<pageset name="epCollectDialog" description="the collect dialog">
+			
+			<xpath-ui-element xpath="//div[@class='b_wizard']//input" name="title" description="title field"/>
+			<xpath-ui-element xpath="//div[@class='b_wizard']//textarea" name="description" description="textarea field"/>
+
+			<!-- mark: to use tag-component, leave away wizard-path -->
+			<xpath-ui-element xpath="//div[@class='b_wizard_steps_current']//div[@class and contains( concat( ' ', normalize-space(@class), ' ' ), ' holder ' )]//input[@class and contains( concat( ' ', normalize-space(@class), ' ' ), ' maininput ' )]" name="taginput" description="input field for tags"/>
+			<xpath-ui-element xpath="//div[@class='b_wizard_steps_current']//ul[@class='feed']/li[1]" name="taginputFeed" description="first element of the autocompletion feed"/>
+			<xpath-ui-element xpath="//div[@class='b_wizard_steps_current']//div[@class='b_form_selection_element']//input" name="copyrightCheckbox" description="checkbox for copyright"/>
+			
+		</pageset>
+		
+		<pageset name="epMenu" description="the left hand menu">
+		<!-- todo: rh: fix as soon as epf is translated to EN -->
+			<xpath-ui-element name="ePortfolioArtefacts" xpath="//div[contains(@class, 'o_home')]//div[@class='b_tree']//a[text()='My artefacts']" description="left navigation link 'eportfolio / my artefacts'"/>
+			<xpath-ui-element name="ePortfolioMyMaps" xpath="//div[contains(@class, 'o_home')]//div[@class='b_tree']//a[text()='My accumulative folders']" description="left navigation link 'eportfolio / my maps'"/>
+		</pageset>
+		
+		<pageset name="epArtefacts" description="artefact page">
+			<xpath-ui-element xpath="//div[@class='b_artefact_count']" name="artefactCount" description="text containing artefact count"/>
+			<xpath-ui-element xpath="//div[@class='b_ep_add_artefact']//a" name="addArtefactLink" description="button to add artefact"/>
+			<xpath-ui-element xpath="//div[@class='b_ext_tooltip_wrapper']//li[1]//a" name="createTextArtefactLink" description="link to create a text-artefact"/>
+			<xpath-ui-element xpath="//div[@class='b_segments']//li[3]//a" name="artefactSearch" description="segmented view - artefact search"/>
+		</pageset>
+		
+		<pageset name="epArtefactSearch" description="search segment in artefact extension">
+			<xpath-ui-element xpath="//div[@class='b_ep_filter b_float_left']//div[2]//div[2]/div/span[6]/a" name="textartefact" description="filter for text artefacts"/>
+			<xpath-ui-element xpath="//div[@class='b_subcl']/../../div[1]//a[contains(@class, 'b_delete_icon')]" name="deleteFirstArtefactLink" description="delete link of first left artefact"/>
+			<xpath-ui-element xpath="//div[@class='b_subcl']/../../div[1]//div[contains(@class, 'b_actions')]//a" name="firstArtefactChooseLink" description="link to choose an artefact"/>
+			<xpath-ui-element xpath="//div[contains(@class, 'b_ep_viewmode')]//input[@value='details']" name="viewModeDetails" description="radio for details mode"/>
+		</pageset>
+		
+		<pageset name="epMap" description="the map view">
+			<xpath-ui-element xpath="//div[@class='b_ep_add_artefact']//a" name="addMapLink" description="button to add a map"/>
+			<xpath-ui-element xpath="//div[@class='b_ext_tooltip_wrapper']//li[1]//a" name="createDefaultMap" description="link to create a default map"/>
+			<xpath-ui-element xpath="//div[@class='b_ext_tooltip_wrapper']//li[2]//a" name="createMapFromTemplate" description="link to create a default map from a given template"/>
+			<xpath-ui-element xpath="//div[@id='o_addMapBox']//div/input" name="createMapTitle" description="input field for map title"/>
+			<xpath-ui-element xpath="//div[@id='o_addMapBox']//div/textarea" name="createMapDescription" description="input field for map description"/>
+			<xpath-ui-element xpath="//div[@id='o_addMapBox']//button" name="createMapSaveButton" description="save button"/>
+			
+			<xpath-ui-element xpath="//div[@class='b_pagination']//li[2]//a" name="firstPageLink" description="link in tab to first page"/>
+			<xpath-ui-element xpath="//div[@class='b_eportfolio_add_link']//a" name="addPageLink" description="link to add a page"/>
+			<xpath-ui-element xpath="//div[@class='b_eportfolio_page']//span[2]/a[contains(@class, 'b_eportfolio_add_link')]" name="addStructLink" description="link to add a structure"/>
+			<xpath-ui-element xpath="//div[@class='b_eportfolio_page']/div[1]//span[1]/a[contains(@class, 'b_eportfolio_add_link')]" name="attachArtefactToPageLink" description="link to add a artefact"/>
+			<xpath-ui-element xpath="//div[@class='b_eportfolio_structure'][1]//span[1]/a[contains(@class, 'b_eportfolio_add_link')]" name="attachArtefactToStructLink" description="link to add a artefact"/>
+			
+			<xpath-ui-element name="openMap" xpath="//ul[@class='b_eportfolio_maps']//li/h4[contains(text(), '&quot; + titleOfMap + &quot;')]/..//span[1]/a" description="get link to a map">
+				<parameter name="titleOfMap" description="the title of the map"/>
+			</xpath-ui-element>
+			
+			<xpath-ui-element name="shareMap" xpath="//ul[@class='b_eportfolio_maps']//li/h4[contains(text(), '&quot; + titleOfMap + &quot;')]/..//span[2]/a" description="get link to share a map">
+				<parameter name="titleOfMap" description="the title of the map"/>
+			</xpath-ui-element>
+			
+			<xpath-ui-element xpath="//div[@class='b_eportfolio']//span[text()='Open Editor']/.." name="openEditor" description="open the map editor"/>
+			<xpath-ui-element xpath="//div[@class='b_eportfolio']//span[text()='Close Editor']/.." name="closeEditor" description="close the map editor"/>			
+		</pageset>
+		
+		<pageset name="epMapEditor" description="the map editor">
+			<xpath-ui-element xpath="//div[contains(@class, 'o_ep_struct_editor')]//input[@type='text']" name="elTitle" description="title input element"/>
+			<xpath-ui-element xpath="//div[contains(@class, 'o_ep_struct_editor')]//div/textarea" name="elDescription" description="description for this element"/>
+			<xpath-ui-element xpath="//div[contains(@class, 'o_ep_struct_editor')]//button" name="saveEditor" description="save form"/>
+			<xpath-ui-element xpath="//a[contains(@class, 'b_delete_icon')]" name="deleteButton" description="delete active element"/>
+		</pageset>
+		
+		<pageset name="epShare" description="the map share view">		
+			<xpath-ui-element xpath="//div[contains(@id, 'o_shareBox' )]//form//div[2]//a" name="createRule" description="create rule button"/>			
+			<xpath-ui-element xpath="//div[@class and contains( concat( ' ', normalize-space(@class), ' ' ), ' holder ' )]//input[@class and contains( concat( ' ', normalize-space(@class), ' ' ), ' maininput ' )]" name="nameInput" description="input field for usernames"/>
+			<xpath-ui-element xpath="//ul[@class='feed']/li[1]" name="nameInputSelect" description="select entry from input field for usernames"/>
+			<xpath-ui-element xpath="//div[@class='b_button_group']//button" name="saveShare" description="save form"/>		
+		</pageset>
+		
+		
+</ui-map-include>

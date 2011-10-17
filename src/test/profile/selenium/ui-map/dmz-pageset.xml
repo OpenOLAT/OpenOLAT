@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ui-map-include PUBLIC "olat/ui-map-include" "resources/olat-ui-map-include.dtd">
+
+<ui-map-include>
+	<pageset name="dmz" description="DMZ links">		
+		<xpath-ui-element name="login" xpath="//button[@value='Login']" description="login button" testcase="dmz/type(dmz::username,foo)/type(dmz::username,bar)/clickAndWait(dmz::login)"/>
+		
+		<xpath-ui-element name="disclaimerCheckbox" xpath="//input[@name='acknowledge_checkbox']" description="terms of use disclaimer - checkbox" />
+		<xpath-ui-element name="acceptDisclaimer" xpath="//button[@value='&quot; + acceptLabel + &quot;']" description="terms of use disclaimer - accept button">
+			<parameter name="acceptLabel" description="the name of the label">
+					<defaultValue value="Accept"/>
+			</parameter>
+		</xpath-ui-element>
+		<xpath-ui-element name="loginErrorOK" xpath="//button[.//text()='OK']"  description="login error OK button"></xpath-ui-element>
+		<xpath-ui-element name="wayf" xpath="//div[@id='wayf_div']" description="wayf div"></xpath-ui-element>
+	</pageset>
+</ui-map-include>

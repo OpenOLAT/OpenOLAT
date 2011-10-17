@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+<!-- EXAMPLE SPRING CONFIG FILE FOR ADDITIONAL TEST USERS -->
+<!-- Copy this file to the top of your web-app CLASSPATH e.g. webapp/WEB-INF/classes and add your test-users to additionalTestUsers-list -->
+<!-- Delete this two line which contains 'REMOVE THIS LINE TO ENABLE' below -->
+
+
+<bean class="org.olat.user.TestUserAdder">
+	<constructor-arg ref="userModule"></constructor-arg>
+	
+	<property name="additionalTestUsers">
+        <list>
+                <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="author2" />
+                       <property name="firstName" value="Aurich2" />
+                       <property name="lastName" value="Thorw2" />
+                       <property name="email" value="author2@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="true" />
+                       <property name="admin" value="false" />
+                       
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="learner2" />
+                       <property name="firstName" value="Leisa2" />
+                       <property name="lastName" value="Arnerich2" />
+                       <property name="email" value="learner2@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                      <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="usermgr2" />
+                       <property name="firstName" value="Marc2" />
+                       <property name="lastName" value="Bond2" />
+                       <property name="email" value="usermgr2@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+                       <property name="userManager" value="true" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="groupmgr2" />
+                       <property name="firstName" value="Alexandra2" />
+                       <property name="lastName" value="Jeunet2" />
+                       <property name="email" value="groupmgr2@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+                       <property name="groupManager" value="true" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="test21" />
+                       <property name="firstName" value="Thomas21" />
+                       <property name="lastName" value="Est21" />
+                       <property name="email" value="test21@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                       <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="test22" />
+                       <property name="firstName" value="Till22" />
+                       <property name="lastName" value="Estobesto22" />
+                       <property name="email" value="test22@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                      <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+               <bean class="org.olat.user.DefaultUser">
+                        <!-- constructor arg is userName -->
+                       <constructor-arg type="java.lang.String" value="test23" />
+                       <property name="firstName" value="Tanja23" />
+                       <property name="lastName" value="Estelle23" />
+                       <property name="email" value="test23@olat-newinstallation.org" />
+                       <property name="password" value="test2011" />
+                       <property name="language" value="${defaultlang}" />
+                      <property name="guest" value="false" />
+                       <property name="author" value="false" />
+                       <property name="admin" value="false" />
+               </bean>
+           </list>
+	</property>
+</bean>
+
+
+</beans>
