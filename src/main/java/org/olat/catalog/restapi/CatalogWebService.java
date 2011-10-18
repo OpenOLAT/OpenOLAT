@@ -46,8 +46,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -60,6 +60,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -323,6 +324,7 @@ public class CatalogWebService {
    * @param path The path
    * @param name The name
    * @param description The description
+   * @param newParentKey The parent key to move the entry (optional)
    * @param httpRquest The HTTP request
    * @param uriInfo The URI informations
 	 * @return The response
@@ -333,12 +335,13 @@ public class CatalogWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updatePostCatalogEntry(@PathParam("path") List<PathSegment> path,
 			@FormParam("name") String name, @FormParam("description") String description,
+			@FormParam("newParentKey") Long newParentKey,//fxdiff FXOLAT-122: course management
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		CatalogEntryVO entryVo = new CatalogEntryVO();
 		entryVo.setName(name);
 		entryVo.setDescription(description);
-		return updateCatalogEntry(path, entryVo, httpRequest, uriInfo);
+		return updateCatalogEntry(path, entryVo, newParentKey, httpRequest, uriInfo);
 	}
 	
 	/**
@@ -353,6 +356,7 @@ public class CatalogWebService {
    * @param id The id of the catalog entry
    * @param name The name
    * @param description The description
+   * @param newParentKey The parent key to move the entry (optional)
    * @param httpRquest The HTTP request
    * @param uriInfo The URI informations
 	 * @return The response
@@ -362,12 +366,13 @@ public class CatalogWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateCatalogEntry(@PathParam("path") List<PathSegment> path,
 			@QueryParam("name") String name, @QueryParam("description") String description,
+			@QueryParam("newParentKey") Long newParentKey,//fxdiff FXOLAT-122: course management
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		CatalogEntryVO entryVo = new CatalogEntryVO();
 		entryVo.setName(name);
 		entryVo.setDescription(description);
-		return updateCatalogEntry(path, entryVo, httpRequest, uriInfo);
+		return updateCatalogEntry(path, entryVo, newParentKey, httpRequest, uriInfo);
 	}
 	
 	/**
@@ -380,6 +385,7 @@ public class CatalogWebService {
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
    * @param entryVo The catalog entry
+   * @param newParentKey The parent key to move the entry (optional)
    * @param httpRquest The HTTP request
    * @param uriInfo The URI informations
 	 * @return The response
@@ -389,7 +395,7 @@ public class CatalogWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateCatalogEntry(@PathParam("path") List<PathSegment> path,
-			CatalogEntryVO entryVo, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+			CatalogEntryVO entryVo, @QueryParam("newParentKey") Long newParentKey, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		
 		if(!isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -407,6 +413,17 @@ public class CatalogWebService {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
+		//fxdiff FXOLAT-122: course management
+		CatalogEntry newParent = null;
+		if(newParentKey != null) {
+			newParent = catalogManager.loadCatalogEntry(newParentKey);
+			if(newParent.getType() == CatalogEntry.TYPE_NODE) {
+				//check if can admin category
+				if(!canAdminSubTree(newParent, httpRequest)) {
+					return Response.serverError().status(Status.UNAUTHORIZED).build();
+				}
+			}
+		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
 		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(catalogRes, id, LOCK_TOKEN);
@@ -420,10 +437,21 @@ public class CatalogWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			
-			ce.setName(entryVo.getName());
-			ce.setDescription(entryVo.getDescription());
-			ce.setType(guessType(entryVo));
+			//only update if needed
+			//fxdiff FXOLAT-122: course management
+			if(StringHelper.containsNonWhitespace(entryVo.getName())) {
+				ce.setName(entryVo.getName());
+			}
+			if(StringHelper.containsNonWhitespace(entryVo.getDescription())) {
+				ce.setDescription(entryVo.getDescription());
+			}
+			if(entryVo.getType() != null) {
+				ce.setType(guessType(entryVo));
+			}
 			catalogManager.updateCatalogEntry(ce);
+			if(newParent != null) {
+				catalogManager.moveCatalogEntry(ce, newParent);
+			}
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		} finally {

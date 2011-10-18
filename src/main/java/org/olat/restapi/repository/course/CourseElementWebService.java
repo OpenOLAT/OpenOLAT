@@ -52,16 +52,20 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
+import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractFeedCourseNode;
+import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.sp.SPEditController;
+import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -140,6 +144,47 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	}
 	
 	/**
+	 * This updates a Structure Element onto a given course.
+   * @response.representation.mediaType application/x-www-form-urlencoded, multipart/form-data
+   * @response.representation.doc The course node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id of this structure
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param displayType The type of display (file, toc...)
+	 * @param filename The name of the file to be attached
+	 * @param file The file to be attached
+	 * @param request The HTTP request
+	 * @return The persisted structure element (fully populated)
+	 * @return The persisted structure element (fully populated)
+	 */
+	@POST
+	@Path("structure/{nodeId}")
+	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.MULTIPART_FORM_DATA})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateStructure(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
+			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
+			@Context HttpServletRequest request) {
+		CustomConfigDelegate config = new StructureFullConfig(displayType, file, filename);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
 	 * This attaches a Structure Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
    * @response.representation.mediaType application/x-www-form-urlencoded
@@ -170,8 +215,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
+			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		return attachStructure(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, request);
+		//fxdiff FXOLAT-122: course management
+		CustomConfigDelegate config = new StructureFullConfig(displayType, file, filename);
+		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -205,14 +254,50 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+			@QueryParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
 			@Context HttpServletRequest request) {
-		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, null, request);
+		//fxdiff FXOLAT-122: course management
+		CustomConfigDelegate config = new StructureFullConfig(displayType, null, null);
+		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
-
-	
-
-	
+	/**
+	 * This updates a Single Page Element onto a given course.
+   * @response.representation.mediaType multipart/form-data
+   * @response.representation.doc The content of the single page
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc the course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id of this single page
+	 * @param position The node's position relative to its sibling nodes (optional)
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param filename The single page file name
+	 * @param file The file input stream
+	 * @param request The HTTP request
+	 * @return The persisted Single Page Element(fully populated)
+	 */
+	@POST
+	@Path("singlepage/{nodeId}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateSinglePage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+			@FormParam("filename") @DefaultValue("attachment") String filename, @FormParam("file") InputStream file,
+			@Context HttpServletRequest request) {
+		SinglePageCustomConfig config = new SinglePageCustomConfig(file, filename);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
 	
 	/**
 	 * This attaches a Single Page Element onto a given course. The element will
@@ -369,6 +454,40 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	}
 	
 	/**
+	 * This upudate a Folder Element onto a given course.
+   * @response.representation.mediaType application/x-www-form-urlencoded
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The folder node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id of this folder
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param downloadExpertRules The rules to download files (optional)
+	 * @param uploadExpertRules The rules to upload files (optional)
+	 * @param request The HTTP request
+	 * @return The persisted folder element (fully populated)
+	 */
+	@POST
+	@Path("folder/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("downloadExpertRules") String downloadExpertRules,
+			@FormParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
+		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
+	}
+	
+	/**
 	 * This attaches a Folder Element onto a given course. The element will be
 	 * inserted underneath the supplied parentNodeId.
    * @response.representation.mediaType application/x-www-form-urlencoded
@@ -385,7 +504,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param longTitle The node long title
 	 * @param objectives The node learning objectives
 	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param downloadExpertRules The rules to download files (optional)
+	 * @param uploadExpertRules The rules to upload files (optional)
 	 * @param request The HTTP request
 	 * @return The persisted folder element (fully populated)
 	 */
@@ -396,9 +516,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response attachFolderPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
 			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@Context HttpServletRequest request) {
-		return attachFolder(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, request);
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("downloadExpertRules") String downloadExpertRules,
+			@FormParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
+		return attachFolder(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, downloadExpertRules, uploadExpertRules, request);
 	}
 
 	/**
@@ -418,7 +538,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param longTitle The node long title
 	 * @param objectives The node learning objectives
 	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param downloadExpertRules The rules to download files (optional)
+	 * @param uploadExpertRules The rules to upload files (optional)
 	 * @param request The HTTP request
 	 * @return The persisted folder element (fully populated)
 	 */
@@ -429,9 +550,48 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response attachFolder(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
 			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("downloadExpertRules") String downloadExpertRules,
+			@QueryParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
+		
+		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
+		return attach(courseId, parentNodeId, "bc", position, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
+	}
+	
+	/**
+	 * This updates a Task Element onto a given course.
+   * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The task node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable id
+	 * @param nodeId The node's id of this task
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param text The task node text
+	 * @param points The task node's possible points
+	 * @param request The HTTP request
+	 * @return The persisted task element (fully populated)
+	 */
+	@POST
+	@Path("task/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateTask(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("text") String text, @FormParam("points") Float points,
 			@Context HttpServletRequest request) {
-		return attach(courseId, parentNodeId, "bc", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, null, request);
+		TaskCustomConfig config = new TaskCustomConfig(points, text);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -507,6 +667,49 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@Context HttpServletRequest request) {
 		TaskCustomConfig config = new TaskCustomConfig(points, text);
 		return attach(courseId, parentNodeId, "ta", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
+	 * This updates a Test Element onto a given course.
+   * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The course node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The test node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course, parentNode or test not found
+	 * @param courseId The course resourceable id
+	 * @param nodeId The node's id of this test
+	 * @param testResourceableId The test node's id which is retorned in the
+	 *          response of the import test resource
+	 * @param position The node's position relative to its sibling nodes (optional)
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param testResourceableId The repository entry key of the test
+	 * @param request The HTTP request
+	 * @return The persisted test element (fully populated)
+	 */
+	@POST
+	@Path("test/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateTest(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("testResourceableId") Long testResourceableId,  @Context HttpServletRequest request) {
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry testRepoEntry = rm.lookupRepositoryEntry(testResourceableId);
+		if(testRepoEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		CustomConfigDelegate config = CustomConfigFactory.getTestCustomConfig(testRepoEntry);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -589,6 +792,40 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	}
 	
 	/**
+	 * Updates an assessment building block.
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The assessment node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id of this assessment
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@POST
+	@Path("assessment/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateAssessment(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@Context HttpServletRequest request) {
+		AssessmentCustomConfig config = new AssessmentCustomConfig();
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
 	 * Attaches an assessment building block.
 	 * @response.representation.mediaType application/x-www-form-urlencoded
    * @response.representation.doc The assessment node metadatas
@@ -666,6 +903,49 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @response.representation.404.doc The course or parentNode not found
 	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id which of this wiki
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param wikiResourceableId The repository entry key of the wiki
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@POST
+	@Path("wiki/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateWiki(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("wikiResourceableId") Long wikiResourceableId, @Context HttpServletRequest request) {
+		RepositoryEntry wikiRepoEntry = null;
+		if(wikiResourceableId != null) {
+			RepositoryManager rm = RepositoryManager.getInstance();
+			wikiRepoEntry = rm.lookupRepositoryEntry(wikiResourceableId);
+			if(wikiRepoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+		}
+		WikiCustomConfig config = new WikiCustomConfig(wikiRepoEntry);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
+	 * Attaches an wiki building block.
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The assessment node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
 	 * @param parentNodeId The node's id which will be the parent of this assessment
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
@@ -725,6 +1005,49 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 		WikiCustomConfig config = new WikiCustomConfig(wikiRepoEntry);
 		return attach(courseId, parentNodeId, "wiki", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
+	 * Update an blog building block.
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The assessment node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id of this blog
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param blogResourceableId The softkey of the blog resourceable (optional)
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@POST
+	@Path("blog/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateBlog(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("repoEntry") Long blogResourceableId, @Context HttpServletRequest request) {
+		RepositoryEntry blogRepoEntry = null;
+		if(blogResourceableId != null) {
+			RepositoryManager rm = RepositoryManager.getInstance();
+			blogRepoEntry = rm.lookupRepositoryEntry(blogResourceableId);
+			if(blogRepoEntry == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+		}
+		BlogCustomConfig config = new BlogCustomConfig(blogRepoEntry);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -824,6 +1147,46 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @return
 	 */
 	@POST
+	@Path("survey/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response attachSurveyPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("surveyResourceableId") Long surveyResourceableId, @Context HttpServletRequest request) {
+		
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry surveyRepoEntry = rm.lookupRepositoryEntry(surveyResourceableId);
+		if(surveyRepoEntry == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		CustomConfigDelegate config = CustomConfigFactory.getSurveyCustomConfig(surveyRepoEntry);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
+	 * Attaches an survey building block.
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The assessment node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param parentNodeId The node's id which will be the parent of this assessment
+	 * @param position The node's position relative to its sibling nodes (optional)
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@POST
 	@Path("survey")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -873,6 +1236,49 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		CustomConfigDelegate config = CustomConfigFactory.getSurveyCustomConfig(surveyRepoEntry);
 		
 		return attach(courseId, parentNodeId, "iqsurv", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
+	 * Update an external page building block.
+	 * @response.representation.mediaType application/x-www-form-urlencoded
+   * @response.representation.doc The external page node metadatas
+	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id of this external page
+	 * @param shortTitle The node short title
+	 * @param longTitle The node long title
+	 * @param objectives The node learning objectives
+	 * @param visibilityExpertRules The rules to view the node (optional)
+	 * @param accessExpertRules The rules to access the node (optional)
+	 * @param url The URL of the external page
+	 * @param request The HTTP request
+	 * @return
+	 */
+	@POST
+	@Path("externalpage/{nodeId}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	//fxdiff FXOLAT-122: course management
+	public Response updateExternalPage(@PathParam("courseId") Long courseId, @PathParam("parentNodeId") String nodeId,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("url") String url, @Context HttpServletRequest request) {
+		URL externalUrl = null;
+		if(url != null) {
+			try {
+				externalUrl = new URL(url);
+			} catch (MalformedURLException e) {
+				return Response.serverError().status(Status.CONFLICT).build();
+			}
+		}
+		ExternalPageCustomConfig config = new ExternalPageCustomConfig(externalUrl);
+		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -1596,15 +2002,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			moduleConfig.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
-			
-			moduleConfig.setConfigurationVersion(2);
-			moduleConfig.set(TUConfigForm.CONFIGKEY_PROTO, url.getProtocol());
-			moduleConfig.set(TUConfigForm.CONFIGKEY_HOST, url.getHost());
-			moduleConfig.set(TUConfigForm.CONFIGKEY_URI, url.getPath());
-			moduleConfig.set(TUConfigForm.CONFIGKEY_QUERY, url.getQuery());
-			int port = url.getPort();
-			moduleConfig.set(TUConfigForm.CONFIGKEY_PORT, new Integer(port != -1 ? port : url.getDefaultPort()));
-			moduleConfig.setBooleanEntry(TUConfigForm.CONFIG_IFRAME, true); 
+			    //fxdiff FXOLAT-122: course management
+			if(url != null) {
+				moduleConfig.setConfigurationVersion(2);
+				moduleConfig.set(TUConfigForm.CONFIGKEY_PROTO, url.getProtocol());
+				moduleConfig.set(TUConfigForm.CONFIGKEY_HOST, url.getHost());
+				moduleConfig.set(TUConfigForm.CONFIGKEY_URI, url.getPath());
+				moduleConfig.set(TUConfigForm.CONFIGKEY_QUERY, url.getQuery());
+				int port = url.getPort();
+				moduleConfig.set(TUConfigForm.CONFIGKEY_PORT, new Integer(port != -1 ? port : url.getDefaultPort()));
+				moduleConfig.setBooleanEntry(TUConfigForm.CONFIG_IFRAME, true);
+			}
 		}
 		
 	}
@@ -1651,6 +2059,36 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 	}
 	
+	public class FolderCustomConfig implements CustomConfigDelegate {
+		private final String downloadExpertRules;
+		private final String uploadExpertRules;
+		
+		public FolderCustomConfig(String downloadExpertRules, String uploadExpertRules) {
+			this.downloadExpertRules = downloadExpertRules;
+			this.uploadExpertRules = uploadExpertRules;
+		}
+
+		@Override
+		public boolean isValid() {
+			return true;
+		}
+
+		@Override
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+			BCCourseNode bcCourseNode = (BCCourseNode)newNode;
+			
+			if(StringHelper.containsNonWhitespace(downloadExpertRules)) {
+				Condition downloadCond = createExpertCondition("downloaders", downloadExpertRules);
+				bcCourseNode.setPreConditionDownloaders(downloadCond);
+			}
+
+			if(StringHelper.containsNonWhitespace(uploadExpertRules)) {
+				Condition uploadCond = createExpertCondition("uploaders", uploadExpertRules);
+				//fxdiff: RESTAPI bug fix
+				bcCourseNode.setPreConditionUploaders(uploadCond);
+			}
+		}	
+	}
 	
 	public class TaskFullConfig implements FullConfigDelegate {
 
@@ -1812,6 +2250,62 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 	}
 	
+	//fxdiff FXOLAT-122: course management
+	public class StructureFullConfig implements FullConfigDelegate {
+		
+		private final String displayType;
+		private final InputStream in;
+		private final String filename;
+		
+		public StructureFullConfig(String displayType, InputStream in, String filename) {
+			this.displayType = displayType;
+			this.in = in;
+			this.filename = filename;
+		}
+
+		@Override
+		public boolean isValid() {
+			return true;
+		}
+
+		@Override
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+			
+			if(displayType != null && (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC.equals(displayType)
+					|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(displayType)
+					|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(displayType))) {
+				moduleConfig.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, displayType);
+			}
+			
+			if(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(moduleConfig.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
+				if(in != null && StringHelper.containsNonWhitespace(filename)) {
+					VFSContainer rootContainer = course.getCourseFolderContainer();
+					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve("/" + filename);
+					if (singleFile == null) {
+						singleFile = rootContainer.createChildLeaf("/" + filename);
+					}
+	
+					moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_FILE, "/" + filename);
+					OutputStream out = singleFile.getOutputStream(false);
+					FileUtils.copy(in, out);
+					FileUtils.closeSafely(out);
+					FileUtils.closeSafely(in);
+				} else if (StringHelper.containsNonWhitespace(filename)) {
+					VFSContainer rootContainer = course.getCourseFolderContainer();
+					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve("/" + filename);
+					if(singleFile != null) {
+						moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_FILE, "/" + filename);
+					}
+				}
+			}
+		}
+
+		@Override
+		public boolean isApplicable(ICourse course, CourseNode courseNode) {
+			return courseNode instanceof STCourseNode;
+		}
+	}
+	
 	public class TestFullConfig implements FullConfigDelegate {
 		
 		private final Boolean allowCancel;
@@ -1960,7 +2454,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			newNode.updateModuleConfigDefaults(true);
-			moduleConfig.set(TACourseNode.CONF_TASK_TEXT, text);
+			//fxdiff FXOLAT-122: course management
+			if(text != null) {
+				moduleConfig.set(TACourseNode.CONF_TASK_TEXT, text);
+			}
 			if (points != null) {
 				moduleConfig.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, true);
 				moduleConfig.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, new Float(0));

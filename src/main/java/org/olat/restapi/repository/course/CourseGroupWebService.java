@@ -20,6 +20,8 @@
  */
 package org.olat.restapi.repository.course;
 
+import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +39,17 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.admin.quota.QuotaConstants;
+import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.Identity;
+import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
+import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.group.BusinessGroup;
@@ -46,6 +58,8 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
+import org.olat.modules.fo.Forum;
+import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.resource.OLATResource;
 import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -83,6 +97,69 @@ public class CourseGroupWebService {
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
+	}
+	
+	@Path("{groupKey}/folder")
+	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		if(bg == null) {
+			return null;
+		}
+		
+		if(!isGroupManager(request)) {
+			Identity identity = RestSecurityHelper.getIdentity(request);
+			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+				return null;
+			}
+		}
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		if(!collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
+			return null;
+		}
+		
+		String relPath = collabTools.getFolderRelPath();
+		QuotaManager qm = QuotaManager.getInstance();
+		Quota folderQuota = qm.getCustomQuota(relPath);
+		if (folderQuota == null) {
+			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
+			folderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+		}
+		SubscriptionContext subsContext = null;
+		VFSWebServiceSecurityCallback secCallback = new VFSWebServiceSecurityCallback(true, true, true, folderQuota, subsContext);
+		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		rootContainer.setLocalSecurityCallback(secCallback);
+		return new VFSWebservice(rootContainer);
+	}
+	
+	/**
+	 * Return the Forum web service
+	 * @param groupKey The key of the group
+	 * @param request The HTTP Request
+	 * @return
+	 */
+	@Path("{groupKey}/forum")
+	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		if(bg == null) {
+			return null;
+		}
+		
+		if(!isGroupManager(request)) {
+			Identity identity = RestSecurityHelper.getIdentity(request);
+			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+				return null;
+			}
+		}
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
+			Forum forum = collabTools.getForum();
+			return new ForumWebService(forum);
+		}
+		return null;
 	}
 	
 	/**
@@ -219,7 +296,7 @@ public class CourseGroupWebService {
 	@POST
 	@Path("{groupKey}")
 	public Response updateGroup(@PathParam("groupKey") Long groupKey, GroupVO group, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isGroupManager(request)) {
+		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return new LearningGroupWebService().postGroup(groupKey, group, request);
@@ -237,7 +314,7 @@ public class CourseGroupWebService {
 	@DELETE
 	@Path("{groupKey}")
 	public Response deleteGroup(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isGroupManager(request)) {
+		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		return new LearningGroupWebService().deleteGroup(groupKey, request);
@@ -248,8 +325,9 @@ public class CourseGroupWebService {
 	 * @return value bigger or equal than 0
 	 */
 	private Integer normalize(Integer integer) {
-		if(integer == null) return new Integer(0);
-		if(integer.intValue() < 0) return new Integer(0);
+	    //fxdiff FXOLAT-122: course management
+		if(integer == null) return null;
+		if(integer.intValue() < 0) return null;
 		return integer;
 	}
 }

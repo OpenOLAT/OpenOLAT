@@ -24,6 +24,8 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -46,6 +49,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
@@ -104,6 +108,61 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());
 		assertNotNull(item);
+	}
+	
+	@Test
+	public void testCreateFolder() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		
+		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSItem item = folder.resolve("RootFolder");
+		assertNotNull(item);
+		assertTrue(item instanceof VFSContainer);
+	}
+	
+	@Test
+	public void testCreateFolders() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("NewFolder1").path("NewFolder2").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		
+		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSItem item = folder.resolve("NewFolder1");
+		assertNotNull(item);
+		assertTrue(item instanceof VFSContainer);
+		
+		VFSContainer newFolder1 = (VFSContainer)item;
+		VFSItem item2 = newFolder1.resolve("NewFolder2");
+		assertNotNull(item2);
+		assertTrue(item2 instanceof VFSContainer);
+	}
+	
+	@Test
+	public void deleteFolder() throws IOException {
+		//add some folders
+		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSItem item = folder.resolve("FolderToDelete");
+		if(item == null) {
+			folder.createChildContainer("FolderToDelete");
+		}
+		
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("FolderToDelete").build();
+		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		
+		VFSItem deletedItem = folder.resolve("FolderToDelete");
+		assertNull(deletedItem);
 	}
 	
 	private URI getNodeURI() {

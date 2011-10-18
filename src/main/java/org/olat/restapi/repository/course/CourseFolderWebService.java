@@ -21,34 +21,35 @@
 
 package org.olat.restapi.repository.course;
 
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.bc.FolderNodeCallback;
+import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.TreeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+
 
 /**
  * 
@@ -81,75 +82,42 @@ public class CourseFolderWebService {
 	}
 	
 	/**
-	 * This attaches the uploaded file(s) to the supplied folder id.
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file
-   * @response.representation.200.doc The file is correctly saved
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
-	 * @param courseId The course resourceable's id
-	 * @param nodeId The id for the folder that will contain the file(s)
-	 * @param filename The filename
-	 * @param file The file resource to upload
-	 * @param The HTTP request
-	 * @return 
+	 * Return the FX implementation to manage a folder.
+	 * @param courseId
+	 * @param nodeId
+	 * @param request
+	 * @return
 	 */
-	@POST
 	@Path("files")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response attachFileToFolderPost(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("filename") String filename, @FormParam("file") InputStream file, @Context HttpServletRequest request) {
-		return attachFileToFolder(courseId, nodeId, filename, file, request);
-	}
-	
-	/**
-	 * This attaches the uploaded file(s) to the supplied folder id.
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file
-   * @response.representation.200.doc The file is correctly saved
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
-	 * @param courseId The course resourceable's id
-	 * @param nodeId The id for the folder that will contain the file(s)
-	 * @param filename The filename
-	 * @param file The file resource to upload
-	 * @param request The HTTP request
-	 * @return 
-	 */
-	@PUT
-	@Path("files")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response attachFileToFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("filename") String filename, @FormParam("file") InputStream file, @Context HttpServletRequest request) {
+	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 		
 		ICourse course = loadCourse(courseId);
 		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		}
 		CourseNode node =course.getEditorTreeModel().getCourseNode(nodeId);
 		if(node == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		} else if(!(node instanceof BCCourseNode)) {
-			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
 		}
 		
 		BCCourseNode bcNode = (BCCourseNode)node;
+		UserRequest ureq = getUserRequest(request);
+		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
+		NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+
 		OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
-		if (container.resolve(filename) != null) {
-			//already exist
-		} else {
-			VFSLeaf newFile = container.createChildLeaf(filename);
-			OutputStream out = newFile.getOutputStream(false);
-			FileUtils.copy(file, out);
-			FileUtils.closeSafely(out);
-			FileUtils.closeSafely(file);
-		}
-		return Response.ok().build();
+		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, isOlatAdmin, isGuestOnly, null);
+		container.setLocalSecurityCallback(secCallback);
+		
+		return new VFSWebservice(container);
 	}
 	
 	private ICourse loadCourse(Long courseId) {

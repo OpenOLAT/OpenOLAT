@@ -253,49 +253,10 @@ public class CollaborationTools implements Serializable {
 	public Controller createForumController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean isGuestOnly,
 			final SubscriptionContext subsContext) {
 		Codepoint.codepoint(CollaborationTools.class, "createForumController-init");
+		
 		final boolean isAdm = isAdmin;
 		final boolean isGuest = isGuestOnly;
-		final ForumManager fom = ForumManager.getInstance();
-		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
-		
-		// TODO: is there a nicer solution without setting an instance variable
-		//final List<Forum> forumHolder = new ArrayList<Forum>();
-		
-		Codepoint.codepoint(CollaborationTools.class, "pre_sync_enter");
-
-		Forum forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
-			public Forum execute() {
-				
-				Codepoint.codepoint(CollaborationTools.class, "sync_enter");
-				
-				//was: synchronized (CollaborationTools.class) {
-				Forum aforum;
-				Long forumKey;
-				Property forumKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
-				if (forumKeyProperty == null) {
-					// First call of forum, create new forum and save
-					aforum = fom.addAForum();
-					forumKey = aforum.getKey();
-					if (log.isDebug()) {
-						log.debug("created new forum in collab tools: foid::" + forumKey.longValue() + " for ores::"
-								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
-					}
-					forumKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM, null, forumKey, null, null);
-					npm.saveProperty(forumKeyProperty);
-				} else {
-					// Forum does already exist, load forum with key from properties
-					forumKey = forumKeyProperty.getLongValue();
-					aforum = fom.loadForum(forumKey);
-					if (aforum == null) { throw new AssertException("Unable to load forum with key " + forumKey.longValue() + " for ores "
-							+ ores.getResourceableTypeName() + " with key " + ores.getResourceableId()); }
-					if (log.isDebug()) {
-						log.debug("loading forum in collab tools from properties: foid::" + forumKey.longValue() + " for ores::"
-								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
-					}
-				}
-				Codepoint.codepoint(CollaborationTools.class, "sync_exit");
-				return aforum;
-			}});
+		Forum forum = getForum();
 		
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		TitleInfo titleInfo = new TitleInfo(null, trans.translate("collabtools.named.hasForum"));
@@ -331,6 +292,52 @@ public class CollaborationTools implements Serializable {
 			}
 		}, titleInfo);
 		return forumController;
+	}
+	
+	public Forum getForum() {
+		
+		final ForumManager fom = ForumManager.getInstance();
+		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		
+		// TODO: is there a nicer solution without setting an instance variable
+		//final List<Forum> forumHolder = new ArrayList<Forum>();
+		
+		Codepoint.codepoint(CollaborationTools.class, "pre_sync_enter");
+		
+		Forum forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
+			public Forum execute() {
+				
+				Codepoint.codepoint(CollaborationTools.class, "sync_enter");
+				
+				//was: synchronized (CollaborationTools.class) {
+				Forum aforum;
+				Long forumKey;
+				Property forumKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
+				if (forumKeyProperty == null) {
+					// First call of forum, create new forum and save
+					aforum = fom.addAForum();
+					forumKey = aforum.getKey();
+					if (log.isDebug()) {
+						log.debug("created new forum in collab tools: foid::" + forumKey.longValue() + " for ores::"
+								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
+					}
+					forumKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM, null, forumKey, null, null);
+					npm.saveProperty(forumKeyProperty);
+				} else {
+					// Forum does already exist, load forum with key from properties
+					forumKey = forumKeyProperty.getLongValue();
+					aforum = fom.loadForum(forumKey);
+					if (aforum == null) { throw new AssertException("Unable to load forum with key " + forumKey.longValue() + " for ores "
+							+ ores.getResourceableTypeName() + " with key " + ores.getResourceableId()); }
+					if (log.isDebug()) {
+						log.debug("loading forum in collab tools from properties: foid::" + forumKey.longValue() + " for ores::"
+								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
+					}
+				}
+				Codepoint.codepoint(CollaborationTools.class, "sync_exit");
+				return aforum;
+			}});
+		return forum;
 	}
 
 	public String getFolderRelPath() {

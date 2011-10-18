@@ -92,7 +92,7 @@
 	<!-- The mapping to the Login filter REST API -->
 	<filter-mapping>
 		<filter-name>RESTApiLoginFilter</filter-name>
-		<url-pattern>/restapibeta/*</url-pattern>
+		<url-pattern>/restapi/*</url-pattern>
 	</filter-mapping>
 
 	
@@ -274,7 +274,7 @@
 	<!-- The mapping to the REST API -->
 	<servlet-mapping>
 		<servlet-name>RESTServletAdaptor</servlet-name>
-		<url-pattern>/restapibeta/*</url-pattern>
+		<url-pattern>/restapi/*</url-pattern>
 	</servlet-mapping>
 		
 	<!-- The mapping for the RSS servlet -->

@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -95,6 +96,8 @@ public class Authentication {
 		
 		int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
+			//fxdiff: FXOLAT-268 update last login date and register active user
+			UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 			//Forge a new security token
 			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
 			String token = securityBean.generateToken(identity);

@@ -19,40 +19,35 @@
  * <p>
  */
 
-package org.olat.restapi.support.vo;
+package org.olat.modules.fo.restapi;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.olat.modules.fo.Forum;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "groupVOes")
-public class GroupVOes {
+/**
+ * 
+ * <h3>Description:</h3>
+ * Wrapper class for Forum
+ * <p>
+ * Initial Date:  11 janv. 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, www.frentix.com
+ */
+public class ForumVO {
 
-	@XmlElement(name="groupVO")
-	private GroupVO[] groups;
-	@XmlAttribute(name="totalCount")
-	private int totalCount;
+	private Long forumKey;
 	
-	public GroupVOes() {
+	public ForumVO() {
 		//make JAXB happy
 	}
 
-	public GroupVO[] getGroups() {
-		return groups;
+	public ForumVO(Forum forum) {
+		forumKey = forum.getKey();
 	}
 
-	public void setGroups(GroupVO[] groups) {
-		this.groups = groups;
+	public Long getForumKey() {
+		return forumKey;
 	}
 
-	public int getTotalCount() {
-		return totalCount;
-	}
-
-	public void setTotalCount(int totalCount) {
-		this.totalCount = totalCount;
+	public void setForumKey(Long forumKey) {
+		this.forumKey = forumKey;
 	}
 }

@@ -28,13 +28,18 @@ import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.OlatJerseyTestCase;
+
+import com.oreilly.servlet.Base64Encoder;
 
 /**
  * Description:<br>
@@ -119,6 +124,32 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 		method4.releaseConnection();
 		securityToken = getToken(method4);
 		assertEquals(code4, 200);
+		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+	}
+	
+	@Test
+	public void testBasicAuthentication() throws HttpException, IOException {
+		//path is protected
+		GetMethod method1 = createGet("/users/version", MediaType.TEXT_PLAIN, false);
+		method1.setRequestHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:olat"));
+		int code1 = getHttpClient().executeMethod(method1);
+		method1.releaseConnection();
+		assertEquals(code1, 200);
+		String securityToken = getToken(method1);
+		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+	}
+	
+	@Test
+	public void testWebStandardAuthentication() throws HttpException, IOException {
+		HttpClient c = getHttpClient();
+		Credentials creds = new UsernamePasswordCredentials("administrator", "olat");
+		c.getState().setCredentials(AuthScope.ANY, creds);
+    
+		GetMethod method = createGet("/users/version", MediaType.TEXT_PLAIN, false);
+		int code = c.executeMethod(method);
+		method.releaseConnection();
+		assertEquals(code, 200);
+		String securityToken = getToken(method);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 	}
 }

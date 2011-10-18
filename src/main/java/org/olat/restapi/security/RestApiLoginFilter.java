@@ -22,7 +22,9 @@ package org.olat.restapi.security;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -34,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -48,7 +51,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.login.OLATAuthenticationController;
 import org.olat.restapi.RestModule;
+
+import com.oreilly.servlet.Base64Decoder;
 
 /**
  * 
@@ -62,6 +68,8 @@ import org.olat.restapi.RestModule;
 public class RestApiLoginFilter implements Filter {
 	
 	private static OLog log = Tracing.createLoggerFor(RestApiLoginFilter.class);
+	
+	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
 	
 	private static List<String> openUrls;
 	private static String LOGIN_URL;
@@ -112,14 +120,14 @@ public class RestApiLoginFilter implements Filter {
 						followForAuthentication(requestURI, uress, httpRequest, httpResponse, chain);
 					} else if(isRequestURIInOpenSpace(requestURI)) {
 						followWithoutAuthentication(httpRequest, httpResponse, chain);
-					} else {
+					} else if (isRequestTokenValid(httpRequest)) {
 						String token = httpRequest.getHeader(RestSecurityHelper.SEC_TOKEN);
-						RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
-						if(securityBean.isTokenRegistrated(token)) {
-							followToken(token, httpRequest, httpResponse, chain);
-						} else {
-							httpResponse.sendError(401);
-						}
+						followToken(token, httpRequest, httpResponse, chain);
+					} else if (isBasicAuthenticated(httpRequest, httpResponse, requestURI)) {
+						followBasicAuthenticated(request, response, chain);
+					} else  {
+						httpResponse.setHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
+						httpResponse.sendError(401);
 					}
 				}
 			} catch (Exception e) {
@@ -135,6 +143,63 @@ public class RestApiLoginFilter implements Filter {
 		} else {
 			throw new ServletException("Only accept HTTP Request");
 		}
+	}
+	//fxdiff Basic Authentication
+	private boolean isBasicAuthenticated(HttpServletRequest request, HttpServletResponse response, String requestURI) {
+		String authHeader = request.getHeader("Authorization");
+		if (authHeader != null) {
+			StringTokenizer st = new StringTokenizer(authHeader);
+			if (st.hasMoreTokens()) {
+				String basic = st.nextToken();
+				// We only handle HTTP Basic authentication
+				if (basic.equalsIgnoreCase("Basic")) {
+					String credentials = st.nextToken();
+					String userPass = Base64Decoder.decode(credentials);
+					// The decoded string is in the form "userID:password".
+					int p = userPass.indexOf(":");
+					if (p != -1) {
+						String username = userPass.substring(0, p);
+						String password = userPass.substring(p + 1);
+						Identity identity = OLATAuthenticationController.authenticate(username, password);
+						if(identity == null) {
+							return false;
+						}
+						
+						UserRequest ureq = null;
+						try{
+							//upon creation URL is checked for
+							ureq = new UserRequest(requestURI, request, response);
+						} catch(NumberFormatException nfe) {
+							return false;
+						}
+						request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
+						
+						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+						if (loginStatus == AuthHelper.LOGIN_OK) {
+							//fxdiff: FXOLAT-268 update last login date and register active user
+							UserDeletionManager.getInstance().setIdentityAsActiv(identity);
+							//Forge a new security token
+							RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+							String token = securityBean.generateToken(identity);
+							response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
+						}
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private void followBasicAuthenticated(ServletRequest request, ServletResponse response, FilterChain chain)
+	throws ServletException, IOException {
+		chain.doFilter(request, response);
+	}
+	
+	private boolean isRequestTokenValid(HttpServletRequest request) {
+		String token = request.getHeader(RestSecurityHelper.SEC_TOKEN);
+		RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+		return securityBean.isTokenRegistrated(token);
 	}
 	
 	private boolean isRequestURIInOpenSpace(String requestURI) {
@@ -185,7 +250,18 @@ public class RestApiLoginFilter implements Filter {
 			followToken(token, request, response, chain);
 			return;
 		}
-
+		//fxdiff FXOLAT-113: business path in DMZ
+		UserRequest ureq = null;
+		try{
+			//upon creation URL is checked for
+			String requestURI = request.getRequestURI();
+			ureq = new UserRequest(requestURI, request, response);
+		} catch(NumberFormatException nfe) {
+			response.sendError(401);
+			return;
+		}
+		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
+		
 		//no authentication, but no authentication needed, go further
 		chain.doFilter(request, response);
 	}

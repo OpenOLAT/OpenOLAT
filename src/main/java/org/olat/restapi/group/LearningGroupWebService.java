@@ -42,11 +42,13 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -55,6 +57,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
+import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -63,13 +71,10 @@ import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.restapi.ForumWebService;
-import org.olat.properties.NarrowedPropertyManager;
-import org.olat.properties.Property;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 
@@ -291,7 +296,7 @@ public class LearningGroupWebService {
 		//forum
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
-				info.setForumKey(getForumKey(bg));
+			info.setForumKey(collabTools.getForum().getKey());
 		}
 		
 		String news = collabTools.lookupNews();
@@ -310,43 +315,6 @@ public class LearningGroupWebService {
 		}
 		
 		return Response.ok(info).build();
-	}
-	
-	private Long getForumKey(final BusinessGroup ores) {
-		final ForumManager fom = ForumManager.getInstance();
-		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
-		
-		Long forumKey = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Long>(){
-			public Long execute() {
-				
-				Codepoint.codepoint(CollaborationTools.class, "sync_enter");
-
-				Long key;
-				Property forumKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS,
-						CollaborationTools.KEY_FORUM);
-				if (forumKeyProperty == null) {
-					// First call of forum, create new forum and save
-					Forum forum = fom.addAForum();
-					key = forum.getKey();
-					if (log.isDebug()) {
-						log.debug("created new forum in collab tools: foid::" + key.longValue() + " for ores::"
-								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
-					}
-					forumKeyProperty = npm.createPropertyInstance(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS,
-							CollaborationTools.KEY_FORUM, null, key, null, null);
-					npm.saveProperty(forumKeyProperty);
-				} else {
-					// Forum does already exist, load forum with key from properties
-					key = forumKeyProperty.getLongValue();
-					if (log.isDebug()) {
-						log.debug("loading forum in collab tools from properties: foid::" + key.longValue() + " for ores::"
-								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
-					}
-				}
-				Codepoint.codepoint(CollaborationTools.class, "sync_exit");
-				return key;
-			}});
-		return forumKey;
 	}
 	
 	/**
@@ -369,11 +337,47 @@ public class LearningGroupWebService {
 				return null;
 			}
 		}
-
-		Long forumKey = getForumKey(bg);
-		ForumManager fom = ForumManager.getInstance();
-		Forum forum = fom.loadForum(forumKey);
-		return new ForumWebService(forum);
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
+			Forum forum = collabTools.getForum();
+			return new ForumWebService(forum);
+		}
+		return null;
+	}
+	
+	@Path("{groupKey}/folder")
+	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		if(bg == null) {
+			return null;
+		}
+		
+		if(!isGroupManager(request)) {
+			Identity identity = RestSecurityHelper.getIdentity(request);
+			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+				return null;
+			}
+		}
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		if(!collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
+			return null;
+		}
+		
+		String relPath = collabTools.getFolderRelPath();
+		QuotaManager qm = QuotaManager.getInstance();
+		Quota folderQuota = qm.getCustomQuota(relPath);
+		if (folderQuota == null) {
+			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
+			folderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+		}
+		SubscriptionContext subsContext = null;
+		VFSSecurityCallback secCallback = new VFSWebServiceSecurityCallback(true, true, true, folderQuota, subsContext);
+		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		rootContainer.setLocalSecurityCallback(secCallback);
+		return new VFSWebservice(rootContainer);
 	}
 	
 	/**

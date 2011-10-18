@@ -209,8 +209,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
     assertEquals(bg.getKey(), responseVo.getKey());
     assertEquals(bg.getName(), vo.getName());
     assertEquals(bg.getDescription(), vo.getDescription());
-    assertEquals(new Integer(0), bg.getMinParticipants());
-    assertEquals(new Integer(0), bg.getMaxParticipants());
+    assertNull(bg.getMinParticipants());
+    assertNull(bg.getMaxParticipants());
 	}
 	
 	@Test

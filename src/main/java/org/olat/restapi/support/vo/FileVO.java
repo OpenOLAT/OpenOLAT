@@ -23,36 +23,41 @@ package org.olat.restapi.support.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "groupVOes")
-public class GroupVOes {
 
-	@XmlElement(name="groupVO")
-	private GroupVO[] groups;
-	@XmlAttribute(name="totalCount")
-	private int totalCount;
+/**
+ * 
+ * <h3>Description:</h3>
+ * <p>
+ * Initial Date:  27 jan. 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, www.frentix.com
+ */
+//fxdiff Folder
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "link")
+public class FileVO extends LinkVO {
 	
-	public GroupVOes() {
+	private Long size;
+	
+	public FileVO() {
 		//make JAXB happy
 	}
-
-	public GroupVO[] getGroups() {
-		return groups;
+	
+	public FileVO(String rel, String href, String title) {
+		this(rel, href, title, null);
+	}
+	
+	public FileVO(String rel, String href, String title, Long size) {
+		super(rel, href, title);
+		this.size = size;
 	}
 
-	public void setGroups(GroupVO[] groups) {
-		this.groups = groups;
+	public Long getSize() {
+		return size;
 	}
 
-	public int getTotalCount() {
-		return totalCount;
-	}
-
-	public void setTotalCount(int totalCount) {
-		this.totalCount = totalCount;
+	public void setSize(Long size) {
+		this.size = size;
 	}
 }

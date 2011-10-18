@@ -1,0 +1,61 @@
+package org.olat.restapi.support;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Variant;
+
+import org.olat.core.util.StringHelper;
+
+public class MediaTypeVariants {
+	
+	public static final MediaType APPLICATION_JSON = MediaType.APPLICATION_JSON_TYPE;
+	public static final MediaType APPLICATION_JSON_PAGED;
+	public static final MediaType APPLICATION_XML = MediaType.APPLICATION_XML_TYPE;
+	public static final MediaType APPLICATION_XML_PAGED;
+	
+	private static final Variant VARIANT_JSON;
+	private static final Variant VARIANT_JSON_PAGED;
+	private static final Variant VARIANT_XML;
+	private static final Variant VARIANT_XML_PAGED;
+	
+	private static final List<Variant> variants = new ArrayList<Variant>();
+	
+	static {
+		Map<String, String> pagingSpec = new HashMap<String, String>();
+		pagingSpec.put("pagingspec","1.0");
+		VARIANT_JSON = new Variant(APPLICATION_JSON, null, null);
+		APPLICATION_JSON_PAGED = new MediaType("application","json", pagingSpec);
+		VARIANT_JSON_PAGED = new Variant(APPLICATION_JSON_PAGED, null, null);
+
+		VARIANT_XML = new Variant(APPLICATION_XML, null, null);
+		APPLICATION_XML_PAGED = new MediaType("application","xml", pagingSpec);
+		VARIANT_XML_PAGED = new Variant(APPLICATION_XML_PAGED, null, null);
+		
+		variants.add(VARIANT_JSON);
+		variants.add(VARIANT_JSON_PAGED);
+		variants.add(VARIANT_XML);
+		variants.add(VARIANT_XML_PAGED);
+	}
+	
+	public static List<Variant> getVariants() {
+		return new ArrayList<Variant>(variants);
+	}
+	
+	public static boolean isPaged(HttpServletRequest httpRequest, Request request) {
+		String accept = httpRequest.getHeader("Accept");
+		if(StringHelper.containsNonWhitespace(accept)) {
+			MediaType requestMediaType = MediaType.valueOf(accept);
+			if(APPLICATION_JSON_PAGED.equals(requestMediaType) || APPLICATION_XML_PAGED.equals(requestMediaType)) {
+				return true;
+			}
+		}
+		Variant variant = request.selectVariant(variants);
+		return (variant != null && (variant.equals(APPLICATION_JSON_PAGED) || variant.equals(APPLICATION_XML_PAGED)));
+	}
+}

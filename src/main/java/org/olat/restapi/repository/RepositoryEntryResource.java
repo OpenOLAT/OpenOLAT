@@ -202,7 +202,8 @@ public class RepositoryEntryResource {
   @Consumes({MediaType.MULTIPART_FORM_DATA})
   public Response replaceResource(@PathParam("repoEntryKey") String repoEntryKey,
       @FormParam("filename") String filename, @FormParam("file") InputStream file,
-      @FormParam("displayname") String displayname, @Context HttpServletRequest request) {
+      @FormParam("displayname") String displayname, @FormParam("description") String description,
+      @Context HttpServletRequest request) {
     if(!RestSecurityHelper.isAuthor(request)) {
       return Response.serverError().status(Status.UNAUTHORIZED).build();
     }
@@ -216,21 +217,33 @@ public class RepositoryEntryResource {
       }
 
       Identity identity = RestSecurityHelper.getUserRequest(request).getIdentity();
-      String tmpName = StringHelper.containsNonWhitespace(filename) ? filename : "import.zip";
-      tmpFile = getTmpFile(tmpName);
-      FileUtils.save(file, tmpFile);
-      FileUtils.closeSafely(file);
-      length = tmpFile.length();
-
-      if(length == 0) {
-        return Response.serverError().status(Status.NO_CONTENT).build();
-      }
-      final RepositoryEntry replacedRe = replaceFileResource(identity, re, tmpFile);
-      if(replacedRe == null) {
-        return Response.serverError().status(Status.NOT_FOUND).build();
-      } else if (StringHelper.containsNonWhitespace(displayname)) {
-        replacedRe.setDisplayname(displayname);
-        RepositoryManager.getInstance().updateRepositoryEntry(replacedRe);
+      RepositoryEntry replacedRe;
+      if(file == null) {
+      	replacedRe = re;
+      	if(StringHelper.containsNonWhitespace(displayname)) {
+      		replacedRe.setDisplayname(displayname);
+      	}
+      	if(StringHelper.containsNonWhitespace(description)) {
+      		replacedRe.setDescription(description);
+      	}
+      	RepositoryManager.getInstance().updateRepositoryEntry(replacedRe);
+      } else {
+	      String tmpName = StringHelper.containsNonWhitespace(filename) ? filename : "import.zip";
+	      tmpFile = getTmpFile(tmpName);
+	      FileUtils.save(file, tmpFile);
+	      FileUtils.closeSafely(file);
+	      length = tmpFile.length();
+	
+	      if(length == 0) {
+	        return Response.serverError().status(Status.NO_CONTENT).build();
+	      }
+	      replacedRe = replaceFileResource(identity, re, tmpFile);
+	      if(replacedRe == null) {
+	        return Response.serverError().status(Status.NOT_FOUND).build();
+	      } else if (StringHelper.containsNonWhitespace(displayname)) {
+	        replacedRe.setDisplayname(displayname);
+	        RepositoryManager.getInstance().updateRepositoryEntry(replacedRe);
+	      }
       }
       RepositoryEntryVO vo = ObjectFactory.get(replacedRe);
       return Response.ok(vo).build();

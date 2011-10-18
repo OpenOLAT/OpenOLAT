@@ -43,6 +43,7 @@ public class AssessableResultsVO {
 	private Float score;
 	private Boolean passed;
 	private Map<Long, String> results;
+	private Date lastModifiedDate;
 
 	public AssessableResultsVO() {
 	//make jaxb happy
@@ -70,6 +71,14 @@ public class AssessableResultsVO {
 
 	public void setScore(Float score) {
 		this.score = score;
+	}
+	
+	public Date getLastModifiedDate() {
+		return lastModifiedDate;
+	}
+
+	public void setLastModifiedDate(Date lastModifiedDate) {
+		this.lastModifiedDate = lastModifiedDate;
 	}
 
 	public Map<Long, String> getResults() {

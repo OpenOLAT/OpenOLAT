@@ -56,7 +56,7 @@ public class Examples {
   	SAMPLE_GROUPVO.setDescription("My group description");
   	SAMPLE_GROUPVO.setMinParticipants(0);
   	SAMPLE_GROUPVO.setMaxParticipants(0);
-  	SAMPLE_GROUPVOes.getGroups().add(SAMPLE_GROUPVO);
+  	SAMPLE_GROUPVOes.setGroups(new GroupVO[]{SAMPLE_GROUPVO});
   	
   	SAMPLE_GROUPINFOVO.setNews("<p>Hello world</p>");
   	SAMPLE_GROUPINFOVO.setForumKey(374589l);

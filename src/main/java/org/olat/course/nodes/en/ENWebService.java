@@ -209,8 +209,20 @@ public class ENWebService extends AbstractCourseNodeWebService {
 
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			moduleConfig.set(ENCourseNode.CONFIG_GROUPNAME, groups);
+			moduleConfig.set(ENCourseNode.CONFIG_GROUPNAME, getGroupNamesToString());
 			moduleConfig.set(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnabled);
+		}
+		
+		//fxdiff 
+		private String getGroupNamesToString() {
+			StringBuffer buffer = new StringBuffer();
+			for(String groupName:groups) {
+				if(buffer.length() > 0) {
+					buffer.append(',');
+				}
+				buffer.append(groupName);
+			}
+			return buffer.toString();
 		}
 		
 		private List<String> getGroupNames(String groupIds) {

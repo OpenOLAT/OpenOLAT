@@ -63,6 +63,7 @@ import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.TUCourseNode;
+import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.repository.RepositoryEntry;
@@ -154,6 +155,11 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		newFolderMethod.addParameter("shortTitle", "Folder-0");
 		newFolderMethod.addParameter("longTitle", "Folder-long-0");
 		newFolderMethod.addParameter("objectives", "Folder-objectives-0");
+		String rule = "hasLanguage(\"de\")";
+		newFolderMethod.addParameter("visibilityExpertRules", rule);
+		newFolderMethod.addParameter("downloadExpertRules", rule);
+		newFolderMethod.addParameter("uploadExpertRules", rule);
+
 		int newFolderCode = c.executeMethod(newFolderMethod);
 		assertTrue(newFolderCode == 200 || newFolderCode == 201);
 		String newFolderBody = newFolderMethod.getResponseBodyAsString();
@@ -762,6 +768,120 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertNotNull(singleFile);
 	}
 	
+	@Test
+	//fxdiff FXOLAT-122: course management
+	public void testUpdateRootNodeCoursePost() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		//create an empty course
+		URI uri = getCoursesUri().queryParam("shortTitle", "course4").queryParam("title", "course4 long name").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		String body = method.getResponseBodyAsString();
+		method.releaseConnection();
+		CourseVO course = parse(body, CourseVO.class);
+		assertNotNull(course);
+		assertNotNull(course.getKey());
+		assertNotNull(course.getEditorRootNodeId());
+		
+		//update the root node
+		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
+		PostMethod updateMethod = createPost(rootUri, MediaType.APPLICATION_JSON, true);
+		updateMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		Part[] parts = {
+				new StringPart("shortTitle", "Structure-0b"),
+				new StringPart("longTitle", "Structure-long-0b"),
+				new StringPart("objectives", "Structure-objectives-0b")
+		};
+		updateMethod.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		
+		int newStructureCode = c.executeMethod(updateMethod);
+		assertTrue(newStructureCode == 200 || newStructureCode == 201);
+		//check the response
+		String newStructureBody = updateMethod.getResponseBodyAsString();
+		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
+		assertNotNull(structureNode);
+		assertNotNull(structureNode.getId());
+		assertEquals(structureNode.getShortTitle(), "Structure-0b");
+		assertEquals(structureNode.getLongTitle(), "Structure-long-0b");
+		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0b");
+		assertEquals(structureNode.getId(), course.getEditorRootNodeId());
+		
+		//check the real node
+		ICourse realCourse = CourseFactory.loadCourse(course.getKey());
+		CourseEditorTreeModel editorTreeModel = realCourse.getEditorTreeModel();
+		CourseEditorTreeNode rootNode = (CourseEditorTreeNode)editorTreeModel.getRootNode();
+		assertNotNull(rootNode);
+		assertNotNull(rootNode.getIdent());
+		assertNotNull(rootNode.getCourseNode());
+		assertEquals(rootNode.getCourseNode().getShortTitle(), "Structure-0b");
+		assertEquals(rootNode.getCourseNode().getLongTitle(), "Structure-long-0b");
+		assertEquals(rootNode.getCourseNode().getLearningObjectives(), "Structure-objectives-0b");
+	}
+	
+	@Test
+	//fxdiff FXOLAT-122: course management
+	public void testUpdateRootNodeCoursePostWithFile() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		//create an empty course
+		URI uri = getCoursesUri().queryParam("shortTitle", "course5").queryParam("title", "course5 long name").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		String body = method.getResponseBodyAsString();
+		method.releaseConnection();
+		CourseVO course = parse(body, CourseVO.class);
+		assertNotNull(course);
+		assertNotNull(course.getKey());
+		assertNotNull(course.getEditorRootNodeId());
+		
+		//the page
+		URL pageUrl = RepositoryEntriesTest.class.getResource("singlepage.html");
+		assertNotNull(pageUrl);
+		File page = new File(pageUrl.toURI());
+		
+		//update the root node
+		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
+		PostMethod newStructureMethod = createPost(rootUri, MediaType.APPLICATION_JSON, true);
+		newStructureMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		Part[] parts = {
+				new FilePart("file", page),
+				new StringPart("filename", page.getName()),
+				new StringPart("parentNodeId",course.getEditorRootNodeId()),
+				new StringPart("position","1"),
+				new StringPart("shortTitle", "Structure-0-with-file"),
+				new StringPart("longTitle", "Structure-long-0-with-file"),
+				new StringPart("objectives", "Structure-objectives-0-with-file"),
+				new StringPart("displayType", "file")
+		};
+		newStructureMethod.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		
+		
+		int newStructureCode = c.executeMethod(newStructureMethod);
+		assertTrue(newStructureCode == 200 || newStructureCode == 201);
+		//check the response
+		String newStructureBody = newStructureMethod.getResponseBodyAsString();
+		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
+		assertNotNull(structureNode);
+		assertNotNull(structureNode.getId());
+		assertEquals(structureNode.getShortTitle(), "Structure-0-with-file");
+		assertEquals(structureNode.getLongTitle(), "Structure-long-0-with-file");
+		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0-with-file");
+		assertEquals(structureNode.getId(), course.getEditorRootNodeId());
+		
+		//check the real node
+		ICourse realCourse = CourseFactory.loadCourse(course.getKey());
+		CourseEditorTreeModel editorTreeModel = realCourse.getEditorTreeModel();
+		CourseEditorTreeNode rootNode = (CourseEditorTreeNode)editorTreeModel.getRootNode();
+		assertNotNull(rootNode);
+		assertNotNull(rootNode.getIdent());
+		assertNotNull(rootNode.getCourseNode());
+		assertEquals(rootNode.getCourseNode().getShortTitle(), "Structure-0-with-file");
+		assertEquals(rootNode.getCourseNode().getLongTitle(), "Structure-long-0-with-file");
+		assertEquals(rootNode.getCourseNode().getLearningObjectives(), "Structure-objectives-0-with-file");
+	}
 	
 	private UriBuilder getCoursesUri() {
 		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses");

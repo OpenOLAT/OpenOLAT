@@ -198,8 +198,8 @@ public class COWebService extends AbstractCourseNodeWebService {
 
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			moduleConfig.set(CONFIG_KEY_EMAILTOGROUPS, groups);
-			moduleConfig.set(CONFIG_KEY_EMAILTOAREAS, areas);
+			moduleConfig.set(CONFIG_KEY_EMAILTOGROUPS, getGroupNamesToString(groups));
+			moduleConfig.set(CONFIG_KEY_EMAILTOAREAS, getGroupNamesToString(areas));
 			moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES, coaches == null ? false : coaches.booleanValue());
 			moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS, participants == null ? false : participants.booleanValue());
 			moduleConfig.set(CONFIG_KEY_EMAILTOADRESSES, tos);
@@ -221,6 +221,18 @@ public class COWebService extends AbstractCourseNodeWebService {
 				}
 			}
 			return eList;
+		}
+		
+		// fxdiff
+		private String getGroupNamesToString(List<String> groupNames) {
+			StringBuffer buffer = new StringBuffer();
+			for(String groupName:groupNames) {
+				if(buffer.length() > 0) {
+					buffer.append(',');
+				}
+				buffer.append(groupName);
+			}
+			return buffer.toString();
 		}
 		
 		private List<String> getGroupNames(String groupIds) {

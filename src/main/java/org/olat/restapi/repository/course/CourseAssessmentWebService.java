@@ -44,19 +44,24 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -77,6 +82,7 @@ import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
+import org.olat.properties.Property;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.AssessableResultsVO;
 
@@ -122,13 +128,14 @@ public class CourseAssessmentWebService {
    * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
-	 * @param request The HTTP request
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
 	 * @return
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCourseResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isAuthor(request)) {
+	public Response getCourseResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
+		if(!RestSecurityHelper.isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -139,9 +146,23 @@ public class CourseAssessmentWebService {
 
 		List<Identity> courseUsers = loadUsers(course.getCourseEnvironment().getCourseGroupManager());
 		int i=0;
+		
+		Date lastModified = null;
 		AssessableResultsVO[] results = new AssessableResultsVO[courseUsers.size()];
 		for(Identity courseUser:courseUsers) {
-			results[i++] = getRootResult(courseUser, course);
+			AssessableResultsVO result = getRootResult(courseUser, course);
+			if(lastModified == null || (result.getLastModifiedDate() != null && lastModified.before(result.getLastModifiedDate()))) {
+				lastModified = result.getLastModifiedDate();
+			}
+			results[i++] = result;
+		}
+		
+		if(lastModified != null) {
+			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+			if(response != null) {
+				return response.build();
+			}
+			return Response.ok(results).lastModified(lastModified).cacheControl(cc).build();
 		}
 		return Response.ok(results).build();
 	}
@@ -174,17 +195,23 @@ public class CourseAssessmentWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			Date lastModified = userIdentity.getLastLogin();
-			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-			if (response == null) {
-				ICourse course = CourseFactory.loadCourse(courseId);
-				if(course == null) {
-					return Response.serverError().status(Status.NOT_FOUND).build();
-				}
+			ICourse course = CourseFactory.loadCourse(courseId);
+			if(course == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
 				
-				AssessableResultsVO results = getRootResult(userIdentity, course);
-				response = Response.ok(results).lastModified(lastModified).cacheControl(cc);
-		  }
+			AssessableResultsVO results = getRootResult(userIdentity, course);
+			if(results.getLastModifiedDate() != null) {
+				Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
+				if (response != null) {
+					return response.build();
+			  }
+			}
+
+			ResponseBuilder response = Response.ok(results);
+			if(results.getLastModifiedDate() != null) {
+				response = response.lastModified(results.getLastModifiedDate()).cacheControl(cc);
+			}
 			return response.build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
@@ -201,30 +228,46 @@ public class CourseAssessmentWebService {
 	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The id of the course building block
-	 * @param request The HTTP request
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
 	 * @return
 	 */
 	@GET
 	@Path("{nodeId}")
 	@Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response getAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isAuthor(request)) {
+	public Response getAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
+		if(!RestSecurityHelper.isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		ICourse course = CourseFactory.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, request)) {
+		} else if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		List<Identity> courseUsers = loadUsers(course.getCourseEnvironment().getCourseGroupManager());
 		int i=0;
+		Date lastModified = null;
 		AssessableResultsVO[] results = new AssessableResultsVO[courseUsers.size()];
 		for(Identity courseUser:courseUsers) {
-			results[i++] = getNodeResult(courseUser, course, nodeId);
+			AssessableResultsVO result = getNodeResult(courseUser, course, nodeId);
+			if(lastModified == null || (result.getLastModifiedDate() != null && lastModified.before(result.getLastModifiedDate()))) {
+				lastModified = result.getLastModifiedDate();
+			}
+			results[i++] = result;
 		}
+		
+		if(lastModified != null) {
+			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
+			if(response != null) {
+				return response.build();
+			}
+			return Response.ok(results).lastModified(lastModified).cacheControl(cc).build();
+		}
+		
 		return Response.ok(results).build();
 	}
 	
@@ -455,18 +498,20 @@ public class CourseAssessmentWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			Date lastModified = userIdentity.getLastLogin();
-			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
-			if(response == null) {
-				ICourse course = CourseFactory.loadCourse(courseId);
-				if(course == null) {
-					return Response.serverError().status(Status.NOT_FOUND).build();
-				}
-
-				AssessableResultsVO results = getNodeResult(userIdentity, course, nodeId);
-				response = Response.ok(results).lastModified(lastModified).cacheControl(cc);
+			ICourse course = CourseFactory.loadCourse(courseId);
+			if(course == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			return response.build();
+
+			AssessableResultsVO results = getNodeResult(userIdentity, course, nodeId);
+			if(results.getLastModifiedDate() != null) {
+				Response.ResponseBuilder response = request.evaluatePreconditions(results.getLastModifiedDate());
+				if(response != null) {
+					return response.build();
+				}
+				return Response.ok(results).lastModified(results.getLastModifiedDate()).cacheControl(cc).build();
+			}
+			return Response.ok(results).build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
 		}
@@ -500,9 +545,36 @@ public class CourseAssessmentWebService {
 			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(assessableRootNode);
 			results.setScore(scoreEval.getScore());
 			results.setPassed(scoreEval.getPassed());
+			results.setLastModifiedDate(getLastModificationDate(identity, course, courseNode));
 		}
 		
 		return results;
+	}
+	
+	private Date getLastModificationDate(Identity assessedIdentity, ICourse course, CourseNode courseNode) {
+		//try to load the exact score prpoerty saved on the DB
+		
+		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		Property scoreProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, AssessmentManager.SCORE);
+		if(scoreProperty != null) {
+			return scoreProperty.getLastModified();
+		}
+	  
+		//last change in course
+		StringBuilder sb = new StringBuilder();
+		sb.append("select max(p.lastModified) from ").append(Property.class.getName()).append(" as p where")
+			.append(" p.resourceTypeName = :restypename and p.resourceTypeId = :restypeid")
+			.append(" and p.name = '").append(AssessmentManager.SCORE).append("'")
+			.append(" and p.identity = :id");
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setString("restypename", course.getResourceableTypeName());
+		query.setLong("restypeid", course.getResourceableId().longValue());
+		query.setEntity("id", assessedIdentity);
+		List<Date> properties = query.list();
+		if(!properties.isEmpty()) {
+			return properties.get(0);
+		}
+		return null;
 	}
 	
 	private List<Identity> loadUsers(CourseGroupManager gm) {

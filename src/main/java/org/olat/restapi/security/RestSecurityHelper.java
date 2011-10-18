@@ -48,7 +48,7 @@ import org.olat.dispatcher.LocaleNegotiator;
  */
 public class RestSecurityHelper {
 
-	public static final String SUB_CONTEXT = "/restapibeta";
+	public static final String SUB_CONTEXT = "/restapi";
 	public static final String SEC_TOKEN = "X-OLAT-TOKEN";
 	public static final String SEC_USER_REQUEST = "olat-user-request";
 	

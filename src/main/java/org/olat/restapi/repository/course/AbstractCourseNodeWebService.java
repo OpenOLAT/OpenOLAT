@@ -51,7 +51,18 @@ public abstract class AbstractCourseNodeWebService {
 		return new CourseEditSession(course, lock);
 	}
 	
+	//fxdiff FXOLAT-122: course management
+	protected Response update(Long courseId, String nodeId, String shortTitle, String longTitle, String objectives,
+			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
+		return attach(courseId, null, nodeId, null, null, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
 	protected Response attach(Long courseId, String parentNodeId, String type, Integer position, String shortTitle, String longTitle, 
+			String objectives, String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
+		return attach(courseId, parentNodeId, null, type, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	protected Response attach(Long courseId, String parentNodeId, String nodeId, String type, Integer position, String shortTitle, String longTitle, 
 			String objectives, String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -67,11 +78,7 @@ public abstract class AbstractCourseNodeWebService {
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		CourseNode parentNode = getParentNode(course, parentNodeId);
-		if(parentNode == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		
+
 		CourseEditSession editSession = null;
 		try {
 			editSession = openEditSession(course, getIdentity(request));
@@ -79,8 +86,17 @@ public abstract class AbstractCourseNodeWebService {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 			
-			CourseNodeVO newNode = createCourseNode(type, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, editSession, parentNode, position);
-			return Response.ok(newNode).build();
+			CourseNodeVO node;
+			if(nodeId != null) {
+				node = updateCourseNode(nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, editSession);
+			} else {
+				CourseNode parentNode = getParentNode(course, parentNodeId);
+				if(parentNode == null) {
+					return Response.serverError().status(Status.NOT_FOUND).build();
+				}
+				node = createCourseNode(type, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, editSession, parentNode, position);
+			}
+			return Response.ok(node).build();
 		} catch(Exception ex) {
 			log.error("Error while adding an enrolment building block", ex);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -165,6 +181,44 @@ public abstract class AbstractCourseNodeWebService {
 		
 		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(insertedNode);
 		CourseNodeVO vo = get(insertedNode);
+		vo.setParentId(editorNode.getParent() == null ? null: editorNode.getParent().getIdent());
+		return vo;
+	}
+	
+	//fxdiff FXOLAT-122: course management
+	private CourseNodeVO updateCourseNode(String nodeId, String shortTitle, String longTitle, String learningObjectives,
+			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession) {
+
+		ICourse course = editSession.getCourse();
+		
+		CourseNode updatedNode = course.getEditorTreeModel().getCourseNode(nodeId);
+		if(StringHelper.containsNonWhitespace(shortTitle)) {
+			updatedNode.setShortTitle(shortTitle);
+		}
+		if(StringHelper.containsNonWhitespace(longTitle)) {
+			updatedNode.setLongTitle(longTitle);
+		}
+		if(StringHelper.containsNonWhitespace(learningObjectives)) {
+			updatedNode.setLearningObjectives(learningObjectives);
+		}
+		
+		if(visibilityExpertRules != null) {
+			Condition cond = createExpertCondition(CONDITION_ID_VISIBILITY, visibilityExpertRules);
+			updatedNode.setPreConditionVisibility(cond);
+		}
+		
+		if(StringHelper.containsNonWhitespace(accessExpertRules) && updatedNode instanceof AbstractAccessableCourseNode) {
+			Condition cond = createExpertCondition(CONDITION_ID_ACCESS, accessExpertRules);
+			((AbstractAccessableCourseNode)updatedNode).setPreConditionAccess(cond);
+		}
+		
+		if(delegateConfig != null) {
+			ModuleConfiguration moduleConfig = updatedNode.getModuleConfiguration();
+			delegateConfig.configure(course, updatedNode, moduleConfig);
+		}
+
+		CourseEditorTreeNode editorNode = course.getEditorTreeModel().getCourseEditorNodeContaining(updatedNode);
+		CourseNodeVO vo = get(updatedNode);
 		vo.setParentId(editorNode.getParent() == null ? null: editorNode.getParent().getIdent());
 		return vo;
 	}
