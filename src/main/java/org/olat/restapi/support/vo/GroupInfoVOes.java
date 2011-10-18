@@ -30,23 +30,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "groups")
-public class GroupVOes {
+public class GroupInfoVOes {
 
 	@XmlElementWrapper(name="groups")
 	@XmlElement(name="group")
-	private GroupVO[] groups;
+	private GroupInfoVO[] groups;
 	@XmlAttribute(name="totalCount")
 	private int totalCount;
 	
-	public GroupVOes() {
+	public GroupInfoVOes() {
 		//make JAXB happy
 	}
 
-	public GroupVO[] getGroups() {
+	public GroupInfoVO[] getGroups() {
 		return groups;
 	}
 
-	public void setGroups(GroupVO[] groups) {
+	public void setGroups(GroupInfoVO[] groups) {
 		this.groups = groups;
 	}
 

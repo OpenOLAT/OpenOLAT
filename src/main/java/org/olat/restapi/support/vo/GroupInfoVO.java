@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "groupInfoVO")
-public class GroupInfoVO {
+public class GroupInfoVO extends GroupVO {
 	
 	private String news;
 	private Long forumKey;

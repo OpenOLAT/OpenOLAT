@@ -23,6 +23,7 @@ package org.olat.restapi.group;
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -132,14 +133,7 @@ public class LearningGroupWebService {
 		} else {
 			bgs = new ArrayList<BusinessGroup>();
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			List<BusinessGroup> ownedGroups = bgm.findBusinessGroupsOwnedBy(null, identity, null);
-			for (BusinessGroup group:ownedGroups) {
-				bgs.add(group);
-			}
-			List<BusinessGroup> partGroups = bgm.findBusinessGroupsAttendedBy(null, identity, null);
-			for (BusinessGroup group:partGroups) {
-				bgs.add(group);
-			}
+			bgs = bgm.findBusinessGroups(Collections.<String>emptyList(), identity, true, true, null, 0, -1);
 		}
 		
 		int count = 0;

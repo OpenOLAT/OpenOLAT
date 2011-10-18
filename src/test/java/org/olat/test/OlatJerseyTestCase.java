@@ -24,6 +24,7 @@ package org.olat.test;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sun.grizzly.http.embed.GrizzlyWebServer;
 import com.sun.grizzly.http.servlet.ServletAdapter;
+import com.sun.jersey.test.framework.spi.container.TestContainer;
 
 /**
  * 
@@ -327,6 +329,17 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	}
 	
 	protected <T> T parse(String body, Class<T> cl) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory);
+			T obj = mapper.readValue(body, cl);
+			return obj;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	protected <T> T parse(InputStream body, Class<T> cl) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory);
 			T obj = mapper.readValue(body, cl);

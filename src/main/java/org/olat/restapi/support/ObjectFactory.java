@@ -23,6 +23,8 @@ package org.olat.restapi.support;
 import javax.ws.rs.core.EntityTag;
 
 import org.olat.basesecurity.Authentication;
+import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
@@ -39,6 +41,7 @@ import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.ErrorVO;
+import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 
@@ -60,6 +63,31 @@ public class ObjectFactory {
 		vo.setMaxParticipants(grp.getMaxParticipants());
 		vo.setMinParticipants(grp.getMinParticipants());
 		vo.setType(grp.getType());
+		return vo;
+	}
+	
+	public static GroupInfoVO getInformation(BusinessGroup grp) {
+		GroupInfoVO vo = new GroupInfoVO();
+		vo.setKey(grp.getKey());
+		vo.setName(grp.getName());
+		vo.setDescription(grp.getDescription());
+		vo.setMaxParticipants(grp.getMaxParticipants());
+		vo.setMinParticipants(grp.getMinParticipants());
+		vo.setType(grp.getType());
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(grp);
+		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
+			vo.setForumKey(collabTools.getForum().getKey());
+		}
+		
+		String news = collabTools.lookupNews();
+		vo.setNews(news);
+		
+		boolean hasWiki = collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI);
+		vo.setHasWiki(hasWiki);
+		
+		boolean hasFolder = collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER);
+		vo.setHasFolder(hasFolder);
 		return vo;
 	}
 	

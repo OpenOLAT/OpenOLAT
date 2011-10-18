@@ -41,6 +41,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.lifecycle.LifeCycleManager;
@@ -226,6 +227,79 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		List res = dbq.list();
 		return res;
 	}
+	
+
+	public int countBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext) {
+		DBQuery query = createFindDBQuery(types, identity, ownedById, attendedById, bgContext, true);
+		Number count = (Number)query.uniqueResult();
+		return count.intValue();
+	}
+
+	public List<BusinessGroup> findBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
+			int firstResult, int maxResults) {
+		DBQuery dbq = createFindDBQuery(types, identity, ownedById, attendedById, bgContext, false);
+		dbq.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			dbq.setMaxResults(maxResults);
+		}
+		List<BusinessGroup> groups = dbq.list();
+		return groups;
+	}
+	
+	private DBQuery createFindDBQuery(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext, boolean count) {
+		StringBuilder query = new StringBuilder();
+		if(count) {
+			query.append("select count(bgi.key) from ");
+		} else {
+			query.append("select distinct(bgi) from ");
+		}
+		query.append(org.olat.group.BusinessGroupImpl.class.getName()).append(" as bgi ");
+		//inner joins if needed
+		if(ownedById) {
+			query.append("inner join bgi.ownerGroup ownerGroup ");
+		}
+		if(attendedById) {
+			query.append("inner join bgi.partipiciantGroup participantGroup ");
+		}
+		if(bgContext != null) {
+			query.append("inner join bgi.groupContext context ");
+		}
+		
+		boolean where = false;
+		if(types != null && !types.isEmpty()) {
+			where = where(query, where);
+			query.append("bgi.type in (:types)");
+		}
+		if(ownedById || attendedById) {
+			where = where(query, where);
+			if(ownedById) {
+				query.append("ownerGroup.key in (select ownerMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerMembership where ownerMembership.identity.key=:identId)");
+			}
+			if(attendedById) {
+				if(ownedById) query.append(" or ");
+				query.append("participantGroup.key in (select partMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partMembership where partMembership.identity.key=:identId)");
+			}
+		}
+		if(bgContext != null) {
+			where = where(query, where);
+			query.append("context.key=:contextKey");
+		}
+		if(!count) {
+			query.append(" order by bgi.name,bgi.key");
+		}
+		
+		DBQuery dbq = DBFactory.getInstance().createQuery(query.toString());
+		if(ownedById || attendedById) {
+			dbq.setLong("identId", identity.getKey().longValue());
+		}
+		if (bgContext != null) {
+			dbq.setLong("contextKey", bgContext.getKey());
+		}
+		if (types != null && !types.isEmpty()) {
+			dbq.setParameterList("types", types);
+		}
+		return dbq;
+	}
 
 	/**
 	 * 
@@ -255,6 +329,15 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 
 		List res = dbq.list();
 		return res;
+	}
+	
+	private boolean where(StringBuilder sb, boolean where) {
+		if(where) {
+			sb.append(" and ");
+		} else {
+			sb.append(" where ");
+		}
+		return true;
 	}
 	
 	/**

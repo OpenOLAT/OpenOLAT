@@ -26,6 +26,7 @@ public class Examples {
 	public static final GroupVO SAMPLE_GROUPVO = new GroupVO();
 	public static final GroupVOes SAMPLE_GROUPVOes = new GroupVOes();
 	public static final GroupInfoVO SAMPLE_GROUPINFOVO = new GroupInfoVO();
+	public static final GroupInfoVOes SAMPLE_GROUPINFOVOes = new GroupInfoVOes();
 	
 	public static final ErrorVO SAMPLE_ERRORVO = new ErrorVO();
 	public static final ErrorVOes SAMPLE_ERRORVOes = new ErrorVOes();
@@ -58,9 +59,15 @@ public class Examples {
   	SAMPLE_GROUPVO.setMaxParticipants(0);
   	SAMPLE_GROUPVOes.setGroups(new GroupVO[]{SAMPLE_GROUPVO});
   	
+  	SAMPLE_GROUPINFOVO.setKey(123467l);
+  	SAMPLE_GROUPINFOVO.setName("My group");
+  	SAMPLE_GROUPINFOVO.setDescription("My group description");
+  	SAMPLE_GROUPINFOVO.setMinParticipants(0);
+  	SAMPLE_GROUPINFOVO.setMaxParticipants(0);
   	SAMPLE_GROUPINFOVO.setNews("<p>Hello world</p>");
   	SAMPLE_GROUPINFOVO.setForumKey(374589l);
-  	
+  	SAMPLE_GROUPINFOVOes.setGroups(new GroupInfoVO[]{SAMPLE_GROUPINFOVO});
+
   	SAMPLE_ERRORVO.setCode("org.olat.restapi:error");
   	SAMPLE_ERRORVO.setTranslation("Hello world, there is an error");
   	SAMPLE_ERRORVOes.getErrors().add(SAMPLE_ERRORVO);

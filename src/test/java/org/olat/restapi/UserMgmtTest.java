@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -70,12 +72,12 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.ErrorVO;
+import org.olat.restapi.support.vo.GroupInfoVOes;
 import org.olat.restapi.support.vo.GroupVO;
+import org.olat.restapi.support.vo.GroupVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.DisplayPortraitManager;
@@ -497,6 +499,48 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
 		assertTrue(groups.size() >= 4);
+	}
+	
+	@Test
+	public void testUserGroupWithPaging() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		//retrieve all groups
+		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
+			.queryParam("start", 0).queryParam("limit", 1).build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+
+		InputStream body = method.getResponseBodyAsStream();
+		GroupVOes groups = parse(body, GroupVOes.class);
+		method.releaseConnection();
+		assertNotNull(groups);
+		assertNotNull(groups.getGroups());
+		assertEquals(1, groups.getGroups().length);
+		assertTrue(groups.getTotalCount() >= 4);
+	}
+	
+	@Test
+	public void testUserGroupInfosWithPaging() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		//retrieve all groups
+		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups").path("infos")
+			.queryParam("start", 0).queryParam("limit", 1).build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+
+		InputStream body = method.getResponseBodyAsStream();
+		GroupInfoVOes groups = parse(body, GroupInfoVOes.class);
+		method.releaseConnection();
+		assertNotNull(groups);
+		assertNotNull(groups.getGroups());
+		assertEquals(1, groups.getGroups().length);
+		assertTrue(groups.getTotalCount() >= 4);
 	}
 	
 	@Test

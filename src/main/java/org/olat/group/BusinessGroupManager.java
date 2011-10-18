@@ -107,6 +107,12 @@ public interface BusinessGroupManager {
 	 */
 	public List findBusinessGroupsAttendedBy(String type, Identity identity, BGContext bgContext);
 
+	public int countBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext);
+	
+	public List<BusinessGroup> findBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
+			int firstResult, int maxResults);
+
+	
 	/**
 	 * @param currBusinessGroup
 	 * @return The group or null if not found
@@ -364,7 +370,6 @@ public interface BusinessGroupManager {
 	 * @return 0=not found on waiting-list 
 	 */
 	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup);
-
 
 	/**
 	 * Get all business-groups.

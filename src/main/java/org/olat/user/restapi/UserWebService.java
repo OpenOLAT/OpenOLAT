@@ -35,11 +35,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -59,8 +57,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
@@ -80,12 +78,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.restapi.support.ObjectFactory;
+import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.vo.ErrorVO;
-import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -427,59 +421,14 @@ public class UserWebService {
 		}	
 	}
 
-	
-	/**
-	 * Return all groups of a user
-	 * @response.representation.200.qname {http://www.example.com}groupVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The groups of the user
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVOes}
-   * @response.representation.404.doc The identity not found
-	 * @param identityKey The key of the user
-	 * @return
-	 */
-	@GET
 	@Path("{identityKey}/groups")
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getUserGroupList(@PathParam("identityKey") Long identityKey) {
+	public MyGroupWebService getUserGroupList(@PathParam("identityKey") Long identityKey) {
 		Identity retrievedUser = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 		if(retrievedUser == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+			return null;
 		}
-		
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();	
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<String> bgTypes = new ArrayList<String>();
-		bgTypes.add(BusinessGroup.TYPE_BUDDYGROUP);
-		bgTypes.add(BusinessGroup.TYPE_LEARNINGROUP);
-		
-		Set<Long> groupIds = new HashSet<Long>();
-		for (String bgType : bgTypes) {	
-			List<BusinessGroup> attendedGroups = bgm.findBusinessGroupsAttendedBy(bgType, retrievedUser, null);
-			for(BusinessGroup group:attendedGroups) {
-				if(!groupIds.contains(group.getKey())) {
-					groups.add(group);
-					groupIds.add(group.getKey());
-				}
-			}
-
-			List<BusinessGroup> ownedGroups = bgm.findBusinessGroupsOwnedBy(bgType, retrievedUser, null);
-			for(BusinessGroup group:ownedGroups) {
-				if(!groupIds.contains(group.getKey())) {
-					groups.add(group);
-					groupIds.add(group.getKey());
-				}
-			}
-		}
-		
-		int count = 0;
-		GroupVO[] groupVOs = new GroupVO[groups.size()];
-		for(BusinessGroup group:groups) {
-			groupVOs[count++] = ObjectFactory.get(group);
-		}
-		return Response.ok(groupVOs).build();
+		return new MyGroupWebService(retrievedUser);
 	}
-	
 
 	/**
 	 * Update an user
