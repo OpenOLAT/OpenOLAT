@@ -20,9 +20,6 @@
  */
 package org.olat.course.nodes.fo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -55,11 +52,6 @@ import org.olat.modules.fo.Message;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class FOPeekviewController extends BasicController implements Controller {
-	// comparator to sort the messages list by creation date
-	private static final Comparator<Message> dateSortingComparator = new Comparator<Message>(){
-		public int compare(final Message m1, final Message m2) {
-			return m2.getCreationDate().compareTo(m1.getCreationDate()); //last first
-		}};
 	// the current course node id
 	private final String nodeId;
 
@@ -79,17 +71,9 @@ public class FOPeekviewController extends BasicController implements Controller 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		// add items, only as many as configured
 		ForumManager foMgr = ForumManager.getInstance();
-		List<Message> allMessages = foMgr.getMessagesByForum(forum);
-		// Sort messages by creation date
-		Collections.sort(allMessages, dateSortingComparator);
+		List<Message> messages = foMgr.getMessagesByForumID(forum.getKey(), 0, itemsToDisplay, Message.OrderBy.creationDate, false);
 		// only take the configured amount of messages
-		List<Message> messages = new ArrayList<Message>();
-		for (int i = 0; i < allMessages.size(); i++) {
-			if (messages.size() == itemsToDisplay) {
-				break;
-			}
-			Message message = allMessages.get(i);
-			messages.add(message);
+		for (Message message :messages) {
 			// add link to item
 			// Add link to jump to course node
 			Link nodeLink = LinkFactory.createLink("nodeLink_" + message.getKey(), peekviewVC, this);

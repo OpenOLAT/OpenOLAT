@@ -74,36 +74,48 @@ public class ForumManager extends BasicManager {
 	public static ForumManager getInstance() {
 		return INSTANCE;
 	}
+	
+	public int countThread(Long msgid) {
+		StringBuilder query = new StringBuilder();
+		query.append("select count(msg) from ").append(MessageImpl.class.getName()).append(" as msg")
+		     .append(" where (msg.key=:messageKey or msg.threadtop.key=:messageKey) ");
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("messageKey", msgid);
+		Number totalCount = (Number)dbQuery.uniqueResult();
+		return totalCount.intValue();
+	}
 
 	/**
 	 * @param msgid msg id of the topthread
 	 * @return List messages
 	 */
 	public List<Message> getThread(Long msgid) {
-
-		// we make a scalar query so that not only the messages, but also the users
-		// are loaded into the cache as well.
-		// TODO : Otherwise, hibernate will fetch the user for each message (100
-		// messages = 101 SQL Queries!)
-		// FIXME: use join fetch instead
+		return getThread(msgid, 0, -1, Message.OrderBy.creationDate, true); 
+	}
+	
+	public List<Message> getThread(Long msgid, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
 		long rstart = 0;
 		if (isLogDebugEnabled()){
 			rstart = System.currentTimeMillis();
 		}
-		List scalar = DBFactory.getInstance().find(
-				"select msg, cr, usercr " + 
-				"from org.olat.modules.fo.MessageImpl as msg" + 
-				", org.olat.core.id.Identity as cr "	+ 
-				", org.olat.user.UserImpl as usercr" + " where msg.creator = cr and cr.user = usercr " + 
-				" and (msg.key = ? or msg.threadtop.key = ?) order by msg.creationDate", new Object[] { msgid, msgid },
-				new Type[] { Hibernate.LONG, Hibernate.LONG });
-		int size = scalar.size();
-		List<Message> messages = new ArrayList<Message>(size);
-		for (int i = 0; i < size; i++) {
-			Object[] o = (Object[]) scalar.get(i);
-			Message m = (Message) o[0];
-			messages.add(m);
+		
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from ").append(MessageImpl.class.getName()).append(" as msg")
+		     .append(" inner join fetch msg.creator as creator")
+		     .append(" where (msg.key=:messageKey or msg.threadtop.key=:messageKey) ");
+		if(orderBy != null) {
+			query.append(" order by msg.").append(orderBy.name()).append(asc ? " ASC " : " DESC ");
 		}
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("messageKey", msgid);
+		dbQuery.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			dbQuery.setMaxResults(maxResults);
+		}
+		
+		List<Message> messages = dbQuery.list();
 		if (isLogDebugEnabled()){
 			long rstop = System.currentTimeMillis();
 			logDebug("time to fetch thread with topmsg_id " + msgid + " :" + (rstop - rstart), null);
@@ -116,9 +128,35 @@ public class ForumManager extends BasicManager {
 		return tmpRes;
 	}
 	
-
+	/**
+	 * 
+	 * @param forum_id
+	 * @return
+	 */
+	public int countThreadsByForumID(Long forum_id) {
+		return countMessagesByForumID(forum_id, true);
+	}
+	
+	/**
+	 * 
+	 * @param forum_id
+	 * @param start
+	 * @param limit
+	 * @param orderBy
+	 * @param asc
+	 * @return
+	 */
+	public List<Message> getThreadsByForumID(Long forum_id, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
+		return getMessagesByForumID(forum_id, firstResult, maxResults, true, orderBy, asc);
+	}
+	
+	/**
+	 * 
+	 * @param forum
+	 * @return
+	 */
 	public List<Message> getMessagesByForum(Forum forum){		
-		return getMessagesByForumID(forum.getKey());
+		return getMessagesByForumID(forum.getKey(),  0, -1, null, true);
 	}
 	
 	/**
@@ -126,23 +164,57 @@ public class ForumManager extends BasicManager {
 	 * @return List messages
 	 */
 	public List<Message> getMessagesByForumID(Long forum_id) {
+		return getMessagesByForumID(forum_id, 0, -1, false, null, true);
+	}
+	
+	/**
+	 * 
+	 * @param forum_id
+	 * @param start
+	 * @param limit
+	 * @param orderBy
+	 * @param asc
+	 * @return
+	 */
+	public List<Message> getMessagesByForumID(Long forum_id, int firstResult, int maxResults, Message.OrderBy orderBy, boolean asc) {
+		return getMessagesByForumID(forum_id, firstResult, maxResults, false, orderBy, asc);
+	}
+	
+	/**
+	 * 
+	 * @param forum_id
+	 * @param start
+	 * @param limit
+	 * @param onlyThreads
+	 * @param orderBy
+	 * @param asc
+	 * @return
+	 */
+	private List<Message> getMessagesByForumID(Long forum_id, int firstResult, int maxResults, boolean onlyThreads, Message.OrderBy orderBy, boolean asc) {
 		long rstart = 0;
 		if(isLogDebugEnabled()){
 			rstart = System.currentTimeMillis();
 		}
-		List scalar = DBFactory.getInstance().find(
-				"select msg, cr, usercr " + "from org.olat.modules.fo.MessageImpl as msg" +
-				", org.olat.core.id.Identity as cr " + 
-				", org.olat.user.UserImpl as usercr" + 
-				" where msg.creator = cr and cr.user = usercr and msg.forum.key = ?", forum_id,
-				Hibernate.LONG);
-		int size = scalar.size();
-		List<Message> messages = new ArrayList<Message>(size);
-		for (int i = 0; i < size; i++) {
-			Object[] o = (Object[]) scalar.get(i);
-			Message m = (Message) o[0];
-			messages.add(m);
+		
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from ").append(MessageImpl.class.getName()).append(" as msg")
+		     .append(" inner join fetch msg.creator as creator")
+		     .append(" where msg.forum.key=:forumId ");
+		if(onlyThreads) {
+			query.append(" and msg.parent is null");
 		}
+		if(orderBy != null) {
+			query.append(" order by msg.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
+		}
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("forumId", forum_id);
+		dbQuery.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			dbQuery.setMaxResults(maxResults);
+		}
+		
+		List<Message> messages = dbQuery.list();
 		if(isLogDebugEnabled()){
 			long rstop = System.currentTimeMillis();
 			logDebug("time to fetch forum with forum_id " + forum_id + " :" + (rstop - rstart), null);
@@ -150,15 +222,28 @@ public class ForumManager extends BasicManager {
 		return messages;
 	}
 	
+	private int countMessagesByForumID(Long forum_id, boolean onlyThreads) {
+		StringBuilder query = new StringBuilder();
+		query.append("select count(msg) from ").append(MessageImpl.class.getName()).append(" as msg")
+		     .append(" where msg.forum.key=:forumId ");
+		if(onlyThreads) {
+			query.append(" and msg.parent is null");
+		}
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("forumId", forum_id);
+		
+		Number totalCount = (Number)dbQuery.uniqueResult();
+		return totalCount.intValue();
+	}
+	
 	/**
 	 * 
 	 * @param forumkey
 	 * @return the count of all messages by this forum
 	 */
-	public Integer countMessagesByForumID(Long forumkey) {
-		List msgCount = DBFactory.getInstance().find(
-				"select count(msg.title) from org.olat.modules.fo.MessageImpl as msg where msg.forum.key = ?", forumkey, Hibernate.LONG);
-		return new Integer( ((Long)msgCount.get(0)).intValue() );
+	public Integer countMessagesByForumID(Long forum_id) {
+		return countMessagesByForumID(forum_id, false);
 	}
 	
 	/**
@@ -167,10 +252,16 @@ public class ForumManager extends BasicManager {
 	 * @param forumkey
 	 * @return number of read messages
 	 */
-	public int countReadMessagesByUserAndForum(Identity identity, Long forumkey) {		
-		List<ReadMessage> itemList = DBFactory.getInstance().find("select msg from msg in class org.olat.modules.fo.ReadMessageImpl where msg.identity = ? and msg.forum = ?", 
-				new Object[] {identity.getKey(), forumkey}, new Type[] { Hibernate.LONG, Hibernate.LONG });
-		return itemList.size();
+	public int countReadMessagesByUserAndForum(Identity identity, Long forumkey) {
+		StringBuilder query = new StringBuilder();
+		query.append("select count(msg) from ").append(ReadMessageImpl.class.getName()).append(" as msg ")
+		     .append(" where msg.identity=:ident and msg.forum=:forumId");
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("forumId", forumkey);
+		dbQuery.setLong("ident", identity.getKey());
+
+		return ((Number)dbQuery.uniqueResult()).intValue();
 	}
 
 	/**
@@ -183,9 +274,12 @@ public class ForumManager extends BasicManager {
 	public List<Message> getNewMessageInfo(Long forumKey, Date latestRead) {
 		// FIXME:fj: lastModified has no index -> test performance with forum with
 		// 200 messages
-		String query = "select msg from org.olat.modules.fo.MessageImpl as msg" + 
-			" where msg.forum.key = :forumKey and msg.lastModified > :latestRead order by msg.lastModified desc";
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query);
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from ").append(MessageImpl.class.getName()).append(" as msg ")
+		     .append(" inner join fetch msg.creator as creator")
+		     .append(" where msg.forum.key =:forumKey and msg.lastModified>:latestRead order by msg.lastModified desc");
+
+		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
 		dbquery.setLong("forumKey", forumKey.longValue());
 		dbquery.setTimestamp("latestRead", latestRead);
 		dbquery.setCacheable(true);
@@ -587,16 +681,17 @@ public class ForumManager extends BasicManager {
 	 * @param forum
 	 * @return a set with the read messages keys for the input identity and forum.  
 	 */
-	public Set<Long> getReadSet(Identity identity, Forum forum) {				
-		List<ReadMessage> itemList = DBFactory.getInstance().find("select msg from msg in class org.olat.modules.fo.ReadMessageImpl where msg.identity = ? and msg.forum = ?", new Object[] {identity.getKey(), forum.getKey()}, new Type[] { Hibernate.LONG, Hibernate.LONG });
-				
-		Set<Long> readSet = new HashSet<Long>();
-		Iterator<ReadMessage> listIterator = itemList.iterator();
-		while(listIterator.hasNext()) {
-			Long msgKey = listIterator.next().getMessage().getKey();
-			readSet.add(msgKey);
-		}
-		return readSet;		
+	public Set<Long> getReadSet(Identity identity, Forum forum) {	
+		StringBuilder query = new StringBuilder();
+		query.append("select rmsg.message.key from ").append(ReadMessageImpl.class.getName()).append(" as rmsg")
+		     .append(" inner join rmsg.message as msg")
+		     .append(" where msg.forum.key=:forumId and rmsg.identity.key=:ident");
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("forumId", forum.getKey());
+		dbQuery.setLong("ident", identity.getKey());
+		List<Long> messageKeys = dbQuery.list();
+		return new HashSet<Long>(messageKeys);	
 	}
 	
 	/**

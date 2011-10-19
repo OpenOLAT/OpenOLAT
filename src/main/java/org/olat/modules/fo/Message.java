@@ -50,4 +50,11 @@ public interface Message extends CreateInfo, ModifiedInfo,  Persistable, Compara
 	public abstract void setNumOfCharacters(Integer numOfCharacters);
 	public int getStatusCode();
 	public void setStatusCode(int statusCode);
+	
+	
+	public enum OrderBy {
+		title,
+		creationDate
+		
+	}
 }

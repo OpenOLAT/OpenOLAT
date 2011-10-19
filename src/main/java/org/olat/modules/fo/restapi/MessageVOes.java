@@ -20,12 +20,11 @@
  */
 package org.olat.modules.fo.restapi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -39,21 +38,32 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author srosse, stephane.rosse@frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "messagesVOes")
+@XmlRootElement(name = "messages")
 public class MessageVOes {
 
-	@XmlElement(name="messageVO")
-	private List<MessageVO> messages = new ArrayList<MessageVO>();
+	@XmlElementWrapper(name="messages")
+	@XmlElement(name="message")
+	private MessageVO[] messages;
+	@XmlAttribute(name="totalCount")
+	private int totalCount;
 
 	public MessageVOes() {
 		//make JAXB happy
 	}
 
-	public List<MessageVO> getMessages() {
+	public MessageVO[] getMessages() {
 		return messages;
 	}
 
-	public void setMessages(List<MessageVO> messages) {
+	public void setMessages(MessageVO[] messages) {
 		this.messages = messages;
+	}
+
+	public int getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
 	}
 }

@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.modules.fo.Message;
 
 /**
@@ -43,6 +45,11 @@ public class MessageVO {
 	private Long forumKey;
 	private Long parentKey;
 	private Long authorKey;
+	private String author;
+	private String authorName;
+	private Long modifierKey;
+	private String modifier;
+	private String modifierName;
 	
 	private String title;
 	private String body;
@@ -53,10 +60,22 @@ public class MessageVO {
 	
 	public MessageVO(Message message) {
 		key = message.getKey();
-		authorKey = message.getCreator().getKey();
+		Identity auth = message.getCreator();
+		authorKey = auth.getKey();
+		authorName = auth.getName();
+		author = auth.getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + auth.getUser().getProperty(UserConstants.LASTNAME, null);
+		
+		Identity mod = message.getModifier();
+		if(mod != null) {
+			modifierKey = mod.getKey();
+			modifierName = mod.getName();
+			modifier = mod.getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + mod.getUser().getProperty(UserConstants.LASTNAME, null);
+		}
+		
 		if(message.getParent() != null) {
 			parentKey = message.getParent().getKey();
 		}
+		
 		forumKey = message.getForum().getKey();
 		title = message.getTitle();
 		body = message.getBody();
@@ -92,6 +111,46 @@ public class MessageVO {
 
 	public void setAuthorKey(Long authorKey) {
 		this.authorKey = authorKey;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getAuthorName() {
+		return authorName;
+	}
+
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
+	}
+
+	public Long getModifierKey() {
+		return modifierKey;
+	}
+
+	public void setModifierKey(Long modifierKey) {
+		this.modifierKey = modifierKey;
+	}
+
+	public String getModifier() {
+		return modifier;
+	}
+
+	public void setModifier(String modifier) {
+		this.modifier = modifier;
+	}
+
+	public String getModifierName() {
+		return modifierName;
+	}
+
+	public void setModifierName(String modifierName) {
+		this.modifierName = modifierName;
 	}
 
 	public String getTitle() {

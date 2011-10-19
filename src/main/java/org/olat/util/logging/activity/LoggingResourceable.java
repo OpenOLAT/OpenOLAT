@@ -359,7 +359,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 */
 	public static LoggingResourceable wrap(Forum forum) {
 		final String name;
-		List<Message> forumMessages = ForumManager.getInstance().getMessagesByForum(forum);
+		List<Message> forumMessages = ForumManager.getInstance().getMessagesByForumID(forum.getKey(), 0, 1, null, true);
 		if (forumMessages==null || forumMessages.size()==0) {
 			name = null;
 		} else {

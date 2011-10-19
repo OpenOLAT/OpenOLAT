@@ -21,6 +21,9 @@
 
 package org.olat.modules.fo.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +33,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -38,6 +42,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -50,7 +55,10 @@ import javax.ws.rs.core.UriInfo;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -60,7 +68,7 @@ import org.olat.core.util.vfs.restapi.VFSStreamingOutput;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
-import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.vo.FileVO;
 
 /**
@@ -74,6 +82,8 @@ import org.olat.restapi.support.vo.FileVO;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ForumWebService {
+	
+	private static final OLog log = Tracing.createLoggerFor(ForumWebService.class);
 	
 	public static CacheControl cc = new CacheControl();
 	static {
@@ -106,27 +116,38 @@ public class ForumWebService {
    * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @response.representation.404.doc The author, forum or message not found
-	 * @param forumKey The id of the forum
+	 * @param start
+	 * @param limit
+	 * @param orderBy (value name,creationDate)
+	 * @param asc (value true/false)
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
 	 * @return The list of threads
 	 */
 	@GET
 	@Path("threads")
-	public Response getThreads() {
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getThreads(@QueryParam("start") @DefaultValue("0") Integer start,
+			@QueryParam("limit") @DefaultValue("25") Integer limit,  @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
+			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context Request request) {
 		if(forum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-
-		List<Message> messages = fom.getMessagesByForum(forum);
-		List<MessageVO> threads = new ArrayList<MessageVO>();
-		for(Message message:messages) {
-			if(message.getParent() == null) {
-				threads.add(new MessageVO(message));
-			}
-		}
 		
-		MessageVO[] threadArr = new MessageVO[threads.size()];
-		threads.toArray(threadArr);
-		return Response.ok(threads).build();
+		if(MediaTypeVariants.isPaged(httpRequest, request)) {
+			int totalCount = fom.countThreadsByForumID(forum.getKey());
+			Message.OrderBy order = toEnum(orderBy);
+			List<Message> threads = fom.getThreadsByForumID(forum.getKey(), start, limit, order, asc);
+			MessageVO[] vos = toArrayOfVO(threads);
+			MessageVOes voes = new MessageVOes();
+			voes.setMessages(vos);
+			voes.setTotalCount(totalCount);
+			return Response.ok(voes).build();
+		} else {
+			List<Message> threads = fom.getThreadsByForumID(forum.getKey(), 0, -1, null, true);
+			MessageVO[] voes = toArrayOfVO(threads);
+			return Response.ok(voes).build();
+		}
 	}
 	
 	/**
@@ -141,8 +162,8 @@ public class ForumWebService {
 	 * @param forumKey The id of the forum
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
-	 * @param authorKey The author key
-	 * @param request The HTTP request
+	 * @param authorKey The author key (optional)
+	 * @param httpRequest The HTTP request
 	 * @return The new thread
 	 */
 	@POST
@@ -150,8 +171,9 @@ public class ForumWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForumPost(@FormParam("title") String title,
-			@FormParam("body") String body, @FormParam("authorKey") Long authorKey) {
-		return newThreadToForum(title, body, authorKey);
+			@FormParam("body") String body, @FormParam("authorKey") Long authorKey,
+			@Context HttpServletRequest httpRequest) {
+		return newThreadToForum(title, body, authorKey, httpRequest);
 	}
 	
 	/**
@@ -164,27 +186,24 @@ public class ForumWebService {
    * @response.representation.404.doc The author, forum or message not found
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
-	 * @param authorKey The author user key
+	 * @param authorKey The author user key (optional)
+	 * @param httpRequest The HTTP request
 	 * @return The new thread
 	 */
 	@PUT
 	@Path("threads")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForum(@QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey) {
-		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		Identity identity = securityManager.loadIdentityByKey(authorKey, false);
-		if(identity == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
+			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
+			@Context HttpServletRequest httpRequest) {
 
+		Identity author = getMessageAuthor(authorKey, httpRequest);
 		// creating the thread (a message without a parent message)
 		Message newThread = fom.createMessage();
 		newThread.setTitle(title);
 		newThread.setBody(body);
 		// open a new thread
-		fom.addTopMessage(identity, forum, newThread);
+		fom.addTopMessage(author, forum, newThread);
 		
 		MessageVO vo = new MessageVO(newThread);
 		return Response.ok(vo).build();
@@ -199,23 +218,39 @@ public class ForumWebService {
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @response.representation.404.doc The author, forum or message not found
 	 * @param threadKey The key of the thread
+	 * @param start
+	 * @param limit
+	 * @param orderBy (value name, creationDate)
+	 * @param asc (value true/false)
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
 	 * @return The messages of the thread
 	 */
 	@GET
 	@Path("posts/{threadKey}")
-	public Response getMessages( @PathParam("threadKey") Long threadKey) {
+	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @DefaultValue("0") Integer start,
+			@QueryParam("limit") @DefaultValue("25") Integer limit, @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
+			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context Request request) {
+		
 		if(forum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
 		ForumManager fom = ForumManager.getInstance();
-		List<Message> messages = fom.getThread(threadKey);
-		MessageVO[] messageArr = new MessageVO[messages.size()];
-		int i=0;
-		for(Message message:messages) {
-			messageArr[i++] = new MessageVO(message);
+		if(MediaTypeVariants.isPaged(httpRequest, request)) {
+			int totalCount = fom.countThread(threadKey);
+			Message.OrderBy order = toEnum(orderBy);
+			List<Message> threads = fom.getThread(threadKey, start, limit, order, asc);
+			MessageVO[] vos = toArrayOfVO(threads);
+			MessageVOes voes = new MessageVOes();
+			voes.setMessages(vos);
+			voes.setTotalCount(totalCount);
+			return Response.ok(voes).build();
+		} else {
+			List<Message> messages = fom.getThread(threadKey);
+			MessageVO[] messageArr = toArrayOfVO(messages);
+			return Response.ok(messageArr).build();
 		}
-		return Response.ok(messageArr).build();
 	}
 	
 	/**
@@ -231,6 +266,7 @@ public class ForumWebService {
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
 	 * @param authorKey The author key
+	 * @param httpRequest The HTTP request
 	 * @return The new message
 	 */
 	@POST
@@ -238,8 +274,9 @@ public class ForumWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostPost(@PathParam("messageKey") Long messageKey, @FormParam("title") String title,
-			@FormParam("body") String body, @FormParam("authorKey") Long authorKey) {
-		return replyToPost(messageKey, title, body, authorKey);
+			@FormParam("body") String body, @FormParam("authorKey") Long authorKey,
+			@Context HttpServletRequest httpRequest) {
+		return replyToPost(messageKey, title, body, authorKey, httpRequest);
 	}
 	
 	/**
@@ -253,21 +290,18 @@ public class ForumWebService {
 	 * @param messageKey The id of the reply message
 	 * @param title The title for the first post in the thread
 	 * @param body The body for the first post in the thread
-	 * @param authorKey The author user key
+	 * @param authorKey The author user key (optional)
+	 * @param httpRequest The HTTP request
 	 * @return The new Message
 	 */
 	@PUT
 	@Path("posts/{messageKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey) {
-		
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		Identity identity = securityManager.loadIdentityByKey(authorKey, false);
-		if(identity == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
+			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
+			@Context HttpServletRequest httpRequest) {
 
+		Identity author = this.getMessageAuthor(authorKey, httpRequest);
 		// load message
 		Message mess = fom.loadMessage(messageKey);
 		if(mess == null) {
@@ -281,7 +315,7 @@ public class ForumWebService {
 		Message newMessage = fom.createMessage();
 		newMessage.setTitle(title);
 		newMessage.setBody(body);
-		fom.replyToMessage(newMessage, identity, mess);
+		fom.replyToMessage(newMessage, author, mess);
 		MessageVO vo = new MessageVO(newMessage);
 		return Response.ok(vo).build();
 	}
@@ -310,7 +344,7 @@ public class ForumWebService {
 		}
 		
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
-		
+
 		List<FileVO> attachments = new ArrayList<FileVO>();
 		for(VFSItem item: container.getItems(new SystemItemFilter())) {
 			String uri = uriInfo.getAbsolutePathBuilder().path(format(item.getName())).build().toString();
@@ -395,7 +429,7 @@ public class ForumWebService {
 	}
 
 	protected Response attachToPost(Message mess, String filename, InputStream file,  HttpServletRequest request) {
-		Identity identity = RestSecurityHelper.getIdentity(request);
+		Identity identity = getIdentity(request);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		} else if (!identity.equalsByPersistableKey(mess.getCreator())) {
@@ -425,5 +459,46 @@ public class ForumWebService {
 	public String format(String segment) {
 		segment = segment.replace(" ", "_");
 		return segment;
+	}
+	
+	private MessageVO[] toArrayOfVO(List<Message> threads) {
+		MessageVO[] threadArr = new MessageVO[threads.size()];
+		int i=0;
+		for(Message thread:threads) {
+			threadArr[i++] = new MessageVO(thread);
+		}
+		return threadArr;
+	}
+	
+	private Message.OrderBy toEnum(String str) {
+		if(StringHelper.containsNonWhitespace(str)) {
+			try {
+				return Message.OrderBy.valueOf(str);
+			} catch (Exception e) {
+				log.warn("", e);
+			}
+		}
+		return null;
+	}
+	
+	private Identity getMessageAuthor(Long authorKey, HttpServletRequest httpRequest) {
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		Identity author;
+		if(authorKey == null) {
+			author = getIdentity(httpRequest);
+		} else if(isAdmin(httpRequest)) {
+			author = securityManager.loadIdentityByKey(authorKey, false);
+		} else {
+			author = getIdentity(httpRequest);
+			if(!authorKey.equals(author.getKey())) {
+				throw new WebApplicationException(Status.CONFLICT);
+			}
+		}
+		
+		if(author == null) {
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+		
+		return author;
 	}
 }

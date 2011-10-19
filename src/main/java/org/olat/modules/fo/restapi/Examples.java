@@ -40,6 +40,7 @@ public class Examples {
   	SAMPLE_MESSAGEVO.setAuthorKey(345l);
   	SAMPLE_MESSAGEVO.setTitle("A message");
   	SAMPLE_MESSAGEVO.setBody("The content of the message");
-  	SAMPLE_MESSAGEVOes.getMessages().add(SAMPLE_MESSAGEVO);
+  	SAMPLE_MESSAGEVOes.setMessages(new MessageVO[]{SAMPLE_MESSAGEVO});
+  	SAMPLE_MESSAGEVOes.setTotalCount(1);
   }
 }

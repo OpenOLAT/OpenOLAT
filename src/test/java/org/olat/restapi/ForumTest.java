@@ -22,10 +22,12 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
@@ -45,6 +47,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.restapi.MessageVO;
+import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -91,6 +94,70 @@ public class ForumTest extends OlatJerseyTestCase {
 		fm.replyToMessage(m5, id1, m1);
 
 		DBFactory.getInstance().intermediateCommit();
+	}
+	
+	@Test
+	public void testGetThreads() throws IOException  {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = getForumUriBuilder().path("threads").build();
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		String body = method.getResponseBodyAsString();
+		List<MessageVO> threads = parseMessageArray(body);
+		method.releaseConnection();
+		assertNotNull(threads);
+		assertFalse(threads.isEmpty());	
+	}
+	
+	@Test
+	public void testGetThreadsWithPaging() throws IOException  {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = getForumUriBuilder().path("threads")
+				.queryParam("start", "0").queryParam("limit", "2").build();
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVOes threads = parse(body, MessageVOes.class);
+		method.releaseConnection();
+		assertNotNull(threads);
+		assertNotNull(threads.getMessages());
+		assertTrue(threads.getTotalCount() >= 2);	
+	}
+	
+	@Test
+	public void testGetThread() throws IOException  {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		String body = method.getResponseBodyAsString();
+		List<MessageVO> threads = parseMessageArray(body);
+		method.releaseConnection();
+		assertNotNull(threads);
+		assertFalse(threads.isEmpty());	
+	}
+	
+	@Test
+	public void testGetThreadWithPaging() throws IOException  {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
+				.queryParam("start", "0").queryParam("limit", "2").build();
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVOes threads = parse(body, MessageVOes.class);
+		method.releaseConnection();
+		assertNotNull(threads);
+		assertNotNull(threads.getMessages());
+		assertTrue(threads.getTotalCount() >= 2);	
 	}
 
 	@Test
