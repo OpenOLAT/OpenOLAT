@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
@@ -51,6 +52,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.catalog.restapi.CatalogEntryVO;
+import org.olat.catalog.restapi.CatalogEntryVOes;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -165,6 +167,23 @@ public class CatalogTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testGetRootsWithPaging() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").build();
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		CatalogEntryVOes vos = parse(body, CatalogEntryVOes.class);
+		method.releaseConnection();
+		assertNotNull(vos);
+		assertNotNull(vos.getCatalogEntries());
+		assertEquals(1, vos.getCatalogEntries().length);//Root-1
+		assertEquals(1, vos.getTotalCount());
+	}
+	
+	@Test
 	public void testGetChild() throws IOException {
 		HttpClient c = loginWithCookie("administrator", "olat");
 		
@@ -193,6 +212,25 @@ public class CatalogTest extends OlatJerseyTestCase {
 		List<CatalogEntryVO> vos = parseEntryArray(body);
 		assertNotNull(vos);
 		assertTrue(vos.size() >= 2);
+	}
+	
+	@Test
+	public void testGetChildrenWithPaging() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children")
+				.queryParam("start", "0").queryParam("limit", "2").build();
+		
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		CatalogEntryVOes vos = parse(body, CatalogEntryVOes.class);
+		method.releaseConnection();
+		assertNotNull(vos);
+		assertNotNull(vos.getCatalogEntries());
+		assertTrue(vos.getCatalogEntries().length <= 2);
+		assertTrue(vos.getTotalCount() >= 2);
 	}
 	
 	@Test

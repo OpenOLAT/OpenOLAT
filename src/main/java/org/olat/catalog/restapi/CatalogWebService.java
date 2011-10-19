@@ -33,6 +33,7 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -45,6 +46,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -69,6 +71,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -118,15 +121,17 @@ public class CatalogWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getRoots() {
+	public Response getRoots(@Context HttpServletRequest httpRequest, @Context Request request) {
 		List<CatalogEntry> rootEntries = catalogManager.getRootCatalogEntries();
-		
-		int count = 0;
-		CatalogEntryVO[] entryVOes = new CatalogEntryVO[rootEntries.size()];
-		for(CatalogEntry entry :rootEntries) {
-			entryVOes[count++] = get(entry);
+		CatalogEntryVO[] entryVOes = toArray(rootEntries);
+		if(MediaTypeVariants.isPaged(httpRequest, request)) {
+			CatalogEntryVOes voes = new CatalogEntryVOes();
+			voes.setCatalogEntries(entryVOes);
+			voes.setTotalCount(1);
+			return Response.ok(voes).build();
+		} else {
+			return Response.ok(entryVOes).build();
 		}
-		return Response.ok(entryVOes).build();
 	}
 	
 	/**
@@ -138,14 +143,17 @@ public class CatalogWebService {
    * @response.representation.401.doc The path could not be resolved to a valid catalog entry
    * @param path The path
    * @param uriInfo The URI informations
+   * @param httpRequest The HTTP request
+   * @param request The REST request
 	 * @return The response
 	 */
 	@GET
 	@Path("{path:.*}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCatalogEntry(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo) {
+	public Response getCatalogEntry(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo,
+			@Context HttpServletRequest httpRequest, @Context Request request) {
 		if(path.isEmpty()) {
-			return getRoots();
+			return getRoots(httpRequest, request);
 		}
 		
 		Long ceKey = getCatalogEntryKeyFromPath(path);
@@ -170,14 +178,19 @@ public class CatalogWebService {
    * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVOes}
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
+   * @param start
+   * @param limit
+   * @param httpRequest The HTTP request
+   * @param request The REST request
 	 * @return The response
 	 */
 	@GET
 	@Path("{path:.*}/children")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getChildren(@PathParam("path") List<PathSegment> path) {
+	public Response getChildren(@PathParam("path") List<PathSegment> path, @QueryParam("start") @DefaultValue("0") Integer start,
+			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest, @Context Request request) {
 		if(path.isEmpty()) {
-			return getRoots();
+			return getRoots(httpRequest, request);
 		}
 
 		Long ceKey = getCatalogEntryKeyFromPath(path);
@@ -190,13 +203,28 @@ public class CatalogWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		List<CatalogEntry> entries = catalogManager.getChildrenOf(ce);
+		if(MediaTypeVariants.isPaged(httpRequest, request)) {
+			int totalCount = catalogManager.countChildrenOf(ce, -1);
+			List<CatalogEntry> entries = catalogManager.getChildrenOf(ce, start, limit, CatalogEntry.OrderBy.name, true);
+			CatalogEntryVO[] entryVOes = toArray(entries);
+			CatalogEntryVOes voes = new CatalogEntryVOes();
+			voes.setTotalCount(totalCount);
+			voes.setCatalogEntries(entryVOes);
+			return Response.ok(voes).build();
+		} else {
+			List<CatalogEntry> entries = catalogManager.getChildrenOf(ce);
+			CatalogEntryVO[] entryVOes = toArray(entries);
+			return Response.ok(entryVOes).build();
+		}
+	}
+	
+	private CatalogEntryVO[] toArray(List<CatalogEntry> entries) {
 		int count = 0;
 		CatalogEntryVO[] entryVOes = new CatalogEntryVO[entries.size()];
 		for(CatalogEntry entry:entries) {
 			entryVOes[count++] = get(entry);
 		}
-		return Response.ok(entryVOes).build();
+		return entryVOes;
 	}
 	
 	/**

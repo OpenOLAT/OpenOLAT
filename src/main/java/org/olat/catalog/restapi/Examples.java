@@ -42,6 +42,7 @@ public class Examples {
 		SAMPLE_CATALOGENTRYVO.setDescription("Description of the category");
 		SAMPLE_CATALOGENTRYVO.setType(CatalogEntry.TYPE_NODE);
 		
-		SAMPLE_CATALOGENTRYVOes.getEntries().add(SAMPLE_CATALOGENTRYVO);
+		SAMPLE_CATALOGENTRYVOes.setCatalogEntries(new CatalogEntryVO[]{SAMPLE_CATALOGENTRYVO});
+		SAMPLE_CATALOGENTRYVOes.setTotalCount(0);
 	}
 }

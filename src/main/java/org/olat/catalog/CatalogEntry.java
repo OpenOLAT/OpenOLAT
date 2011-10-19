@@ -149,4 +149,9 @@ public interface CatalogEntry extends CreateInfo, Persistable, OLATResourceable 
 	 * @return CatalogEntry
 	 */
 	public CatalogEntry getParent();
+	
+	
+	public enum OrderBy {
+		name,
+	}
 }

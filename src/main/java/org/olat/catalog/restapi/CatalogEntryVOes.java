@@ -20,40 +20,48 @@
  */
 package org.olat.catalog.restapi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
  * Description:<br>
- * This is an helper class for the WADL documentation. Don't use it
- * in the REST API!!!
  * 
  * <P>
  * Initial Date:  5 may 2010 <br>
- * @author srosse, stephane.rosse@frentix.com
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "catalogEntryVOes")
+@XmlRootElement(name = "catalogEntries")
 public class CatalogEntryVOes {
 	
-	@XmlElement(name="catalogEntryVO")
-	private List<CatalogEntryVO> entries = new ArrayList<CatalogEntryVO>();
+	@XmlElementWrapper(name="catalogEntries")
+	@XmlElement(name="catalogEntry")
+	private CatalogEntryVO[] entries;
+	@XmlAttribute(name="totalCount")
+	private int totalCount;
 	
 	public CatalogEntryVOes() {
 		//make JAXB happy
 	}
 
-	public List<CatalogEntryVO> getEntries() {
+	public CatalogEntryVO[] getCatalogEntries() {
 		return entries;
 	}
 
-	public void setEntries(List<CatalogEntryVO> entries) {
+	public void setCatalogEntries(CatalogEntryVO[] entries) {
 		this.entries = entries;
+	}
+
+	public int getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
 	}
 }

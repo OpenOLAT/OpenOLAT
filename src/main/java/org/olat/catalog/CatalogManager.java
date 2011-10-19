@@ -38,7 +38,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -107,15 +106,28 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries that are childern entries of given entry
 	 */
 	public List<CatalogEntry> getChildrenOf(CatalogEntry ce) {
-		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei "
-			+ " where cei.parent = :parent order by cei.name ";
-			DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-			dbQuery.setEntity("parent", ce);
-			// cache this query
-			dbQuery.setCacheable(true);
-			return dbQuery.list();
+		return getChildrenOf(ce, 0, -1, CatalogEntry.OrderBy.name, true);
 	}
 
+	public List<CatalogEntry> getChildrenOf(CatalogEntry ce, int firstResult, int maxResults, CatalogEntry.OrderBy orderBy, boolean asc) {
+		StringBuilder query = new StringBuilder();
+		query.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		     .append(" where cei.parent.key=:parentKey");
+		if(orderBy != null) {
+			query.append(" order by cei.").append(orderBy.name()).append(asc ? " ASC" : " DESC");
+		}
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("parentKey", ce.getKey());
+		dbQuery.setFirstResult(0);
+		if(maxResults > 0) {
+			dbQuery.setMaxResults(maxResults);
+		}
+		// cache this query
+		dbQuery.setCacheable(true);
+		List<CatalogEntry> entries = dbQuery.list();
+		return entries;
+	}
 
 	/**
 	 * Returns a list catalog categories
@@ -142,16 +154,31 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return true: entry has at least one child of type node
 	 */
 	public boolean hasChildEntries(CatalogEntry ce, int type) {
-		String sqlQuery = "select count(cei) from org.olat.catalog.CatalogEntryImpl as cei "
-		+ " where cei.parent = :parent AND cei.type= :type ";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
-		dbQuery.setEntity("parent", ce);
-		dbQuery.setInteger("type", type);
+		return countChildrenOf(ce, type) > 0; 
+	}
+	/**
+	 * 
+	 * @param ce
+	 * @param type (-1) if you want all types
+	 * @return
+	 */
+	public int countChildrenOf(CatalogEntry ce, int type) {
+		StringBuilder query = new StringBuilder();
+		query.append("select count(cei) from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		     .append(" where cei.parent.key=:parentKey");
+		if(type >= 0) {
+			query.append(" and cei.type=:type");
+		}
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("parentKey", ce.getKey());
+		if(type > 0) {
+			dbQuery.setInteger("type", type);
+		}
 		// cache this query
 		dbQuery.setCacheable(true);
-		List res = dbQuery.list();
-		Long cntL = (Long) res.get(0);
-		return (cntL.longValue() > 0); 
+		Number totalCount = (Number)dbQuery.uniqueResult();
+		return totalCount.intValue(); 
 	}
 
 	/**
@@ -399,7 +426,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * 
 	 * @return List of catalog entries
 	 */
-	public List getRootCatalogEntries() {
+	public List<CatalogEntry> getRootCatalogEntries() {
 		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei where cei.parent is null";
 		DBQuery dbQuery = DBFactory.getInstance().createQuery(sqlQuery);
 		dbQuery.setCacheable(true);
