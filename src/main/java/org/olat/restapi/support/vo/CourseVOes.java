@@ -21,12 +21,11 @@
 
 package org.olat.restapi.support.vo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -39,21 +38,33 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author srosse, stephane.rosse@frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "courseVOes")
+@XmlRootElement(name = "courses")
 public class CourseVOes {
 	
-	@XmlElement(name="courseVO")
-	private List<CourseVO> courses = new ArrayList<CourseVO>();
+
+	@XmlElementWrapper(name="courses")
+	@XmlElement(name="course")
+	private CourseVO[] courses;
+	@XmlAttribute(name="totalCount")
+	private int totalCount;
 	
 	public CourseVOes() {
 		//make JAXB happy
 	}
 
-	public List<CourseVO> getCourses() {
+	public CourseVO[] getCourses() {
 		return courses;
 	}
 
-	public void setCourses(List<CourseVO> courses) {
+	public void setCourses(CourseVO[] courses) {
 		this.courses = courses;
+	}
+
+	public int getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
 	}
 }

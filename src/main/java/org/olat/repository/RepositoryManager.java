@@ -28,10 +28,11 @@ import java.util.List;
 
 import org.hibernate.Hibernate;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -789,7 +790,7 @@ public class RepositoryManager extends BasicManager {
 	 * 
 	 * If any input data contains "*", then it replaced by "%" (search me*er -> sql: me%er).
 	 * 
-	 * 
+	 * @deprecated Use genericANDQueryWithRolesRestriction with paging instead
 	 * @param ureq
 	 * @param displayName null -> no restriction
 	 * @param author			null -> no restriction
@@ -873,6 +874,109 @@ public class RepositoryManager extends BasicManager {
 		} else {
 			return runGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles);
 		}
+	}
+	
+	public int countGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Roles roles,
+			String institution, boolean orderBy) {
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles, institution, orderBy, true);
+		Number count = (Number)dbQuery.uniqueResult();
+		return count.intValue();
+	}
+	
+	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Roles roles,
+			String institution, int firstResult, int maxResults, boolean orderBy) {
+		
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles, institution, orderBy, false);
+		dbQuery.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			dbQuery.setMaxResults(maxResults);
+		}
+		List<RepositoryEntry> res = dbQuery.list();
+		return res;
+	}
+	
+	private DBQuery createGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Roles roles,
+			String institution, boolean orderBy, boolean count) {
+		
+		boolean institut = (!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager());
+		boolean var_author = StringHelper.containsNonWhitespace(author);
+		boolean var_displayname = StringHelper.containsNonWhitespace(displayName);
+		boolean var_desc = StringHelper.containsNonWhitespace(desc);
+		boolean var_resourcetypes = (resourceTypes != null && resourceTypes.size() > 0);
+		
+		StringBuilder query = new StringBuilder();
+		if(count) {
+			query.append("select count(v.key) from ").append(RepositoryEntry.class.getName()).append(" v ");
+			query.append(" inner join v.olatResource as res");
+		} else {
+			query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
+			query.append(" inner join fetch v.olatResource as res");
+		}
+
+		//access rules
+		if(roles.isOLATAdmin()) {
+			query.append(" where v.access!=0 ");
+		} else if(institut) {
+			query.append(" where ((v.access >=");
+			if (roles.isAuthor()) query.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
+			else if (roles.isGuestOnly()) query.append(RepositoryEntry.ACC_USERS_GUESTS);
+			else query.append(RepositoryEntry.ACC_USERS);
+			query.append(") or (");
+			
+			query.append("v.access=1 and v.ownerGroup in (select ms.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ms, ")
+			     .append(" org.olat.basesecurity.IdentityImpl msid,")
+			     .append(" org.olat.user.UserImpl msuser ")
+			     .append(" where ms.identity = msid and msid.user = msuser and ")
+			     .append(" msuser.properties['institutionalName']=:institution)")
+			     .append("))");
+		} else {
+			query.append(" where v.access>=");
+			if (roles.isAuthor()) query.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
+			else if (roles.isGuestOnly()) query.append(RepositoryEntry.ACC_USERS_GUESTS);
+			else query.append(RepositoryEntry.ACC_USERS);
+		}
+		
+		if (var_author) { // fuzzy author search
+			author = '%' + author.replace('*', '%') + '%';
+			query.append(" and v.ownerGroup in (select msauth.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" msauth, ")
+		         .append(" org.olat.basesecurity.IdentityImpl msauthid,")
+		         .append(" org.olat.user.UserImpl msauthuser ")
+		         .append(" where msauth.identity = msauthid and msauthid.user = msauthuser and ")
+		         .append(" (msauthuser.properties['firstName'] like :author or msauthuser.properties['lastName'] like :author or msauthid.name like :author))");
+		}
+		if (var_displayname) {
+			displayName = '%' + displayName.replace('*', '%') + '%';
+			query.append(" and v.displayname like :displayname");
+		}
+		if (var_desc) {
+			desc = '%' + desc.replace('*', '%') + '%';
+			query.append(" and v.description like :desc");
+		}
+		if (var_resourcetypes) {
+			query.append(" and res.resName in (:resourcetypes)");
+		}
+
+		if(orderBy) {
+			query.append(" order by v.displayname, v.key");
+		}
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		if(institut) {
+			dbQuery.setString("institution", institution);
+		}
+		if (var_author) {
+			dbQuery.setString("author", author);
+		}
+		if (var_displayname) {
+			dbQuery.setString("displayname", displayName);
+		}
+		if (var_desc) {
+			dbQuery.setString("desc", desc);
+		}
+		if (var_resourcetypes) {
+			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+		}
+		return dbQuery;
 	}
 	
 	/**

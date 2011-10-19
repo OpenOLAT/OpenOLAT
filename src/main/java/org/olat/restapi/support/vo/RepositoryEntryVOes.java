@@ -20,31 +20,43 @@
  */
 package org.olat.restapi.support.vo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "repositoryEntryVOes")
+@XmlRootElement(name = "repositoryEntries")
 public class RepositoryEntryVOes {
-
-	@XmlElement(name="repositoryEntryVO")
-	private List<RepositoryEntryVO> entries = new ArrayList<RepositoryEntryVO>();
+	
+	@XmlElementWrapper(name="repositoryEntries")
+	@XmlElement(name="repositoryEntrie")
+	private RepositoryEntryVO[] entries;
+	@XmlAttribute(name="totalCount")
+	private int totalCount;
 	
 	public RepositoryEntryVOes() {
 		//make JAXB happy
 	}
 
-	public List<RepositoryEntryVO> getEntries() {
+	public RepositoryEntryVO[] getRepositoryEntries() {
 		return entries;
 	}
 
-	public void setEntries(List<RepositoryEntryVO> entries) {
+	public void setRepositoryEntries(RepositoryEntryVO[] entries) {
 		this.entries = entries;
 	}
+
+	public int getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
+	}
+	
+	
 }

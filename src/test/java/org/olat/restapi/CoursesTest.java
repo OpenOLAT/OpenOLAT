@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 
@@ -50,6 +51,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.OlatJerseyTestCase;
 
 public class CoursesTest extends OlatJerseyTestCase {
@@ -102,6 +104,23 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertEquals(vo1.getKey(), course1.getResourceableId());
 		assertNotNull(vo2);
 		assertEquals(vo2.getKey(), course2.getResourceableId());
+	}
+	
+	@Test
+	public void testGetCoursesWithPaging() throws IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("start", "0").queryParam("limit", "1").build();
+		
+		HttpMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		CourseVOes courses = parse(body, CourseVOes.class);
+		assertNotNull(courses);
+		assertNotNull(courses.getCourses());
+		assertEquals(1, courses.getCourses().length);
 	}
 	
 	@Test

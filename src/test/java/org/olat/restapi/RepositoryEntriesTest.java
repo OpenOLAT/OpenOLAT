@@ -27,11 +27,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -55,6 +58,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
+import org.olat.restapi.support.vo.RepositoryEntryVOes;
 import org.olat.test.OlatJerseyTestCase;
 
 public class RepositoryEntriesTest extends OlatJerseyTestCase {
@@ -87,6 +91,25 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		List<RepositoryEntryVO> entryVoes = parseRepoArray(body);
 		assertNotNull(entryVoes);
+	}
+	
+	@Test
+	public void testGetEntriesWithPaging() throws HttpException, IOException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.queryParam("start", "0").queryParam("limit", "25").build();
+		
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		RepositoryEntryVOes entryVoes = parse(body, RepositoryEntryVOes.class);
+		method.releaseConnection();
+
+		assertNotNull(entryVoes);
+		assertNotNull(entryVoes.getRepositoryEntries());
+		assertTrue(entryVoes.getRepositoryEntries().length <= 25);
+		assertTrue(entryVoes.getTotalCount() >= 25);
 	}
 	
 	@Test

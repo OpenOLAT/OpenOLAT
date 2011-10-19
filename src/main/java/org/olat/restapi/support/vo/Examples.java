@@ -21,6 +21,7 @@
 
 package org.olat.restapi.support.vo;
 
+
 public class Examples {
  
 	public static final GroupVO SAMPLE_GROUPVO = new GroupVO();
@@ -78,7 +79,8 @@ public class Examples {
   	SAMPLE_REPOENTRYVO.setResourcename("fdhasl");
   	SAMPLE_REPOENTRYVO.setResourceableId(4368567l);
   	SAMPLE_REPOENTRYVO.setResourceableTypeName("CourseModule");
-  	SAMPLE_REPOENTRYVOes.getEntries().add(SAMPLE_REPOENTRYVO);
+  	SAMPLE_REPOENTRYVOes.setRepositoryEntries(new RepositoryEntryVO[]{SAMPLE_REPOENTRYVO});
+  	SAMPLE_REPOENTRYVOes.setTotalCount(1);
   	
   	SAMPLE_AUTHVO.setKey(38759l);
   	SAMPLE_AUTHVO.setAuthUsername("john");
@@ -97,7 +99,8 @@ public class Examples {
   	
   	SAMPLE_COURSEVO.setKey(777l);
   	SAMPLE_COURSEVO.setTitle("Demo course");
-  	SAMPLE_COURSEVOes.getCourses().add(SAMPLE_COURSEVO);
+  	SAMPLE_COURSEVOes.setTotalCount(0);
+  	SAMPLE_COURSEVOes.setCourses(new CourseVO[]{SAMPLE_COURSEVO});
   	
   	SAMPLE_COURSENODEVO.setId("id");
   	SAMPLE_COURSENODEVOes.getNodes().add(SAMPLE_COURSENODEVO);
