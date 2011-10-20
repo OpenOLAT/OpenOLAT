@@ -26,6 +26,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.gui.components.form.ValidationError;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -34,8 +35,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseNodeVO;
@@ -115,15 +114,18 @@ public class ObjectFactory {
 	}
 	
 	public static CourseVO get(ICourse course) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, course.getResourceableId());
+		RepositoryEntry	re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+		return get(re, course);
+	}
+	
+	public static CourseVO get(RepositoryEntry re, ICourse course) {
 		CourseVO vo = new CourseVO();
 		vo.setKey(course.getResourceableId());
-		String typeName = OresHelper.calculateTypeName(CourseModule.class);
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(course.getResourceableId(), typeName);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-		vo.setSoftKey(re.getSoftkey());
-		vo.setRepoEntryKey(re.getKey());
 		vo.setTitle(course.getCourseTitle());
 		vo.setEditorRootNodeId(course.getEditorTreeModel().getRootNode().getIdent());
+		vo.setSoftKey(re.getSoftkey());
+		vo.setRepoEntryKey(re.getKey());
 		return vo;
 	}
 	

@@ -142,9 +142,9 @@ public class CoursesWebService {
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
 				ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource().getResourceableId());
-				voList.add(ObjectFactory.get(course));
+				voList.add(ObjectFactory.get(repoEntry, course));
 			} catch (Exception e) {
-				log.error("Cannot load the course with this repository entry: " + repoEntry);
+				log.error("Cannot load the course with this repository entry: " + repoEntry, e);
 			}
 		}
 		

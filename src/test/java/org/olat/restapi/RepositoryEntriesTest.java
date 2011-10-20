@@ -109,12 +109,12 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(entryVoes);
 		assertNotNull(entryVoes.getRepositoryEntries());
 		assertTrue(entryVoes.getRepositoryEntries().length <= 25);
-		assertTrue(entryVoes.getTotalCount() >= 25);
+		assertTrue(entryVoes.getTotalCount() >= entryVoes.getRepositoryEntries().length);
 	}
 	
 	@Test
 	public void testGetEntry() throws HttpException, IOException {
-		RepositoryEntry re = createRepository("Test GET repo entry", 83911l);
+		RepositoryEntry re = createRepository("Test GET repo entry");
 		
 		HttpClient c = loginWithCookie("administrator", "olat");
 		
@@ -311,25 +311,15 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private RepositoryEntry createRepository(String name, final Long resourceableId) {
-		OLATResourceable resourceable = new OLATResourceable() {
-			public String getResourceableTypeName() {	return CourseModule.ORES_TYPE_COURSE;}
-			public Long getResourceableId() {return resourceableId;}
-		};
-		
-		RepositoryEntry d = RepositoryManager.getInstance().lookupRepositoryEntry(resourceable, false);
-		if(d != null) {
-			return d;
-		}
-		
+	private RepositoryEntry createRepository(String name) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		
-		OLATResource r =  rm.createOLATResourceInstance(resourceable);
+		OLATResource r =  rm.createOLATResourceInstance("DummyType");
 		DBFactory.getInstance().saveObject(r);
 		DBFactory.getInstance().intermediateCommit();
 
-		d = RepositoryManager.getInstance().createRepositoryEntryInstance("Stéphane Rossé", name, "Repo entry");
+		RepositoryEntry d = RepositoryManager.getInstance().createRepositoryEntryInstance("Stéphane Rossé", name, "Repo entry");
 		d.setOlatResource(r);
 		d.setDisplayname(name);
 		DBFactory.getInstance().saveObject(d);

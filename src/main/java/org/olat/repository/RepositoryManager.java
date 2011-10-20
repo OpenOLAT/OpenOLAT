@@ -956,8 +956,8 @@ public class RepositoryManager extends BasicManager {
 			query.append(" and res.resName in (:resourcetypes)");
 		}
 
-		if(orderBy) {
-			query.append(" order by v.displayname, v.key");
+		if(!count && orderBy) {
+			query.append(" order by v.displayname, v.key ASC");
 		}
 
 		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());

@@ -481,13 +481,12 @@ public class CourseWebService {
 		SecurityGroup sg = repositoryEntry.getOwnerGroup();
 
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<Object[]> owners = securityManager.getIdentitiesAndDateOfSecurityGroup(sg);
+		List<Identity> owners = securityManager.getIdentitiesOfSecurityGroup(sg);
 		
 		int count = 0;
 		UserVO[] authors = new UserVO[owners.size()];
-		for(int i=0; i<owners.size(); i++) {
-			Identity identity = (Identity)owners.get(i)[0];
-			authors[count++] = UserVOFactory.get(identity);
+		for(Identity owner:owners) {
+			authors[count++] = UserVOFactory.get(owner);
 		}
 		return Response.ok(authors).build();
 	}
