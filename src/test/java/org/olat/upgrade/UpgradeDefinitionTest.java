@@ -22,7 +22,7 @@ public class UpgradeDefinitionTest extends AbstractJUnit4SpringContextTests {
 	public void testFileResourceFromClasspath() {
 		UpgradesDefinitions defs = (UpgradesDefinitions) applicationContext.getBean("olatupgrades");
 		for(OLATUpgrade upgrade: defs.getUpgrades()) {
-			String path = "/resources/database/mysql/"+upgrade.getAlterDbStatements();
+			String path = "/database/mysql/"+upgrade.getAlterDbStatements();
 			Resource file = new ClassPathResource(path);
 			assertTrue("file not found: "+path, file.exists());
 		}

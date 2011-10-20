@@ -18,7 +18,7 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.core.test;
+package org.olat.test;
 
 /**
  * Description:<br>
@@ -97,6 +97,26 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.service.tagging.SimpleTagProposalManagerTest.class,
 	org.olat.commons.coordinate.singlevm.SingleVMLockerTest.class,
 	org.olat.core.commons.service.tagging.TaggingManagerTest.class,
+	org.olat.restapi.AuthenticationTest.class,
+	org.olat.restapi.CatalogTest.class,
+	org.olat.restapi.CourseGroupMgmtTest.class,
+	org.olat.restapi.CoursesContactElementTest.class,
+	org.olat.restapi.CourseSecurityTest.class,
+	org.olat.restapi.CoursesElementsTest.class,
+	org.olat.restapi.CoursesFoldersTest.class,
+	org.olat.restapi.CoursesResourcesFoldersTest.class,
+	org.olat.restapi.CoursesTest.class,
+	org.olat.restapi.CourseTest.class,
+	org.olat.restapi.FolderTest.class,
+	org.olat.restapi.ForumTest.class,
+	org.olat.restapi.GroupFoldersTest.class,
+	org.olat.restapi.GroupMgmtTest.class,
+	org.olat.restapi.I18nTest.class,
+	org.olat.restapi.NotificationsTest.class,
+	org.olat.restapi.RepositoryEntriesTest.class,
+	org.olat.restapi.RestApiLoginFilterTest.class,
+	org.olat.restapi.UserAuthenticationMgmtTest.class,
+	org.olat.restapi.UserMgmtTest.class,
 	/**
 	 * 
 	 * Place tests which load their own Spring context

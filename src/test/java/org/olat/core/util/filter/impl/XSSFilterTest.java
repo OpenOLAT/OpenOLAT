@@ -110,7 +110,7 @@ public class XSSFilterTest {
 	@Test
 	public void test_balancing_angle_brackets() {
 		testsToRun = 9;
-		t("<img src=\"foo\"", "");
+		t("<img src=\"foo\"", "<img src=\"foo\" />");
 		t("b>", "b&gt;");
 		t("<img src=\"foo\"/", "<img src=\"foo\" />");
 		t(">", "&gt;");
@@ -218,16 +218,16 @@ public class XSSFilterTest {
 	public void test_tiny_lists(){
 		testsToRun = 2;
 		//lists (output without \n as policy has formatOutput = false		
-		t("<ul>\n<li>a list: adsf</li>\n<li>adsf</li>\n<li>adsfas</li>\n</ul>", "<ul> <li>a list: adsf</li> <li>adsf</li> <li>adsfas</li> </ul>");
-		t("<ol style=\"font-size: 20pt;\">\n<li>numbered list</li>\n<li>adf</li>\n<li>asdfa</li>\n</ol>", "<ol style=\"font-size: 20.0pt;\"> <li>numbered list</li> <li>adf</li> <li>asdfa</li> </ol>");
+		t("<ul>\n<li>a list: adsf</li>\n<li>adsf</li>\n<li>adsfas</li>\n</ul>", "<ul>\n<li>a list: adsf</li>\n<li>adsf</li>\n<li>adsfas</li>\n</ul>");
+		t("<ol style=\"font-size: 20pt;\">\n<li>numbered list</li>\n<li>adf</li>\n<li>asdfa</li>\n</ol>", "<ol style=\"font-size: 20.0pt;\">\n<li>numbered list</li>\n<li>adf</li>\n<li>asdfa</li>\n</ol>");
 	}
 
 	@Test
 	public void test_tiny_tables(){
 		testsToRun = 2;
 	//tables
-		t("<table border=\"1\" style=\"width: 268px; height: 81px;\" class=\"b_table\">\n<caption>bliblablue</caption>\n<tbody>\n<tr>\n<td>\n<p>adsfadsf</p>\n</td>\n<td>asdf</td>\n</tr>\n<tr>\n<td>asf</td>\n<td>\n<p>asdf</p>\n</td>\n</tr>\n</tbody>\n</table>", "<table border=\"1\" class=\"b_table\" style=\"width: 268.0px;height: 81.0px;\"> <caption>bliblablue</caption> <tbody> <tr> <td> <p>adsfadsf</p> </td> <td>asdf</td> </tr> <tr> <td>asf</td> <td> <p>asdf</p> </td> </tr> </tbody> </table>");
-		t("<tr style=\"background-color: rgb(46, 147, 209);\">\n<td style=\"border: 1px solid rgb(240, 68, 14);\">asf</td>\n<td>\n<p>asdf</p>\n</td>\n</tr>","<tr style=\"background-color: rgb(46,147,209);\"> <td style=\"border: 1.0px solid rgb(240,68,14);\">asf</td> <td> <p>asdf</p> </td> </tr>");
+		t("<table border=\"1\" style=\"width: 268px; height: 81px;\" class=\"b_table\">\n<caption>bliblablue</caption>\n<tbody>\n<tr>\n<td>\n<p>adsfadsf</p>\n</td>\n<td>asdf</td>\n</tr>\n<tr>\n<td>asf</td>\n<td>\n<p>asdf</p>\n</td>\n</tr>\n</tbody>\n</table>", "<table border=\"1\" class=\"b_table\" style=\"width: 268.0px;height: 81.0px;\">\n<caption>bliblablue</caption>\n<tbody>\n<tr>\n<td>\n<p>adsfadsf</p>\n</td>\n<td>asdf</td>\n</tr>\n<tr>\n<td>asf</td>\n<td>\n<p>asdf</p>\n</td>\n</tr>\n</tbody>\n</table>");
+		t("<tr style=\"background-color: rgb(46, 147, 209);\">\n<td style=\"border: 1px solid rgb(240, 68, 14);\">asf</td>\n<td>\n<p>asdf</p>\n</td>\n</tr>","\nasf\n\n<p>asdf</p>\n");
 	}
 	
 	@Test

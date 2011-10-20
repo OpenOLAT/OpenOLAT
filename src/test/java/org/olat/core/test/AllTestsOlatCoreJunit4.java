@@ -18,7 +18,7 @@
  * University of Zurich, Switzerland.
  * <p>
  */
-package org.olat.test;
+package org.olat.core.test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -43,7 +43,7 @@ import org.junit.runners.Suite;
 	org.olat.core.helpers.SettingsTest.class,
 	org.olat.core.util.coordinate.LockEntryTest.class,
 	org.olat.core.util.StringHelperTest.class,
-	org.olat.core.gui.render.TestRenderStaticURLCacheHeaders.class,
+	//org.olat.core.gui.render.TestRenderStaticURLCacheHeaders.class, //uzh specific
 	/**
 	 * 
 	 * Place tests which load their own Spring context

@@ -168,7 +168,7 @@ public class UpgradeManagerImpl extends UpgradeManager {
 	 */
 	private void loadAndExecuteSqlStatements(Statement statement, String alterDbStatements, String dialect) {
 		try {
-			Resource setupDatabaseFile = new ClassPathResource("/resources/database/"+dialect+"/"+alterDbStatements);
+			Resource setupDatabaseFile = new ClassPathResource("/database/"+dialect+"/"+alterDbStatements);
 			if (!setupDatabaseFile.exists()) {
 				throw new StartupException("The database upgrade file was not found on the classpath: "+"/database/"+dialect+"/"+alterDbStatements);
 			}
