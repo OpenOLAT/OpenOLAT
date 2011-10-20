@@ -1322,6 +1322,11 @@
                 				<type>1</type>
                 				<location>${basedir}/target/${artifactId}-${project.version}/WEB-INF/classes/maven.build.properties</location>
                 			</linkedResource>
+                			<linkedResource>
+		                        <name>/src/test/java/olat.local.properties</name>
+		                        <type>1</type>
+		                        <location>${basedir}/src/test/profile/mysql/olat.eclipse.properties</location>
+                			</linkedResource>
 				        </linkedResources>				        
 				        
                         
