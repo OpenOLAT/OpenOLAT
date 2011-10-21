@@ -142,7 +142,12 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 			if (l.size() == 0) {
 				one = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, id1, oneName, oneDesc, null, null, false, false, null);
 			} else {
-				one = (BusinessGroup) bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null).get(0);
+				List<BusinessGroup> groups = bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+				for(BusinessGroup group:groups) {
+					if(oneName.equals(group.getName())) {
+						one = group;
+					}
+				}
 			}
 			l = bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 			if (l.size() == 0) {
