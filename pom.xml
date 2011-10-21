@@ -1797,11 +1797,9 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>ical4j</groupId>
+			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>0.9.19</version><!-- Must be version 0.9.19 ! Newer version have 
-				problem with 'serientermin' -->
-			<scope>compile</scope>
+			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>

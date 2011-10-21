@@ -23,6 +23,7 @@ package org.olat.commons.calendar;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -44,11 +45,13 @@ import net.fortuna.ical4j.model.property.RRule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 public class CalendarUtils {
 	static OLog log = Tracing.createLoggerFor(CalendarUtils.class);
+	private static final SimpleDateFormat ical4jFormatter = new SimpleDateFormat("yyyyMMdd");
 
 	public static String getTimeAsString(Date date, Locale locale) {
 		return DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(date);
@@ -191,8 +194,7 @@ public class CalendarUtils {
 	 * @return date of recurrence end
 	 */
 	public static Date getRecurrenceEndDate(String rule) {
-		TimeZone tz = TimeZoneRegistryFactory.getInstance().createRegistry().getTimeZone(java.util.Calendar.getInstance().getTimeZone().getID());
-		
+		TimeZone tz = ((CalendarModule)CoreSpringFactory.getBean("calendarModule")).getDefaultTimeZone();
 		if (rule != null) {
 			try {
 				Recur recur = new Recur(rule);
@@ -217,7 +219,7 @@ public class CalendarUtils {
 	 * @return rrule
 	 */
 	public static String getRecurrenceRule(String recurrence, Date recurrenceEnd) {
-		TimeZone tz = TimeZoneRegistryFactory.getInstance().createRegistry().getTimeZone(java.util.Calendar.getInstance().getTimeZone().getID());
+		TimeZone tz = ((CalendarModule)CoreSpringFactory.getBean("calendarModule")).getDefaultTimeZone();
 		
 		if (recurrence != null) { // recurrence available
 			// create recurrence rule
@@ -290,7 +292,7 @@ public class CalendarUtils {
 		if(dates != null && dates.size() > 0) {
 			DateList dl = new DateList();
 			for( Date date : dates ) {
-				net.fortuna.ical4j.model.Date dd = new net.fortuna.ical4j.model.Date(date);
+				net.fortuna.ical4j.model.Date dd = CalendarUtils.createDate(date);
 				dl.add(dd);
 			}
 			ExDate exdate = new ExDate(dl);
@@ -300,4 +302,15 @@ public class CalendarUtils {
 		return null;
 	}
 	
+	public static net.fortuna.ical4j.model.Date createDate(Date date) {
+		try {
+			String toString;
+			synchronized(ical4jFormatter) {//cluster_OK only to optimize memory/speed
+				toString = ical4jFormatter.format(date);
+			}
+			return new net.fortuna.ical4j.model.Date(toString);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
 }

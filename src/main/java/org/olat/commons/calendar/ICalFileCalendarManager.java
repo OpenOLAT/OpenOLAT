@@ -50,14 +50,13 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.TimeZone;
-import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Clazz;
-import net.fortuna.ical4j.model.property.Created;
 import net.fortuna.ical4j.model.property.Contact;
+import net.fortuna.ical4j.model.property.Created;
 import net.fortuna.ical4j.model.property.Duration;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.LastModified;
@@ -76,6 +75,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -127,9 +127,9 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		createCalendarFileDirectories();
 		// set parser to relax (needed for allday events
 		// see http://sourceforge.net/forum/forum.php?thread_id=1253735&forum_id=368291
-		System.setProperty("ical4j.unfolding.relaxed", "true");
+		//made in module System.setProperty("ical4j.unfolding.relaxed", "true");
 		// initialize tiemzone
-		tz = TimeZoneRegistryFactory.getInstance().createRegistry().getTimeZone(java.util.Calendar.getInstance().getTimeZone().getID());
+		tz = ((CalendarModule)CoreSpringFactory.getBean("calendarModule")).getDefaultTimeZone();
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(this.getClass(), "calendar");
 		UserDeletionManager.getInstance().registerDeletableUserData(this);
 	}
@@ -350,10 +350,10 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 		} else {
 			// AllDay VEvent
-			net.fortuna.ical4j.model.Date dtBegin = new net.fortuna.ical4j.model.Date(kEvent.getBegin());
+			net.fortuna.ical4j.model.Date dtBegin = CalendarUtils.createDate(kEvent.getBegin());
 			// adjust end date: ICal end dates for all day events are on the next day
 			Date adjustedEndDate = new Date(kEvent.getEnd().getTime() + (1000 * 60 * 60 * 24));
-			net.fortuna.ical4j.model.Date dtEnd = new net.fortuna.ical4j.model.Date(adjustedEndDate);
+			net.fortuna.ical4j.model.Date dtEnd = CalendarUtils.createDate(adjustedEndDate);
 			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 			vEvent.getProperties().getProperty(Property.DTSTART).getParameters().add(Value.DATE);
 			vEvent.getProperties().getProperty(Property.DTEND).getParameters().add(Value.DATE);
@@ -626,9 +626,9 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			if(recurrenceRule != null && !recurrenceRule.equals("")) {
 				try {
 					Recur recur = new Recur(recurrenceRule);
-					net.fortuna.ical4j.model.Date periodStartDate = new net.fortuna.ical4j.model.Date(periodStart);
-					net.fortuna.ical4j.model.Date periodEndDate = new net.fortuna.ical4j.model.Date(periodEnd);
-					net.fortuna.ical4j.model.Date eventStartDate = new net.fortuna.ical4j.model.Date(kEvent.getBegin());
+					net.fortuna.ical4j.model.Date periodStartDate = CalendarUtils.createDate(periodStart);
+					net.fortuna.ical4j.model.Date periodEndDate = CalendarUtils.createDate(periodEnd);
+					net.fortuna.ical4j.model.Date eventStartDate = CalendarUtils.createDate(kEvent.getBegin());
 					recurDates = recur.getDates(eventStartDate, periodStartDate, periodEndDate, Value.DATE);
 				} catch (ParseException e) {
 					Tracing.createLoggerFor(getClass()).error("cannot restore recurrence rule: " + recurrenceRule, e);
