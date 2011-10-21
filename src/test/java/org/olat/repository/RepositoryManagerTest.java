@@ -159,7 +159,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		long startCreate = System.currentTimeMillis();
 		for (int i = 1; i < numbRes; i++) {
 			// create course and persist as OLATResourceImpl
-			RepositoryEntry re = createCourseRepositoryEntry(i);				
+			RepositoryEntry re = createRepositoryEntryFG(i);				
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			} else {
@@ -196,8 +196,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		long endCreate = System.currentTimeMillis();
 		Tracing.logDebug("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms", RepositoryManagerTest.class);
 		
-		List typelist = new ArrayList();
-		typelist.add(CourseModule.getCourseTypeName());
+		List<String> typelist = Collections.singletonList("FGType");
 		// finally the search query
 		long startSearchReferencable = System.currentTimeMillis();
 		List results = rm.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
@@ -205,17 +204,17 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Tracing.logDebug("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms", RepositoryManagerTest.class);
 
 		// only half of the items should be found
-		assertTrue(results.size() == (int) (numbRes / 2));
+		assertEquals((int) (numbRes / 2), results.size());
 		
 		// inserting must take longer than searching, otherwhise most certainly we have a problem somewhere in the query
 		assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
 		
 	}
 
-	private RepositoryEntry createCourseRepositoryEntry(final int i) {
+	private RepositoryEntry createRepositoryEntryFG(final int i) {
 		DB db = DBFactory.getInstance();
 		OLATResourceable resourceable = new OLATResourceable() {
-			public String getResourceableTypeName() {	return CourseModule.getCourseTypeName();}
+			public String getResourceableTypeName() {	return "FGType";}
 			public Long getResourceableId() {return new Long(i);}
 		};
 		OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(resourceable);
@@ -233,14 +232,14 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		int count = rm.countByTypeLimitAccess("unkown", RepositoryEntry.ACC_OWNERS_AUTHORS);
     assertEquals("Unkown type must return 0 elements", 0,count);
-    int countValueBefore = rm.countByTypeLimitAccess(CourseModule.getCourseTypeName(), RepositoryEntry.ACC_OWNERS_AUTHORS);
+    int countValueBefore = rm.countByTypeLimitAccess("FGType", RepositoryEntry.ACC_OWNERS_AUTHORS);
     // add 1 entry
-    RepositoryEntry re = createCourseRepositoryEntry(999999);
+    RepositoryEntry re = createRepositoryEntryFG(999999);
 		// create security group
 		SecurityGroup ownerGroup = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
 		re.setOwnerGroup(ownerGroup);
     rm.saveRepositoryEntry(re);
-    count = rm.countByTypeLimitAccess(CourseModule.getCourseTypeName(), RepositoryEntry.ACC_OWNERS_AUTHORS);
+    count = rm.countByTypeLimitAccess("FGType", RepositoryEntry.ACC_OWNERS_AUTHORS);
     // check count must be one more element
     assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);
 	}
@@ -251,9 +250,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test public void testIncrementLaunchCounter() {
 		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
 		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		RepositoryEntry repositoryEntry = createRepository("T1_perf2", new Long(927888101));		
+		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
+		assertNotNull(resourceable);
 		DBFactory.getInstance().closeSession();
 		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
 		final int mainLoop = 10;
@@ -282,9 +282,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test public void testIncrementDownloadCounter() {
 		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
 		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
-		RepositoryEntry repositoryEntry = createRepository("T1_perf2", new Long(927888102));		
+		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
+		assertNotNull(resourceable);
 		DBFactory.getInstance().closeSession();
 		assertEquals("Download counter was not 0", 0, repositoryEntry.getDownloadCounter() );
 		final int mainLoop = 10;
@@ -321,15 +322,16 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Syncer syncer = CoordinatorManager.getInstance().getCoordinator().getSyncer();
 		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
 		final int loop = 500;
-		RepositoryEntry repositoryEntry = createRepository("T1_perf2", new Long(927888103));		
+		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
+		assertNotNull(resourceable);
 		DBFactory.getInstance().closeSession();
 		long startTime = System.currentTimeMillis();
 		for (int i = 0; i < loop; i++) {
 			// 1. load RepositoryEntry
 			RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
-			RepositoryManager.getInstance().setLastUsageNowFor(repositoryEntryT1);
+			RepositoryManager.setLastUsageNowFor(repositoryEntryT1);
 			lastSetLastUsageDate = Calendar.getInstance().getTime();
 			DBFactory.getInstance().closeSession();
 		}
@@ -349,9 +351,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 		assertTrue("syncer is not of type 'ClusterSyncer'", syncer instanceof ClusterSyncer);
 		final int loop = 100;
 		final int numberOfThreads = 3;
-		RepositoryEntry repositoryEntry = createRepository("T1_perf2", new Long(927888104));		
+		RepositoryEntry repositoryEntry = createRepositoryCG("T1_perf2");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
+		assertNotNull(resourceable);
 		DBFactory.getInstance().closeSession();
 		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
 		long startTime = System.currentTimeMillis();
@@ -479,7 +482,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	 */
 	@Test public void testIncrementLaunchCounterSetDescription() {
 		System.out.println("testIncrementLaunchCounterSetDescription: START...");
-		RepositoryEntry repositoryEntry = createRepository("testIncrementLaunchCounterSetDescription", new Long(927888105));
+		RepositoryEntry repositoryEntry = createRepositoryCG("testIncrementLaunchCounterSetDescription");
 		DBFactory.getInstance().closeSession();
 		final Long keyRepo = repositoryEntry.getKey();
 		RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
@@ -512,11 +515,11 @@ public class RepositoryManagerTest extends OlatTestCase {
 	 */
 	@Test public void testConcurrentIncrementLaunchCounterWithCodePoints() {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 
-		RepositoryEntry repositoryEntry = createRepository("IncCodePoint", new Long(927888106));		
+		RepositoryEntry repositoryEntry = createRepositoryCG("IncCodePoint");		
 		final Long keyRepo = repositoryEntry.getKey();
 		final OLATResourceable resourceable = repositoryEntry.getOlatResource();
+		assertNotNull(resourceable);
 		final int access = 4;
 		DBFactory.getInstance().closeSession();
 		assertEquals("Launch counter was not 0", 0, repositoryEntry.getLaunchCounter() );
@@ -536,7 +539,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					Thread.currentThread().sleep(100);
+					Thread.sleep(100);
 					RepositoryEntry repositoryEntryT1 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 					RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT1);
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread1 incremented download-counter");
@@ -549,7 +552,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					Thread.currentThread().sleep(300);
+					Thread.sleep(300);
 					RepositoryEntry repositoryEntryT2 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 					RepositoryManager.getInstance().incrementDownloadCounter(repositoryEntryT2);
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread2 incremented download-counter");
@@ -562,7 +565,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					Thread.currentThread().sleep(200);
+					Thread.sleep(200);
 					RepositoryEntry repositoryEntryT3 = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 					// change repository directly and not via RepositoryManager.setAccess(...) for testing
 					repositoryEntryT3.setAccess(access);
@@ -576,7 +579,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 		try {
 			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: main thread sleep 500msec");
-	        Thread.currentThread().sleep(500);
+	        Thread.sleep(500);
         } catch (InterruptedException e1) {
 	        // TODO Auto-generated catch block
 	        e1.printStackTrace();
@@ -609,14 +612,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 		System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints finish successful");		
 	}
 
-	private RepositoryEntry createRepository(String name, final Long resourceableId) {
+	private RepositoryEntry createRepositoryCG(String name) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
-		OLATResourceable resourceable = new OLATResourceable() {
-				public String getResourceableTypeName() {	return CourseModule.ORES_TYPE_COURSE;}
-				public Long getResourceableId() {return resourceableId;}
-		};
-		OLATResource r =  rm.createOLATResourceInstance(resourceable);
+		OLATResource r =  rm.createOLATResourceInstance("CGType");
 		DBFactory.getInstance().saveObject(r);
 
 		// now make a repository entry for this course

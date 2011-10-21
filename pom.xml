@@ -456,7 +456,7 @@
 				          from utf-8 to iso we cannot update this lib at the moment. -->
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.0.8</version>
+                <version>5.1.11</version>
               </dependency>
             </dependencies>
 
@@ -501,7 +501,7 @@
                   <url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
                   <!-- no transaction -->
                   <autocommit>true</autocommit>
-                  <sqlCommand>create database ${test.env.db.name}</sqlCommand>
+                  <sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
                 </configuration>
               </execution>
 
@@ -560,6 +560,138 @@
         </plugins>
       </build>
     </profile>
+    
+
+    <profile>
+      <id>clean-postgresql-dbsetup</id>
+      <activation>
+        <property>
+          <name>with-postgresql</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.4.3</version>
+            <executions>
+              <execution>
+                <id>copy-resources-4-clean-postgresql-dbsetup</id>
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
+                  <resources>
+                    <resource>
+                      <!-- place resources you like to get filtered an copied -->
+                      <directory>src/main/resources/database/postgresql</directory>
+                      <includes>
+                        <include>setupDatabase.sql</include>
+                      </includes>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <version>1.4</version>
+
+            <dependencies>
+              <dependency>
+			          <groupId>postgresql</groupId>
+			          <artifactId>postgresql</artifactId>
+			          <version>8.4-701.jdbc4</version>
+		          </dependency>
+            </dependencies>
+
+            <!-- common configuration shared by all executions -->
+            <configuration>
+              <driver>org.postgresql.Driver</driver>
+              <url>jdbc:postgresql://localhost:${test.env.db.host.port}/${test.env.db.name}</url>
+              <username>${test.env.db.user}</username>
+              <password>${test.env.db.pass}</password>
+              <!-- You can comment out username/password configurations and
+                   have maven to look them up in your settings.xml using ${settingsKey}
+              
+              <settingsKey>sensibleKey</settingsKey>-->
+              <!--all executions are ignored if -Dmaven.test.skip=true-->
+              <skip>${maven.test.skip}</skip>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>drop-db-before-test</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <!-- need another database to drop the targeted one -->
+                  <url>jdbc:postgresql://localhost:${test.env.db.host.port}/${test.env.db.name}/template1</url>
+                  <autocommit>true</autocommit>
+                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+                  <!-- ignore error when database is not avaiable -->
+                  <onError>continue</onError>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>create-db</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <url>jdbc:postgresql://localhost:${test.env.db.host.port}/${test.env.db.name}/template1</url>
+                  <!-- no transaction -->
+                  <autocommit>true</autocommit>
+                  <sqlCommand>create database ${test.env.db.name}</sqlCommand>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>create-schema</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <autocommit>true</autocommit>
+                  <srcFiles>
+                    <srcFile>target/test-classes/setupDatabase.sql</srcFile>
+                  </srcFiles>
+                </configuration>
+              </execution>
+
+              <!-- drop db after test -->
+              <execution>
+                <id>drop-db-after-test</id>
+                <!-- there is no post-test phase, the next phase after "test" is "prepare-package"
+                     for integration tests running against mysql generated via setupDatabase.sql there is need
+                     to bind a similar drop/create/schema/drop to pre-integration-test and post-integration-test -->
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <url>jdbc:postgresql://localhost:${test.env.db.host.port}/${test.env.db.name}/template1</url>
+                  <autocommit>true</autocommit>
+                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+    
     <profile>
       <!-- activate this profile to unzip two tomcats instances for cluster setup, which are the configured and used with profile seleniumtests
       bind to phase initialize and execute goal unpack

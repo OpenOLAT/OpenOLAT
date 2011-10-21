@@ -22,6 +22,7 @@ package org.olat.core.commons.scheduler;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
  * <h3>Description:</h3>
@@ -35,10 +36,10 @@ import org.quartz.JobExecutionException;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  * @author guido
  */
-public class SchedulerTestJob extends JobWithDB {
+public class SchedulerTestJob extends QuartzJobBean {
 
 	@Override
-	public void executeWithDB(JobExecutionContext arg0)
+	public void executeInternal(JobExecutionContext arg0)
 			throws JobExecutionException {
 		String testValueFromSchedulerTest = arg0.getMergedJobDataMap().getString("testValue");
 		arg0.setResult(testValueFromSchedulerTest);

@@ -388,4 +388,22 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
+	
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 293485 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof RepositoryEntry) {
+			RepositoryEntry re = (RepositoryEntry)obj;
+			return getKey() != null && getKey().equals(re.getKey());
+		}
+		return false;
+	}
 }

@@ -46,6 +46,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -139,10 +140,15 @@ public class CoursesWebService {
 	
 	private CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {
 		List<CourseVO> voList = new ArrayList<CourseVO>();
+		
+		int count=0;
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
 				ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource().getResourceableId());
 				voList.add(ObjectFactory.get(repoEntry, course));
+				if(count % 33 == 0) {
+					DBFactory.getInstance().commitAndCloseSession();
+				}
 			} catch (Exception e) {
 				log.error("Cannot load the course with this repository entry: " + repoEntry, e);
 			}
