@@ -102,11 +102,12 @@ public class ViteroBookingsEditController extends FormBasicController {
 	protected void reloadModel() {
 		bookingDisplays.clear(); 
 		List<ViteroBooking> bookings = viteroManager.getBookings(group, ores);
+		int i=0;
 		for(ViteroBooking booking:bookings) {
 			BookingDisplay display = new BookingDisplay(booking);
-			display.setDeleteButton(uifactory.addFormLink("delete", flc, Link.BUTTON));
-			display.setEditButton(uifactory.addFormLink("edit", flc, Link.BUTTON));
-			display.setUsersButton(uifactory.addFormLink("users", flc, Link.BUTTON));
+			display.setDeleteButton(uifactory.addFormLink("delete_" + i++, "delete", "delete", flc, Link.BUTTON));
+			display.setEditButton(uifactory.addFormLink("edit_" + i++, "edit", "edit", flc, Link.BUTTON));
+			display.setUsersButton(uifactory.addFormLink("users_" + i++, "users", "users", flc, Link.BUTTON));
 			bookingDisplays.add(display);
 		}
 		flc.contextPut("bookingDisplays", bookingDisplays);

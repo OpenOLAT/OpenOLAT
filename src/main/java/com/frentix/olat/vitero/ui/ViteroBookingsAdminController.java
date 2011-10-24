@@ -151,7 +151,12 @@ public class ViteroBookingsAdminController extends BasicController {
 			} else {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(prop.getResourceTypeName(), prop.getResourceTypeId());
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-				url = "[RepositoryEntry:" + re.getKey() + "]";
+				if(re != null) {
+					url = "[RepositoryEntry:" + re.getKey() + "]";
+				} else {
+					showWarning("resource.dont.exist");
+					return;
+				}
 			}
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
