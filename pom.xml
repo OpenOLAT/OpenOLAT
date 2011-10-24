@@ -1334,7 +1334,21 @@
 		<repository>
 			<id>java.net</id>
 			<url>http://download.java.net/maven/2</url>
-		</repository>		
+		</repository>
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>	
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
@@ -1977,7 +1991,7 @@
 			<artifactId>jgrapht</artifactId>
 			<version>0.6.0</version>
 		</dependency>
-		<!-- fxdiff: FXOLAT-243 remove dependency to jbosscache (only for cluster + deprecated by JBoss)
+		<!-- fxdiff: FXOLAT-243 remove dependency to jbosscache (only for cluster + deprecated by JBoss) -->
 		<dependency>
 			<groupId>org.jboss</groupId>
 			<artifactId>jboss-common-core</artifactId>
@@ -1992,7 +2006,7 @@
 			<groupId>org.jboss.cache</groupId>
 			<artifactId>jbosscache-core</artifactId>
 			<version>3.2.2.GA</version>
-		</dependency>-->
+		</dependency>
 		<dependency>
 			<groupId>reload-diva</groupId>
 			<artifactId>reload-diva</artifactId>
@@ -2112,13 +2126,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-css</artifactId>
 			<version>1.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>batik</groupId>
+			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
 			<version>1.7</version>
 			<scope>test</scope>
