@@ -58,7 +58,7 @@ public class WikiPage {
 	 * @param id
 	 * @param name
 	 */
-	protected WikiPage(String name) {
+	public WikiPage(String name) {
 		this.pageName = FilterUtil.normalizeWikiLink(name);
 		this.pageId = WikiManager.generatePageId(pageName);
 	}
@@ -67,7 +67,7 @@ public class WikiPage {
 		return content;
 	}
 
-	protected void setContent(String content) {
+	public void setContent(String content) {
 		this.content = content;
 		dirty = true;
 	}

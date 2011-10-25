@@ -122,7 +122,7 @@ public class Wiki implements WikiContainer, Serializable {
 		return page;
 	}
 
-	protected void addPage(WikiPage page) {
+	public void addPage(WikiPage page) {
 		String pageId = page.getPageId();
 		if (!wikiPages.containsKey(pageId)) wikiPages.put(pageId, page);
 	}

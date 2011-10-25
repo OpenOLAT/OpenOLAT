@@ -41,6 +41,7 @@
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
 				<value>org.olat.catalog.restapi.CatalogWebService</value>
 				<value>org.olat.notifications.restapi.NotificationsWebService</value>
+				<value>com.frentix.olat.restapi.MoodleImportWebService</value>
 			</list>
 		</property>
 		<!-- property name="singletonBeans">

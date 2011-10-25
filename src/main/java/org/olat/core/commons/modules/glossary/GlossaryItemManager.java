@@ -94,7 +94,7 @@ public class GlossaryItemManager extends BasicManager {
 	 * @param olatResource
 	 * @param glossItemList
 	 */
-	protected void saveGlossaryItemList(VFSContainer glossaryFolder, ArrayList<GlossaryItem> glossItemList) {
+	public void saveGlossaryItemList(VFSContainer glossaryFolder, ArrayList<GlossaryItem> glossItemList) {
 		VFSLeaf glossaryFile = getGlossaryFile(glossaryFolder);
 		saveToFile(glossaryFile, glossItemList);
 		glossItemList = removeEmptyGlossaryItems(glossItemList);
