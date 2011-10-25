@@ -1,0 +1,111 @@
+junit and integration tests in OLAT 7.2.1
+=========================================
+
+* Preconditions
+-----------------------------------------
+- Make sure the following ports are not in use (Selenium, Tomcat 1, Tomcat 2, JMS, MBeanServer(s) )
+	4444 / 8181 / 8105 / 8109 / 8282 / 8205 / 8209 / 61616 / 3000 / 3001 / 3002
+
+- Make sure you have a MySQL database version 5.0 with the InnoDB as default engine 
+  The server must be at localhost. To change the config see databaseCorecontext.xml
+
+- Edit src/test/profile/selenium/config/defaultcontext.xml and add the browserID line (Firefox 3.x only supported):
+    E.g. Firefox on linux box
+    <entry key="browserId" value="*firefox /usr/lib64/firefox/firefox"/>
+	E.g. Firefox verison on a mac
+	<entry key="browserId" value="*firefox /Applications/Firefox3.5.app/Contents/MacOS/firefox-bin"/>
+
+- Clone a clean project or remove any olat.local.properties you might have on the classpath. This is important!
+	
+- Make sure maven has enough memory. E.g execute the following:
+	export MAVEN_OPTS= -Xms512m -Xmx1024m
+	
+- Make sure the tmp directory is writable. E.g. execute the following.
+	ls -la `printenv TMPDIR`
+	
+
+* Setup (necessary only once)
+-----------------------------------------
+- Install tomcats
+	mvn verify -Pinstall-tomcats
+
+- Manually create the webapps directories
+	mkdir cargo/tomcat/one/apache-tomcat-6.0.23/webapps
+	mkdir cargo/tomcat/two/apache-tomcat-6.0.23/webapps
+
+- In file src/test/profile/cluster/tomcat-one/lib/olat.local.properties and src/test/profile/cluster/tomcat-two/lib/olat.local.properties
+  set the following property to an empty value on line 76:
+ 	db.hibernate.ddl.auto=
+
+- Setup database users and tables in the pom.xml:
+    <test.env.db.name>olattest</test.env.db.name>
+    <test.env.db.user>olat</test.env.db.user>
+    <test.env.db.pass>olat</test.env.db.pass>
+
+- Create a database user and the database in mysql:
+	CREATE DATABASE IF NOT EXISTS olattest;
+	GRANT ALL PRIVILEGES ON olattest.* TO 'olat' IDENTIFIED BY 'olat';
+	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
+	FLUSH PRIVILEGES;
+	
+- Initialize the database
+	mysql -u olat -p olattest < src/main/resources/database/mysql/setupDatabase.sql
+
+
+* Execute standalone jUnit tests
+-----------------------------------------
+- Not supported in 7.2.1 release
+	
+	
+* Execute jUnit integration tests
+-----------------------------------------
+- jUnit integrationtests with MySQL that load the framework to execute (execution time ca. 10-15m)
+	mvn clean test -Dwith-mysql
+
+- The junit testresults can be found at target/surefire-reports/*
+  Double click the xml files in Eclipse to display the results in the standards jUnit console
+
+- Results should be:	
+  - 1 failures (±0), 3 skipped (±0) 381 tests (±0)
+  - Fail: SecurityManagerTest.testCountUniqueUserLoginsSince 
+
+
+* Execute selenium functional integration tests
+-----------------------------------------
+- Selenium functional tests on GUI layer that load OLAT in a two node cluster (execution time ca. 5-6h!)
+	mvn clean verify -Pseleniumtests
+
+- The selenium test results can be found at target/failsafe-reports/SeleniumTesting72x/*
+
+- When Seleniums don't work, try to debug like this:
+	mvn verify -Pseleniumtests,debug | tee /tmp/mvn72x.log | grep execution
+
+- It is recommendet to use a Hudsen setup to administrate the test results. The Selenium results have the same format as the junit test protocols
+
+
+* Execute a single selenium functional integration test in Eclipse
+-----------------------------------------
+- Start Eclipse, refresh project and wait until Eclipse is finished with refreshing and compiling
+
+- In a shell run the following command to start the test cluster:
+	mvn verify -Pseleniumtests,debug | tee /tmp/mvn72x.log | grep execution
+	
+- Wait until the servers have started (in the log /tmp/mvn72.log an information appears that the server can be stopped with Crl-C)
+
+- In Eclipse right-click a selenium testcase form src/test/java/org/olat/test/functional/* and select "run in jUnit"
+
+
+* Execute a single selenium functional integration test on the command line
+-----------------------------------------
+- Configure the tests to be run in the file src/test/profile/selenium/config/testng.xml
+
+- Run the tests
+	mvn clean verify -Pseleniumtests
+
+
+* Fixing Selenium testcases
+-----------------------------------------
+- Fix broken code or broken testcases in src/test/profile/selenium/ui-map/*
+
+- When changing the pagesets, update UI-map afterwards using the following command
+	mvn clean package -Pseleniumtests
