@@ -491,6 +491,7 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.getProperties(), i18nManager.saveOrUpdateProperties() and i18nManager.deleteProperties()
 	 */
+	@Ignore
 	@Test public void testGetSaveOrUpdateAndDeleteProperties() {
 		// test with existing files
 		Properties props = i18nMgr.getResolvedProperties(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
