@@ -354,6 +354,8 @@
 					<version>2.1.1</version>
 					<!-- <configuration> <webXml>target/web.xml</webXml> </configuration> -->
 					<configuration>
+						<attachClasses>true</attachClasses>
+						<directory>src/main/java</directory>
 						<!-- <webResources> -->
 						<!-- <resource> -->
 						<!-- <directory>src/main/java</directory> -->
