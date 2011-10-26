@@ -20,7 +20,7 @@
 		***********************************************
 -->
 	
-	<bean id="versioningConfigurator" class="org.olat.core.util.vfs.version.SimpleVersionConfig">
+	<bean id="versioningConfigurator" class="org.olat.core.util.vfs.version.SimpleVersionConfig" depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
 		<property name="coordinator" ref="coordinatorManager" />
 		<property name="persistedProperties">
 			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy"
