@@ -46,6 +46,7 @@ CVS/*
 .settings/org.eclipse.wst.common.project.facet.core.xml
 .settings/org.maven.ide.eclipse.prefs
 src/main/resources/maven.build.properties
+src/main/java/maven.build.properties
 
 syntax: regexp
 ^olat3/\.settings$
