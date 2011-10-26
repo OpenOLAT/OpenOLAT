@@ -35,6 +35,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -229,6 +230,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	 * Test concurrent add/update event with two threads and code-point to control concurrency.
 	 *
 	 */
+	@Ignore
 	@Test public void testConcurrentAddUpdateEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddUpdateEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";
@@ -368,6 +370,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	 * Test concurrent add/delete event with two threads and code-point to control concurrency.
 	 *
 	 */
+	@Ignore
 	@Test public void testConcurrentAddRemoveEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddRemoveEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";

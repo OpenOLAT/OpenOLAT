@@ -70,23 +70,23 @@ import org.olat.core.util.vfs.version.Versionable;
  */
 public class HTMLEditorController extends FormBasicController {
 	// HTML constants
-	static final String DOCTYPE = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-	static final String OPEN_HTML = "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
-	static final String OPEN_HEAD = "<head>";
-	static final String CLOSE_HEAD = "</head>";
-	static final String OPEN_TITLE = "<title>";
-	static final String CLOSE_TITLE = "</title>";
-	static final String EMTPY_TITLE = OPEN_TITLE + CLOSE_TITLE;
-	static final String CLOSE_HTML = "\n<html>";
-	static final String CLOSE_BODY_HTML = "</body></html>";
-	static final String CLOSE_HEAD_OPEN_BODY = "</head><body>";
+	public static final String DOCTYPE = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+	public static final String OPEN_HTML = "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
+	public static final String OPEN_HEAD = "<head>";
+	public static final String CLOSE_HEAD = "</head>";
+	public static final String OPEN_TITLE = "<title>";
+	public static final String CLOSE_TITLE = "</title>";
+	public static final String EMTPY_TITLE = OPEN_TITLE + CLOSE_TITLE;
+	public static final String CLOSE_HTML = "\n<html>";
+	public static final String CLOSE_BODY_HTML = "</body></html>";
+	public static final String CLOSE_HEAD_OPEN_BODY = "</head><body>";
 	// Editor version metadata to check if file has already been edited with this editor
-	static final String GENERATOR = "olat-tinymce-";
-	static final String GENERATOR_VERSION = "3";
-	static final String GENERATOR_META = "<meta name=\"generator\" content=\"" + GENERATOR + GENERATOR_VERSION + "\" />\n";
+	public static final String GENERATOR = "olat-tinymce-";
+	public static final String GENERATOR_VERSION = "3";
+	public static final String GENERATOR_META = "<meta name=\"generator\" content=\"" + GENERATOR + GENERATOR_VERSION + "\" />\n";
 	// Default char set for new files is UTF-8
-	static final String UTF_8 = "utf-8";
-	static final String UTF8CHARSET = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
+	public static final String UTF_8 = "utf-8";
+	public static final String UTF8CHARSET = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 
 	private String preface; // null if no head, otherwise head is kept in memory
 	private String body; // Content of body tag

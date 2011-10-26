@@ -351,7 +351,7 @@ public class WikiManager extends BasicManager {
 	 * @param ores
 	 * @param page
 	 */
-	protected void saveWikiPage(OLATResourceable ores, WikiPage page, boolean incrementVersion, Wiki wiki) {
+	public void saveWikiPage(OLATResourceable ores, WikiPage page, boolean incrementVersion, Wiki wiki) {
 		//cluster_OK by guido
 		VFSContainer versionsContainer = getWikiContainer(ores, VERSION_FOLDER_NAME);
 		VFSContainer wikiContentContainer = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);

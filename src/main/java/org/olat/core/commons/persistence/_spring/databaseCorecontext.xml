@@ -271,7 +271,7 @@
 	to the normal  org.springframework.jdbc.datasource.DriverManagerDataSource and the check is gone.-->                  
 	<bean id="mysqlDataSource" class="org.olat.core.commons.persistence.InnoDBAwareDriverManagerDataSource" lazy-init="true" init-method="init">
 	        <property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property>
-	        <property name="url"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}?useOldUTF8Behavior=true&amp;useUnicode=true&amp;characterEncoding=UTF-8</value></property>
+	        <property name="url"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}?useUnicode=true&amp;characterEncoding=UTF-8</value></property>
 	        <property name="username" value="${db.user}" />
 	        <property name="password" value="${db.pass}" />
 	        <property name="dbVendor" value="${db.vendor}" />
