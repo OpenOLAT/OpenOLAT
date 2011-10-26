@@ -407,9 +407,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			boolean canCopy = repositoryEntry.getCanCopy();
 			if (isOwner) {
 				if (isNewController) {
-					detailsToolC.addLink(ACTION_EDIT, translate("details.openeditor"), TOOL_EDIT, null);
-					detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null);
-					detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null);
+					if(isAuthor) {
+						detailsToolC.addLink(ACTION_EDIT, translate("details.openeditor"), TOOL_EDIT, null);
+						detailsToolC.addLink(ACTION_EDITDESC, translate("details.chdesc"), TOOL_CHDESC, null);
+						detailsToolC.addLink(ACTION_EDITPROP, translate("details.chprop"), TOOL_CHPROP, null);
+					}
 					detailsToolC.addLink(ACTION_ADD_CATALOG, translate("details.catadd"), TOOL_CATALOG, null);
 					if ((OresHelper.isOfType(repositoryEntry.getOlatResource(), CourseModule.class)) && (!RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed())) {
 						detailsToolC.addLink(ACTION_CLOSE_RESSOURCE, translate("details.close.ressoure"), TOOL_CLOSE_RESSOURCE, null);
@@ -418,20 +420,28 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				// update catalog link
 				detailsToolC.setEnabled(TOOL_CATALOG, (repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS));
 			}
-			if (isNewController)
-				detailsToolC.addLink(ACTION_COPY, translate("details.copy"), TOOL_COPY, null);
+			if (isNewController) {
+				if(isAuthor) {
+					detailsToolC.addLink(ACTION_COPY, translate("details.copy"), TOOL_COPY, null);
+				}
+			}
 			if (isOwner) {
 				if (isNewController) {
 					detailsToolC.addLink(ACTION_DELETE, translate("details.delete"));
 					detailsToolC.addLink(ACTION_GROUPS, translate("details.groups"));
 				}
 				// enable
-				detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry));
-				detailsToolC.setEnabled(TOOL_CHDESC, true);
-				detailsToolC.setEnabled(TOOL_CHPROP, true);
+				if(isAuthor) {
+					detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry));
+					detailsToolC.setEnabled(TOOL_CHDESC, true);
+					detailsToolC.setEnabled(TOOL_CHPROP, true);
+				}
+				
 				canCopy = true;
 			}
-			detailsToolC.setEnabled(TOOL_COPY, canCopy);
+			if(isAuthor) {
+				detailsToolC.setEnabled(TOOL_COPY, canCopy);
+			}
 		}
 		if (isNewController)
 			detailsToolC.addLink(ACTION_CLOSE, translate("details.close"), null, "b_toolbox_close");
