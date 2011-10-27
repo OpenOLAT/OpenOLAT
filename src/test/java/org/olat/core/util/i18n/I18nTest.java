@@ -474,6 +474,7 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.getProperties(), i18nManager.saveOrUpdateProperties() and i18nManager.deleteProperties()
 	 */
+	@Ignore
 	@Test public void testGetSaveOrUpdateAndDeleteProperties() {
 		// test with existing files
 		Properties props = i18nMgr.getResolvedProperties(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
@@ -574,6 +575,7 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.countI18nItems() and i18nManager.countBundles()
 	 */
+	@Ignore
 	@Test public void testCountI18nItemsAndBundles() {
 		I18nModule.initBundleNames(); // remove dirty stuff from previous tests
 		int bundleCounter = I18nModule.getBundleNamesContainingI18nFiles().size();
