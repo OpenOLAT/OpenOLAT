@@ -1,0 +1,29 @@
+<fieldset>
+	<legend>$r.translate("booking.admin.title")</legend>
+	$r.contextHelpWithWrapper("com.frentix.olat.vitero.ui","ced-vitero-config.html","help.hover.vitero")
+	<table>
+		<tr>
+			<td>$r.translate("booking.begin")</td>
+			<td>$r.translate("booking.end")</td>
+			<td colspan="3"></td>
+		</tr>
+		
+		#foreach($bookingDisplay in $bookingDisplays)
+			<tr>
+				<td>$r.formatDateAndTime($bookingDisplay.begin)</td>
+				<td>$r.formatDateAndTime($bookingDisplay.end)</td>
+				<td>
+					$r.render($bookingDisplay.editButton.component.componentName)
+				</td>
+				<td>
+					$r.render($bookingDisplay.usersButton.component.componentName)
+				</td>
+				<td>
+					$r.render($bookingDisplay.deleteButton.component.componentName)
+				</td>
+			</tr>
+		#end
+	</table>
+
+	$r.render("buttons-cont")
+</fieldset>
