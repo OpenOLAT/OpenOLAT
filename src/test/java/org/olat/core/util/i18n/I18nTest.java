@@ -140,24 +140,7 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 		File movePath = testMFile.getParentFile().getParentFile().getParentFile();
 		FileUtils.deleteDirsAndFiles(movePath, true, true);
 		
-	}	
-
-//	@Test public void testSortPropertiesTest() {
-//		// sort all properties files
-//		TranslationDevManager tDMgr = TranslationDevManager.getInstance();
-//		tDMgr.sortKeysTask(false);		
-//	}
-	
-	
-	@Test public void testGetLostTranslationsFromBranch() {
-		String[] referenceLanguages = new String[]{"de", "en"};
-		// Path to olat and core dir from the other branch where to lookup for missing translations
-		String pathToOlatBranch = "/Volumes/flow/workspace/olat3_60_branch/webapp/WEB-INF/src/";
-		String pathToCoreBranch = "/Volumes/flow/workspace/olatcore_60_branch/src/main/java/";
-		// Uncomment to run this test. Fix pathes above
-		//tDMgr.getLostTranslationsFromBranch(false, referenceLanguages, pathToOlatBranch, pathToCoreBranch );
 	}
-	
 	
 	@Test public void testRemoveDeletedKeysTest() {
 		// set languages that is used as reference: all keys there are the keys should not to be deleted
@@ -326,7 +309,7 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test method i18nManager.searchForAvailableLanguages()
 	 */
-	@Ignore
+	@Ignore //until import of all languages
 	@Test public void testSearchForAvailableLanguages() {
 		if (I18nModule.isTransToolEnabled()) {
 			// Try to load i18n files and a jar from the testdata dir
@@ -491,7 +474,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.getProperties(), i18nManager.saveOrUpdateProperties() and i18nManager.deleteProperties()
 	 */
-	@Ignore
 	@Test public void testGetSaveOrUpdateAndDeleteProperties() {
 		// test with existing files
 		Properties props = i18nMgr.getResolvedProperties(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
@@ -592,7 +574,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.countI18nItems() and i18nManager.countBundles()
 	 */
-	@Ignore // didnt find the test package
 	@Test public void testCountI18nItemsAndBundles() {
 		I18nModule.initBundleNames(); // remove dirty stuff from previous tests
 		int bundleCounter = I18nModule.getBundleNamesContainingI18nFiles().size();
@@ -625,8 +606,8 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 		// count bundles tests
 		assertEquals(0, i18nMgr.countBundles("org.olat.core.util.i18n.nonexisting", true));
 		assertEquals(1, i18nMgr.countBundles("org.olat.core.util.i18n.ui", true));
-		// finds 4: regular: i18n.devtools, i18n.ui; from junit tests: i18n.junittestdata, i18n.junittestdata.subtest
-		assertEquals(4, i18nMgr.countBundles("org.olat.core.util.i18n", true));
+		// finds 4: regular: i18n.devtools, i18n.ui;
+		assertEquals(2, i18nMgr.countBundles("org.olat.core.util.i18n", true));
 		assertEquals(0, i18nMgr.countBundles("org.olat.core.util.i18n", false));
 		assertEquals(1, i18nMgr.countBundles("org.olat.core.util.i18n.ui", false));
 		assertTrue(0 < i18nMgr.countBundles(null, false));
@@ -634,11 +615,9 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 		if (testFile.exists()) {
 			i18nMgr.deleteProperties(testLocale, testNewBundle);			
 		}
-		if (testFile.getParentFile().exists()) testFile.getParentFile().delete();
-		// tests with existing bundles
-		String testBundle =  "org.olat.core.util.i18n.junittestdata";
-		assertEquals(3, i18nMgr.countI18nItems(testLocale, testBundle, false));
-		assertEquals(10, i18nMgr.countI18nItems(testLocale, testBundle, true));
+		if (testFile.getParentFile().exists()) {
+			testFile.getParentFile().delete();
+		}
 	}
 
 	/**
