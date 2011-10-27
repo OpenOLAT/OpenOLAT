@@ -36,6 +36,7 @@ How to add a new job:
             <ref bean="changePresenceJobTrigger" />
             <!-- <ref bean="dumpJMXJobTrigger"/> -->
             <ref bean="registrationTrigger"/>
+            <ref bean="adobeCleanupJob"/>
 		    <!--
 			<ref bean="translationToolStatusGeneratorTrigger"/>
 			-->
