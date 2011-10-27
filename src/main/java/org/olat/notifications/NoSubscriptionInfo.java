@@ -38,7 +38,7 @@ public class NoSubscriptionInfo extends SubscriptionInfo {
 	 * 
 	 */
 	NoSubscriptionInfo() {
-		super(null, null);
+		super(null, null, null, null);
 	}
 
 	/**

@@ -67,7 +67,7 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 					si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 				} else {
 					translator = Util.createPackageTranslator(this.getClass(), locale);
-					si = new SubscriptionInfo(new TitleItem(getItemTitle(translator), CSSHelper.CSS_CLASS_GROUP), null);
+					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(getItemTitle(translator), CSSHelper.CSS_CLASS_GROUP), null);
 					SubscriptionListItem subListItem;
 					for (Identity newUser : identities) {
 						String desc = translator.translate("notifications.entry", new String[] { NotificationHelper.getFormatedName(newUser) });

@@ -96,7 +96,7 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 
 				if (calType != null) {
 					Formatter form = Formatter.getInstance(locale);
-					si = new SubscriptionInfo(new TitleItem(title, CSS_CLASS_CALENDAR_ICON), null);
+					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_CALENDAR_ICON), null);
 					
 					String bPath;
 					if(StringHelper.containsNonWhitespace(p.getBusinessPath())) {

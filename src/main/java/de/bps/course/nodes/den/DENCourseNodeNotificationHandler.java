@@ -69,7 +69,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 					final Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
 
 					String cssClass = new DENCourseNodeConfiguration().getIconCSSClass();
-					si = new SubscriptionInfo(new TitleItem(trans.translate("notifications.header", new String[]{course.getCourseTitle()}), cssClass), null);
+					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(trans.translate("notifications.header", new String[]{course.getCourseTitle()}), cssClass), null);
 					SubscriptionListItem subListItem;
 
 					for (DENCourseNode denNode : denNodes) {

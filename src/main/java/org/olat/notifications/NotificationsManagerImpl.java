@@ -150,13 +150,32 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param identity
 	 * @return List of Subscriber Objects which belong to the identity
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Subscriber> getSubscribers(Identity identity) {
-		DB db = DBFactory.getInstance();
-		String q = "select sub from org.olat.notifications.SubscriberImpl sub"
-				+ " inner join fetch sub.publisher where sub.identity = :anIdentity";
-		DBQuery query = db.createQuery(q);
+		return getSubscribers(identity, Collections.<String>emptyList());
+	}
+
+	/**
+	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
+	 * belonging to this person) restricted to the specified types
+	 * 
+	 * @param identity
+	 * @return List of Subscriber Objects which belong to the identity
+	 */
+	@Override
+	public List<Subscriber> getSubscribers(Identity identity, List<String> types) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sub from ").append(SubscriberImpl.class.getName()).append(" as sub ")
+		  .append("inner join fetch sub.publisher as publisher ")
+		  .append("where sub.identity = :anIdentity");
+		if(types != null && !types.isEmpty()) {
+			sb.append(" and publisher.type in (:types)");
+		}
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
 		query.setEntity("anIdentity", identity);
+		if(types != null && !types.isEmpty()) {
+			query.setParameterList("types", types);
+		}
+		@SuppressWarnings("unchecked")
 		List<Subscriber> res = query.list();
 		return res;
 	}

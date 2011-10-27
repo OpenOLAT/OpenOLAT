@@ -120,7 +120,7 @@ public class WikiPageChangeOrCreateNotificationHandler extends LogDelegator impl
 				Translator translator = Util.createPackageTranslator(WikiPageChangeOrCreateNotificationHandler.class, locale);
 				
 				TitleItem title = getTitleItem(p, translator);
-				si = new SubscriptionInfo(title, null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), title, null);
 					SubscriptionListItem subListItem;
 						for (Iterator<WikiPage> it = pages.listIterator(); it.hasNext();) {						
 							WikiPage element = it.next();

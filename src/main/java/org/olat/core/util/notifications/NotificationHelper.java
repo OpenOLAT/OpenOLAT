@@ -19,6 +19,7 @@
 */ 
 package org.olat.core.util.notifications;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,10 +56,18 @@ public class NotificationHelper {
 	private static final OLog log = Tracing.createLoggerFor(NotificationHelper.class);
 
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Identity identity, Locale locale, boolean showWithNewsOnly, Date compareDate) {
+		return getSubscriptionMap(identity, locale, showWithNewsOnly, compareDate, Collections.<String>emptyList());
+	}
+	
+	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Identity identity, Locale locale, boolean showWithNewsOnly, Date compareDate, List<String> types) {
 		NotificationsManager man = NotificationsManager.getInstance();
-		List<Subscriber> subs = man.getSubscribers(identity);
+		List<Subscriber> subs = man.getSubscribers(identity, types);
+		return getSubscriptionMap(locale, showWithNewsOnly, compareDate, subs);	
+	}
+	
+	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Locale locale, boolean showWithNewsOnly, Date compareDate, List<Subscriber> subs) {		
+		NotificationsManager man = NotificationsManager.getInstance();
 		Map<Subscriber, SubscriptionInfo> subToSubInfo = new HashMap<Subscriber, SubscriptionInfo>();
-
 		// calc subscriptioninfo for all subscriptions and, if only those with news
 		// are to be shown, remove the other ones
 		for (Iterator<Subscriber> it_subs = subs.iterator(); it_subs.hasNext();) {

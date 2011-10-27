@@ -83,7 +83,7 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 				final List<DialogElement> dialogElements = elements.getDialogPropertyElements();
 				final Translator translator = Util.createPackageTranslator(FileUploadNotificationHandler.class, locale);
 
-				si = new SubscriptionInfo(new TitleItem(translator.translate("notifications.header", new String[]{displayname}), CSSS_CLASS_UPLOAD_ICON), null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate("notifications.header", new String[]{displayname}), CSSS_CLASS_UPLOAD_ICON), null);
 				SubscriptionListItem subListItem;
 				for (DialogElement element : dialogElements) {
 					// do only show entries newer then the ones already seen

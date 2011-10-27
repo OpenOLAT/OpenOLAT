@@ -70,7 +70,7 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 				String resSubPath = subscriber.getPublisher().getSubidentifier();
 				String businessPath = subscriber.getPublisher().getBusinessPath();
 				String title = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
-				si = new SubscriptionInfo(new TitleItem(title, CSS_CLASS_ICON), null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_ICON), null);
 				
 				OLATResourceable ores = new OLATResourceable() {
 					@Override

@@ -84,7 +84,7 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 					}
 				}
 				
-				si = new SubscriptionInfo(new TitleItem(translator.translate(getNotificationHeaderKey(), new String[]{displayName}), getCssClassIcon() ), null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate(getNotificationHeaderKey(), new String[]{displayName}), getCssClassIcon() ), null);
 				SubscriptionListItem subListItem;
 				for (Iterator<FileInfo> it_infos = fInfos.iterator(); it_infos.hasNext();) {
 							FileInfo fi = it_infos.next();

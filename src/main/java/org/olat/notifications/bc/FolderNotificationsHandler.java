@@ -85,7 +85,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 				final List<FileInfo> fInfos = FolderManager.getFileInfos(folderRoot, compareDate);
 				final Translator translator = Util.createPackageTranslator(FolderNotificationsHandler.class, locale);
 
-				si = new SubscriptionInfo(getTitleItem(p, translator), null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItem(p, translator), null);
 				SubscriptionListItem subListItem;
 				for (Iterator<FileInfo> it_infos = fInfos.iterator(); it_infos.hasNext();) {
 					FileInfo fi = it_infos.next();

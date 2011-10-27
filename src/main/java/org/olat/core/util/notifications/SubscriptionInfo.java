@@ -43,11 +43,16 @@ public class SubscriptionInfo {
 	public static final String MIME_HTML = "text/html";
 	public static final String MIME_PLAIN = "text/plain";
 	
-	private TitleItem title;
-	private List<SubscriptionListItem> subsList;
+	private final Long key;
+	private final String type;
+	
+	private final TitleItem title;
+	private final List<SubscriptionListItem> subsList;
 	private String customUrl = null;
 	
-	public SubscriptionInfo(TitleItem title, List<SubscriptionListItem> subsList){
+	public SubscriptionInfo(Long key, String type, TitleItem title, List<SubscriptionListItem> subsList){
+		this.key = key;
+		this.type = type;
 		this.title = title;
 		if (subsList == null){
 			subsList = new ArrayList<SubscriptionListItem>();
@@ -86,6 +91,14 @@ public class SubscriptionInfo {
 	 */
 	public boolean hasNews() {
 		return subsList != null && subsList.size() > 0;
+	}
+
+	public Long getKey() {
+		return key;
+	}
+
+	public String getType() {
+		return type;
 	}
 
 	/**

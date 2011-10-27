@@ -106,18 +106,16 @@ class NotificationNewsController extends BasicController implements Activateable
 	 * Update the new data model and refresh the GUI
 	 */
 	List<Subscriber> updateNewsDataModel() {
-		NotificationsManager man = NotificationsManager.getInstance();
-		List<Subscriber> subs = man.getSubscribers(subscriberIdentity);
+		List<String> notiTypes = new ArrayList<String>();
 		if(StringHelper.containsNonWhitespace(newsType)) {
-			for(Iterator<Subscriber> it=subs.iterator(); it.hasNext(); ) {
-				if(!newsType.equals(it.next().getPublisher().getType())) {
-					it.remove();
-				}
-			}
+			notiTypes.add(newsType);
 		}
+
+		NotificationsManager man = NotificationsManager.getInstance();
+		List<Subscriber> subs = man.getSubscribers(subscriberIdentity, notiTypes);
 		
 		newsVC.contextPut("subs", subs);
-		subsInfoMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
+		subsInfoMap = NotificationHelper.getSubscriptionMap(getLocale(), true, compareDate, subs);
 		NotificationSubscriptionAndNewsFormatter subsFormatter = new NotificationSubscriptionAndNewsFormatter(compareDate, getTranslator(), subsInfoMap);
 		newsVC.contextPut("subsFormatter", subsFormatter);
 		return subs;

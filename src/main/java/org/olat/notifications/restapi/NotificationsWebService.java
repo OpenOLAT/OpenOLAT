@@ -73,7 +73,8 @@ public class NotificationsWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
-	public Response getNotifications(@QueryParam("date") String date, @Context HttpServletRequest httpRequest) {
+	public Response getNotifications(@QueryParam("date") String date,
+			@QueryParam("type") String type, @Context HttpServletRequest httpRequest) {
 		Identity identity = RestSecurityHelper.getIdentity(httpRequest);
 		Locale locale = RestSecurityHelper.getLocale(httpRequest);
 		
@@ -85,7 +86,12 @@ public class NotificationsWebService {
 			compareDate = man.getCompareDateFromInterval(man.getUserIntervalOrDefault(identity));
 		}
 		
-		Map<Subscriber,SubscriptionInfo> subsInfoMap = NotificationHelper.getSubscriptionMap(identity, locale, true, compareDate);
+		List<String> types = new ArrayList<String>(1);
+		if(StringHelper.containsNonWhitespace(type)) {
+			types.add(type);
+		}
+		
+		Map<Subscriber,SubscriptionInfo> subsInfoMap = NotificationHelper.getSubscriptionMap(identity, locale, true, compareDate, types);
 		List<SubscriptionInfoVO> voes = new ArrayList<SubscriptionInfoVO>();
 		for(Map.Entry<Subscriber, SubscriptionInfo> entry: subsInfoMap.entrySet()) {
 			SubscriptionInfo info = entry.getValue();

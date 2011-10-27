@@ -82,7 +82,7 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 				
 				businessControlString = p.getBusinessPath() + "[Message:";
 				
-				si = new SubscriptionInfo(getTitleItem(p, translator), null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItem(p, translator), null);
 				for (Message mInfo : mInfos) {
 					String title = mInfo.getTitle();
 					Identity creator = mInfo.getCreator();

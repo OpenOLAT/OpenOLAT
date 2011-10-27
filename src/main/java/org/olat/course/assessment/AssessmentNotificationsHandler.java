@@ -374,7 +374,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 								if(si == null) {
 									String title = translator.translate("notifications.header", new String[]{course.getCourseTitle()});
 									String css = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(test.getType()).getIconCSSClass();
-									si = new SubscriptionInfo(new TitleItem(title, css), null);
+									si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, css), null);
 								}
 								si.addSubscriptionListItem(subListItem);
 							}

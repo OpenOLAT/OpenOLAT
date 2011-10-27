@@ -33,10 +33,21 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
 
+
+/**
+ * 
+ * Description:<br>
+ * 
+ * <P>
+ * Initial Date:  27 oct. 2011 <br>
+ *
+ * @author srosse, stephane.rosseªfrentix.com, http://www.frentix.com
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "subscriptionInfoVO")
 public class SubscriptionInfoVO {
-	
+	private Long key;
+	private String type;
 	private String title;
 	
 	@XmlElementWrapper(name="items")
@@ -48,12 +59,30 @@ public class SubscriptionInfoVO {
 	}
 	
 	public SubscriptionInfoVO(SubscriptionInfo info) {
+		key = info.getKey();
+		type = info.getType();
 		title = info.getTitle(SubscriptionInfo.MIME_PLAIN);
 		if(info.getSubscriptionListItems() != null) {
 			for(SubscriptionListItem item:info.getSubscriptionListItems()) {
 				items.add(new SubscriptionListItemVO(item));
 			}
 		}
+	}
+
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public String getTitle() {

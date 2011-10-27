@@ -251,6 +251,15 @@ public abstract class NotificationsManager extends BasicManager {
 	public abstract List<Subscriber> getSubscribers(Identity identity);
 	
 	/**
+	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers
+	 * belonging to this person) restricted to the list of specified types
+	 * @param identity
+	 * @param types
+	 * @return
+	 */
+	public abstract List<Subscriber> getSubscribers(Identity identity, List<String> types);
+	
+	/**
 	 * @param identity
 	 * @return a list of all subscribers which belong to the identity and which
 	 *         publishers are valid
