@@ -21,7 +21,15 @@
 
 package org.olat.user.restapi;
 
-
+/**
+ * 
+ * Description:<br>
+ * 
+ * <P>
+ * Initial Date:  26 oct. 2011 <br>
+ *
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 public class Examples {
 	
 	public static final UserVO SAMPLE_USERVO = new UserVO();
@@ -36,6 +44,6 @@ public class Examples {
   	SAMPLE_USERVO.setPassword("");
   	SAMPLE_USERVO.putProperty("telPrivate", "238456782");
   	SAMPLE_USERVO.putProperty("telMobile", "238456782");
-  	SAMPLE_USERVOes.getUsers().add(SAMPLE_USERVO);
+  	SAMPLE_USERVOes.setUsers(new UserVO[]{SAMPLE_USERVO});
   }
 }

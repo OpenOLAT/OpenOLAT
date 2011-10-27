@@ -20,12 +20,11 @@
  */
 package org.olat.user.restapi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -39,21 +38,32 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author srosse, stephane.rosse@frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "userVOes")
+@XmlRootElement(name = "users")
 public class UserVOes {
 
-	@XmlElement(name="userVO")
-	private List<UserVO> users = new ArrayList<UserVO>();
+	@XmlElementWrapper(name="users")
+	@XmlElement(name="user")
+	private UserVO[] users;
+	@XmlAttribute(name="totalCount")
+	private int totalCount;
 
 	public UserVOes() {
 		//make JAXB happy
 	}
 
-	public List<UserVO> getUsers() {
+	public UserVO[] getUsers() {
 		return users;
 	}
 
-	public void setUsers(List<UserVO> users) {
+	public void setUsers(UserVO[] users) {
 		this.users = users;
+	}
+
+	public int getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
 	}
 }

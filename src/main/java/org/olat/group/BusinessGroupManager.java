@@ -172,6 +172,10 @@ public interface BusinessGroupManager {
 	 */
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
 
+	public int countContacts(Identity identity);
+	
+	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults);
+
 	/**
 	 * @param currBusinessGroup
 	 * @return The reloaded group

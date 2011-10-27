@@ -37,9 +37,9 @@ import java.util.Set;
 import org.hibernate.StaleObjectStateException;
 import org.jfree.util.Log;
 import org.olat.admin.user.delete.service.UserDeletionManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
@@ -89,6 +89,7 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.syncservice.SyncSingleUserTask;
 import org.olat.notifications.NotificationsManagerImpl;
+import org.olat.properties.Property;
 import org.olat.repository.RepoJumpInHandlerFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -521,6 +522,64 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			if (securityManager.isIdentityInSecurityGroup(identity, owners)) return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public int countContacts(Identity identity) {
+		DBQuery dbq = createContactsQuery(identity, true);
+		Number result = (Number)dbq.uniqueResult();
+		int numOfContacts = result.intValue();
+		if(numOfContacts > 0) {
+			numOfContacts--;//always a contact of myself with this query
+		}
+		return numOfContacts;
+	}
+
+	@Override
+	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
+		DBQuery dbq = createContactsQuery(identity, false);
+		dbq.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			dbq.setMaxResults(maxResults);
+		}
+		List<Identity> contacts = dbq.list();
+		contacts.remove(identity);
+		return contacts;
+	}
+	
+	private DBQuery createContactsQuery(Identity identity, boolean count) {
+		StringBuilder query = new StringBuilder();
+		if(count) {
+			query.append("select count(distinct sgmi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+		} else {
+			query.append("select distinct sgmi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+		}
+		query.append(" inner join sgmi.securityGroup as secGroup ")
+		     .append(" where ")
+		     .append("  secGroup in (")
+		     .append("    select bg1.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg1,").append(Property.class.getName()).append(" as prop where prop.grp=bg1 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
+		     .append("      and bg1.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
+		     .append("  ) or")
+		     .append("  secGroup in (")
+		     .append("    select bg3.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg3,").append(Property.class.getName()).append(" as prop where prop.grp=bg3 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
+		     .append("      and bg3.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
+		     .append("  ) or")
+		     .append("  secGroup in (")
+		     .append("    select bg2.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg2,").append(Property.class.getName()).append(" as prop where prop.grp=bg2 and prop.name='displayMembers' and prop.longValue in (2,3,6,7)")
+		     .append("      and bg2.partipiciantGroup in (select partSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partSgmi where partSgmi.identity.key=:identKey)")
+		     .append("  ) or")
+		     .append("  secGroup in (")
+		     .append("    select bg4.partipiciantGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg4,").append(Property.class.getName()).append(" as prop where prop.grp=bg4 and prop.name='displayMembers' and prop.longValue in (2,3,6,7)")
+		     .append("      and bg4.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
+		     .append("  )");
+		if(!count) {
+			query.append("order by sgmi.identity.name");
+		}
+
+		DB db = DBFactory.getInstance();
+		DBQuery dbq = db.createQuery(query.toString());
+		dbq.setLong("identKey", identity.getKey());
+		return dbq;
 	}
 
 	/**
