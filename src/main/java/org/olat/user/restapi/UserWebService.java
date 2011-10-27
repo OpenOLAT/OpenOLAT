@@ -42,6 +42,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -277,6 +278,7 @@ public class UserWebService {
    * @response.representation.401.doc The roles of the authenticated user are not sufficient
    * @response.representation.404.doc The identity not found
 	 * @param identityKey The user key identifier of the user being searched
+	 * @param withPortrait If true return the portrait as Base64 (default false)
 	 * @param uriInfo The URI infos
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
@@ -287,8 +289,8 @@ public class UserWebService {
 	@GET
 	@Path("{identityKey}")
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
-	public Response findById(@PathParam("identityKey") Long identityKey, @Context UriInfo uriInfo,
-			@Context HttpServletRequest httpRequest, @Context Request request) {
+	public Response findById(@PathParam("identityKey") Long identityKey, @QueryParam("withPortrait") @DefaultValue("false") Boolean withPortrait,
+			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @Context Request request) {
 		try {
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null) {
@@ -296,7 +298,7 @@ public class UserWebService {
 			}
 			
 			boolean isUserManager = isUserManager(httpRequest);
-			UserVO userVO = link(get(identity, true, isUserManager), uriInfo);
+			UserVO userVO = link(get(identity, null, true, isUserManager, withPortrait), uriInfo);
 			return Response.ok(userVO).build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

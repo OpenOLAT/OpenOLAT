@@ -20,6 +20,10 @@
  */
 package org.olat.user.restapi;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -32,15 +36,19 @@ import java.util.Locale;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.restapi.support.vo.LinkVO;
+import org.olat.user.DisplayPortraitManager;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManagerImpl;
 import org.olat.user.UserManager;
@@ -69,18 +77,22 @@ public class UserVOFactory {
 	}*/
 	
 	public static UserVO get(Identity identity) {
-		return get(identity, I18nModule.getDefaultLocale(), false, false);
+		return get(identity, I18nModule.getDefaultLocale(), false, false, false);
 	}
 	
 	public static UserVO get(Identity identity, Locale locale) {
-		return get(identity, locale, false, false);
+		return get(identity, locale, false, false, false);
 	}
 	
 	public static UserVO get(Identity identity, boolean allProperties, boolean isAdmin) {
-		return get(identity, I18nModule.getDefaultLocale(), allProperties, isAdmin);
+		return get(identity, I18nModule.getDefaultLocale(), allProperties, isAdmin, false);
 	}
 	
-	public static UserVO get(Identity identity, Locale locale, boolean allProperties, boolean isAdmin) {
+	public static UserVO get(Identity identity, Locale locale, boolean allProperties, boolean isAdmin, boolean withPortrait) {
+		if(locale == null) {
+			locale = I18nModule.getDefaultLocale();
+		}
+		
 		UserVO userVO = new UserVO();
 		User user = identity.getUser();
 		userVO.setKey(identity.getKey());
@@ -90,6 +102,22 @@ public class UserVOFactory {
 		userVO.setFirstName(user.getProperty(UserConstants.FIRSTNAME, null));
 		userVO.setLastName(user.getProperty(UserConstants.LASTNAME, null));
 		userVO.setEmail(user.getProperty(UserConstants.EMAIL, null));
+		
+		if(withPortrait) {
+			File portraitDir = DisplayPortraitManager.getInstance().getPortraitDir(identity);
+			File portrait = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+			if(portrait.exists()) {
+				try {
+					InputStream input = new FileInputStream(portrait);
+					byte[] datas = IOUtils.toByteArray(input);
+					FileUtils.closeSafely(input);
+					byte[] data64 = Base64.encodeBase64(datas);
+					userVO.setPortrait(new String(data64, "UTF8"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		
 		HomePageConfig hpc = isAdmin ? null : HomePageConfigManagerImpl.getInstance().loadConfigFor(identity.getName());
 		

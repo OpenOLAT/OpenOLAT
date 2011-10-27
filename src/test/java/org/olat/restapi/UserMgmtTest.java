@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,9 +38,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -581,9 +584,35 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		while((b = in.read()) > -1) {
 			count++;
 		}
+		getMethod.releaseConnection();
+		
 		assertEquals(-1, b);//up to end of file
 		assertTrue(count > 1000);//enough bytes
-		method.releaseConnection();
+		File bigPortrait = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
+		assertEquals(count, bigPortrait.length());
+
+		//check get portrait as Base64
+		UriBuilder getRequest2 = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).queryParam("withPortrait", "true");
+		GetMethod getMethod2 = createGet(getRequest2.build(), MediaType.APPLICATION_JSON, true);
+		int getCode2 = c.executeMethod(getMethod2);
+		assertEquals(getCode2, 200);
+		InputStream in2 = getMethod2.getResponseBodyAsStream();
+		UserVO userVo = parse(in2, UserVO.class);
+		getMethod2.releaseConnection();
+		assertNotNull(userVo);
+		assertNotNull(userVo.getPortrait());
+		byte[] datas = Base64.decodeBase64(userVo.getPortrait().getBytes());
+		assertNotNull(datas);
+		assertTrue(datas.length > 0);
+		
+		File smallPortrait = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+		assertEquals(datas.length, smallPortrait.length());
+		
+		try {
+			ImageIO.read(new ByteArrayInputStream(datas));
+		} catch (Exception e) {
+			assertFalse("Cannot read the portrait after Base64 encoding/decoding", false);
+		}
 	}
 	
 	protected List<UserVO> parseUserArray(String body) {

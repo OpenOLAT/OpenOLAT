@@ -49,6 +49,7 @@ public class UserVO {
 	private String firstName;
 	private String lastName;
 	private String email;
+	private String portrait;
 
 	@XmlElementWrapper(name="properties")
 	@XmlElement(name="property")
@@ -107,6 +108,14 @@ public class UserVO {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getPortrait() {
+		return portrait;
+	}
+
+	public void setPortrait(String portrait) {
+		this.portrait = portrait;
 	}
 
 	public List<UserPropertyVO> getProperties() {
