@@ -31,11 +31,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -50,7 +51,6 @@ import org.olat.testutils.codepoints.client.CodepointClientFactory;
 import org.olat.testutils.codepoints.client.CodepointRef;
 import org.olat.testutils.codepoints.client.CommunicationException;
 import org.olat.testutils.codepoints.client.TemporaryPausedThread;
-import org.olat.testutils.codepoints.server.impl.JMSCodepointServer;
 
 
 /**
@@ -116,7 +116,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		CodepointClient codepointClient = null;
 		CodepointRef codepointRef = null;
 		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://localhost?broker.persistent=false", CODEPOINT_SERVER_ID);
+			codepointClient = CodepointClientFactory.createCodepointClient("vm://embedded?broker.persistent=false", CODEPOINT_SERVER_ID);
 			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.commons.calendar.ICalFileCalendarManager.addEventTo");
 			codepointRef.enableBreakpoint();
 			System.out.println();
@@ -124,9 +124,12 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			e.printStackTrace();
 			fail("Could not initialzed CodepointClient");
 		}
+		
+
+		final CountDownLatch doneSignal = new CountDownLatch(2);
 
 		// thread 1
-		new Thread(new Runnable() {
+		Thread thread1 = new Thread() {
 			public void run() {
 				try {
 					// 1. load calendar
@@ -153,11 +156,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentAddEvent thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					doneSignal.countDown();
+					DBFactory.getInstance().commitAndCloseSession();
 				}
-			}}).start();
-		
+			}};
+
 		// thread 2
-		new Thread(new Runnable() {
+		Thread thread2 = new Thread() {
 			public void run() {
 				try {
 					// 1. load calendar
@@ -183,8 +189,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentAddEvent thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					doneSignal.countDown();
+					DBFactory.getInstance().commitAndCloseSession();
 				}
-			}}).start();
+			}};
+			
+		thread1.start();
+		thread2.start();
 
 		sleep(2000);
 		try {
@@ -198,30 +210,26 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			codepointRef.disableBreakpoint(true);
 			System.out.println("testConcurrentAddEvent breakpoint reached => continue");
 		} catch (BreakpointStateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			fail("Codepoints: BreakpointStateException=" + e.getMessage());
 		} catch (CommunicationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			fail("Codepoints: CommunicationException=" + e.getMessage());
 		}
-	
-		// sleep until t1 and t2 should have terminated/excepted
-		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<5)) {
-			sleep(1000);
-			loopCount++;
+		
+		try {
+			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		assertTrue("Threads did not finish in 5sec", loopCount<5);
+		
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
 			System.out.println("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
-		if (exceptionHolder.size() > 0) {
-			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
-		}
+		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
 		codepointClient.close();
 		System.out.println("testConcurrentAddEvent finish successful");
 	}
@@ -230,7 +238,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	 * Test concurrent add/update event with two threads and code-point to control concurrency.
 	 *
 	 */
-	@Ignore
 	@Test public void testConcurrentAddUpdateEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddUpdateEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";
@@ -256,7 +263,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		CodepointClient codepointClient = null;
 		CodepointRef codepointRef = null;
 		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://localhost?broker.persistent=false", CODEPOINT_SERVER_ID);
+			codepointClient = CodepointClientFactory.createCodepointClient("vm://embedded?broker.persistent=false", CODEPOINT_SERVER_ID);
 			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.commons.calendar.ICalFileCalendarManager.addEventTo");
 			codepointRef.enableBreakpoint();
 			System.out.println();
@@ -264,9 +271,12 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			e.printStackTrace();
 			fail("Could not initialzed CodepointClient");
 		}
+		
+
+		final CountDownLatch doneSignal = new CountDownLatch(2);
 
 		// thread 1
-		new Thread(new Runnable() {
+		Thread thread1 = new Thread() {
 			public void run() {
 				try {
 					// 1. load calendar
@@ -293,11 +303,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentAddUpdateEvent thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					doneSignal.countDown();
+					DBFactory.getInstance().commitAndCloseSession();
 				}
-			}}).start();
+			}};
 		
 		// thread 2
-		new Thread(new Runnable() {
+		Thread thread2 = new Thread() {
 			public void run() {
 				try {
 					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
@@ -325,10 +338,16 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentAddUpdateEvent thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					doneSignal.countDown();
+					DBFactory.getInstance().commitAndCloseSession();
 				}
-			}}).start();
-
+			}};
+			
+		thread1.start();
+		thread2.start();
 		sleep(2000);
+		
 		try {
 			// to see all registered code-points: comment-in next 2 lines
 			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
@@ -347,21 +366,20 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			fail("Codepoints: CommunicationException=" + e.getMessage());
 		}
 	
-		// sleep until t1 and t2 should have terminated/excepted
-		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<5)) {
-			sleep(1000);
-			loopCount++;
+		try {
+			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		assertTrue("Threads did not finish in 5sec", loopCount<5);
+		
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
 			System.out.println("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
-		if (exceptionHolder.size() > 0) {
-			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
-		}
+		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
+
 		codepointClient.close();
 		System.out.println("testConcurrentAddUpdateEvent finish successful");
 	}
@@ -370,7 +388,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	 * Test concurrent add/delete event with two threads and code-point to control concurrency.
 	 *
 	 */
-	@Ignore
 	@Test public void testConcurrentAddRemoveEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddRemoveEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";
@@ -395,7 +412,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		CodepointClient codepointClient = null;
 		CodepointRef codepointRef = null;
 		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://localhost?broker.persistent=false", CODEPOINT_SERVER_ID);
+			codepointClient = CodepointClientFactory.createCodepointClient("vm://embedded?broker.persistent=false", CODEPOINT_SERVER_ID);
 			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.commons.calendar.ICalFileCalendarManager.addEventTo");
 			codepointRef.enableBreakpoint();
 			System.out.println();
@@ -403,9 +420,12 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			e.printStackTrace();
 			fail("Could not initialzed CoepointClient");
 		}
+		
+
+		final CountDownLatch doneSignal = new CountDownLatch(2);
 
 		// thread 1
-		new Thread(new Runnable() {
+		Thread thread1 = new Thread() {
 			public void run() {
 				try {
 					// 1. load calendar
@@ -432,11 +452,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentAddRemoveEvent thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					doneSignal.countDown();
+					DBFactory.getInstance().commitAndCloseSession();
 				}
-			}}).start();
+			}};
 		
 		// thread 2
-		new Thread(new Runnable() {
+		Thread thread2 = new Thread() {
 			public void run() {
 				try {
 					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
@@ -461,10 +484,16 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentAddRemoveEvent thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					doneSignal.countDown();
+					DBFactory.getInstance().commitAndCloseSession();
 				}
-			}}).start();
+			}};
 
+		thread1.start();
+		thread2.start();
 		sleep(2000);
+		
 		try {
 			// to see all registered code-points: comment-in next 2 lines
 			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
@@ -482,22 +511,21 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			e.printStackTrace();
 			fail("Codepoints: CommunicationException=" + e.getMessage());
 		}
-	
-		// sleep until t1 and t2 should have terminated/excepted
-		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<5)) {
-			sleep(1000);
-			loopCount++;
+		
+		try {
+			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		assertTrue("Threads did not finish in 5sec", loopCount<5);
+
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
 			System.out.println("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
-		if (exceptionHolder.size() > 0) {
-			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
-		}
+
+		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
 		codepointClient.close();
 		System.out.println("testConcurrentAddRemoveEvent finish successful");
 	}

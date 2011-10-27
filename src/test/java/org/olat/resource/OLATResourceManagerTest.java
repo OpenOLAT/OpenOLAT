@@ -160,6 +160,8 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 					System.out.println("testConcurrentFindOrPersistResourceable thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					DBFactory.getInstance().commitAndCloseSession();
 				}
 			}}).start();
 		
@@ -174,6 +176,8 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 					System.out.println("testConcurrentFindOrPersistResourceable thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					DBFactory.getInstance().commitAndCloseSession();
 				}
 			}}).start();
 

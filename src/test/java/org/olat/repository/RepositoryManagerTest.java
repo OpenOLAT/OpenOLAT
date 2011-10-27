@@ -21,23 +21,24 @@
 
 package org.olat.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import junit.framework.TestSuite;
-import static org.junit.Assert.*;
-
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.command.ActiveMQQueue;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.coordinate.cluster.ClusterSyncer;
 import org.olat.core.commons.persistence.DB;
@@ -45,10 +46,11 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.Syncer;
-import org.olat.course.CourseModule;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JMSCodePointServerJunitHelper;
@@ -60,8 +62,6 @@ import org.olat.testutils.codepoints.client.CodepointClientFactory;
 import org.olat.testutils.codepoints.client.CodepointRef;
 import org.olat.testutils.codepoints.client.CommunicationException;
 import org.olat.testutils.codepoints.client.TemporaryPausedThread;
-import org.olat.testutils.codepoints.server.CodepointInstaller;
-import org.olat.testutils.codepoints.server.impl.JMSCodepointServer;
 
 /**
  * Initial Date:  Mar 26, 2004
@@ -72,10 +72,11 @@ import org.olat.testutils.codepoints.server.impl.JMSCodepointServer;
  * 
  */
 public class RepositoryManagerTest extends OlatTestCase {
-	private static boolean isInitialized = false;
+	private static final OLog log = Tracing.createLoggerFor(RepositoryManagerTest.class);
 	private static String CODEPOINT_SERVER_ID = "RepositoryManagerTest";
-	private JMSCodepointServer codepointServer_;
-
+	
+	private static final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
+	private static final String CG_TYPE = UUID.randomUUID().toString().replace("-", "");
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -84,11 +85,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		try {
 			// Setup for code-points
 			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
-
-			RepositoryManagerTest.isInitialized = true;
 		} catch (Exception e) {
-			Tracing.logError("Error while setting up activeMq or Codepointserver",
-				e, RepositoryManagerTest.class);
+			log.error("Error while setting up activeMq or Codepointserver", e);
 		}
 	}
 	
@@ -100,21 +98,22 @@ public class RepositoryManagerTest extends OlatTestCase {
 			JMSCodePointServerJunitHelper.stopServer();
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
-			Tracing.logError("tearDown failed", e, RepositoryManagerTest.class);
+			log.error("tearDown failed", e);
 		}
 	}
 
 	/**
 	 * Test creation of a repository entry.
 	 */
-	@Test public void testRawRepositoryEntryCreate() {
+	@Test
+	public void testRawRepositoryEntryCreate() {
 		try {
 			DB db = DBFactory.getInstance();
 			OLATResourceManager rm = OLATResourceManager.getInstance();
 			// create course and persist as OLATResourceImpl
 			OLATResourceable resourceable = new OLATResourceable() {
-					public String getResourceableTypeName() {	return "Course";}
-					public Long getResourceableId() {return new Long(456);}
+					public String getResourceableTypeName() {	return "RepoMgrTestCourse";}
+					public Long getResourceableId() {return CodeHelper.getForeverUniqueID();}
 			};
 			OLATResource r =  rm.createOLATResourceInstance(resourceable);
 			db.saveObject(r);
@@ -125,23 +124,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 			d.setResourcename("Lernen mit OLAT");
 			d.setInitialAuthor("Florian Gnägi");
 			d.setDisplayname("JunitTest_RepositoryEntry");
-	// TODO: chg: Remove for 5.3 MetaDataElement because it does not work with mySql 5.0 
-	//            and it is not used !		
-	//     		    lastmodified of MetaDataElement is null and is not set by hibernate because 
-	//		        it is a child object od RepositoryEntry !
-	//            It could be solved with defintion of MetaDataElement.lastmodified IS NULL = false
-	//		MetaDataElement v1, v2, v3;
-	//		v1 = new MetaDataElement("version", "1.0 alpha");
-	//		d.getMetaDataElements().add(v1);
-	//		v2 = new MetaDataElement("duration", "2h");
-	//		d.getMetaDataElements().add(v2);
-	//		v3 = new MetaDataElement("path", "/UNIZH/ID/MELS/");
-	//		d.getMetaDataElements().add(v3);
 			db.saveObject(d);
 		} catch(Exception ex) {
 			fail("No Exception allowed. ex=" + ex.getMessage());
 		}
-
 	}
 	
 	/**
@@ -194,14 +180,14 @@ public class RepositoryManagerTest extends OlatTestCase {
 			}
 		}
 		long endCreate = System.currentTimeMillis();
-		Tracing.logDebug("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms", RepositoryManagerTest.class);
+		log.debug("created " + numbRes + " repo entries in " + (endCreate - startCreate) + "ms");
 		
-		List<String> typelist = Collections.singletonList("FGType");
+		List<String> typelist = Collections.singletonList(FG_TYPE);
 		// finally the search query
 		long startSearchReferencable = System.currentTimeMillis();
 		List results = rm.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
 		long endSearchReferencable = System.currentTimeMillis();
-		Tracing.logDebug("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms", RepositoryManagerTest.class);
+		log.debug("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
 
 		// only half of the items should be found
 		assertEquals((int) (numbRes / 2), results.size());
@@ -213,16 +199,17 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 	private RepositoryEntry createRepositoryEntryFG(final int i) {
 		DB db = DBFactory.getInstance();
+		
 		OLATResourceable resourceable = new OLATResourceable() {
-			public String getResourceableTypeName() {	return "FGType";}
-			public Long getResourceableId() {return new Long(i);}
+			public String getResourceableTypeName() {	return FG_TYPE;}
+			public Long getResourceableId() {return new Long(i); }
 		};
 		OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(resourceable);
 		db.saveObject(r);
 		
 		// now make a repository entry for this course
-		RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("Florian Gnägi", "Lernen mit OLAT " + i, "yo man description bla bla + i");
-		re.setDisplayname("JunitTest_RepositoryEntry_" + i);
+		final RepositoryEntry re = RepositoryManager.getInstance().createRepositoryEntryInstance("Florian Gnägi", "Lernen mit OLAT " + i, "yo man description bla bla + i");
+		re.setDisplayname("JunitTest_RepositoryEntry_" + i);		
 		re.setOlatResource(r);
 		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
 		return re;
@@ -232,14 +219,14 @@ public class RepositoryManagerTest extends OlatTestCase {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		int count = rm.countByTypeLimitAccess("unkown", RepositoryEntry.ACC_OWNERS_AUTHORS);
     assertEquals("Unkown type must return 0 elements", 0,count);
-    int countValueBefore = rm.countByTypeLimitAccess("FGType", RepositoryEntry.ACC_OWNERS_AUTHORS);
+    int countValueBefore = rm.countByTypeLimitAccess(FG_TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
     // add 1 entry
     RepositoryEntry re = createRepositoryEntryFG(999999);
 		// create security group
 		SecurityGroup ownerGroup = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
 		re.setOwnerGroup(ownerGroup);
     rm.saveRepositoryEntry(re);
-    count = rm.countByTypeLimitAccess("FGType", RepositoryEntry.ACC_OWNERS_AUTHORS);
+    count = rm.countByTypeLimitAccess(FG_TYPE, RepositoryEntry.ACC_OWNERS_AUTHORS);
     // check count must be one more element
     assertEquals("Add one course repository-entry, but countByTypeLimitAccess does NOT return one more element", countValueBefore + 1,count);
 	}
@@ -545,6 +532,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread1 incremented download-counter");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					DBFactory.getInstance().commitAndCloseSession();
 				}
 			}}).start();
 		
@@ -558,6 +547,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread2 incremented download-counter");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					DBFactory.getInstance().commitAndCloseSession();
 				}
 			}}).start();
 
@@ -574,6 +565,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 					System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: Thread3 setAccess DONE");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
+				} finally {
+					DBFactory.getInstance().commitAndCloseSession();
 				}
 			}}).start();
 
@@ -581,7 +574,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints: main thread sleep 500msec");
 	        Thread.sleep(500);
         } catch (InterruptedException e1) {
-	        // TODO Auto-generated catch block
 	        e1.printStackTrace();
         }
 		try {
@@ -595,11 +587,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 			codepointRef.disableBreakpoint(true);
 			System.out.println("testConcurrentIncrementLaunchCounterWithCodePoints breakpoint reached => continue");
 		} catch (BreakpointStateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			fail("Codepoints: BreakpointStateException=" + e.getMessage());
 		} catch (CommunicationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			fail("Codepoints: CommunicationException=" + e.getMessage());
 		}
@@ -615,7 +605,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private RepositoryEntry createRepositoryCG(String name) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
-		OLATResource r =  rm.createOLATResourceInstance("CGType");
+		OLATResource r =  rm.createOLATResourceInstance(CG_TYPE);
 		DBFactory.getInstance().saveObject(r);
 
 		// now make a repository entry for this course
