@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -62,6 +64,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
@@ -70,6 +73,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -374,6 +378,67 @@ public class CourseWebService {
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		CourseConfigVO vo = ObjectFactory.getConfig(course);
+		return Response.ok(vo).build();
+	}
+	
+	/**
+	 * Update the course configuration
+	 * @response.representation.200.qname {http://www.example.com}courseConfigVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param courseId The course resourceable's id
+	 * @param calendar Enable/disable the calendar (value: true/false) (optional)
+	 * @param chat Enable/disable the chat (value: true/false) (optional)
+	 * @param cssLayoutRef Set the custom CSS file for the layout (optional)
+	 * @param efficencyStatement Enable/disable the efficencyStatement (value: true/false) (optional)
+	 * @param glossarySoftkey Set the glossary (optional)
+	 * @param sharedFolderSoftkey Set the shared folder (optional)
+	 * @param request The HTTP request
+	 * @return It returns the XML/Json representation of the <code>CourseConfig</code>
+	 *         object representing the course configuration.
+	 */
+	@POST
+	@Path("configuration")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response updateConfiguration(@PathParam("courseId") Long courseId,
+			@FormParam("calendar") Boolean calendar, @FormParam("chat") Boolean chat,
+			@FormParam("cssLayoutRef") String cssLayoutRef, @FormParam("efficencyStatement") Boolean efficencyStatement,
+			@FormParam("glossarySoftkey") String glossarySoftkey, @FormParam("sharedFolderSoftkey") String sharedFolderSoftkey,
+			@Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		ICourse course = CourseFactory.openCourseEditSession(courseId);
+		//change course config
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		if(calendar != null) {
+			courseConfig.setCalendarEnabled(calendar.booleanValue());
+		}
+		if(chat != null) {
+			courseConfig.setChatIsEnabled(chat.booleanValue());
+		}
+		if(StringHelper.containsNonWhitespace(cssLayoutRef)) {
+			courseConfig.setCssLayoutRef(cssLayoutRef);
+		}
+		if(efficencyStatement != null) {
+			courseConfig.setEfficencyStatementIsEnabled(efficencyStatement.booleanValue());
+		}
+		if(StringHelper.containsNonWhitespace(glossarySoftkey)) {
+			courseConfig.setGlossarySoftKey(glossarySoftkey);
+		}
+		if(StringHelper.containsNonWhitespace(sharedFolderSoftkey)) {
+			courseConfig.setSharedFolderSoftkey(sharedFolderSoftkey);
+		}
+
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
+		
 		CourseConfigVO vo = ObjectFactory.getConfig(course);
 		return Response.ok(vo).build();
 	}
