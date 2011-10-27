@@ -454,7 +454,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	}
 	
 	/**
-	 * This upudate a Folder Element onto a given course.
+	 * This updates a Folder Element onto a given course.
    * @response.representation.mediaType application/x-www-form-urlencoded
 	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
    * @response.representation.200.mediaType application/xml, application/json

@@ -53,6 +53,15 @@ import org.olat.group.BusinessGroupManagerImpl;
 @Path("contacts")
 public class ContactsWebService {
 	
+	/**
+	 * Retrieve the contacts of the logged in identity.
+	 * @response.representation.200.doc The list of contacts
+	 * @param start
+	 * @param limit
+	 * @param httpRequest The HTTP request
+	 * @param uriInfo The URI information
+	 * @return The list of contacts
+	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMyContacts(@QueryParam("start") @DefaultValue("0") Integer start,

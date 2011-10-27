@@ -64,9 +64,10 @@ public class NotificationsWebService {
 	 * Retrieves the notification of the logged in user.
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The notifications
-   * @response.representation.200.example {@link org.olat.notifications.restapi.vo.Examples#SAMPLE_INFOVOes}
-   * @response.representation.404.doc The identity not found
-   * @param date The date (optional)
+	 * @response.representation.200.example {@link org.olat.notifications.restapi.vo.Examples#SAMPLE_INFOVOes}
+	 * @response.representation.404.doc The identity not found
+	 * @param date The date (optional)
+	 * @param type The type of notifications (User, Forum...) (optional)
 	 * @param httpRequest The HTTP request
 	 * @return an xml or json representation of a the user being search. The xml
 	 *         correspond to a <code>SubscriptionInfoVO</code>. <code>SubscriptionInfoVO</code>

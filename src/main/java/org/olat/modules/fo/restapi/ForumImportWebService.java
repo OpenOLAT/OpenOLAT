@@ -34,8 +34,7 @@ import org.olat.modules.fo.ForumManager;
 /**
  * 
  * Description:<br>
- * Web service to manage forum element. This implementation is
- * only for import.
+ * Web service to manage forums.
  * 
  * <P>
  * Initial Date:  26 aug. 2010 <br>
@@ -60,6 +59,11 @@ public class ForumImportWebService {
 		return Response.ok(VERSION).build();
 	}
 	
+	/**
+	 * Web service to manage a forum
+	 * @param forumKey The key of the forum
+	 * @return
+	 */
 	@Path("{forumKey}")
 	public ForumWebService getForumWebservice(@PathParam("forumKey") Long forumKey) {
 		ForumManager fom = ForumManager.getInstance();

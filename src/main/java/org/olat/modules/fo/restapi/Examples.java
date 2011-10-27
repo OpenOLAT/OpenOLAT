@@ -34,6 +34,8 @@ public class Examples {
 
 	public static final MessageVO SAMPLE_MESSAGEVO = new MessageVO();
 	public static final MessageVOes SAMPLE_MESSAGEVOes = new MessageVOes();
+	
+	public static final ForumVO SAMPLE_FORUMVO = new ForumVO();
   
   static {
   	SAMPLE_MESSAGEVO.setKey(380l);
@@ -42,5 +44,7 @@ public class Examples {
   	SAMPLE_MESSAGEVO.setBody("The content of the message");
   	SAMPLE_MESSAGEVOes.setMessages(new MessageVO[]{SAMPLE_MESSAGEVO});
   	SAMPLE_MESSAGEVOes.setTotalCount(1);
+  	
+  	SAMPLE_FORUMVO.setForumKey(28294l);
   }
 }

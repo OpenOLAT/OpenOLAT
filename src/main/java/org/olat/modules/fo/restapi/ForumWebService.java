@@ -74,8 +74,7 @@ import org.olat.restapi.support.vo.FileVO;
 /**
  * 
  * Description:<br>
- * Web service to manage forum element. This implementation is
- * only for import.
+ * Web service to manage a forum.
  * 
  * <P>
  * Initial Date:  20 apr. 2010 <br>
@@ -97,6 +96,16 @@ public class ForumWebService {
 		this.forum = forum;
 	}
 	
+	/**
+	 * Retrieves the forum.
+	 * @response.representation.200.qname {http://www.example.com}forumVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The root message of the thread
+	 * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The forum not found
+	 * @return The forum
+	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForum() {
@@ -323,11 +332,11 @@ public class ForumWebService {
 
 	/**
 	 * Retrieves the attachments of the message
-	 * @response.representation.200.mediaType application/xml
-	 * @response.representation.200.doc The portrait as image
-   * @response.representation.404.doc The identity or the portrait not found
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The links to the attachments
+	 * @response.representation.404.doc The message not found
 	 * @param messageKey The key of the message
-	 * @param request The REST request
+	 * @param uriInfo The URI information
 	 * @return The attachments
 	 */
 	@GET
@@ -365,9 +374,10 @@ public class ForumWebService {
 	 * @response.representation.200.mediaType application/octet-stream
 	 * @response.representation.200.doc The portrait as image
    * @response.representation.404.doc The identity or the portrait not found
-	 * @param identityKey The identity key of the user being searched
+	 * @param messageKey The identity key of the user being searched
+	 * @param filename The name of the attachment
 	 * @param request The REST request
-	 * @return The image
+	 * @return The attachment
 	 */
 	@GET
 	@Path("posts/{messageKey}/attachments/{filename}")
@@ -407,6 +417,17 @@ public class ForumWebService {
 		return Response.serverError().status(Status.NOT_FOUND).build();
 	}
 	
+	/**
+	 * Upload the attachment of a message
+	 * @response.representation.200.mediaType application/json, application/xml
+	 * @response.representation.200.doc Ok
+	 * @response.representation.404.doc The identity or the portrait not found
+	 * @param messageKey The key of the message
+	 * @param filename The name of the attachment
+	 * @file file The attachment
+	 * @param request The HTTP request
+	 * @return Ok
+	 */
 	@POST
 	@Path("posts/{messageKey}/attachments")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
