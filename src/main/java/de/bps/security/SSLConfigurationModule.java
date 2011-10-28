@@ -24,7 +24,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.logging.Tracing;
 
-public class SSLConfigurationModule implements Initializable {
+public class SSLConfigurationModule {
 
 	private static String keyStoreFile;
 	private static String keyStorePass;
