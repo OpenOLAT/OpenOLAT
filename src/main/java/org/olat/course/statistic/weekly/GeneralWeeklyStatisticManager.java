@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -39,8 +40,6 @@ import org.olat.course.statistic.IStatisticManager;
 import org.olat.course.statistic.StatisticDisplayController;
 import org.olat.course.statistic.StatisticResult;
 import org.olat.course.statistic.TotalAwareColumnDescriptor;
-
-import com.ibm.icu.util.StringTokenizer;
 
 /**
  * Implementation of the IStatisticManager for 'weekly' statistic - 

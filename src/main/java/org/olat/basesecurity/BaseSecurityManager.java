@@ -21,6 +21,7 @@
 
 package org.olat.basesecurity;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +58,6 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
 import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * <h3>Description:</h3>

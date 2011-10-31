@@ -12,13 +12,10 @@ package ch.goodsolutions.olat.jfreechart;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
 import org.olat.core.gui.media.MediaResource;
 
 /**
@@ -36,10 +33,10 @@ public class JFreeChartMediaResource implements MediaResource {
 	private static final Long UNDEF_SIZE = new Long(-1);
 	private static final Long UNDEF_LAST_MODIFIED = new Long(-1);
 	
-	private JFreeChart chart;
+	private Object chart;
 	private Long width, height;
 	
-	public JFreeChartMediaResource(JFreeChart chart, Long width, Long height) {
+	public JFreeChartMediaResource(Object chart, Long width, Long height) {
 		this.chart = chart;
 		this.width = width;
 		this.height = height;
@@ -66,9 +63,9 @@ public class JFreeChartMediaResource implements MediaResource {
 		ByteArrayInputStream pIn = null;
 		try {
 			ByteArrayOutputStream pOut = new ByteArrayOutputStream();
-			ChartUtilities.writeChartAsPNG(pOut, chart, width.intValue(), height.intValue());
+			//ChartUtilities.writeChartAsPNG(pOut, chart, width.intValue(), height.intValue());
 			pIn = new ByteArrayInputStream(pOut.toByteArray());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// bummer...
 		}
 		return pIn;

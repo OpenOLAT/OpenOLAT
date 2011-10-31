@@ -23,9 +23,10 @@ package org.olat.commons.info;
 
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -40,8 +41,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * 

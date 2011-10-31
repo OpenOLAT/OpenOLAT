@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.StaleObjectStateException;
-import org.jfree.util.Log;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -380,7 +379,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			businessGroupTodelete = loadBusinessGroup(businessGroupTodelete);
 			// 0) Loop over all deletableGroupData
 			for (DeletableGroupData deleteListener : deleteListeners) {
-				Log.debug("deleteBusinessGroup: call deleteListener=" + deleteListener);
+				logDebug("deleteBusinessGroup: call deleteListener=" + deleteListener);
 				deleteListener.deleteGroupDataFor(businessGroupTodelete);
 			} 
 			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteGroupDataFor(businessGroupTodelete);

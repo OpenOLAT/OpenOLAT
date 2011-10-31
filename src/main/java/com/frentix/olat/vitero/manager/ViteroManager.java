@@ -27,6 +27,7 @@ import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -80,7 +81,6 @@ import com.frentix.olat.vitero.model.ViteroBooking;
 import com.frentix.olat.vitero.model.ViteroCustomer;
 import com.frentix.olat.vitero.model.ViteroGroup;
 import com.frentix.olat.vitero.model.ViteroUser;
-import com.ibm.icu.util.Calendar;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.CompactWriter;
 

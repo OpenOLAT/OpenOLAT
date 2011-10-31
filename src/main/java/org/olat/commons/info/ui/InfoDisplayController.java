@@ -23,6 +23,7 @@ package org.olat.commons.info.ui;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -61,8 +62,6 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.modules.ModuleConfiguration;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * 

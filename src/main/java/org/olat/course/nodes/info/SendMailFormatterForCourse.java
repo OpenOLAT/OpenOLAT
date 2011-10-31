@@ -22,6 +22,7 @@
 
 package org.olat.course.nodes.info;
 
+import java.text.DateFormat;
 import java.util.List;
 
 import org.olat.commons.info.manager.MailFormatter;
@@ -32,8 +33,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.notifications.NotificationHelper;
-
-import com.ibm.icu.text.DateFormat;
 
 /**
  * 

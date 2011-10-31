@@ -19,6 +19,7 @@
 */
 package org.olat.admin.user;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -36,8 +37,6 @@ import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.notifications.DateChooserController;
 import org.olat.user.notification.UsersSubscriptionManager;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * 

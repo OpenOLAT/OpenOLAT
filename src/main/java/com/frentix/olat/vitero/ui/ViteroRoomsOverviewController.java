@@ -20,6 +20,7 @@
  */
 package com.frentix.olat.vitero.ui;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +36,6 @@ import org.olat.core.gui.control.controller.BasicController;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.model.ViteroBooking;
-import com.ibm.icu.util.Calendar;
 
 /**
  * 

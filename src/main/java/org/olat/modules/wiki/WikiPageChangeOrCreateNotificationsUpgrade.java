@@ -21,10 +21,8 @@
 
 package org.olat.modules.wiki;
 
-import org.jfree.util.Log;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.LogDelegator;
-import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.NotificationsUpgrade;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.resource.OresHelper;
@@ -66,7 +64,7 @@ public class WikiPageChangeOrCreateNotificationsUpgrade extends LogDelegator imp
 				CourseEnvironment cenv = course.getCourseEnvironment();
 				courseNode = cenv.getRunStructure().getNode(publisher.getSubidentifier());
 			} catch (Exception e) {
-				Log.warn("Could not load course with resid: "+resId, e);
+				logWarn("Could not load course with resid: "+resId, e);
 				return null;
 			}
 			if(courseNode == null){

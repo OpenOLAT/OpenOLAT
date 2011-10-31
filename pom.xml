@@ -1805,6 +1805,23 @@
 					<groupId>javax.activation</groupId>
 					<artifactId>activation</artifactId>
 				</exclusion>
+				<!-- fxdiff: FXOLAT-243  clean up the dependencies of ActiveMQ -->
+				<exclusion>
+					<groupId>org.springframework.osgi</groupId>
+					<artifactId>spring-osgi-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>kahadb</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-j2ee-management_1.0_spec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -1888,11 +1905,12 @@
 			<artifactId>ical4j</artifactId>
 			<version>1.0.2</version>
 		</dependency>
+		<!-- fxdiff FXOLAT-243: ActiveMQ doesn't it anymore
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>10.4.2.0</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
@@ -1912,12 +1930,22 @@
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
 			<version>1.1.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.ibm.icu</groupId>
+					<artifactId>icu4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
 			<version>4.0.1</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>opensaml</groupId>
 			<artifactId>opensaml</artifactId>
@@ -2034,11 +2062,11 @@
 			<artifactId>rome</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>jfree</groupId>
 			<artifactId>jfreechart</artifactId>
 			<version>1.0.1</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>ch.ethz</groupId>
 			<artifactId>pfplms-scorm</artifactId>
@@ -2301,11 +2329,12 @@
 			<artifactId>cos</artifactId>
 			<version>05Nov2002</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xmlParserAPIs</artifactId>
 			<version>2.6.2</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
@@ -2498,6 +2527,14 @@
 					<groupId>javax.xml.bind</groupId>
 					<artifactId>jaxb-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jettison</groupId>
+					<artifactId>jettison</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-impl</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -2631,6 +2668,7 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jdepend-maven-plugin</artifactId>
 				<version>2.0-beta-2</version>
+
 			</plugin>
 		</plugins>
 	</reporting>

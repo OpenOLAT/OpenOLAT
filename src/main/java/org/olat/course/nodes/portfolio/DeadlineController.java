@@ -21,6 +21,7 @@
 
 package org.olat.course.nodes.portfolio;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
@@ -35,8 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * 

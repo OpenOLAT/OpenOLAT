@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -309,7 +308,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test method i18nManager.searchForAvailableLanguages()
 	 */
-	@Ignore //until import of all languages
 	@Test public void testSearchForAvailableLanguages() {
 		if (I18nModule.isTransToolEnabled()) {
 			// Try to load i18n files and a jar from the testdata dir

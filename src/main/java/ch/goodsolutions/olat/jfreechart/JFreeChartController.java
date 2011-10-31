@@ -10,7 +10,6 @@
  */
 package ch.goodsolutions.olat.jfreechart;
 
-import org.jfree.chart.JFreeChart;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -36,7 +35,7 @@ public class JFreeChartController extends DefaultController {
 	/**
 	 * @param wControl
 	 */
-	public JFreeChartController(JFreeChart chart, Long height, Long width, WindowControl wControl) {
+	public JFreeChartController(Object chart, Long height, Long width, WindowControl wControl) {
 		super(wControl);
 		imgComponent = new ImageComponent("jfreechartwrapper");
 		imgComponent.setWidth(width);

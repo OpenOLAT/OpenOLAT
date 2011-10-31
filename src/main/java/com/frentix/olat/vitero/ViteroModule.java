@@ -22,6 +22,7 @@ package com.frentix.olat.vitero;
 
 import java.net.URI;
 import java.text.ParseException;
+import java.util.Calendar;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -35,7 +36,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 import com.frentix.olat.vitero.manager.ViteroZombieSlayerJob;
-import com.ibm.icu.util.Calendar;
 
 /**
  * 

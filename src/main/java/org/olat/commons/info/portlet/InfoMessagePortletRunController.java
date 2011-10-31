@@ -3,6 +3,7 @@ package org.olat.commons.info.portlet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -44,8 +45,6 @@ import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.home.site.HomeSite;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * 
