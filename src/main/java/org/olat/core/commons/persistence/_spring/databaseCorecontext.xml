@@ -260,13 +260,6 @@
 	        <property name="password"><value></value></property>
 	</bean>
 
-
-	<bean id="hsqldbDatabaseManagerGUI" class="org.olat.core.commons.persistence.HsqldbDatabaseManagerGUI" init-method="init" destroy-method="destroy" lazy-init="true">
-		<constructor-arg value="${db.vendor}" />
-		<constructor-arg><value>jdbc:hsqldb:file:${java.io.tmpdir}/olatdata/database/${db.name}</value></constructor-arg>
-		<constructor-arg value="${olat.debug}"/>
-	</bean>
-
 	<!-- The mysql datasource checks upon startup whether the tables are of type InnoDB, if not it will not start. If you have an other type of transactional tables just switch back the spring config
 	to the normal  org.springframework.jdbc.datasource.DriverManagerDataSource and the check is gone.-->                  
 	<bean id="mysqlDataSource" class="org.olat.core.commons.persistence.InnoDBAwareDriverManagerDataSource" lazy-init="true" init-method="init">

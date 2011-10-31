@@ -33,8 +33,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.OLATLocalSessionFactoryBean;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -59,7 +57,6 @@ public class SetupPropertiesController extends BasicController {
 	VelocityContainer content = createVelocityContainer("setup");
 	private List<OLATProperty> defaultProps = new ArrayList<OLATProperty>();
 	private List<OLATProperty> overwriteProps = new ArrayList<OLATProperty>();
-	private Link showDBManager;
 
 	/**
 	 * 
@@ -95,11 +92,6 @@ public class SetupPropertiesController extends BasicController {
 		String hibernateConnectionURL = getHibernateConnectionUrl();
 		content.contextPut("hibernateConnectionUrl",hibernateConnectionURL);
 		content.contextPut("userDataRoot",WebappHelper.getUserDataRoot());
-		
-		//add button to start hsqldbmanager gui when hsqldb is in use
-		if (hibernateConnectionURL.contains("hsqldb")) {
-			showDBManager = LinkFactory.createButton("show.hsqldb", content, this);
-		}
 
 		main.setContent(content);
 		
@@ -198,11 +190,7 @@ public class SetupPropertiesController extends BasicController {
 	@Override
 	@SuppressWarnings("unused") 
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == showDBManager) {
-			//accessing the bean will create it
-			CoreSpringFactory.getBean("hsqldbDatabaseManagerGUI");
-		}
-
+		//
 	}
 	
 	public class OLATProperty implements Comparable<OLATProperty> {

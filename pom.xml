@@ -831,7 +831,38 @@
         <cargo.container.wait>true</cargo.container.wait>
       </properties>
     </profile>
-
+    
+    <profile>
+      <id>cluster</id>
+      <activation>
+        <property>
+          <name>cluster</name>
+        </property>
+      </activation>
+      <dependencies>
+	      <dependency>
+					<groupId>org.jboss</groupId>
+					<artifactId>jboss-common-core</artifactId>
+					<version>2.2.8.GA</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging-spi</artifactId>
+					<version>2.0.5.GA</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.cache</groupId>
+					<artifactId>jbosscache-core</artifactId>
+					<version>3.2.2.GA</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-jbosscache2</artifactId>
+					<version>3.3.2.GA</version>
+					<scope>runtime</scope>
+				</dependency>
+      </dependencies>
+    </profile>
 
     <profile>
       <!-- activate this profile to run Selenium based Integration Tests against a cluster running locally
@@ -1300,6 +1331,30 @@
           </plugin>
         </plugins>
       </build>
+      
+      <dependencies>
+	      <dependency>
+					<groupId>org.jboss</groupId>
+					<artifactId>jboss-common-core</artifactId>
+					<version>2.2.8.GA</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging-spi</artifactId>
+					<version>2.0.5.GA</version>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.cache</groupId>
+					<artifactId>jbosscache-core</artifactId>
+					<version>3.2.2.GA</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-jbosscache2</artifactId>
+					<version>3.3.2.GA</version>
+					<scope>runtime</scope>
+				</dependency>
+      </dependencies>
     </profile>
 		
 	</profiles>
@@ -2022,21 +2077,7 @@
 			<version>0.6.0</version>
 		</dependency>
 		<!-- fxdiff: FXOLAT-243 remove dependency to jbosscache (only for cluster + deprecated by JBoss) -->
-		<dependency>
-			<groupId>org.jboss</groupId>
-			<artifactId>jboss-common-core</artifactId>
-			<version>2.2.8.GA</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging-spi</artifactId>
-			<version>2.0.5.GA</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.cache</groupId>
-			<artifactId>jbosscache-core</artifactId>
-			<version>3.2.2.GA</version>
-		</dependency>
+		<!-- cluster -->
 		<dependency>
 			<groupId>reload-diva</groupId>
 			<artifactId>reload-diva</artifactId>
@@ -2196,6 +2237,12 @@
 			<groupId>org.apache.woden</groupId>
 			<artifactId>woden-api</artifactId>
 			<version>1.0M8</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xmlParserAPIs</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- /Dependencys for onyx plugin -->
 		<dependency>
@@ -2268,12 +2315,6 @@
 					<groupId>c3p0</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-jbosscache2</artifactId>
-			<version>3.3.2.GA</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>c3p0</groupId>
@@ -2385,6 +2426,7 @@
 			<groupId>hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 			<version>2.0.0-rc8</version>
+			<scope>test</scope>
 		</dependency>
 		<!-- Spring dependencies -->
 		<dependency>
@@ -2668,7 +2710,6 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jdepend-maven-plugin</artifactId>
 				<version>2.0-beta-2</version>
-
 			</plugin>
 		</plugins>
 	</reporting>
