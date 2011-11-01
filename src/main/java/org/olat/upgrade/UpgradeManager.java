@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
@@ -15,7 +17,6 @@ import org.olat.core.util.event.FrameworkStartedEvent;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.xml.XStreamHelper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 /**
  * 
@@ -39,7 +40,7 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 	List<OLATUpgrade> upgrades;
 	Map<String, UpgradeHistoryData> upgradesHistories;
 	private UpgradesDefinitions upgradesDefinitions;
-	protected DriverManagerDataSource dataSource;
+	protected DataSource dataSource;
 	private boolean needsUpgrade = true;
 	private boolean autoUpgradeDatabase = true;
 	
@@ -47,11 +48,11 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
    * [used by spring]
    * @param dataSource
    */
-  public void setDataSource (DriverManagerDataSource dataSource) {
+  public void setDataSource (DataSource dataSource) {
           this.dataSource = dataSource;
   }
 
-  public DriverManagerDataSource getDataSource() {
+  public DataSource getDataSource() {
           return dataSource;
   }
 

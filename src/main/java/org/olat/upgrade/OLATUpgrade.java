@@ -21,10 +21,11 @@
 
 package org.olat.upgrade;
 
+import javax.sql.DataSource;
+
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 
 /**
@@ -91,7 +92,7 @@ public abstract class OLATUpgrade {
 	 * @param query
 	 * @param dataSource
 	 */
-	public void executePlainSQLDBStatement(String query, DriverManagerDataSource dataSource) {
+	public void executePlainSQLDBStatement(String query, DataSource dataSource) {
     JdbcTemplate template = new JdbcTemplate(dataSource);
     template.update(query);
 	}

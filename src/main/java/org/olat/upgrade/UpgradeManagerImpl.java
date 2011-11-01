@@ -45,6 +45,8 @@ import org.springframework.core.io.Resource;
  */
 public class UpgradeManagerImpl extends UpgradeManager {
 	
+	private String dbVendor;
+	
 	/**
 	 * used by spring
 	 */
@@ -52,6 +54,14 @@ public class UpgradeManagerImpl extends UpgradeManager {
 		//
 	}
 	
+	/**
+	 * [user by Spring]
+	 * @param dbVendor
+	 */
+	public void setDbVendor(String dbVendor) {
+		this.dbVendor = dbVendor;
+	}
+
 	/**
 	 * Execute the pre system init code of all upgrades in the order as they were configured
 	 * in the configuration file
@@ -101,9 +111,9 @@ public class UpgradeManagerImpl extends UpgradeManager {
 	public void runAlterDbStatements() {
 		String dialect = "";
 		//only run upgrades on mysql or postgresql
-		if (dataSource.getUrl().contains("mysql")) dialect = "mysql";
-		else if (dataSource.getUrl().contains("postgresql")) dialect = "postgresql";
-		else if (dataSource.getUrl().contains("hsqldb")) return;
+		if (dbVendor.contains("mysql")) dialect = "mysql";
+		else if (dbVendor.contains("postgresql")) dialect = "postgresql";
+		else if (dbVendor.contains("hsqldb")) return;
 		else return;
 			
 		Statement statement = null;
