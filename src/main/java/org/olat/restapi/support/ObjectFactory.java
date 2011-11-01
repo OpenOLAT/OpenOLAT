@@ -122,6 +122,7 @@ public class ObjectFactory {
 	public static CourseVO get(RepositoryEntry re, ICourse course) {
 		CourseVO vo = new CourseVO();
 		vo.setKey(course.getResourceableId());
+		vo.setDisplayName(re.getDisplayname());
 		vo.setTitle(course.getCourseTitle());
 		vo.setEditorRootNodeId(course.getEditorTreeModel().getRootNode().getIdent());
 		vo.setSoftKey(re.getSoftkey());

@@ -21,6 +21,7 @@
 package org.olat.restapi.group;
 
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
+import static org.olat.restapi.support.ObjectFactory.getInformation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +71,6 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
@@ -285,29 +285,7 @@ public class LearningGroupWebService {
 			}
 		}
 		
-		GroupInfoVO info = new GroupInfoVO();
-		
-		//forum
-		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
-		if(collabTools.isToolEnabled(CollaborationTools.TOOL_FORUM)) {
-			info.setForumKey(collabTools.getForum().getKey());
-		}
-		
-		String news = collabTools.lookupNews();
-		info.setNews(news);
-		
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI)) {
-			info.setHasWiki(Boolean.TRUE);
-		} else {
-			info.setHasWiki(Boolean.FALSE);
-		}
-		
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
-			info.setHasFolder(Boolean.TRUE);
-		} else {
-			info.setHasFolder(Boolean.FALSE);
-		}
-		
+		GroupInfoVO info = getInformation(bg);
 		return Response.ok(info).build();
 	}
 	

@@ -98,6 +98,7 @@ public class Examples {
   	SAMPLE_KEYVALUEVOes.getPairs().add(SAMPLE_KEYVALUEVO);
   	
   	SAMPLE_COURSEVO.setKey(777l);
+  	SAMPLE_COURSEVO.setDisplayName("Demo course");
   	SAMPLE_COURSEVO.setTitle("Demo course");
   	SAMPLE_COURSEVOes.setTotalCount(0);
   	SAMPLE_COURSEVOes.setCourses(new CourseVO[]{SAMPLE_COURSEVO});

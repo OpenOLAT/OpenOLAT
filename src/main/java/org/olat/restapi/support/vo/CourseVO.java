@@ -45,6 +45,7 @@ public class CourseVO {
 	private String softKey;
 	private Long repoEntryKey;
 	private String title;
+	private String displayName;
 	private String editorRootNodeId;
 	
 	
@@ -85,6 +86,14 @@ public class CourseVO {
 	
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	public String getEditorRootNodeId() {
