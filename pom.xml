@@ -366,6 +366,9 @@
             <version>2.8.1</version>
             <configuration>
               <argLine>-Xmx512m -Xms512m</argLine>
+            	<systemPropertyVariables>
+								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
+							</systemPropertyVariables>
               <testNGArtifactName>none:none</testNGArtifactName>
               <includes>
                 <include>**/AllTestsOlatCoreJunit4.java</include>
@@ -587,6 +590,9 @@
             <version>2.8.1</version>
             <configuration>
               <argLine>-Xmx512m -Xms512m</argLine>
+            	<systemPropertyVariables>
+								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
+							</systemPropertyVariables>
               <testNGArtifactName>none:none</testNGArtifactName>
               <includes>
                 <include>**/AllTestsOlatCoreJunit4.java</include>
