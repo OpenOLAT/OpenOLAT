@@ -113,12 +113,6 @@ public class PortfolioModuleTest extends OlatTestCase {
 		//////////////////////////////////
 		portfolioModule.setEnableArtefactHandler(dummyHandler, false);
 		
-		try {//wait until the event is send
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
 		//found in the list of all available handlers
 		List<EPArtefactHandler<?>> allHandlers = portfolioModule.getAllAvailableArtefactHandlers();
 		boolean foundInAll = false;
@@ -149,12 +143,6 @@ public class PortfolioModuleTest extends OlatTestCase {
 		// enable
 		//////////////////////////////////
 		portfolioModule.setEnableArtefactHandler(dummyHandler, false);
-		
-		try {//wait until the event is send
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		
 		//found in the list of all available handlers
 		allHandlers = portfolioModule.getAllAvailableArtefactHandlers();
@@ -215,6 +203,7 @@ public class PortfolioModuleTest extends OlatTestCase {
 	}
 	
 	public class DummyArtefact extends AbstractArtefact {
+		private static final long serialVersionUID = -7986085106701245624L;
 		public static final String TYPE = "dummy";
 
 		@Override
