@@ -22,10 +22,10 @@
 package org.olat.portfolio;
 
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -113,6 +113,12 @@ public class PortfolioModuleTest extends OlatTestCase {
 		//////////////////////////////////
 		portfolioModule.setEnableArtefactHandler(dummyHandler, false);
 		
+		try {//wait until the event is send
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
 		//found in the list of all available handlers
 		List<EPArtefactHandler<?>> allHandlers = portfolioModule.getAllAvailableArtefactHandlers();
 		boolean foundInAll = false;
@@ -143,6 +149,12 @@ public class PortfolioModuleTest extends OlatTestCase {
 		// enable
 		//////////////////////////////////
 		portfolioModule.setEnableArtefactHandler(dummyHandler, false);
+		
+		try {//wait until the event is send
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 		//found in the list of all available handlers
 		allHandlers = portfolioModule.getAllAvailableArtefactHandlers();

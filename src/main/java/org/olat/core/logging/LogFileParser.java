@@ -60,8 +60,8 @@ public class LogFileParser extends LogDelegator {
 			} else {
 				logfilepathBase = logdir + File.separator + filename;
 			}
-		}else {
-			//todo if java.io.tmpdir is in use the log gets written to catalina.out....
+		} else {
+			logfilepathBase = System.getProperty("java.io.tmpdir") + File.separator + "logs" + File.separator + filename;
 		}		
 		log = getLogger();
 	}
