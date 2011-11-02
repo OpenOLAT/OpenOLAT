@@ -42,8 +42,11 @@ public class VCProviderFactory {
 		if(_registeredProviders == null || _registeredProviders.isEmpty()) {
 			return null;
 		}
-		String providerId = _registeredProviders.keySet().iterator().next();
-		return createProvider(providerId);
+		List<VCProvider> providers = getProviders();
+		if(!providers.isEmpty()) {
+			return createProvider(providers.get(0).getProviderId());
+		}
+		return null;
 	}
 	
 	public static boolean existsProvider(String providerId) {
