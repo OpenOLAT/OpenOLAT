@@ -83,6 +83,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	private boolean hsqlDBConfigured = false;
+	private boolean postgresqlConfigured = false;
 	
 	/**
 	 * If you like to disable a test method for some time just add the
@@ -114,6 +115,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		
 		String connectionURL = (String)properties.get("hibernate.connection.url");
 		hsqlDBConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("hsqldb") > 0; 
+		postgresqlConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("postgres") > 0; 
 		
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		for (int i = 0; i < propsOfInterest.length; i++) {
@@ -156,4 +158,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		return hsqlDBConfigured;
 	}
 
+	protected boolean isPostgresqlConfigured() {
+		return postgresqlConfigured;
+	}
 }

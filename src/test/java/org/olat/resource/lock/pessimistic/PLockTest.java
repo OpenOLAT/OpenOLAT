@@ -174,7 +174,7 @@ public class PLockTest extends OlatTestCase {
 	@Test public void testLockWaitTimout() {
 		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
 		assumeTrue(!getHsqlDbConfigured());
-
+		assumeTrue(!isPostgresqlConfigured());//no lock timeout on postgres
 		
 		System.out.println("testing if holding a lock timeouts");
 		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
