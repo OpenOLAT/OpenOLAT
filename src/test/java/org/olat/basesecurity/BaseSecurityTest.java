@@ -767,6 +767,9 @@ public class BaseSecurityTest extends OlatTestCase {
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, null, null, before);
 		assertTrue(results.size() == 0);
 		
+
+		System.out.println("Tschagaaa, good job! 2");
+		
 	}
 	
 	

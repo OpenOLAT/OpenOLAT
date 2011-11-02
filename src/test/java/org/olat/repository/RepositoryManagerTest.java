@@ -87,9 +87,14 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Before public void setup() {
 		try {
 			// Setup for code-points
+
+			System.out.println("Tschagaaa, start RepositoryManagerTest!");
 			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
 		} catch (Exception e) {
 			log.error("Error while setting up activeMq or Codepointserver", e);
+		} catch(Error err) {
+			System.out.println("Tschagaaa, ERROR starting RepositoryManagerTest!");
+			throw err;
 		}
 	}
 	
@@ -111,6 +116,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void testRawRepositoryEntryCreate() {
 		try {
+
+			System.out.println("Tschagaaa, start testRawRepositoryEntryCreate!");
+			
 			DB db = DBFactory.getInstance();
 			OLATResourceManager rm = OLATResourceManager.getInstance();
 			// create course and persist as OLATResourceImpl
