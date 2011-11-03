@@ -23,6 +23,7 @@ package org.olat.core.util.vfs;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +31,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
@@ -115,9 +119,46 @@ public class VFSManager extends BasicManager {
 			return rootContainer;
 		}
 
+		// The following code block eliminates directory scans on file-systems,
+		// which are done in the original code in the next block, which is left
+		// there as a fall-back in case there are non-file-system implementations
+		// of OLAT-VFS.
+		// OLAT file-systems can be very large and directories can contain
+		// quite numerous files. Scanning these can take a lot of time.
+		// Just put together the paths of both arguments
+		// and ask the file-system whether such an entry
+		// exists. If yes, this entry must be exactly what is
+		// to be returned as, the proper type of, VFSItem.
+		if (rootContainer instanceof LocalFolderImpl) {
+			LocalFolderImpl l = (LocalFolderImpl) rootContainer;
+			String fsPath = l.getBasefile().getAbsolutePath()+path;
+			File t = new File (fsPath);
+			if (t.exists()) {
+				String bcroot = FolderConfig.getCanonicalRoot();
+				if (t.isDirectory()) {
+					if (fsPath.startsWith(bcroot)) {
+						fsPath = fsPath.replace(bcroot,"");
+						return new OlatRootFolderImpl(fsPath, rootContainer);
+					} else {
+						return new LocalFolderImpl (t, rootContainer);
+					}
+				} else {
+					if (fsPath.startsWith(bcroot)) {
+						fsPath = fsPath.replace(bcroot,"");
+						return new OlatRootFileImpl(fsPath, rootContainer);
+					} else {
+						return new LocalFileImpl(t, rootContainer);
+					}
+				}
+			} else {
+				return null;
+			}
+		}
+
+		//leave original code block as fall-back for non-file-system-based implementations
 		String childName = VFSManager.extractChild(path);
 		List<VFSItem> children = rootContainer.getItems();
-		for (VFSItem child:children) {
+		for (VFSItem child : children) {
 			String curName = child.getName();
 			if (childName.equals(curName)) { // found , let child further resolve if needed
 				return child.resolve(path.substring(childName.length() + 1));
