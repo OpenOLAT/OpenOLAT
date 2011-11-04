@@ -60,6 +60,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -174,9 +175,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		InputStream body = method.getResponseBodyAsStream();
 		List<UserVO> vos = parseUserArray(body);
+		method.releaseConnection();
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 
 		assertNotNull(vos);
@@ -195,9 +196,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		});
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		InputStream body = method.getResponseBodyAsStream();
 		List<UserVO> vos = parseUserArray(body);
+		method.releaseConnection();
 		String[] authProviders = new String[]{"OLAT"};
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("administrator", null, true, null, null, authProviders, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 
@@ -226,9 +227,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		method.addRequestHeader("Accept-Language", "en");
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		InputStream body = method.getResponseBodyAsStream();
 		List<UserVO> vos = parseUserArray(body);
+		method.releaseConnection();
 	
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
@@ -289,40 +290,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(vo.getLogin(), id2.getName());
 		//no properties for security reason
 		assertTrue(vo.getProperties().isEmpty());
-	}
-	
-	/**
-	 * Only print out the raw body of the response
-	 * @throws IOException
-	 */
-	@Test
-	public void testGetRawJsonUsers() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
-		
-		HttpMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String bodyJsons = method.getResponseBodyAsString();
-		System.out.println("Users JSON");
-		System.out.println(bodyJsons);
-		System.out.println("Users JSON");
-	}
-		
-	/**
-	 * Only print out the raw body of the response
-	 * @throws IOException
-	 */
-	@Test
-	public void testGetRawXmlUsers() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
-		
-		HttpMethod method = createGet("/users", MediaType.APPLICATION_XML, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String bodyXmls = method.getResponseBodyAsString();
-		System.out.println("Users XML");
-		System.out.println(bodyXmls);
-		System.out.println("Users XML");
 	}
 		
 	/**
@@ -616,6 +583,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	protected List<UserVO> parseUserArray(String body) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	protected List<UserVO> parseUserArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
