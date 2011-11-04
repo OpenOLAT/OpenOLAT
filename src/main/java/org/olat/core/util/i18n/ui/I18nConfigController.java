@@ -21,7 +21,6 @@
 
 package org.olat.core.util.i18n.ui;
 
-import java.io.File;
 import java.util.Locale;
 import java.util.Set;
 
@@ -121,7 +120,11 @@ class I18nConfigController extends FormBasicController {
 			if (explLang != null && !explLang.equals(key)) all += " (" + key + ")";
 			// count translation status
 			int keyCount = i18nMgr.countI18nItems(i18nMgr.getLocaleOrNull(key), null, true);
-			all += "   <span class='b_translation_status'>" + (keyCount * 100 / referenceKeyCount) + "%</span>";
+			if(keyCount > 0) {
+				all += "   <span class='b_translation_status'>" + (keyCount * 100 / referenceKeyCount) + "%</span>";
+			} else {
+				all += "   <span class='b_translation_status'>0%</span>";
+			}
 			availableValues[i] = all;
 		}
 		ArrayHelper.sort(availablelangKeys, availableValues, false, true, false);
