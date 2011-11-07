@@ -1181,7 +1181,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public String getLanguageTranslated(String languageKey, boolean overlayEnabled) {
 		// Load it from package without fallback
-		String translated = getLocalizedString(I18nModule.getCoreFallbackBundle(), "this.language.translated", null, I18nModule
+		String translated = getLocalizedString(I18nModule.getApplicationFallbackBundle(), "this.language.translated", null, I18nModule
 				.getAllLocales().get(languageKey), overlayEnabled, false, false, false, 0);
 		if (translated == null) {
 			// Use the english version as callback
@@ -1889,7 +1889,7 @@ public class I18nManager extends BasicManager {
 		if (I18nModule.getAvailableLanguageKeys().contains(localeKey)) { return false; }
 		// Create new property file in the brasato bundle and re-initialize
 		// everything
-		String coreFallbackBundle = I18nModule.getCoreFallbackBundle();
+		String coreFallbackBundle = I18nModule.getApplicationFallbackBundle();
 		File transToolCoreLanguagesDir = I18nModule.getTransToolApplicationOptLanguagesSrcDir();
 		String i18nDirRelPath = "/" + coreFallbackBundle.replace(".", "/") + "/" + I18nManager.I18N_DIRNAME;
 		File transToolCoreLanguagesDir_I18n = new File(transToolCoreLanguagesDir, i18nDirRelPath);

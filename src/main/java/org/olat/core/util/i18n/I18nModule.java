@@ -267,7 +267,39 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	private void doInitAvailableLanguages() {
 		I18nManager i18nMgr = I18nManager.getInstance();
 		// Search all availableLanguages files that exist 
-		
+
+		String i18nDirRelPath = File.separator + applicationFallbackBundle.replace(".", File.separator) + File.separator + I18nManager.I18N_DIRNAME;
+		if (transToolApplicationLanguagesDir != null) {
+			File coreSrcI18nDir = new File(transToolApplicationLanguagesDir, i18nDirRelPath);
+			if (coreSrcI18nDir.exists()) {
+				for (String languageCode : i18nMgr.searchForAvailableLanguages(transToolApplicationLanguagesDir)) {
+					if (availableLanguages.contains(languageCode)) {
+						String path = "";
+						if (transToolApplicationOptLanguagesSrcDir != null) path = transToolApplicationOptLanguagesSrcDir.getAbsolutePath();
+						logWarn("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path , null);
+						continue;
+					}
+					logDebug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath(), null);
+					availableLanguages.add(languageCode);
+					translatableLanguages.add(languageCode);
+					translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationLanguagesDir);
+				}
+			}
+		}
+		// 2) Add languages from the translation tool source path
+		if (isTransToolEnabled()) {
+			for (String languageCode : i18nMgr.searchForAvailableLanguages(transToolApplicationOptLanguagesSrcDir)) {
+				if (availableLanguages.contains(languageCode)) {
+					logWarn("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+					continue;
+				}
+				logDebug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+				availableLanguages.add(languageCode);
+				translatableLanguages.add(languageCode);
+				translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationOptLanguagesSrcDir);
+			}
+		}
+
 		File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
 		for (String languageCode : i18nMgr.searchForAvailableLanguages(libDir)) {
 			if (availableLanguages.contains(languageCode)) {
