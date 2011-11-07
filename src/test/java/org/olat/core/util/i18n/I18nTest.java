@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -472,7 +471,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.getProperties(), i18nManager.saveOrUpdateProperties() and i18nManager.deleteProperties()
 	 */
-	@Ignore
 	@Test public void testGetSaveOrUpdateAndDeleteProperties() {
 		// test with existing files
 		Properties props = i18nMgr.getResolvedProperties(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
@@ -573,7 +571,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 	/**
 	 * Test methods i18nManager.countI18nItems() and i18nManager.countBundles()
 	 */
-	@Ignore
 	@Test public void testCountI18nItemsAndBundles() {
 		I18nModule.initBundleNames(); // remove dirty stuff from previous tests
 		int bundleCounter = I18nModule.getBundleNamesContainingI18nFiles().size();

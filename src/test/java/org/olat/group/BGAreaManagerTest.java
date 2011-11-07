@@ -29,7 +29,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -97,7 +98,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		final String areaName = "BGArea_1";
 
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final AtomicInteger finfishCount = new AtomicInteger(0);
+		final CountDownLatch finfishCount = new CountDownLatch(3);
 		
 		BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
 		assertNull(bgArea);
@@ -107,7 +108,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 		startThreadCreateDeleteBGArea(areaName, maxLoop, exceptionHolder, 15, 20, finfishCount);
 		
 		// sleep until t1 and t2 should have terminated/excepted
-		sleep(50000);
+		try {
+			finfishCount.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
@@ -115,7 +120,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 			exception.printStackTrace();
 		}
 		assertTrue("Exceptions #" + exceptionHolder.size(), exceptionHolder.size() == 0);				
-		assertEquals("Not all threads has finished", 3, finfishCount.intValue());
+		assertEquals("Not all threads has finished", 0, finfishCount.getCount());
 	}
 
 
@@ -129,9 +134,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 	 * @param sleepAfterDelete
 	 */
 	private void startThreadCreateDeleteBGArea(final String areaName, final int maxLoop, final List<Exception> exceptionHolder, 
-			final int sleepAfterCreate, final int sleepAfterDelete, final AtomicInteger finishedCount) {
+			final int sleepAfterCreate, final int sleepAfterDelete, final CountDownLatch finishedCount) {
 		new Thread(new Runnable() {
 			public void run() {
+				try {
+				
 				for (int i=0; i<maxLoop; i++) {
 					try {
 						BGArea bgArea = BGAreaManagerImpl.getInstance().createAndPersistBGAreaIfNotExists(areaName, "description:" + areaName, c1);
@@ -152,7 +159,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 					}
 					sleep(sleepAfterDelete);
 				}
-				finishedCount.getAndIncrement();
+				} catch(Exception e) {
+					exceptionHolder.add(e);
+				} finally {
+					finishedCount.countDown();
+				}
 			}
 		}).start();
 	}
@@ -170,7 +181,8 @@ public class BGAreaManagerTest extends OlatTestCase {
 		final String areaName = "BGArea_2";
 
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final AtomicInteger finfishCount = new AtomicInteger(0);
+		final CountDownLatch finfishCount = new CountDownLatch(3);
+		
 		
 		BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
 		assertNull(bgArea);
@@ -182,7 +194,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 		startThreadUpdateBGArea(areaName, maxLoop, exceptionHolder, 15, finfishCount);
 		
 		// sleep until t1 and t2 should have terminated/excepted
-		sleep(50000);
+		try {
+			finfishCount.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			exceptionHolder.add(e);
+		}
 
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
@@ -190,34 +206,39 @@ public class BGAreaManagerTest extends OlatTestCase {
 			exception.printStackTrace();
 		}
 		assertTrue("Exceptions #" + exceptionHolder.size(), exceptionHolder.size() == 0);				
-		assertEquals("Not all threads has finished", 3, finfishCount.intValue());
+		assertEquals("Not all threads has finished", 0, finfishCount.getCount());
 	}
 	
 	private void startThreadUpdateBGArea(final String areaName, final int maxLoop, final List<Exception> exceptionHolder, 
-			final int sleepTime, final AtomicInteger finishedCount) {
+			final int sleepTime, final CountDownLatch finishedCount) {
 		// thread 2 : update,copy 
 		new Thread(new Runnable() {
 			public void run() {
-				for (int i=0; i<maxLoop; i++) {
-					try {
-						BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
-						DBFactory.getInstance().closeSession();// Detached the bg-area object with closing session 
-						if (bgArea != null) {
-							bgArea.setDescription("description:" + areaName + i);
-							BGAreaManagerImpl.getInstance().updateBGArea(bgArea);
-						}
-					} catch (Exception e) {
-						exceptionHolder.add(e);
-					} finally {
+				try {
+					for (int i=0; i<maxLoop; i++) {
 						try {
-							DBFactory.getInstance().closeSession();
+							BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
+							DBFactory.getInstance().closeSession();// Detached the bg-area object with closing session 
+							if (bgArea != null) {
+								bgArea.setDescription("description:" + areaName + i);
+								BGAreaManagerImpl.getInstance().updateBGArea(bgArea);
+							}
 						} catch (Exception e) {
-							// ignore
-						};
+							exceptionHolder.add(e);
+						} finally {
+							try {
+								DBFactory.getInstance().closeSession();
+							} catch (Exception e) {
+								// ignore
+							};
+						}
+						sleep(sleepTime);
 					}
-					sleep(sleepTime);
+				} catch(Exception e) {
+					exceptionHolder.add(e);
+				} finally {
+					finishedCount.countDown();
 				}
-				finishedCount.getAndIncrement();
 			}}).start();
 	}
 

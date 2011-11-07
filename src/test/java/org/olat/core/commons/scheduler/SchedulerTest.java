@@ -23,6 +23,7 @@ package org.olat.core.commons.scheduler;
 
 import static org.junit.Assert.*;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Test;
@@ -45,17 +46,15 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 public class SchedulerTest extends AbstractJUnit4SpringContextTests {
 
 	@Test public void testSimpleTrigger() {
-		Date start = new Date();
 		JobDetailBean job = (JobDetailBean)applicationContext.getBean("schedulerTestJobSimple");
 		assertNotNull(job);
-		//wait until the job is executed
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		SimpleTriggerBean trigger = (SimpleTriggerBean) applicationContext.getBean("schedulerTestJobSimpleTrigger");
-		Date end = new Date();
+		
+		Calendar cal = Calendar.getInstance();
+		Date start = cal.getTime();
+		cal.add(Calendar.SECOND, 5);
+		cal.add(Calendar.MILLISECOND, 011);
+		Date end = cal.getTime();
 		assertEquals(5, trigger.computeNumTimesFiredBetween(start, end));
 	}
 	

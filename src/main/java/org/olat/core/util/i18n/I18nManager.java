@@ -1181,7 +1181,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public String getLanguageTranslated(String languageKey, boolean overlayEnabled) {
 		// Load it from package without fallback
-		String translated = getLocalizedString(I18nModule.getApplicationFallbackBundle(), "this.language.translated", null, I18nModule
+		String translated = getLocalizedString(I18nModule.getCoreFallbackBundle(), "this.language.translated", null, I18nModule
 				.getAllLocales().get(languageKey), overlayEnabled, false, false, false, 0);
 		if (translated == null) {
 			// Use the english version as callback

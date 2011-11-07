@@ -28,13 +28,6 @@
     <property name="repeatCount" value="10" />
 </bean>
 
-<!-- 
-<bean id="schedulerTestJobCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-    <property name="jobDetail" ref="schedulerTestJobCron" />
-    <property name="cronExpression" value="0-59 * * * *" />
-</bean>
- -->
-
 <!-- referenced beans -->
 <bean id="schedulerTestJobSimple" class="org.springframework.scheduling.quartz.JobDetailBean">
 	<property name="jobClass" value="org.olat.core.commons.scheduler.SchedulerTestJob" />
@@ -44,17 +37,6 @@
     </map>
   </property>
 </bean>
-
-<!-- 
-<bean id="schedulerTestJobCron" class="org.springframework.scheduling.quartz.JobDetailBean">
-	<property name="jobClass" value="org.olat.core.commons.scheduler.SchedulerTestJobWithDB" />
-	<property name="jobDataAsMap">
-    <map>
-    	<entry key="testValue" value="testValue" />
-    </map>
-  </property>
-</bean>
- -->
 
 </beans>
 
