@@ -22,6 +22,7 @@ package com.frentix.olat.course.nodes.vitero;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -29,6 +30,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 
 import com.frentix.olat.course.nodes.ViteroCourseNode;
+import com.frentix.olat.vitero.ViteroModule;
 
 /**
  * 
@@ -65,7 +67,9 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	
 	@Override
 	public boolean isEnabled() {
-		return super.isEnabled();
+		ViteroModule viteroModule = (ViteroModule) CoreSpringFactory.getBean("viteroModule");
+		if (!viteroModule.isEnabled()) return false;
+		else return super.isEnabled();
 	}
 
 	public String getName() {
