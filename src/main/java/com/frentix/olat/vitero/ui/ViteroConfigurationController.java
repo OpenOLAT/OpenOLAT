@@ -85,8 +85,22 @@ public class ViteroConfigurationController extends FormBasicController {
 		
 		enabledValues = new String[]{translate("enabled")};
 		
+		loadCustomers(false);
+		
+		initForm(ureq);
+	}
+	
+	private void loadCustomers(boolean fromEditor) {
 		try {
-			List<ViteroCustomer> customers = viteroManager.getCustomers();
+			List<ViteroCustomer> customers;
+			if(fromEditor) {
+				String url = urlEl.getValue();
+				String login = loginEl.getValue();
+				String password = passwordEl.getValue();
+				customers = viteroManager.getCustomers(url, login, password);
+			} else {
+				customers = viteroManager.getCustomers();
+			}
 			customerKeys = new String[customers.size()];
 			customerValues = new String[customers.size()];
 			int i=0;
@@ -98,8 +112,6 @@ public class ViteroConfigurationController extends FormBasicController {
 			customerKeys = new String[0];
 			customerValues = new String[0];
 		}
-		
-		initForm(ureq);
 	}
 
 	@Override
@@ -192,6 +204,30 @@ public class ViteroConfigurationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = validateURL();
+
+		customersEl.clearError();
+		if(customersEl.isOneSelected()) {
+			try {
+				String customerId = customersEl.getSelectedKey();
+				Integer.parseInt(customerId);
+			} catch(Exception e) {
+				customersEl.setErrorKey("error.customer.invalid", null);
+				allOk = false;
+			}
+		} else {
+			if(customersEl.getSize() == 0) {
+				loadCustomers(true);
+				customersEl.setKeysAndValues(customerKeys, customerValues, null);
+			}
+			customersEl.setErrorKey("form.legende.mandatory", null);
+			allOk = false;
+		}
+		
+		return allOk && super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateURL() {
 		boolean allOk = true;
 		
 		String url = urlEl.getValue();
@@ -221,22 +257,8 @@ public class ViteroConfigurationController extends FormBasicController {
 			passwordEl.setErrorKey("form.legende.mandatory", null);
 			allOk = false;
 		}
-
-		customersEl.clearError();
-		if(customersEl.isOneSelected()) {
-			try {
-				String customerId = customersEl.getSelectedKey();
-				Integer.parseInt(customerId);
-			} catch(Exception e) {
-				customersEl.setErrorKey("error.customer.invalid", null);
-				allOk = false;
-			}
-		} else {
-			customersEl.setErrorKey("form.legende.mandatory", null);
-			allOk = false;
-		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -245,14 +267,18 @@ public class ViteroConfigurationController extends FormBasicController {
 			boolean enabled = viteroEnabled.isSelected(0);
 			viteroModule.setEnabled(enabled);
 		} else if(source == checkLink) {
-			if(validateFormLogic(ureq)) {
-				checkConnection(ureq);
+			if(validateURL()) {
+				boolean ok = checkConnection(ureq);
+				if(ok && customersEl.getSize() == 0) {
+					loadCustomers(true);
+					customersEl.setKeysAndValues(customerKeys, customerValues, null);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	protected void checkConnection(UserRequest ureq) {
+	protected boolean checkConnection(UserRequest ureq) {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
 		String password = passwordEl.getValue();
@@ -265,10 +291,13 @@ public class ViteroConfigurationController extends FormBasicController {
 			} else {
 				showError("check.nok");
 			}
+			return ok;
 		} catch (NumberFormatException e) {
 			showError("error.customer.invalid");
+			return false;
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
+			return false;
 		}
 	}
 }

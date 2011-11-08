@@ -199,6 +199,28 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}
 	}
 	
+	public List<ViteroCustomer> getCustomers(String url, String login, String password) 
+			throws VmsNotAvailableException {
+				try {
+					CustomerServiceStub customerWs = new CustomerServiceStub(url + "/services");
+					SecurityHeader.addAdminSecurityHeader(login, password, customerWs);
+					CustomerServiceStub.GetCustomerListRequest listRequest = new CustomerServiceStub.GetCustomerListRequest();
+					listRequest.setGetCustomerListRequest(new EmptyOMElement());
+					CustomerServiceStub.GetCustomerListResponse response = customerWs.getCustomerList(listRequest);
+					CustomerServiceStub.Customertype[] customerTypes = response.getCustomer();
+					return convert(customerTypes);
+				} catch (AxisFault f) {
+					int code = handleAxisFault(f);
+					switch(code) {
+						default: logAxisError("Cannot get the list of customers.", f);
+					}
+					return Collections.emptyList();
+				} catch (RemoteException e) {
+					logError("Cannot get the list of customers.", e);
+					return Collections.emptyList();
+				}
+			}
+	
 	/**
 	 * Create a session code with a one hour expiration date
 	 * @param identity

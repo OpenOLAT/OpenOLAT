@@ -34,6 +34,7 @@ import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 
 import com.frentix.olat.vitero.manager.ViteroZombieSlayerJob;
 
@@ -140,7 +141,7 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	
 	private void initCronJob() {
 		try {
-			if(scheduler.getTrigger("Vitero_Cleaner_Cron_Job", Scheduler.DEFAULT_GROUP) == null) {
+			if(scheduler.getTrigger("Vitero_Cleaner_Cron_Trigger", Scheduler.DEFAULT_GROUP) == null) {
 				JobDetail jobDetail = new JobDetail("Vitero_Cleaner_Cron_Job", Scheduler.DEFAULT_GROUP, ViteroZombieSlayerJob.class);
 				CronTrigger trigger = new CronTrigger();
 				
