@@ -221,7 +221,12 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 	public Tag createAndPersistTag(Identity author, String tag, OLATResourceable ores, String subPath, String businessPath) {
 		if (author == null || !StringHelper.containsNonWhitespace(tag) || ores.getResourceableId() == null || ores.getResourceableTypeName() == null){
 			throw new AssertException("A tag cannot be created and persisted without an author, tag and a valid OlatResourcable");
-		}		
+		}
+		if (tag.length() > 128){
+			// truncate
+			logWarn("tag was too long, truncated to 128 chars. Original: " + tag, null);
+			tag = tag.substring(0, 125) + "...";
+		}
 		TagImpl t = new TagImpl();
 		t.setAuthor(author);
 		t.setTag(tag.trim());
