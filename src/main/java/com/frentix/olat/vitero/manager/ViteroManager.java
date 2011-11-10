@@ -956,14 +956,20 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	 * @param ores The OLAT resourceable (of the course) (optional)
 	 * @return
 	 */
-	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores) {
+	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores)
+	throws VmsNotAvailableException {
 		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
 		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
 		for(Property property:properties) {
 			String bookingStr = property.getTextValue();
 			ViteroBooking booking = deserializeViteroBooking(bookingStr);
-			booking.setProperty(property);
-			bookings.add(booking);
+			Bookingtype bookingType = getBookingById(booking.getBookingId());
+			if(bookingType != null) {
+				Booking vmsBooking = bookingType.getBooking();
+				booking.setProperty(property);
+				update(booking, vmsBooking);
+				bookings.add(booking);
+			}
 		}
 		return bookings;
 	}
@@ -1114,9 +1120,9 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		vb.setGroupId(booking.getGroupid());
 		vb.setRoomSize(booking.getRoomsize());
 		vb.setStart(parse(booking.getStart()));
-		vb.setStartBuffer(booking.getEndbuffer());
+		vb.setStartBuffer(booking.getStartbuffer());
 		vb.setEnd(parse(booking.getEnd()));
-		vb.setEndBuffer(booking.getStartbuffer());
+		vb.setEndBuffer(booking.getEndbuffer());
 		return vb;
 	}
 	

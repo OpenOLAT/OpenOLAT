@@ -217,7 +217,7 @@ public class ViteroBookingEditController extends FormBasicController {
 		if(endBufferEl.isOneSelected()) {
 			endBuffer = Integer.parseInt(endBufferEl.getSelectedKey());
 		}
-		booking.setStartBuffer(endBuffer);
+		booking.setEndBuffer(endBuffer);
 		
 		int roomSize = -1;
 		if(roomSizeEl.isOneSelected()) {

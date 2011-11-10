@@ -202,8 +202,12 @@ public class ViteroBookingsAdminController extends BasicController {
 	}
 	
 	protected void reloadModel() {
-		List<ViteroBooking> bookings = viteroManager.getBookings(null, null);
-		ViteroBookingDataModel tableModel = new ViteroBookingDataModel(bookings);
-		tableCtr.setTableDataModel(tableModel);
+		try {
+			List<ViteroBooking> bookings = viteroManager.getBookings(null, null);
+			ViteroBookingDataModel tableModel = new ViteroBookingDataModel(bookings);
+			tableCtr.setTableDataModel(tableModel);
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 	}
 }
