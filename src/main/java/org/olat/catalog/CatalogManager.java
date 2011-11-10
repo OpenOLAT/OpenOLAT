@@ -172,7 +172,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 
 		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
 		dbQuery.setLong("parentKey", ce.getKey());
-		if(type > 0) {
+		if(type >= 0) {
 			dbQuery.setInteger("type", type);
 		}
 		// cache this query
