@@ -23,6 +23,7 @@ package org.olat.commons.calendar;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
+import net.fortuna.ical4j.util.CompatibilityHints;
 
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
@@ -45,7 +46,8 @@ public class CalendarModule extends AbstractOLATModule {
 	public void init() {
 		//some computers have no Internet access, the host can be down and we must get the default time zone
 		System.setProperty("net.fortuna.ical4j.timezone.update.enabled", "false");
-		System.setProperty("ical4j.unfolding.relaxed", "true");
+		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
+		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
 		String defaultTimeZoneID = java.util.TimeZone.getDefault().getID();
 		timeZoneRegistry = TimeZoneRegistryFactory.getInstance().createRegistry();
 		defaultTimeZone = timeZoneRegistry.getTimeZone(defaultTimeZoneID);

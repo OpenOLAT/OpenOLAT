@@ -14,6 +14,7 @@ import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.parameter.Value;
+import net.fortuna.ical4j.util.CompatibilityHints;
 import net.fortuna.ical4j.util.Dates;
 import net.fortuna.ical4j.util.TimeZones;
 
@@ -65,6 +66,18 @@ public class CalendarImportTest {
 	@Test
 	public void testImportFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Hoffstedde.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(in);
+        assertNotNull(calendar);
+	}
+	
+	@Test
+	public void testImportFromFGiCal() throws IOException, ParserException {
+		//default settings in olat
+		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
+		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
+		
+		InputStream in = CalendarImportTest.class.getResourceAsStream("EMAIL.ics");
 		CalendarBuilder builder = new CalendarBuilder();
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
