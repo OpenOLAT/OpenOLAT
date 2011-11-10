@@ -26,7 +26,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
@@ -50,6 +52,7 @@ import org.olat.repository.RepositoryManager;
 
 import com.frentix.olat.course.nodes.vitero.ViteroEditController;
 import com.frentix.olat.course.nodes.vitero.ViteroPeekViewController;
+import com.frentix.olat.course.nodes.vitero.ViteroRunController;
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.ui.ViteroBookingsRunController;
 
@@ -98,29 +101,36 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		// check if user is moderator of the virtual classroom
+		Controller runCtr;
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean moderator = roles.isOLATAdmin();
-		Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		if (!moderator) {
-			if(roles.isInstitutionalResourceManager() | roles.isAuthor()) {
-				RepositoryManager rm = RepositoryManager.getInstance();
-				ICourse course = CourseFactory.loadCourse(key);
-				RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
-				if (re != null) {
-					moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
-					if(!moderator) {
-						moderator = rm.isInstitutionalRessourceManagerFor(re, ureq.getIdentity());
+		if (roles.isGuestOnly()) {
+			Translator trans = Util.createPackageTranslator(ViteroRunController.class, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			runCtr = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else {
+			// check if user is moderator of the virtual classroom
+			boolean moderator = roles.isOLATAdmin();
+			Long key = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			if (!moderator) {
+				if(roles.isInstitutionalResourceManager() | roles.isAuthor()) {
+					RepositoryManager rm = RepositoryManager.getInstance();
+					ICourse course = CourseFactory.loadCourse(key);
+					RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
+					if (re != null) {
+						moderator = rm.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
+						if(!moderator) {
+							moderator = rm.isInstitutionalRessourceManagerFor(re, ureq.getIdentity());
+						}
 					}
 				}
 			}
+			// create run controller
+			Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
+			String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
+			runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, courseTitle, moderator);
 		}
-		// create run controller
-		
-		Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
-		String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
-		Controller runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, courseTitle, moderator);
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vitero_icon");
 		return new NodeRunConstructionResult(controller);
 	}
