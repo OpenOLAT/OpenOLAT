@@ -30,7 +30,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.activation.DataHandler;
@@ -55,7 +57,6 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserDataDeletable;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +81,7 @@ import com.frentix.olat.vitero.model.GroupRole;
 import com.frentix.olat.vitero.model.ViteroBooking;
 import com.frentix.olat.vitero.model.ViteroCustomer;
 import com.frentix.olat.vitero.model.ViteroGroup;
+import com.frentix.olat.vitero.model.ViteroGroupRoles;
 import com.frentix.olat.vitero.model.ViteroUser;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.CompactWriter;
@@ -108,8 +110,6 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	private PropertyManager propertyManager;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 	
@@ -267,20 +267,56 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}
 	}
 	
-	public List<Identity> getIdentitiesInBooking(ViteroBooking booking) 
+	public ViteroGroupRoles getGroupRoles(int id)
 	throws VmsNotAvailableException {
-		Usertype[] vmsUsers = getVmsUsersByGroup(booking.getGroupId());
-		List<Identity> identities = new ArrayList<Identity>();
-		if(vmsUsers != null) {
-			for(Usertype vmsUser:vmsUsers) {
-				String email = vmsUser.getEmail();
-				Identity id = userManager.findIdentityByEmail(email);
-				if(id != null) {
-					identities.add(id);
+		try {
+			GroupServiceStub groupWs = getGroupWebService();
+			GroupServiceStub.GetGroupRequest getRequest = new GroupServiceStub.GetGroupRequest();
+			GroupServiceStub.Groupid groupId = new GroupServiceStub.Groupid();
+			groupId.setGroupid(id);
+			getRequest.setGetGroupRequest(groupId);
+			
+			GroupServiceStub.GetGroupResponse response = groupWs.getGroup(getRequest);
+			GroupServiceStub.Group group = response.getGetGroupResponse();
+			GroupServiceStub.Completegrouptype groupType = group.getGroup();
+			GroupServiceStub.Participant_type0[] participants = groupType.getParticipant();
+			int numOfParticipants = participants == null ? 0 : participants.length;
+
+			ViteroGroupRoles groupRoles = new ViteroGroupRoles();
+			if(numOfParticipants > 0) {
+				Map<Integer,String> idToEmails = new HashMap<Integer,String>();
+				Usertype[] vmsUsers = getVmsUsersByGroup(id);
+				if(vmsUsers != null) {
+					for(Usertype vmsUser:vmsUsers) {
+						Integer userId = new Integer(vmsUser.getId());
+						String email = vmsUser.getEmail();
+						groupRoles.getEmailsOfParticipants().add(email);
+						idToEmails.put(userId, email);
+					}	
 				}
-			}	
-		}
-		return identities;
+				
+				for(int i=0; i<numOfParticipants; i++) {
+					GroupServiceStub.Participant_type0 participant = participants[i];
+					Integer userId = new Integer(participant.getUserid());
+					String email = idToEmails.get(userId);
+					if(email != null) {
+						GroupRole role = GroupRole.valueOf(participant.getRole());
+						groupRoles.getEmailsToRole().put(email, role);
+					}
+				}
+			}
+
+			return groupRoles;
+		} catch(AxisFault f) {
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot get group roles",f);
+			}
+			return null;
+		} catch (RemoteException e) {
+			logError("Cannot get group roles.", e);
+			return null;
+		}	
 	}
 	
 	public List<ViteroUser> getUsersOf(ViteroBooking booking) 
@@ -580,6 +616,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			GroupServiceStub.GetGroupResponse response = groupWs.getGroup(getRequest);
 			GroupServiceStub.Group group = response.getGetGroupResponse();
 			GroupServiceStub.Completegrouptype groupType = group.getGroup();
+			
 			return convert(groupType);
 		} catch(AxisFault f) {
 			int code = handleAxisFault(f);

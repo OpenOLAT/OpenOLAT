@@ -27,6 +27,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 
+import com.frentix.olat.vitero.model.GroupRole;
+
 /**
  * 
  * Description:<br>
@@ -46,8 +48,16 @@ public class RoleCellRenderer implements CustomCellRenderer {
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if("owner".equals(val) || "coach".equals(val)) {
-			sb.append(translator.translate("role.teamLeader"));
+		if(val instanceof GroupRole) {
+			GroupRole role = (GroupRole)val;
+			switch(role) {
+				case participant: sb.append(translator.translate("role.participant")); break;
+				case assistant: sb.append(translator.translate("role.assistant")); break;
+				case teamleader: sb.append(translator.translate("role.teamLeader")); break;
+				case audience: sb.append(translator.translate("role.audience")); break;
+			}
+		} else if("owner".equals(val) || "coach".equals(val)) {
+			sb.append("<i>").append(translator.translate("role.teamLeader")).append("</i>");
 		}
 	}
 }

@@ -62,6 +62,7 @@ import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.GroupRole;
 import com.frentix.olat.vitero.model.ViteroBooking;
+import com.frentix.olat.vitero.model.ViteroGroupRoles;
 
 /**
  * 
@@ -213,11 +214,12 @@ public class ViteroUserToGroupController extends BasicController {
 
 	private void loadModel() {
 		try {
-			List<Identity> identitiesInGroup = viteroManager.getIdentitiesInBooking(booking);
-			ResourceMembers members = getIdentitiesInResource();
-			tableCtr.setTableDataModel(new UserToGroupDataModel(members, identitiesInGroup));
+			ViteroGroupRoles groupRoles = viteroManager.getGroupRoles(booking.getGroupId());
 			
-			int numOfFreePlaces = booking.getRoomSize() - identitiesInGroup.size();
+			ResourceMembers members = getIdentitiesInResource();
+			tableCtr.setTableDataModel(new UserToGroupDataModel(members, groupRoles));
+			
+			int numOfFreePlaces = booking.getRoomSize() - groupRoles.size();
 			mainVC.contextPut("freePlaces", new String[]{Integer.toString(numOfFreePlaces)});
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
@@ -288,11 +290,11 @@ public class ViteroUserToGroupController extends BasicController {
 		
 		private ResourceMembers members;
 		private List<Identity> identities;
-		private final List<Identity> identitiesInGroup;
+		private final ViteroGroupRoles groupRoles;
 		
-		public UserToGroupDataModel(ResourceMembers members, List<Identity> identitiesInGroup) {
+		public UserToGroupDataModel(ResourceMembers members, ViteroGroupRoles groupRoles) {
 			this.members = members;
-			this.identitiesInGroup = identitiesInGroup;
+			this.groupRoles = groupRoles;
 			
 			identities = new ArrayList<Identity>();
 			identities.addAll(members.getOwners());
@@ -322,13 +324,23 @@ public class ViteroUserToGroupController extends BasicController {
 				case lastName: return identity.getUser().getProperty(UserConstants.LASTNAME, null);
 				case email: return identity.getUser().getProperty(UserConstants.EMAIL, null);
 				case role: {
+					String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+					GroupRole role = groupRoles.getEmailsToRole().get(email);
+					if(role != null) {
+						return role;
+					}
 					if(members == null) return null;
-					if(members.owners.contains(identity)) return "owner";
-					if(members.coaches.contains(identity)) return "coach";
+					if(members.owners.contains(identity)) {
+						return "owner";
+					}
+					if(members.coaches.contains(identity)) {
+						return "coach";
+					}
 					return null;
 				}
 				case sign: {
-					if(identitiesInGroup.contains(identity)) {
+					String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+					if(groupRoles.getEmailsOfParticipants().contains(email)) {
 						return Sign.signout;
 					}
 					return Sign.signin;
@@ -349,7 +361,7 @@ public class ViteroUserToGroupController extends BasicController {
 
 		@Override
 		public Object createCopyWithEmptyList() {
-			return new UserToGroupDataModel(new ResourceMembers(), identitiesInGroup);
+			return new UserToGroupDataModel(new ResourceMembers(), groupRoles);
 		}
 	}
 	

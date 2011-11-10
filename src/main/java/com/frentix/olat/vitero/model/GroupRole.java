@@ -25,4 +25,14 @@ public enum GroupRole {
 	public int getVmsValue() {
 		return vmsValue;
 	}
+	
+	public static GroupRole valueOf(int role) {
+		switch(role) {
+			case 0: return participant;
+			case 1: return assistant;
+			case 2: return teamleader;
+			case 3: return audience;
+			default : return null;
+		}
+	}
 }
