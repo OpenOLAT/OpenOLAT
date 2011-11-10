@@ -51,6 +51,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
@@ -374,7 +375,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			
 			//mandatory
 			User olatUser = identity.getUser();
-			user.setUsername("olat." + identity.getName());
+			user.setUsername("olat." + WebappHelper.getInstanceId() + "." + identity.getName());
 			user.setSurname(olatUser.getProperty(UserConstants.LASTNAME, null));
 			user.setFirstname(olatUser.getProperty(UserConstants.FIRSTNAME, null));
 			user.setEmail(olatUser.getProperty(UserConstants.EMAIL, null));
@@ -584,7 +585,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			GroupServiceStub groupWs = getGroupWebService();
 			GroupServiceStub.CreateGroupRequest createRequest = new GroupServiceStub.CreateGroupRequest();
 			GroupServiceStub.Groupnamecustomerid groupInfos = new GroupServiceStub.Groupnamecustomerid();
-			groupInfos.setGroupname("OLAT-" + UUID.randomUUID().toString());
+			groupInfos.setGroupname("OLAT-" + UUID.randomUUID().toString().replace("-", ""));
 			groupInfos.setCustomerid(viteroModule.getCustomerId());
 			createRequest.setGroup(groupInfos);
 			
