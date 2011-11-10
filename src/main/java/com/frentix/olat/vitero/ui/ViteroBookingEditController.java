@@ -164,26 +164,30 @@ public class ViteroBookingEditController extends FormBasicController {
 		boolean allOk = true;
 
 		Date begin = beginChooser.getDate();
-		beginChooser.clearError();
-		if(begin == null) {
-			beginChooser.setErrorKey("form.legende.mandatory", null);
-			allOk = false;
-		} else if(new Date().after(begin)) {
-			beginChooser.setErrorKey("error.bookingInPast", null);
-			allOk = false;
+		if(beginChooser.isEnabled()) {
+			beginChooser.clearError();
+			if(begin == null) {
+				beginChooser.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			} else if(new Date().after(begin)) {
+				beginChooser.setErrorKey("error.bookingInPast", null);
+				allOk = false;
+			}
 		}
 		
-		Date end = endChooser.getDate();
-		endChooser.clearError();
-		if(end == null) {
-			endChooser.setErrorKey("form.legende.mandatory", null);
-			allOk = false;
-		} else if(new Date().after(begin)) {
-			beginChooser.setErrorKey("error.bookingInPast", null);
-			allOk = false;
-		} else if(end.before(begin)) {
-			beginChooser.setErrorKey("error.bookingInPast", null);
-			allOk = false;
+		if(endChooser.isEnabled()) {
+			Date end = endChooser.getDate();
+			endChooser.clearError();
+			if(end == null) {
+				endChooser.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			} else if(new Date().after(begin)) {
+				beginChooser.setErrorKey("error.bookingInPast", null);
+				allOk = false;
+			} else if(end.before(begin)) {
+				beginChooser.setErrorKey("error.bookingInPast", null);
+				allOk = false;
+			}
 		}
 		
 		roomSizeEl.clearError();

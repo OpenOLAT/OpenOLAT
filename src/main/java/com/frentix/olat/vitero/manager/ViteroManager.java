@@ -349,7 +349,12 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			user.setCustomeridlist(customerIds);
 
 			//optional
-			user.setLocale("en");
+			String language = identity.getUser().getPreferences().getLanguage();
+			if(StringHelper.containsNonWhitespace(language) && language.startsWith("de")) {
+				user.setLocale("de");
+			} else {
+				user.setLocale("en");
+			}
 			user.setPcstate("NOT_TESTED");
 			user.setTimezone(viteroModule.getTimeZoneId());
 			
