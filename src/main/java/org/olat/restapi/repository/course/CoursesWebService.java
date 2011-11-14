@@ -55,6 +55,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -64,6 +66,9 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.controllers.RepositoryEntryImageController;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.MediaTypeVariants;
@@ -160,7 +165,7 @@ public class CoursesWebService {
 	}
 
 	/**
-	 * Creates an empty course
+	 * Creates an empty course, or a copy from a course if the parameter copyFrom is set.
 	 * @response.representation.200.qname {http://www.example.com}courseVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The metadatas of the created course
@@ -169,6 +174,7 @@ public class CoursesWebService {
    * @param shortTitle The short title
    * @param title The title
    * @param sharedFolderSoftKey The repository entry key of a shared folder (optional)
+   * @param copyFrom The cours key to make a copy from (optional)
    * @param request The HTTP request
 	 * @return It returns the id of the newly created Course
 	 */
@@ -177,6 +183,7 @@ public class CoursesWebService {
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle,
 			@QueryParam("title") String title,
 			@QueryParam("sharedFolderSoftKey") String sharedFolderSoftKey,
+			@QueryParam("copyFrom") Long copyFrom,
 			@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -184,10 +191,63 @@ public class CoursesWebService {
 		CourseConfigVO configVO = new CourseConfigVO();
 		configVO.setSharedFolderSoftKey(sharedFolderSoftKey);
 		
+		ICourse course;
 		UserRequest ureq = getUserRequest(request);
-		ICourse course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, configVO);
+		if(copyFrom != null) {
+			course = copyCourse(copyFrom, ureq, shortTitle, title, configVO);
+		} else {
+			course = createEmptyCourse(ureq.getIdentity(), shortTitle, title, configVO);
+		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
+	}
+	
+	public static ICourse copyCourse(Long copyFrom, UserRequest ureq, String name, String longTitle, CourseConfigVO courseConfigVO) {
+		String shortTitle = name;
+		//String learningObjectives = name + " (Example of creating a new course)";
+		
+		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
+		RepositoryEntry src = RepositoryManager.getInstance().lookupRepositoryEntry(originalOresTrans, false);
+		OLATResource originalOres = OLATResourceManager.getInstance().findResourceable(src.getOlatResource());
+		boolean isAlreadyLocked = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).isLocked(originalOres);
+		LockResult lockResult = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).acquireLock(originalOres, ureq.getIdentity());
+		
+		if(lockResult == null || (lockResult != null && lockResult.isSuccess()) && !isAlreadyLocked) {
+
+			//create new repo entry
+			RepositoryEntry preparedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(ureq.getIdentity().getName());
+			preparedEntry.setCanDownload(src.getCanDownload());
+			preparedEntry.setCanLaunch(src.getCanLaunch());
+			
+			if (courseConfigVO != null && StringHelper.containsNonWhitespace(shortTitle)) {
+				preparedEntry.setDisplayname(shortTitle);
+			} else {
+				preparedEntry.setDisplayname("Copy of " + src.getDisplayname());
+			}
+			preparedEntry.setDescription(src.getDescription());
+
+			String resName = src.getResourcename();
+			if (resName == null) {
+				resName = "";
+			}
+			preparedEntry.setResourcename(resName);
+			RepositoryHandler typeToCopy = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);			
+			OLATResourceable newResourceable = typeToCopy.createCopy(src.getOlatResource(), ureq);
+			if (newResourceable == null) {
+				return null;
+			}
+					
+			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
+			preparedEntry.setOlatResource(ores);
+			// create security group
+			prepareSecurityGroup(ureq.getIdentity(), preparedEntry);
+			// copy image if available
+			RepositoryEntryImageController.copyImage(src, preparedEntry);
+			
+			return prepareCourse(preparedEntry, courseConfigVO);
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -218,7 +278,6 @@ public class CoursesWebService {
 			addedEntry.setAccess(0);// Access for nobody
 
 			// Set the resource on the repository entry and save the entry.
-			RepositoryManager rm = RepositoryManager.getInstance();
 			// bind resource and repository entry
 			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
 			addedEntry.setOlatResource(ores);
@@ -228,49 +287,54 @@ public class CoursesWebService {
 			// initialize course group management
 			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 			cgm.createCourseGroupmanagement(course.getResourceableId().toString());
-
-			// create security group
-			BaseSecurity securityManager = BaseSecurityManager.getInstance();
-			SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
-			// member of this group may modify member's membership
-			securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
-			// members of this group are always authors also
-			securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
-
-			securityManager.addIdentityToSecurityGroup(identity, newGroup);
-			addedEntry.setOwnerGroup(newGroup);
-			// Do set access for owner at the end, because unfinished course should be
-			// invisible
-			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-
-			rm.saveRepositoryEntry(addedEntry);
-
-			securityManager.createAndPersistPolicy(addedEntry.getOwnerGroup(), Constants.PERMISSION_ADMIN, addedEntry.getOlatResource());
-
-			// set root node title
-			course = CourseFactory.openCourseEditSession(addedEntry.getOlatResource().getResourceableId());
-			String displayName = addedEntry.getDisplayname();
-			course.getRunStructure().getRootNode().setShortTitle(Formatter.truncate(displayName, 25));
-			course.getRunStructure().getRootNode().setLongTitle(displayName);
-
-			CourseNode rootNode = ((CourseEditorTreeNode) course.getEditorTreeModel().getRootNode()).getCourseNode();
-			rootNode.setShortTitle(Formatter.truncate(displayName, 25));
-			rootNode.setLongTitle(displayName);
-			
-			if(courseConfigVO != null) {
-				CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-				if(StringHelper.containsNonWhitespace(courseConfigVO.getSharedFolderSoftKey())) {
-					courseConfig.setSharedFolderSoftkey(courseConfigVO.getSharedFolderSoftKey());
-				}
-			}
-			RepositoryManager.getInstance().updateRepositoryEntry(addedEntry);
-
-			CourseFactory.saveCourse(course.getResourceableId());
-			CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-			course = CourseFactory.loadCourse(oresable.getResourceableId());
-			return course;
+			prepareSecurityGroup(identity, addedEntry);
+			return prepareCourse(addedEntry, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
+	}
+	
+	private static void prepareSecurityGroup(Identity identity, RepositoryEntry addedEntry) {
+		// create security group
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
+		// members of this group are always authors also
+		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
+
+		securityManager.addIdentityToSecurityGroup(identity, newGroup);
+		addedEntry.setOwnerGroup(newGroup);
+		// Do set access for owner at the end, because unfinished course should be invisible
+		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		RepositoryManager.getInstance().saveRepositoryEntry(addedEntry);
+	}
+	
+	private static ICourse prepareCourse(RepositoryEntry addedEntry, CourseConfigVO courseConfigVO) {
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		securityManager.createAndPersistPolicy(addedEntry.getOwnerGroup(), Constants.PERMISSION_ADMIN, addedEntry.getOlatResource());
+
+		// set root node title
+		ICourse course = CourseFactory.openCourseEditSession(addedEntry.getOlatResource().getResourceableId());
+		String displayName = addedEntry.getDisplayname();
+		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncate(displayName, 25));
+		course.getRunStructure().getRootNode().setLongTitle(displayName);
+
+		CourseNode rootNode = ((CourseEditorTreeNode) course.getEditorTreeModel().getRootNode()).getCourseNode();
+		rootNode.setShortTitle(Formatter.truncate(displayName, 25));
+		rootNode.setLongTitle(displayName);
+		
+		if(courseConfigVO != null) {
+			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+			if(StringHelper.containsNonWhitespace(courseConfigVO.getSharedFolderSoftKey())) {
+				courseConfig.setSharedFolderSoftkey(courseConfigVO.getSharedFolderSoftKey());
+			}
+		}
+		RepositoryManager.getInstance().updateRepositoryEntry(addedEntry);
+
+		CourseFactory.saveCourse(course.getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		course = CourseFactory.loadCourse(course.getResourceableId());
+		return course;
 	}
 }
