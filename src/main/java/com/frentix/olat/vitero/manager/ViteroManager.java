@@ -133,7 +133,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		this.viteroModule = module;
 	}
 	
-	public List<ViteroBooking> getBookingByDate(Date start, Date end) {
+	public List<ViteroBooking> getBookingByDate(Date start, Date end) 
+	throws VmsNotAvailableException {
 		try {
 			BookingServiceStub bookingWs = getBookingWebService();
 			BookingServiceStub.GetBookingListByDateRequest dateRequest = new BookingServiceStub.GetBookingListByDateRequest();
@@ -146,8 +147,10 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			Booking[] bookings = bookingList.getBooking();
 			return convert(bookings);
 		} catch(AxisFault f) {
-			String msg = f.getFaultDetailElement().toString();
-			logError(msg, f);
+			int code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot get the list of bookings by date.", f);
+			}
 			return Collections.emptyList();
 		} catch (RemoteException e) {
 			logError("Cannot get bookings by date", e);

@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 
 import com.frentix.olat.vitero.manager.ViteroManager;
+import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.ViteroBooking;
 
 /**
@@ -51,7 +52,8 @@ public class ViteroRoomsOverviewController extends BasicController {
 	private final TableController tableCtr;
 	private final ViteroManager viteroManager;
 	
-	public ViteroRoomsOverviewController(UserRequest ureq, WindowControl wControl) {
+	public ViteroRoomsOverviewController(UserRequest ureq, WindowControl wControl)
+	throws VmsNotAvailableException {
 		super(ureq, wControl);
 		
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");

@@ -172,13 +172,17 @@ public class ViteroBookingsEditController extends FormBasicController {
 	protected void occupiedRooms(UserRequest ureq) {
 		removeAsListenerAndDispose(bookingController);
 
-		roomsOverviewController = new ViteroRoomsOverviewController(ureq, getWindowControl());			
-		listenTo(roomsOverviewController);
-		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), roomsOverviewController.getInitialComponent(), true, translate("roomsOverview"));
-		listenTo(cmc);
-		cmc.activate();
+		try {
+			roomsOverviewController = new ViteroRoomsOverviewController(ureq, getWindowControl());			
+			listenTo(roomsOverviewController);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), roomsOverviewController.getInitialComponent(), true, translate("roomsOverview"));
+			listenTo(cmc);
+			cmc.activate();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
 	}
 	
 	protected void deleteBooking(UserRequest ureq, ViteroBooking booking) {
