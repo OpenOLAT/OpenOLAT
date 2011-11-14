@@ -316,8 +316,8 @@
 	a.o_tu_icon:hover { background-image: url(../images/olat/external_page_over.png)!important}
 	.o_wiki_icon { background-image: url(../images/olat/wiki.png)!important}
 	a.o_wiki_icon:hover { background-image: url(../images/olat/wiki_over.png)!important}
-	.o_ll_icon { background-image: url(../images/olat/ll.png)!important}
-	a.o_ll_icon:hover { background-image: url(../images/olat/ll_over.png)!important}
+	.o_ll_icon { background-image: url(../images/olat/linklist.png)!important}
+	a.o_ll_icon:hover { background-image: url(../images/olat/linklist_over.png)!important}
 	.o_cl_icon { background-image: url(../images/olat/cl.png)!important}
 	a.o_cl_icon:hover { background-image: url(../images/olat/cl_over.png)!important}
 	.o_den_icon { background-image: url(../images/olat/den.png)!important}
