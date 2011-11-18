@@ -53,8 +53,6 @@ import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.ims.qti.export.CourseQTIArchiveController;
 
-import ch.unizh.campusmgnt.controller.CampusManagementController;
-
 /**
  * Initial Date:  May 26, 2004
  * @author gnaegi
@@ -72,7 +70,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	private static final String CMD_FORUMS = "forums";
 	private static final String CMD_DIALOGS = "dialogs";
 	private static final String CMD_WIKIS = "wikis";
-	private static final String CMD_BRINGTOGETHER = "bringtogether";
 	
 	
 	private IArchiverCallback archiverCallback;
@@ -303,10 +300,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			}
 			else if (menuCommand.equals(CMD_WIKIS)) {
 		    this.contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new WikiCourseNode());
-		    main.setContent(contentCtr.getInitialComponent());
-			}
-			else if (menuCommand.equals(CMD_BRINGTOGETHER)) {
-		    this.contentCtr = new CampusManagementController(ureq, getWindowControl(), ores);
 		    main.setContent(contentCtr.getInitialComponent());
 			}
 			listenTo(contentCtr);

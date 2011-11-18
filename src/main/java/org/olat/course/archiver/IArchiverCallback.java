@@ -56,12 +56,6 @@ public interface IArchiverCallback {
 	public boolean mayArchiveDialogs();
 	
 	/**
-	 * @return true if user has rights to bring together usernames,
-	 * institutionaluseridentifiers or emails with their e.g. results in a test.
-	 * Or in other words: true if user has rights for bulk actions.
-	 */
-	public boolean mayBringTogether();
-	/**
 	 * 
 	 * @return true if user has rights to archive wikis
 	 */

@@ -89,10 +89,6 @@
 		<property name="name" value="Calendar" />
 		<property name="enabled" value="${portlet.calendar.enabled}" />
 	</bean>
-	<bean id="Zsuz" class="ch.unizh.portal.zsuz.ZentralstellePortlet" scope="prototype">
-		<property name="name" value="Zentralstelle" />
-		<property name="enabled" value="${portlet.zentralstelle.enabled}" />
-	</bean>
 	<bean id="Information" class="org.olat.portal.infomsg.InfoMsgPortlet" scope="prototype">
 		<property name="name" value="Information" />
 		<property name="enabled" value="${portlet.infomsg.enabled}" />

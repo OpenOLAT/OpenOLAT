@@ -76,10 +76,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 
-import com.anthonyeden.lib.config.Configuration;
-import com.anthonyeden.lib.config.ConfigurationException;
-import com.anthonyeden.lib.config.XMLConfiguration;
-
 
 /**
 *  Description:<br>
@@ -101,7 +97,7 @@ public class SysinfoController extends BasicController  {
 	private static final String ACTION_HIBERNATEINFO = "hibernate";
 	private static final String ACTION_LOCKS = "locks";
 
-	private VelocityContainer mySessions, mySnoop, myErrors, myLoglevels, mySysinfo, myLocks, myMultiUserEvents,myHibernateInfo;
+	private VelocityContainer mySessions, mySnoop, myErrors, myLoglevels, mySysinfo, myMultiUserEvents,myHibernateInfo;
 	private Panel cachePanel;
 	private UserSessionController usessC;
 	private LockController lockController;
@@ -163,7 +159,6 @@ public class SysinfoController extends BasicController  {
 		
 		sessionAdministrationController = new SessionAdministrationController(ureq, getWindowControl() );
 		requestLoglevelController = new RequestLoglevelController(ureq, getWindowControl());
-		myLocks = createVelocityContainer("locks");
 		myMultiUserEvents = createVelocityContainer("multiuserevents");
 		
 		//info message controller has two implementations (SingleVM or cluster)
@@ -270,127 +265,9 @@ public class SysinfoController extends BasicController  {
 		properties.add(m);
 		
 		myBuildinfo.contextPut("properties", properties);
-		
-		File deploymentInfoProperties = new File(WebappHelper.getContextRoot(), "deployment-info.properties");
-
-		// defaults
-		myBuildinfo.contextPut("existsActivePatchFile", false);
-		myBuildinfo.contextPut("existsDeploymentInfoProperties", false);
-		myBuildinfo.contextPut("existsPatchFile", false);
-		
-		if (deploymentInfoProperties.exists()) {
-			myBuildinfo.contextPut("existsDeploymentInfoProperties", true);
-			myBuildinfo.contextPut("fileDateDeploymentInfoProperties", new Date(deploymentInfoProperties.lastModified()));
-			List<Map> deploymentInfoPropertiesLines = new LinkedList<Map>();
-			try{
-				BufferedReader r = new BufferedReader(new FileReader(deploymentInfoProperties));
-				while(true) {
-					final String line = r.readLine();
-					if (line==null) {
-						break;
-					}
-					Map<String, String> lineMap = new HashMap<String, String>();
-					lineMap.put("line", line);
-					deploymentInfoPropertiesLines.add(lineMap);
-				}
-			} catch(IOException ioe) {
-				Map<String, String> lineMap = new HashMap<String, String>();
-				lineMap.put("line", "Problems reading deployment-info.properties: "+ioe);
-				deploymentInfoPropertiesLines.add(lineMap);
-			}
-			myBuildinfo.contextPut("deploymentInfoPropertiesLines", deploymentInfoPropertiesLines);
-
-			File patchesNewest = new File(WebappHelper.getContextRoot(), "patches.xml.newest");
-			if (!patchesNewest.exists()) {
-				myBuildinfo.contextPut("existsPatchFile", false);
-			} else {
-				myBuildinfo.contextPut("existsPatchFile", true);
-				Date patchesFileDate = new Date(patchesNewest.lastModified());
-				myBuildinfo.contextPut("patchesFileDate", patchesFileDate);
-				
-				final boolean patchesActive = patchesFileDate.before(timeOfServerStartup);
-				if (patchesActive) {
-					myBuildinfo.contextPut("patchesActive", "yes, patch(es) active");
-				} else {
-					myBuildinfo.contextPut("patchesActive", "probably not: they are deployed but server hasn't been restarted since. Will be active after restart!");
-				}
-				
-				List<Map> patches = new LinkedList<Map>();
-				String baseTag = readPatchesXml(patchesNewest, patches);
-				myBuildinfo.contextPut("patchesBaseTag", baseTag);
-				myBuildinfo.contextPut("patches", patches);
-				
-				if (!patchesActive) {
-					// find the active patch
-					File[] allPatches = new File(WebappHelper.getContextRoot()).listFiles(new FilenameFilter() {
-
-						/**
-						 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
-						 */
-						public boolean accept(File dir, String name) {
-							if (name==null) {
-								return false;
-							} else {
-								return name.startsWith("patches.xml.");
-							}
-						}
-						
-					});
-					File activePatchFile = null;
-					for (int i = 0; i < allPatches.length; i++) {
-						File aPatchFile = allPatches[i];
-						if (new Date(aPatchFile.lastModified()).before(timeOfServerStartup)) {
-							// then it was potentially active at some point. Let's see if it is the newest before the
-							// timeOfServerStartup
-							if (activePatchFile==null) {
-								activePatchFile = aPatchFile;
-							} else if (new Date(activePatchFile.lastModified()).before(new Date(aPatchFile.lastModified()))) {
-								activePatchFile = aPatchFile;
-							}
-						}
-					}
-					if (activePatchFile!=null) {
-						myBuildinfo.contextPut("existsActivePatchFile", true);
-						myBuildinfo.contextPut("activePatchFileName", activePatchFile.getName());
-						Date activePatchesFileDate = new Date(activePatchFile.lastModified());
-						myBuildinfo.contextPut("activePatchesFileDate", activePatchesFileDate);
-						List<Map> activePatches = new LinkedList<Map>();
-						String activeBaseTag = readPatchesXml(activePatchFile, activePatches);
-						myBuildinfo.contextPut("activePatchesBaseTag", activeBaseTag);
-						myBuildinfo.contextPut("activePatches", activePatches);
-					}
-				}
-			}
-		}
 	}
 
-	private String readPatchesXml(File patchesNewest, List<Map> patches) {
-		XMLConfiguration patchConfig = null;
-		Map<String, String> m;
-		try {
-			patchConfig = new XMLConfiguration(patchesNewest);
-			for (Iterator<Configuration> it = patchConfig.getChildren().iterator(); it.hasNext();) {
-				Configuration aPatchConfig = it.next();
-				m = new HashMap<String, String>();
-				m.put("id", aPatchConfig.getAttribute("patch-id"));
-				m.put("enabled", aPatchConfig.getAttribute("enabled"));
-				m.put("jira", aPatchConfig.getAttribute("jira"));
-				m.put("tag", aPatchConfig.getAttribute("tag"));
-				m.put("title", aPatchConfig.getChildValue("description"));
-				patches.add(m);
-			}
-			return patchConfig.getAttribute("basetag");
-		} catch (ConfigurationException e) {
-			m = new HashMap<String, String>();
-			m.put("id", "Problems reading patches.xml.newest: "+e);
-			m.put("enabled", "");
-			m.put("jira", "");
-			m.put("tag", "");
-			m.put("title", "");
-			patches.add(m);
-			return "";
-		}
-	}
+
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)

@@ -252,35 +252,6 @@
 				</entry>
 				
 				
-				<entry key="ch.unizh.portal.zsuz.ZsuzStepUserDataForm">
-					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="propertyHandlers">
-							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyStreet" />
-								<ref bean="userPropertyZipCode" />
-								<ref bean="userPropertyCity" />
-								<ref bean="userPropertyEmail" />
-							</list>
-						</property>
-						<property name="userViewReadOnlyProperties">
-							<set>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
-							</set>
-						</property>
-						<property name="mandatoryProperties">
-							<set>
-								<ref bean="userPropertyStreet" />
-								<ref bean="userPropertyZipCode" />
-								<ref bean="userPropertyCity" />
-							</set>
-						</property>
-					</bean>
-				</entry>
-				
 				
 				<!-- 
 					Tables that show user properties

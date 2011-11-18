@@ -15,10 +15,7 @@
 
 	<!-- classes implementing the Extension interface -->
 	<!-- Locations that implement action extensions: SystemAdminMainController, HomeMainController, ArchiverMaincontroller -->
-	<bean id="combineExtension" class="ch.unizh.campusmgnt.SAPCampusMgntExtension">
-		<property name="enabled" value="${SAPCampusMgntExtension.enabled}"/>
-	</bean>
-	
+
 	<!-- extension for admin site for OLAT setup -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 			<property name="actionController">	

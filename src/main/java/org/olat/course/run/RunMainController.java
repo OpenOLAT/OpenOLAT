@@ -828,10 +828,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						return true;
 					}
 
-					public boolean mayBringTogether() {
-						return true;
-					}
-
 					public boolean mayArchiveWikis() {
 						return true;
 					}
