@@ -6,7 +6,7 @@
 // this lines allong with the script.
 // i programmed this because i always wanted to programm a plasma. then i was 
 // looking for an easter eg that i could implement into the open source learning 
-// management system olat (http://www.olat.org), so  i decided to finally code
+// management system openolat (http://www.openolat.org), so  i decided to finally code
 // a small plasma together with a scrolling text using java script and css... 
 // usage:
 // to start the plasma, press shift, alt or control key while double clicking 
@@ -24,14 +24,14 @@ var s = 0;
 // number of iterations
 var q = 500;
 // flow text at right side: plain text - no html allowed!
-var t = "thank you for using the \nlearning management\nsystem olat\n\n" 
+var t = "thank you for using the \nlearning management\nsystem openolat\n\n" 
 	+ "olat is beeing developed by:\nroberto bagnoli\nhanspeter brun\npatrick brunner\nlavinia dumitrescu\n"
 	+ "lars eberle\nstefan egli\nclaudia ehrle\njoel fisler\nflorian gnaegi\nchristian guretzki\nroman haag\n"
 	+ "stefan hofstetter\nkristina isacson\ndesiree iturbide\nsabina jeger\nfelix jost\nandreas kapp\nmartin kernland\ningmar kroll\n"
 	+ "tiziana perini\nmaurus rohrer\nsandra roth\nalexander schneider\nfranziska schneider\nguido schnider\nmaya schuessler\nruth schuermann\n"
 	+ "renata sevcikova\nconi steinemann\nmike stock\nalexandra stucki\ngregor wassmann\nmarion weber\ncarsten weisse\ntimo wuersch\nhans-joerg zuberbuehler\n"
 	+ "\n\nopen source development \nfinanced by\nUniversity of Zuerich\n"
-	+ "\n\n(c) 1999-2009 by\nwww.olat.org"
+	+ "\n\n(c) 1999-2009 by\nwww.openolat.org"
 	+ "\n\n\n\n\n\n\n\n\n\n\n\n\njava script plasma \n(c) 2009 by\ngnaegi@frentix.com\n\n\n\n\n\n\n\n\n\n\n\n\n";
 // flow text speed factor
 var ts = 1.5;
