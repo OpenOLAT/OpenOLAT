@@ -573,21 +573,7 @@
 				</list>
 			</property>
 			<property name="order" value="33" />
-		</bean>
-		
-		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.test.HelloWorldController"/>
-				</bean>
-			</property>
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.test.GUIDemoMainController</value>		
-				</list>
-			</property>
-			<property name="order" value="34" />
-		</bean>		
+		</bean>	
 		
 		
 		<!-- Extension for SCORM Results export -->	

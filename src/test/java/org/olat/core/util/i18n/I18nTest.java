@@ -348,8 +348,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 		// Must contain packages from olat app
 		assertTrue(foundBundles.contains("org.olat"));
 		assertTrue(foundBundles.contains("org.olat.course"));
-		// Must contain packages from non olat
-		assertTrue(foundBundles.contains("com.xyz.demoextension"));
 	}
 
 	/**
