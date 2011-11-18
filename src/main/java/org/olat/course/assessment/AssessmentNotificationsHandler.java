@@ -347,8 +347,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					  	if (modDate.after(compareDate) && (hasFullAccess || PersistenceHelper.listContainsObjectByKey(coachedUsers, assessedIdentity))) {
 								String score = null;
 								for(Property scoreProperty:scoreProperties) {
-									if(scoreProperty.getIdentity().equalsByPersistableKey(assessedIdentity) ||
-											scoreProperty.getCategory().equals(attemptProperty.getCategory())) {
+									if(scoreProperty.getIdentity().equalsByPersistableKey(assessedIdentity) ) {
 										score = scoreProperty.getFloatValue().toString();
 										break;
 									}
