@@ -51,7 +51,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.change.ChangeManager;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -341,7 +340,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// values are taken from the modifyBusinessGroupForm
 				updateBusinessGroup();
 				// inform index about change
-				ChangeManager.changed(ChangeManager.ACTION_UPDATE,this.currBusinessGroup);
 				refreshAllTabs(ureq);
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent

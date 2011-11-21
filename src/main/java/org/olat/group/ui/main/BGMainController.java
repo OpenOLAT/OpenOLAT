@@ -60,7 +60,6 @@ import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.id.Identity;
-import org.olat.core.id.change.ChangeManager;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
@@ -282,7 +281,6 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 				// values are taken from the createBuddyGroupForm
 				this.currBusinessGroup = createBuddyGroup(ureq);
 				updateGroupListModelAll();
-				ChangeManager.changed(ChangeManager.ACTION_CREATE,this.currBusinessGroup);
 
 				// after successfully creating a buddygroup 'launch' it
 				BusinessGroupMainRunController groupRunCtr = BGControllerFactory.getInstance().createRunControllerAsTopNavTab(this.currBusinessGroup,
@@ -346,7 +344,6 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		everybody.add(owners);
 		everybody.add(participants);
 		// inform Indexer about change
-		ChangeManager.changed(ChangeManager.ACTION_DELETE,currBusinessGroup);
 		// 3) delete the group
 		currBusinessGroup = bgm.loadBusinessGroup(currBusinessGroup);
 		

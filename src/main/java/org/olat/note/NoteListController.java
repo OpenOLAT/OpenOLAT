@@ -41,7 +41,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.change.ChangeManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -166,7 +165,7 @@ public class NoteListController extends BasicController implements GenericEventL
 	}
 
 	public void event(Event event) {
-		if (ChangeManager.isChangeEvent(event)) {
+		if (event instanceof NoteEvent) {
 			populateNLTable();
 		}
 	}

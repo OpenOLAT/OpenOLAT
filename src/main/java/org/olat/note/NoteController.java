@@ -37,7 +37,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.change.ChangeManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -135,7 +134,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 			nm.saveNote(n);
 			Long newKey = n.getKey();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Note.class, newKey);
-			ChangeManager.changed(ChangeManager.ACTION_CREATE, ores);
+			sec.fireEventToListenersOf(new NoteEvent(getIdentity().getName()), ores);
 		} else {
 			nm.updateNote(n);
 		}

@@ -28,23 +28,16 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.change.ChangeManager;
-import org.olat.core.id.change.ObjectAccessEvent;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.SearchServiceImpl;
 import org.olat.search.service.document.GroupDocument;
 import org.olat.search.service.indexer.AbstractIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -53,7 +46,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * Index all business-groups. Includes group-forums and groups-folders. 
  * @author Christian Guretzki
  */
-public class GroupIndexer extends AbstractIndexer implements GenericEventListener {
+public class GroupIndexer extends AbstractIndexer {
 	
 	private BusinessGroupManager businessGroupManager;
 
@@ -137,26 +130,5 @@ public class GroupIndexer extends AbstractIndexer implements GenericEventListene
 
 	public String getSupportedTypeName() {
 		return OresHelper.calculateTypeName(BusinessGroup.class);
-	}
-
-	// Handling Update Event
-	public void event(Event event) {
-		if (ChangeManager.isChangeEvent(event)) {
-			ObjectAccessEvent oae = (ObjectAccessEvent) event;			
-			if (Tracing.isDebugEnabled(GroupIndexer.class)) Tracing.logDebug("info: oae = "+oae.toString(),GroupIndexer.class);
-			int action = oae.getAction();
-			Long   id   = oae.getOresId();
-			BusinessGroup newBusinessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(id,true);
-			SearchResourceContext searchResourceContext = new SearchResourceContext(); // businessContextString
-			searchResourceContext.setBusinessControlFor(newBusinessGroup);
-		  Document document = GroupDocument.createDocument(searchResourceContext, newBusinessGroup);
-			if (action == ChangeManager.ACTION_UPDATE) {
-				//-> OLAT-3367 SearchServiceImpl.getInstance().addToIndex(document);
-			} else if (action == ChangeManager.ACTION_CREATE) {
-				//-> OLAT-3367 SearchServiceImpl.getInstance().addToIndex(document);
-			} else if (action == ChangeManager.ACTION_DELETE) {
-				//-> OLAT-3367 SearchServiceImpl.getInstance().deleteFromIndex(document);
-			}
-		}
 	}
 }
