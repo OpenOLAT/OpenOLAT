@@ -87,7 +87,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	}
 	
 	/**
-	 * if you need to instantiate controllers e.g. via spring -> see SpringController and SpringDefaultController
+	 *
 	 */
 	@SuppressWarnings("unused")
 	private DefaultController() {

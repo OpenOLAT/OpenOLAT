@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.commons.dispatcher.SessionDispatcher;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -305,7 +304,7 @@ public class DMZDispatcher implements Dispatcher {
 				// do not dispatch (render only), since this is a new Window created as
 				// a result of another window's click.
 			} catch (Throwable t) {
-				Tracing.logError("An exception occured while handling the exception...",t, SessionDispatcher.class);
+				Tracing.logError("An exception occured while handling the exception...",t, DMZDispatcher.class);
 				//XX:GUIInterna.setLoadPerformanceMode(null);
 			}
 			//XX:GUIInterna.setLoadPerformanceMode(null);

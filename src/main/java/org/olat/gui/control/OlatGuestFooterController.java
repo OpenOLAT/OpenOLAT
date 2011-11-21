@@ -93,11 +93,6 @@ public class OlatGuestFooterController extends BasicController {
 		putInitialPanel(olatFootervc);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultSpringController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showOtherUsers) {
 				// show list of other online users that are connected to jabber server

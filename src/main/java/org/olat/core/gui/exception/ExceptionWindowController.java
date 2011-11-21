@@ -40,7 +40,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.StaleObjectRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -110,11 +109,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		}
 		// fix detailed message
 		if (detailedmessage == null) {
-			if (o3e instanceof StaleObjectRuntimeException) {
-				StaleObjectRuntimeException soe = (StaleObjectRuntimeException) o3e;
-				detailedmessage = trans.translate("error.staleobjectexception") + "<br />(" + soe.getKey() + " : " + soe.getPersClassName() + ")";
-			}
-			else detailedmessage = "-";
+			detailedmessage = "-";
 		}
 
 		// fetch more info
