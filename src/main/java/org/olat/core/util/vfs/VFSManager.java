@@ -130,18 +130,22 @@ public class VFSManager extends BasicManager {
 		// exists. If yes, this entry must be exactly what is
 		// to be returned as, the proper type of, VFSItem.
 		if (rootContainer instanceof LocalFolderImpl) {
+			String childName = extractChild(path);
 			LocalFolderImpl l = (LocalFolderImpl) rootContainer;
-			String fsPath = l.getBasefile().getAbsolutePath()+path;
-			File t = new File (fsPath);
+			File t = new File (l.getBasefile().getAbsolutePath(), childName);
 			if (t.exists()) {
 				String bcroot = FolderConfig.getCanonicalRoot();
+				String fsPath = t.getAbsolutePath();
 				if (t.isDirectory()) {
+					VFSContainer subContainer;
 					if (fsPath.startsWith(bcroot)) {
 						fsPath = fsPath.replace(bcroot,"");
-						return new OlatRootFolderImpl(fsPath, rootContainer);
+						subContainer = new OlatRootFolderImpl(fsPath, rootContainer);
 					} else {
-						return new LocalFolderImpl (t, rootContainer);
+						subContainer = new LocalFolderImpl (t, rootContainer);
 					}
+					String subPath = path.substring(childName.length() + 1);
+					return resolveFile(subContainer, subPath);
 				} else {
 					if (fsPath.startsWith(bcroot)) {
 						fsPath = fsPath.replace(bcroot,"");
@@ -156,7 +160,7 @@ public class VFSManager extends BasicManager {
 		}
 
 		//leave original code block as fall-back for non-file-system-based implementations
-		String childName = VFSManager.extractChild(path);
+		String childName = extractChild(path);
 		List<VFSItem> children = rootContainer.getItems();
 		for (VFSItem child : children) {
 			String curName = child.getName();
@@ -190,6 +194,7 @@ public class VFSManager extends BasicManager {
 	 * @return
 	 */
 	public static VFSContainer findInheritingSecurityCallbackContainer(VFSItem vfsItem) {
+		if (vfsItem == null) return null;
 		// first resolve delegates of any NamedContainers to get the actual container (might be a MergeSource)
 		if (vfsItem instanceof NamedContainerImpl) return findInheritingSecurityCallbackContainer(((NamedContainerImpl)vfsItem).delegate);
 		// special treatment for MergeSource
