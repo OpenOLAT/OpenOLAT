@@ -9,12 +9,12 @@
 tomcat.id=2
 node.id=2
 generate.index.at.startup=false
-build.identifier=uzh71-devLocal
+build.identifier=opol71-devLocal
 
 guidemo.enabled=true
 
 # runtime application data directory 
-userdata.dir=/home/roman/olatdata/uzh_71
+userdata.dir=/home/roman/olatdata/opol_71
 # name of the repository root
 folder.root=${userdata.dir}/bcroot
 # temporary workspace for the running application
@@ -58,11 +58,11 @@ db.hibernate.ddl.auto=validate
 auto.upgrade.database=false
 
 # the name of the application database
-db.name=uzh71
+db.name=opol71
 # the name of the OLAT database user
-db.user=uzh71
+db.user=opol71
 # the password of the OLAT database user
-db.pass=uzh71
+db.pass=opol71
 # JDBC options (e.g., to set character channel behaviour etc.)
 db.jdbc.options=useUnicode=true&amp;characterEncoding=UTF-8
 
