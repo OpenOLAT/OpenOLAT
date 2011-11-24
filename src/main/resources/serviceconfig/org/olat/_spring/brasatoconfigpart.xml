@@ -255,7 +255,7 @@
 
 	<!--  gui prefs via database -->
 	<bean id="core.preferences.PreferencesStorage"
-		class="org.olat.preferences.DbStorage"  />
+		class="org.olat.core.util.prefs.db.DbStorage"  />
 
 	<!-- Search components -->
 	<bean id="org.olat.admin.user.UserSearchUIService"

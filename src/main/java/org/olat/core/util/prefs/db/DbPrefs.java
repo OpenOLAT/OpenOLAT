@@ -19,7 +19,7 @@
  * http://www.goodsolutions.ch All rights reserved.
  * <p>
  */
-package org.olat.preferences;
+package org.olat.core.util.prefs.db;
 
 import java.util.HashMap;
 import java.util.Iterator;
