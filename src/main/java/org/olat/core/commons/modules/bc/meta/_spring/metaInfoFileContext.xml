@@ -12,7 +12,7 @@
 	<constructor-arg ref="metaInfoFile" />
 </bean>
 
-<bean id="metaInfoFile" class="org.olat.commons.modules.bc.meta.MetaInfoFileImpl">
+<bean id="metaInfoFile" class="org.olat.core.commons.modules.bc.meta.MetaInfoFileImpl">
 	<property name="thumbnailService" ref="thumbnailService" />
 </bean>  
 

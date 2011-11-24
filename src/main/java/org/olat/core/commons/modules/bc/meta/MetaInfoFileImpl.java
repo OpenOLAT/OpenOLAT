@@ -19,7 +19,7 @@
 * <p>
 */ 
 
-package org.olat.commons.modules.bc.meta;
+package org.olat.core.commons.modules.bc.meta;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
