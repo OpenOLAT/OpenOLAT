@@ -12,6 +12,7 @@ syntax: glob
 # mvn build trees
 target/*
 cargo/*
+bin/*
 
 # deprecated scripting files
 *.pl
