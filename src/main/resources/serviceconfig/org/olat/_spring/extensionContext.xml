@@ -464,21 +464,6 @@
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.test.guidemo.clipboard.ClipboardDemoController"/>
-				</bean>
-			</property>
-			<property name="translationPackage" value="org.olat.test.guidemo" />
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.test.GUIDemoMainController</value>		
-				</list>
-			</property>
-			<property name="order" value="26" />
-		</bean>
-		
-		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.test.guidemo.cssjs.GUIDemoCSSJSController"/>
 				</bean>
 			</property>

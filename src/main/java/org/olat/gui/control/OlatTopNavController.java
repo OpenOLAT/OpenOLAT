@@ -24,7 +24,6 @@ package org.olat.gui.control;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.commons.services.clipboard.ClipboardService;
 import org.olat.core.commons.services.search.ui.SearchController;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
@@ -62,7 +61,6 @@ public class OlatTopNavController extends BasicController /*TODO:PB:OLAT-4047 im
 	private VelocityContainer topNavVC;
 	private Controller imController;
 	private GroupChatManagerController groupChatController;
-	private Controller clipboardC;
 	private SearchController searchC;
 	private Link helpLink, loginLink;
 	//TODO:PB:OLAT-4047 private Link permLink;
