@@ -55,7 +55,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.portal.PortalImpl;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -180,7 +179,6 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 		olatMenuTree.addListener(this);
 		// Activate correct position in menu
 		olatMenuTree.setSelectedNode(tm.getRootNode());
-		setState("root");
 
 		// prepare main panel
 		content = new Panel("content");
@@ -291,7 +289,6 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 	}
 	
 	private void doActivate(String cmd, UserRequest ureq, String activationArgs) {
-		setState(cmd);
 		if (cmd.equals(MENU_ROOT)) { // check for root node clicked
 			content.setContent(createRootComponent(ureq));
 		} else { // create a controller
@@ -310,14 +307,6 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			inclTitle.put("exclTitle", resComp);
 			content.setContent(inclTitle);
 		}
-	}
-	
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		String cmd = cstate.getSerializedState();
-		doActivate(cmd, ureq, null);
-		// adjust the menu
-		TreeNode tn = TreeHelper.findNodeByUserObject(cmd, olatMenuTree.getTreeModel().getRootNode());
-		olatMenuTree.setSelectedNode(tn);
 	}
 
 

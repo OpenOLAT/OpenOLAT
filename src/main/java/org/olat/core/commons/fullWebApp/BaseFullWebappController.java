@@ -59,7 +59,6 @@ import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.navigation.BornSiteInstance;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
@@ -543,13 +542,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 	private void doActivateSite(SiteInstance s, GuiStack gs) {
 		removeCurrentCustomCSSFromView();
-		// for state keeping: remember the currently activated site position
-		int pos = sites.indexOf(s);
-		setState("s" + pos);
 
-		
-		
-		
 		curDTab = null;
 		if (curSite != null) {
 			prevSite = s;
@@ -572,8 +565,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 		//System.err.println("<<<<< dynamic site <<<<");
 		
 		removeCurrentCustomCSSFromView();
-		// for state keeping: remember the ores of the dtabi
-		setState("d" + OresHelper.createStringRepresenting(dtabi.getOLATResourceable()));
 
 		curDTab = dtabi;
 		curSite = null;
@@ -861,34 +852,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 			Boolean hasStickyMessage = Boolean.valueOf(msg != null);
 			this.mainVc.contextPut("hasStickyMessage", hasStickyMessage);
 			this.mainVc.contextPut("stickyMessage", msg != null ? msg : "");		}
-	}
-
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		String state = cstate.getSerializedState();
-		// we always have a defined state, even after init - so don't handle the
-		// empty-string-case
-		char ch = state.charAt(0);
-		switch (ch) {
-			case 's': // static site selection
-				int pos = Integer.parseInt(state.substring(1));
-				SiteInstance s = sites.get(pos);
-				activateSite(s, ureq, null);
-				break;
-			case 'd': // dynamic tab selection
-				String oresString = state.substring(1);
-				for (int i = 0; i < dtabs.size(); i++) {
-					DTab dt = dtabs.get(i);
-					if (oresString.equals(OresHelper.createStringRepresenting(dt.getOLATResourceable()))) {
-						doActivateDTab((DTabImpl) dt);
-						break;
-					}
-					// if no matching dtabs were found - do nothing, since that means the
-					// tab was closed and we cannot "browserback" to it again.
-				}
-				break;
-			default:
-				throw new AssertException("unknown state to handle:" + state);
-		}
 	}
 
 	/**

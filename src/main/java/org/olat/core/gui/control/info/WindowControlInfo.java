@@ -21,10 +21,6 @@
 
 package org.olat.core.gui.control.info;
 
-import java.util.List;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.state.ExtendedControllerState;
 
 
 /**
@@ -35,7 +31,6 @@ import org.olat.core.gui.control.state.ExtendedControllerState;
 public interface WindowControlInfo {
 	
 	/**
-	 * @deprecated, use getExtendedControllerState().getControllerClassName() instead
 	 * @return
 	 */
 	public String getControllerClassName();
@@ -43,36 +38,4 @@ public interface WindowControlInfo {
 	
 	
 	public WindowControlInfo getParentWindowControlInfo();
-
-	/**
-	 * 
-	 * @return the controllerstate of the underlying controller
-	 */
-	public ExtendedControllerState getExtendedControllerState();
-	
-	
-
-	/**
-	 * the implementation must somehow call back to the controller to let it adjust its state to the new state.
-	 * @param ecstate the new state to adjust to
-	 * @param back if true, the transition direction is back, that is from end to start, otherwise it is forward (from start to end)
-	 * @param ureq the UserRequest: using as normal, but calling ureq.getParameter(...) doesn't make sense here, since those are the parameters of a call in the past.
-	 */
-	public void adjustControllerState(boolean back, ExtendedControllerState ecstate, UserRequest ureq);
-
-	/**
-	 * @return null or a list (non-empty) of currently non-disposed WindowControlInfos
-	 */
-	public List<WindowControlInfo> getChildren();
-
-	/**
-	 * to be called only by the constructor of a windowcontrolinfo.
-	 * @param impl
-	 */
-	public void addChild(WindowControlInfo child);
-
-	/**
-	 * @return
-	 */
-	public boolean isControllerDisposed();
 }

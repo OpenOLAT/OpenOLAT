@@ -60,7 +60,6 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.AutoCompleterContro
 import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
@@ -242,7 +241,6 @@ public class UserSearchController extends BasicController {
 		
 		
 		putInitialPanel(myContent);
-		setState(STATE_SEARCHFORM);
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -250,7 +248,6 @@ public class UserSearchController extends BasicController {
 			myContent.contextPut("noList","false");			
 			myContent.contextPut("showButton","false");
 			searchPanel.popContent();
-			setState(STATE_SEARCHFORM);
 		} 
 	}
 
@@ -338,25 +335,14 @@ public class UserSearchController extends BasicController {
 					tableCtr.setMultiSelect(useMultiSelect);
 					searchPanel.pushContent(tableCtr.getInitialComponent());
 					myContent.contextPut("showButton","true");
-					setState(STATE_RESULTS);
 				} else {
 					getWindowControl().setInfo(translate("error.no.user.found"));
-					setState(STATE_SEARCHFORM);
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
 		
-	}
-	
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		String state = cstate.getSerializedState();
-		if (state.equals(STATE_SEARCHFORM)) {
-			// we should and can adjust to the searchform
-			searchPanel.popContent();
-			setState(STATE_SEARCHFORM);
-		}
 	}
 	
 	/**

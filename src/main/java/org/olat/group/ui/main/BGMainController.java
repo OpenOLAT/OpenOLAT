@@ -58,7 +58,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -210,17 +209,6 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		} else if (userObject.equals(CMD_MENU_RIGHT)) {
 			doRightGroupList(ureq, getWindowControl());
 		}
-		setState(userObject.toString());
-	}
-	
-	@Override
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		String cmd = cstate.getSerializedState();
-		activateContent(ureq, cmd);
-		// adjust the menu
-		TreeNode rootNode = this.menuTree.getTreeModel().getRootNode();
-		TreeNode activatedNode = TreeHelper.findNodeByUserObject(cmd, rootNode);
-		this.menuTree.setSelectedNode(activatedNode);
 	}
 
 	/**

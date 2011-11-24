@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.bookmark.AddAndEditBookmarkController;
@@ -59,7 +60,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -538,21 +538,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void updateState(CourseNode courseNode) {
 		// TODO: fj : describe when the course node can be null
 		if (courseNode == null) return;
-		String selNodeId = courseNode.getIdent();
-		setState("n"+selNodeId);
-	}
-	
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		String state = cstate.getSerializedState();
-		char com = state.charAt(0);
-		switch (com) {
-			case 'n': // show node command
-				String nodeId = state.substring(1);
-				currentCourseNode = course.getRunStructure().getNode(nodeId);
-				updateTreeAndContent(ureq, currentCourseNode, null);
-				break;
-			default: throw new AssertException("unknown command:"+state);
-		}
+		
 	}
 
 	/**

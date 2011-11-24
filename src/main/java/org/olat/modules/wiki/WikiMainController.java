@@ -58,7 +58,6 @@ import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -456,7 +455,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 			wikiArticleComp.setWikiContent(a2zPage.getContent());
 			clearPortfolioLink();
 			setTabsEnabled(false);
-			setState(WikiPage.WIKI_A2Z_PAGE);
 			tabs.setSelectedPane(0);
 		} else if (source == changesLink){
 			WikiPage recentChanges = wiki.getPage(WikiPage.WIKI_RECENT_CHANGES_PAGE);
@@ -869,37 +867,11 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 	
 	/**
-	 * called by the gui framework upon browser back/forward.
-	 */
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		// the pagename is unique within a wiki.
-		String pageName = cstate.getSerializedState();
-		Wiki wiki = getWiki();
-		
-		if (pageName.equals(WikiPage.WIKI_A2Z_PAGE)) {
-			WikiPage a2zPage = wiki.getPage(WikiPage.WIKI_A2Z_PAGE);
-			articleContent.contextPut("page", a2zPage);
-			a2zPage.setContent(translate("nav.a-z.desc")+wiki.getAllPageNamesSorted());
-			wikiArticleComp.setWikiContent(a2zPage.getContent());
-			setTabsEnabled(false);
-			setState(WikiPage.WIKI_A2Z_PAGE);
-		} else {
-			WikiPage page = wiki.getPage(pageName, true);
-			if (page != null) this.pageId = page.getPageId();
-			page.incrementViewCount();
-			updatePageContext(ureq, page);
-		//breadCrumpCtr.addLink(page.getPageName(), page.getPageName());
-		}
-		
-	}
-	
-	/**
 	 * update depended velocity contexts and componetens with latest globally used page
 	 *
 	 */
 	private void updatePageContext(UserRequest ureq, WikiPage page) {
-		setState(page.getPageName());
-		
+
 		if (page.getPageName().equals(WikiPage.WIKI_ERROR)) {
 			wikiArticleComp.setWikiContent(translate(page.getContent()));
 		} else {

@@ -22,7 +22,6 @@
 package org.olat.modules.iq;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -38,7 +37,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.winmgr.BackHandler;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
@@ -65,7 +63,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * @author Felix Jost
  */
-public class IQDisplayController extends DefaultController implements BackHandler {
+public class IQDisplayController extends DefaultController {
 
 	private static final String PACKAGE = Util.getPackageName(IQDisplayController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(IQDisplayController.class);
@@ -159,9 +157,6 @@ public class IQDisplayController extends DefaultController implements BackHandle
 		this.iqsec = secCallback;
 		this.translator = new PackageTranslator(PACKAGE, ureq.getLocale());
 		this.ready = false;
-		
-		// acquire the back-handling, so that (unintended) back-clicks will not throw you out of a test, but shows a message instead.
-		getWindowControl().getWindowBackOffice().acquireBackHandling(this);
 
 		iqm = IQManager.getInstance();
 
@@ -488,15 +483,6 @@ public class IQDisplayController extends DefaultController implements BackHandle
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		// we are finished with the test, allow the use of the browser-back button again.
-		getWindowControl().getWindowBackOffice().releaseBackHandling(this);
-	}
-	
-	/**
-	 * 
-	 */
-	public void browserBackOrForward(UserRequest ureq, int diff) {
-		// user is using back -> simply warn, do nothing more. 
-		getWindowControl().setWarning(translator.translate("test.nobackusage"));		
+		//
 	}
 }

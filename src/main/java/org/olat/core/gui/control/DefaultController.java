@@ -31,10 +31,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.state.ControllerState;
-import org.olat.core.gui.control.state.ExtendedControllerState;
-import org.olat.core.gui.control.state.StateConstants;
-import org.olat.core.gui.control.winmgr.ControllerStateImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -55,7 +51,7 @@ import org.olat.core.util.i18n.I18nModule;
  */
 public abstract class DefaultController implements Controller, ControllerEventListener {
 	private static final String DEFAULTDISPOSED_PAGE = "defaultdisposed";
-	OLog log = Tracing.createLoggerFor(DefaultController.class);
+	private OLog log = Tracing.createLoggerFor(DefaultController.class);
 	// for memory watch only.
 	private static AtomicInteger controllerCnt = new AtomicInteger(0);
 	private final Object DISPOSE_LOCK = new Object();
@@ -67,13 +63,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	private final IUserActivityLogger userActivityLogger;
 	
 	private WindowControl newWControl;
-	private WindowControl origWControl = null;
 	
-	private ControllerState previousState = StateConstants.NULL_STATE;
-	
-	private ControllerState state = StateConstants.NULL_STATE;
-	private boolean newTransition = false;
-	private boolean isInDispatching;
 	private Controller disposedMessageController = null;
 	private Locale locale;
 	
@@ -109,13 +99,8 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		
 		// wControl may be null, e.g. for DefaultChiefController. 
 		// normal controllers should provide a windowcontrol, even though they may not need it
-		this.origWControl = wControl;
 		if (wControl != null) {
 			this.newWControl = new LocalWindowControl(wControl,this);
-			// we inform the window's backoffice about the creation of a new controller, so that a suitable business control path
-			// may be assembled (for jump-in / bookmarking feature)
-			wControl.getWindowBackOffice().informControllerCreated(wControl, this);
-			
 		}
 		
 	}
@@ -125,9 +110,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * @param wControl not null
 	 */
 	protected void setOrigWControl(WindowControl wControl) {
-		if (this.origWControl != null) throw new AssertException("can only set origWControl once!");
 		if (wControl == null) throw new AssertException("can not accept a null Windowcontrol here");
-		this.origWControl = wControl;
 		this.newWControl = new LocalWindowControl(wControl,this);
 	}
 	
@@ -190,17 +173,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 */
 	public final void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if (!disposed) {
-			// 1. dispatch the event
-			isInDispatching = true;
-			event(ureq, source, event);
-			isInDispatching = false;
-			
-			// 2. if there is a windowcontrol (always except for a) legacy controllers or b) controllers which provide their own windowcontrol:
-			// inform the windowbackoffice about the dispatching
-			WindowControl ref = newWControl;
-			if (ref != null) {
-				ref.getWindowBackOffice().informControllerDispatched(ref, this, source, event);
-			} 			
+			event(ureq, source, event);			
 		} else {
 			// COMMMENT:2008-02-28:pb: reviewed 'little hack' which is not a hack.
 			// The introduced setDisposedMsgController allows the surrounding Controller
@@ -450,7 +423,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 */
 
 	public String toString() {
-		StringBuilder sb = new StringBuilder("state: "+state+", cListener:");
+		StringBuilder sb = new StringBuilder("cListener:");
 		if (listeners == null) {
 			sb.append("-");
 		} else {
@@ -466,59 +439,11 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	}
 
 	/**
-	 * @return the current state
-	 */
-	ControllerState getState() {
-		return state;
-	}
-
-	protected void setState(String state) {
-		doSetState(new ControllerStateImpl(state));
-	}
-	
-	private void doSetState(@SuppressWarnings("hiding")
-	ControllerState state) {
-		if (!this.state.isSame(state)) {
-			this.previousState = this.state;
-			this.state = state;
-			// a state change set as an effect of a call to adjustState(...) (browser-back/forward handling) 
-			// is not added to the history as a new transition - because we are just replaying the history, 
-			// not creating a new history entry
-			newTransition  = isInDispatching;
-		} // else ignore if there is no real change (state A to state A)
-	}
-
-	/**
-	 * called by the framework upon a direct jump url or as a result of the need to adjust a controller's state after pressing the browser-back-button (so that the back-button works as expected)
-	 * @param cstate the new state to change to. the concrete controller must adjust its own state to a state it once created. normally controllers will only remember the "important" states - 
-	 * 	the ones that must be accessible using a permalink and which can be reached using browser-back-button
-	 * @param ureq the UserRequest: using as normal, but calling ureq.getParameter(...) doesn't make sense here, since those are the parameters of a call in the past.
-	 */
-	@SuppressWarnings("unused")
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		// default impl does nothing
-	}
-
-	/**
 	 * 
 	 * @see org.olat.core.gui.control.Controller#isDisposed()
 	 */
 	public boolean isDisposed() {
 		return disposed;
-	}
-	
-	protected ExtendedControllerState createdExtendedControllerState() {
-		ExtendedControllerState ecs;
-		if (newTransition) {
-			newTransition = false;
-			ecs = new ExtendedControllerStateImpl(previousState, state, System.identityHashCode(this), this.getClass().getName());
-		} else {
-			// no transition has taken place in the mean time: indicate a state-to-same-state-transition which means no transition.
-			ecs = new ExtendedControllerStateImpl(state, state, System.identityHashCode(this), this.getClass().getName());			
-		}
-		
-		// note defaultController.hashCode is not guaranteed to be unique, however most(all?) vm do
-		return ecs;
 	}
 	
 	/**

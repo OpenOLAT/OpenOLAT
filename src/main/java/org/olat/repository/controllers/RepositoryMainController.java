@@ -47,7 +47,6 @@ import org.olat.core.gui.control.generic.portal.PortletFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.control.generic.wizard.WizardController;
-import org.olat.core.gui.control.state.ControllerState;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -185,7 +184,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		menuTree = new MenuTree("repoTree");
 		menuTree.setTreeModel(buildTreeModel(isAuthor));
 		menuTree.setSelectedNodeId(menuTree.getTreeModel().getRootNode().getIdent());
-		setState("search.home");
 		menuTree.addListener(this);
 
 		Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
@@ -319,18 +317,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		log.info("Repo-Perf: event duration=" + duration);
 	}
 
-	@Override
-	protected void adjustState(ControllerState cstate, UserRequest ureq) {
-		String cmd = cstate.getSerializedState();
-		// sub view identifyers are attached to user object with ":"
-		String[] cmdArray = cmd.split(":");
-		activateContent(ureq, cmdArray[0], (cmdArray.length > 1 ? cmdArray[1] : null));
-		// adjust the menu
-		TreeNode rootNode = this.menuTree.getTreeModel().getRootNode();
-		TreeNode activatedNode = TreeHelper.findNodeByUserObject(cmdArray[0], rootNode);
-		this.menuTree.setSelectedNode(activatedNode);
-	}
-
 	/**
 	 * Activate the content in the content area based on a user object
 	 * representing the identifyer of the content
@@ -443,8 +429,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		}
 		// encode sub view identifyer into state, attach separated by ":"
 		lastUserObject = userObject.toString();
-		String state = lastUserObject + (subViewIdentifyer != null ? ":" + subViewIdentifyer : null);
-		setState(state);
 		removeAsListenerAndDispose(deleteTabPaneCtr);
 	}
 

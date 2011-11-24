@@ -42,12 +42,10 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.DispatchResult;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.JSAndCSSAdderImpl;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.history.HistoryEntry;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -141,9 +139,6 @@ public class Window extends Container {
 	private final Object render_mutex = new Object();
 	// delegate for css and js includes
 	private final JSAndCSSAdderImpl jsAndCssAdder;
-	
-	private List<HistoryEntry> history = new ArrayList<HistoryEntry>();
-	private int historyPos = -1;
 	
 
 	private Map<String, Object> attributes = new HashMap<String, Object>();
@@ -410,7 +405,7 @@ public class Window extends Container {
 									// other commands to not overwrite the form o2c dirty flag
 									// wich might be set by later commands
 									if (!this.isDirty()) {
-										wbackofficeImpl.sendCommandTo(CommandFactory.createPrepareClientCommand(wbackofficeImpl.getBusinessControlPath()));
+										wbackofficeImpl.sendCommandTo(CommandFactory.createPrepareClientCommand(null));
 									}
 									
 									// Add the js and css files and related pre init commands
@@ -799,60 +794,6 @@ public class Window extends Container {
 	}
 
 	/**
-	 * @param componentID
-	 * @param timestampID
-	 * @param componentTimestamp
-	 * @return -1 for back, 1 for forward, 0 for nothing/reload
-	 */
-	private int findInHistory(UserRequest ureq) {
-		for (int i = historyPos-1; i>=0; i--) {
-			HistoryEntry he = history.get(i);
-			if (he.isSame(ureq)) {
-				// found "left" to the current position = left in time = back
-				historyPos = i; // make ready for future comparisons
-				return -1;
-			}
-		}
-		// not found -> check forward
-		int size = history.size();
-		for (int i = historyPos+1; i<size; i++) {
-			HistoryEntry he = history.get(i);
-			if (he.isSame(ureq)) {
-				// found "right" to the current position = right in time = forward
-				historyPos = i; // make ready for future comparisons
-				return 1;
-			}
-		}
-		// not found, either reload, fake, error, or current entry -> return reload
-		return 0;
-	}
-	
-	/**
-	 * @param entry
-	 */
-	private void addToHistory(HistoryEntry entry) {
-		// clear old forward history
-		int size = history.size();
-		if (historyPos < size-1) { // we are not rightmost,
-			// that is we have traversed back in history
-			// -> clear forward history
-			history.subList(historyPos+1, size).clear();
-		}
-		// now add the new entry
-		history.add(entry);
-		historyPos++;
-		
-		// restrict to 100 entries per user should be more than enough
-		int nsize = history.size();
-		if (nsize > MAX_HISTORY_ENTRIES) {
-			// clear leftmost entry and adjust history position
-			history.remove(0);
-			historyPos--;
-		}
-		
-	}
-
-	/**
 	 * Set a window-scope variable
 	 * 
 	 * @param key
@@ -1200,12 +1141,6 @@ public class Window extends Container {
 			DBFactory.getInstance().commit();
 			
 			// add the new URL to the browser history, but not if the klick resulted in a new browser window (a href .. target=...) or in a download (excel or such)
-			DispatchResult dr = ureq.getDispatchResult();
-			MediaResource tMr = dr.getResultingMediaResource();
-			Window tWin = dr.getResultingWindow();
-			if (tMr == null && tWin == null) {
-				addToHistory(new HistoryEntry(ureq));
-			}
 			wbackofficeImpl.fireCycleEvent(END_OF_DISPATCH_CYCLE);
 			
 			

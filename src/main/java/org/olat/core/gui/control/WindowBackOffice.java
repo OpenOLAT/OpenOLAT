@@ -26,8 +26,6 @@ import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.guistack.GuiStack;
-import org.olat.core.gui.control.info.WindowControlInfo;
-import org.olat.core.gui.control.winmgr.BackHandler;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.event.GenericEventListener;
 
@@ -89,17 +87,7 @@ public interface WindowBackOffice extends Disposable{
 	 * @return
 	 */
 	boolean isDebuging();
-
-	void informControllerDispatched(WindowControl wControl, Controller controller, Component source, Event event);
-
 	
-	/**
-	 * @param controller
-	 */
-	void informControllerCreated(WindowControl wControl, Controller controller);
-	
-	public String getBusinessControlPath();
-
 	/**
 	 * @param initialComponent
 	 * @return
@@ -145,28 +133,4 @@ public interface WindowBackOffice extends Disposable{
 	public void addCycleListener(GenericEventListener gel);
 	
 	public void removeCycleListener(GenericEventListener gel);
-
-	public void adjustGuiPathCenter(WindowControlInfo wci);
-
-	/**
-	 * when set, all browser-back and forward moves are sent to the backHandler instead
-	 * of the ordinary handling (which reverts to the latest gui path in case of back).
-	 * use when "critical" use cases/controllers are in progress, such as a qti-test where a
-	 * (unintended) back-button-click should not leave the current workflow.
-	 * <br>
-	 * this method should be called from the constructor of the controller that wishes to control the back-handling.
-	 * <br>
-	 * an existing backhandler will be overridden, that is, only the latest set has any effect
-	 * TODO: check if boolean (done/skip) instead of void makes sense here to backevent-bubble. or if the back-handlers 
-	 * should be stacked (what would be real use cases for such a thing?)
-	 * @param backHandler
-	 */
-	public void acquireBackHandling(BackHandler backHandler);
-	
-	/**
-	 * releases any back handler. must be called by a controller in its dispose method when it acquired a backhandling in its contructor.
-	 * @param backHandler the backhandler to release
-	 */
-	public void releaseBackHandling(BackHandler backHandler);
-
 }
