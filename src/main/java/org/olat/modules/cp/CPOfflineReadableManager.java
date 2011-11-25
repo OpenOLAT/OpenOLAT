@@ -85,7 +85,6 @@ public class CPOfflineReadableManager {
 		/**
 	 * Used for migration purposes
 	 * 
-	 * @see org.olat.migration.Convert314To32#main(String[])
 	 * @param unzippedDir
 	 * @param targetZip
 	 * @param cpOfflineMat
