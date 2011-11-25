@@ -18,12 +18,13 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.core.commons.persistence.async;
+package org.olat.repository.async;
 
 import java.util.Queue;
 
-import org.apache.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * this is a special task executor system used only for learning resources. If you look for a general task Executor for scheduled tasks
@@ -32,7 +33,7 @@ import org.olat.core.commons.persistence.DBFactory;
  * @author Christian Guretzki
  */
 public class TaskExecutorThread extends Thread {
-	private static Logger log = Logger.getLogger(TaskExecutorThread.class.getName());
+	private static OLog log = Tracing.createLoggerFor(TaskExecutorThread.class);
 	Queue<BackgroundTask> taskQueue;
 
 	public TaskExecutorThread(Queue<BackgroundTask> taskQueue) {
@@ -58,7 +59,7 @@ public class TaskExecutorThread extends Thread {
 			if (taskQueue.size() > 0) {
 				// Queue is not empty
 				long startTime = 0;
-				if (log.isDebugEnabled()) {
+				if (log.isDebug()) {
 					startTime = System.currentTimeMillis();
 				}
 				if (taskQueue.size() > 10) {
@@ -76,7 +77,7 @@ public class TaskExecutorThread extends Thread {
 		    }
 				// running in a seperate thread, we must close db-session after each run.
 				DBFactory.getInstance().commitAndCloseSession();
-				if (log.isDebugEnabled()) {
+				if (log.isDebug()) {
 					long endTime = System.currentTimeMillis();
 					log.debug("TaskExecutorThread executed in " + (endTime - startTime) + "ms, executeCount=" + executeCount );
 				}

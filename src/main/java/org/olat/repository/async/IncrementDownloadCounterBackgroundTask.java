@@ -22,10 +22,9 @@ package org.olat.repository.async;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.async.AbstractBackgroundTask;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -37,7 +36,7 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author Christian Guretzki
  */
 public class IncrementDownloadCounterBackgroundTask extends AbstractBackgroundTask {
-	private static Logger log = Logger.getLogger(IncrementDownloadCounterBackgroundTask.class.getName());
+	private static OLog log = Tracing.createLoggerFor(IncrementDownloadCounterBackgroundTask.class);
 	
 	private RepositoryEntry repositoryEntry;
 	
@@ -54,7 +53,7 @@ public class IncrementDownloadCounterBackgroundTask extends AbstractBackgroundTa
 			reloadedRe.setLastUsage(new Date());
 			LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
 			if (lcManager.lookupLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION) != null) {
-				Tracing.logAudit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe, RepositoryManager.class);
+				log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
 				LifeCycleManager.createInstanceFor(reloadedRe).deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
 			}
 			Codepoint.hierarchicalCodepoint(IncrementDownloadCounterBackgroundTask.class, "executeTask-before-update", 1);

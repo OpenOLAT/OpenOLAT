@@ -20,9 +20,9 @@
 */
 package org.olat.repository.async;
 
-import org.apache.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.async.AbstractBackgroundTask;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -31,7 +31,7 @@ import org.olat.repository.RepositoryManager;
  * @author Christian Guretzki
  */
 public class SetAccessBackgroundTask extends AbstractBackgroundTask {
-	private static Logger log = Logger.getLogger(SetAccessBackgroundTask.class.getName());
+	private static OLog log = Tracing.createLoggerFor(SetAccessBackgroundTask.class);
 	
 	private RepositoryEntry repositoryEntry;
 	private int access;

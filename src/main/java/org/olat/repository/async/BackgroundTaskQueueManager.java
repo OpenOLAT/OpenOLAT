@@ -18,7 +18,7 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.core.commons.persistence.async;
+package org.olat.repository.async;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -27,6 +27,8 @@ import org.apache.log4j.Logger;
 import org.olat.core.manager.BasicManager;
 
 /**
+ * !!!This is only for the Repository Manager. It's absolutely forbidden to use for something else!!! 
+ * 
  * FIFO-queue for background job. Application can put-in 'background-task', the background-job check in a fix interval
  * this queue and can execute task. If you look for scheduled tasks check TaskExecutorManager
  * 

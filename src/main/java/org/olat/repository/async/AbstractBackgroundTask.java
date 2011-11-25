@@ -18,19 +18,20 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.core.commons.persistence.async;
+package org.olat.repository.async;
 
-import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.DBRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 
 /**
  * @author Christian Guretzki
  */
 public abstract class AbstractBackgroundTask implements BackgroundTask {
-	private static Logger log = Logger.getLogger(AbstractBackgroundTask.class.getName());
+	private static OLog log = Tracing.createLoggerFor(AbstractBackgroundTask.class);
 	
 	private int maxRetry = 1000;// 0 = endless retry
 
@@ -124,7 +125,7 @@ public abstract class AbstractBackgroundTask implements BackgroundTask {
 		while (!this.isTaskDone() && counter < COUNTER_LIMIT) {
 			try {
 				log.debug("waitForDone: this.isTaskDone()=" + this.isTaskDone() + "   counter=" + counter + "  this=" + this);
-	            Thread.currentThread().sleep(200);
+	            Thread.sleep(200);
 	            counter++;
             } catch (InterruptedException e) {
             	// no log

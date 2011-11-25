@@ -18,7 +18,7 @@
 * University of Zurich, Switzerland.
 * <p>
 */
-package org.olat.core.commons.persistence.async;
+package org.olat.repository.async;
 
 
 /**
