@@ -35,7 +35,6 @@ How to add a new job:
             <ref bean="sendNotificationsEmailTrigger" />
             <ref bean="changePresenceJobTrigger" />
             <!-- <ref bean="dumpJMXJobTrigger"/> -->
-            <ref bean="registrationTrigger"/>
             <ref bean="adobeCleanupJob"/>
 		    <!--
 			<ref bean="translationToolStatusGeneratorTrigger"/>
@@ -68,16 +67,6 @@ requests and therefore the session in never invalidated -->
     <property name="startDelay" value="300000" />
     <!-- repeat every 10 seconds (dmps the data to disk) -->
     <property name="repeatInterval" value="60000" />
-</bean>
-
-<bean id="registrationTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-    <property name="jobDetail" ref="registrationJob" />
-    <!-- 10 minutes-->
-    <property name="startDelay" value="600000" />
-    <!-- repeat every 10 seconds -->
-    <property name="repeatInterval" value="10000" />
-    <!-- never repeat -->
-    <property name="repeatCount" value="0"/>
 </bean>
 
 <bean id="translationToolStatusGeneratorTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
@@ -140,11 +129,6 @@ requests and therefore the session in never invalidated -->
     	<entry key="FilesInfoMBean" value="org.olat.core.commons.modules.bc:name=FilesInfoMBean" />
     </map>
   </property>
-</bean>
-
-<bean id="registrationJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-	<!-- Creates after OLAT Startup a Cron Job to send registration data on weekly base -->
-	<property name="jobClass" value="org.olat.admin.registration.SystemRegistrationJobStarter"/>
 </bean>
 
 <!--

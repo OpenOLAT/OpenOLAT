@@ -20,6 +20,7 @@
 */
 package org.olat.admin.registration;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.scheduler.JobWithDB;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -42,8 +43,8 @@ public class SystemRegistrationJob extends JobWithDB {
 	@SuppressWarnings("unused")
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-		SystemRegistrationManager regMgr = SystemRegistrationManager.getInstance();
-		regMgr.sendRegistrationData();
+		SystemRegistrationManager registrationManager = (SystemRegistrationManager)CoreSpringFactory.getBean("systemRegistrationManager");
+		registrationManager.sendRegistrationData();
 	}
 
 }

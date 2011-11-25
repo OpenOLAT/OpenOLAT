@@ -8,22 +8,25 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+	<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
 
-<bean id="systemRegistrationManager" class="org.olat.admin.registration.SystemRegistrationManager" 
-	init-method="init" destroy-method="destroy" depends-on="coordinatorManager">
-	<constructor-arg index="0" ref="schedulerFactoryBean"/>
-	<constructor-arg index="1" value="${cluster.mode}"/>
-	<constructor-arg index="2" ref="database"/>
-	<property name="persistedProperties">
-		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-			<constructor-arg index="0" ref="coordinatorManager"/>
-			<constructor-arg index="1" ref="systemRegistrationManager"/>
-		</bean>
-	</property>
-</bean>
-		
+	<bean id="systemRegistrationModule" class="org.olat.admin.registration.SystemRegistrationModule" 
+		init-method="init" depends-on="coordinatorManager">
+		<property name="persistedProperties">
+			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+				<constructor-arg index="0" ref="coordinatorManager"/>
+				<constructor-arg index="1" ref="systemRegistrationModule"/>
+			</bean>
+		</property>
+	</bean>
 
-
-               
+	<bean id="systemRegistrationManager" class="org.olat.admin.registration.SystemRegistrationManager" 
+		init-method="init" destroy-method="destroy" depends-on="systemRegistrationModule">
+		<constructor-arg index="0" ref="schedulerFactoryBean"/>
+		<constructor-arg index="1" value="${cluster.mode}"/>
+		<constructor-arg index="2" ref="database"/>
+		<constructor-arg index="3" ref="systemRegistrationModule"/>
+		<property name="securityManager" ref="baseSecurityManager" />
+		<property name="repositoryManager" ref="repositoryManager" />
+	</bean>             
 </beans>
