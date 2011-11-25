@@ -31,4 +31,10 @@
 	<constructor-arg index="1" ref="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" />
 </bean>
 
+<!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->
+<bean id="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" class="org.olat.repository.async.BackgroundTaskQueueManager">
+	<!-- Number of retries when a task failed e.g. incrementLaunchCounter try 20 times to increment when a exception occurs -->
+	<property name="maxRetry" value="20"/>
+</bean>	
+
 </beans>

@@ -283,11 +283,7 @@ init-method="springInit" destroy-method="stop" lazy-init="true">
 	<property name="brokerURL" value="${jms.broker.url}" /> <!-- e.g.: tcp://localhost:61616 -->
 </bean>
 
-<!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->
-<bean id="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" class="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager">
-	<!-- Number of retries when a task failed e.g. incrementLaunchCounter try 20 times to increment when a exception occurs -->
-	<property name="maxRetry" value="20"/>
-</bean>	
+
 
 	
 	

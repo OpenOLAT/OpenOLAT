@@ -18,7 +18,7 @@
 <bean id="baseSecurityManager" class="org.olat.basesecurity.BaseSecurityManager"></bean>
 
 <!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->
-<bean id="backgroundTaskQueueManager" class="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager">
+<bean id="backgroundTaskQueueManager" class="org.olat.repository.async.BackgroundTaskQueueManager">
 	<!-- Number of retries when a task failed e.g. incrementLaunchCounter try 20 times to increment when a exception occurs -->
 	<property name="maxRetry" value="20"/>
 </bean>	
