@@ -39,7 +39,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.commons.persistence.async.BackgroundTaskQueueManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -57,6 +56,7 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManagerImpl;
+import org.olat.repository.async.BackgroundTaskQueueManager;
 import org.olat.repository.async.IncrementDownloadCounterBackgroundTask;
 import org.olat.repository.async.IncrementLaunchCounterBackgroundTask;
 import org.olat.repository.async.SetAccessBackgroundTask;
@@ -89,7 +89,7 @@ public class RepositoryManager extends BasicManager {
 	 */
 	private RepositoryManager(BaseSecurity securityManager, BackgroundTaskQueueManager taskQueueManager) {
 		this.securityManager = securityManager;
-		this.taskQueueManager = taskQueueManager;
+		RepositoryManager.taskQueueManager = taskQueueManager;
 		INSTANCE = this;
 	}
 
