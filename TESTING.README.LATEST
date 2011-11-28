@@ -1,4 +1,4 @@
-junit and integration tests in OLAT 7.2.1
+junit and integration tests in OpenOLAT 8
 =========================================
 
 * Preconditions
@@ -52,11 +52,6 @@ junit and integration tests in OLAT 7.2.1
 	mysql -u olat -p olattest < src/main/resources/database/mysql/setupDatabase.sql
 
 
-* Execute standalone jUnit tests
------------------------------------------
-- Not supported in 7.2.1 release
-	
-	
 * Execute jUnit integration tests
 -----------------------------------------
 - jUnit integrationtests with MySQL that load the framework to execute (execution time ca. 10-15m)
@@ -65,14 +60,10 @@ junit and integration tests in OLAT 7.2.1
 - The junit testresults can be found at target/surefire-reports/*
   Double click the xml files in Eclipse to display the results in the standards jUnit console
 
-- Results should be:	
-  - 1 failures (±0), 3 skipped (±0) 381 tests (±0)
-  - Fail: SecurityManagerTest.testCountUniqueUserLoginsSince 
-
 
 * Execute selenium functional integration tests
 -----------------------------------------
-- Selenium functional tests on GUI layer that load OLAT in a two node cluster (execution time ca. 5-6h!)
+- Selenium functional tests on GUI layer that load OpenOLAT in a two node cluster (execution time ca. 5-6h!)
 	mvn clean verify -Pseleniumtests
 
 - The selenium test results can be found at target/failsafe-reports/SeleniumTesting72x/*
