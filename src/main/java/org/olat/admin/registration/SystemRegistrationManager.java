@@ -76,6 +76,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 
 	private static final String SCHEDULER_NAME = "system.registration";
 	private static final String TRIGGER = "system_registration_trigger";
+	private static final String PRODUCT = "openolat";
 
 	private final SystemRegistrationModule registrationModule;
 	private final Scheduler scheduler;
@@ -84,8 +85,8 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	private RepositoryManager repositoryManager;
 	private BaseSecurity securityManager;
 
-	private static final String REGISTRATION_SERVER = "http://www.openolat.org/registration/restapi/registration/openolat";
-	//private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
+	//private static final String REGISTRATION_SERVER = "http://www.openolat.org/registration/restapi/registration/openolat";
+	private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
 	
 	/**
 	 * [used by spring]
@@ -214,6 +215,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 				String secretKey = registrationModule.getSecretKey();
 				builder.queryParam("secretKey", secretKey);
 			}
+			builder.queryParam("product", PRODUCT);
 
 			HttpClient client = HttpClientFactory.getHttpClientInstance();
 			String url = builder.build().toString();
