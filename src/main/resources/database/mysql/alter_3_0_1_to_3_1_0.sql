@@ -132,11 +132,11 @@ create table o_gp_bgarea (
    primary key (area_id)
 );
 
-alter table o_gp_business type = InnoDB;
-alter table o_gp_bgcontextresource_rel type = InnoDB;
-alter table o_gp_bgcontext type = InnoDB;
-alter table o_gp_bgarea type = InnoDB;
-alter table o_gp_bgtoarea_rel type = InnoDB;
+alter table o_gp_business ENGINE = InnoDB;
+alter table o_gp_bgcontextresource_rel ENGINE = InnoDB;
+alter table o_gp_bgcontext ENGINE = InnoDB;
+alter table o_gp_bgarea ENGINE = InnoDB;
+alter table o_gp_bgtoarea_rel ENGINE = InnoDB;
 
 create index type_idx on o_gp_bgcontext (grouptype);
 create index name_idx on o_gp_bgcontext (name);
@@ -170,7 +170,7 @@ create table o_catentry (
    parent_id bigint,
    primary key (message_id)
 );
-alter table o_catentry type = InnoDB;
+alter table o_catentry ENGINE = InnoDB;
 alter table o_catentry add index FKF4433C2C7B66B0D0 (parent_id), add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry (message_id);
 alter table o_catentry add index FKF4433C2CA1FAC766 (fk_ownergroup), add constraint FKF4433C2CA1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup (id);
 alter table o_catentry add index FKF4433C2C88C31018 (fk_olatresource), add constraint FKF4433C2C88C31018 foreign key (fk_olatresource) references o_olatresource (resource_id);

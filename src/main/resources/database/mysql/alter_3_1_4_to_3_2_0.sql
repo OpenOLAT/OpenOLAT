@@ -19,7 +19,7 @@ create table o_note (
    primary key (note_id)
 );
 
-alter table o_note type = InnoDB;
+alter table o_note ENGINE = InnoDB;
 create index resid_idx on o_note (resourceTypeId);
 create index owner_idx on o_note (owner_id);
 create index restype_idx on o_note (resourceTypeName);
@@ -46,7 +46,7 @@ create table o_noti_pub (
    latestnews datetime not null,
    primary key (publisher_id)
 );
-alter table o_noti_pub type = InnoDB;
+alter table o_noti_pub ENGINE = InnoDB;
 create index notif_type_idx on o_noti_pub (publishertype);
 create index name_idx on o_noti_pub (resname);
 
@@ -65,7 +65,7 @@ create table o_noti_sub (
    primary key (publisher_id),
    unique (fk_publisher, fk_identity)
 );
-alter table o_noti_sub type = InnoDB;
+alter table o_noti_sub ENGINE = InnoDB;
 alter table o_noti_sub add index FK4FB8F04749E53702 (fk_publisher), add constraint FK4FB8F04749E53702 foreign key (fk_publisher) references o_noti_pub (publisher_id);
 alter table o_noti_sub add index FK4FB8F0476B1F22F8 (fk_identity), add constraint FK4FB8F0476B1F22F8 foreign key (fk_identity) references o_bs_identity (id);
 

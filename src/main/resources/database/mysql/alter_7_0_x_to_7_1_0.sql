@@ -19,7 +19,7 @@ create table if not exists o_ep_artefact (
   fk_artefact_auth_id bigint not null,
   primary key (artefact_id)
 );
-alter table o_ep_artefact type = InnoDB;
+alter table o_ep_artefact ENGINE = InnoDB;
 alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);
 
 -- eportfolio collect restrictions
@@ -34,7 +34,7 @@ create table if not exists o_ep_collect_restriction (
   fk_struct_el_id bigint,
   primary key (collect_id)
 );
-alter table o_ep_collect_restriction type = InnoDB;
+alter table o_ep_collect_restriction ENGINE = InnoDB;
 
 -- eportfolio structure element
 create table if not exists o_ep_struct_el (
@@ -63,7 +63,7 @@ create table if not exists o_ep_struct_el (
   fk_olatresource bigint not null,
   primary key (structure_id)  
 );
-alter table o_ep_struct_el type = InnoDB;
+alter table o_ep_struct_el ENGINE = InnoDB;
 alter table o_ep_struct_el add constraint FKF26C8375236F26X foreign key (fk_olatresource) references o_olatresource (resource_id);
 alter table o_ep_struct_el add constraint FKF26C8375236F29X foreign key (fk_ownergroup) references o_bs_secgroup (id);
 alter table o_ep_struct_el add constraint FK4ECC1C8D636191A1 foreign key (fk_map_source_id) references o_ep_struct_el (structure_id);
@@ -84,7 +84,7 @@ create table if not exists o_ep_struct_struct_link (
   fk_struct_child_id bigint not null,
   primary key (link_id)
 );
-alter table o_ep_struct_struct_link type = InnoDB;
+alter table o_ep_struct_struct_link ENGINE = InnoDB;
 alter table o_ep_struct_struct_link add constraint FKF26C8375236F22X foreign key (fk_struct_parent_id) references o_ep_struct_el (structure_id);
 alter table o_ep_struct_struct_link add constraint FKF26C8375236F23X foreign key (fk_struct_child_id) references o_ep_struct_el (structure_id);
 
@@ -101,7 +101,7 @@ create table if not exists o_ep_struct_artefact_link (
   primary key (link_id)
 );
 
-alter table o_ep_struct_artefact_link type = InnoDB;
+alter table o_ep_struct_artefact_link ENGINE = InnoDB;
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F24X foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F25X foreign key (fk_artefact_id) references o_ep_artefact (artefact_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign key (fk_auth_id) references o_bs_identity (id);
@@ -119,7 +119,7 @@ create table if not exists o_bs_invitation (
    fk_secgroup bigint,
    primary key (id)
 );
-alter table o_bs_invitation type = InnoDB;
+alter table o_bs_invitation ENGINE = InnoDB;
 alter table o_bs_invitation add constraint FKF26C8375236F27X foreign key (fk_secgroup) references o_bs_secgroup (id);
 
 
@@ -138,7 +138,7 @@ create table if not exists o_tag (
   primary key (tag_id)
 );
 
-alter table o_tag type = InnoDB;
+alter table o_tag ENGINE = InnoDB;
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
 
 -- update policy
@@ -170,7 +170,7 @@ create table if not exists o_info_message (
   fk_modifier_id bigint,
   primary key (info_id)
 );
-alter table o_info_message type = InnoDB;
+alter table o_info_message ENGINE = InnoDB;
 
 create index imsg_resid_idx on o_info_message (resid);
 create index imsg_author_idx on o_info_message (fk_author_id);

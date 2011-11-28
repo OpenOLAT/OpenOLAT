@@ -8,7 +8,7 @@ create table o_userproperty (
    propvalue varchar(255),
    primary key (fk_user_id, propname)
 );
-alter table o_userproperty type = InnoDB;
+alter table o_userproperty ENGINE = InnoDB;
 create index propvalue_idx on o_userproperty (propvalue);
 alter table o_userproperty add index FK4B04D83FD1A80C95 (fk_user_id), add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user (user_id);
 
@@ -82,7 +82,7 @@ create table o_readmessage (
 	message_id bigint not null, 
 	primary key (id),
 	INDEX identity_forum_idx (identity_id, forum_id));
-alter table o_readmessage type = InnoDB;
+alter table o_readmessage ENGINE = InnoDB;
 
 insert into o_readmessage (id, lastmodified, creationdate, identity_id, forum_id, message_id) select id, lastmodified, creationdate, identity, resourcetypeid, longvalue from o_property where category='rvst';
 
@@ -111,7 +111,7 @@ create table oc_lock (
 );
 create index ocl_asset_idx on oc_lock (asset);
 alter table oc_lock add index FK9E30F4B66115906D (identity_fk), add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);
-alter table oc_lock type = InnoDB;
+alter table oc_lock ENGINE = InnoDB;
 -- end cluster lock 
 
 SET FOREIGN_KEY_CHECKS = 1;

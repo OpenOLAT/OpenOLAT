@@ -72,9 +72,9 @@ create table o_checkpoint_results (
    primary key (checkpoint_result_id)
 );
 
-alter table o_checklist type = InnoDB;
-alter table o_checkpoint type = InnoDB;
-alter table o_checkpoint_results type = InnoDB;
+alter table o_checklist ENGINE = InnoDB;
+alter table o_checkpoint ENGINE = InnoDB;
+alter table o_checkpoint_results ENGINE = InnoDB;
 
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZY foreign key (checkpoint_fk) references o_checkpoint (checkpoint_id) ;
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZX foreign key (identity_fk) references o_bs_identity (id);
@@ -111,9 +111,9 @@ create table o_projectbroker_customfields (
    primary key (fk_project_id, propname)
 );
 
-alter table o_projectbroker type = InnoDB;
-alter table o_projectbroker_project type = InnoDB;
-alter table o_projectbroker_customfields type = InnoDB;
+alter table o_projectbroker ENGINE = InnoDB;
+alter table o_projectbroker_project ENGINE = InnoDB;
+alter table o_projectbroker_customfields ENGINE = InnoDB;
 
 create index projectbroker_project_broker_idx on o_projectbroker_project (projectbroker_fk);
 create index projectbroker_project_id_idx on o_projectbroker_project (project_id);
@@ -139,7 +139,7 @@ create table o_usercomment (
 	parent_key bigint, 
 	primary key (comment_id)
 );
-alter table o_usercomment type = InnoDB;
+alter table o_usercomment ENGINE = InnoDB;
 create index cmt_id_idx on o_usercomment (resid);
 create index cmt_name_idx on o_usercomment (resname);
 create index cmt_subpath_idx on o_usercomment (ressubpath);
@@ -157,7 +157,7 @@ create table o_userrating (
 	rating integer not null, 
 	primary key (rating_id)
 );
-alter table o_userrating type = InnoDB;
+alter table o_userrating ENGINE = InnoDB;
 create index rtn_id_idx on o_userrating (resid);
 create index rtn_name_idx on o_userrating (resname);
 create index rtn_subpath_idx on o_userrating (ressubpath);

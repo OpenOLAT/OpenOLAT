@@ -18,7 +18,7 @@ create table o_lifecycle (
    uservalue varchar(255),
    primary key (id)
 );
-alter table o_lifecycle type = InnoDB;
+alter table o_lifecycle ENGINE = InnoDB;
 create index lc_pref_idx on o_lifecycle (persistentref);
 create index lc_type_idx on o_lifecycle (persistenttypename);
 create index lc_action_idx on o_lifecycle (action);

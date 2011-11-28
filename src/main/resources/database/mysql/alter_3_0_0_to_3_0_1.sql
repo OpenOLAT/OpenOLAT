@@ -37,7 +37,7 @@ create table o_bg_buddygroups (
    primary key (group_id)
 ) ;
 --
-alter table o_bg_buddygroups type = InnoDB;
+alter table o_bg_buddygroups ENGINE = InnoDB;
 --
 create index bg_name_idx on o_bg_buddygroups (groupname);
 alter table o_bg_buddygroups add index FK4A14ACF0C06E3EF3 (fk_partipiciantgroup), add constraint FK4A14ACF0C06E3EF3 foreign key (fk_partipiciantgroup) references o_bs_secgroup (id) ;

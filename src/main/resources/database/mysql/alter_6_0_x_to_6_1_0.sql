@@ -9,7 +9,7 @@ drop table if exists o_plock ;
 	asset varchar(255) not null unique,	
 	primary key (plock_id)
 );
-alter table o_plock type = InnoDB;
+alter table o_plock ENGINE = InnoDB;
 
 -- tables that keep last modified
 alter table o_repositoryentry add column version bigint;

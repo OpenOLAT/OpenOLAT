@@ -420,7 +420,7 @@ create table if not exists o_checklist (
    description longtext,
    primary key (checklist_id)
 );
-alter table o_checklist type = InnoDB;
+alter table o_checklist ENGINE = InnoDB;
 
 create table if not exists o_checkpoint (
    checkpoint_id bigint not null,
@@ -754,56 +754,56 @@ create table if not exists o_ep_struct_artefact_link (
 create index  ocl_asset_idx on oc_lock (asset);
 alter table oc_lock add index FK9E30F4B66115906D (identity_fk), add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity (id);
 
-alter table hibernate_unique_key type = InnoDB;
+alter table hibernate_unique_key ENGINE = InnoDB;
 
-alter table o_forum type = InnoDB;
-alter table o_property type = InnoDB;
-alter table o_bs_secgroup type = InnoDB;
-alter table o_repositorymetadata type = InnoDB;
-alter table o_user type = InnoDB;
-alter table o_userproperty type = InnoDB;
-alter table o_message type = InnoDB;
-alter table o_temporarykey type = InnoDB;
-alter table o_bs_authentication type = InnoDB;
-alter table o_qtiresult type = InnoDB;
-alter table o_qtiresultset type = InnoDB;
-alter table o_bs_identity type = InnoDB;
-alter table o_olatresource type = InnoDB;
-alter table o_bs_policy type = InnoDB;
-alter table o_bs_namedgroup type = InnoDB;
-alter table o_bs_membership type = InnoDB;
-alter table o_repositoryentry type = InnoDB;
-alter table o_bookmark type = InnoDB;
-alter table o_references type = InnoDB;
-alter table o_gp_business type = InnoDB;
-alter table o_gp_bgcontextresource_rel type = InnoDB;
-alter table o_gp_bgcontext type = InnoDB;
-alter table o_gp_bgarea type = InnoDB;
-alter table o_gp_bgtoarea_rel type = InnoDB;
-alter table o_catentry type = InnoDB;
-alter table o_noti_pub type = InnoDB;
-alter table o_noti_sub type = InnoDB;
-alter table o_note type = InnoDB;
-alter table o_lifecycle type = InnoDB;
-alter table o_plock type = InnoDB;
-alter table oc_lock type = InnoDB;
-alter table o_readmessage type = InnoDB;
-alter table o_projectbroker type = InnoDB;
-alter table o_projectbroker_project type = InnoDB;
-alter table o_projectbroker_customfields type = InnoDB;
-alter table o_checkpoint type = InnoDB;
-alter table o_checkpoint_results type = InnoDB;
-alter table o_usercomment type = InnoDB;
-alter table o_userrating type = InnoDB;
-alter table o_mark type = InnoDB;
-alter table o_info_message type = InnoDB;
-alter table o_tag type = InnoDB;
-alter table o_bs_invitation type = InnoDB;
-alter table o_ep_artefact type = InnoDB;
-alter table o_ep_collect_restriction type = InnoDB;
-alter table o_ep_struct_el type = InnoDB;
-alter table o_ep_struct_struct_link type = InnoDB;
-alter table o_ep_struct_artefact_link type = InnoDB;
+alter table o_forum ENGINE = InnoDB;
+alter table o_property ENGINE = InnoDB;
+alter table o_bs_secgroup ENGINE = InnoDB;
+alter table o_repositorymetadata ENGINE = InnoDB;
+alter table o_user ENGINE = InnoDB;
+alter table o_userproperty ENGINE = InnoDB;
+alter table o_message ENGINE = InnoDB;
+alter table o_temporarykey ENGINE = InnoDB;
+alter table o_bs_authentication ENGINE = InnoDB;
+alter table o_qtiresult ENGINE = InnoDB;
+alter table o_qtiresultset ENGINE = InnoDB;
+alter table o_bs_identity ENGINE = InnoDB;
+alter table o_olatresource ENGINE = InnoDB;
+alter table o_bs_policy ENGINE = InnoDB;
+alter table o_bs_namedgroup ENGINE = InnoDB;
+alter table o_bs_membership ENGINE = InnoDB;
+alter table o_repositoryentry ENGINE = InnoDB;
+alter table o_bookmark ENGINE = InnoDB;
+alter table o_references ENGINE = InnoDB;
+alter table o_gp_business ENGINE = InnoDB;
+alter table o_gp_bgcontextresource_rel ENGINE = InnoDB;
+alter table o_gp_bgcontext ENGINE = InnoDB;
+alter table o_gp_bgarea ENGINE = InnoDB;
+alter table o_gp_bgtoarea_rel ENGINE = InnoDB;
+alter table o_catentry ENGINE = InnoDB;
+alter table o_noti_pub ENGINE = InnoDB;
+alter table o_noti_sub ENGINE = InnoDB;
+alter table o_note ENGINE = InnoDB;
+alter table o_lifecycle ENGINE = InnoDB;
+alter table o_plock ENGINE = InnoDB;
+alter table oc_lock ENGINE = InnoDB;
+alter table o_readmessage ENGINE = InnoDB;
+alter table o_projectbroker ENGINE = InnoDB;
+alter table o_projectbroker_project ENGINE = InnoDB;
+alter table o_projectbroker_customfields ENGINE = InnoDB;
+alter table o_checkpoint ENGINE = InnoDB;
+alter table o_checkpoint_results ENGINE = InnoDB;
+alter table o_usercomment ENGINE = InnoDB;
+alter table o_userrating ENGINE = InnoDB;
+alter table o_mark ENGINE = InnoDB;
+alter table o_info_message ENGINE = InnoDB;
+alter table o_tag ENGINE = InnoDB;
+alter table o_bs_invitation ENGINE = InnoDB;
+alter table o_ep_artefact ENGINE = InnoDB;
+alter table o_ep_collect_restriction ENGINE = InnoDB;
+alter table o_ep_struct_el ENGINE = InnoDB;
+alter table o_ep_struct_struct_link ENGINE = InnoDB;
+alter table o_ep_struct_artefact_link ENGINE = InnoDB;
 
 
 create index  resid_idx on o_property (resourcetypeid);

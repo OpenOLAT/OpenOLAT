@@ -19,7 +19,7 @@ create table o_catentry (
    parent_id bigint,
    primary key (id)
 );
-alter table o_catentry type = InnoDB;
+alter table o_catentry ENGINE = InnoDB;
 alter table o_catentry add index FKF4433C2C7B66B0D0 (parent_id), add constraint FKF4433C2C7B66B0D0 foreign key (parent_id) references o_catentry (id);
 alter table o_catentry add index FKF4433C2CA1FAC766 (fk_ownergroup), add constraint FKF4433C2CA1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup (id);
 alter table o_catentry add index FKF4433C2CDDD69946 (fk_repoentry), add constraint FKF4433C2CDDD69946 foreign key (fk_repoentry) references o_repositoryentry (repositoryentry_id);
