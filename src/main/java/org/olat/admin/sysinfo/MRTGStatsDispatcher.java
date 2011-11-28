@@ -537,7 +537,7 @@ public class MRTGStatsDispatcher implements Dispatcher {
 			BaseSecurity secMgr = BaseSecurityManager.getInstance();
 			SecurityGroup olatuserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 			int users = secMgr.countIdentitiesOfSecurityGroup(olatuserGroup);
-			int disabled = secMgr.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED).size();			
+			long disabled = secMgr.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED);			
 			result.append(users-disabled).append("\n"); // number of active users
 			result.append(disabled).append("\n"); // number of disabled users
 			result.append("0\n");

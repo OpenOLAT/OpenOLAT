@@ -161,6 +161,10 @@ public interface BaseSecurity {
 	 * @return nr of members in the securitygroup
 	 */
 	public int countIdentitiesOfSecurityGroup(SecurityGroup secGroup);
+	
+	public int countAuthors();
+	
+	public int countDisabledUsers();
 
 	/**
 	 * @param username the username
@@ -464,6 +468,26 @@ public interface BaseSecurity {
 	public List<Identity> getIdentitiesByPowerSearch(String login, Map<String, String> userProperties, boolean userPropertiesAsIntersectionSearch, 
 			SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter,
 			Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status);
+	
+	/**
+	 * See the method above.
+	 * @param login
+	 * @param userProperties
+	 * @param userPropertiesAsIntersectionSearch
+	 * @param groups
+	 * @param permissionOnResources
+	 * @param authProviders
+	 * @param createdAfter
+	 * @param createdBefore
+	 * @param userLoginAfter
+	 * @param userLoginBefore
+	 * @param status
+	 * @return
+	 */
+	public long countIdentitiesByPowerSearch(String login, Map<String, String> userProperties, boolean userPropertiesAsIntersectionSearch, 
+			SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter,
+			Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status);
+	
 	
 	/** Save an identity
 	 * @param identity  Save this identity

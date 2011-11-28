@@ -271,11 +271,11 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		// User counts
 		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		int users = securityManager.countIdentitiesOfSecurityGroup(olatuserGroup);
-		int disabled = securityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED).size();
+		long disabled = securityManager.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED);
 		msgProperties.put("usersEnabled", String.valueOf(users - disabled));
 				
 		PermissionOnResourceable[] permissions = { new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR) };
-		int authors = securityManager.getIdentitiesByPowerSearch(null, null, true, null, permissions, null, null, null, null, null, null).size();
+		long authors = securityManager.countIdentitiesByPowerSearch(null, null, true, null, permissions, null, null, null, null, null, null);
 		msgProperties.put("authors", String.valueOf(authors));
 		
 		// Activity

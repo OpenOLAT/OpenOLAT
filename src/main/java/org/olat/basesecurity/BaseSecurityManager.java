@@ -981,6 +981,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return cntL;
 	}	
 	
+	
+	
+	@Override
+	public int countAuthors() {
+		return 0;
+	}
+
+	@Override
+	public int countDisabledUsers() {
+		return 0;
+	}
+
 	/**
 	 * @see org.olat.basesecurity.Manager#getAuthentications(org.olat.core.id.Identity)
 	 */
@@ -1047,12 +1059,26 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return getIdentitiesByPowerSearch(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, 
 				                              authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT ); 
 	}
+	
+	public long countIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
+			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
+		DBQuery dbq = createIdentitiesByPowerQuery(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status, true);
+		Number count = (Number)dbq.uniqueResult();
+		return count.longValue();
+	}
 
   /**
 	 * @see org.olat.basesecurity.Manager#getIdentitiesByPowerSearch(java.lang.String, java.util.Map, boolean, org.olat.basesecurity.SecurityGroup[], org.olat.basesecurity.PermissionOnResourceable[], java.lang.String[], java.util.Date, java.util.Date, java.lang.Integer)
    */
-	public List getIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
+	public List<Identity> getIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
 			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
+		DBQuery dbq = createIdentitiesByPowerQuery(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status, false);
+		return dbq.list();
+	}
+	
+	private DBQuery createIdentitiesByPowerQuery(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups,
+			PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status, boolean count) {
+
 		boolean hasGroups = (groups != null && groups.length > 0);
 		boolean hasPermissionOnResources = (permissionOnResources != null && permissionOnResources.length > 0);
 		boolean hasAuthProviders = (authProviders != null && authProviders.length > 0);
@@ -1065,9 +1091,17 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			// or right join is necessary since it is totally ok to have null values as authentication
 			// providers (e.g. when searching for users that do not have any authentication providers at all!).
 			// It took my quite a while to make this work, so think twice before you change anything here!
-			sb = new StringBuilder("select distinct ident from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+			if(count) {
+				sb = new StringBuilder("select count(distinct ident.key) from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+			} else {
+				sb = new StringBuilder("select distinct ident from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+			}
 		} else {
-			sb = new StringBuilder("select distinct ident from org.olat.core.id.Identity as ident ");
+			if(count) {
+				sb = new StringBuilder("select count(distinct ident.key) from org.olat.core.id.Identity as ident ");
+			} else {
+				sb = new StringBuilder("select distinct ident from org.olat.core.id.Identity as ident ");
+			}
 		}
 		// In any case join with the user. Don't join-fetch user, this breaks the query
 		// because of the user fields (don't know exactly why this behaves like
@@ -1308,7 +1342,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			dbq.setInteger("status", status);
 		}
 		// execute query
-		return dbq.list();
+		return dbq;
 	}
 	
 	/**
