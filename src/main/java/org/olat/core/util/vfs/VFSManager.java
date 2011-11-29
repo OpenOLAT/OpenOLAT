@@ -534,6 +534,26 @@ public class VFSManager extends BasicManager {
 	}
 	
 	/**
+	 * 
+	 * @param container
+	 * @param filename
+	 * @return
+	 */
+	public static String rename(VFSContainer container, String filename) {
+		String newName = filename;
+		VFSItem newFile = container.resolve(newName);
+		for(int count=0; newFile != null && count < 999 ; ) {
+			count++;
+			newName = appendNumberAtTheEndOfFilename(filename, count);
+		    newFile = container.resolve(newName);
+		}
+		if(newFile == null) {
+			return newName;
+		}
+		return null;
+	}
+	
+	/**
 	 * Check if the file exist or not
 	 * @param item
 	 * @return

@@ -25,6 +25,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;
@@ -63,6 +65,7 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.core.util.vfs.restapi.VFSStreamingOutput;
 import org.olat.modules.fo.Forum;
@@ -464,16 +467,23 @@ public class ForumWebService {
 		VFSLeaf attachment = null;
 		if(item == null) {
 			attachment = container.createChildLeaf(filename);
-		} else if (item instanceof VFSLeaf) {
-			attachment = (VFSLeaf)item;
 		} else {
-			return Response.serverError().status(Status.CONFLICT).build();
+			filename = VFSManager.rename(container, filename);
+			if(filename == null) {
+				return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+			}
+			attachment = container.createChildLeaf(filename);
 		}
 		
 		OutputStream out = attachment.getOutputStream(false);
-		FileUtils.copy(file, out);
-		FileUtils.closeSafely(out);
-		FileUtils.closeSafely(file);
+		try {
+			IOUtils.copy(file, out);
+		} catch (IOException e) {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		} finally {
+			FileUtils.closeSafely(out);
+			FileUtils.closeSafely(file);
+		}
 		return Response.ok().build();
 	}
 	

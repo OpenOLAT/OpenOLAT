@@ -55,6 +55,7 @@ import org.olat.restapi.security.RestApiLoginFilter;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.OlatRestApplication;
 import org.olat.restapi.support.vo.ErrorVO;
+import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.LinkVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -376,6 +377,16 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<LinkVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	protected List<FileVO> parseFileArray(InputStream body) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(body, new TypeReference<List<FileVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

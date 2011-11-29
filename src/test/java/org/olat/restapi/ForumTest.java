@@ -26,9 +26,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -36,7 +39,12 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
@@ -48,6 +56,7 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.modules.fo.restapi.MessageVOes;
+import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -218,6 +227,113 @@ public class ForumTest extends OlatJerseyTestCase {
 			}
 		}
 		assertTrue(saved);
+	}
+	
+	@Test
+	public void testGetAttachment() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie("administrator", "olat");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		List<FileVO> files = parseFileArray(body);
+		assertNotNull(files);
+	}
+	
+	@Test
+	public void testUploadAttachment() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
+			.queryParam("authorKey", id1.getKey())
+			.queryParam("title", "New message with attachment ")
+			.queryParam("body", "A very interesting response in Thread-1 with an attachment").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVO message = parse(body, MessageVO.class);
+		assertNotNull(message);
+		
+		//attachment
+		URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+		assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+		
+		//upload portrait
+		URI attachUri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
+		PostMethod attachMethod = createPost(attachUri, MediaType.APPLICATION_JSON, true);
+		attachMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		Part[] parts = { 
+			new FilePart("file", portrait),
+			new StringPart("filename","portrait.jpg")
+		};
+		attachMethod.setRequestEntity(new MultipartRequestEntity(parts, attachMethod.getParams()));
+		int attachCode = c.executeMethod(attachMethod);
+		assertEquals(200, attachCode);
+		attachMethod.releaseConnection();
+	}
+	
+	@Test
+	public void testUploadAttachmentAndRename() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
+			.queryParam("authorKey", id1.getKey())
+			.queryParam("title", "New message with attachment ")
+			.queryParam("body", "A very interesting response in Thread-1 with an attachment").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVO message = parse(body, MessageVO.class);
+		assertNotNull(message);
+		
+		//attachment
+		URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+		assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+		
+		//upload portrait
+		URI attachUri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
+		PostMethod attachMethod = createPost(attachUri, MediaType.APPLICATION_JSON, true);
+		attachMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		Part[] parts = { 
+			new FilePart("file", portrait),
+			new StringPart("filename","portrait.jpg")
+		};
+		attachMethod.setRequestEntity(new MultipartRequestEntity(parts, attachMethod.getParams()));
+		int attachCode = c.executeMethod(attachMethod);
+		assertEquals(200, attachCode);
+		attachMethod.releaseConnection();
+
+		//upload portrait a second time
+		URI attach2Uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
+		PostMethod attach2Method = createPost(attach2Uri, MediaType.APPLICATION_JSON, true);
+		attach2Method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		Part[] parts2 = { 
+			new FilePart("file", portrait),
+			new StringPart("filename","portrait.jpg")
+		};
+		attach2Method.setRequestEntity(new MultipartRequestEntity(parts2, attach2Method.getParams()));
+		int attach2Code = c.executeMethod(attach2Method);
+		assertEquals(200, attach2Code);
+		attach2Method.releaseConnection();
+		
+		// load the attachments
+		
+		URI loadUri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
+		GetMethod loadMethod = createGet(loadUri, MediaType.APPLICATION_JSON, true);
+		int loadCode = c.executeMethod(loadMethod);
+		assertEquals(200, loadCode);
+		InputStream loadBody = loadMethod.getResponseBodyAsStream();
+		List<FileVO> files = parseFileArray(loadBody);
+		assertNotNull(files);
+		assertEquals(2, files.size());
+		loadMethod.releaseConnection();
+		
 	}
 	
 	private UriBuilder getForumUriBuilder() {
