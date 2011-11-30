@@ -1472,6 +1472,15 @@
 						<!-- context name for servlet container e.g. localhost:8080/olat -->
 						<wtpContextName>olat</wtpContextName>
 						<downloadSources>false</downloadSources>
+								<additionalConfig>
+									<file>
+										<name>.settings/org.eclipse.core.resources.prefs</name>
+										<content>
+											<![CDATA[eclipse.preferences.version=1
+											encoding/<project>=UTF-8]]>
+										</content>
+									</file>
+								</additionalConfig>
 					</configuration>
 				</plugin>
 
