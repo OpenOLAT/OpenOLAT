@@ -134,7 +134,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.webFeed.FeedManagerTestWithMocking.class,
 	org.olat.instantMessaging.IMUnitTestWithoutOLAT.class,
 	org.olat.course.TestDeployableRepositoryExport.class,
-	org.olat.test.SpringTest.class,//ok
 	org.olat.upgrade.UpgradeDefinitionTest.class,
 	org.olat.modules.fo.WordCountTest.class
 	

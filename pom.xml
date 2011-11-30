@@ -2,25 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.olat</groupId>
-	<artifactId>OLAT-LMS</artifactId>
+	<groupId>org.openolat</groupId>
+	<artifactId>openolat-lms</artifactId>
 	<version>7.1.2.0-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>OLAT LMS</name>
+	<name>OpenOLAT LMS</name>
 	<url>http://www.openolat.org</url>
 	<description>
-  Welcome to the OLAT (Online Learning And Training) Developer Project Site.  This site
+  Welcome to the OpenOLAT (Open Online Learning And Training) Developer Project Site.  This site
   contains materials chiefly of concern to developers (e.g., unit testing and SCA output etc.)
   and is rebuilt periodically on a regular basis.  The site structure is divided between
   project information (e.g., infrastructure, mailing lists, repositories etc.) and reports
   (e.g., unit testing, SCAs etc.)
-
-  The development of OLAT itself started in 1999 at the University of Zürich, Switzerland,
-  where it is the strategic learning management system.  For further information see our main project website.
   </description>
 	<organization>
-		<name>Online Learning And Training (University of Zürich)</name>
-		<url>http://www.olat.org/</url>
+		<name>OpenOLAT</name>
+		<url>http://www.openolat.org/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -28,96 +25,20 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
 			<distribution>manual</distribution>
 			<comments>
-		OLAT is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+		OpenOLAT is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 		</comments>
 		</license>
 	</licenses>
-	<developers>
-		<developer>
-			<id>amoran</id>
-			<name>Alan Moran</name>
-			<email>alan.moran@id.uzh.ch</email>
-			<roles>
-				<role>Head of Development</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>pbrunner</id>
-			<name>Patrick Brunner</name>
-			<email>patrick.brunner@id.uzh.ch</email>
-			<roles>
-				<role>Quality Assurance Manager</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>asch</id>
-			<name>Alexander Schneider</name>
-			<email>alexander.schneider@id.uzh.ch</email>
-			<roles>
-				<role>Database Administrator</role>
-				<role>Deployment Manager</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>matthai</id>
-			<name>Matthai Karumacheril</name>
-			<email>matthai.karumacheril@id.uzh.ch</email>
-			<roles>
-				<role>Developer</role>
-				<role>Systems Analyst</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>lavinia</id>
-			<name>Lavinia Dumitrescu</name>
-			<email>lavinia.dumitrescu@id.uzh.ch</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>guretzki</id>
-			<name>Christian Guretzki</name>
-			<email>christian.guretzki@id.uzh.ch</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>mila</id>
-			<name>Milanka Ringwald</name>
-			<email>milanka.ringwald@id.uzh.ch</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>schnider</id>
-			<name>Guido Schnider</name>
-			<email>guido.schnider@id.uzh.ch</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-	</developers>
 	<distributionManagement>
 		<repository>
 			<id>releases</id>
-			<name>OLAT Internal Nexus Release Repository</name>
-			<url>http://repo.olat.uzh.ch/nexus/content/repositories/releases</url>
+			<name>OpenOLAT Internal Nexus Release Repository</name>
+			<url>http://nexus.openolat.org/nexus/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>snapshots</id>
-			<name>OLAT Internal Nexus Snapshot Repository</name>
-			<url>http://repo.olat.uzh.ch/nexus/content/repositories/snapshots</url>
+			<name>OpenOLAT Internal Nexus Snapshot Repository</name>
+			<url>http://nexus.openolat.uzh.ch/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<issueManagement>
@@ -131,39 +52,10 @@
 	</scm>
 	<mailingLists>
 		<mailingList>
-			<name>olat-announce</name>
-			<subscribe>https://lists.uzh.ch/lists.olat.org/sympa/subscribe/olat-announce</subscribe>
-			<unsubscribe>https://lists.uzh.ch/lists.olat.org/sympa/sigrequest/olat-announce</unsubscribe>
-			<post>olat-announce@lists.olat.org</post>
-			<archive>https://lists.uzh.ch/lists.olat.org/sympa/info/olat-announce</archive>
-		</mailingList>
-		<mailingList>
-			<name>olat-users</name>
-			<subscribe>https://lists.uzh.ch/lists.olat.org/sympa/subscribe/olat-users</subscribe>
-			<unsubscribe>https://lists.uzh.ch/lists.olat.org/sympa/sigrequest/olat-users</unsubscribe>
-			<post>olat-users@lists.olat.org</post>
-			<archive>https://lists.uzh.ch/lists.olat.org/sympa/info/olat-users</archive>
-		</mailingList>
-		<mailingList>
-			<name>olat-developers</name>
-			<subscribe>https://lists.uzh.ch/lists.olat.org/sympa/subscribe/olat-developers</subscribe>
-			<unsubscribe>https://lists.uzh.ch/lists.olat.org/sympa/sigrequest/olat-developers</unsubscribe>
-			<post>olat-developers@lists.olat.org</post>
-			<archive>https://lists.uzh.ch/lists.olat.org/sympa/info/olat-developers</archive>
-		</mailingList>
-		<mailingList>
-			<name>olat-translators</name>
-			<subscribe>https://lists.uzh.ch/lists.olat.org/sympa/subscribe/olat-translators</subscribe>
-			<unsubscribe>https://lists.uzh.ch/lists.olat.org/sympa/sigrequest/olat-translators</unsubscribe>
-			<post>olat-translators@lists.olat.org</post>
-			<archive>https://lists.uzh.ch/lists.olat.org/sympa/info/olat-translators</archive>
-		</mailingList>
-		<mailingList>
-			<name>olat-usability</name>
-			<subscribe>https://lists.uzh.ch/lists.olat.org/sympa/subscribe/olat-usability</subscribe>
-			<unsubscribe>https://lists.uzh.ch/lists.olat.org/sympa/sigrequest/olat-usability</unsubscribe>
-			<post>olat-usability@lists.olat.org</post>
-			<archive>https://lists.uzh.ch/lists.olat.org/sympa/info/olat-usability</archive>
+			<name>openolat</name>
+			<subscribe>https://groups.google.com/forum/#!forum/openolat</subscribe>
+			<post>openolat@googlegroups.com</post>
+			<archive>https://groups.google.com/forum/#!forum/openolat</archive>
 		</mailingList>
 	</mailingLists>
 	<!-- Unless otherwise explicitly stated the character encoding for all resources 
@@ -791,7 +683,7 @@
                 <configuration>
                   <artifactItems>
                     <artifactItem>
-                      <groupId>org.olat.testutils</groupId>
+                      <groupId>org.openolat.testutils</groupId>
                       <artifactId>zipped-tomcat6x</artifactId>
                       <version>1.0</version>
                       <type>zip</type>
@@ -812,7 +704,7 @@
                 <configuration>
                   <artifactItems>
                     <artifactItem>
-                      <groupId>org.olat.testutils</groupId>
+                      <groupId>org.openolat.testutils</groupId>
                       <artifactId>zipped-tomcat6x</artifactId>
                       <version>1.0</version>
                       <type>zip</type>
@@ -1366,35 +1258,24 @@
 	</profiles>
 	<repositories>
 		<repository>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<id>repo.olat.org</id>
-			<name>OLAT Maven Repository</name>
-			<url>http://repo.olat.org/nexus/content/groups/public</url>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+      <layout>default</layout>
+      <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+		<repository>
+			<id>maven2-repository.java.net</id>
+			<name>Java.net Repository for Maven</name>
+			<url>http://download.java.net/maven/2/</url>
+			<layout>default</layout>
 		</repository>
 		<repository>
 			<id>nexus.codehaus.org</id>
 			<name>Codehaus nexus repo</name>
 			<url>https://nexus.codehaus.org/content/groups/public</url>
-		</repository>
-		<repository>
-			<id>repo.olat.org1</id>
-			<name>OLAT Maven Repository1</name>
-			<url>http://repo.olat.org/nexus/content/repositories/dependencies</url>
-		</repository>
-		<repository>
-			<id>repo.olat.org2</id>
-			<name>OLAT Maven Repository2</name>
-			<url>http://repo.olat.org/nexus/content/repositories/releases</url>
-		</repository>
-		<repository>
-			<id>olat-plugin-repo</id>
-			<url>http://repo.olat.org/nexus</url>
-		</repository>
-		<repository>
-			<id>java.net</id>
-			<url>http://download.java.net/maven/2</url>
 		</repository>
 		<repository>
 			<id>jboss-public-repository-group</id>
@@ -1410,6 +1291,20 @@
 				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>	
+		<repository>
+			<id>openolat-repo</id>
+			<name>OpenOLAT Public Maven Repository Group</name>
+			<url>http://nexus.openolat.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+			</snapshots>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
@@ -1421,21 +1316,6 @@
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-			</snapshots>
-		</pluginRepository>
-		<pluginRepository>
-			<id>olat-plugin-repo</id>
-			<name>OLAT Maven plugin repository</name>
-			<url>http://repo.olat.org/nexus</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<!-- The frequency for downloading updates - can be "always", "daily" 
-					(default), "interval:XXX" (in minutes) or "never" (only if it doesn't exist 
-					locally). -->
 				<updatePolicy>daily</updatePolicy>
 			</snapshots>
 		</pluginRepository>
@@ -1547,37 +1427,15 @@
 					</configuration>
 				</plugin>
 
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>2.1.1</version>
-					<!-- <configuration> <webXml>target/web.xml</webXml> </configuration> -->
 					<configuration>
 						<attachClasses>true</attachClasses>
 						<directory>src/main/java</directory>
-						<!-- <webResources> -->
-						<!-- <resource> -->
-						<!-- <directory>src/main/java</directory> -->
-						<!-- <targetPath>WEB-INF/classes</targetPath> -->
-						<!-- <excludes> -->
-						<!-- <exclude>**/*.java</exclude> -->
-						<!-- </excludes> -->
-						<!-- </resource> -->
-						<!-- <resource> -->
-						<!-- <directory>src/main/resources</directory> -->
-						<!-- <excludes> -->
-						<!-- <exclude>**/log4j.xml</exclude> -->
-						<!-- </excludes> -->
-						<!-- </resource> -->
-						<!-- </webResources> -->
 					</configuration>
 				</plugin>
-
-
-
-
-
 
 				<!-- The Eclipse plugin is only of interest to developers and requires 
 					that WTP be installed. -->
@@ -1848,9 +1706,9 @@
 	<!-- check with mvn dependency:tree to see what other dep. get downloaded -->
 	<dependencies>
 		<dependency>
-			<groupId>org.olat.testutils</groupId>
-			<artifactId>olat-codepoints-full</artifactId>
-			<version>olat-codepoints-full.jar</version>
+			<groupId>org.openolat.testutils</groupId>
+			<artifactId>codepoints-full</artifactId>
+			<version>1.0.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2284,16 +2142,9 @@
 			<version>2.6</version>
 		</dependency>
 		<dependency>
-			<groupId>codepoints</groupId>
+			<groupId>org.openolat.testutils</groupId>
 			<artifactId>codepoints</artifactId>
 			<version>1.0.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>olat-extension-springtest</groupId>
-			<artifactId>olat-extension-springtest</artifactId>
-			<version>1.1</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -2430,9 +2281,9 @@
 			<version>3.0.2</version>
 		</dependency>
 		<dependency>
-			<groupId>hsqldb</groupId>
+			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.0.0-rc8</version>
+			<version>2.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Spring dependencies -->
@@ -2525,6 +2376,7 @@
 			</exclusions>
 		</dependency>
 
+	<!-- 
 		<dependency>
 			<groupId>com.sun.jersey.contribs</groupId>
 			<artifactId>jersey-spring</artifactId>
@@ -2562,6 +2414,7 @@
 			<artifactId>jersey-multipart</artifactId>
 			<version>1.1.5.1</version>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
