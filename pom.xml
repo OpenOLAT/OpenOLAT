@@ -17,7 +17,7 @@
   </description>
 	<organization>
 		<name>OpenOLAT</name>
-		<url>http://www.openolat.org/</url>
+		<url>http://www.openolat.org</url>
 	</organization>
 	<licenses>
 		<license>
@@ -38,7 +38,7 @@
 		<snapshotRepository>
 			<id>snapshots</id>
 			<name>OpenOLAT Internal Nexus Snapshot Repository</name>
-			<url>http://nexus.openolat.uzh.ch/nexus/content/repositories/snapshots</url>
+			<url>http://nexus.openolat.org/nexus/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 	<issueManagement>
