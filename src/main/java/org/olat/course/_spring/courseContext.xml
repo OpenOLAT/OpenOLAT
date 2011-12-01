@@ -38,60 +38,15 @@
 	-->
 	<property name="courseExportFiles">
 		<list>
-		
 			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-snapshots-local/org/olat/examples/Demo-Kurs-7.1/SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
+			
+				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/examples/Demo-Course/7.1-SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
 				<property name="identifier" value="Demo Kurs" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-snapshots-local/org/olat/examples/Demo-Course-7.1/SNAPSHOT/Demo-Course-7.1-SNAPSHOT.zip" />
-				<property name="identifier" value="Demo Course" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Demokurs-Themeneinschreibung/7.1/Demokurs-Themeneinschreibung-7.1.zip" />
-				<property name="identifier" value="Demokurs-Themeneinschreibung" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Course-template-big/7.1/Course-template-big-7.1.zip" />
-				<property name="identifier" value="Demo course template big" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Course-template-small/7.1/Course-template-small-7.1.zip" />
-				<property name="identifier" value="Demo course template small" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Kursvorlage-gross/7.1/Kursvorlage-gross-7.1.zip" />
-				<property name="identifier" value="Kursvorlage gross" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Kursvorlage-klein/7.1/Kursvorlage-klein-7.1.zip" />
-				<property name="identifier" value="Kursvorlage klein" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Demo-course-enrolment/7.1/Demo-course-enrolment-7.1.zip" />
-				<property name="identifier" value="Demo course enrolment" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Demo-course-enrol-to-topics/7.1/Demo-course-enrol-to-topics-7.1.zip" />
-				<property name="identifier" value="Demo course enrol to topics" />
-				<property name="version" value="7.1" />
-			</bean>
-			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-releases-local/org/olat/examples/Demokurs-Einschreibung/7.1/Demokurs-Einschreibung-7.1.zip" />
-				<property name="identifier" value="Demokurs Einschreibung" />
 				<property name="version" value="7.1" />
 			</bean>
 			<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
 			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://repo.olat.org/artifactory/libs-snapshots-local/org/olat/examples/OLAT-Help-7.1/SNAPSHOT/OLAT-Help-7.1-SNAPSHOT.zip" />
+				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/examples/OLAT-Help/7.1-SNAPSHOT/OLAT-Help-7.1-SNAPSHOT.zip" />
 				<property name="identifier" value="OLAT Hilfe" />
 				<property name="access" value="4" />
 				<property name="version" value="7.1" />
