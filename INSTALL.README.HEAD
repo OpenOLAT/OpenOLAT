@@ -31,6 +31,8 @@ Preconditions:
 	GRANT ALL PRIVILEGES ON olat.* TO 'olat' IDENTIFIED BY 'olat';
 	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
 	FLUSH PRIVILEGES;
+	
+	mysql -u olat -p olattest < src/main/resources/database/mysql/setupDatabase.sql
 
 6. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
   6.1 The Run on Server wizard will pop up and check: manually define a new server

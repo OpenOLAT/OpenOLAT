@@ -36,6 +36,7 @@
 				<entry key="singleVmOlatUrl" value="http://localhost:${container.tomcat.one.port}/olat/dmz/"/>
 				
 				<entry key="browserId" value="*firefox /Applications/FirefoxEnglish.app/Contents/MacOS/firefox-bin"/>
+				<!-- <entry key="browserId" value="*firefox /usr/bin/firefox-bin"/> -->
 
    			<entry key="log4jConfigFilename" value="log4j.remote.properties"/>
 			</map>

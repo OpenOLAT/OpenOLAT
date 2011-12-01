@@ -29,18 +29,13 @@ junit and integration tests in OpenOLAT 8
 - Install tomcats
 	mvn verify -Pinstall-tomcats
 
-- Manually create the webapps directories
-	mkdir cargo/tomcat/one/apache-tomcat-6.0.23/webapps
-	mkdir cargo/tomcat/two/apache-tomcat-6.0.23/webapps
-
-- In file src/test/profile/cluster/tomcat-one/lib/olat.local.properties and src/test/profile/cluster/tomcat-two/lib/olat.local.properties
-  set the following property to an empty value on line 76:
- 	db.hibernate.ddl.auto=
-
-- Setup database users and tables in the pom.xml:
+- Setup database users and tables in the pom.xml. The default settings are:
     <test.env.db.name>olattest</test.env.db.name>
     <test.env.db.user>olat</test.env.db.user>
     <test.env.db.pass>olat</test.env.db.pass>
+    
+- Setup first an user for the database
+	CREATE USER 'olat'@'localhost' IDENTIFIED BY 'olat';
     
 - Create a first database named olat (the maven create and drop databases automatically and need an existing database to do that)
 	CREATE DATABASE IF NOT EXISTS olat;
@@ -48,10 +43,9 @@ junit and integration tests in OpenOLAT 8
 	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
 	FLUSH PRIVILEGES;
 	
-- Create a database user and the database in mysql:
+- Create the real test database in mysql:
 	CREATE DATABASE IF NOT EXISTS olattest;
 	GRANT ALL PRIVILEGES ON olattest.* TO 'olat' IDENTIFIED BY 'olat';
-	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
 	FLUSH PRIVILEGES;
 	
 - Initialize the database
@@ -60,7 +54,7 @@ junit and integration tests in OpenOLAT 8
 
 * Execute jUnit integration tests
 -----------------------------------------
-- jUnit integrationtests with MySQL that load the framework to execute (execution time ca. 10-15m)
+- junit integration tests with MySQL that load the framework to execute (execution time ca. 10-15m)
 	mvn clean test -Dwith-mysql
 
 - The junit testresults can be found at target/surefire-reports/*
@@ -77,7 +71,7 @@ junit and integration tests in OpenOLAT 8
 - When Seleniums don't work, try to debug like this:
 	mvn verify -Pseleniumtests,debug | tee /tmp/mvn72x.log | grep execution
 
-- It is recommendet to use a Jenkins setup to administrate the test results. The Selenium results have the same format as the junit test protocols
+- It is recommended to use a Jenkins setup to administrate the test results. The Selenium results have the same format as the junit test protocols
 
 
 * Execute a single selenium functional integration test in Eclipse

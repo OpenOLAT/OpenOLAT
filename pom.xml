@@ -780,7 +780,7 @@
       - pre-integration-test
       ... selenium-maven-plugin to start the selenium server (runs in the background and logs output to target/selenium/server.log) using the generated olat-user-extension.js
       ... starts an active mq jms for cluster instances.
-      ... cargo-maven2-plugin deploying the asset OLAT-LMS into two tomcats which must be installed beforehand with (-Pinstall-tomcats)
+      ... cargo-maven2-plugin deploying the asset openolat-lms into two tomcats which must be installed beforehand with (-Pinstall-tomcats)
       - post-integration-test
       ... cargo-maven2-plugin stops the started tomcat(s)
       ... stops active mq
@@ -1048,13 +1048,15 @@
           <plugin>
             <groupId>org.codehaus.cargo</groupId>
             <artifactId>cargo-maven2-plugin</artifactId>
-            <configuration>Selenium
+            <version>1.1.3</version>
+            <configuration>
               <container>
                 <containerId>tomcat6x</containerId>
                 <timeout>${cargo.container.timeout}</timeout>
               </container>
             </configuration>
             <executions>
+              <!-- start tomcat 1 -->
               <execution>
                 <id>tomcat-one-start</id>
                 <phase>pre-integration-test</phase>
@@ -1074,16 +1076,11 @@
                     <properties>
                       <cargo.servlet.port>${container.tomcat.one.port}</cargo.servlet.port>
                       <cargo.logging>high</cargo.logging>
-<!--
-                      <cargo.jvmargs>
-                          "-Xdebug" "-Xrunjdwp:transport=dt_socket,address=4646,server=y,suspend=n"
-                      </cargo.jvmargs>
--->
                     </properties>
                     <deployables>
                       <deployable>
-                        <groupId>org.olat</groupId>
-                        <artifactId>OLAT-LMS</artifactId>
+                        <groupId>org.openolat</groupId>
+                        <artifactId>openolat-lms</artifactId>
                         <type>war</type>
                         <properties>
                           <context>olat</context>
@@ -1095,6 +1092,44 @@
                   </configuration>
                 </configuration>
               </execution>
+              <!-- start tomcat 2 -->
+              <execution>
+                <id>tomcat-two-start</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+                <configuration>
+                  <wait>${cargo.container.wait}</wait>
+                  <container>
+                    <containerId>tomcat6x</containerId>
+                    <type>installed</type>
+                    <home>${container.tomcat.two.home}</home>
+                  </container>
+                  <configuration>
+                    <type>existing</type>
+                    <home>${container.tomcat.two.home}</home>
+                    <properties>
+                      <cargo.servlet.port>${container.tomcat.two.port}</cargo.servlet.port>
+                      <cargo.logging>high</cargo.logging>
+                    </properties>
+                    <deployables>
+                      <deployable>
+                        <groupId>org.openolat</groupId>
+                        <artifactId>openolat-lms</artifactId>
+                        <type>war</type>
+                        <properties>
+                          <context>olat</context>
+                        </properties>
+                        <pingURL>http://localhost:${container.tomcat.two.port}/cargocpc/</pingURL>
+                        <pingTimeout>300000</pingTimeout>
+                      </deployable>
+                    </deployables>
+                  </configuration>
+                </configuration>
+              </execution>
+ 
+              <!-- stop tomcat 1 -->
               <execution>
                 <id>tomcat-one-stop</id>
                 <phase>post-integration-test</phase>
@@ -1108,63 +1143,8 @@
                   </configuration>
                 </configuration>
               </execution>
-            </executions>
-          </plugin>
 
-          <plugin>
-            <groupId>org.codehaus.cargo</groupId>
-            <artifactId>cargo-maven2-plugin</artifactId>
-            <configuration>
-              <container>
-                <containerId>tomcat6x</containerId>
-                <timeout>${cargo.container.timeout}</timeout>
-              </container>
-            </configuration>
-            <executions>
-              <execution>
-                <id>tomcat-two-start</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-                <configuration>
-                  <wait>${cargo.container.wait}</wait>
-                  <container>
-                    <containerId>tomcat6x</containerId>
-                    <!--<zipUrlInstaller>
-                    <url>http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.29/bin/apache-tomcat-6.0.29.zip</url>
-                    <installDir>${container.tomcat.one.install.dir}</installDir>
-                  </zipUrlInstaller>-->
-                    <type>installed</type>
-                    <home>${container.tomcat.two.home}</home>
-                  </container>
-                  <configuration>
-                    <type>existing</type>
-                    <home>${container.tomcat.two.home}</home>
-                    <properties>
-                      <cargo.servlet.port>${container.tomcat.two.port}</cargo.servlet.port>
-                      <cargo.logging>high</cargo.logging>
-<!--
-                      <cargo.jvmargs>
-                          "-Xdebug" "-Xrunjdwp:transport=dt_socket,address=5656,server=y,suspend=n"
-                      </cargo.jvmargs>
--->
-                    </properties>
-                    <deployables>
-                      <deployable>
-                        <groupId>org.olat</groupId>
-                        <artifactId>OLAT-LMS</artifactId>
-                        <type>war</type>
-                        <properties>
-                          <context>olat</context>
-                        </properties>
-                        <pingURL>http://localhost:${container.tomcat.two.port}/cargocpc/</pingURL>
-                        <pingTimeout>300000</pingTimeout>
-                      </deployable>
-                    </deployables>
-                  </configuration>
-                </configuration>
-              </execution>
+              <!-- stop tomcat 2 -->
               <execution>
                 <id>tomcat-two-stop</id>
                 <phase>post-integration-test</phase>
