@@ -1,54 +1,68 @@
-Setting up latest OLAT HEAD version on Eclipse
+Setting up latest OpenOLAT version on Eclipse
 -------------------------------------------------------------------------
 
-o As the latest development is often ahead of the current documentation here you will find an up to date install guide.
-
-1. perform fresh checkout from cvs (not simply cvs-update) of olat3 and olatcore (use a new workspace if you have this folders already in your workspace)
-2. In Terminal: make sure that you are using maven 2.2 or higher (mvn -V)
-3. In Terminal: go to olat3 directory 
-4. In Terminal: create eclipse project settings and creates .classpath files
-mvn eclipse:eclipse
-mvn install (install copies all jars and resources to the target folder) If you run out of memory while runnig this commant set MAVEN_OPTS="-Xmx1024m" in front of the mvn command
-
-5. In Eclipse: refresh ola3 and olatcore projects 
+o As the latest development is often ahead of the current documentation you will always find an up to date install guide here.
+o There a two different arts to install a development environment for OpenOLAT. Choose the one you prefer.
 
 
-6. In Eclipse: setup tomcat server by clicking on olat3->Run As->Run on Server->Manually define a new server
-7. In Eclipse: under Servers find your server and change content of the server.xml to:
+*******************************************************************************************
+Setting up OpenOLAT in Eclipse
+*******************************************************************************************
+Preconditions:
+	o Check that you are using maven 2.2 or higher (mvn -V)
+	o Check that you have the mercurial plugin installed in eclipse (http://www.javaforge.com/project/HGE)
+	o Check that you have Mercurial (hg) installed
+	
+1. In Eclipse: create a Mercurial repository location (http://hg.openolat.org/openolat) and clone the repo.
+	  1.1 Do not add a password and make sure you uncheck the init Mercurial repo checkbox at the end. Right click to clone repo into your workspace.
 
-<?xml version="1.0" encoding="UTF-8"?>
-<Server port="8005" shutdown="SHUTDOWN">
-  <Service name="Catalina">
-	<!-- Define a non-SSL Coyote HTTP/1.1 Connector on port 8080 -->
-	<Connector port="8080"  URIEncoding="UTF-8"/>
-    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" URIEncoding="UTF-8"/>
-    <Engine defaultHost="localhost" name="Catalina">
-		<Host appBase="webapps" name="localhost">
-    		<Context path="/olat" docBase="/yourhome/workspace/olat3/olat/target/olat" debug="0" reloadable="false" ></Context>
-    	</Host>
-	</Engine>
-  </Service>
-</Server>
+2. In Terminal: create eclipse project settings and create .classpath file by running
+   mvn eclipse:clean eclipse:eclipse
 
-8. (optional) In Eclipse: setup VM arguments by clicking on olat3->Run Configurations->Arguments->VM Arguments and pasting:
--Djava.io.tmpdir="/tmp/olatdata"
--Xmx512m -Xms512m
+3. In Eclipse: refresh the project
 
-9. In Eclipse link the core sources and core resources to olat3 project. olat3->Properties->Java Build Path->Source->Edit the two path entries to your env.
+4. Create an olat.local.properties file somewhere 
+  4.1 Right click on olat.local.properties in our eclipse project (src/main/java) and link it to your own olat.local.properties. You can customized
+      your configuration whit this file. You can find an example in root of your eclipse project: olat.local.properties.sample
 
-10. Before you start create an empty olat.local.properties and save it to /yourTomcatDir/lib (OLAT searches for this file on the classpath and /tomcat/lib is part of it). But OLAT should start with just the default config!
+5. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
+  5.1 The Run on Server wizzard will pop up and check: manually define a new server
+  5.2 look for Apache->Tomcat v6.0 or v7.0 Server
+  5.3 Add openolat as web application in the step "Add and remove" and click finish
+  5.4 Double click the newly created server and increase the timeout to something like 180s
+  5.5 Open the launch configuration of the server, select the tab Arguments and add these arguments to the VM arguments:
+      -XX:MaxPermSize=128m -Xms128m -Xmx384m -Djava.awt.headless=true
 
-11. Usually you will get a timeout exception when you start a new OLAT. After double clicking on the server entry you can increase the timeout for the startup.
+6. In Eclipse: start the server
 
-12. (not needed normally). If your tomcat starts very quickly but you cannnot access OLAT it might be that tomcat did not find the OLAT context. Right click the server entry and click publish to inform eclipse about a new context.
+
+
+*******************************
+Troubleshotting
+*******************************
+
+A. OutOfMemoryException: in Eclipse: setup VM arguments by clicking on Run > Run Configurations > Arguments > VM Arguments and pasting:
+   -Xmx384m -Xms128m -XX:MaxPermSize=128m -Djava.awt.headless=true
+
+B. (optional) Create an empty olat.local.properties and save it to /yourTomcatDir/lib (OLAT searches for this file on the classpath and /tomcat/lib is part of it). 
+   But OLAT should start with just the default config!
+
+D. Usually you will get a timeout exception when you start a new OLAT. After double clicking on the server entry you can increase the timeout for the startup.
+
+E. If your tomcat starts very quickly but you cannot access OLAT it might be that tomcat did not find the OLAT context.
+   Right click the server entry and click publish to inform eclipse about a new or updated context.
+
+F. If you run into problems with classes or resources not found e.g. "ClassNotFoundException" right click your server config and run the "Clean..." Task to republish 
+   all resources. Problems comes mostly when switching from eclipse to console and back with command like mvn clean, or eclipse clean and such. You will always get a clean and working environment when you do the following: Eclipse clean, create eclipse settings with launch, Server publish resources and restart OLAT.
+
 
 Background (optional for further interest)
 ------------------------------------------------------------------
-o The whole start up is no longer done by the custom olat_config.xml mechanism and instead all is done with the Spring framework.
-o In short: web.xml has some spring stuff inside that searches the classpath for spring stuff and loads OLAT (OlatServlet.init() comes after spring...).
-If done, spring injects the servlet context into files which implement ServletContextAware.
-o Dependencies are done with the "depends-on" bean attribute
 
-o There is only one spring context for the whole OLAT which you can access via CoreSpringFactory (only needed in rare special cases!)
-changes in olat.local.properties are reflected upon each restart of Tomcat (no more mvn olat:propeties needed)
-Developers can use the embedded Hsqldb and do not need to create a database manually (Default installation of data and database points to java.io.tmpdir which you can overwrite with  -Djava.io.tmpdir=/yourdir if you like or adjust the olat.local.properties file as before)
+o There is only one spring context for the whole OpenOLAT which you can access via CoreSpringFactory. The context is configured with
+  the files serviceconfig/olat.properies and can be overwritten with olat.local.properties. 
+  changes in olat.local.properties are reflected upon each restart of Tomcat.
+o Developers can use the embedded Hsqldb and do not need to create a database manually (Default installation of data and database points to java.io.tmpdir which you can overwrite with  
+  -Djava.io.tmpdir=/yourdir if you like or adjust the olat.local.properties file as before) but it's considered bad pratice. The database schema for Hsqldb is automatically generated
+  from the hibernate configuration and do not create all the foreign key constraints. The primary databases used by OpenOLAT are MySQL and PostreSQL.
+

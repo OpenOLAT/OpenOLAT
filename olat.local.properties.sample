@@ -79,9 +79,6 @@ user.generateTestUsers=false
 # When running in eclipse use "INFO, syslog, A1", for production use "INFO, syslog"
 log.rootCategory = INFO, syslog, A1
 
-# relative path to 
-relpathto.src=../../../src
-
 
 # if enabled then the IM Server must be running before OLAT is started!
 instantMessaging.enable=false

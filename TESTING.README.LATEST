@@ -6,14 +6,14 @@ junit and integration tests in OpenOLAT 8
 - Make sure the following ports are not in use (Selenium, Tomcat 1, Tomcat 2, JMS, MBeanServer(s) )
 	4444 / 8181 / 8105 / 8109 / 8282 / 8205 / 8209 / 61616 / 3000 / 3001 / 3002
 
-- Make sure you have a MySQL database version 5.0 with the InnoDB as default engine 
+- Make sure you have a MySQL database version 5.1 or 5.5 with the InnoDB as default engine 
   The server must be at localhost. To change the config see databaseCorecontext.xml
 
 - Edit src/test/profile/selenium/config/defaultcontext.xml and add the browserID line (Firefox 3.x only supported):
     E.g. Firefox on linux box
-    <entry key="browserId" value="*firefox /usr/lib64/firefox/firefox"/>
-	E.g. Firefox verison on a mac
-	<entry key="browserId" value="*firefox /Applications/Firefox3.5.app/Contents/MacOS/firefox-bin"/>
+     <entry key="browserId" value="*firefox /usr/lib64/firefox/firefox"/>
+    E.g. Firefox verison on a mac
+     <entry key="browserId" value="*firefox /Applications/Firefox3.5.app/Contents/MacOS/firefox-bin"/>
 
 - Clone a clean project or remove any olat.local.properties you might have on the classpath. This is important!
 	
@@ -71,7 +71,7 @@ junit and integration tests in OpenOLAT 8
 - When Seleniums don't work, try to debug like this:
 	mvn verify -Pseleniumtests,debug | tee /tmp/mvn72x.log | grep execution
 
-- It is recommendet to use a Hudsen setup to administrate the test results. The Selenium results have the same format as the junit test protocols
+- It is recommendet to use a Jenkins setup to administrate the test results. The Selenium results have the same format as the junit test protocols
 
 
 * Execute a single selenium functional integration test in Eclipse
