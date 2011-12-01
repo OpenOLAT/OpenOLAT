@@ -41,7 +41,13 @@ junit and integration tests in OpenOLAT 8
     <test.env.db.name>olattest</test.env.db.name>
     <test.env.db.user>olat</test.env.db.user>
     <test.env.db.pass>olat</test.env.db.pass>
-
+    
+- Create a first database named olat (the maven create and drop databases automatically and need an existing database to do that)
+	CREATE DATABASE IF NOT EXISTS olat;
+	GRANT ALL PRIVILEGES ON olat.* TO 'olat' IDENTIFIED BY 'olat';
+	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
+	FLUSH PRIVILEGES;
+	
 - Create a database user and the database in mysql:
 	CREATE DATABASE IF NOT EXISTS olattest;
 	GRANT ALL PRIVILEGES ON olattest.* TO 'olat' IDENTIFIED BY 'olat';

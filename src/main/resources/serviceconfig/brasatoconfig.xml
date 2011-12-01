@@ -8,17 +8,6 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-<!-- spring replaces vars with values from olat.properties -->
-<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	<property name="ignoreResourceNotFound" value="false"/>
-	<property name="locations">
-		<list>
-			<value>classpath:serviceconfig/olat.properties</value>
-			<value>classpath:olat.local.properties</value>
-			<value>classpath:maven.build.properties</value>
-		</list>
-	</property>
-</bean>
 
 			<bean id ="org.olat.core.util.WebappHelper" class="org.olat.core.util.WebappHelper"  init-method="init" destroy-method="destroy">
 				<!-- relative path from the webapp directory to the source directory (only relavant for development/debuging mode) -->

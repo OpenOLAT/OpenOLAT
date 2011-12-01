@@ -257,7 +257,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <version>2.8.1</version>
             <configuration>
-              <argLine>-XX:MaxPermSize=256m -Xmx1024m -Xms256m</argLine>
+              <argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
             	<systemPropertyVariables>
 								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 							</systemPropertyVariables>
@@ -481,7 +481,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <version>2.8.1</version>
             <configuration>
-              <argLine>-XX:MaxPermSize=256m -Xmx1024m -Xms256m</argLine>
+              <argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
             	<systemPropertyVariables>
 								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 							</systemPropertyVariables>
@@ -1454,11 +1454,6 @@
 		                        <name>/src/main/java/olat.local.properties</name>
 		                        <type>1</type>
 		                        <location>${basedir}/olat.local.properties</location>
-                			</linkedResource>
-                			<linkedResource>
-                				<name>/src/main/java/maven.build.properties</name>
-                				<type>1</type>
-                				<location>${basedir}/target/${artifactId}-${project.version}/WEB-INF/classes/maven.build.properties</location>
                 			</linkedResource>
                 			<linkedResource>
 		                        <name>/src/test/java/olat.local.properties</name>

@@ -99,7 +99,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 * @param nodeId
 	 */
 	public void setNodeId(int nodeId) {
-		this.nodeId = nodeId;
+		WebappHelper.nodeId = nodeId;
 	}
 
 	/**
@@ -186,10 +186,10 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	}
 
 	public static String getBuildOutputFolderRoot() {
-		Resource res = new ClassPathResource("maven.build.properties");
 		try {
-			String path = res.getFile().getAbsolutePath();
-			path = path.substring(0, path.lastIndexOf("/"));
+			String resource = "/serviceconfig/olat.properties";
+			Resource res = new ClassPathResource(resource);
+			String path = res.getFile().getParentFile().getParentFile().getAbsolutePath();
 			return path;
 		} catch (IOException e) {
 			throw new StartupException("could not find classpath resource: 'serviceconfig/olat.properties'", e);

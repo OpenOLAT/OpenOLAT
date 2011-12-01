@@ -12,7 +12,8 @@ Preconditions:
 	o Check that you are using maven 2.2 or higher (mvn -V)
 	o Check that you have the mercurial plugin installed in eclipse (http://www.javaforge.com/project/HGE)
 	o Check that you have Mercurial (hg) installed
-	
+	o MySQL 5.1 or greater or PostreSQL 8.4
+
 1. In Eclipse: create a Mercurial repository location (http://hg.openolat.org/openolat) and clone the repo.
 	  1.1 Do not add a password and make sure you uncheck the init Mercurial repo checkbox at the end. Right click to clone repo into your workspace.
 
@@ -24,16 +25,22 @@ Preconditions:
 4. Create an olat.local.properties file somewhere 
   4.1 Right click on olat.local.properties in our eclipse project (src/main/java) and link it to your own olat.local.properties. You can customized
       your configuration whit this file. You can find an example in root of your eclipse project: olat.local.properties.sample
+      
+5. In MySQL create a user 'olat' and a database 'olat'
+	CREATE DATABASE IF NOT EXISTS olat;
+	GRANT ALL PRIVILEGES ON olat.* TO 'olat' IDENTIFIED BY 'olat';
+	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
+	FLUSH PRIVILEGES;
 
-5. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
-  5.1 The Run on Server wizzard will pop up and check: manually define a new server
-  5.2 look for Apache->Tomcat v6.0 or v7.0 Server
-  5.3 Add openolat as web application in the step "Add and remove" and click finish
-  5.4 Double click the newly created server and increase the timeout to something like 180s
-  5.5 Open the launch configuration of the server, select the tab Arguments and add these arguments to the VM arguments:
+6. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
+  6.1 The Run on Server wizard will pop up and check: manually define a new server
+  6.2 look for Apache->Tomcat v6.0 or v7.0 Server
+  6.3 Add openolat as web application in the step "Add and remove" and click finish
+  6.4 Double click the newly created server and increase the timeout to something like 180s
+  6.5 Open the launch configuration of the server, select the tab Arguments and add these arguments to the VM arguments:
       -XX:MaxPermSize=128m -Xms128m -Xmx384m -Djava.awt.headless=true
 
-6. In Eclipse: start the server
+7. In Eclipse: start the server
 
 
 
@@ -62,7 +69,4 @@ Background (optional for further interest)
 o There is only one spring context for the whole OpenOLAT which you can access via CoreSpringFactory. The context is configured with
   the files serviceconfig/olat.properies and can be overwritten with olat.local.properties. 
   changes in olat.local.properties are reflected upon each restart of Tomcat.
-o Developers can use the embedded Hsqldb and do not need to create a database manually (Default installation of data and database points to java.io.tmpdir which you can overwrite with  
-  -Djava.io.tmpdir=/yourdir if you like or adjust the olat.local.properties file as before) but it's considered bad pratice. The database schema for Hsqldb is automatically generated
-  from the hibernate configuration and do not create all the foreign key constraints. The primary databases used by OpenOLAT are MySQL and PostreSQL.
 
