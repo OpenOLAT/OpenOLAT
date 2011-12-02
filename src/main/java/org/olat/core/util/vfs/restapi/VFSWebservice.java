@@ -20,6 +20,7 @@
  */
 package org.olat.core.util.vfs.restapi;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Normalizer;
@@ -46,6 +47,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.codec.binary.Base64;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -135,6 +137,27 @@ public class VFSWebservice {
 	}
 	
 	/**
+	 * Upload a file to the root folder or create a new folder. One of the two sets
+	 * of parameters must be set: foldername to create
+	 * @response.representation.200.doc The link to the created file
+	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * @param foldername The name of the new folder (optional)
+	 * @param filename The name of the file (optional)
+	 * @param file The content of the file (encoded with Base64)
+	 * @param uriInfo The uri infos
+	 * @return The link to the created file
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response postFile64ToRoot(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
+			@FormParam("file") String file, @Context UriInfo uriInfo) {
+		byte[] fileAsBytes = Base64.decodeBase64(file);
+		InputStream in = new ByteArrayInputStream(fileAsBytes);
+		return putFile(foldername, filename, in, uriInfo, Collections.<PathSegment>emptyList());
+	}
+	
+	/**
 	 * Upload a file to the specified folder or create a new folder
 	 * @response.representation.200.doc The link to the created file
 	 * @response.representation.200.qname {http://www.example.com}linkVO
@@ -152,6 +175,28 @@ public class VFSWebservice {
 	public Response postFileToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
 			@FormParam("file") InputStream file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
 		return putFile(foldername, filename, file, uriInfo, path);
+	}
+	
+	/**
+	 * Upload a file to the specified folder or create a new folder
+	 * @response.representation.200.doc The link to the created file
+	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * @param foldername The name of the new folder (optional)
+	 * @param filename The name of the file (optional)
+	 * @param file The content of the file (encoded with Base64)
+	 * @param uriInfo The uri infos
+	 * @param path The path to the folder
+	 * @return The link to the created file
+	 */
+	@POST
+	@Path("{path:.*}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response postFile64ToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
+			@FormParam("file") String file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
+		byte[] fileAsBytes = Base64.decodeBase64(file);
+		InputStream in = new ByteArrayInputStream(fileAsBytes);
+		return putFile(foldername, filename, in, uriInfo, path);
 	}
 	
 	/**

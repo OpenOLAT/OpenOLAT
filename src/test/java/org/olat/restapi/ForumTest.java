@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,9 +35,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -45,12 +48,17 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
@@ -263,7 +271,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		File portrait = new File(portraitUrl.toURI());
 		
 		//upload portrait
-		URI attachUri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
+		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
 		PostMethod attachMethod = createPost(attachUri, MediaType.APPLICATION_JSON, true);
 		attachMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		Part[] parts = { 
@@ -274,6 +282,67 @@ public class ForumTest extends OlatJerseyTestCase {
 		int attachCode = c.executeMethod(attachMethod);
 		assertEquals(200, attachCode);
 		attachMethod.releaseConnection();
+		
+		
+		//check if the file exists
+		ForumManager fm = ForumManager.getInstance();
+		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSItem uploadedFile = container.resolve("portrait.jpg");
+		assertNotNull(uploadedFile);
+		assertTrue(uploadedFile instanceof VFSLeaf);
+				
+		//check if the image is still an image
+		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
+		InputStream uploadedStream = uploadedImage.getInputStream();
+		BufferedImage image = ImageIO.read(uploadedStream);
+		FileUtils.closeSafely(uploadedStream);
+		assertNotNull(image);
+	}
+	
+	@Test
+	public void testUpload64Attachment() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
+			.queryParam("authorKey", id1.getKey())
+			.queryParam("title", "New message with attachment ")
+			.queryParam("body", "A very interesting response in Thread-1 with an attachment").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVO message = parse(body, MessageVO.class);
+		assertNotNull(message);
+		
+		//attachment
+		InputStream  portraitStream = RepositoryEntriesTest.class.getResourceAsStream("portrait.jpg");
+		assertNotNull(portraitStream);
+		//upload portrait
+		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
+		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
+		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
+		PostMethod attachMethod = createPost(attachUri, MediaType.APPLICATION_JSON, true);
+		attachMethod.addRequestHeader("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
+		attachMethod.addParameter("file", new String(portrait64));
+		attachMethod.addParameter("filename", "portrait64.jpg");
+
+		int attachCode = c.executeMethod(attachMethod);
+		assertEquals(200, attachCode);
+		attachMethod.releaseConnection();
+		
+		//check if the file exists
+		ForumManager fm = ForumManager.getInstance();
+		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSItem uploadedFile = container.resolve("portrait64.jpg");
+		assertNotNull(uploadedFile);
+		assertTrue(uploadedFile instanceof VFSLeaf);
+		
+		//check if the image is still an image
+		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
+		InputStream uploadedStream = uploadedImage.getInputStream();
+		BufferedImage image = ImageIO.read(uploadedStream);
+		FileUtils.closeSafely(uploadedStream);
+		assertNotNull(image);
 	}
 	
 	@Test

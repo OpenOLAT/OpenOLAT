@@ -24,6 +24,7 @@ package org.olat.modules.fo.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +54,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -438,6 +440,28 @@ public class ForumWebService {
 	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @FormParam("filename") String filename,
 			@FormParam("file") InputStream file, @Context HttpServletRequest request) {
 		return attachToPost(messageKey, filename, file, request);
+	}
+	
+	/**
+	 * Upload the attachment of a message
+	 * @response.representation.200.mediaType application/json, application/xml
+	 * @response.representation.200.doc Ok
+	 * @response.representation.404.doc The identity or the portrait not found
+	 * @param messageKey The key of the message
+	 * @param filename The name of the attachment
+	 * @file file64 The attachment (encoded as Base64)
+	 * @param request The HTTP request
+	 * @return Ok
+	 */
+	@POST
+	@Path("posts/{messageKey}/attachments")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @FormParam("filename") String filename,
+			@FormParam("file") String file, @Context HttpServletRequest request) {
+		byte[] fileAsBytes = Base64.decodeBase64(file);
+		InputStream in = new ByteArrayInputStream(fileAsBytes);
+		return attachToPost(messageKey, filename, in, request);
 	}
 	
 	protected Response attachToPost(Long messageKey, String filename, InputStream file,  HttpServletRequest request) {
