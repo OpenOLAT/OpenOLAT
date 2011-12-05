@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<OLATGroupExport>
+  <AreaCollection>
+    <Area name="Form Area 1">
+      <Description>&lt;p&gt;Form Area 1&lt;/p&gt;</Description>
+    </Area>
+  </AreaCollection>
+  <GroupCollection>
+    <Group name="Form Group 1" maxParticipants="12" waitingList="true" autoCloseRanks="true" showOwners="true" showParticipants="false" showWaitingList="false">
+      <Description>&lt;p&gt;Forum &lt;em&gt;Group&lt;/em&gt; 1&lt;/p&gt;</Description>
+      <CollabTools hasNews="true" hasContactForm="true" hasCalendar="true" hasFolder="true" hasForum="true" hasChat="true" hasWiki="true" hasPortfolio="true"/>
+      <AreaRelation>Form Area 1</AreaRelation>
+    </Group>
+    <Group name="Form Group 2" waitingList="false" autoCloseRanks="false" showOwners="true" showParticipants="false" showWaitingList="false">
+      <Description>&lt;p&gt;A second &lt;strong&gt;group&lt;/strong&gt;&amp;nbsp;&lt;/p&gt;</Description>
+      <CollabTools hasNews="false" hasContactForm="false" hasCalendar="false" hasFolder="false" hasForum="false" hasChat="false" hasWiki="false" hasPortfolio="false"/>
+    </Group>
+  </GroupCollection>
+</OLATGroupExport>

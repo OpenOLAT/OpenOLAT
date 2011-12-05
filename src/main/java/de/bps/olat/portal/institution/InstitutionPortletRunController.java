@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.site.RepositorySite;
@@ -51,17 +52,18 @@ public class InstitutionPortletRunController extends BasicController {
 	protected InstitutionPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		this.portletVC = createVelocityContainer("institutionPortlet");
-		String userinst = "unknown";
-
-		try {
-			userinst = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, ureq.getLocale()).toLowerCase();
-			this.ipe = InstitutionPortlet.getInstitutionPortletEntry(userinst);
-		} catch (Exception e) {
+		
+		String userinst = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, ureq.getLocale());
+		if(StringHelper.containsNonWhitespace(userinst)) {
+			ipe = InstitutionPortlet.getInstitutionPortletEntry(userinst.toLowerCase());
+		} else {
+			userinst = "unknown";
 			ipe = null;
 		}
+		
 		this.portletVC.contextPut("hasInstitution", new Boolean(ipe != null));
 		if (ipe == null) {
-			Tracing.createLoggerFor(InstitutionPortletRunController.class).warn("unknown institution (" + userinst + ") for user " + ureq.getIdentity().getName());
+			logWarn("unknown institution (" + userinst + ") for user " + ureq.getIdentity().getName(), null);
 		} else {
 			this.portletVC.contextPut("iname", ipe.getInstitutionName());
 			this.portletVC.contextPut("iurl", ipe.getInstitutionUrl());

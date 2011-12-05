@@ -15,8 +15,7 @@
 package de.bps.olat.portal.institution;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,35 +32,14 @@ import org.olat.core.logging.StartupException;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 
-import com.anthonyeden.lib.config.Configuration;
-import com.anthonyeden.lib.config.ConfigurationException;
-import com.anthonyeden.lib.config.XMLConfiguration;
+import com.thoughtworks.xstream.XStream;
+
 
 public class InstitutionPortlet extends AbstractPortlet {
 	private String cssWrapperClass = "o_pt_w_if";
 
 	private static final String CONFIG_FILE = "/WEB-INF/olat_portals_institution.xml";
 	private static FastHashMap institutions = null;
-
-	private static final String POLYMORPHLINK = "polymorphlink";
-	private static final String POLYMORPHLINK_TARGETID = "default_targetid";
-	private static final String POLYMORPHLINK_TYPE = "type";
-	private static final String POLYMORPHLINK_TEXT = "text";
-	private static final String POLYMORPHLINK_ELEMENT = "element";
-	private static final String POLYMORPHLINK_ELEMENT_ATTRIBUT = "attribute";
-	private static final String POLYMORPHLINK_ELEMENT_VALUE = "value";
-	private static final String POLYMORPHLINK_ELEMENT_ID = "targetid";
-	private static final String POLYMORPHLINK_ELEMENT_CONDITION = "condition";
-	private static final String INSTITUTION_NAME = "name";
-	private static final String INSTITUTION_LOGO = "logo";
-	private static final String INSTITUTION_URL = "url";
-	private static final String SUPERVISOR = "supervisor";
-	private static final String SUPERVISOR_PERSON = "person";
-	private static final String SUPERVISOR_URL = "url";
-	private static final String SUPERVISOR_EMAIL = "email";
-	private static final String SUPERVISOR_PHONE = "phone";
-	private static final String SUPERVISOR_BLOG = "blog";
-	private static final String VALUE = "value";
 
 	public static final String TYPE_COURSE = "course";
 	public static final String TYPE_CATALOG = "catalog";
@@ -152,73 +130,22 @@ public class InstitutionPortlet extends AbstractPortlet {
 	 */
 	public void init() {
 
-		File configurationFile = new File(WebappHelper.getContextRoot() + CONFIG_FILE);
-
-		XMLConfiguration instConfigSection = null;
-		try {
-			instConfigSection = new XMLConfiguration(configurationFile);
-		} catch (ConfigurationException ce) {
-			throw new StartupException("Error loading institution portlet configuration file!", ce);
-		}
-		if (instConfigSection == null) { throw new StartupException("Error loading institution portlet configuration file!"); }
-
 		institutions = new FastHashMap();
-		for (Iterator iter = instConfigSection.getChildren("institution").iterator(); iter.hasNext();) {
-			Configuration instConfigEntry = (Configuration) iter.next(); // the institutions config entry
-			String shortName = instConfigEntry.getAttribute("shortname"); // short name of inst
-
-			if (shortName == null) { throw new StartupException("Institution portlet startup: No shortname given for one entry!"); }
-			try {
-				List<InstitutionPortletSupervisorEntry> supervisors = new ArrayList<InstitutionPortletSupervisorEntry>(1); // there may be more than one supervisor
-				for (Iterator it = instConfigEntry.getChildren(SUPERVISOR).iterator(); it.hasNext();) {
-					Configuration supervisorElement = (Configuration) it.next(); // one supervisor element
-					InstitutionPortletSupervisorEntry ipse = new InstitutionPortletSupervisorEntry(getSupervisorElementChild(supervisorElement.getChild(SUPERVISOR_PERSON)),
-								getSupervisorElementChild(supervisorElement.getChild(SUPERVISOR_PHONE)),
-								getSupervisorElementChild(supervisorElement.getChild(SUPERVISOR_EMAIL)),
-								getSupervisorElementChild(supervisorElement.getChild(SUPERVISOR_URL)),
-								getSupervisorElementChild(supervisorElement.getChild(SUPERVISOR_BLOG)));
-					supervisors.add(ipse); // save it
-				}
-
-				//get polymorph links
-				List<Configuration> polymorphConfs = instConfigEntry.getChildren(POLYMORPHLINK);
-				List<PolymorphLink> polyList = new ArrayList<PolymorphLink>();
-				if (polymorphConfs != null && polymorphConfs.size() > 0) {
-					for(Configuration polymorphConf: polymorphConfs) {
-						List<PolymorphLinkElement> elemList = new ArrayList<PolymorphLinkElement>();
-						for (Iterator<Configuration> it = polymorphConf.getChildren(POLYMORPHLINK_ELEMENT).iterator(); it.hasNext();) {
-							Configuration tmp = it.next();
-							elemList.add(new PolymorphLinkElement(tmp.getAttribute(POLYMORPHLINK_ELEMENT_ATTRIBUT), tmp
-									.getAttribute(POLYMORPHLINK_ELEMENT_VALUE), tmp.getAttribute(POLYMORPHLINK_ELEMENT_ID), tmp
-									.getAttribute(POLYMORPHLINK_ELEMENT_CONDITION)));
-							
-						}
-						PolymorphLink polyLink = new PolymorphLink(polymorphConf.getAttribute(POLYMORPHLINK_TARGETID), polymorphConf.getAttribute(POLYMORPHLINK_TYPE),
-								polymorphConf.getAttribute(POLYMORPHLINK_TEXT), elemList);
-						polyList.add(polyLink);
-					}
-				}
-				
-				InstitutionPortletEntry ipe = new InstitutionPortletEntry(instConfigEntry.getChild(INSTITUTION_NAME).getAttribute(VALUE),
-						instConfigEntry.getChild(INSTITUTION_URL).getAttribute(VALUE), instConfigEntry.getChild(INSTITUTION_LOGO).getAttribute(VALUE),
-						supervisors, polyList);
-				institutions.put(shortName.toLowerCase(), ipe); // save inst entry
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new StartupException(e.getMessage(), e);
+		
+		File configurationFile = new File(WebappHelper.getContextRoot() + CONFIG_FILE);
+		XStream xstream = InstitutionPortletXStream.getXStream();
+		InstitutionConfiguration configuration = (InstitutionConfiguration)xstream.fromXML(configurationFile);
+		
+		for(InstitutionPortletEntry institution: configuration.getInstitution()) {
+			String shortName = institution.shortname;
+			if (shortName == null) { 
+				throw new StartupException("Institution portlet startup: No shortname given for one entry!");
 			}
+			institutions.put(shortName.toLowerCase(), institution);
 		}
 
 		// from now on optimize for non-synchronized read access
 		institutions.setFast(true);
-	}
-
-	private String getSupervisorElementChild(Configuration child) {
-		String value = new String();
-		if(child!=null){
-			value=child.getAttribute(VALUE);
-		}
-		return value;
 	}
 
 	/**
@@ -241,11 +168,13 @@ public class InstitutionPortlet extends AbstractPortlet {
  * @author Lars Eberle (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 class InstitutionPortletEntry {
-	private String institutionName;
-	private String institutionUrl;
-	private String institutionLogo;
-	private List<InstitutionPortletSupervisorEntry> supervisors;
-	private List<PolymorphLink> polymorphLinks;
+
+	public List<InstitutionPortletSupervisorEntry> supervisor;
+	public List<PolymorphLink> polymorphlink;
+	public Value logo;
+	public Value name;
+	public Value url;
+	public String shortname;
 
 	/**
 	 * @param institutionName Name of the inst.
@@ -253,49 +182,46 @@ class InstitutionPortletEntry {
 	 * @param institutionLogo Logo file name of the inst.
 	 * @param supervisors The supervisors. List of type InstitutionportletSupervisorEntry.
 	 */
-	InstitutionPortletEntry(String institutionName, String institutionUrl, String institutionLogo,
-			List<InstitutionPortletSupervisorEntry> supervisors, List<PolymorphLink> polymorphLinks) {
-		this.institutionName = institutionName;
-		this.institutionUrl = institutionUrl;
-		this.institutionLogo = institutionLogo;
-		this.supervisors = supervisors;
-		this.polymorphLinks = polymorphLinks;
+	public InstitutionPortletEntry() {
+		//
 	}
 
 	/**
 	 * @return Returns the institutionLogo.
 	 */
 	public String getInstitutionLogo() {
-		return institutionLogo;
+		return logo == null ? null : logo.value;
 	}
 
 	/**
 	 * @return Returns the institutionName.
 	 */
 	public String getInstitutionName() {
-		return institutionName;
+		return name == null ? null : name.value;
 	}
 
 	/**
 	 * @return Returns the institutionUrl.
 	 */
 	public String getInstitutionUrl() {
-		return institutionUrl;
+		return url == null ? null : url.value;
 	}
 
 	/**
 	 * @return Returns the supervisors.
 	 */
 	public List<InstitutionPortletSupervisorEntry> getSupervisors() {
-		return supervisors;
+		if(supervisor == null) {
+			return Collections.emptyList();
+		}
+		return supervisor;
 	}
 
-	protected List<PolymorphLink> getPolymorphLinks() {
-		return polymorphLinks;
-	}
-
-	protected void setPolymorphLinks(List<PolymorphLink> polymorphLink) {
-		this.polymorphLinks = polymorphLink;
+	public List<PolymorphLink> getPolymorphLinks() {
+		if(polymorphlink == null) {
+			return Collections.emptyList();
+		}
+		return polymorphlink;
 	}
 }
 
@@ -309,20 +235,12 @@ class InstitutionPortletEntry {
  * @author Lars Eberle (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 class InstitutionPortletSupervisorEntry {
-	private String supervisorPhone;
-	private String supervisorMail;
-	private String supervisorPerson;
-	private String supervisorURL;
-	private String supervisorBlog;
+	public Value phone;
+	public Value email;
+	public Value person;
+	public Value url;
+	public Value blog;
 
-	public String getSupervisorBlog() {
-		return supervisorBlog;
-	}
-
-	public void setSupervisorBlog(String supervisorBlog) {
-		this.supervisorBlog = supervisorBlog;
-	}
-	
 	/**
 	 * @param supervisorName The supervisors name. 
 	 * @param supervisorSurname The supervisors surname.
@@ -330,56 +248,42 @@ class InstitutionPortletSupervisorEntry {
 	 * @param supervisorMail The supervisors mail.
 	 * @param supervisorBlog The supervisor Blog 	 
 	 */
-	InstitutionPortletSupervisorEntry(String supervisorPerson, String supervisorPhone, String supervisorMail, String supervisorURL,String supervisorBlog) {
-		this.supervisorPerson = supervisorPerson;
-		this.supervisorPhone = supervisorPhone;
-		this.supervisorMail = supervisorMail;
-		this.supervisorURL = supervisorURL;
-		this.supervisorBlog = supervisorBlog;
+	public InstitutionPortletSupervisorEntry() {
+		//
 	}
-
-	InstitutionPortletSupervisorEntry(String supervisorURL) {
-		this.supervisorURL = supervisorURL;
-
+	
+	public String getSupervisorBlog() {
+		return blog == null ? null : blog.value;
 	}
 
 	/**
 	 * @return Returns the supervisorMail.
 	 */
 	public String getSupervisorMail() {
-		return supervisorMail;
+		return email == null ? null : email.value;
 	}
 
 	/**
 	 * @return Returns the supervisorPhone.
 	 */
 	public String getSupervisorPhone() {
-		return supervisorPhone;
+		return phone == null ? null : phone.value;
 	}
 
 	public String getSupervisorPerson() {
-		return supervisorPerson;
-	}
-
-	public void setSupervisorPerson(String supervisorPerson) {
-		this.supervisorPerson = supervisorPerson;
+		return person == null ? null : person.value;
 	}
 
 	public String getSupervisorURL() {
-		return supervisorURL;
+		return url == null ? null : url.value;
 	}
-
-	public void setSupervisorURL(String supervisorURL) {
-		this.supervisorURL = supervisorURL;
-	}
-
 }
 
 class PolymorphLink {
-	private String defaultId;
-	private List<PolymorphLinkElement> linkElements;
-	private String linkType;
-	private String linkText;
+	public String defaultId;
+	public String linkType;
+	public String linkText;
+	public List<PolymorphLinkElement> element;
 
 	protected String getDefaultLink() {
 		return this.defaultId;
@@ -389,11 +293,8 @@ class PolymorphLink {
 		return this.linkType;
 	}
 
-	PolymorphLink(String defautlId, String linkType, String linkText, List<PolymorphLinkElement> linkElements) {
-		this.defaultId = defautlId;
-		this.linkType = linkType;
-		this.linkText = linkText;
-		this.linkElements = linkElements;
+	public PolymorphLink() {
+		//
 	}
 
 	/**
@@ -402,6 +303,7 @@ class PolymorphLink {
 	 * @return Id from the first matching rule, otherwise <b>null</b>  
 	 */
 	protected String getResultIDForUser(UserRequest ureq) {
+		if(element == null) return null;
 
 		// first value --> orgUnit | second value --> studySubject must be equivalent with enumeration in PolymorphLinkElement
 
@@ -411,8 +313,8 @@ class PolymorphLink {
 		String[] userValues = {
 						orgunit != null ? orgunit : "",
 						studysubject != null ? studysubject : "" };
-
-		for (PolymorphLinkElement elem : linkElements) {
+		
+		for (PolymorphLinkElement elem : element) {
 			switch (elem.getCondition()) {
 				case 0:
 					if (userValues[elem.getAttrib()].startsWith(elem.getValue())) return elem.getId(); break;
@@ -426,7 +328,7 @@ class PolymorphLink {
 	}
 	
 	protected boolean hasConditions() {
-		return (linkElements != null && linkElements.size() > 0);
+		return (element != null && element.size() > 0);
 	}
 
 	protected String getLinkText() {
@@ -435,36 +337,26 @@ class PolymorphLink {
 }
 
 class PolymorphLinkElement {
-	private int attrib;
-	private String value;
-	private int condition = 0;
-	private String id;
-
 	protected static final String EQUALS = "equals";
 	protected static final String STARTS_WITH = "starts_with";
 	protected static final String CONTAINS = "contains";
 
-	protected PolymorphLinkElement(String attrib, String value, String id, String condition) {
-		this.value = value;
-		this.id = id;
+	public String id;
+	public String cond;
+	public String value;
+	public String attribute;
 
-		if (attrib.equals("orgunit")) {
-			this.attrib = 0;
-		} else if (attrib.equals("studysubject")) {
-			this.attrib = 1;
-		}
-
-		if (condition.equals(STARTS_WITH)) {
-			this.condition = 0;
-		} else if (condition.equals(EQUALS)) {
-			this.condition = 1;
-		} else if (condition.equals(CONTAINS)) {
-			this.condition = 2;
-		}
+	public PolymorphLinkElement() {
+		//
 	}
 
 	protected int getAttrib() {
-		return attrib;
+		if ("orgunit".equals(attribute)) {
+			return 0;
+		} else if ("studysubject".equals(attribute)) {
+			return 1;
+		}
+		return -1;
 	}
 
 	protected String getValue() {
@@ -472,10 +364,45 @@ class PolymorphLinkElement {
 	}
 
 	protected int getCondition() {
-		return condition;
+		if (STARTS_WITH.equals(cond)) {
+			return 0;
+		} else if (EQUALS.equals(cond)) {
+			return 1;
+		} else if (CONTAINS.equals(cond)) {
+			return 2;
+		}
+		return -1;
 	}
 
 	protected String getId() {
 		return id;
+	}
+}
+
+class Value {
+	public String value;
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+	
+	@Override
+	public String toString() {
+		return value == null ? "null" : value;
+	}
+}
+
+class InstitutionConfiguration {
+	public List<InstitutionPortletEntry> institution;
+	
+	public List<InstitutionPortletEntry> getInstitution() {
+		if(institution == null) {
+			return Collections.emptyList();
+		}
+		return institution;
 	}
 }

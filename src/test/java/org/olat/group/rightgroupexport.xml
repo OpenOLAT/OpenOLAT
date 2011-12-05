@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<OLATGroupExport>
+  <AreaCollection/>
+  <GroupCollection>
+    <Group name="Test Right 1" waitingList="false" autoCloseRanks="false" showOwners="false" showParticipants="true" showWaitingList="false">
+      <Description>&lt;p&gt;Test Right 1&lt;/p&gt;</Description>
+      <CollabTools hasNews="true" hasContactForm="true" hasCalendar="false" hasFolder="false" hasForum="false" hasChat="false" hasWiki="false" hasPortfolio="false"/>
+    </Group>
+    <Group name="Test Right 2" waitingList="false" autoCloseRanks="false" showOwners="false" showParticipants="true" showWaitingList="false">
+      <Description>&lt;p&gt;Test Right 2&lt;/p&gt;</Description>
+      <CollabTools hasNews="false" hasContactForm="false" hasCalendar="false" hasFolder="true" hasForum="true" hasChat="false" hasWiki="true" hasPortfolio="false"/>
+    </Group>
+  </GroupCollection>
+</OLATGroupExport>

@@ -27,8 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.commons.servlets.util.ResourceDescriptor;
 
-import com.anthonyeden.lib.config.Configuration;
-
 
 /**
  * Initial Date:  16.06.2003

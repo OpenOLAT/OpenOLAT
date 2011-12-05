@@ -1802,12 +1802,6 @@
 			<version>1.4</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-vfs</groupId>
-			<artifactId>commons-vfs</artifactId>
-			<version>1.0</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
 			<version>1.0.2</version>
@@ -2001,11 +1995,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.5.11</version>
-		</dependency>
-		<dependency>
-			<groupId>edenlib</groupId>
-			<artifactId>edenlib</artifactId>
-			<version>1.3</version>
 		</dependency>
 		<!-- basic LTI stuff for lti demo: http://www.imsglobal.org/toolsinteroperability2.cfm -->
 		<dependency>

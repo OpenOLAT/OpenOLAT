@@ -21,11 +21,12 @@
 
 package org.olat.group;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -95,12 +96,6 @@ import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
 
-import com.anthonyeden.lib.config.Configuration;
-import com.anthonyeden.lib.config.ConfigurationException;
-import com.anthonyeden.lib.config.Dom4jConfiguration;
-import com.anthonyeden.lib.config.MutableConfiguration;
-import com.anthonyeden.lib.config.XMLConfiguration;
-
 /**
  * Description:<br>
  * Persisting implementation of the business group manager. Persists the data in
@@ -114,25 +109,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 
 	private static BusinessGroupManager INSTANCE;
 
-	private static final String EXPORT_ATTR_NAME = "name";
-	private static final String EXPORT_ATTR_MAX_PARTICIPATS = "maxParticipants";
-	private static final String EXPORT_ATTR_MIN_PARTICIPATS = "minParticipants";
-	private static final String EXPORT_ATTR_WAITING_LIST = "waitingList";
-	private static final String EXPORT_ATTR_AUTO_CLOSE_RANKS = "autoCloseRanks";
-	private static final String EXPORT_KEY_AREA_RELATION = "AreaRelation";
-	private static final String EXPORT_KEY_GROUP = "Group";
-	private static final String EXPORT_KEY_GROUP_COLLECTION = "GroupCollection";
-	private static final String EXPORT_KEY_AREA = "Area";
-	private static final String EXPORT_KEY_AREA_COLLECTION = "AreaCollection";
-	private static final String EXPORT_KEY_ROOT = "OLATGroupExport";
-	private static final String EXPORT_KEY_DESCRIPTION = "Description";
-	private static final String EXPORT_KEY_COLLABTOOLS = "CollabTools";
-	private static final String EXPORT_KEY_SHOW_OWNERS = "showOwners";
-	private static final String EXPORT_KEY_SHOW_PARTICIPANTS = "showParticipants";
-	private static final String EXPORT_KEY_SHOW_WAITING_LIST = "showWaitingList";
-	private static final String EXPORT_KEY_CALENDAR_ACCESS = "calendarAccess";
-	private static final String EXPORT_KEY_NEWS = "info";
-
+	private GroupXStream xstream = new GroupXStream();
 	private BaseSecurity securityManager;
 	private List<DeletableGroupData> deleteListeners;
 	
@@ -834,102 +811,124 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_FROM_WAITING_LIST_REMOVED, getClass(), LoggingResourceable.wrap(identity));
 		// send notification mail in your controller!
 	}
-	
+
 	/**
 	 * @see org.olat.group.BusinessGroupManager#exportGroups(org.olat.group.context.BGContext,
 	 *      java.io.File)
 	 */
 	public void exportGroups(BGContext context, File fExportFile) {
-		if (context == null) return; // nothing to do... says Florian.
-		Dom4jConfiguration root = new Dom4jConfiguration(EXPORT_KEY_ROOT);
+		if (context == null)
+			return; // nothing to do... says Florian.
 
+		OLATGroupExport root = new OLATGroupExport();
 		// export areas
-		MutableConfiguration confAreas = root.addChild(EXPORT_KEY_AREA_COLLECTION);
 		BGAreaManager am = BGAreaManagerImpl.getInstance();
-		List areas = am.findBGAreasOfBGContext(context);
-		for (Iterator iter = areas.iterator(); iter.hasNext();) {
-			BGArea area = (BGArea) iter.next();
-			MutableConfiguration newArea = confAreas.addChild(EXPORT_KEY_AREA);
-			newArea.addAttribute(EXPORT_ATTR_NAME, area.getName());
-			newArea.addChild(EXPORT_KEY_DESCRIPTION, area.getDescription());
+		List<BGArea> areas = am.findBGAreasOfBGContext(context);
+
+		root.setAreas(new AreaCollection());
+		root.getAreas().setGroups(new ArrayList<Area>());
+		for (BGArea area : areas) {
+			Area newArea = new Area();
+			newArea.name = area.getName();
+			newArea.description = Collections.singletonList(area.getDescription());
+			root.getAreas().getGroups().add(newArea);
 		}
 
-		// TODO fg: export group rights
-
 		// export groups
-		MutableConfiguration confGroups = root.addChild(EXPORT_KEY_GROUP_COLLECTION);
+		root.setGroups(new GroupCollection());
+		root.getGroups().setGroups(new ArrayList<Group>());
+
 		BGContextManager cm = BGContextManagerImpl.getInstance();
-		List groups = cm.getGroupsOfBGContext(context);
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			BusinessGroup group = (BusinessGroup) iter.next();
-			exportGroup(fExportFile, confGroups, group);
+		List<BusinessGroup> groups = cm.getGroupsOfBGContext(context);
+		for (BusinessGroup group : groups) {
+			Group newGroup = exportGroup(fExportFile, group);
+			root.getGroups().getGroups().add(newGroup);
 		}
 
 		saveGroupConfiguration(fExportFile, root);
 	}
 
 	public void exportGroup(BusinessGroup group, File fExportFile) {
-		Dom4jConfiguration root = new Dom4jConfiguration(EXPORT_KEY_ROOT);
-		MutableConfiguration confGroups = root.addChild(EXPORT_KEY_GROUP_COLLECTION);
-		exportGroup(fExportFile, confGroups, group);
+		OLATGroupExport root = new OLATGroupExport();
+		Group newGroup = exportGroup(fExportFile, group);
+		root.setGroups(new GroupCollection());
+		root.getGroups().setGroups(new ArrayList<Group>());
+		root.getGroups().getGroups().add(newGroup);
 		saveGroupConfiguration(fExportFile, root);
 	}
 
-	private void exportGroup(File fExportFile, MutableConfiguration confGroups, BusinessGroup group) {
-		MutableConfiguration newGroup = confGroups.addChild(EXPORT_KEY_GROUP);
-		newGroup.addAttribute(EXPORT_ATTR_NAME, group.getName());
-		if (group.getMinParticipants() != null) newGroup.addAttribute(EXPORT_ATTR_MIN_PARTICIPATS, group.getMinParticipants());
-		if (group.getMaxParticipants() != null) newGroup.addAttribute(EXPORT_ATTR_MAX_PARTICIPATS, group.getMaxParticipants());			
-		if (group.getWaitingListEnabled() != null) newGroup.addAttribute(EXPORT_ATTR_WAITING_LIST, group.getWaitingListEnabled());
-		if (group.getAutoCloseRanksEnabled() != null) newGroup.addAttribute(EXPORT_ATTR_AUTO_CLOSE_RANKS, group.getAutoCloseRanksEnabled());
-		newGroup.addChild(EXPORT_KEY_DESCRIPTION, group.getDescription());
+	private Group exportGroup(File fExportFile, BusinessGroup group) {
+		Group newGroup = new Group();
+		newGroup.name = group.getName();
+		if (group.getMinParticipants() != null) {
+			newGroup.minParticipants = group.getMinParticipants();
+		}
+		if (group.getMaxParticipants() != null) {
+			newGroup.maxParticipants = group.getMaxParticipants();
+		}
+		if (group.getWaitingListEnabled() != null) {
+			newGroup.waitingList = group.getWaitingListEnabled();
+		}
+		if (group.getAutoCloseRanksEnabled() != null) {
+			newGroup.autoCloseRanks = group.getAutoCloseRanksEnabled();
+		}
+		newGroup.description = Collections.singletonList(group.getDescription());
 		// collab tools
-		MutableConfiguration toolsConfig = newGroup.addChild(EXPORT_KEY_COLLABTOOLS);
+
+		CollabTools toolsConfig = new CollabTools();
 		CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-			toolsConfig.addAttribute(CollaborationTools.TOOLS[i], ct.isToolEnabled(CollaborationTools.TOOLS[i]) ? "true" : "false");
+			try {
+				Field field = toolsConfig.getClass().getField(CollaborationTools.TOOLS[i]);
+				field.setBoolean(toolsConfig, ct.isToolEnabled(CollaborationTools.TOOLS[i]));
+			} catch (Exception e) {
+				logError("", e);
+			}
 		}
+		newGroup.tools = toolsConfig;
+
 		Long calendarAccess = ct.lookupCalendarAccess();
 		if (calendarAccess != null) {
-			newGroup.addAttribute(EXPORT_KEY_CALENDAR_ACCESS,calendarAccess);			
+			newGroup.calendarAccess = calendarAccess;
 		}
 		String info = ct.lookupNews();
-		if(info!=null && !info.trim().equals("")) {
-			newGroup.addAttribute(EXPORT_KEY_NEWS,info.trim());			
-		}		
-		
-		Tracing.logDebug("fExportFile.getParent()=" + fExportFile.getParent(), this.getClass());
+		if (info != null && !info.trim().equals("")) {
+			newGroup.info = info.trim();
+		}
+
+		logDebug("fExportFile.getParent()=" + fExportFile.getParent());
 		ct.archive(fExportFile.getParent());
 		// export membership
-		List bgAreas = BGAreaManagerImpl.getInstance().findBGAreasOfBusinessGroup(group);
-		for (Iterator iterator = bgAreas.iterator(); iterator.hasNext();) {
-			BGArea areaRelation = (BGArea) iterator.next();
-			MutableConfiguration newGroupAreaRel = newGroup.addChild(EXPORT_KEY_AREA_RELATION);
-			newGroupAreaRel.setValue(areaRelation.getName());
+		List<BGArea> bgAreas = BGAreaManagerImpl.getInstance().findBGAreasOfBusinessGroup(group);
+		newGroup.areaRelations = new ArrayList<String>();
+		for (BGArea areaRelation : bgAreas) {
+			newGroup.areaRelations.add(areaRelation.getName());
 		}
-		//export properties
+		// export properties
 		BusinessGroupPropertyManager bgPropertyManager = new BusinessGroupPropertyManager(group);
 		boolean showOwners = bgPropertyManager.showOwners();
 		boolean showParticipants = bgPropertyManager.showPartips();
 		boolean showWaitingList = bgPropertyManager.showWaitingList();
-		
-		newGroup.addAttribute(EXPORT_KEY_SHOW_OWNERS, showOwners);		
-		newGroup.addAttribute(EXPORT_KEY_SHOW_PARTICIPANTS, showParticipants);		
-		newGroup.addAttribute(EXPORT_KEY_SHOW_WAITING_LIST, showWaitingList);		
+
+		newGroup.showOwners = showOwners;
+		newGroup.showParticipants = showParticipants;
+		newGroup.showWaitingList = showWaitingList;
+		return newGroup;
 	}
 
-	private void saveGroupConfiguration(File fExportFile, Dom4jConfiguration root) {
+	private void saveGroupConfiguration(File fExportFile, OLATGroupExport root) {
 		FileOutputStream fOut = null;
 		try {
 			fOut = new FileOutputStream(fExportFile);
-			BufferedOutputStream bos = FileUtils.getBos(fOut);
-			root.save(bos);
-			bos.flush();
-			bos.close();
+			xstream.toXML(root, fOut);
 		} catch (IOException ioe) {
-			throw new OLATRuntimeException("Error writing group configuration during group export.", ioe);
-		} catch (ConfigurationException cfe) {
-			throw new OLATRuntimeException("Error writing group configuration during group export.", cfe);
+			throw new OLATRuntimeException(
+					"Error writing group configuration during group export.",
+					ioe);
+		} catch (Exception cfe) {
+			throw new OLATRuntimeException(
+					"Error writing group configuration during group export.",
+					cfe);
 		} finally {
 			FileUtils.closeSafely(fOut);
 		}
@@ -940,106 +939,100 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      java.io.File)
 	 */
 	public void importGroups(BGContext context, File fGroupExportXML) {
-		if (!fGroupExportXML.exists()) return;
+		if (!fGroupExportXML.exists())
+			return;
 
-		Configuration groupConfig = null;
+		OLATGroupExport groupConfig = null;
 		try {
-			groupConfig = new XMLConfiguration(fGroupExportXML);
-		} catch (ConfigurationException ce) {
+			groupConfig = xstream.fromXML(fGroupExportXML);
+		} catch (Exception ce) {
 			throw new OLATRuntimeException("Error importing group config.", ce);
 		}
-		if (!groupConfig.getName().equals(EXPORT_KEY_ROOT)) throw new AssertException("Invalid group export file. Root does not match.");
+		if (groupConfig == null) {
+			throw new AssertException(
+					"Invalid group export file. Root does not match.");
+		}
 
 		// get areas
 		BGAreaManager am = BGAreaManagerImpl.getInstance();
-		Configuration confAreas = groupConfig.getChild(EXPORT_KEY_AREA_COLLECTION);
-		if (confAreas != null) {
-			List areas = confAreas.getChildren(EXPORT_KEY_AREA);
-			for (Iterator iter = areas.iterator(); iter.hasNext();) {
-				Configuration area = (Configuration) iter.next();
-				String areaName = area.getAttribute(EXPORT_ATTR_NAME);
-				String areaDesc = area.getChildValue(EXPORT_KEY_DESCRIPTION);
+		if (groupConfig.getAreas() != null && groupConfig.getAreas().getGroups() != null) {
+			for (Area area : groupConfig.getAreas().getGroups()) {
+				String areaName = area.name;
+				String areaDesc = (area.description != null && !area.description.isEmpty()) ? area.description.get(0) : "";
 				am.createAndPersistBGAreaIfNotExists(areaName, areaDesc, context);
 			}
 		}
 
-		// TODO fg: import group rights
-
 		// get groups
-		Configuration confGroups = groupConfig.getChild(EXPORT_KEY_GROUP_COLLECTION);
-		if (confGroups != null) {
+		if (groupConfig.getGroups() != null && groupConfig.getGroups().getGroups() != null) {
 			BusinessGroupManager gm = BusinessGroupManagerImpl.getInstance();
-			List groups = confGroups.getChildren(EXPORT_KEY_GROUP);
-			for (Iterator iter = groups.iterator(); iter.hasNext();) {
+			for (Group group : groupConfig.getGroups().getGroups()) {
 				// create group
-				Configuration group = (Configuration) iter.next();
-				String groupName = group.getAttribute(EXPORT_ATTR_NAME);
-				String groupDesc = group.getChildValue(EXPORT_KEY_DESCRIPTION);
+				String groupName = group.name;
+				String groupDesc = (group.description != null && !group.description.isEmpty()) ? group.description.get(0) : "";
 
 				// get min/max participants
-				Integer groupMinParticipants = null;
-				String sMinParticipants = group.getAttribute(EXPORT_ATTR_MIN_PARTICIPATS);
-				if (sMinParticipants != null) groupMinParticipants = new Integer(sMinParticipants);
-				Integer groupMaxParticipants = null;
-				String sMaxParticipants = group.getAttribute(EXPORT_ATTR_MAX_PARTICIPATS);
-				if (sMaxParticipants != null) groupMaxParticipants = new Integer(sMaxParticipants);
+				Integer groupMinParticipants = group.minParticipants;
+				Integer groupMaxParticipants = group.maxParticipants;
 
 				// waiting list configuration
-				String waitingListConfig = group.getAttribute(EXPORT_ATTR_WAITING_LIST);
-				Boolean waitingList = null;
-				if (waitingListConfig == null) {
+				Boolean waitingList = group.waitingList;
+				if (waitingList == null) {
 					waitingList = Boolean.FALSE;
-				} else {
-					waitingList = Boolean.valueOf(waitingListConfig);
 				}
-				String enableAutoCloseRanksConfig = group.getAttribute(EXPORT_ATTR_AUTO_CLOSE_RANKS);
-				Boolean enableAutoCloseRanks = null;
-				if (enableAutoCloseRanksConfig == null) {
+				Boolean enableAutoCloseRanks = group.autoCloseRanks;
+				if (enableAutoCloseRanks == null) {
 					enableAutoCloseRanks = Boolean.FALSE;
-				} else {
-					enableAutoCloseRanks = Boolean.valueOf(enableAutoCloseRanksConfig);
 				}
-				
-				BusinessGroup newGroup = gm.createAndPersistBusinessGroup(context.getGroupType(), null, groupName, groupDesc, groupMinParticipants,
-						groupMaxParticipants, waitingList, enableAutoCloseRanks, context);
+
+				BusinessGroup newGroup = gm.createAndPersistBusinessGroup(context.getGroupType(), null, groupName, groupDesc, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, context);
 
 				// get tools config
-				Configuration toolsConfig = group.getChild(EXPORT_KEY_COLLABTOOLS);
+				CollabTools toolsConfig = group.tools;
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(newGroup);
 				for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
-					String sTool = toolsConfig.getAttribute(CollaborationTools.TOOLS[i]);
-					if (sTool != null) ct.setToolEnabled(CollaborationTools.TOOLS[i], sTool.equals("true") ? true : false);
+					try {
+						Field field = toolsConfig.getClass().getField(CollaborationTools.TOOLS[i]);
+						Boolean val = field.getBoolean(toolsConfig);
+						if (val != null) {
+							ct.setToolEnabled(CollaborationTools.TOOLS[i], val);
+						}
+					} catch (Exception e) {
+						logError("", e);
+					}
 				}
-				if(group.getAttribute(EXPORT_KEY_CALENDAR_ACCESS)!=null) {
-				  Long calendarAccess = Long.valueOf(group.getAttribute(EXPORT_KEY_CALENDAR_ACCESS));
-				  ct.saveCalendarAccess(calendarAccess);				  
+				if (group.calendarAccess != null) {
+					Long calendarAccess = group.calendarAccess;
+					ct.saveCalendarAccess(calendarAccess);
 				}
-				if(group.getAttribute(EXPORT_KEY_NEWS)!=null) {
-				  String info = group.getAttribute(EXPORT_KEY_NEWS);
-				  ct.saveNews(info);				 
+				if (group.info != null) {
+					ct.saveNews(group.info);
 				}
 
 				// get memberships
-				List memberships = group.getChildren(EXPORT_KEY_AREA_RELATION);
-				for (Iterator iterator = memberships.iterator(); iterator.hasNext();) {
-					Configuration areaRelation = (Configuration) iterator.next();
-					BGArea area = am.findBGArea(areaRelation.getValue(), context);
-					if (area == null) throw new AssertException("Group-Area-Relationship in export, but area was not created during import.");
-					am.addBGToBGArea(newGroup, area);
+				List<String> memberships = group.areaRelations;
+				if(memberships != null) {
+					for (String membership : memberships) {
+						BGArea area = am.findBGArea(membership, context);
+						if (area == null) {
+							throw new AssertException("Group-Area-Relationship in export, but area was not created during import.");
+						}
+						am.addBGToBGArea(newGroup, area);
+					}
 				}
-				
-				//get properties
+
+				// get properties
 				boolean showOwners = true;
 				boolean showParticipants = true;
-				boolean showWaitingList = true;				
-				if(group.getAttribute(EXPORT_KEY_SHOW_OWNERS)!=null) {
-					showOwners = Boolean.valueOf(group.getAttribute(EXPORT_KEY_SHOW_OWNERS));
+				boolean showWaitingList = true;
+				if (group.showOwners != null) {
+					showOwners = group.showOwners;
 				}
-				if(group.getAttribute(EXPORT_KEY_SHOW_PARTICIPANTS)!=null) {
-					showParticipants = Boolean.valueOf(group.getAttribute(EXPORT_KEY_SHOW_PARTICIPANTS));
+				if (group.showParticipants != null) {
+					showParticipants = group.showParticipants;
 				}
-				if(group.getAttribute(EXPORT_KEY_SHOW_WAITING_LIST)!=null) {
-					showWaitingList = Boolean.valueOf(group.getAttribute(EXPORT_KEY_SHOW_WAITING_LIST));
+				if (group.showWaitingList != null) {
+					showWaitingList = group.showWaitingList;
 				}
 				BusinessGroupPropertyManager bgPropertyManager = new BusinessGroupPropertyManager(newGroup);
 				bgPropertyManager.updateDisplayMembers(showOwners, showParticipants, showWaitingList);
