@@ -25,7 +25,7 @@ public class InstitutionPortletTest {
 
 	@Test
 	public void readConfiguration() throws IOException, URISyntaxException {
-		XStream xstream = InstitutionPortletXStream.getXStream();
+		XStream xstream = InstitutionPortlet.getInstitutionConfigXStream();
 		InputStream input = InstitutionPortletTest.class.getResourceAsStream("olat_portals_institution.xml");
 		InstitutionConfiguration obj = (InstitutionConfiguration)xstream.fromXML(input);
 
