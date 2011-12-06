@@ -60,10 +60,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -76,6 +77,8 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
+import org.olat.modules.fo.restapi.ForumVO;
+import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.ErrorVO;
@@ -152,6 +155,11 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
+		DBFactory.getInstance().closeSession();
+		
+		//add some collaboration tools
+		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
+		myCTSMngr.setToolEnabled(CollaborationTools.KEY_FORUM, true);
 		DBFactory.getInstance().closeSession();
 	}
 	
@@ -453,6 +461,38 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(id2.getKey());
 		assertNotNull(deletedIdent);//Identity aren't deleted anymore
 		assertEquals(Identity.STATUS_DELETED, deletedIdent.getStatus());
+	}
+	
+	@Test
+	public void testUserForums() throws IOException {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
+				.queryParam("start", 0).queryParam("limit", 20).build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		ForumVOes forums = parse(body, ForumVOes.class);
+		
+		assertNotNull(forums);
+		assertNotNull(forums.getForums());
+		assertTrue(forums.getForums().length > 0);
+
+    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		for(ForumVO forum:forums.getForums()) {
+			Long groupKey = forum.getGroupKey();
+			BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+			assertNotNull(bg);
+			CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+			assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FORUM));
+			
+			assertNotNull(forum.getForumKey());
+			assertEquals(bg.getName(), forum.getName());
+			assertEquals(bg.getKey(), forum.getGroupKey());
+			assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+		}
 	}
 	
 	@Test

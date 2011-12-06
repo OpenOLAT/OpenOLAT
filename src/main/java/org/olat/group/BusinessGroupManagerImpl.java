@@ -206,15 +206,15 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	}
 	
 
-	public int countBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext) {
-		DBQuery query = createFindDBQuery(types, identity, ownedById, attendedById, bgContext, true);
+	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext) {
+		DBQuery query = createFindDBQuery(params, identity, ownedById, attendedById, bgContext, true);
 		Number count = (Number)query.uniqueResult();
 		return count.intValue();
 	}
 
-	public List<BusinessGroup> findBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
 			int firstResult, int maxResults) {
-		DBQuery dbq = createFindDBQuery(types, identity, ownedById, attendedById, bgContext, false);
+		DBQuery dbq = createFindDBQuery(params, identity, ownedById, attendedById, bgContext, false);
 		dbq.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbq.setMaxResults(maxResults);
@@ -223,7 +223,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		return groups;
 	}
 	
-	private DBQuery createFindDBQuery(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext, boolean count) {
+	private DBQuery createFindDBQuery(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext, boolean count) {
 		StringBuilder query = new StringBuilder();
 		if(count) {
 			query.append("select count(bgi.key) from ");
@@ -243,12 +243,13 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		}
 		
 		boolean where = false;
-		if(types != null && !types.isEmpty()) {
+		if(params.getTypes() != null && !params.getTypes().isEmpty()) {
 			where = where(query, where);
 			query.append("bgi.type in (:types)");
 		}
 		if(ownedById || attendedById) {
 			where = where(query, where);
+			query.append('(');
 			if(ownedById) {
 				query.append("ownerGroup.key in (select ownerMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerMembership where ownerMembership.identity.key=:identId)");
 			}
@@ -256,7 +257,16 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 				if(ownedById) query.append(" or ");
 				query.append("participantGroup.key in (select partMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partMembership where partMembership.identity.key=:identId)");
 			}
+			query.append(')');
 		}
+		
+		if(params.getTools() != null && !params.getTools().isEmpty()) {
+			where = where(query, where);
+			query.append("bgi.key in (select prop.resourceTypeId from ").append(Property.class.getName()).append(" prop")
+				.append(" where prop.category='").append(CollaborationTools.PROP_CAT_BG_COLLABTOOLS).append("'")
+				.append(" and prop.name in (:tools) and prop.stringValue='true' and prop.resourceTypeName='BusinessGroup')");
+		}
+
 		if(bgContext != null) {
 			where = where(query, where);
 			query.append("context.key=:contextKey");
@@ -272,8 +282,12 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (bgContext != null) {
 			dbq.setLong("contextKey", bgContext.getKey());
 		}
-		if (types != null && !types.isEmpty()) {
-			dbq.setParameterList("types", types);
+		if (params.getTypes() != null && !params.getTypes().isEmpty()) {
+			dbq.setParameterList("types", params.getTypes());
+		}
+
+		if(params.getTools() != null && !params.getTools().isEmpty()) {
+			dbq.setParameterList("tools", params.getTools());
 		}
 		return dbq;
 	}

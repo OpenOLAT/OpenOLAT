@@ -24,7 +24,6 @@ import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 import static org.olat.restapi.support.ObjectFactory.getInformation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -68,6 +67,7 @@ import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.fo.Forum;
@@ -133,7 +133,8 @@ public class LearningGroupWebService {
 		} else {
 			bgs = new ArrayList<BusinessGroup>();
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			bgs = bgm.findBusinessGroups(Collections.<String>emptyList(), identity, true, true, null, 0, -1);
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			bgs = bgm.findBusinessGroups(params, identity, true, true, null, 0, -1);
 		}
 		
 		int count = 0;

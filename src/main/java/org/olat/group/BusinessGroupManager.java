@@ -107,9 +107,9 @@ public interface BusinessGroupManager {
 	 */
 	public List findBusinessGroupsAttendedBy(String type, Identity identity, BGContext bgContext);
 
-	public int countBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext);
+	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext);
 	
-	public List<BusinessGroup> findBusinessGroups(List<String> types, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
 			int firstResult, int maxResults);
 
 	

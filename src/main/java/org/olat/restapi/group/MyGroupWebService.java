@@ -20,7 +20,6 @@
  */
 package org.olat.restapi.group;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.SearchBusinessGroupParams;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupInfoVO;
@@ -82,13 +82,12 @@ public class MyGroupWebService {
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
 		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<String> bgTypes = new ArrayList<String>();
-		bgTypes.add(BusinessGroup.TYPE_BUDDYGROUP);
-		bgTypes.add(BusinessGroup.TYPE_LEARNINGROUP);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgm.countBusinessGroups(bgTypes, retrievedUser, true, true, null);
-			groups = bgm.findBusinessGroups(bgTypes, retrievedUser, true, true, null, start, limit);
+			int totalCount = bgm.countBusinessGroups(params, retrievedUser, true, true, null);
+			groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, start, limit);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -100,7 +99,7 @@ public class MyGroupWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			groups = bgm.findBusinessGroups(bgTypes, retrievedUser, true, true, null, 0, -1);
+			groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -132,13 +131,12 @@ public class MyGroupWebService {
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
 		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<String> bgTypes = new ArrayList<String>();
-		bgTypes.add(BusinessGroup.TYPE_BUDDYGROUP);
-		bgTypes.add(BusinessGroup.TYPE_LEARNINGROUP);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgm.countBusinessGroups(bgTypes, retrievedUser, true, true, null);
-			groups = bgm.findBusinessGroups(bgTypes, retrievedUser, true, true, null, start, limit);
+			int totalCount = bgm.countBusinessGroups(params, retrievedUser, true, true, null);
+			groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, start, limit);
 			
 			int count = 0;
 			GroupInfoVO[] groupVOs = new GroupInfoVO[groups.size()];
