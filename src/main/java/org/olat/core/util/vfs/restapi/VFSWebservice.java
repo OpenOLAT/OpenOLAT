@@ -56,6 +56,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 
 public class VFSWebservice {
@@ -218,6 +219,25 @@ public class VFSWebservice {
 	}
 	
 	/**
+	 * Upload a file to the root folder or create a new folder
+	 * @response.representation.200.doc The link to the created file
+	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * @param foldername The name of the new folder (optional)
+	 * @param filename The name of the file (optional)
+	 * @param file The content of the file (optional)
+	 * @param uriInfo The uri infos
+	 * @return The link to the created file
+	 */
+	@PUT
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response putFile64VOToRoot(File64VO file, @Context UriInfo uriInfo) {
+		byte[] fileAsBytes = Base64.decodeBase64(file.getFile());
+		InputStream in = new ByteArrayInputStream(fileAsBytes);
+		return putFile(null, file.getFilename(), in, uriInfo, Collections.<PathSegment>emptyList());
+	}
+	
+	/**
 	 * Upload a file to the specified folder or create a new folder
 	 * @response.representation.200.doc The link to the created file
 	 * @response.representation.200.qname {http://www.example.com}linkVO
@@ -235,6 +255,27 @@ public class VFSWebservice {
 	public Response putFileToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
 			@FormParam("file") InputStream file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
 		return putFile(foldername, filename, file, uriInfo, path);
+	}
+	
+	/**
+	 * Upload a file to the specified folder or create a new folder
+	 * @response.representation.200.doc The link to the created file
+	 * @response.representation.200.qname {http://www.example.com}linkVO
+	 * @param foldername The name of the new folder (optional)
+	 * @param filename The name of the file (optional)
+	 * @param file The content of the file (optional)
+	 * @param uriInfo The uri infos
+	 * @param path The path to the folder
+	 * @return The link to the created file
+	 */
+	@PUT
+	@Path("{path:.*}")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response putFile64ToFolder(File64VO file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
+		byte[] fileAsBytes = Base64.decodeBase64(file.getFile());
+		InputStream in = new ByteArrayInputStream(fileAsBytes);
+		return putFile(null, file.getFilename(), in, uriInfo, path);
 	}
 	
 	/**

@@ -44,6 +44,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
@@ -64,6 +66,7 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.modules.fo.restapi.MessageVOes;
+import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -344,6 +347,61 @@ public class ForumTest extends OlatJerseyTestCase {
 		FileUtils.closeSafely(uploadedStream);
 		assertNotNull(image);
 	}
+	
+	
+	@Test
+	public void testUploadAttachmentWithFile64VO() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
+			.queryParam("authorKey", id1.getKey())
+			.queryParam("title", "New message with attachment ")
+			.queryParam("body", "A very interesting response in Thread-1 with an attachment").build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVO message = parse(body, MessageVO.class);
+		assertNotNull(message);
+		
+		//attachment
+		InputStream  portraitStream = RepositoryEntriesTest.class.getResourceAsStream("portrait.jpg");
+		assertNotNull(portraitStream);
+		//upload portrait
+		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
+		PutMethod attachMethod = createPut(attachUri, MediaType.APPLICATION_JSON, true);
+		attachMethod.addRequestHeader("Content-Type", MediaType.APPLICATION_JSON);
+		
+		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
+		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
+		File64VO fileVo = new File64VO();
+		fileVo.setFile(new String(portrait64));
+		fileVo.setFilename("portrait64vo.jpg");
+		String stringuifiedFileVo = stringuified(fileVo);
+		RequestEntity entity = new StringRequestEntity(stringuifiedFileVo, MediaType.APPLICATION_JSON, "UTF-8");
+		attachMethod.setRequestEntity(entity);
+		int attachCode = c.executeMethod(attachMethod);
+		assertEquals(200, attachCode);
+		attachMethod.releaseConnection();
+		
+		//check if the file exists
+		ForumManager fm = ForumManager.getInstance();
+		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSItem uploadedFile = container.resolve("portrait64vo.jpg");
+		assertNotNull(uploadedFile);
+		assertTrue(uploadedFile instanceof VFSLeaf);
+		
+		//check if the image is still an image
+		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
+		InputStream uploadedStream = uploadedImage.getInputStream();
+		BufferedImage image = ImageIO.read(uploadedStream);
+		FileUtils.closeSafely(uploadedStream);
+		assertNotNull(image);
+	}
+	
+	
+	
+	
 	
 	@Test
 	public void testUploadAttachmentAndRename() throws IOException, URISyntaxException {

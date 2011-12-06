@@ -74,6 +74,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.restapi.support.MediaTypeVariants;
+import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 
 /**
@@ -459,6 +460,18 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @FormParam("filename") String filename,
 			@FormParam("file") String file, @Context HttpServletRequest request) {
+		byte[] fileAsBytes = Base64.decodeBase64(file);
+		InputStream in = new ByteArrayInputStream(fileAsBytes);
+		return attachToPost(messageKey, filename, in, request);
+	}
+	
+	@PUT
+	@Path("posts/{messageKey}/attachments")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey,  File64VO file64, @Context HttpServletRequest request) {
+		String file = file64.getFile();
+		String filename = file64.getFilename();
 		byte[] fileAsBytes = Base64.decodeBase64(file);
 		InputStream in = new ByteArrayInputStream(fileAsBytes);
 		return attachToPost(messageKey, filename, in, request);
