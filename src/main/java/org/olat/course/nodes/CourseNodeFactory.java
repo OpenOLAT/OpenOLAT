@@ -163,7 +163,8 @@ public class CourseNodeFactory {
 		DTab dt = dts.getDTab(ores);
 		if (dt == null) {
 			// does not yet exist -> create and add
-			dt = dts.createDTab(ores, repositoryEntry.getDisplayname());
+			//fxdiff BAKS-7 Resume function
+			dt = dts.createDTab(ores, repositoryEntry, repositoryEntry.getDisplayname());
 			if (dt == null){
 				//null means DTabs are full -> warning is shown
 				return;

@@ -25,8 +25,9 @@
 	</bean>-->
 	
 	<!-- Disable site by adding '<property name="enabled" value="false"/>' -->
-	<bean id="olatsites_home" class="org.olat.home.site.HomeSiteDef" scope="prototype" >
+	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef" scope="prototype" >
 	   <property name="order" value="1" />
+	   <property name="enabled" value="${site.minimalhome.enabled}"/>
 	</bean>
 	<bean id="olatsites_groups" class="org.olat.group.site.GroupsSiteDef" scope="prototype" >
 	   <property name="order" value="2" />

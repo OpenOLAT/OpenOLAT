@@ -73,7 +73,8 @@ public class BornSiteInstance implements Disposable, CustomCSSProvider {
 		// delegate to content controller if of type main layout controller
 		if (controller != null && controller instanceof MainLayoutController) {
 			MainLayoutController layoutController = (MainLayoutController) controller;
-			layoutController.getCustomCSS();
+			// fxdiff: do return!
+			return layoutController.getCustomCSS();
 		}
 		return null;
 	}

@@ -21,6 +21,8 @@
 
 package org.olat.course.nodes.bc;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +31,10 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseModule;
@@ -42,7 +48,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author gnaegi
  */
-public class BCCourseNodeRunController extends DefaultController implements Activateable {
+public class BCCourseNodeRunController extends DefaultController implements Activateable, Activateable2 {
 
 	private FolderRunController frc;
 
@@ -102,5 +108,13 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			frc.activate(ureq, viewIdentifier);
 		}
 		
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (frc != null) {
+			frc.activate(ureq, entries, state);
+		}
 	}
 }

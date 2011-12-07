@@ -147,23 +147,10 @@ class EventAgency {
 	 */
 	void addListener(GenericEventListener gel, Identity identity) {
 		synchronized (listeners) { //o_clusterOK by:fj
-			if (listeners.containsKey(gel)) throw new AssertException(" already added gel:" + gel.getClass().getName() + " to eventagency "
-					+ this.toString());
-			
-			// here: look at the latest event fired. (1 sticky)
-			// if it is younger that this agency's ttl, then immediately fire it to the registrant.
-			// 
-			/*if (latestEvent != null) {
-				long now = System.currentTimeMillis();
-				if (now - latestEventTimestamp < ttl) {
-					gel.event(latestEvent); 
-					// by design: the latestEvent is never consumed; 
-					// an eventlistener could receive the same message more than once if a) the ttl is high, and b)
-					// it registers/deregisters more than once.
-				} else {
-					latestEvent = null;  // object is too old to be considered as missed update
-				}
-			}*/
+			if (listeners.containsKey(gel)) {
+				//already registered, do nothing
+				return;
+			}
 			
 			String identityName = (identity != null? identity.getName() : null);
 			listeners.put(gel, identityName);

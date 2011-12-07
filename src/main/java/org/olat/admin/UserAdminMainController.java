@@ -56,12 +56,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -83,7 +85,7 @@ import org.olat.core.util.resource.OresHelper;
  * To append predefined searches use ActionExtensions and register them for UserAdminMainController.EXTENSIONPOINT_MENU_MENUQUERIES.
  * </pre>
  */
-public class UserAdminMainController extends MainLayoutBasicController implements Activateable {
+public class UserAdminMainController extends MainLayoutBasicController implements Activateable, Activateable2 {
 	public static final String EXTENSIONPOINT_MENU_MENUQUERIES = ".menu.menuqueries";
 	private static boolean extensionLogged = false;
 	OLog log = Tracing.createLoggerFor(this.getClass());
@@ -107,14 +109,17 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	public UserAdminMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);		
 		olatMenuTree = new MenuTree("olatMenuTree");				
-		TreeModel tm = buildTreeModel(ureq.getUserSession().getRoles().isOLATAdmin()); 
+		TreeModel tm = buildTreeModel(ureq); 
 		olatMenuTree.setTreeModel(tm);
-		INode firstNode = tm.getRootNode().getChildAt(0);
+		TreeNode firstNode = (TreeNode)tm.getRootNode().getChildAt(0);
 		olatMenuTree.setSelectedNodeId(firstNode.getIdent());
 		olatMenuTree.addListener(this);
 
 		// we always start with a search controller
-		contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl());
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(firstNode.getUserObject().toString(), 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		contentCtr = new UsermanagerUserSearchController(ureq, bwControl);
 		listenTo(contentCtr); // auto dispose later
 		
 		content = new Panel("content");
@@ -155,7 +160,21 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				Identity identity = userChoosenEvent.getChosenIdentity();
 				// cleanup old userAdminCtr controller
 				removeAsListenerAndDispose(userAdminCtr);
-				userAdminCtr = new UserAdminController(ureq, getWindowControl(), identity);
+
+				//fxdiff BAKS-7 Resume function
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());
+				WindowControl bwControl;
+				if(contentCtr instanceof UsermanagerUserSearchController) {
+					UsermanagerUserSearchController ctrl = (UsermanagerUserSearchController)contentCtr;
+					WindowControl tableControl = ctrl.getTableControl();
+					if(tableControl == null) {
+						tableControl = ctrl.getWindowControlForDebug();
+					}
+					bwControl = addToHistory(ureq, ores, null, tableControl, true);
+				} else {
+					bwControl = addToHistory(ureq, ores, null, contentCtr.getWindowControlForDebug(), true);
+				}
+				userAdminCtr = new UserAdminController(ureq, bwControl, identity);
 				listenTo(userAdminCtr);
 				// activate a special pane in the tabbed pane when set
 				if (	activatePaneInDetailView != null)
@@ -178,6 +197,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				if (contentCtr instanceof UsermanagerUserSearchController) {
 					UsermanagerUserSearchController userSearchCtr = (UsermanagerUserSearchController) contentCtr;
 					userSearchCtr.reloadFoundIdentity();
+					//fxdiff BAKS-7 Resume function
+					addToHistory(ureq, userSearchCtr);
 				}
 				content.setContent(contentCtr.getInitialComponent());
 			}
@@ -190,36 +211,53 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		if (uobject instanceof ActionExtension) {
 			ActionExtension ae = (ActionExtension) uobject;
-			contentCtr = ae.createController(ureq, getWindowControl(), null);
+			//fxdiff BAKS-7 Resume function
+			TreeNode node = ((GenericTreeModel)olatMenuTree.getTreeModel()).findNodeByUserObject(uobject);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AE", new Long(node.getPosition()));
+			WindowControl bwControl = addToHistory(ureq, ores, null);
+			contentCtr = ae.createController(ureq, bwControl, null);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}	
-		
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(uobject.toString(), 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
 		//first check if it is node which opens a subtree with further uobject.tree.commands
 		if (uobject.equals("menuroles")) {
 			if (rolesVC == null)
 				rolesVC = createVelocityContainer("systemroles");
+			//fxdiff BAKS-7 Resume function
+			addToHistory(ureq, bwControl);
 			return rolesVC;
 		}		
 		else if (uobject.equals("menuqueries")) {
 			if (queriesVC == null)
 				queriesVC = createVelocityContainer("predefinedqueries");
+			//fxdiff BAKS-7 Resume function
+			addToHistory(ureq, bwControl);
 			return queriesVC;
 		}
 		else if (uobject.equals("menuaccess")) {
 			if (queriesVC == null)
 				queriesVC = createVelocityContainer("systemroles");
+			//fxdiff BAKS-7 Resume function
+			addToHistory(ureq, bwControl);
 			return queriesVC;
 		} else if (uobject.equals("userdelete")) {
 			//creates the user deletin controller
 			//if locking fails -> a contentCtrl is created
 			//-> hence removeAsListenerAndDispose(contentCtr) is delegated to the method called!
-			return createAndLockUserDeleteController(ureq);
+			//fxdiff BAKS-7 Resume function
+			addToHistory(ureq, bwControl);
+			return createAndLockUserDeleteController(ureq, bwControl);
 		} else if (uobject.equals("userdelete_direct")) {
 			//creates the user deletin controller
 			//if locking fails -> a contentCtrl is created
 			//-> hence removeAsListenerAndDispose(contentCtr) is delegated to the method called!
-			return createAndLockDirectUserDeleteController(ureq);
+			//fxdiff BAKS-7 Resume function
+			addToHistory(ureq, bwControl);
+			return createAndLockDirectUserDeleteController(ureq, bwControl);
 		} 		
 		
 		//these nodes re-create (not stateful) content Controller (contentCtrl)
@@ -227,7 +265,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		removeAsListenerAndDispose(contentCtr);
 		if (uobject.equals("usearch") || uobject.equals("useradmin")) {
 			activatePaneInDetailView = null;
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl());
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
@@ -241,7 +281,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				Boolean canCreatePwdByConfig = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;				
 				canCreateOLATPassword = canCreatePwdByConfig.booleanValue();
 			}
-			contentCtr = new UserCreateController(ureq, getWindowControl(), canCreateOLATPassword);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UserCreateController(ureq, bwControl, canCreateOLATPassword);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
@@ -255,21 +297,27 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				Boolean canCreatePwdByConfig = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;				
 				canCreateOLATPassword = canCreatePwdByConfig.booleanValue();
 			}
-			contentCtr = new UserImportController(ureq, getWindowControl(), canCreateOLATPassword);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UserImportController(ureq, bwControl, canCreateOLATPassword);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("admingroup")) {
 			activatePaneInDetailView = "";
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_ADMIN)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("authorgroup")) {
 			activatePaneInDetailView = "edit.uroles";
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_AUTHORS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
@@ -277,7 +325,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			activatePaneInDetailView = "edit.uroles";
 			// special case: use user search controller and search for all users that have author rights
 			PermissionOnResourceable[] permissions = {new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)};
-			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl,null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			// now subtract users that are in the author group to get the co-authors
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_AUTHORS)};
 			List identitiesFromAuthorGroup = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
@@ -289,47 +339,61 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		else if (uobject.equals("resourceowners")) {
 			activatePaneInDetailView = "edit.uroles";
 			PermissionOnResourceable[] permissions = {new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("groupmanagergroup")) {
 			activatePaneInDetailView = "edit.uroles";
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("usermanagergroup")) {
 			activatePaneInDetailView = "edit.uroles";
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_USERMANAGERS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("usergroup")) {
 			activatePaneInDetailView = "edit.uroles";
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_OLATUSERS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}		
 		else if (uobject.equals("anonymousgroup")) {
 			activatePaneInDetailView = "edit.uroles";
 			SecurityGroup[] secGroup = {BaseSecurityManager.getInstance().findSecurityGroupByName(Constants.GROUP_ANONYMOUS)};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("logondeniedgroup")) {
 			activatePaneInDetailView = "edit.uroles";
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),null, null, null, null, null, Identity.STATUS_LOGIN_DENIED, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, null, null, null, null, Identity.STATUS_LOGIN_DENIED, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}		
 		else if (uobject.equals("deletedusers")) {
 			activatePaneInDetailView = "list.deletedusers";
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(),null, null, null, null, null, Identity.STATUS_DELETED, false);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, null, null, null, null, Identity.STATUS_DELETED, false);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
@@ -338,7 +402,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.DAY_OF_MONTH, -7);
 			Date time = cal.getTime();
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(), null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
@@ -347,7 +413,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.MONTH, -1);
 			Date time = cal.getTime();
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(), null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
@@ -356,19 +424,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.MONTH, -6);
 			Date time = cal.getTime();
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(), null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, null, time, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("created.newUsersNotification")) {
 			activatePaneInDetailView = null;
-			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(new OLATResourceable() {
-				@Override
-				public Long getResourceableId() { return 0l; }
-				@Override
-				public String getResourceableTypeName() { return "NewIdentityCreated"; }
-			});
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());	
+			//fxdiff BAKS-7 Resume function
+			bwControl = addToHistory(ureq, ores, null);	
 			contentCtr = new NewUsersNotificationsController(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -376,7 +441,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		else if (uobject.equals("noauthentication")) {
 			activatePaneInDetailView = null;
 			String[] auth = {null};
-			contentCtr = new UsermanagerUserSearchController(ureq, getWindowControl(), null, null, auth, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			//fxdiff BAKS-7 Resume function
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, null, null, auth, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		} else{
@@ -391,12 +458,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	 * @param ureq
 	 * @return
 	 */
-	private Component createAndLockDirectUserDeleteController(UserRequest ureq) {
+	//fxdiff BAKS-7 Resume function
+	private Component createAndLockDirectUserDeleteController(UserRequest ureq, WindowControl wControl) {
 		Controller lockCtrl = acquireDeleteUserLock(ureq);
 		if (lockCtrl == null) {
 			//success -> create new User deletion workflow
 			removeAsListenerAndDispose(contentCtr);
-			contentCtr = new DirectDeleteController(ureq, getWindowControl());
+			contentCtr = new DirectDeleteController(ureq, wControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		} else {
@@ -411,14 +479,15 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	 * @param ureq
 	 * @return
 	 */
-	private Component createAndLockUserDeleteController(UserRequest ureq) {
+	//fxdiff BAKS-7 Resume function
+	private Component createAndLockUserDeleteController(UserRequest ureq, WindowControl wControl) {
 		Controller lockCtrl = acquireDeleteUserLock(ureq);
 
 		if (lockCtrl == null) {
 			//success -> create new User deletion workflow
 			activatePaneInDetailView = null;
 			removeAsListenerAndDispose(contentCtr);
-			contentCtr = new TabbedPaneController(ureq, getWindowControl());
+			contentCtr = new TabbedPaneController(ureq, wControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		} else {
@@ -451,7 +520,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 	}
 
-	private TreeModel buildTreeModel(boolean isOlatAdmin) {
+	private TreeModel buildTreeModel(UserRequest ureq) {
+		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		GenericTreeNode gtnChild, admin;
 		Translator translator = getTranslator();
 		
@@ -643,12 +713,81 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		return gtm;
 	}
 	
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		GenericTreeModel tm = (GenericTreeModel)olatMenuTree.getTreeModel();
+		ContextEntry entry = entries.get(0);
+		String entryPoint = entry.getOLATResourceable().getResourceableTypeName();
+		if(entryPoint.startsWith("notifications") || entryPoint.startsWith("NewIdentityCreated")) {
+			TreeNode node = tm.findNodeByUserObject("created.newUsersNotification");
+			selectNode(ureq, node);
+		} else if(entryPoint.startsWith("AE")) {
+			TreeNode node = tm.findNodeByUserObject("menuqueries");
+			int pos = entries.get(0).getOLATResourceable().getResourceableId().intValue();
+			if(pos >= 0 && pos < node.getChildCount()) {
+				TreeNode childNode = (TreeNode)node.getChildAt(pos);
+				selectNode(ureq, childNode);
+			}
+		} else {
+			TreeNode node = tm.findNodeByUserObject(entryPoint);
+			if(node != null) {
+				selectNode(ureq, node);
+				entries = entries.subList(1, entries.size());
+				if(contentCtr instanceof Activateable2) {
+					((Activateable2)contentCtr).activate(ureq, entries, entry.getTransientState());
+				}
+				if(!entries.isEmpty() && userAdminCtr != null) {
+					userAdminCtr.activate(ureq, entries, null);
+				}
+			}
+		}
+	}
+	
+	private void selectNode(UserRequest ureq, TreeNode childNode) {
+		olatMenuTree.setSelectedNode(childNode);
+		Component resComp = initComponentFromMenuCommand(childNode.getUserObject(), ureq);
+		content.setContent(resComp);
+	}
+
 	public void activate(UserRequest ureq, String viewIdentifier) {
+		if(viewIdentifier == null) return;
+		
 		if(viewIdentifier.startsWith("notifications") || viewIdentifier.startsWith("NewIdentityCreated")) {
 			GenericTreeModel tm = (GenericTreeModel)olatMenuTree.getTreeModel();
 			TreeNode node = tm.findNodeByUserObject("created.newUsersNotification");
 			olatMenuTree.setSelectedNode(node);
 			Component resComp = initComponentFromMenuCommand("created.newUsersNotification", ureq);
+			content.setContent(resComp);
+		} else if(viewIdentifier.startsWith("AE")) {
+			String posStr = viewIdentifier.substring(3);
+			try {
+				GenericTreeModel treeModel = (GenericTreeModel)olatMenuTree.getTreeModel();
+				TreeNode node = treeModel.findNodeByUserObject("menuqueries");
+				int pos = Integer.parseInt(posStr);
+				if(pos >= 0 && pos < node.getChildCount()) {
+					TreeNode childNode = (TreeNode)node.getChildAt(pos);
+					olatMenuTree.setSelectedNode(childNode);
+					Component resComp = initComponentFromMenuCommand(childNode.getUserObject(), ureq);
+					content.setContent(resComp);
+				}
+			} catch (Exception e) {
+				logWarn("", e);
+			}	
+		} else {
+			int first = viewIdentifier.indexOf(":");
+			String uobject = viewIdentifier.substring(0, first);
+			GenericTreeModel treeModel = (GenericTreeModel)olatMenuTree.getTreeModel();
+			TreeNode node = treeModel.findNodeByUserObject(uobject);
+			if(node == null) {
+				node = treeModel.getRootNode();
+				uobject = (String)node.getUserObject();
+			}
+			olatMenuTree.setSelectedNode(node);
+			Component resComp = initComponentFromMenuCommand(uobject, ureq);
 			content.setContent(resComp);
 		}
 	}

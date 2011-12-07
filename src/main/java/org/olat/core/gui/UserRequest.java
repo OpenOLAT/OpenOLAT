@@ -73,6 +73,10 @@ public class UserRequest {
 
 	private boolean isValidDispatchURI;
 
+	//fxdiff BAKS-7 Resume function
+	private String uuid;
+	private static int count = 0;
+
 	//private String businessControlPath;
 
 
@@ -89,6 +93,14 @@ public class UserRequest {
 		params = new HashMap<String,String>(4);
 		dispatchResult = new DispatchResult();
 		parseRequest(httpReq);
+
+		//fxdiff BAKS-7 Resume function
+		uuid = Integer.toString(++count);
+	}
+
+	//fxdiff BAKS-7 Resume function
+	public String getUuid() {
+		return uuid;
 	}
 
 	/**

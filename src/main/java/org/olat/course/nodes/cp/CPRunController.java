@@ -22,6 +22,7 @@
 package org.olat.course.nodes.cp;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -34,9 +35,12 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -62,7 +66,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class CPRunController extends BasicController implements ControllerEventListener {
+public class CPRunController extends BasicController implements ControllerEventListener, Activateable2 {
 	private static final OLog log = Tracing.createLoggerFor(CPRunController.class);
 	
 	private String attrFromStartpage;
@@ -160,6 +164,14 @@ public class CPRunController extends BasicController implements ControllerEventL
 			// propagate TreeNodeEvent to the listener
 			fireEvent(ureq, event);
 		}
+	}
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		cpDispC.activate(ureq, entries, state);
 	}
 
 	private void doLaunch(UserRequest ureq) {

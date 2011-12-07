@@ -21,6 +21,8 @@
 
 package org.olat.repository.controllers;
 
+import java.util.List;
+
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.ui.CatalogController;
 import org.olat.core.CoreSpringFactory;
@@ -41,16 +43,22 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.portal.PortletFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.control.generic.wizard.WizardController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseModule;
 import org.olat.fileresource.types.BlogFileResource;
@@ -90,7 +98,7 @@ import de.bps.olat.repository.controllers.WizardAddOwnersController;
  * @date Initial Date: Oct 21, 2004 <br>
  * @author Felix Jost
  */
-public class RepositoryMainController extends MainLayoutBasicController implements Activateable {
+public class RepositoryMainController extends MainLayoutBasicController implements Activateable, Activateable2 {
 
 	OLog log = Tracing.createLoggerFor(this.getClass());
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
@@ -119,6 +127,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private String myEntriesNodeId;
 
 	private RepositoryAddController addController;
+	//fxdiff BAKS-7 Resume function
+	private WindowControl searchWindowControl;
 	private RepositorySearchController searchController;
 	private RepositoryDetailsController detailsController;
 	private DialogBoxController launchEditorDialog;
@@ -430,6 +440,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		// encode sub view identifyer into state, attach separated by ":"
 		lastUserObject = userObject.toString();
 		removeAsListenerAndDispose(deleteTabPaneCtr);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(lastUserObject, 0l);
+		searchWindowControl = addToHistory(ureq, ores, null);
 	}
 
 	private void activateCatalogController(UserRequest ureq, String nodeId) {
@@ -438,7 +451,10 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		// catalog link in the menu
 		if (catalogCntrllr == null || lastUserObject.equals("search.catalog")) {
 			removeAsListenerAndDispose(catalogCntrllr);
-			catalogCntrllr = new CatalogController(ureq, getWindowControl(), nodeId);
+			//fxdiff BAKS-7 Resume function
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("search.catalog", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			catalogCntrllr = new CatalogController(ureq, bwControl, nodeId);
 			listenTo(catalogCntrllr);
 		} else {
 			// just activate the existing catalog
@@ -552,20 +568,30 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 				columnsLayoutCtr.setCol2(toolComp);
 				mainPanel.setContent(detailsController.getInitialComponent());
+				//fxdiff BAKS-7 Resume function
+				addToHistory(urequest, selectedEntry, null, searchWindowControl, true);
 			}
 		} else if (source == detailsController) { // back from details
-			if (event.equals(Event.DONE_EVENT)) {
+			//fxdiff FXOLAT-128: back/resume function
+			if (event.equals(Event.DONE_EVENT) || event.equals(RepositoryDetailsController.LAUNCHED_EVENT)) {
 				if (backtocatalog) {
 					backtocatalog = false;
 					ToolController toolC = catalogCntrllr.createCatalogToolController();
 					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);
 					mainPanel.setContent(catalogCntrllr.getInitialComponent());
-
+					//fxdiff BAKS-7 Resume function
+					if(!event.equals(RepositoryDetailsController.LAUNCHED_EVENT)) {
+						catalogCntrllr.updateHistory(urequest);
+					}
 				} else {
 					Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
 					columnsLayoutCtr.setCol2(toolComp);
 					mainPanel.setContent(main);
+					//fxdiff BAKS-7 Resume function
+					if(!event.equals(RepositoryDetailsController.LAUNCHED_EVENT)) {
+						addToHistory(urequest, searchWindowControl);
+					}
 				}
 			} else if (event instanceof EntryChangedEvent) {
 				Component toolComp = (mainToolC == null ? null : mainToolC.getInitialComponent());
@@ -762,6 +788,41 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.remove(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		//activate the catalog
+		if(CatalogEntry.class.getSimpleName().equals(type)) {
+			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+			TreeNode activatedNode = TreeHelper.findNodeByUserObject("search.catalog", rootNode);
+			if (activatedNode != null) {
+				menuTree.setSelectedNodeId(activatedNode.getIdent());
+				String catId = entry.getOLATResourceable().getResourceableId().toString();
+				activateContent(ureq, "search.catalog", catId);
+			}
+		} else {
+			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+			TreeNode activatedNode = TreeHelper.findNodeByUserObject(type, rootNode);
+			if (activatedNode != null) {
+				menuTree.setSelectedNodeId(activatedNode.getIdent());
+				long resId = entry.getOLATResourceable().getResourceableId();
+				activateContent(ureq, type, resId != 0 ? Long.toString(resId) : null);
+				if(!entries.isEmpty()) {
+					String subType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+					if(RepositoryEntry.class.getSimpleName().equals(subType)) {
+						searchController.activate(ureq, entries, entry.getTransientState());
+					} else if(CatalogEntry.class.getSimpleName().equals(subType)) {
+						catalogCntrllr.activate(ureq, entries, entry.getTransientState());
+					}
+				}
+			}
+		}
 	}
 
 	/**

@@ -22,11 +22,15 @@
 
 package org.olat.user;
 
+import java.util.Set;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -36,7 +40,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.UserSession;
-
+import org.olat.core.id.User;
+import org.olat.core.id.context.HistoryManager;
+import org.olat.core.id.context.HistoryModule;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 
@@ -131,8 +138,15 @@ class SpecialPrefsForm extends FormBasicController {
 	private Identity tobeChangedIdentity;
 	private Preferences prefs;
 	private MultipleSelectionElement prefsElement;
+	//fxdiff BAKS-7 Resume function
+	private SingleSelection resumeElement;
+	private SingleSelection backElement;
 	private String[] keys, values;
 	private boolean useAjaxCheckbox = false;
+	private String[] resumeKeys, resumeValues;
+	/** The keys for yes/no back. */
+	private String[] yesNoKeys;
+	private String[] yesNoValues;
 	
 	public SpecialPrefsForm(final UserRequest ureq, final WindowControl wControl, final Identity changeableIdentity) {
 		super(ureq, wControl);
@@ -158,7 +172,15 @@ class SpecialPrefsForm extends FormBasicController {
 					translate("accessibility.web2aMode.label")
 			};
 		}
-		
+		//fxdiff BAKS-7 Resume function
+		resumeKeys = new String[]{"none", "auto", "ondemand"}; 
+		resumeValues = new String[] {
+				translate("resume.none"),
+				translate("resume.auto"),
+				translate("resume.ondemand"),
+		};
+		yesNoKeys = new String[]{"yes", "no"}; 
+		yesNoValues = new String[] { translate("back.on"), translate("back.off") };
 		initForm(ureq);
 	}
 
@@ -177,6 +199,13 @@ class SpecialPrefsForm extends FormBasicController {
 			prefs.putAndSave(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
 		}
 		prefs.putAndSave(WindowManager.class, "web2a-beta-on", prefsElement.getSelectedKeys().contains("web2a"));
+		//fxdiff BAKS-7 Resume function
+		if(resumeElement != null) {
+			prefs.putAndSave(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
+		}
+		if(backElement != null) {
+			prefs.putAndSave(WindowManager.class, "back-enabled", backElement.isSelected(0));
+		}
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			showInfo("preferences.successful");
 		}
@@ -194,8 +223,14 @@ class SpecialPrefsForm extends FormBasicController {
 		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
 		
 		prefsElement = uifactory.addCheckboxesVertical("prefs", "title.prefs.accessibility", formLayout, keys, values, null, 1);
-
-		
+		//fxdiff BAKS-7 Resume function
+		HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
+		if(historyModule.isResumeEnabled()) {
+			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);
+		}
+		if(historyModule.isBackEnabled()) {
+			backElement = uifactory.addRadiosVertical("back-enabling", "back.label", formLayout, yesNoKeys, yesNoValues);
+		}
 		update();
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -211,6 +246,34 @@ class SpecialPrefsForm extends FormBasicController {
 			prefsElement.select("ajax", ajax == null ? true: ajax.booleanValue());
 		}
 		prefsElement.select("web2a", web2a == null ? false: web2a.booleanValue());
+		//fxdiff BAKS-7 Resume function
+		if(resumeElement != null) {
+			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
+			if(StringHelper.containsNonWhitespace(resumePrefs)) {
+				resumeElement.select(resumePrefs, true);
+			} else {
+				HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
+				String defaultSetting = historyModule.getResumeDefaultSetting();
+				try {
+					resumeElement.select(defaultSetting, true);
+				} catch (Exception e) {
+					logError("Unavailable setting for resume function: " + defaultSetting, e);
+				}
+			}
+		}
+		if(backElement != null) {
+			Boolean be = (Boolean)prefs.get(WindowManager.class, "back-enabled");
+			String selected;
+			if (be != null) {
+				selected = (be.booleanValue() ?  "yes" : "no");
+			}
+			else {
+				HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
+				selected = (historyModule.isBackDefaultSetting() ?  "yes" : "no");
+			}
+
+			backElement.select(selected, true);
+		}
 	}
 	
 	@Override

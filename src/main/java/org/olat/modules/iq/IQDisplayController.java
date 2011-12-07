@@ -23,6 +23,7 @@ package org.olat.modules.iq;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -37,17 +38,24 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.container.AssessmentContext;
+import org.olat.ims.qti.container.ItemsInput;
+import org.olat.ims.qti.container.SectionContext;
 import org.olat.ims.qti.navigator.Navigator;
 import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -63,7 +71,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * @author Felix Jost
  */
-public class IQDisplayController extends DefaultController {
+public class IQDisplayController extends DefaultController implements Activateable2 {
 
 	private static final String PACKAGE = Util.getPackageName(IQDisplayController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(IQDisplayController.class);
@@ -296,6 +304,22 @@ public class IQDisplayController extends DefaultController {
 		if (!ai.isResuming()) {
 			Navigator navigator = ai.getNavigator();
 			navigator.startAssessment();
+		} else {
+			//fxdiff BAKS-7 Resume function
+			AssessmentContext act = ai.getAssessmentContext();
+			if (act.getCurrentSectionContextPos() >= 0) {
+				int sectionPos = act.getCurrentSectionContextPos();
+				OLATResourceable sres = OresHelper.createOLATResourceableInstance("gse", new Long(sectionPos));
+				WindowControl bwControl = addToHistory(ureq, sres, null, getWindowControl(), false);
+				if(!ai.isSectionPage()) {
+					SectionContext sct = act.getCurrentSectionContext();
+					int itemPos = sct.getCurrentItemContextPos();
+					if(itemPos >= 0) {
+						OLATResourceable ires = OresHelper.createOLATResourceableInstance("git", new Long(itemPos));
+						addToHistory(ureq, ires, null, bwControl, true);
+					}
+				}
+			}
 		}
 
 		qtistatus.update(ai);
@@ -334,6 +358,13 @@ public class IQDisplayController extends DefaultController {
 		);
 	}
 	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
@@ -363,7 +394,10 @@ public class IQDisplayController extends DefaultController {
 			logAudit(ureq);
 			
 			if (wfCommand.equals("sitse")) { // submitItemorSection
-				navig.submitItems(iqm.getItemsInput(ureq)); //
+				ItemsInput iInp = iqm.getItemsInput(ureq);
+				if(iInp.getItemCount() > 0) {
+					navig.submitItems(iInp);
+				}
 				if (ai.isClosed()) { // do all the finishing stuff
 					event(ureq, source, new Event(QTIConstants.QTI_WF_SUBMIT));
 					return;
@@ -381,12 +415,22 @@ public class IQDisplayController extends DefaultController {
 					int sectionPos = Integer.parseInt(seid);
 					int itemPos = Integer.parseInt(itid);
 					navig.goToItem(sectionPos, itemPos);
+
+					//fxdiff BAKS-7 Resume function
+					OLATResourceable sres = OresHelper.createOLATResourceableInstance("gse", new Long(sectionPos));
+					WindowControl bwControl = addToHistory(ureq, sres, null, getWindowControl(), false);
+					OLATResourceable ires = OresHelper.createOLATResourceableInstance("git", new Long(itemPos));
+					addToHistory(ureq, ires, null, bwControl, true);
 				}
 			} else if (wfCommand.equals("gse")) { // goToSection
 				String seid = ureq.getParameter("seid");
 				if (seid!=null && seid.length()!=0) {
 					int sectionPos = Integer.parseInt(seid);
 					navig.goToSection(sectionPos);
+
+					//fxdiff BAKS-7 Resume function
+					OLATResourceable sres = OresHelper.createOLATResourceableInstance("gse", new Long(sectionPos));
+					addToHistory(ureq, sres, null);
 				}
 			} else if (wfCommand.equals(QTIConstants.QTI_WF_SUBMIT)) { // submit
 																																	// Assessment

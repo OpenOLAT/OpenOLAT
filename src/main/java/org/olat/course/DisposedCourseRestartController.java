@@ -49,7 +49,7 @@ import org.olat.resource.OLATResourceManager;
  * 
  * @author patrickb
  */
-class DisposedCourseRestartController extends BasicController {
+public class DisposedCourseRestartController extends BasicController {
 
 	private VelocityContainer initialContent;
 	private Link restartLink;
@@ -97,7 +97,8 @@ class DisposedCourseRestartController extends BasicController {
 			/*
 			 * create new tab with "refreshed course run" and activate the course
 			 */
-			dt = dts.createDTab(ores, courseRepositoryEntry.getDisplayname());
+			//fxdiff BAKS-7 Resume function
+			dt = dts.createDTab(ores, courseRepositoryEntry, courseRepositoryEntry.getDisplayname());
 			if (dt == null) return; // full tabs -> warning already set by
 															// dts.create...
 			Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);

@@ -64,7 +64,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.LogFileParser;
 import org.olat.core.logging.LogRealTimeViewerController;
 import org.olat.core.logging.OLATSecurityException;
@@ -83,7 +86,7 @@ import org.olat.core.util.resource.OresHelper;
 *
 * @author Felix Jost
 */
-public class SysinfoController extends BasicController  {
+public class SysinfoController extends BasicController implements Activateable2 {
 
 	private static final String ACTION_SNOOP = "snoop";
 	private static final String ACTION_ERRORS = "errors";
@@ -269,6 +272,13 @@ public class SysinfoController extends BasicController  {
 
 
 
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && entries.isEmpty()) return;
+		tabbedPane.activate(ureq, entries, state);
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
@@ -276,6 +286,8 @@ public class SysinfoController extends BasicController  {
 		if (source == tabbedPane) { // those must be links
 			TabbedPaneChangedEvent tbcEvent = (TabbedPaneChangedEvent)event;
 			Component newComponent = tbcEvent.getNewComponent();
+			//fxdiff BAKS-7 Resume function
+			tabbedPane.addToHistory(ureq, getWindowControl());
 			if (newComponent == cachePanel) {
 				if (cacheController != null) {
 					cacheController.dispose();

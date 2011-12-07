@@ -21,6 +21,8 @@
  */
 package org.olat.core.id.context;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.core.commons.servlets.util.URLEncoder;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -63,6 +66,12 @@ public class BusinessControlFactory {
 			
 			public String getAsString() {
 				return "";
+			}
+
+			@Override
+			//fxdiff BAKS-7 Resume function
+			public List<ContextEntry> getEntries() {
+				return Collections.<ContextEntry>emptyList();
 			}
 
 			public ContextEntry popLauncherContextEntry() {
@@ -143,21 +152,51 @@ public class BusinessControlFactory {
 		return wc;
 	}
 	
-	public WindowControl createBusinessWindowControl(final String type, final Long id, WindowControl origWControl) {
-		final OLATResourceable ores = new OLATResourceable(){
-			public String getResourceableTypeName() {
-				return type;
-			}
-
-			public Long getResourceableId() {
-				return id;
-			}};
-
-		ContextEntry contextEntry = new MyContextEntry(ores);
-		return createBusinessWindowControl(contextEntry, origWControl);
+	/**
+	 * The method check for duplicate entries!!!
+	 * @param ores
+	 * @param wControl
+	 * @return
+	 */
+	//fxdiff BAKS-7 Resume function
+	public WindowControl createBusinessWindowControl(final OLATResourceable ores, StateEntry state, WindowControl wControl) {
+		WindowControl bwControl;
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
+		if(ce.equals(wControl.getBusinessControl().getCurrentContextEntry())) {
+			bwControl = wControl;
+			wControl.getBusinessControl().getCurrentContextEntry().setTransientState(state);
+		} else {
+			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
+			ce.setTransientState(state);
+		}
+		return bwControl;
 	}
 	
+	/**
+	 * The method check for duplicate entries!!!
+	 * @param ores
+	 * @param wControl
+	 * @return
+	 */
+	//fxdiff BAKS-7 Resume function
+	public WindowControl createBusinessWindowControl(UserRequest ureq, final OLATResourceable ores, StateEntry state,
+			WindowControl wControl, boolean addToHistory) {
+		WindowControl bwControl = createBusinessWindowControl(ores, state, wControl);
+		if(addToHistory) {
+			ureq.getUserSession().addToHistory(ureq, bwControl.getBusinessControl());
+		}
+		return bwControl;
+	}
 	
+	//fxdiff BAKS-7 Resume function
+	public void addToHistory(UserRequest ureq, WindowControl wControl) {
+		if(wControl == null || wControl.getBusinessControl() == null) return;
+		ureq.getUserSession().addToHistory(ureq, wControl.getBusinessControl());
+	}
+	
+	public void addToHistory(UserRequest ureq, HistoryPoint historyPoint) {
+		ureq.getUserSession().addToHistory(ureq, historyPoint);
+	}
 
 	public WindowControl createBusinessWindowControl(BusinessControl businessControl, WindowControl origWControl) {
 		WindowControl wc = new StackedBusinessWindowControl(origWControl, businessControl);
@@ -174,7 +213,8 @@ public class BusinessControlFactory {
 	}
 	
 	public ContextEntry createContextEntry(Identity identity) {
-		return new IdContextEntry(identity);	
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());
+		return new MyContextEntry(ores);	
 	}
 
 	public String getAsString(BusinessControl bc) {
@@ -188,7 +228,15 @@ public class BusinessControlFactory {
 		ContextEntry rootEntry = null;
 		if (ces.isEmpty() || ((rootEntry = ces.get(0))==null)) {
 			Tracing.logWarn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is "+businessControlString, new Exception("stacktrace"), getClass());
-//			throw new AssertException("empty or invalid business control string, String is "+businessControlString);
+		}
+		return createFromContextEntries(ces);
+	}
+
+	//fxdiff BAKS-7 Resume function
+	public BusinessControl createFromContextEntries(final List<ContextEntry> ces) {
+		ContextEntry rootEntry = null;
+		if (ces.isEmpty() || ((rootEntry = ces.get(0))==null)) {
+			Tracing.logWarn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty.", new Exception("stacktrace"), getClass());
 		}
 		
 		//Root businessControl with RootContextEntry which must be defined (i.e. not null)
@@ -300,10 +348,66 @@ public class BusinessControlFactory {
 		}
 		return retVal.substring(0, retVal.length()-1);
 	}
+	
+	//fxdiff BAKS-7 Resume function
+	public String getPath(ContextEntry entry) {
+		String path = entry.getOLATResourceable().getResourceableTypeName();
+		path = path.endsWith(":0") ? path.substring(0, path.length() - 2) : path;
+		path = path.startsWith("path=") ? path.substring(5, path.length()) : path;
+		return path;
+	}
+	
+	public String getBusinessPathAsURIFromCEList(List<ContextEntry> ceList){
+		if(ceList == null || ceList.isEmpty()) return "";
+		
+		StringBuilder retVal = new StringBuilder();
+		//see code in JumpInManager, cannot be used, as it needs BusinessControl-Elements, not the path
+		for (ContextEntry contextEntry : ceList) {
+			String ceStr = contextEntry != null ? contextEntry.toString() : "NULL_ENTRY";
+			if(ceStr.startsWith("[path")) {
+				//the %2F make a problem on browsers.
+				//make the change only for path which is generally used
+				//TODO: find a better method or a better separator as |
+				ceStr = ceStr.replace("%2F", "~~");
+			}
+			ceStr = ceStr.replace(':', '/');
+			ceStr = ceStr.replaceFirst("\\]", "/");
+			ceStr= ceStr.replaceFirst("\\[", "");
+			retVal.append(ceStr);
+		}
+		return retVal.substring(0, retVal.length()-1);
+	}
+	
+	public String formatFromURI(String restPart) {
+		try {
+			restPart = URLDecoder.decode(restPart, "UTF8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			//log.error("Unsupported encoding", e);
+		}
+		
+		String[] split = restPart.split("/");
+		if (split.length % 2 != 0) {
+			return null;
+		}
+		String businessPath = "";
+		for (int i = 0; i < split.length; i=i+2) {
+			String key = split[i];
+			if(key != null && key.startsWith("path=")) {
+				key = key.replace("~~", "/");
+			}
+			String value = split[i+1];
+			businessPath += "[" + key + ":" + value +"]";
+		}
+		return businessPath;
+	}
 }	
 
 class MyContextEntry implements ContextEntry {
 	private final OLATResourceable olatResourceable;
+
+	//fxdiff BAKS-7 Resume function
+	private StateEntry state;
 
 	MyContextEntry(OLATResourceable ores) {
 		this.olatResourceable = ores;
@@ -316,6 +420,28 @@ class MyContextEntry implements ContextEntry {
 		return olatResourceable;
 	}
 	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public StateEntry getTransientState() {
+		return state;
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void setTransientState(StateEntry state) {
+		this.state = state;
+	}
+	
+	@Override
+	public ContextEntry clone() {
+		MyContextEntry entry = new MyContextEntry(olatResourceable);
+		if(state != null) {
+			entry.state = state.clone();
+		}
+		return entry;
+	}
+	
+	@Override
 	public String toString(){
 		URLEncoder urlE = new URLEncoder();
 		String resource =urlE.encode(this.olatResourceable.getResourceableTypeName());
@@ -348,60 +474,20 @@ class MyContextEntry implements ContextEntry {
 			if (myResName==null && itsResName!=null) return false;
 			if (myResName!=null && itsResName==null) return false;
 			if (myResName!=null && itsResName!=null) {
-				if (!myResName.equals(itsResName)) return false;
+				if (!myResName.equals(itsResName)) {
+					return false;
+				}
 			}
-			return true;
+			
+			if(state == null && mce.state == null) {
+				return true;
+			} else if (state != null && state.equals(mce.state)) {
+				return true;
+			}
+			return false;
 		} else {
 			return super.equals(obj);
 		}
 	}
-	
-}
-
-class IdContextEntry implements ContextEntry {
-	private final Identity identity;
-
-	IdContextEntry(Identity identity) {
-		this.identity = identity;
-	}
-	
-	/**
-	 * @return Returns the olatResourceable.
-	 */
-	public OLATResourceable getOLATResourceable() {
-		return new OLATResourceable() {
-			@Override
-			public Long getResourceableId() {
-				return identity.getKey();
-			}
-
-			@Override
-			public String getResourceableTypeName() {
-				return "Identity";
-			}
-		};
-	}
-	
-	public String toString(){
-		return "[Identity:"+identity.getKey()+"]";
-	}
-	
-	@Override
-	public int hashCode() {
-		return (identity==null) ? super.hashCode() : identity.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (identity==null) {
-			return super.equals(obj);
-		} else if (obj instanceof IdContextEntry) {
-			IdContextEntry ice = (IdContextEntry)obj;
-			return identity.equals(ice.identity);
-		} else {
-			return super.equals(obj);
-		}
-	}
-	
 }
 

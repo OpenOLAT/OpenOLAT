@@ -88,7 +88,7 @@ public class EfficiencyStatementsListController extends BasicController {
 	 * @param wControl
 	 * @param ureq
 	 */
-	public EfficiencyStatementsListController(WindowControl wControl, UserRequest ureq) { 
+	public EfficiencyStatementsListController(UserRequest ureq, WindowControl wControl) { 
 		super(ureq, wControl);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
@@ -162,7 +162,8 @@ public class EfficiencyStatementsListController extends BasicController {
 						DTab dt = dts.getDTab(ores);
 						if (dt == null) {
 							// does not yet exist -> create and add
-							dt = dts.createDTab(ores, efficiencyStatement.getCourseTitle());
+							//fxdiff BAKS-7 Resume function
+							dt = dts.createDTab(ores, re, efficiencyStatement.getCourseTitle());
 							if (dt == null) return;
 							Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
 							dt.setController(launchController);

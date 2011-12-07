@@ -134,7 +134,8 @@ public class WikiManager extends BasicManager {
 	 */
 	public Controller createWikiMainControllerDisposeOnOres(UserRequest ureq, WindowControl wControl, OLATResourceable ores, WikiSecurityCallback securityCallback, String initialPageName) {
 		Controller controller = new WikiMainController(ureq, wControl, ores, securityCallback, initialPageName);
-		OLATResourceableListeningWrapperController dwc = new OLATResourceableListeningWrapperController(ureq, wControl, ores, controller, ureq.getIdentity());
+		//fxdiff BAKS-7 Resume function
+		OLATResourceableListeningWrapperController dwc = new OLATResourceableListeningWrapperController(ureq, wControl, ores, controller, null, ureq.getIdentity());
 		return dwc;
 	}
 

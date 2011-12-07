@@ -175,7 +175,6 @@ public class FileChooseCreateEditController extends BasicController{
 		init(chosenFile, allowRelativeLinks, rootContainer, VC_DEFAULT, fieldSetLegend, ureq, wControl);
 	}	
 
-
 	private void init(String file, Boolean allowRelLinks, VFSContainer rContainer, String target, String fieldSetLegend, UserRequest ureq, WindowControl wControl )	{		
 		if(log.isDebug()) {
 			log.debug("Constructing FileChooseCreateEditController using the current velocity root");

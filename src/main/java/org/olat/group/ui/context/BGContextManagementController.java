@@ -43,13 +43,20 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
@@ -70,7 +77,7 @@ import org.olat.group.ui.management.BGManagementController;
  * Initial Date: Jan 24, 2005
  * @author gnaegi
  */
-public class BGContextManagementController extends MainLayoutBasicController {
+public class BGContextManagementController extends MainLayoutBasicController implements Activateable, Activateable2 {
 
 	// Menu commands
 	private static final String CMD_INDEX = "cmd.index";
@@ -166,9 +173,13 @@ public class BGContextManagementController extends MainLayoutBasicController {
 		String cmd = event.getCommand();
 		if (source == this.toolC) {
 			handleToolCommands(ureq, cmd);
-		} else if (source == this.groupManagementController) {
+		} else if (source == groupManagementController) {
 			if (event == Event.DONE_EVENT) {
 				getWindowControl().pop();
+				//fxdiff BAKS-7 Resume function
+				if(contextListCtr != null) {//de facto -> contextlist
+					addToHistory(ureq, contextListCtr);
+				}
 			}
 		} else if (source == this.confirmDeleteContext) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -281,9 +292,58 @@ public class BGContextManagementController extends MainLayoutBasicController {
 		this.contextListVC = createVelocityContainer("contextlist");
 	}
 
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, String viewIdentifier) {
+		if(viewIdentifier != null && viewIdentifier.endsWith(":0")) {
+			viewIdentifier = viewIdentifier.substring(0, viewIdentifier.length() - 2);
+		}
+		
+		if(CMD_CONTEXTLIST.equals(viewIdentifier)) {
+			TreeNode node = ((GenericTreeModel)olatMenuTree.getTreeModel()).findNodeByUserObject(CMD_CONTEXTLIST);
+			olatMenuTree.setSelectedNode(node);
+			doContextList(ureq, true);
+		}
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry ce = entries.remove(0);
+		String type = ce.getOLATResourceable().getResourceableTypeName();
+		TreeNode node = ((GenericTreeModel)olatMenuTree.getTreeModel()).findNodeByUserObject(type);
+		if(node != null) {
+			olatMenuTree.setSelectedNode(node);
+			
+			handleMenuCommands(ureq);
+			if(CMD_CONTEXTLIST.equals(ce.getOLATResourceable().getResourceableTypeName())) {
+				//try to select a context if there is one
+				if(!entries.isEmpty()) {
+					ContextEntry groupCe = entries.remove(0);
+					List<BGContext> contexts = contextTableModel.getObjects();
+					for(BGContext context:contexts) {
+						if(context.getKey().equals(groupCe.getOLATResourceable().getResourceableId())) {
+							currentGroupContext = context;
+							break;
+						}
+					}
+					
+					if(currentGroupContext != null) {
+						doContextRun(ureq);
+					}
+				}
+			}
+		}
+	}
+
 	private void doIndex(UserRequest ureq) {
 		this.content.setContent(this.indexVC);
 		setTools(false);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_INDEX, 0l);
+		addToHistory(ureq, ores, null);
 	}
 
 	private void doContextCreateForm(UserRequest ureq, String type) {
@@ -318,7 +378,10 @@ public class BGContextManagementController extends MainLayoutBasicController {
 
 	private void doContextRun(UserRequest ureq) {
 		removeAsListenerAndDispose(groupManagementController);
-		groupManagementController = BGControllerFactory.getInstance().createManagementController(ureq, getWindowControl(), this.currentGroupContext, false);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(BGContext.class, currentGroupContext.getKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null, contextListCtr.getWindowControlForDebug(), true);
+		groupManagementController = BGControllerFactory.getInstance().createManagementController(ureq, bwControl, this.currentGroupContext, false);
 		listenTo (groupManagementController);
 		
 		//FIXME fg: no layout ctr in a modal panel!
@@ -350,7 +413,10 @@ public class BGContextManagementController extends MainLayoutBasicController {
 			tableConfig.setTableEmptyMessage(translate("contextlist.no.contexts"));
 			// init group list filter controller
 			removeAsListenerAndDispose(contextListCtr);
-			contextListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
+			//fxdiff BAKS-7 Resume function
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_CONTEXTLIST, 0l);
+			WindowControl bwControl = addToHistory(ureq, ores, null, getWindowControl(), false);
+			contextListCtr = new TableController(tableConfig, ureq, bwControl, getTranslator());
 			listenTo(contextListCtr);
 
 			this.contextListCtr.addColumnDescriptor(new DefaultColumnDescriptor("contextlist.table.name", 0, CMD_CONTEXT_RUN, ureq.getLocale()));
@@ -368,6 +434,8 @@ public class BGContextManagementController extends MainLayoutBasicController {
 			this.contextTableModel = new BGContextTableModel(contexts, getTranslator(), true, false);
 			this.contextListCtr.setTableDataModel(this.contextTableModel);
 		}
+		//fxdiff BAKS-7 Resume function
+		addToHistory(ureq, contextListCtr);
 		this.content.setContent(this.contextListVC);
 		setTools(false);
 	}

@@ -41,7 +41,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.group.site.GroupsSite;
-import org.olat.home.site.HomeSite;
+import org.olat.home.HomeSite;
 import org.olat.repository.site.RepositorySite;
 
 /**

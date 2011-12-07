@@ -21,6 +21,8 @@
 
 package org.olat.user;
 
+import java.util.List;
+
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -29,11 +31,15 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.resource.OresHelper;
@@ -50,7 +56,7 @@ import org.olat.registration.RegistrationModule;
  * @author Sabina Jeger
  * 
  */
-public class PersonalSettingsController extends BasicController {
+public class PersonalSettingsController extends BasicController implements Activateable2 {
 	
 	private TabbedPane userConfig;
 	
@@ -76,6 +82,8 @@ public class PersonalSettingsController extends BasicController {
 				throw new OLATSecurityException("Insufficient permissions to access PersonalSettingsController");
 
 			userConfig = new TabbedPane("userConfig", ureq.getLocale());
+			//fxdiff BAKS-7 Resume function
+			userConfig.addListener(this);
 
 			hpec = new ProfileAndHomePageEditController(ureq, getWindowControl(), (Identity)DBFactory.getInstance().loadObject(ureq.getIdentity()), false);
 			listenTo(hpec);
@@ -128,8 +136,11 @@ public class PersonalSettingsController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	@Override
+	//fxdiff BAKS-7 Resume function
 	public void event(UserRequest ureq, Component source, Event event) {
-		// nothing to do here.
+		if (source == userConfig && event instanceof TabbedPaneChangedEvent) {
+			userConfig.addToHistory(ureq, getWindowControl());
+		}
 	}
 	
 	/**
@@ -146,5 +157,11 @@ public class PersonalSettingsController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		userConfig.activate(ureq, entries, state);
 	}
 }

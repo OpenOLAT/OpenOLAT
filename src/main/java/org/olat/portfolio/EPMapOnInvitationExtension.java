@@ -54,6 +54,7 @@ public class EPMapOnInvitationExtension {
 			
 			@Override
 			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+				
 				PortfolioStructureMap map = getMapFromContext(ce);
 				EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
 				Controller epCtr = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);

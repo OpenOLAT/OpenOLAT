@@ -1,0 +1,62 @@
+/**
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ * <p>
+ */
+package org.olat.core.id.context;
+
+import org.olat.core.gui.control.navigation.SiteInstance;
+
+/**
+ * 
+ * <h3>Description:</h3>
+ * <p>A simple implementation of StateEntry, 
+ * <p>
+ * Initial Date:  18 jan. 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, www.frentix.com
+ */
+public class StateSite implements StateEntry{
+	
+	private transient SiteInstance site;
+	
+	public StateSite() {
+		//make XStream happy
+	}
+	
+	public StateSite(SiteInstance site) {
+		this.site = site;
+	}
+
+	public SiteInstance getSite() {
+		return site;
+	}
+
+	public void setSite(SiteInstance site) {
+		this.site = site;
+	}
+	
+	@Override
+	public String toString() {
+		return site == null ? "{empty}" : site.toString();
+	}
+	
+	@Override
+	public StateEntry clone() {
+		return new StateSite(site);
+	}
+}

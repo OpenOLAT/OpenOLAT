@@ -39,11 +39,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -65,7 +68,7 @@ import org.olat.repository.SearchForm;
 *
 * @author Felix Jost
 */
-public class RepositorySearchController extends BasicController {
+public class RepositorySearchController extends BasicController implements Activateable2 {
 
 	private static final String PACKAGE = Util.getPackageName(RepositoryManager.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
@@ -158,6 +161,20 @@ public class RepositorySearchController extends BasicController {
 	 */
 	public void enableBackToSearchFormLink(boolean enableBack) {
 		vc.contextPut("withBack", new Boolean(enableBack));
+	}
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String subType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(RepositoryEntry.class.getSimpleName().equals(subType)) {
+			//activate details
+			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			selectedEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resId);
+			fireEvent(ureq, new Event(RepositoryTableModel.TABLE_ACTION_SELECT_LINK));
+		}
 	}
 
 	/**

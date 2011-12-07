@@ -67,6 +67,9 @@ import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.util.ReusableURLHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
@@ -365,6 +368,11 @@ public class Window extends Container {
 							//REVIEW:PB: this will be the code allowing back forward navigation
 							//-----> if (inline) {
 							if (inline || !validForDispatching) {
+								if(!validForDispatching){
+									// not valid: fire oldtimestamp event and later rerender
+									fireEvent(ureq, OLDTIMESTAMPCALL);
+								}
+								
 								Container top = getContentPane();
 								// always validate here, since we are never in the case of just rerendering (we are in the bg iframe)
 								ValidatingVisitor vv = new ValidatingVisitor(gsettings, jsAndCssAdder);
@@ -554,7 +562,9 @@ public class Window extends Container {
 							// not a valid timestamp -> most likely a browser back or forward event (or a copy/paste of a url) ->
 
 							// fire event to listening chiefcontroller
-							fireEvent(ureq, OLDTIMESTAMPCALL);
+							//fxdiff BAKS-7: resume controller
+							Tracing.logDebug("Removed old timestamp event", Window.class);
+							//fireEvent(ureq, OLDTIMESTAMPCALL);
 							/*
 							 * 
 							 * REVIEW:PB: this will be the code allowing back forward navigation

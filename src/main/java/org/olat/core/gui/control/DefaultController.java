@@ -32,6 +32,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -436,6 +439,35 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 			}
 		}
 		return this.getClass().getName()+" [" + sb + "]";
+	}
+
+	protected WindowControl addToHistory(UserRequest ureq) {
+		BusinessControlFactory.getInstance().addToHistory(ureq, getWindowControl());
+		return getWindowControl();
+	}
+	
+	protected WindowControl addToHistory(UserRequest ureq, Controller controller) {
+		WindowControl wControl;
+		if(controller instanceof DefaultController) {
+			wControl = ((DefaultController)controller).getWindowControl();
+		} else {
+			wControl = controller.getWindowControlForDebug();
+		}	
+		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
+		return wControl;
+	}
+	
+	protected WindowControl addToHistory(UserRequest ureq, WindowControl wControl) {
+		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
+		return wControl;
+	}
+	
+	protected WindowControl addToHistory(UserRequest ureq, OLATResourceable ores, StateEntry stateEntry) {
+		return addToHistory(ureq, ores, stateEntry, getWindowControl(), true);
+	}
+	
+	protected WindowControl addToHistory(UserRequest ureq, OLATResourceable ores, StateEntry stateEntry, WindowControl wControl, boolean addToHistory) {
+		return BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, stateEntry, wControl, addToHistory);
 	}
 
 	/**

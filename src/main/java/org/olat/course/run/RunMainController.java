@@ -53,11 +53,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
+import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.translator.PackageTranslator;
@@ -66,6 +68,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.Tracing;
@@ -130,7 +133,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Felix Jost
  */
-public class RunMainController extends MainLayoutBasicController implements GenericEventListener, Activateable {
+public class RunMainController extends MainLayoutBasicController implements GenericEventListener, Activateable, Activateable2 {
 	private static final String COMMAND_EDIT = "gotoeditor";
 	private static final String TOOLBOX_LINK_COURSECONFIG = "courseconfig";
 
@@ -498,6 +501,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @return true if the node jumped to is visible
 	 */
 	private boolean updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd) {
+		return updateTreeAndContent(ureq, calledCourseNode, nodecmd, null, null);
+	}
+	
+	//fxdiff BAKS-7 Resume function
+	private boolean updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd, List<ContextEntry> entries, StateEntry state) {
 		// build menu (treemodel)
 		// dispose old node controller before creating the NodeClickedRef which creates 
 		// the new node controller. It is important that the old node controller is 
@@ -529,6 +537,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// get new run controller.
 		currentNodeController = nclr.getRunController();
+		//fxdiff BAKS-7 Resume function
+		if(currentNodeController instanceof Activateable2) {
+			((Activateable2)currentNodeController).activate(ureq, entries, state);
+		} else if (currentNodeController instanceof TitledWrapperController) {
+			Controller contentcontroller = ((TitledWrapperController)currentNodeController).getContentController();
+			if(contentcontroller instanceof Activateable2) {
+				((Activateable2)contentcontroller).activate(ureq, entries, state);
+			} else {
+				addToHistory(ureq, currentNodeController);
+			}
+		} else {
+			addToHistory(ureq, currentNodeController);
+		}
 		contentP.setContent(currentNodeController.getInitialComponent());
 		// enableCustomCourseCSS(ureq);
 		
@@ -585,6 +606,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				currentNodeController = nclr.getRunController();
 				Component nodeComp = currentNodeController.getInitialComponent();
 				contentP.setContent(nodeComp);
+				//fxdiff BAKS-7 Resume function
+				addToHistory(ureq, currentNodeController);
 				
 				// set glossary wrapper dirty after menu click to make it reload the glossary
 				// stuff properly when in AJAX mode
@@ -1319,7 +1342,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (currentNodeController != null) {
 				currentNodeController.dispose();
 			}
-			
+			//fxdiff BAKS-7 Resume function
+			if (viewIdentifier.startsWith("CourseNode:")) {
+				viewIdentifier = viewIdentifier.substring("CourseNode:".length());
+			} 
+
 			CourseNode cn = null;
 			cn = (viewIdentifier == null ? null : course.getRunStructure().getNode(viewIdentifier));
 			String subsubId = null;
@@ -1349,5 +1376,45 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		glossaryToolCtr = new CourseGlossaryToolLinkController(getWindowControl(), ureq, course, getTranslator(), hasGlossaryRights, 
 				uce.getCourseEnvironment(), glossaryMarkerCtr);
 		listenTo(glossaryToolCtr);
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry firstEntry = entries.get(0);
+		if("CourseNode".equals(firstEntry.getOLATResourceable().getResourceableTypeName())) {
+			CourseNode cn = course.getRunStructure().getNode(firstEntry.getOLATResourceable().getResourceableId().toString());
+			
+			// FIXME:fj:b is this needed in some cases?: currentCourseNode = cn;
+			getWindowControl().makeFlat();
+
+			// add loggin information for case course gets started via jumpin
+			// link/search
+			addLoggingResourceable(LoggingResourceable.wrap(course));
+			if (cn != null) {
+				addLoggingResourceable(LoggingResourceable.wrap(cn));
+			}
+			
+			if(entries.size() > 1) {
+				entries = entries.subList(1, entries.size());
+			}
+			updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
+		}
+	}
+
+	// fxdiff: allow disabling after instantiation
+	public void disableToolController(boolean disable) {
+		columnLayoutCtr.hideCol2(disable);
+	}
+
+	/**
+	 * @see org.olat.core.gui.control.DefaultController#setDisposedMsgController(org.olat.core.gui.control.Controller)
+	 */
+	@Override
+	// fxdiff: exchange dispose controller
+	public void setDisposedMsgController(Controller disposeMsgController) {
+		super.setDisposedMsgController(disposeMsgController);
 	}
 }

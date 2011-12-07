@@ -21,7 +21,11 @@
 
 package org.olat.catalog.ui;
 
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Stack;
 
@@ -36,6 +40,7 @@ import org.olat.bookmark.AddAndEditBookmarkController;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
@@ -51,6 +56,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -61,6 +67,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -128,7 +136,7 @@ import org.olat.resource.OLATResource;
  * Date: 2005/10/14 12:35:40 <br>
  * @author Felix Jost
  */
-public class CatalogController extends BasicController implements Activateable {
+public class CatalogController extends BasicController implements Activateable, Activateable2 {
 	
 	// velocity form flags
 	
@@ -193,7 +201,7 @@ public class CatalogController extends BasicController implements Activateable {
 	private CatalogEntry newLinkNotPersistedYet;
 	private int currentCatalogEntryLevel = -1;
 	private List<CatalogEntry> historyStack = new ArrayList<CatalogEntry>(5);
-	private List childCe;
+	private List<CatalogEntry> childCe;
 	private boolean isOLATAdmin;
 	private boolean isAuthor;
 	private boolean isLocalTreeAdmin = false;
@@ -282,7 +290,7 @@ public class CatalogController extends BasicController implements Activateable {
 		myContent.contextPut("iconRenderer", new RepositoryEntryIconRenderer(getLocale()));
 		// add this root node as history start
 		historyStack.add(rootce);
-		updateContent(ureq.getIdentity(), rootce, 0);
+		updateContent(ureq, rootce, 0);
 		
 		// jump to a specific node in the catalog structure, build corresponding
 		// historystack and update tool access
@@ -316,7 +324,7 @@ public class CatalogController extends BasicController implements Activateable {
 				// put new as trail on stack
 				historyStack.add(cur);
 				updateToolAccessRights(ureq, cur, historyStack.indexOf(cur));
-				updateContent(ureq.getIdentity(), cur, historyStack.indexOf(cur));
+				updateContent(ureq, cur, historyStack.indexOf(cur));
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				
 			} else if (command.startsWith(CATCMD_HISTORY)) { // history clicked
@@ -324,7 +332,7 @@ public class CatalogController extends BasicController implements Activateable {
 				CatalogEntry cur = historyStack.get(pos);
 				historyStack = historyStack.subList(0, pos + 1);
 				updateToolAccessRights(ureq, cur, historyStack.indexOf(cur));
-				updateContent(ureq.getIdentity(), cur, historyStack.indexOf(cur));
+				updateContent(ureq, cur, historyStack.indexOf(cur));
 				fireEvent(ureq, Event.CHANGED_EVENT);
 				
 			} else if (command.startsWith(CATENTRY_LEAF)) { // link clicked
@@ -349,7 +357,7 @@ public class CatalogController extends BasicController implements Activateable {
 					DTab dt = dts.getDTab(ores);
 					if (dt == null) {
 						// does not yet exist -> create and add
-						dt = dts.createDTab(ores, displayName);
+						dt = dts.createDTab(ores, repoEntry, displayName);
 						if (dt == null) return;
 						Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
 						dt.setController(launchController);
@@ -420,8 +428,11 @@ public class CatalogController extends BasicController implements Activateable {
 					CatalogEntry showDetailForLink = (CatalogEntry) childCe.get(pos);
 					RepositoryEntry repoEnt = showDetailForLink.getRepositoryEntry();					
 					fireEvent(ureq, new EntryChangedEvent(repoEnt, EntryChangedEvent.MODIFIED));
-					//TODO [ingkr]
-					//getWindowControl().getDTabs().activateStatic(ureq, RepositorySite.class.getName(), RepositoryMainController.JUMPFROMEXTERN+RepositoryMainController.JUMPFROMCATALOG+repoEnt.getKey().toString());
+					//fxdiff BAKS-7 Resume function
+					OLATResourceable ceRes = OresHelper.createOLATResourceableInstance(CatalogEntry.class.getSimpleName(), showDetailForLink.getKey());
+					WindowControl bwControl = addToHistory(ureq, ceRes, null);
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance("details", 0l);
+					addToHistory(ureq, ores, null, bwControl, true);
 					return;
 				}
 			}
@@ -658,7 +669,7 @@ public class CatalogController extends BasicController implements Activateable {
 				CatalogEntry newRoot = (CatalogEntry) cm.getRootCatalogEntries().get(0);
 				historyStack = new ArrayList<CatalogEntry>();
 				historyStack.add(newRoot);
-				updateContent(ureq.getIdentity(), newRoot, 0);
+				updateContent(ureq, newRoot, 0);
 				updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -690,11 +701,11 @@ public class CatalogController extends BasicController implements Activateable {
 				newLinkNotPersistedYet.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
 				cm.addCatalogEntry(currentCatalogEntry, newLinkNotPersistedYet);
 				newLinkNotPersistedYet = null;
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if (event == Event.CANCELLED_EVENT) {
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 
@@ -711,7 +722,7 @@ public class CatalogController extends BasicController implements Activateable {
 				cm.deleteCatalogEntry(currentCatalogEntry);
 				// display the parent
 				historyStack.remove(historyStack.size() - 1);
-				updateContent(ureq.getIdentity(), parent, historyStack.indexOf(parent));
+				updateContent(ureq, parent, historyStack.indexOf(parent));
 				updateToolAccessRights(ureq, parent, historyStack.indexOf(parent));
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -728,7 +739,7 @@ public class CatalogController extends BasicController implements Activateable {
 		else if (source == dialogDeleteLink) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				cm.deleteCatalogEntry(linkMarkedToBeDeleted);
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			}
 			// in any case, remove the lock
 			if (catModificationLock != null && catModificationLock.isSuccess()) {
@@ -743,7 +754,7 @@ public class CatalogController extends BasicController implements Activateable {
 			// remove modal dialog
 			cmc.deactivate();
 			if (event.equals(Event.DONE_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			}
 		} else if (source == groupController) {
 			// remove modal dialog
@@ -789,7 +800,7 @@ public class CatalogController extends BasicController implements Activateable {
 				reloadHistoryStack(ureq, currentCatalogEntry.getKey());
 			} else if(event.equals(Event.FAILED_EVENT)){
 				showError("tools.move.catalog.entry.failed");
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			}
 			// in any case, remove the lock
 			if (catModificationLock != null && catModificationLock.isSuccess()) {
@@ -808,7 +819,7 @@ public class CatalogController extends BasicController implements Activateable {
 		else if (source == repositoryEditDescriptionController) {
 			if (event == Event.CHANGED_EVENT) {
 				linkMarkedToBeEdited.setRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 				cm.updateReferencedRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
@@ -830,7 +841,7 @@ public class CatalogController extends BasicController implements Activateable {
 			}
 			CatalogEntry reloaded = cm.loadCatalogEntry(currentCatalogEntry);
 			currentCatalogEntry = reloaded;// FIXME:pb:
-			updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+			updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			// in any case, remove the lock
 			if (catModificationLock != null && catModificationLock.isSuccess()) {
@@ -860,7 +871,7 @@ public class CatalogController extends BasicController implements Activateable {
 					CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(catModificationLock);
 					catModificationLock = null;
 				}
-				updateContent(ureq.getIdentity(), currentCatalogEntry, currentCatalogEntryLevel);
+				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			}
 	}
 
@@ -932,7 +943,9 @@ public class CatalogController extends BasicController implements Activateable {
 	 * @param ce
 	 * @param ceLevel
 	 */
-	private void updateContent(Identity identity, CatalogEntry ce, int ceLevel) {
+	//fxdiff BAKS-7 Resume function
+	private void updateContent(UserRequest ureq, CatalogEntry ce, int ceLevel) {
+		Identity identity = ureq.getIdentity();
 		/*
 		 * FIXME:pb:c include lookahead feature, displaying the 1st 3 children if
 		 * any, to give a google directory feeling
@@ -974,6 +987,18 @@ public class CatalogController extends BasicController implements Activateable {
 			} else myContent.contextPut("hasOwnedLinks", Boolean.FALSE);
 
 		} else myContent.contextPut("hasOwnedLinks", Boolean.FALSE);
+		//fxdiff BAKS-7 Resume function
+		updateHistory(ureq);
+	}
+
+	//fxdiff BAKS-7 Resume function
+	public void updateHistory(UserRequest ureq) {
+		if(currentCatalogEntry != null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CatalogEntry.class, currentCatalogEntry.getKey());
+			addToHistory(ureq, ores, null);
+		} else {
+			addToHistory(ureq);
+		}
 	}
 
 	/**
@@ -1083,7 +1108,35 @@ public class CatalogController extends BasicController implements Activateable {
 				canAdministrateCategory = true;
 				canAddSubCategories = true;
 				canRemoveAllLinks = true;
-				fireEvent(ureq, Event.CHANGED_EVENT);				
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		}
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		ContextEntry catCe = entries.remove(0);
+		Long catId = catCe.getOLATResourceable().getResourceableId();
+		CatalogEntry ce = CatalogManager.getInstance().loadCatalogEntry(catId);
+		switch(ce.getType()) {
+			case CatalogEntry.TYPE_NODE: {
+				reloadHistoryStack(ureq, catId);
+				break;
+			}
+			case CatalogEntry.TYPE_LEAF: {
+				Long folderId = ce.getParent().getKey();
+				reloadHistoryStack(ureq, folderId);
+				if(!entries.isEmpty()) {
+					ContextEntry subEntry = entries.remove(0);
+					String subType = subEntry.getOLATResourceable().getResourceableTypeName();
+					if("details".equals(subType)) {
+						event(ureq, myContent, new Event(CATCMD_DETAIL + CATENTRY_LEAF + "0"));
+					}
+				}
+				break;
 			}
 		}
 	}
@@ -1122,7 +1175,8 @@ public class CatalogController extends BasicController implements Activateable {
 					{
 						cE = stack.pop();
 						historyStack.add(cE);
-						updateContent(ureq.getIdentity(), cE, historyStack.size()-1);					
+						//fxdiff BAKS-7 Resume function
+						updateContent(ureq, cE, historyStack.size()-1);					
 						updateToolAccessRights(ureq, cE, historyStack.size()-1);
 					}
 					return true;

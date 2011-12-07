@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.NewControllerFactory;
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -28,7 +28,6 @@ import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
 import org.olat.core.gui.control.generic.portal.PortletEntry;
@@ -37,6 +36,8 @@ import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -44,7 +45,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
-import org.olat.home.site.HomeSite;
 
 /**
  * 
@@ -179,10 +179,13 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
 			cal.add(Calendar.MONTH, -1);
-			//the end is businessPath compatible
-			String activationCmd = "adminnotifications.[news:0][type=" + InfoMessage.class.getSimpleName() + ":0][date=" + format.format(cal.getTime()) + ":0]";
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			dts.activateStatic(ureq, HomeSite.class.getName(), activationCmd);
+			// fxdiff activate homes tab in top navigation and activate the correct
+			// menu item
+			String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][notifications:0][type=" + InfoMessage.class.getSimpleName()
+					+ ":0][date=" + format.format(cal.getTime()) + ":0]";
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		}
 	}
 	

@@ -220,9 +220,6 @@ public class ProfileAndHomePageEditController extends BasicController implements
 					if (dialogCtr != null) {
 						dialogCtr.dispose();
 					}
-					if (dialogCtr != null) {
-						dialogCtr.dispose();
-					}
 					String changerEMail = ureq.getIdentity().getUser().getProperty("email", ureq.getLocale());
 					String dialogText = "";
 					if(changerEMail != null && changerEMail.length() > 0 && changerEMail.equals(currentEmail)) {

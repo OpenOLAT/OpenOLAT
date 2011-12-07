@@ -93,6 +93,7 @@ public class KalendarEntryDetailsController extends BasicController {
 		linkVC = createVelocityContainer ("calEditLinks");
 		linkVC.contextPut("caller", caller);
 		if (!isReadOnly) {
+			//course node links
 			pane.addTab(translate("tab.links"), linkVC);
 		}
 		

@@ -21,6 +21,8 @@
 
 package org.olat.course.nodes.fo;
 
+import java.util.List;
+
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -34,6 +36,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.docking.DockController;
 import org.olat.core.gui.control.generic.docking.DockLayoutControllerCreatorCallback;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.title.TitledWrapperController;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
@@ -50,7 +56,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author gnaegi
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class FOCourseNodeRunController extends BasicController {
+public class FOCourseNodeRunController extends BasicController implements Activateable2 {
 
 	private DockController dockC;
 	private FOCourseNode courseNode;
@@ -128,5 +134,14 @@ public class FOCourseNodeRunController extends BasicController {
 		//
 	}
 
-	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(dockC != null && dockC.getController() instanceof TitledWrapperController) {
+			TitledWrapperController wrapper2 = (TitledWrapperController)dockC.getController();
+			if(wrapper2.getContentController() instanceof Activateable2) {
+				((Activateable2)wrapper2.getContentController()).activate(ureq, entries, state);
+			}
+		}
+	}
 }

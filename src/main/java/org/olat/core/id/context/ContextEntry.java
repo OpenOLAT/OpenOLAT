@@ -31,7 +31,14 @@ import org.olat.core.id.OLATResourceable;
  *
  * @author Felix Jost
  */
-public interface ContextEntry {
+public interface ContextEntry extends Cloneable {
 	public OLATResourceable getOLATResourceable();
-	//public String translate(Locale locale);
+
+	//fxdiff BAKS-7 Resume function
+	public StateEntry getTransientState();
+
+	//fxdiff BAKS-7 Resume function
+	public void setTransientState(StateEntry state);
+	
+	public ContextEntry clone();
 }

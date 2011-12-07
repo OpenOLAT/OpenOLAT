@@ -22,6 +22,8 @@
 
 package org.olat.modules.cp;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
@@ -37,11 +39,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.CourseLoggingAction;
@@ -63,7 +69,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Felix Jost
  */
-public class CPDisplayController extends BasicController {
+public class CPDisplayController extends BasicController implements Activateable2 {
 
 	private static final String FILE_SUFFIX_HTM = "htm";
 	private static final String FILE_SUFFIX_XML = "xml";
@@ -149,6 +155,13 @@ public class CPDisplayController extends BasicController {
 				selNodeId = node.getIdent();
 
 				nodeInfo = LoggingResourceable.wrapCpNode(nodeUri);
+				//fxdiff BAKS-7 Resume function
+				if(node.getUserObject() != null) {
+					String identifierRes = (String)node.getUserObject();
+					Long id = Long.parseLong(node.getIdent());
+					OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, id);
+					addToHistory(ureq, pOres, null);
+				}
 			}
 		} else if (initialUri != null) {
 			// set page
@@ -162,6 +175,13 @@ public class CPDisplayController extends BasicController {
 					cpTree.setSelectedNodeId(newNode.getIdent());
 				} else {
 					selNodeId = newNode.getIdent();
+				}
+				//fxdiff BAKS-7 Resume function
+				if(newNode.getUserObject() != null) {
+					String identifierRes = (String)newNode.getUserObject();
+					Long id = Long.parseLong(newNode.getIdent());
+					OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, id);
+					addToHistory(ureq, pOres, null);
 				}
 			}
 			nodeInfo = LoggingResourceable.wrapCpNode(initialUri);
@@ -235,6 +255,26 @@ public class CPDisplayController extends BasicController {
 					// contentpackaging file)
 			}
 	}
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		Long id = entries.get(0).getOLATResourceable().getResourceableId();
+		TreeNode newNode = null;
+		if(id != null && id.longValue() > 0l) {
+			newNode = ctm.getNodeById(id.toString());
+		}
+		if(newNode == null) {
+			String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+			newNode = ctm.lookupTreeNodeByHref(path);
+		}
+		if(newNode != null) {
+			selectTreeNode(ureq, newNode);
+			switchToPage(ureq, new TreeEvent(TreeEvent.COMMAND_TREENODES_SELECTED, newNode.getIdent()));
+		}
+	}
 
 	/**
 	 * adjust the cp menu tree with the page selected with a link clicked in the content
@@ -243,6 +283,12 @@ public class CPDisplayController extends BasicController {
 	 */
 	public void selectTreeNode(UserRequest ureq, String newUri) {
 		TreeNode newNode = ctm.lookupTreeNodeByHref(newUri);
+		selectTreeNode(ureq, newNode);
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.CP_GET_FILE, getClass(), LoggingResourceable.wrapCpNode(newUri));
+	}
+	
+	//fxdiff VCRP-13: cp navigation
+	public void selectTreeNode(UserRequest ureq, TreeNode newNode) {
 		if (newNode != null) { // user clicked on a link which is listed in the
 			// toc
 			if (cpTree != null) {
@@ -253,7 +299,6 @@ public class CPDisplayController extends BasicController {
 				fireEvent(ureq, new TreeNodeEvent(newNode));
 			}
 		}
-		ThreadLocalUserActivityLogger.log(CourseLoggingAction.CP_GET_FILE, getClass(), LoggingResourceable.wrapCpNode(newUri));
 	}
 
 	/**
@@ -269,6 +314,10 @@ public class CPDisplayController extends BasicController {
 		String nodeId = te.getNodeId();
 		TreeNode tn = ctm.getNodeById(nodeId);
 		String identifierRes = (String) tn.getUserObject();
+		//fxdiff BAKS-7 Resume function
+		Long id = Long.parseLong(tn.getIdent());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, id);
+		addToHistory(ureq, ores, null);
 		
 		// security check
 		if (identifierRes.indexOf("../") != -1) throw new AssertException("a non-normalized url encountered in a manifest item:"

@@ -72,7 +72,6 @@ import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.home.site.HomeSite;
 
 /**
  * Description:<br>
@@ -226,9 +225,10 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink){
 			// activate homes tab in top navigation and active bookmarks menu item
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, HomeSite.class.getName(), "adminnotifications");
-			dts.activateStatic(ureq, HomeSite.class.getName(), "adminnotifications");
+			String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][notifications:0]";
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		} else if (event == ComponentUtil.VALIDATE_EVENT && needsModelReload) {
 			//updateTableModel(ureq.getLocale(), ureq.getIdentity());
 			reloadModel(sortingCriteria);

@@ -69,6 +69,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -78,6 +79,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.ILoggingAction;
@@ -123,7 +125,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  * @author Refactorings: Roman Haag, roman.haag@frentix.com, frentix GmbH
  */
-public class ForumController extends BasicController implements GenericEventListener {
+public class ForumController extends BasicController implements GenericEventListener, Activateable2 {
 
 	protected static final String TINYMCE_EMPTYLINE_CODE = "<p>&nbsp;</p>"; //is pre/appended to quote message to allow writing inside.
 
@@ -317,6 +319,20 @@ public class ForumController extends BasicController implements GenericEventList
 		
 		//filter for user
 		vcFilterView = createVelocityContainer("filter_view");
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+		if (resId.longValue() != 0) {
+			currentMsg = fm.findMessage(resId);
+			if (currentMsg != null) {
+				showThreadView(ureq, currentMsg, null);
+				scrollToCurrentMessage();					
+			}
+		}
 	}
 
 	/**
@@ -1330,9 +1346,8 @@ public class ForumController extends BasicController implements GenericEventList
 	private void adjustBusinessControlPath(UserRequest ureq, Message m) {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(m));
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Message.class,m.getKey());
-		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
-		
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());		
+		//fxdiff BAKS-7 Resume function
+		WindowControl bwControl = addToHistory(ureq, ores, null);		
 		
 		//Simple way to "register" the new ContextEntry although only a VelocityPage was flipped.
 		Controller dummy = new BasicController(ureq, bwControl) {

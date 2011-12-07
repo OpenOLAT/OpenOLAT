@@ -123,6 +123,10 @@ public class DockController extends BasicController {
 			if (controller != null) controller.dispose();
 		} // else nothing to do
 	}
+	//fxdiff BAKS-7 Resume function
+	public Controller getController() {
+		return controller;
+	}
 
 }
 

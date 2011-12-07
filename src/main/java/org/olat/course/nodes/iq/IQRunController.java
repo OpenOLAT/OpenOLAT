@@ -40,10 +40,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Formatter;
@@ -88,7 +92,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Initial Date:  Oct 13, 2004
  * @author Felix Jost
  */
-public class IQRunController extends BasicController implements GenericEventListener {
+public class IQRunController extends BasicController implements GenericEventListener, Activateable2 {
 
 	private VelocityContainer myContent;
 	
@@ -371,7 +375,11 @@ public class IQRunController extends BasicController implements GenericEventList
 			long callingResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
 			String callingResDetail = courseNode.getIdent();
 			removeAsListenerAndDispose(displayController);
-			Controller returnController = IQManager.getInstance().createIQDisplayController(modConfig, secCallback, ureq, getWindowControl(), callingResId, callingResDetail);
+
+			//fxdiff BAKS-7 Resume function
+			OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("test");
+			WindowControl bwControl = addToHistory(ureq, ores, null);
+			Controller returnController = IQManager.getInstance().createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail);
 			/*
 			 * either returnController is a MessageController or it is a IQDisplayController
 			 * this should not serve as pattern to be copy&pasted.
@@ -611,4 +619,14 @@ public class IQRunController extends BasicController implements GenericEventList
 		
 	}
 
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry ce = entries.remove(0);
+		if("test".equals(ce.getOLATResourceable().getResourceableTypeName())) {
+			event(ureq, startButton, Event.CHANGED_EVENT);
+		}
+	}
 }

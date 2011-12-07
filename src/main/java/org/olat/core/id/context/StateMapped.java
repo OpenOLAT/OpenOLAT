@@ -1,0 +1,79 @@
+/**
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ * <p>
+ */
+package org.olat.core.id.context;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 
+ * <h3>Description:</h3>
+ * <p>A simple implementation of StateEntry, 
+ * <p>
+ * Initial Date:  18 jan. 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, www.frentix.com
+ */
+public class StateMapped implements StateEntry{
+	
+	private Map<String,String> delegate = new HashMap<String,String>();
+	
+	public StateMapped() {
+		//make XStream happy
+	}
+
+	public Map<String, String> getDelegate() {
+		return delegate;
+	}
+
+	public void setDelegate(Map<String, String> delegate) {
+		this.delegate = delegate;
+	}
+	
+	@Override
+	public String toString() {
+		return delegate == null ? "{empty}" : delegate.toString();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof StateMapped) {
+			StateMapped map = (StateMapped)obj;
+			if((map.delegate == null || map.delegate.isEmpty()) && (delegate == null || delegate.isEmpty())) {
+				return true;
+			} else if(map.delegate != null && delegate != null && map.delegate.equals(delegate)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public StateEntry clone() {
+		StateMapped state = new StateMapped();
+		if(delegate != null) {
+			state.delegate.putAll(delegate);
+		}
+		return state;
+	}
+}

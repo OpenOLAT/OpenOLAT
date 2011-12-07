@@ -21,6 +21,8 @@
 
 package org.olat.core.util.tree;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.components.tree.TreeModel;
@@ -86,6 +88,16 @@ public class TreeHelper {
 			par = (TreeNode) cur.getParent();
 		}
 		return conPath.toString();
+	}
+	
+	//fxdiff FXOLAT-163: back/resume
+	public static List<TreeNode> getTreePath(TreeNode node) {
+		List<TreeNode> conPath = new ArrayList<TreeNode>();
+		for (TreeNode cur = node; cur != null; cur = (TreeNode) cur.getParent()) {
+			conPath.add(cur);
+		}
+		Collections.reverse(conPath);
+		return conPath;
 	}
 	
 	/**

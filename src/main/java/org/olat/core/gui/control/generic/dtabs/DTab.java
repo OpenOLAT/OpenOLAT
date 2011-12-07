@@ -51,6 +51,12 @@ public interface DTab extends Disposable, CustomCSSProvider {
 	 * @return the olat resourceable
 	 */
 	public OLATResourceable getOLATResourceable();
+	
+	/**
+	 * @return the olat resourceable
+	 */
+	//fxdiff BAKS-7 Resume function
+	public OLATResourceable getInitialOLATResourceable();
 
 	/**
 	 * @param launchController

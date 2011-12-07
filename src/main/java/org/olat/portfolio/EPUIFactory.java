@@ -65,8 +65,9 @@ public class EPUIFactory {
 	 * @return
 	 */
 	public static Controller createPortfolioPoolController(UserRequest ureq, WindowControl wControl) {
-			return new EPArtefactPoolRunController(ureq, wControl);
+		return new EPArtefactPoolRunController(ureq, wControl);
 	}
+
 	/**
 	 * get a controller for admin-setup of e Portfolio
 	 * used directly over extension-config, therefore needs to be static

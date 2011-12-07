@@ -158,6 +158,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	//different instances for "copy" and "settings change", since it is important to know what triggered the CLOSE_MODAL_EVENT
 	private CloseableModalController copyCloseableModalController;
 	private CloseableModalController settingsCloseableModalController;
+	//fxdiff FXOLAT-128: back/resume function
+	public static final Event LAUNCHED_EVENT = new Event("lr-launched");
 
 	/**
 	 * Controller displaying details of a given repository entry.
@@ -563,7 +565,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		DTab dt = dts.getDTab(ores);
 		if (dt == null) {
 			// does not yet exist -> create and add
-			dt = dts.createDTab(ores, displayName);
+			//fxdiff BAKS-7 Resume function
+			dt = dts.createDTab(ores, repositoryEntry, displayName);
 			if (dt == null) return;
 			
 			// build up the context path
@@ -583,7 +586,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		 * close detail page after resource is closed
 		 * DONE_EVENT will be catched by RepositoryMainController
 		 */ 
-		fireEvent(ureq, Event.DONE_EVENT);
+		//fxdiff FXOLAT-128: back/resume function
+		fireEvent(ureq, LAUNCHED_EVENT);
 	}
 
 	private boolean checkIsRepositoryEntryLaunchable(UserRequest ureq) {
@@ -743,7 +747,8 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		DTab dt = dts.getDTab(ores);
 		if (dt == null) {
 			// does not yet exist -> create and add
-			dt = dts.createDTab(ores, repositoryEntry.getDisplayname());
+			//fxdiff BAKS-7 Resume function
+			dt = dts.createDTab(ores, repositoryEntry, repositoryEntry.getDisplayname());
 			if (dt == null){
 				//null means DTabs are full -> warning is shown
 				return;

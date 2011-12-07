@@ -65,6 +65,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
@@ -72,13 +73,18 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.id.context.StateMapped;
 import org.olat.core.logging.AssertException;
 import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.login.auth.WebDAVAuthManager;
@@ -100,7 +106,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * SingleIdentityChosenEvent Alternatively a Canceled Event is fired.
  * 
  */
-public class UsermanagerUserSearchController extends BasicController {
+public class UsermanagerUserSearchController extends BasicController implements Activateable2 {
 
 	private static final String CMD_MAIL = "exeMail";
 	private static final String CMD_BULKEDIT = "bulkEditUsers";
@@ -219,6 +225,42 @@ public class UsermanagerUserSearchController extends BasicController {
 
 		panel = putInitialPanel(userListVC);
 	}
+	
+	//fxdiff BAKS-7 Resume function
+	public WindowControl getTableControl() {
+		return tableCtr == null ? null : tableCtr.getWindowControlForDebug();
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof StateMapped) {
+			StateMapped searchState = (StateMapped)state;
+			searchform.setStateEntry(searchState);
+			
+			if(entries != null && entries.size() > 0) {
+				String table = entries.get(0).getOLATResourceable().getResourceableTypeName();
+				if("table".equals(table)) {
+					entries.remove(0);
+					event(ureq, searchform, Event.DONE_EVENT);
+				}
+			}
+		}
+		
+		if(entries == null || entries.isEmpty()) return;
+		
+		Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
+		if(identityKey != null && identitiesList != null) {
+			for(Identity identity:identitiesList) {
+				if(identityKey.equals(identity.getKey())) {
+					foundIdentity = identity;
+					fireEvent(ureq, new SingleIdentityChosenEvent(foundIdentity));
+					entries.remove(0);
+					break;
+				}
+			}
+		}
+	}
 
 	/**
 	 * Remove the given identites from the list of identites in the table model
@@ -263,7 +305,10 @@ public class UsermanagerUserSearchController extends BasicController {
 		tdm = ExtendedIdentitiesTableControllerFactory.createTableDataModel(ureq, myIdentities, actionEnabled);
 		
 		removeAsListenerAndDispose(tableCtr);
-		tableCtr = ExtendedIdentitiesTableControllerFactory.createController(tdm, ureq, getWindowControl(), actionEnabled);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		tableCtr = ExtendedIdentitiesTableControllerFactory.createController(tdm, ureq, bwControl, actionEnabled);
 		listenTo(tableCtr);
 		
 		if (showEmailButton) {
@@ -359,6 +404,13 @@ public class UsermanagerUserSearchController extends BasicController {
 				userListVC.put("userlist", tableCtr.getInitialComponent());
 				userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
 				panel.setContent(userListVC);
+
+				//fxdiff BAKS-7 Resume function
+				ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
+				if(currentEntry != null) {
+					currentEntry.setTransientState(searchform.getStateEntry());
+				}
+				addToHistory(ureq, tableCtr);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
@@ -655,6 +707,15 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		}
 		return null;
 	}
+
+	//fxdiff BAKS-7 Resume function
+	protected void setStringValue(String key, String value) {
+		FormItem f = items.get(key);
+		if (f == null) return;
+		if (f instanceof TextElement) {
+			((TextElement) f).setValue(value);
+		}
+	}
 	
 	protected boolean getRole (String key) {
 		return roles.isSelected(Arrays.asList(roleKeys).indexOf(key));
@@ -676,6 +737,41 @@ class UsermanagerUserSearchForm extends FormBasicController {
 			}
 		}
 		return apl.toArray(new String[apl.size()]);
+	}
+
+	//fxdiff BAKS-7 Resume function
+	protected StateMapped getStateEntry() {
+		StateMapped state = new StateMapped();
+		if(items != null) {
+			for(Map.Entry<String, FormItem> itemEntry : items.entrySet()) {
+				String key = itemEntry.getKey();
+				FormItem f = itemEntry.getValue();
+				if (f instanceof TextElement) {
+					state.getDelegate().put(key, ((TextElement) f).getValue());
+				}	
+			}	
+		}
+		
+		if(auth.isMultiselect()) {
+			//auth.
+		}
+		if(roles.isMultiselect()) {
+			//
+		}
+		if(status.isOneSelected()) {
+			//
+		}
+		
+		return state;
+	}
+
+	//fxdiff BAKS-7 Resume function
+	protected void setStateEntry(StateMapped state) {
+		for(Map.Entry<String, String> entry:state.getDelegate().entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			setStringValue(key, value);
+		}	
 	}
 	
 	@Override
@@ -700,13 +796,6 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			
-			FormItem fi = userPropertyHandler.addFormItem(
-					getLocale(), null, getClass().getCanonicalName(), false, formLayout
-			);
-			
-			fi.setTranslator(tr);
-			items.put(fi.getName(), fi);
-			
 			String group = userPropertyHandler.getGroup();
 			if (!group.equals(currentGroup)) {
 				if (currentGroup != null) {
@@ -714,6 +803,13 @@ class UsermanagerUserSearchForm extends FormBasicController {
 				}
 				currentGroup = group;
 			}
+
+			FormItem fi = userPropertyHandler.addFormItem(
+					getLocale(), null, getClass().getCanonicalName(), false, formLayout
+			);
+			
+			fi.setTranslator(tr);
+			items.put(fi.getName(), fi);
 		}
 
 		uifactory.addSpacerElement("space1", formLayout, false);

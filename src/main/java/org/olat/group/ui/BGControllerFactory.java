@@ -179,7 +179,7 @@ public class BGControllerFactory {
 			dt.setController(bgMrc);
 			dts.addDTab(dt);
 		}
-		dts.activate(ureq, dt, null); // null: do not activate to a certain view
+		dts.activate(ureq, dt, "", null); // null: do not activate to a certain view
 		return bgMrc;
 	}
 

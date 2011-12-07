@@ -74,6 +74,12 @@ public class CodeHelper {
 		return timeuniqueId.incrementAndGet(); //o_clusterNOK synchronized check what of data generated with that long is persisted
 	}
 	
+	public static long getUniqueIDFromString(String base){
+		int code = Math.abs(base.hashCode());
+		Long l = new Long(code);
+		return l;
+	}
+	
 	/**
 	 * a simple counter which is garanteed to be unique ONLY within one instance of a virtual machine.
 	 * Best effort is taken to make it "globally unique" by instantiating it by System.currentTimeMilis * 64, so that

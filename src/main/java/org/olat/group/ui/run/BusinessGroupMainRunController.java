@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -59,6 +60,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -103,7 +105,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author patrick
  */
 
-public class BusinessGroupMainRunController extends MainLayoutBasicController implements GenericEventListener {
+public class BusinessGroupMainRunController extends MainLayoutBasicController implements GenericEventListener, Activateable2 {
 
 	private static final String INITVIEW_TOOLFOLDER = "toolfolder";
 	public static final OLATResourceable ORES_TOOLFOLDER = OresHelper.createOLATResourceableType(INITVIEW_TOOLFOLDER);	
@@ -119,6 +121,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	
 	public static final String INITVIEW_TOOLCAL = "action.calendar.group";
 	public static final OLATResourceable ORES_TOOLCAL = OresHelper.createOLATResourceableType(INITVIEW_TOOLCAL);
+	//fxdiff BAKS-7 Resume function
+	public static final OLATResourceable ORES_TOOLMSG = OresHelper.createOLATResourceableType("toolmsg");
+	public static final OLATResourceable ORES_TOOLADMIN = OresHelper.createOLATResourceableType("tooladmin");
+	public static final OLATResourceable ORES_TOOLCONTACT = OresHelper.createOLATResourceableType("toolcontact");
+	public static final OLATResourceable ORES_TOOLMEMBERS = OresHelper.createOLATResourceableType("toolmembers");
+	public static final OLATResourceable ORES_TOOLRESOURCES = OresHelper.createOLATResourceableType("toolresources");
 
 	private static final String PACKAGE = Util.getPackageName(BusinessGroupMainRunController.class);
 
@@ -186,6 +194,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private GenericTreeNode nodeWiki;
 	private GenericTreeNode nodeCal;
 	private GenericTreeNode nodePortfolio;
+	//fxdiff BAKS-7 Resume function
+	private GenericTreeNode nodeContact;
+	private GenericTreeNode nodeGroupOwners;
+	private GenericTreeNode nodeResources;
+	private GenericTreeNode nodeInformation;
+	private GenericTreeNode nodeAdmin;
 	private boolean groupRunDisabled;
 	private OLATResourceable assessmentEventOres;
 
@@ -393,6 +407,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				TreeNode selTreeNode = bgTree.getSelectedNode();
 				String cmd = (String) selTreeNode.getUserObject();
 				handleTreeActions(ureq, cmd);
+				//fxdiff BAKS-7 Resume function
+				if(collabToolCtr != null) {
+					addToHistory(ureq, collabToolCtr);
+				}
 			} else if (groupRunDisabled) {
 				handleTreeActions(ureq, ACTIVITY_MENUSELECT_OVERVIEW);
 				this.showError("grouprun.disabled");
@@ -405,14 +423,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == collabToolCtr) {
-			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.BACK_EVENT || event == Event.FAILED_EVENT) {
-				// In all cases (success or failure) we
-				// go back to the group overview page.
-				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
-				mainPanel.setContent(main);
-			}
-		} else if (source == bgEditCntrllr) {
+		if (source == bgEditCntrllr) {
 			// changes from the admin controller
 			if (event == Event.CHANGED_EVENT) {
 				TreeModel trMdl = buildTreeModel();
@@ -442,7 +453,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 					DTab dt = dts.getDTab(ores);
 					if (dt == null) {
 						// does not yet exist -> create and add
-						dt = dts.createDTab(ores, title);
+						//fxdiff BAKS-7 Resume function
+						dt = dts.createDTab(ores, currentRepoEntry, title);
 						if (dt == null) return;
 						Controller ctrl = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
 						dt.setController(ctrl);
@@ -463,8 +475,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
 				mainPanel.setContent(main);
 			}
-		}  
-
+		//fxdiff BAKS-7 Resume function -> need to be at the end, sendToChooserForm are collabToolCtr too
+		} else if (source == collabToolCtr) {
+			if (event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.BACK_EVENT || event == Event.FAILED_EVENT) {
+				// In all cases (success or failure) we
+				// go back to the group overview page.
+				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
+				mainPanel.setContent(main);
+			}
+		//fxdiff VCRP-1,2: access control of resources
+		}
 	}
 
 	/**
@@ -639,7 +659,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_INFORMATION.equals(cmd)) {
-			collabToolCtr = collabTools.createNewsController(ureq, getWindowControl());
+			//fxdiff BAKS-7 Resume function
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLMSG);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
+			collabToolCtr = collabTools.createNewsController(ureq, bwControl);
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_FOLDER.equals(cmd)) {
@@ -690,7 +713,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private void doAdministration(UserRequest ureq) {
 		removeAsListenerAndDispose(bgEditCntrllr);
-		bgEditCntrllr = BGControllerFactory.getInstance().createEditControllerFor(ureq, getWindowControl(), businessGroup);
+		//fxdiff BAKS-7 Resume function
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLADMIN, null, getWindowControl());
+		collabToolCtr = bgEditCntrllr = BGControllerFactory.getInstance().createEditControllerFor(ureq, bwControl, businessGroup);
 		listenTo(bgEditCntrllr);
 		mainPanel.setContent(bgEditCntrllr.getInitialComponent());
 	}
@@ -698,7 +723,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doContactForm(UserRequest ureq) {
 		if (vc_sendToChooserForm == null) vc_sendToChooserForm = createVelocityContainer("cosendtochooser");
 		removeAsListenerAndDispose(sendToChooserForm);
-		sendToChooserForm = new BusinessGroupSendToChooserForm(ureq, getWindowControl(), businessGroup, isAdmin);
+		//fxdiff BAKS-7 Resume function
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLCONTACT, null, getWindowControl());
+		sendToChooserForm = new BusinessGroupSendToChooserForm(ureq, bwControl, businessGroup, isAdmin);
 		listenTo(sendToChooserForm);
 		vc_sendToChooserForm.put("vc_sendToChooserForm", sendToChooserForm.getInitialComponent());
 		mainPanel.setContent(vc_sendToChooserForm);
@@ -739,6 +766,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			membersVc.contextPut("showWaitingList", Boolean.FALSE);
 		}
 		mainPanel.setContent(membersVc);
+		//fxdiff BAKS-7 Resume function
+		collabToolCtr = null;
+		addToHistory(ureq, ORES_TOOLMEMBERS, null);
 	}
 
 	/**
@@ -763,6 +793,101 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, this.businessGroup);
 		
 		userSession.getSingleUserEventCenter().deregisterFor(this, assessmentEventOres);
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry ce = entries.remove(0);
+		activate(ureq, ce);
+		if(collabToolCtr instanceof Activateable2) {
+			((Activateable2)collabToolCtr).activate(ureq, entries, ce.getTransientState());
+		}
+	}
+
+	//fxdiff BAKS-7 Resume function
+	private void activate(UserRequest ureq, ContextEntry ce) {
+		OLATResourceable ores = ce.getOLATResourceable();
+		if (OresHelper.equals(ores, ORES_TOOLFORUM)) {
+			// start the forum
+			if (nodeForum != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_FORUM);
+				bgTree.setSelectedNode(nodeForum);
+			} else { // not enabled
+				String text = translate("warn.forumnotavailable");
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLFOLDER)) {
+			if (nodeFolder != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_FOLDER);
+				bgTree.setSelectedNode(nodeFolder);
+			} else { // not enabled
+				String text = translate("warn.foldernotavailable");				
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLWIKI)) {
+			if (nodeWiki != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_WIKI);
+				bgTree.setSelectedNode(nodeWiki);
+			} else { // not enabled
+				String text = translate("warn.wikinotavailable");
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLCAL)) {
+			if (nodeCal != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_CALENDAR);
+				bgTree.setSelectedNode(nodeCal);
+			} else { // not enabled
+				String text = translate("warn.calnotavailable");
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLPORTFOLIO)) {
+				if (nodePortfolio != null) {
+					handleTreeActions(ureq, ACTIVITY_MENUSELECT_PORTFOLIO);
+					bgTree.setSelectedNode(nodePortfolio);
+				} else { // not enabled
+					String text = translate("warn.portfolionotavailable");
+					Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+					listenTo(mc); // cleanup on dispose
+					mainPanel.setContent(mc.getInitialComponent());
+				}
+		//fxdiff BAKS-7 Resume function
+		} else if (OresHelper.equals(ores, ORES_TOOLADMIN)) {
+			if (this.nodeAdmin != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_ADMINISTRATION);
+				bgTree.setSelectedNode(nodeAdmin);
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLMSG)) {
+			if (this.nodeInformation != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_INFORMATION);
+				bgTree.setSelectedNode(nodeInformation);
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLCONTACT)) {
+			if (this.nodeContact != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_CONTACTFORM);
+				bgTree.setSelectedNode(nodeContact);
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLMEMBERS)) {
+			if (this.nodeGroupOwners != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_MEMBERSLIST);
+				bgTree.setSelectedNode(nodeGroupOwners);
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLRESOURCES)) {
+			if (this.nodeResources != null) {
+				handleTreeActions(ureq, ACTIVITY_MENUSELECT_SHOW_RESOURCES);
+				bgTree.setSelectedNode(nodeResources);
+			}
+		}
 	}
 
 	/**
@@ -828,6 +953,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// add table model to table
 		resourcesCtr.setTableDataModel(repoTableModel);
 		mainPanel.setContent(resourcesVC);
+		//fxdiff BAKS-7 Resume function
+		addToHistory(ureq, ORES_TOOLRESOURCES, null);
 	}
 
 	/**
@@ -864,6 +991,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setAltText(translate("menutree.news.alt"));
 			gtnChild.setIconCssClass("o_news_icon");
 			root.addChild(gtnChild);
+			//fxdiff BAKS-7 Resume function
+			nodeInformation = gtnChild;
 		}
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
@@ -883,6 +1012,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setAltText(translate("menutree.resources.alt"));
 			gtnChild.setIconCssClass("o_course_icon");
 			root.addChild(gtnChild);
+			//fxdiff BAKS-7 Resume function
+			nodeResources = gtnChild;
 		}
 
 		if ((flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && bgpm.showOwners()) || bgpm.showPartips()) {
@@ -894,6 +1025,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setAltText(translate("menutree.members.alt"));
 			gtnChild.setIconCssClass("b_group_icon");
 			root.addChild(gtnChild);
+			//fxdiff BAKS-7 Resume function
+			nodeGroupOwners = gtnChild;
 		}
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_CONTACT)) {
@@ -903,6 +1036,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setAltText(translate("menutree.contactform.alt"));
 			gtnChild.setIconCssClass("o_co_icon");
 			root.addChild(gtnChild);
+			//fxdiff BAKS-7 Resume function
+			nodeContact = gtnChild;
 		}
 
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
@@ -971,6 +1106,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setIconCssClass("o_admin_icon");
 			root.addChild(gtnChild);
 			adminNodeId = gtnChild.getIdent();
+			//fxdiff BAKS-7 Resume function
+			nodeAdmin = gtnChild;
 		}
 
 		return gtm;

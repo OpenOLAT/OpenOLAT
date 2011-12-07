@@ -21,6 +21,8 @@
 
 package org.olat.course.nodes.wiki;
 
+import java.util.List;
+
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -34,9 +36,11 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.clone.CloneController;
 import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.TitledWrapperHelper;
@@ -59,7 +63,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Initial Date: Oct 12, 2004
  * @author Guido Schnider
  */
-public class WikiRunController extends BasicController {
+public class WikiRunController extends BasicController implements Activateable2 {
 	
 	private Panel main;
 	
@@ -140,6 +144,13 @@ public class WikiRunController extends BasicController {
 			main.setContent(cloneCtr.getInitialComponent());
 			putInitialPanel(main);
 		}
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		wikiCtr.activate(ureq, entries, state);
 	}
 
 	/**

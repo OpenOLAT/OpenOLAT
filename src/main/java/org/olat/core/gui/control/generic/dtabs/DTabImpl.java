@@ -43,6 +43,8 @@ import org.olat.core.util.i18n.I18nManager;
 public class DTabImpl implements Disposable, DTab {
 	
 	private OLATResourceable ores;
+	//fxdiff BAKS-7 Resume function
+	private OLATResourceable initialOres;
 	private Controller controller;
 	private GuiStack guiStackHandle;
 	private String title;
@@ -55,8 +57,9 @@ public class DTabImpl implements Disposable, DTab {
 	 * @param title
 	 * @param wControl
 	 */
-	public DTabImpl(OLATResourceable ores, String title, WindowControl wOrigControl) {
+	public DTabImpl(OLATResourceable ores, OLATResourceable initialOres, String title, WindowControl wOrigControl) {
 		this.ores = ores;
+		this.initialOres = initialOres;
 		this.title = title;
 		//Root the JumpInPath - typically all resources are opened in tabs
 		StackedBusinessControl businessControl = new StackedBusinessControl(null, wOrigControl.getBusinessControl());
@@ -116,6 +119,12 @@ public class DTabImpl implements Disposable, DTab {
 	 */
 	public OLATResourceable getOLATResourceable() {
 		return ores;
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public OLATResourceable getInitialOLATResourceable() {
+		return initialOres;
 	}
 
 	/**

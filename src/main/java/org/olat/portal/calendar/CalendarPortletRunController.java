@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -53,9 +54,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.home.HomeCalendarController;
-import org.olat.home.site.HomeSite;
+import org.olat.home.HomeSite;
 
 /**
  * 
@@ -154,10 +157,11 @@ public class CalendarPortletRunController extends BasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink) {
-			String activationCmd = "cal." + new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, HomeSite.class.getName(), activationCmd);
-			dts.activateStatic(ureq, HomeSite.class.getName(), activationCmd);
+			// activate homes tab in top navigation and active calendar menu item
+			String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][calendar:0]";
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		} else if (event == ComponentUtil.VALIDATE_EVENT && dirty) {
 			List events = getMatchingEvents(ureq, getWindowControl());
 			tableController.setTableDataModel(new EventsModel(events));

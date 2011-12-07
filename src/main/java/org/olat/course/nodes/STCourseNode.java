@@ -276,8 +276,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 				sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
 				sd.setDescriptionForUnit(getIdent());
 				// set which pane is affected by error
-				sd.setActivateableViewIdentifier(STCourseNodeEditController.PANE_TAB_ST_CONFIG);                                
-			}                       
+				sd.setActivateableViewIdentifier(STCourseNodeEditController.PANE_TAB_ST_CONFIG);
+			}
 		}
 		return sd;
 	}

@@ -202,9 +202,9 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 		weeklyCalendar = new WeeklyCalendarComponent("weeklyCalendar", allCalendarWrappers, 7, getTranslator(), eventAlwaysVisible);
 		weeklyCalendar.addListener(this);
 
-	  /// subscription, see OLAT-3861
-		if(!isGuest){
-			final SubscriptionProvider provider = new SubscriptionProviderImpl(caller, calendarWrappers.get(0));
+	  // subscription, see OLAT-3861
+		if (!isGuest) {
+			SubscriptionProvider provider = new SubscriptionProviderImpl(caller, calendarWrappers.get(0));
 			subsContext = provider.getSubscriptionContext();
 			// if sc is null, then no subscription is desired
 			if (subsContext != null) {
@@ -212,7 +212,7 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 				vcMain.put("calsubscription", csc.getInitialComponent());
 			}
 		}
-
+		
 		ComponentUtil.registerForValidateEvents(vcMain, this);
 
 		vcMain.put("calendar", weeklyCalendar);

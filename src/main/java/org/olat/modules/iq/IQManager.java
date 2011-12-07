@@ -181,7 +181,8 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 			return glc;
 		}else{
 			Controller controller = new IQDisplayController(resolver, type, secCallback, ureq, wControl);
-			OLATResourceableListeningWrapperController dwc = new OLATResourceableListeningWrapperController(ureq, wControl, res, controller, ureq.getIdentity());
+			//fxdiff BAKS-7 Resume function
+			OLATResourceableListeningWrapperController dwc = new OLATResourceableListeningWrapperController(ureq, wControl, res, controller, null, ureq.getIdentity());
 			return dwc;
 		}
 	}

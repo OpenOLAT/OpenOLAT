@@ -21,7 +21,9 @@
  */
 package org.olat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
@@ -36,6 +38,8 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.ContextEntryControllerCreator2;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
@@ -128,10 +132,11 @@ public class NewControllerFactory extends LogDelegator {
 
 		// Check for RepositoryEntry resource
 		boolean ceConsumed = false;
+		RepositoryEntry re = null;
 		if (ores.getResourceableTypeName().equals(OresHelper.calculateTypeName(RepositoryEntry.class))) {
 			// It is a repository-entry => get OLATResourceable from RepositoryEntry
 			RepositoryManager repom = RepositoryManager.getInstance();
-			RepositoryEntry re = repom.lookupRepositoryEntry(ores.getResourceableId());
+			re = repom.lookupRepositoryEntry(ores.getResourceableId());
 			if (re != null){
 				ores = re.getOlatResource();
 				ceConsumed = true;
@@ -162,12 +167,21 @@ public class NewControllerFactory extends LogDelegator {
 		if (!typeHandler.validateContextEntryAndShowError(mainCe, ureq, wControl)){
 			//simply return and don't throw a red screen
 			return;
-		} 
-		
-		String siteClassName = typeHandler.getSiteClassName(mainCe);
+		}
+
+		//fxdiff BAKS-7 Resume function
+		String siteClassName;
+		if(typeHandler instanceof ContextEntryControllerCreator2) {
+			siteClassName = ((ContextEntryControllerCreator2)typeHandler).getSiteClassName(ureq, mainCe);
+		} else {
+			siteClassName = typeHandler.getSiteClassName(mainCe);
+		}
+			
 		// open in existing site
 		if (siteClassName != null) {
 			// use special activation key to trigger the activate method
+			//fxdiff BAKS-7 Resume function
+			List<ContextEntry> entries = new ArrayList<ContextEntry>();
 			String viewIdentifyer = null;
 			if (bc.hasContextEntry()) {
 				ContextEntry subContext = bc.popLauncherContextEntry();
@@ -181,6 +195,10 @@ public class NewControllerFactory extends LogDelegator {
 							viewIdentifyer = viewIdentifyer + ":" + subResource.getResourceableId();
 						}
 					}
+					entries.add(subContext);
+					while(bc.hasContextEntry()) {
+						entries.add(bc.popLauncherContextEntry());
+					}
 				}
 			} else if (!ceConsumed) {
 				//the olatresourceable is not in a dynamic tab but in a fix one
@@ -193,26 +211,35 @@ public class NewControllerFactory extends LogDelegator {
 					}
 				}
 			}
-			dts.activateStatic(ureq, siteClassName, viewIdentifyer);
+			dts.activateStatic(ureq, siteClassName, viewIdentifyer, entries);
 		} else {
+			List<ContextEntry> entries = new ArrayList<ContextEntry>();
+			
 			// or create new tab
 			String tabName = typeHandler.getTabName(mainCe);
 			// create and add Tab
-			dt = dts.createDTab(ores, tabName);
+			dt = dts.createDTab(ores, re, tabName);
 			if (dt == null) {
 				// tabs are full: TODO
 				// user error message is generated in BaseFullWebappController, nothing
 				// to do here
 			} else {
+				while(bc.hasContextEntry()) {
+					entries.add(bc.popLauncherContextEntry());
+				}
 
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
 				Controller launchC = typeHandler.createController(mainCe, ureq, bwControl);
+				if (launchC == null) {
+					throw new AssertException("ControllerFactory could not create a controller to be launched. Please validate businesspath " 
+							+ bc.getAsString() + " for type " + typeHandler.getClass().getName() + " in advance with validateContextEntryAndShowError().");
+				}
 
 				dt.setController(launchC);
 				dts.addDTab(dt);
 			}
 
-			dts.activate(ureq, dt, null); // null: do not activate to a certain view
+			dts.activate(ureq, dt, null, entries); // null: do not activate to a certain view
 		}
 	}
 

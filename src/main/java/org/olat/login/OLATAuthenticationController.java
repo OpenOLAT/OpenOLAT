@@ -37,7 +37,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -64,7 +68,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
  *
  * @author Mike Stock
  */
-public class OLATAuthenticationController extends AuthenticationController {
+public class OLATAuthenticationController extends AuthenticationController implements Activateable2 {
 
 	public static final String PARAM_LOGINERROR = "loginerror";
 	
@@ -228,6 +232,12 @@ public class OLATAuthenticationController extends AuthenticationController {
 		}
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+	}
+
 	/**
 	 * @param login
 	 * @param pass

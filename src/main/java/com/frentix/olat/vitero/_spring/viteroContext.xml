@@ -54,6 +54,8 @@
 				<property name="factoryMethod" value="createViteroAdminController"/>
 			</bean>
 		</property>
+		<property name="navigationKey" value="vitero" />
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="com.frentix.olat.vitero.ui"/>

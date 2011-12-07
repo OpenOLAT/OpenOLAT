@@ -24,6 +24,7 @@ package org.olat.core.util.controller;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -31,8 +32,11 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -49,9 +53,10 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
  *
  * @author Felix Jost 
  */
-public class OLATResourceableListeningWrapperController extends MainLayoutBasicController implements GenericEventListener {
+public class OLATResourceableListeningWrapperController extends MainLayoutBasicController implements GenericEventListener, Activateable2 {
 	private Controller realController;
 	private OLATResourceable ores;
+	private Activateable2 delegate;//fxdiff BAKS-7 Resume function
 	/**
 	 * !Use only from within Manager-Classes.
 	 * 
@@ -60,9 +65,10 @@ public class OLATResourceableListeningWrapperController extends MainLayoutBasicC
 	 * @param owner
 	 * 
 	 */
-	public OLATResourceableListeningWrapperController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, Controller realController, Identity owner) {
+	public OLATResourceableListeningWrapperController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, Controller realController, Activateable2 delegate, Identity owner) {
 		super(ureq, wControl);
 		this.realController = realController;
+		this.delegate = delegate;//fxdiff BAKS-7 Resume function
 		this.ores = ores;
 		realController.addControllerListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, owner, ores);
@@ -127,6 +133,16 @@ public class OLATResourceableListeningWrapperController extends MainLayoutBasicC
 		throw new AssertException("wrapperComponent should never listen to a componenent! source="+source.getComponentName()+", event "+event);
 	}
 	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(delegate != null) {
+			delegate.activate(ureq, entries, state);
+		} else if(realController instanceof Activateable2) {
+			((Activateable2)realController).activate(ureq, entries, state);
+		}
+	}
+
 	/**
 	 * @see java.lang.Object#toString()
 	 */

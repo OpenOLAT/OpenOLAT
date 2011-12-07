@@ -54,11 +54,17 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
@@ -66,6 +72,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
@@ -103,7 +110,7 @@ import de.bps.olat.util.notifications.SubscriptionProviderImpl;
  * @author patrick
  */
 
-public class BGMainController extends MainLayoutBasicController implements Activateable {
+public class BGMainController extends MainLayoutBasicController implements Activateable, Activateable2 {
 	private static final String PACKAGE = Util.getPackageName(BGMainController.class);
 	/*
 	 * things a controller needs during its lifetime
@@ -135,6 +142,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private static final String CMD_MENU_BUDDY = "cmd.menu.buddy";
 	private static final String CMD_MENU_LEARN = "cmd.menu.learn";
 	private static final String CMD_MENU_RIGHT = "cmd.menu.right";
+	//fxdiff VCRP-1,2: access control of resources
+	private static final String CMD_MENU_OPEN = "cmd.menu.open";
+	private static final String CMD_MENU_OPEN_SEARCH = "cmd.menu.open.search";
 
 	/**
 	 * @param ureq
@@ -224,7 +234,11 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			String trnslP = currBusinessGroup.getName();
 
 			if (actionid.equals(TABLE_ACTION_LAUNCH)) {
-				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+				//fxdiff BAKS-7 Resume function
+				Controller ctrl = BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+				if(ctrl != null) {
+					addToHistory(ureq, ctrl);
+				}
 			} else if (actionid.equals(TABLE_ACTION_DELETE) && currBusinessGroup.getType().equals(BusinessGroup.TYPE_BUDDYGROUP)) {
 				// only for buddygroups allowed
 				deleteDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.delete.text", trnslP), deleteDialogBox);
@@ -433,6 +447,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/index.html");
 		// 4) update toolboxe
 		columnLayoutCtr.hideCol2(false);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_INDEX, 0l);
+		addToHistory(ureq, ores, null, wControl, true);
 	}
 
 	/**
@@ -450,6 +467,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/buddy.html");
 		// 4) update toolboxe
 		columnLayoutCtr.hideCol2(false);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_BUDDY, 0l);
+		addToHistory(ureq, ores, null, wControl, true);
 	}
 
 	/**
@@ -467,6 +487,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/learning.html");
 		// 4) update toolboxe
 		columnLayoutCtr.hideCol2(true);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_LEARN, 0l);
+		addToHistory(ureq, ores, null, wControl, true);
 	}
 
 	/**
@@ -484,6 +507,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/right.html");
 		// 4) update toolboxe
 		columnLayoutCtr.hideCol2(true);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_RIGHT, 0l);
+		addToHistory(ureq, ores, null, wControl, true);
 	}
 
 	/**
@@ -685,6 +711,11 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	public void activate(UserRequest ureq, String viewIdentifier) {
 		// find the menu node that has the user object that represents the
 		// viewIdentifyer
+		//fxdiff BAKS-7 Resume function
+		if(viewIdentifier != null && viewIdentifier.endsWith(":0")) {
+			viewIdentifier = viewIdentifier.substring(0, viewIdentifier.length() - 2);
+		}
+
 		GenericTreeNode rootNode = (GenericTreeNode) this.menuTree.getTreeModel().getRootNode();
 		TreeNode activatedNode = TreeHelper.findNodeByUserObject(viewIdentifier, rootNode);
 		if (activatedNode != null) {
@@ -696,6 +727,39 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			activateContent(ureq, rootNode.getUserObject());
 			// cehck for toolbox activation points
 			if (viewIdentifier.equals(ACTION_ADD_BUDDYGROUP)) {
+				initAddBuddygroupWorkflow(ureq);
+			}
+		}
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		
+		TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+		TreeNode activatedNode = TreeHelper.findNodeByUserObject(type, rootNode);
+		if (activatedNode != null) {
+			menuTree.setSelectedNode(activatedNode);
+			activateContent(ureq, activatedNode.getUserObject());
+		} else if(CMD_MENU_OPEN_SEARCH.equals(type)) {
+			//segmented view ?
+			activatedNode = TreeHelper.findNodeByUserObject(CMD_MENU_OPEN, rootNode);
+			if(activatedNode != null) {
+				menuTree.setSelectedNode(activatedNode);
+				activateContent(ureq, CMD_MENU_OPEN_SEARCH);
+			}
+		}
+		
+		if(activatedNode == null) {
+			// not found, activate the root node
+			menuTree.setSelectedNode(rootNode);
+			activateContent(ureq, rootNode.getUserObject());
+			//check for toolbox activation points
+			if (type.equals(ACTION_ADD_BUDDYGROUP)) {
 				initAddBuddygroupWorkflow(ureq);
 			}
 		}

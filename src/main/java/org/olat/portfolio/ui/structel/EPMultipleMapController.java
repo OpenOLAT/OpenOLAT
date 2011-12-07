@@ -47,7 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
-import org.olat.home.site.HomeSite;
+import org.olat.home.HomeSite;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackFactory;

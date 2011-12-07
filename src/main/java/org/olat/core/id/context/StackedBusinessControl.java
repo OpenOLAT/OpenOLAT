@@ -95,6 +95,19 @@ public class StackedBusinessControl implements BusinessControl {
 		return origBusinessControl != null ? origBusinessControl.getAsString() +  postfix : postfix;
 	}
 
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public List<ContextEntry> getEntries() {
+		if(contextEntry == null) new ArrayList<ContextEntry>();
+		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		if(origBusinessControl != null) {
+			entries.addAll(origBusinessControl.getEntries());
+		}
+		if(contextEntry != null) {
+			entries.add(contextEntry);
+		}
+		return entries;
+	}
 
 	public ContextEntry popLauncherContextEntry() {
 		ContextEntry currentToSpawn = popInternalLaucherContextEntry();

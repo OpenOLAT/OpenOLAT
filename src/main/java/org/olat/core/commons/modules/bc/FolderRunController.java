@@ -24,6 +24,7 @@ package org.olat.core.commons.modules.bc;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,11 +57,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -90,7 +94,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  * 
  * @author Felix Jost, Florian Gnägi
  */
-public class FolderRunController extends BasicController implements Activateable {
+public class FolderRunController extends BasicController implements Activateable, Activateable2 {
 
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	
@@ -110,6 +114,16 @@ public class FolderRunController extends BasicController implements Activateable
 	private CloseableModalController cmc;
 	private Link editQuotaButton;
 
+	/**
+	 * default Constructor, results in showing users personal folder
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 */
+	public FolderRunController(UserRequest ureq, WindowControl wControl) {
+		this(new BriefcaseWebDAVProvider().getContainer(ureq.getIdentity()), true, true, ureq, wControl);
+	}
+ 	 	 	 	
 	/**
 	 * Constructor for a folder controller without filter and custom link model for editor
 	 * @param rootContainer
@@ -362,8 +376,18 @@ public class FolderRunController extends BasicController implements Activateable
 					folderComponent.updateChildren();
 				}	
 			}
+			//fxdiff BAKS-7 Resume function
+			if(FolderCommandFactory.COMMAND_BROWSE.equals(cmd)) {
+				updatePathResource(ureq);
+			}
 			enableDisableQuota(ureq);
 		}
+	}
+	//fxdiff BAKS-7 Resume function
+	private void updatePathResource(UserRequest ureq) {
+		final String path = "path=" + folderComponent.getCurrentContainerPath();
+		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck(path);
+		addToHistory(ureq, ores, null);
 	}
 
 	private void enableDisableQuota(UserRequest ureq) {
@@ -400,6 +424,21 @@ public class FolderRunController extends BasicController implements Activateable
 	 */
 	protected void doDispose() {		
     //folderCommandController is registerd with listenTo and gets disposed in BasicController
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+		VFSItem vfsItem = folderComponent.getRootContainer().resolve(path);
+		if (vfsItem instanceof VFSContainer) {
+			folderComponent.setCurrentContainerPath(path);
+			updatePathResource(ureq);
+		} else {
+			activate(ureq, path);
+		}
 	}
 
 	/**
@@ -441,6 +480,8 @@ public class FolderRunController extends BasicController implements Activateable
 				DisplayOrDownloadComponent dordc = new DisplayOrDownloadComponent("downloadcomp",baseUrl + path);
 				folderContainer.put("autoDownloadComp", dordc);
 			}
+			//fxdiff BAKS-7 Resume function
+			updatePathResource(ureq);
 		}
 	}
 	

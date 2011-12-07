@@ -35,6 +35,7 @@ import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
@@ -52,6 +53,7 @@ import org.olat.core.gui.control.WindowControlInfoImpl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabImpl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
@@ -62,10 +64,17 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryModule;
+import org.olat.core.id.context.HistoryPoint;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 
 /**
@@ -109,6 +118,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<SiteInstance, BornSiteInstance>();
 	private static final int MAX_TABS = 5;
 	private int navLinkCounter = 1;
+	//fxdiff BAKS-7 Resume function
+	private Map<SiteInstance,HistoryPoint> siteToBusinessPath = new HashMap<SiteInstance,HistoryPoint>();
 
 	//
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
@@ -223,19 +234,34 @@ public class BaseFullWebappController extends BasicController implements Generic
 		myDTabsImpl = new DTabs() {
 
 			public void activate(UserRequest ureq, DTab dTab, String viewIdentifier) {
-				BaseFullWebappController.this.activate(ureq, dTab, viewIdentifier);
+				BaseFullWebappController.this.activate(ureq, dTab, viewIdentifier, null);
+			}
+
+			@Override
+			//fxdiff BAKS-7 Resume function
+			public void activate(UserRequest ureq, DTab dTab, String viewIdentifier, List<ContextEntry> entries) {
+				BaseFullWebappController.this.activate(ureq, dTab, viewIdentifier, entries);
 			}
 
 			public void activateStatic(UserRequest ureq, String className, String viewIdentifier) {
-				BaseFullWebappController.this.activateStatic(ureq, className, viewIdentifier);
+				BaseFullWebappController.this.activateStatic(ureq, className, viewIdentifier, null);
+			}
+			@Override
+			//fxdiff BAKS-7 Resume function
+			public void activateStatic(UserRequest ureq, String className, String viewIdentifier, List<ContextEntry> entries) {
+				BaseFullWebappController.this.activateStatic(ureq, className, viewIdentifier, entries);
 			}
 
 			public void addDTab(DTab dt) {
 				BaseFullWebappController.this.addDTab(dt);
 			}
-
+			//fxdiff BAKS-7 Resume function
 			public DTab createDTab(OLATResourceable ores, String title) {
-				return BaseFullWebappController.this.createDTab(ores, title);
+				return BaseFullWebappController.this.createDTab(ores, null, title);
+			}
+			
+			public DTab createDTab(OLATResourceable ores, OLATResourceable initialOres, String title) {
+				return BaseFullWebappController.this.createDTab(ores, initialOres, title);
 			}
 
 			public DTab getDTab(OLATResourceable ores) {
@@ -275,6 +301,7 @@ public class BaseFullWebappController extends BasicController implements Generic
         		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
         		if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
         			Controller aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator")).createController(ureq, getWindowControl());
+        			listenTo(aftLHookCtr);
         			aftLHookCtr.getInitialComponent();
         			ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
         		}
@@ -395,7 +422,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			prevSite = sites.get(0);
 			if (contentCtrl == null) {
 				//activate site only if no content was set -> allow content before activation of default site.
-				activateSite(sites.get(0), ureq, null);
+				activateSite(sites.get(0), ureq, null, null);
 			}
 		}
 		if (sites == null && contentCtrl == null) { throw new AssertException("either one site has to be present or a content controller"); }
@@ -413,7 +440,20 @@ public class BaseFullWebappController extends BasicController implements Generic
 			String mC = link.getCommand().substring(0, 1);
 			if (mC.equals("t")) { // activate normal tab
 				SiteInstance s = (SiteInstance) link.getUserObject();
-				activateSite(s, ureq, null);
+				//fxdiff BAKS-7 Resume function
+				if(prevSite != null) {
+					siteToBusinessPath.put(prevSite, ureq.getUserSession().getLastHistoryPoint());
+				}
+				
+				HistoryPoint point = null;
+				if(siteToBusinessPath.containsKey(s)) {
+					point = siteToBusinessPath.get(s);
+				}
+				activateSite(s, ureq, null, null);
+				if(point != null) {
+					BusinessControlFactory.getInstance().addToHistory(ureq, point);
+				}
+				siteToBusinessPath.put(s, ureq.getUserSession().getLastHistoryPoint());
 			} else if (mC.equals("a")) { // activate dyntab
 				DTab dt = (DTab) link.getUserObject();
 				doActivateDTab((DTabImpl) dt);
@@ -434,6 +474,58 @@ public class BaseFullWebappController extends BasicController implements Generic
 					getLogger().info("loadtestMode RELOAD");
 				} else {
 					getLogger().info("RELOAD");
+				}
+				
+				if(isBackEnabled(ureq)) {
+					HistoryPoint point = ureq.getUserSession().popLastHistoryEntry();
+					if(point != null) {
+						back(ureq, point);
+					}
+				}
+			}
+		}
+	}
+	
+	private boolean isBackEnabled(UserRequest ureq) {
+		HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
+		if(historyModule.isBackEnabled()) {
+			Preferences prefs =  ureq.getUserSession().getGuiPreferences();
+			Boolean be = (Boolean)prefs.get(WindowManager.class, "back-enabled");
+			if (be != null) {
+				return be.booleanValue();
+			}
+			else {
+				return historyModule.isBackDefaultSetting();
+			}
+		}
+		return false;
+	}
+	
+	protected void back(UserRequest ureq, HistoryPoint cstate) {
+		List<ContextEntry> entries = cstate.getEntries();
+		if(entries.isEmpty()) return;
+		
+		entries = new ArrayList<ContextEntry>(entries);
+		
+		ContextEntry state = entries.remove(0);
+		if(state == null) return;//no red screen for this
+		
+		OLATResourceable ores = state.getOLATResourceable();
+		DTab dt = getDTab(ores);
+		if(dt instanceof DTabImpl) {
+			DTabImpl dti = (DTabImpl)dt;
+			doActivateDTab(dti);
+			if(dti.getController() instanceof Activateable2) {
+				((Activateable2)dti.getController()).activate(ureq, entries, null);
+			}
+		} else if (dt == null) {
+			StateEntry s = state.getTransientState();
+			if(s instanceof StateSite && sites != null) {
+				SiteInstance site = ((StateSite)s).getSite();
+				for(SiteInstance savedSite:sites) {
+					if(site.getClass().equals(savedSite.getClass())) {
+						activateSite(savedSite, ureq, null, entries);
+					}
 				}
 			}
 		}
@@ -493,8 +585,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 	}
 
 	// FROM FULLCHIEFCONTROLLER
-
-	private void activateSite(SiteInstance s, UserRequest ureq, String viewIdentifier) {
+	//fxdiff BAKS-7 Resume function
+	private void activateSite(SiteInstance s, UserRequest ureq, String viewIdentifier, List<ContextEntry> entries) {
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;
 		Controller resC;
@@ -528,16 +620,19 @@ public class BaseFullWebappController extends BasicController implements Generic
 			siteToBornSite.put(s, new BornSiteInstance(gs, resC));
 		}
 		doActivateSite(s, gs);
+		//fxdiff BAKS-7 Resume function
+		if(entries != null && !entries.isEmpty() && resC instanceof Activateable2) {
+			((Activateable2)resC).activate(ureq, entries, null);
+		} else if(viewIdentifier != null && resC instanceof Activateable) {
+			((Activateable)resC).activate(ureq, viewIdentifier);
+		}
+		//fxdiff perhaps has activation changed the gui stack and it need to be updated
+		setGuiStack(gs);
 
 		//set current BusPath for extraction in the TopNav Controller
 		//FIXME:pb:2009-06-21:move core
 		//PB//getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", site_wControl);
 		getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", getWindowControl());
-
-		if (viewIdentifier != null && (resC instanceof Activateable)) {
-			Activateable a = (Activateable) resC;
-			a.activate(ureq, viewIdentifier);
-		}
 	}
 
 	private void doActivateSite(SiteInstance s, GuiStack gs) {
@@ -686,9 +781,11 @@ public class BaseFullWebappController extends BasicController implements Generic
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#getDTab(org.olat.core.id.OLATResourceable
 	 */
 	public DTab getDTab(OLATResourceable ores) {
-		for (Iterator it_dts = dtabs.iterator(); it_dts.hasNext();) {
-			DTab dtab = (DTab) it_dts.next();
+		for (Iterator<DTab> it_dts = dtabs.iterator(); it_dts.hasNext();) {
+			DTab dtab = it_dts.next();
 			if (OresHelper.equals(dtab.getOLATResourceable(), ores)) return dtab;
+			//fxdiff BAKS-7 Resume function
+			if (OresHelper.equals(dtab.getInitialOLATResourceable(), ores)) return dtab;
 		}
 		return null;
 	}
@@ -697,12 +794,14 @@ public class BaseFullWebappController extends BasicController implements Generic
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#createDTab(org.olat.core.id.OLATResourceable
 	 *      java.lang.String)
 	 */
-	public DTab createDTab(OLATResourceable ores, String title) {
+	//fxdiff BAKS-7 Resume function
+	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
+		// fxdiff: read from props
 		if (dtabs.size() >= MAX_TABS) {
 			getWindowControl().setError(translate("warn.tabsfull"));
 			return null;
 		}
-		DTabImpl dt = new DTabImpl(ores, title, getWindowControl());
+		DTabImpl dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		return dt;
 	}
 
@@ -755,15 +854,25 @@ public class BaseFullWebappController extends BasicController implements Generic
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#activate(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.generic.dtabs.DTab, java.lang.String)
 	 */
-	public void activate(final UserRequest ureq, DTab dTab, final String viewIdentifier) {
+	public void activate(final UserRequest ureq, DTab dTab, final String viewIdentifier, final List<ContextEntry> entries) {
 		// FIXME:fj:c if viewIdentifier is DTABS.initialView -> activate to this
 		// init view (e.g. kurs in run mode, repo-detail-edit...)
 		// jump here via external link or just open a new tab from e.g. repository
+		//fxdiff FXOLAT-113: business path in DMZ
+		if(dTab == null && contentCtrl instanceof Activateable2) {
+			((Activateable2)contentCtrl).activate(ureq, entries, null);
+			return;
+		}
+
 		DTabImpl dtabi = (DTabImpl) dTab;
 		Controller c = dtabi.getController();
 		if (c == null) throw new AssertException("no controller set yet! " + dTab + ", view: " + viewIdentifier);
 		doActivateDTab(dtabi);
-		if (viewIdentifier != null && c instanceof Activateable) {
+		//fxdiff BAKS-7 Resume function
+		if(entries != null && !entries.isEmpty() && c instanceof Activateable2) {
+			final Activateable2 activateable = ((Activateable2) c);
+			activateable.activate(ureq, entries, null);
+		} else if (viewIdentifier != null && c instanceof Activateable) {
 			final Activateable activateable = ((Activateable) c);
 			ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
 
@@ -773,6 +882,9 @@ public class BaseFullWebappController extends BasicController implements Generic
 				
 			}, activateable.getUserActivityLogger());
 		}
+		//fxdiff BAKS-7 Resume function
+		//update the panels after activation
+		setGuiStack(dtabi.getGuiStackHandle());
 
 		// activating a tab is like focusing a new window - we need to adjust the
 		// guipath since e.g. the button triggering the activation is not
@@ -792,12 +904,13 @@ public class BaseFullWebappController extends BasicController implements Generic
 	 *      java.lang.String, java.lang.String)
 	 */
 	// brasato:: remove
-	public void activateStatic(UserRequest ureq, String className, String viewIdentifier) {
+	//fxdiff BAKS-7 Resume function
+	public void activateStatic(UserRequest ureq, String className, String viewIdentifier, List<ContextEntry> entries) {
 		for (Iterator it_sites = sites.iterator(); it_sites.hasNext();) {
 			SiteInstance site = (SiteInstance) it_sites.next();
 			String cName = site.getClass().getName();
 			if (cName.equals(className)) {
-				activateSite(site, ureq, viewIdentifier);
+				activateSite(site, ureq, viewIdentifier, entries);
 				return;
 			}
 		}
@@ -846,7 +959,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 			initialPanel.pushContent(mainVc);
 			//
 		} else if (event instanceof ChiefControllerMessageEvent) {
-			ChiefControllerMessageEvent messageEvent = (ChiefControllerMessageEvent) event;
 			// msg can be set to show only on one node or on all nodes
 			String msg = GlobalStickyMessage.getGlobalStickyMessage();//either null, or the global message or the per-node-message
 			Boolean hasStickyMessage = Boolean.valueOf(msg != null);

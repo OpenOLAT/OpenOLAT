@@ -26,7 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
-import org.olat.home.site.HomeSite;
+import org.olat.home.HomeSite;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**

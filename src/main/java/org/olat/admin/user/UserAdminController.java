@@ -21,6 +21,7 @@
 
 package org.olat.admin.user;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.admin.policy.PolicyController;
@@ -44,8 +45,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -69,7 +73,7 @@ import org.olat.user.UserPropertiesController;
  *  
  * </pre>
  */
-public class UserAdminController extends BasicController implements Activateable {
+public class UserAdminController extends BasicController implements Activateable, Activateable2 {
 
 		
 	// NLS support
@@ -151,6 +155,17 @@ public class UserAdminController extends BasicController implements Activateable
 		if (userTabP != null) userTabP.setSelectedPane(translate(viewIdentifier));
 		// do nothing if not initialized
 	}
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		String entryPoint = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("tab".equals(entryPoint)) {
+			userTabP.activate(ureq, entries, state);
+		} else {
+			activate(ureq, entryPoint);
+		}
+	}
 
 	/**
 	 * @param backButtonEnabled
@@ -167,6 +182,9 @@ public class UserAdminController extends BasicController implements Activateable
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLink){
 			fireEvent(ureq, Event.BACK_EVENT);
+		//fxdiff BAKS-7 Resume function
+		} else if (source == userTabP) {
+			userTabP.addToHistory(ureq, getWindowControl());
 		}
 	}
 
@@ -239,6 +257,8 @@ public class UserAdminController extends BasicController implements Activateable
 		// first Initialize the user details tabbed pane
 		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
+		//fxdiff BAKS-7 Resume function
+		userTabP.addListener(this);
 		
 		/**
 		 *  Determine, whether the user admin is or is not able to edit all fields in user

@@ -262,27 +262,28 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED, Boolean.FALSE);
 			I18nManager.getInstance().setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);			
 			mainvc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
-		}		
+		}
 
 		// debug info if debugging
 		if (wbo.isDebuging()) {
 			developmentC = wbo.createDevelopmentController(ureq, getWindowControl());
 			mainvc.put("development", developmentC.getInitialComponent());
 		}
-		
+
 		// attach AJAX javascript console
 		jsLoggerC = new JavaScriptTracingController(ureq, getWindowControl());
 		// the js logger provides only a header element, nevertheless we need to
-		// put it into the main velocity container. 
+		// put it into the main velocity container.
 		mainvc.put("jsLoggerC", jsLoggerC.getInitialComponent());
-		
-		//put the globals path like "/olat/classpath/61x/" into the main win, used for some dynamic injected js libs like jsMath
+
+		// put the globals path like "/olat/classpath/61x/" into the main win,
+		// used for some dynamic injected js libs like jsMath
 		String resourcePath = getWindowControl().getWindowBackOffice().getWindowManager().getMapPathFor(this.getClass());
 		mainvc.contextPut("classPathStaticBaseURI", resourcePath.substring(0, resourcePath.indexOf("org.olat")));
 
 		// put the global js translator mapper path into the main window
 		mainvc.contextPut("jsTranslationMapperPath", jsTranslationMapperPath);
-		
+
 		// master window
 		w.addListener(this); // to be able to report "browser reload" to the user
 		w.setContentPane(mainPanel);
@@ -344,8 +345,6 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		}
 	}
 
-
-
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
@@ -359,17 +358,17 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 			jsServerC.dispose();
 			jsServerC = null;
 		}
-		
+
 		if (debugC != null) {
 			debugC.dispose();
 			debugC = null;
 		}
-		
+
 		if (inlineTranslationC != null) {
 			inlineTranslationC.dispose();
 			inlineTranslationC = null;
 		}
-		
+
 		if (developmentC != null) {
 			developmentC.dispose();
 			developmentC = null;

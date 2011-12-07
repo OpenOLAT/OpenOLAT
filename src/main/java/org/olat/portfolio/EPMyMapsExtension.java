@@ -20,21 +20,13 @@
  */
 package org.olat.portfolio;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.home.HomeMainController;
-import org.olat.home.site.HomeSite;
-import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.home.HomeSite;
 import org.olat.portfolio.model.structel.EPDefaultMap;
 
 /**

@@ -30,11 +30,12 @@
                     			This is due to the fact that it can only control Loggers that have been created after it (ThreadLocalLogLevelManager) has been installed. -->
 					classpath:/org/olat/core/util/threadlog/_spring/threadlogCorecontext.xml
 
-                    classpath:/org/olat/core/util/vfs/version/_spring/versioningCorecontext.xml
+					classpath:/org/olat/core/util/vfs/version/_spring/versioningCorecontext.xml
 					classpath:/org/olat/core/util/i18n/_spring/i18nCorecontext.xml
 					classpath:/org/olat/core/util/_spring/utilCorecontext.xml
 					classpath:/org/olat/core/util/i18n/devtools/_spring/devtoolsCorecontext.xml
 					classpath:/org/olat/core/util/event/_spring/frameworkStartedEventCorecontext.xml
+					classpath:/org/olat/core/id/context/_spring/historyCorecontext.xml
 					
 					classpath:/org/olat/core/commons/persistence/_spring/databaseCorecontext.xml
 					classpath:/org/olat/core/commons/taskExecutor/_spring/taskExecutorCorecontext.xml
@@ -48,8 +49,8 @@
 					classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml
 					classpath:/org/olat/core/_spring/mainCorecontext.xml
 					classpath:/org/olat/core/dispatcher/jumpin/_spring/jumpinCorecontext.xml
-                    classpath:/org/olat/core/commons/services/tagging/_spring/taggingContext.xml
-                    classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml
+					classpath:/org/olat/core/commons/services/tagging/_spring/taggingContext.xml
+					classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml
 					
 					classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml
 					classpath:/serviceconfig/org/olat/core/commons/scheduler/_spring/schedulerCorecontext.xml

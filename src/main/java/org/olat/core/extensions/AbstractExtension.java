@@ -22,7 +22,6 @@
 package org.olat.core.extensions;
 
 import org.olat.core.configuration.AbstractConfigOnOff;
-import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.extensions.action.ActionExtensionSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.logging.AssertException;
@@ -30,7 +29,7 @@ import org.olat.core.logging.AssertException;
 /**
  * @author Christian Guretzki
  */
-abstract public class AbstractExtension extends AbstractConfigOnOff implements ConfigOnOff {
+abstract public class AbstractExtension extends AbstractConfigOnOff implements Extension {
 
 	private int order = 0;
 	private String secCallbackName = null;
@@ -44,6 +43,23 @@ abstract public class AbstractExtension extends AbstractConfigOnOff implements C
 	// used by Spring
 	public void setOrder(int order){
 		this.order = order;
+	}
+	
+	@Override
+	public int compareTo(Extension o) {
+		if(getOrder() < o.getOrder()) return -1;
+		if(getOrder() > o.getOrder()) return 1;
+		return 0;
+	}
+	
+	/**
+	 * @overrides
+	 * @see org.olat.core.extensions.Extension#getUniqueExtensionID()
+	 */
+	public String getUniqueExtensionID(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getClass().getName()).append(":").append(order).append(":");
+		return sb.toString();
 	}
 	
 	/**
@@ -129,7 +145,25 @@ abstract public class AbstractExtension extends AbstractConfigOnOff implements C
 	public void setParentTreeNodeIdentifier(String parentTreeNodeIdentifier) {
 		this.parentTreeNodeIdentifier = parentTreeNodeIdentifier;
 	}
+
+	/**
+	 * if there is a security-callback provided, go and check access for user
+	 * @see org.olat.core.extensions.Extension#getExtensionFor(java.lang.String, org.olat.core.gui.UserRequest)
+	 */
+	public ExtensionElement getExtensionFor(String extensionPoint, UserRequest ureq) {
+		if (isSecCallbackNameSet()){
+			// no session on dmz!
+			boolean isDMZ = ureq.getUserSession() == null || ureq.getUserSession().getIdentityEnvironment().getRoles() == null;
+			boolean launchOK = isDMZ || getActionExtensionSecurityCallback().isAllowedToLaunchActionController(ureq);
+			if (isDMZ || !launchOK){
+				return null;
+			}
+		}
+		return getExtensionFor(extensionPoint);
+	}
 	
-	
+	public boolean isSecCallbackNameSet(){
+		return secCallbackName != null;
+	}
 	
 }

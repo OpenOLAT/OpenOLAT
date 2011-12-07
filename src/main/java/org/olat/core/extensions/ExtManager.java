@@ -23,14 +23,18 @@ package org.olat.core.extensions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.olat.core.CoreBeanTypes;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.extensions.action.GenericActionExtension;
+import org.olat.core.logging.LogDelegator;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
+
 
 /**
  * Description:<br>
@@ -38,14 +42,17 @@ import org.olat.core.logging.Tracing;
  * @author Felix
  * @author guido
  */
-public class ExtManager {
-	private static OLog log = Tracing.createLoggerFor(ExtManager.class);
+public class ExtManager extends LogDelegator {
 	
 	private static ExtManager instance;
 	private long timeOfExtensionStartup;
 	private List<Extension> extensions;
 	private Object lockObject = new Object();
-
+	
+  private Map<Long,Extension> idExtensionlookup;
+	
+  private Map<String,GenericActionExtension> navKeyGAExtensionlookup;
+  
 	/**
 	 * @return the instance
 	 */
@@ -80,6 +87,30 @@ public class ExtManager {
 		return getExtensions().get(i);
 	}
 
+	/**
+	 * returns the corresponding extension for a given unique extension id.
+	 * if no Extension is found for the specified id, null is returned instead.
+	 * 
+	 * @param id
+	 * @return the corresponding extension or null, if no extension is found for given id
+	 */
+	public Extension getExtensionByID(long id){
+		if(idExtensionlookup.containsKey(id))
+			return idExtensionlookup.get(id);
+		else return null;
+	}
+	
+	/**
+	 * returns the GenericActionExtension that corresponds to the given NavKey. if
+	 * no suiting GAE is found, null is returned. 
+	 * 
+	 * @param navKey
+	 * @return the GenericActionExtension or null
+	 */
+	public GenericActionExtension getActionExtensioByNavigationKey(String navKey) {
+		if (navKeyGAExtensionlookup.containsKey(navKey)) return navKeyGAExtensionlookup.get(navKey);
+		return null;
+	}
 	
 	/**
 	 * [used by spring]
@@ -113,28 +144,67 @@ public class ExtManager {
 	}
 	
 	private void initExtentions() {
+		logInfo("****** start loading extensions *********");
+		Map<Integer, Extension> orderKeys = new HashMap<Integer, Extension>();
+		idExtensionlookup = new HashMap<Long, Extension>();
+		navKeyGAExtensionlookup = new HashMap<String, GenericActionExtension>();
+		
 		extensions = new ArrayList<Extension>();
-		Map<Integer,Extension> sortedMap = new TreeMap<Integer,Extension>(); 
 		Map<String, Object> extensionMap = CoreSpringFactory.getBeansOfType(CoreBeanTypes.extension);
 		Collection<Object> extensionValues = extensionMap.values();
+
+		int count_disabled = 0;
+		int count_duplid = 0;
+		int count_duplnavkey = 0;
+		
 		// first build ordered list
 		for (Object object : extensionValues) {
 			Extension extension = (Extension) object;
-			log.debug("initExtentions extention=" + extension);
-			int key = extension.getOrder();
-			while (sortedMap.containsKey(key) ) {
-				// a key with this value already exist => add 1000 because offset must be outside of other values.
-				key += 1000;
+			if (!extension.isEnabled()){
+				count_disabled++;
+				logWarn("* Disabled Extension got loaded :: " + extension + ".  Check yourself that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);
 			}
-			if ( key != extension.getOrder() ) {
-				log.warn("Extension-Configuration Problem: Dublicate order-value ("+extension.getOrder()+") for extension=" + extension.getClass() + ", append extension at the end");
+			int orderKey = extension.getOrder();
+			
+			if(orderKey == 0){
+				//not configured via spring (order not set)
+				logDebug("Extension-Configuration Warning: Order-value was not set for extension=" + extension + ", set order-value to config positionioning of extension...",null);
+				if(extension instanceof AbstractExtension){
+					((AbstractExtension)extension).setOrder(1000);
+				}
 			}
-			sortedMap.put(key, extension);
-			log.debug("extension is enabled => add to list of extentions = " + extension);
+			if (orderKeys.containsKey(orderKey)) {
+				Extension occupant = orderKeys.get(orderKey);
+				logDebug("Extension-Configuration Problem: Dublicate order-value ("+extension.getOrder()+") for extension=" + extension + ", orderKey already occupied by "+occupant,null);
+			} else {
+				orderKeys.put(orderKey, extension);
+			}
+		
+			Long uid = CodeHelper.getUniqueIDFromString(extension.getUniqueExtensionID());
+			if(idExtensionlookup.containsKey(uid)){
+					count_duplid++;
+					logWarn("Devel-Info :: duplicate unique id generated for extensions :: "+uid+" [ ["+idExtensionlookup.get(uid)+"]  and ["+extension+"] ]",null);
+			}else{
+				extensions.add(extension);
+				idExtensionlookup.put(uid, extension);
+				if (extension instanceof GenericActionExtension) {
+					GenericActionExtension gAE = (GenericActionExtension) extension;
+					if (StringHelper.containsNonWhitespace(gAE.getNavigationKey())) {
+						if (!navKeyGAExtensionlookup.containsKey(gAE.getNavigationKey())) {
+							navKeyGAExtensionlookup.put(gAE.getNavigationKey(), gAE);
+						} else {
+							count_duplnavkey++;
+							logInfo(
+									"Devel-Info :: duplicate navigation-key for extension :: " + gAE.getNavigationKey() + " [ [" + idExtensionlookup.get(uid)
+											+ "]  and [" + extension + "] ]", null);
+						}
+					}
+				}
+			}
+			logDebug("Created unique-id "+uid+" for extension:: "+extension);
 		}
-		for (Object key : sortedMap.keySet()) {
-			extensions.add(sortedMap.get(key));
-		}
+		logInfo("Devel-Info :: initExtensions done. :: "+count_disabled+" disabled Extensions, "+count_duplid+" extensions with duplicate ids, "+count_duplnavkey+ " extensions with duplicate navigationKeys");
+		Collections.sort(extensions);
 	}
 
 }

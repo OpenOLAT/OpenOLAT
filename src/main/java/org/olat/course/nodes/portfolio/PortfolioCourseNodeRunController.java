@@ -53,7 +53,7 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.home.site.HomeSite;
+import org.olat.home.HomeSite;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.manager.EPFrontendManager;

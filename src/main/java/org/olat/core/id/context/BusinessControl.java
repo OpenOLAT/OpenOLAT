@@ -21,6 +21,8 @@
  */
 package org.olat.core.id.context;
 
+import java.util.List;
+
 
 /**
  * Description:<br>
@@ -54,6 +56,10 @@ public interface BusinessControl {
 	 * @return
 	 */
 	public String getAsString();
+	
+
+	//fxdiff BAKS-7 Resume function
+	public List<ContextEntry> getEntries();
 	
 	/**
 	 * pop context entry for further processing, this is used for spawning controllers

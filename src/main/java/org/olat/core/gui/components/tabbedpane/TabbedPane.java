@@ -30,16 +30,23 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Container;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * enclosing_type Description: <br>
  * 
  * @author Felix Jost
  */
-public class TabbedPane extends Container {
+public class TabbedPane extends Container implements Activateable2 {
 	private static final ComponentRenderer RENDERER = new TabbedPaneRenderer();
 
 	/**
@@ -100,6 +107,15 @@ public class TabbedPane extends Container {
 		Component newSelComp = getTabAt(selectedPane);
 		super.put("atp", newSelComp); 
 		//setDirty(true); not needed since: line above marks this container automatically dirty
+	}
+	//fxdiff BAKS-7 Resume function
+	public OLATResourceable getTabResource() {
+		return OresHelper.createOLATResourceableInstance("tab", new Long(selectedPane));
+	}
+	//fxdiff BAKS-7 Resume function
+	public void addToHistory(UserRequest ureq, WindowControl wControl) {
+		OLATResourceable ores = getTabResource();
+		BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 	}
 
 	/**
@@ -217,5 +233,14 @@ public class TabbedPane extends Container {
 	protected Translator getCompTrans() {
 		return compTrans;
 	}
-	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		int pos = entries.get(0).getOLATResourceable().getResourceableId().intValue();
+		if(pos != selectedPane) {
+			dispatchRequest(ureq, pos);
+		}
+	}
 }

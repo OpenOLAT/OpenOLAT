@@ -108,7 +108,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");				
-		TreeModel tm = buildTreeModel(); 
+		TreeModel tm = buildTreeModel(ureq); 
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
@@ -171,7 +171,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	 * Generates the archiver menu
 	 * @return The generated menu tree model
 	 */
-	private TreeModel buildTreeModel() {
+	private TreeModel buildTreeModel(UserRequest ureq) {
 		GenericTreeNode root, gtn;
 		
 		GenericTreeModel gtm = new GenericTreeModel();
@@ -245,7 +245,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		for (int i = 0; i < cnt; i++) {
 			Extension anExt = extm.getExtension(i);
 			// check for sites
-			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(extensionPointMenu.getName());
+			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(extensionPointMenu.getName(), ureq);
 			if (ae != null) {
 				gtn = new GenericTreeNode();
 				String menuText = ae.getActionText(locale);

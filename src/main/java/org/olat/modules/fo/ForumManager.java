@@ -127,7 +127,7 @@ public class ForumManager extends BasicManager {
 		List<Long> tmpRes = DBFactory.getInstance().find("select key from org.olat.modules.fo.ForumImpl");
 		return tmpRes;
 	}
-	
+
 	/**
 	 * 
 	 * @param forum_id
@@ -155,7 +155,8 @@ public class ForumManager extends BasicManager {
 	 * @param forum
 	 * @return
 	 */
-	public List<Message> getMessagesByForum(Forum forum){		
+	public List<Message> getMessagesByForum(Forum forum){
+		if (forum == null) return new ArrayList<Message>(0); // fxdiff: while indexing it can somehow occur, that forum is null!
 		return getMessagesByForumID(forum.getKey(),  0, -1, null, true);
 	}
 	

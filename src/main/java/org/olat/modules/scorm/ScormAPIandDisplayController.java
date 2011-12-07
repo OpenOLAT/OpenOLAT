@@ -89,7 +89,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 	private String scorm_lesson_mode;
 	private VelocityContainer myContent;
 	private MenuTree menuTree;
-	private Controller	columnLayoutCtr;
+	private Controller columnLayoutCtr;
 	private ScormCPManifestTreeModel treeModel;
 	private IFrameDisplayController iframectr;
 	private OLATApiAdapter scormAdapter;

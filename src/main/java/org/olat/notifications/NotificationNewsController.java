@@ -40,7 +40,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.core.util.notifications.NotificationsManager;
@@ -60,7 +63,7 @@ import org.olat.core.util.notifications.SubscriptionItem;
  * 
  * @author gnaegi
  */
-class NotificationNewsController extends BasicController implements Activateable {
+class NotificationNewsController extends BasicController implements Activateable, Activateable2 {
 	private VelocityContainer newsVC;
 	private Date compareDate;
 	private String newsType;
@@ -185,7 +188,7 @@ class NotificationNewsController extends BasicController implements Activateable
 					dateChooserCtr.setDate(compareDate);
 					changed = true;
 				} catch (ParseException e) {
-					e.printStackTrace();
+					logWarn("Error parsing the date after activate: " + token, e);
 				}
 			}
 		}
@@ -195,7 +198,39 @@ class NotificationNewsController extends BasicController implements Activateable
 		}
 	}
 	
-	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		boolean changed = false;
+		String path = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(path.startsWith("type=")) {
+			newsType = extractValue("type=", path);
+			dateChooserCtr.setType(newsType);
+			changed = true;
+			//consume the entry
+			entries = entries.subList(1, entries.size());
+		}
+		if(!entries.isEmpty()) {
+			String dateEntry = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if(dateEntry.startsWith("date=")) {
+				try {
+					String date = extractValue("date=", dateEntry);
+					DateFormat format = new SimpleDateFormat("yyyyMMdd");
+					compareDate = format.parse(date);
+					dateChooserCtr.setDate(compareDate);
+					changed = true;
+				} catch (ParseException e) {
+					logWarn("Error parsing the date after activate: " + dateEntry, e);
+				}
+			}
+		}
+		
+		if(changed) {
+			updateNewsDataModel();
+		}
+	}
+
 	private String extractValue(String str, String identifier) {
 		if(identifier.startsWith(str)) {
 			int sepIndex = identifier.indexOf(':');

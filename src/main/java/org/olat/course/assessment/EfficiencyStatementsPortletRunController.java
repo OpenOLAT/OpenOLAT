@@ -30,9 +30,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -47,7 +47,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
@@ -56,11 +55,12 @@ import org.olat.core.gui.control.generic.portal.PortletToolSortingControllerImpl
 import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseModule;
-import org.olat.home.site.HomeSite;
 
 
 /**
@@ -184,10 +184,11 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink){
-			// activate homes tab in top navigation and active efficiencyStatements menu item
-			//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, HomeSite.class.getName(), "efficiencyStatements");
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			dts.activateStatic(ureq, HomeSite.class.getName(), "efficiencyStatements");
+			// activate homes tab in top navigation and active calendar menu item
+			String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][effstatements:0]";
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		} else if (event == ComponentUtil.VALIDATE_EVENT && needReloadModel) {			
 			reloadModel(sortingCriteria);
 		}

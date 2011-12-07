@@ -21,6 +21,7 @@
 package org.olat.notifications;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.commons.rss.RSSUtil;
 import org.olat.core.gui.UserRequest;
@@ -34,9 +35,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.home.GuestHomeSite;
 
@@ -50,7 +54,7 @@ import org.olat.home.GuestHomeSite;
  * 
  * @author gnaegi
  */
-public class NotificationSubscriptionAndNewsController extends BasicController implements Activateable {
+public class NotificationSubscriptionAndNewsController extends BasicController implements Activateable, Activateable2 {
 	private Identity subscriberIdentity;
 	private TabbedPane tabbedPane;
 	private Panel subscriptionPanel, rssPanel;
@@ -115,6 +119,8 @@ public class NotificationSubscriptionAndNewsController extends BasicController i
 					notificationsRssVC.contextPut("fullName", fullName);
 					rssPanel.setContent(notificationsRssVC);
 				}
+				//fxdiff BAKS-7 Resume function
+				tabbedPane.addToHistory(ureq, getWindowControl());
 			}
 		}
 	}
@@ -139,6 +145,22 @@ public class NotificationSubscriptionAndNewsController extends BasicController i
 		if(viewIdentifier.startsWith("[news:0]")) {
 			String selection = viewIdentifier.substring(8);
 			newsCtr.activate(ureq, selection);
+		}
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("news".equals(path)) {
+			activate(ureq, "[news:0]");
+		} else if("notifications".equals(path)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			newsCtr.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else {
+			tabbedPane.activate(ureq, entries, state);
 		}
 	}
 }

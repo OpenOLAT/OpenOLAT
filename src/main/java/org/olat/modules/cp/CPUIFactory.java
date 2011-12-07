@@ -155,8 +155,11 @@ public class CPUIFactory {
 	 * @return the resource listening wrapper
 	 */
 	public OLATResourceableListeningWrapperController createMainLayoutResourceableListeningWrapperController(OLATResourceable res, UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean activateFirstPage, String initialUri) {
-		MainLayout3ColumnsController layoutCtr = createMainLayoutController(ureq, wControl, rootContainer, showMenu, activateFirstPage, initialUri, res);
-		return new OLATResourceableListeningWrapperController(ureq, wControl, res, layoutCtr, ureq.getIdentity());
+		//fxdiff BAKS-7 Resume function
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, activateFirstPage, initialUri, res);
+		MainLayout3ColumnsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), null, cpCtr.getInitialComponent(), rootContainer.getName());
+		layoutCtr.addDisposableChildController(cpCtr);
+		return new OLATResourceableListeningWrapperController(ureq, wControl, res, layoutCtr, cpCtr, ureq.getIdentity());
 	}
 
 

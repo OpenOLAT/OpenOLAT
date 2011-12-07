@@ -21,6 +21,8 @@
 
 package org.olat.admin.user.delete;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,7 +35,10 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 
@@ -42,7 +47,7 @@ import org.olat.core.util.WebappHelper;
  *  
  * @author Christian Guretzki
  */
-public class TabbedPaneController extends DefaultController implements ControllerEventListener {
+public class TabbedPaneController extends DefaultController implements ControllerEventListener, Activateable2 {
 
 	private static final String PACKAGE = Util.getPackageName(TabbedPaneController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
@@ -91,6 +96,8 @@ public class TabbedPaneController extends DefaultController implements Controlle
 			userSelectionCtr.updateUserList();
 			userDeleteStatusCtr.updateUserList();
 			readyToDeleteCtr.updateUserList();
+			//fxdiff BAKS-7 Resume function
+			userDeleteTabP.addToHistory(ureq, getWindowControl());
 		}
 	}
 
@@ -101,6 +108,13 @@ public class TabbedPaneController extends DefaultController implements Controlle
 	}
 
 	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && entries.isEmpty()) return;
+		userDeleteTabP.activate(ureq, entries, state);
+	}
+
 	/**
 	 * Initialize the tabbed pane according to the users rights and the system
 	 * configuration

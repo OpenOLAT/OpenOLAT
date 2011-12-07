@@ -56,12 +56,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -85,6 +87,7 @@ import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.ForumUIFactory;
 import org.olat.modules.wiki.gui.components.wikiToHtml.ErrorEvent;
+import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestImageEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestMediaEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestNewPageEvent;
@@ -106,7 +109,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author guido
  */
-public class WikiMainController extends BasicController implements CloneableController {
+public class WikiMainController extends BasicController implements CloneableController, Activateable2 {
 	
 	OLog log = Tracing.createLoggerFor(this.getClass());
 
@@ -313,6 +316,22 @@ public class WikiMainController extends BasicController implements CloneableCont
 		this.pageId = page.getPageId();
 	}
 
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+		Wiki wiki = getWiki();
+		String activatePageId = WikiManager.generatePageId(FilterUtil.normalizeWikiLink(path));
+		if(wiki.pageExists(activatePageId)) {
+			WikiPage page = wiki.getPage(activatePageId, true);
+			if(page != null) {
+				this.pageId = page.getPageId();
+			}
+			updatePageContext(ureq, page);
+		}
+	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
 	
@@ -905,6 +924,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 		} else {
 			clearPortfolioLink();
 		}
+		//fxdiff BAKS-7, FXOLAT-160 Resume function
+		OLATResourceable pageRes = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + page.getPageName(), 0l);
+		addToHistory(ureq, pageRes, null);
 	}
 	
 	private void clearPortfolioLink(){

@@ -24,16 +24,19 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.extensions.AbstractExtension;
-import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.extensions.helpers.ExtensionElements;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.i18n.I18nManager;
 
 /**
  * Description:<br>
@@ -45,28 +48,66 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GenericActionExtension extends AbstractExtension implements ActionExtension, Extension {
+public class GenericActionExtension extends AbstractExtension implements ActionExtension {
 
 	private ExtensionElements elements = new ExtensionElements();
 	private ControllerCreator actionControllerCreator;
 	private String i18nActionKey;
 	private String i18nDescriptionKey;
+	/*
+	 * fxdiff : we use this navigationKey to find the correct actionExtension in a
+	 * genericMainController. (to select the correct tree-entry...)
+	 */
+	private String navigationKey;
 	private List<String> extensionPoints;
 	private String translationPackageName;
 	private String translationPackageNameDerived;
-	private Translator translator;
 	private String contentControllerClassName;
-
+	
+	private String cssClass;
+	private String iconCssClass;
+	
+	protected final OLog log = Tracing.createLoggerFor(GenericActionExtension.class);
+	
 	public GenericActionExtension() {
 		//only for instantiation by spring
 	}
-
+	
 	public void initExtensionPoints() {
 		for (String extPoint : extensionPoints) {
 			elements.putExtensionElement(extPoint, this);
 		}
 	}
-
+	
+	/**
+	 * 
+	 * @see org.olat.core.extensions.action.ActionExtension#createMenuNode(org.olat.core.gui.UserRequest)
+	 */
+	public GenericTreeNode createMenuNode(UserRequest ureq){
+		GenericTreeNode node = new GenericTreeNode();
+		node.setAltText(getDescription(ureq.getLocale()));
+		node.setTitle(getActionText(ureq.getLocale()));
+		node.setIconCssClass(getIconCssClass());
+		node.setCssClass(getCssClass());
+		
+		node.setUserObject(this);
+		return node;
+	}
+	
+	
+	public String getUniqueExtensionID(){
+		StringBuilder sb = new StringBuilder();
+		if (extensionPoints != null){
+			for(String ext: extensionPoints)
+				sb.append(ext).append(":");
+		}
+		if(getActionController() instanceof AutoCreator){
+			sb.append(((AutoCreator) getActionController()).getClassName()).append(":");
+		}
+		sb.append(getActionText(I18nManager.getInstance().getLocaleOrDefault(null))).append(":").append(getOrder()).append(":").append(getNavigationKey());
+		return sb.toString();	
+	}
+	
 	/**
 	 * @see org.olat.core.extensions.action.ActionExtension#createController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl, java.lang.Object)
@@ -85,7 +126,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	 * @see org.olat.core.extensions.action.ActionExtension#getActionText(java.util.Locale)
 	 */
 	public String getActionText(Locale loc) {
-		initPackageTranslator(loc);
+		Translator translator = createPackageTranslator(loc);
 		if (i18nActionKey == null) i18nActionKey = getClassNameOfCorrespondingController() + ".menu.title";
 		return translator.translate(i18nActionKey);
 	}
@@ -94,22 +135,28 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	 * @see org.olat.core.extensions.action.ActionExtension#getDescription(java.util.Locale)
 	 */
 	public String getDescription(Locale loc) {
-		initPackageTranslator(loc);
+		Translator translator = createPackageTranslator(loc);
 		if (i18nDescriptionKey == null) i18nDescriptionKey = getClassNameOfCorrespondingController() + ".menu.title.alt";
 		return translator.translate(i18nDescriptionKey);
 	}
+
+	public String getNavigationKey(){
+		return navigationKey;
+	}
 	
-	private String getClassNameOfCorrespondingController(){
+	//fxdiff
+	public String getClassNameOfCorrespondingController(){
+		if(contentControllerClassName == null) return "";
 		return contentControllerClassName.substring(contentControllerClassName.lastIndexOf(".")+1);
 	}
 	
-	private void initPackageTranslator(Locale loc){
-		if (translator==null) {
-			if (translationPackageName==null){
-				translationPackageName = translationPackageNameDerived;
-			}
-			translator = new PackageTranslator(translationPackageName, loc);
+	// fxdiff
+	private Translator createPackageTranslator(Locale loc){
+		if (translationPackageName==null){
+			translationPackageName = translationPackageNameDerived;
 		}
+		Translator translator = new PackageTranslator(translationPackageName, loc);
+		return translator;
 	}
 	
 	/**
@@ -152,12 +199,39 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		this.i18nDescriptionKey = i18nDescriptionKey;
 	}
 
-	/**
-	 * [used by spring]
-	 */
+	public void setNavigationKey(String navKey) {
+		this.navigationKey = navKey;
+	}
+
 	public void setExtensionPoints(List<String> extensionPoints) {
 		this.extensionPoints = extensionPoints;
 	}
+	
+	public String getCssClass() {
+		return cssClass;
+	}
 
+	public void setCssClass(String classname) {
+		cssClass = classname;
+	}
+
+	public String getIconCssClass() {
+		return iconCssClass;
+	}
+	
+	public void setIconCssClass(String icon) {
+		iconCssClass = icon;
+	}
+
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+	//	sb.append(super.toString());
+		//sb.append(" controllerCreator: ").append(actionControllerCreator);
+		sb.append(" controller: ").append(contentControllerClassName);
+		sb.append(" actionKey: ").append(i18nActionKey);
+		sb.append(" order: ").append(getOrder());
+		sb.append(" navigationKey: ").append(navigationKey);
+		return sb.toString();
+	}
 	
 }

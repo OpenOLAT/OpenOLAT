@@ -30,10 +30,10 @@ import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -48,7 +48,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.portal.AbstractPortletRunController;
 import org.olat.core.gui.control.generic.portal.PortletDefaultTableDataModel;
@@ -58,10 +57,11 @@ import org.olat.core.gui.control.generic.portal.SortingCriteria;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.home.site.HomeSite;
 
 /**
  * Description:<br>
@@ -194,12 +194,13 @@ public class NotesPortletRunController extends AbstractPortletRunController impl
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == showAllLink){
-			// activate homes tab in top navigation and active notes menu item
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, HomeSite.class.getName(), "note");
-			dts.activateStatic(ureq, HomeSite.class.getName(), "note");
-		} 
+			if (source == showAllLink) {
+				// fxdiff: activate homes tab in top navigation and activate correct menu item
+				String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][notelist:0]";
+				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				NewControllerFactory.getInstance().launch(ureq, bwControl);
+			}
 	}
 	
 	/**

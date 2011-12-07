@@ -27,9 +27,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,12 +41,18 @@ import javax.servlet.http.HttpSessionBindingListener;
 
 import org.apache.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryManager;
+import org.olat.core.id.context.HistoryPoint;
+import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
@@ -89,9 +97,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private boolean registeredWithBus = false;
 	private Preferences guiPreferences;
 	private EventBus singleUserSystemBus;
-
-	// brasato:: find a better place?
-	private Map<String, Object> sessionServiceInstances;
+	//fxdiff BAKS-7 Resume function
+	private Stack<HistoryPoint> history = new Stack<HistoryPoint>();
 	
 	
 	private UserSession() {
@@ -114,7 +121,6 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
 		authenticated = false;
 		sessionInfo = null;
-		sessionServiceInstances = new HashMap<String, Object>();
 	}
 
 	/**
@@ -270,6 +276,62 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		identityEnvironment.setRoles(roles);
 	}
 
+	//fxdiff BAKS-7 Resume function
+	public List<HistoryPoint> getHistoryStack() {
+		return history;
+	}
+	
+	public HistoryPoint getLastHistoryPoint() {
+		if(history.isEmpty()) {
+			return null;
+		}
+		return history.lastElement();
+	}
+	
+	//fxdiff BAKS-7 Resume function
+	public HistoryPoint popLastHistoryEntry() {
+		if(history.isEmpty()) return null;
+		history.pop();//current point
+		if(history.isEmpty()) return null;
+		return history.pop();//remove last point from history
+	}
+	
+	//fxdiff BAKS-7 Resume function
+	public void addToHistory(UserRequest ureq, HistoryPoint point) {
+		if(point == null) return;
+		if(Tracing.isDebugEnabled(UserSession.class)) {
+			Tracing.logDebug(ureq.getUuid() + " Add business path: " + point.getBusinessPath(), UserSession.class);
+		}
+		//System.out.println(ureq.getUuid() + " Add business path: " + point.getBusinessPath());
+		history.add(new HistoryPointImpl(ureq.getUuid(), point.getBusinessPath(), point.getEntries()));
+	}
+	
+	//fxdiff BAKS-7 Resume function
+	public void addToHistory(UserRequest ureq, BusinessControl businessControl) {
+		List<ContextEntry> entries = businessControl.getEntries();
+		String businessPath = businessControl.getAsString();
+		if(StringHelper.containsNonWhitespace(businessPath)) {
+			if(Tracing.isDebugEnabled(UserSession.class)) {
+				Tracing.logDebug(ureq.getUuid() + " Add business path: " + businessPath, UserSession.class);
+			}
+			//System.out.println(ureq.getUuid() + " Add business path: " + businessPath);
+			String uuid = ureq.getUuid();
+			if(!history.isEmpty()) {
+				//consolidate
+				for(Iterator<HistoryPoint> it=history.iterator(); it.hasNext(); ) {
+					HistoryPoint p = it.next();
+					if(uuid.equals(p.getUuid())) {
+						it.remove();
+					}
+				}
+			}
+			history.push(new HistoryPointImpl(ureq.getUuid(), businessPath, entries));
+			if(history.size() > 20) {
+				history.remove(0);
+			}
+		}
+	}
+
 	/**
 	 * @see javax.servlet.http.HttpSessionBindingListener#valueBound(javax.servlet.http.HttpSessionBindingEvent)
 	 */
@@ -326,6 +388,10 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		boolean isDebug = Tracing.isDebugEnabled(UserSession.class); 
 		if (isDebug) {
 			Tracing.logDebug("UserSession:::logging off: " + sessionInfo, this.getClass());
+		}
+		//fxdiff BAKS-7 Resume function
+		if(isAuthenticated() && getLastHistoryPoint() != null && !getRoles().isGuestOnly()) {
+			HistoryManager.getInstance().persistHistoryPoint(ident, getLastHistoryPoint());
 		}
 
 		/**

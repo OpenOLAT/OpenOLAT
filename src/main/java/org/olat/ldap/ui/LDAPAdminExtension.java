@@ -27,7 +27,7 @@ import org.olat.admin.SystemAdminMainController;
 import org.olat.core.extensions.AbstractExtension;
 import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.ExtensionElement;
-import org.olat.core.extensions.action.ActionExtension;
+import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.extensions.helpers.ExtensionElements;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -60,7 +60,7 @@ public class LDAPAdminExtension extends AbstractExtension implements Extension {
 	 * Constructor to create an extension that registers in the admin site
 	 */
 	public LDAPAdminExtension() {
-		elements.putExtensionElement(SystemAdminMainController.class.getName(), new ActionExtension() {
+		elements.putExtensionElement(SystemAdminMainController.class.getName(), new GenericActionExtension() {
 
 			/**
 			 * @see org.olat.core.extensions.action.ActionExtension#getActionText(java.util.Locale)

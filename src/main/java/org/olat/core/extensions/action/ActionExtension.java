@@ -25,16 +25,30 @@ import java.util.Locale;
 
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
  * Description:<br>
  * Initial Date:  02.08.2005 <br>
+ * 
+ * @deprecated  
+ * 
+ * do not directly implement this interface. Subclass GenericActionExtension instead!
+ * 
  * @author Felix
  */
 public interface ActionExtension extends ExtensionElement {
 
+	/**
+	 * creates a GenericTreeNode to be used in Menu/Navigation trees
+	 * 
+	 * @param ureq
+	 * @return
+	 */
+	public GenericTreeNode createMenuNode(UserRequest ureq);
+	
 	
 	/**
 	 * @param loc

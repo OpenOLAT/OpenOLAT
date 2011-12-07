@@ -34,6 +34,8 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.StateSite;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.controllers.RepositoryMainController;
@@ -77,7 +79,10 @@ public class RepositorySite implements SiteInstance {
 	 */
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
 		// for existing controller which are part of the main olat -> use the controllerfactory
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_REPO, null, ureq, wControl, true);
+		//fxdiff BAKS-7 Resume function
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositorySite.class, 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
+		MainLayoutController c = ControllerFactory.createLaunchController(ORES_REPO, null, ureq, bwControl, true);
 		return c;
 	}
 

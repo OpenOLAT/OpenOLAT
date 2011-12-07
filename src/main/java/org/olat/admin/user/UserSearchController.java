@@ -122,15 +122,23 @@ public class UserSearchController extends BasicController {
 	
 	private AutoCompleterController autocompleterC;
 	private String actionKeyChoose;
-	private Map<String, String> userPropertiesSearch;
 	private boolean isAdministrativeUser;
 	private Link backLink;
 
-	private static final String STATE_SEARCHFORM = "searchform";
-	private static final String STATE_RESULTS = "results";
-	
 	public static final String ACTION_KEY_CHOOSE = "action.choose";
 	public static final String ACTION_KEY_CHOOSE_FINISH = "action.choose.finish";
+	
+	
+	/**
+	 * fxdiff: FXOLAT-250   we need standard-constructor for use in genericMainController
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 */
+	public UserSearchController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false, false, false);
+	}
+	
 	
 	/**
 	 * @param ureq

@@ -21,6 +21,7 @@
 
 package org.olat.group.ui.edit;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -42,15 +43,20 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -98,7 +104,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author patrick
  */
 
-public class BusinessGroupEditController extends BasicController implements ControllerEventListener, GenericEventListener {
+public class BusinessGroupEditController extends BasicController implements ControllerEventListener, GenericEventListener, Activateable2 {
 	//needed for complicated fall back translator chaining
 	private static final String PACKAGE = Util.getPackageName(BusinessGroupEditController.class);
 
@@ -221,6 +227,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			listenTo(alreadyLockedDialogController);
 			alreadyLockedDialogController.activate();
 		}
+		//fxdiff BAKS-7 Resume function
+		ContextEntry ce = wControl.getBusinessControl().popLauncherContextEntry();
+		if(ce != null) {
+			wControl.getBusinessControl().setCurrentContextEntry(BusinessControlFactory.getInstance().createContextEntry(currBusinessGroup));//tab are not in the regular path
+			tabbedPane.activate(ureq, Collections.singletonList(ce), null);
+			tabbedPane.addToHistory(ureq, wControl);
+		}
 	}
 
 	/**
@@ -256,8 +269,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT, currBusinessGroup, null);
 			}
+		//fxdiff BAKS-7 Resume function
+		} else if (source == tabbedPane && event instanceof TabbedPaneChangedEvent) {
+			tabbedPane.addToHistory(ureq, getWindowControl());
 		}
-
 	}
 
 	/**
@@ -627,6 +642,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 					"receiving a delete event for a olatres we never registered for!!!:" + delEvent.getDerivedOres());
 			dispose();
 		} 
+	}
+	
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		tabbedPane.activate(ureq, entries, state);
 	}
 
 	/**

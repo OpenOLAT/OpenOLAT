@@ -200,7 +200,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 					DTab dt = dts.getDTab(repoEntry.getOlatResource());
 					if (dt == null) {
 						// does not yet exist -> create and add
-						dt = dts.createDTab(repoEntry.getOlatResource(), repoEntry.getDisplayname());
+						//fxdiff BAKS-7 Resume function
+						dt = dts.createDTab(repoEntry.getOlatResource(), repoEntry, repoEntry.getDisplayname());
 						// tabs full
 						if (dt != null) {
 							Controller runCtr = RepositoyUIFactory.createLaunchController(repoEntry, null, ureq, dt.getWindowControl());					
