@@ -21,7 +21,9 @@
 
 package org.olat.course.tree;
 
+import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -35,7 +37,8 @@ import org.olat.course.nodes.CourseNode;
  * 
  * @author Felix Jost
  */
-public class CourseEditorTreeModel extends GenericTreeModel {
+//fxdiff VCRP-9: drag and drop in menu tree
+public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeModel {
 	private long latestPublishTimestamp = -1;
 	private long highestNodeId; // start at Long.MAX_VALUE - 1000000; if set to
 															// zero -> meaning we read from an old
@@ -225,6 +228,39 @@ public class CourseEditorTreeModel extends GenericTreeModel {
 		}
 		return cloneCn;
 
+	}
+	
+	//fxdiff VCRP-9: drag and drop in menu tree
+	@Override
+	public boolean canDrop(TreeNode droppedNode, TreeNode targetNode, boolean sibling) {
+		if(droppedNode == null || targetNode == null) return false;
+
+		CourseEditorTreeNode selectedNode = getCourseEditorNodeById(droppedNode.getIdent());
+		CourseEditorTreeNode parentNode = getCourseEditorNodeById(targetNode.getIdent());
+		if(selectedNode == null || parentNode == null) return false;
+		if(sibling && parentNode.getParent() != null) {
+			parentNode = getCourseEditorNodeById(parentNode.getParent().getIdent());
+		}
+
+		// check if insert position is within the to-be-copied tree
+		if (checkIfIsChild(parentNode, selectedNode)) {
+			return false;
+		}
+		return true;
+	}
+	
+	//fxdiff VCRP-9: drag and drop in menu tree
+	public boolean checkIfIsChild(CourseEditorTreeNode prospectChild, CourseEditorTreeNode sourceTree) {
+		if (sourceTree.getIdent().equals(prospectChild.getIdent())) {
+			return true;
+		}
+		for (int i = sourceTree.getChildCount(); i-->0; ) {
+			INode child = sourceTree.getChildAt(i);
+			if (checkIfIsChild(prospectChild, getCourseEditorNodeById(child.getIdent()))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

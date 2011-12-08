@@ -18,7 +18,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -38,13 +37,13 @@ class ImportStep01 extends BasicStep {
 		this.canCreateOLATPassword = canCreateOLATPassword;
 		this.newUsers = newUsers;
 		setI18nTitleAndDescr("step1.description", "step1.short.description");
-		setNextStep(Step.NOSTEP);
+		setNextStep(new ImportStep02(ureq)); //fxdiff: 101 have another step for group addition
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		if (newUsers) {
-			return new PrevNextFinishConfig(true, false, true);
+			return new PrevNextFinishConfig(true, true, true);
 		} else {
 			return new PrevNextFinishConfig(true, false, false);
 		}

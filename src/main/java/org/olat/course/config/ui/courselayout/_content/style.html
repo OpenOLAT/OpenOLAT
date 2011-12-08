@@ -1,0 +1,31 @@
+<br/>
+<table>
+  <tr>
+    <th>&nbsp;</th>
+	#foreach( $attrib in $allAttribs )
+		#set($attribName = $attrib.getLayoutAttributeTypeName())
+		#set($rowheader = "attribute.title.$attribName")
+	    <th>$r.translate($rowheader)</th>
+	#end
+  </tr>
+
+#foreach( $element in $guiWrapper.entrySet() ) 
+	#set($elementName = $element.getKey() )
+	#set($column = "element.title.$elementName")
+	  <tr>
+	    <td>$r.translate($column)</td>
+	
+		#set($elAttribs = $element.getValue())
+		#foreach( $attrib in $allAttribs )
+			<td>
+			#set($attribName = $attrib.getLayoutAttributeTypeName())
+			#if ($elAttribs.get($attribName)) 
+				$r.render($elAttribs.get($attribName).getName())
+			#else
+				&nbsp;
+			#end
+			</td>
+		#end
+	  </tr>
+	#end  
+</table>

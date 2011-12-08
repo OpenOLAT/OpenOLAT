@@ -38,6 +38,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -316,7 +317,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	@Override
 	public void addActionListener(Controller listener, int action) {
 		super.addActionListener(listener, action);
-		if (action == FormEvent.ONCHANGE) {
+		if (action == FormEvent.ONCHANGE && Settings.isDebuging()) {
 			log.warn("Do not use the onChange event in Textfields / TextAreas as this has often unwanted side effects. " +
 					"As the onchange event is only tiggered when you click outside a field or navigate with the tab to the next element " +
 					"it will suppress the first attempt to the submit click as by clicking " +

@@ -22,6 +22,7 @@ package org.olat.modules.webFeed.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,7 @@ public class ItemsController extends BasicController {
 	private ArrayList<Link> deleteButtons;
 	private ArrayList<Link> itemLinks;
 	private Map<Item,Controller> artefactLinks;
+	private Map<Item,Controller> commentsLinks;
 	private Link addItemButton, makeInternalButton, makeExternalButton, olderItemsLink, newerItemsLink, startpageLink;
 	private FormBasicController itemFormCtr;
 	private CloseableModalController cmc;
@@ -101,7 +103,8 @@ public class ItemsController extends BasicController {
 	private FeedSecurityCallback callback;
 	private Panel mainPanel;
 	private ItemController itemCtr;
-	private int allItemsCount = 0;
+	//private int allItemsCount = 0;
+	private List<ItemId> allItemIds;
 	// Only one lock variable is needed, since only one item can be edited
 	// at a time.
 	private LockResult lock;
@@ -177,8 +180,8 @@ public class ItemsController extends BasicController {
 		createDateComponents(ureq, feed);
 
 		// The year/month navigation
-		List<? extends Dated> items = feed.getFilteredItems(callback, ureq.getIdentity());
-		allItemsCount = items.size();
+		List<Item> items = feed.getFilteredItems(callback, ureq.getIdentity());
+		setAllItemIds(items);
 		naviCtr = new YearNavigationController(ureq, wControl, getTranslator(), items);
 		listenTo(naviCtr);
 		if (displayConfig.isShowDateNavigation()){
@@ -188,6 +191,22 @@ public class ItemsController extends BasicController {
 		mainPanel = new Panel("mainPanel");
 		mainPanel.setContent(vcItems);
 		this.putInitialPanel(mainPanel);
+	}
+	
+	private void setAllItemIds(List<Item> items) {
+		allItemIds = new ArrayList<ItemId>();
+		for(Item item:items) {
+			allItemIds.add(new ItemId(item));
+		}
+	}
+	
+	private boolean isSameAllItems(List<Item> items) {
+		if(allItemIds == null) return false;
+		List<ItemId> itemIds = new ArrayList<ItemId>();
+		for(Item item:items) {
+			itemIds.add(new ItemId(item));
+		}
+		return allItemIds.containsAll(itemIds) && itemIds.containsAll(allItemIds);
 	}
 
 	/**
@@ -242,11 +261,18 @@ public class ItemsController extends BasicController {
 	 */
 	private void createCommentsAndRatingsLink(UserRequest ureq, Feed feed, Item item) {
 		if (CoreSpringFactory.containsBean(CommentAndRatingService.class)) {
+			if(commentsLinks == null) {
+				commentsLinks = new HashMap<Item,Controller>();
+			} else if(commentsLinks.containsKey(item)) {
+				removeAsListenerAndDispose(commentsLinks.get(item));
+			}
+
 			CommentAndRatingService commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
 			commentAndRatingService.init(getIdentity(), feed, item.getGuid(), callback.mayEditMetadata(), ureq.getUserSession().getRoles().isGuestOnly());
 			UserCommentsAndRatingsController commentsAndRatingCtr = commentAndRatingService.createUserCommentsAndRatingControllerMinimized(ureq, getWindowControl());
 			commentsAndRatingCtr.addUserObject(item);
 			listenTo(commentsAndRatingCtr);
+			commentsLinks.put(item, commentsAndRatingCtr);
 			String guid = item.getGuid();
 			vcItems.put("commentsAndRating." + guid, commentsAndRatingCtr.getInitialComponent());
 		}
@@ -411,14 +437,26 @@ public class ItemsController extends BasicController {
 
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
+			if (callback.mayEditItems() || callback.mayCreateItems()) {
+				createEditButtons(ureq, feed);
+			}
+			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 
 		} else if (source == newerItemsLink) {
 			helper.newerItems();
+			if (callback.mayEditItems() || callback.mayCreateItems()) {
+				createEditButtons(ureq, feed);
+			}
+			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 
 		} else if (source == startpageLink) {
 			helper.startpage();
+			if (callback.mayEditItems() || callback.mayCreateItems()) {
+				createEditButtons(ureq, feed);
+			}
+			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 
 		} else if (source instanceof Link) {
@@ -497,6 +535,11 @@ public class ItemsController extends BasicController {
 					makeInternalAndExternalButtons();
 					// The subscription/feed url from the feed info is obsolete
 					fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
+				} else {
+					if (callback.mayEditItems() || callback.mayCreateItems()) {
+						createEditButtons(ureq, feed);
+					}
+					createCommentsAndRatingsLinks(ureq, feed);
 				}
 				vcItems.setDirty(true);
 				// in case we were in single item view, show all items
@@ -594,6 +637,10 @@ public class ItemsController extends BasicController {
 			// make sure items are sorted properly
 			Collections.sort(items, new ItemPublishDateComparator());
 			helper.setSelectedItems(items);
+			if (callback.mayEditItems() || callback.mayCreateItems()) {
+				createEditButtons(ureq, feed);
+			}
+			createCommentsAndRatingsLinks(ureq, feed);
 			vcItems.setDirty(true);
 			mainPanel.setContent(vcItems);
 
@@ -613,7 +660,7 @@ public class ItemsController extends BasicController {
 		}
 		
 		// Check if someone else added an item, reload everything
-		if (feed.getFilteredItems(callback, ureq.getIdentity()).size() != allItemsCount) {
+		if (!isSameAllItems(feed.getFilteredItems(callback, ureq.getIdentity()))) {
 			resetItems(ureq, feed);
 		}
 	}
@@ -656,50 +703,16 @@ public class ItemsController extends BasicController {
 		List<Item> items = feed.getFilteredItems(callback, ureq.getIdentity());
 		helper.setSelectedItems(items);
 		naviCtr.setDatedObjects(items);
-		allItemsCount = items.size();
+		setAllItemIds(items);
 		// Add item details page link
 		createItemLinks(feed);
 		// Add item user comments link and rating
-		createCommentsAndRatingsLinks(ureq, feed);
+		if (displayConfig.isShowCRInMinimized()) {
+			createCommentsAndRatingsLinks(ureq, feed);
+		}
 		// Add date components
 		createDateComponents(ureq, feed);
 		vcItems.setDirty(true);
-	}
-
-	/**
-	 * Sets the edit mode to editable
-	 * 
-	 * @param editable
-	 * @param feed the current feed
-	 */
-	public void setEditMode(UserRequest ureq, boolean editable, Feed feed) {
-		vcItems.contextPut("editModeEnabled", editable);
-		if (editable) {
-			createEditButtons(ureq, feed);
-		} else {
-			removeEditButtons();
-		}
-	}
-
-	/**
-	 * Remove the edit buttons
-	 */
-	private void removeEditButtons() {
-		vcItems.contextRemove(velocity_root);
-		vcItems.remove(addItemButton);
-		vcItems.remove(makeExternalButton);
-		vcItems.remove(makeInternalButton);
-		for (Link button : editButtons) {
-			vcItems.remove(button);
-		}
-		for (Link button : deleteButtons) {
-			vcItems.remove(button);
-		}
-		addItemButton = null;
-		makeInternalButton = null;
-		makeExternalButton = null;
-		editButtons = null;
-		deleteButtons = null;
 	}
 
 	/**
@@ -753,5 +766,34 @@ public class ItemsController extends BasicController {
 			return artefactLinks.get(item);
 		}
 		return result;
+	}
+	
+	private class ItemId {
+		private final String guid;
+		private final Date lastModification;
+		
+		public ItemId(Item item) {
+			guid = item.getGuid();
+			lastModification = item.getLastModified();
+		}
+		
+		@Override
+		public int hashCode() {
+			return guid.hashCode() + (lastModification == null ? -483 : lastModification.hashCode());
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof ItemId) {
+				ItemId id = (ItemId)obj;
+				return guid.equals(id.guid) && ((lastModification == null && id.lastModification == null) ||
+						(lastModification != null && lastModification.equals(id.lastModification)));
+			}
+			
+			return false;
+		}
 	}
 }

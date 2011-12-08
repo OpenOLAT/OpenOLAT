@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
@@ -31,7 +32,6 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.properties.Property;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
-import org.olat.restapi.repository.course.AbstractCourseNodeWebService.CustomConfigDelegate;
 import org.olat.restapi.security.RestSecurityHelper;
 
 /**
@@ -74,8 +74,10 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@Context HttpServletRequest request) {
-		return attachForum(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, request);
+			@FormParam("moderatorExpertRules") String moderatorExpertRules, @FormParam("posterExpertRules") String posterExpertRules,
+			@FormParam("readerExpertRules") String readerExpertRules, @Context HttpServletRequest request) {
+		return attachForum(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules,
+				moderatorExpertRules, posterExpertRules, readerExpertRules, request);
 	}
 	
 	/**
@@ -105,8 +107,9 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@Context HttpServletRequest request) {
-		ForumCustomConfig config = new ForumCustomConfig();
+			@QueryParam("moderatorExpertRules") String moderatorExpertRules, @QueryParam("posterExpertRules") String posterExpertRules,
+			@QueryParam("readerExpertRules") String readerExpertRules, @Context HttpServletRequest request) {
+		ForumCustomConfig config = new ForumCustomConfig(moderatorExpertRules, posterExpertRules, readerExpertRules);
 		return attach(courseId, parentNodeId, "fo", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
@@ -260,24 +263,44 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		
 		return Response.ok(vo).build();
 	}
-	
-}
+	//fxdiff: RESTAPI add special expert rules for forums
+	private class ForumCustomConfig implements CustomConfigDelegate {
+		
+		private final String preConditionModerator;
+		private final String preConditionPoster;
+		private final String preConditionReader;
+		
+		public ForumCustomConfig(String preConditionModerator, String preConditionPoster, String preConditionReader) {
+			this.preConditionModerator = preConditionModerator;
+			this.preConditionPoster = preConditionPoster;
+			this.preConditionReader = preConditionReader;
+		}
+		
+		@Override
+		public boolean isValid() {
+			return true;
+		}
 
-class ForumCustomConfig implements CustomConfigDelegate {
-	
-	@Override
-	public boolean isValid() {
-		return true;
-	}
-
-	@Override
-	public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-		// create the forum
-		ForumManager fom = ForumManager.getInstance();
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Forum forum = fom.addAForum();
-		Long forumKey = forum.getKey();
-		Property forumKeyProperty = cpm.createCourseNodePropertyInstance(newNode, null, null, FOCourseNode.FORUM_KEY, null, forumKey, null, null);
-		cpm.saveProperty(forumKeyProperty);
+		@Override
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+			// create the forum
+			ForumManager fom = ForumManager.getInstance();
+			CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+			Forum forum = fom.addAForum();
+			Long forumKey = forum.getKey();
+			Property forumKeyProperty = cpm.createCourseNodePropertyInstance(newNode, null, null, FOCourseNode.FORUM_KEY, null, forumKey, null, null);
+			cpm.saveProperty(forumKeyProperty);
+			
+			// special rules
+			if(StringHelper.containsNonWhitespace(preConditionModerator)) {
+				((FOCourseNode)newNode).setPreConditionModerator(createExpertCondition("moderator", preConditionModerator));
+			}
+			if(StringHelper.containsNonWhitespace(preConditionPoster)) {
+				((FOCourseNode)newNode).setPreConditionPoster(createExpertCondition("poster", preConditionPoster));
+			}
+			if(StringHelper.containsNonWhitespace(preConditionReader)) {
+				((FOCourseNode)newNode).setPreConditionReader(createExpertCondition("reader", preConditionReader));
+			}
+		}
 	}
 }

@@ -123,10 +123,9 @@ public class ChangePresenceJob extends JobWithDB  {
 						}
 					} else if ((timeNow - lastAccessTime) > idleWaitTime) {
 						/**
-						 * 
-						 * user is back on track
-						 * send presence message available to inform
-						 * 
+						 * uses makes a brake
+						 * last access was more than five minutes ago
+						 * so set instant messaging presence to away
 						 */
 						if (InstantMessagingModule.isEnabled()) {
 							if ((client != null && client.isConnected())
@@ -140,12 +139,13 @@ public class ChangePresenceJob extends JobWithDB  {
 							}
 						}
 					} else {
+						/**
+						 * 
+						 * user is back on track
+						 * send presence message available to inform
+						 * 
+						 */
 						if (InstantMessagingModule.isEnabled()) {
-							/**
-							 * uses makes a brake
-							 * last access was more than five minutes ago
-							 * so set instant messaging presence to away
-							 */
 							if ((client != null && client.isConnected())
 									&& (client.getPresenceMode() == Presence.Mode.away || client.getPresenceMode() == Presence.Mode.xa)) {
 								client.sendPresence(Presence.Type.available, null, 0, Presence.Mode.valueOf(client.getRecentPresenceStatusMode()));
@@ -155,7 +155,6 @@ public class ChangePresenceJob extends JobWithDB  {
 									log.debug("change presence for user " + client.getUsername() + " back to recent presence.");
 								}
 							}
-							// check if we can switch user back to available mode
 						}
 					}
 				}

@@ -20,15 +20,17 @@
 */
 package org.olat.modules.scorm.assessment;
 
-import java.text.DateFormat;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
@@ -42,13 +44,16 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.scorm.server.servermodels.ScoUtils;
-import org.olat.modules.scorm.server.servermodels.SequencerModel;
 
 /**
  * 
@@ -69,13 +74,13 @@ public class ScormResultDetailsController extends BasicController {
 	private TableController summaryTableCtr;
 	private TableController cmiTableCtr;
 	private CloseableModalController cmc;
+	private Link resetButton;
+	private DialogBoxController resetConfirmationBox;
 	
 	private final ScormCourseNode node;
 	private final UserCourseEnvironment userCourseEnvironment;
-	
-	private List<CmiData> rawDatas;
-	private SequencerModel sequencerModel;
-	
+
+
 	public ScormResultDetailsController(UserRequest ureq, WindowControl wControl, ScormCourseNode node, UserCourseEnvironment userCourseEnvironment) {
 		super(ureq, wControl);
 		
@@ -99,62 +104,18 @@ public class ScormResultDetailsController extends BasicController {
 		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
 
 		String username = userCourseEnvironment.getIdentityEnvironment().getIdentity().getName();
-		rawDatas = ScormAssessmentManager.getInstance().visitScoDatas(username, courseEnv, node);
-		sequencerModel = ScormAssessmentManager.getInstance().getSequencerModel(username, courseEnv, node);
-
-		summaryTableCtr.setTableDataModel(getSummaryTableDataModel(ureq, rawDatas, sequencerModel));
+		// <OLATCE-289>
+		Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance().visitScoDatasMultiResults(username, courseEnv, node);
+		summaryTableCtr.setTableDataModel(new SummaryTableDataModelMultiResults(rawDatas));
+		// </OLATCE-289>
 		listenTo(summaryTableCtr);
 		
 		main.put("summary", summaryTableCtr.getInitialComponent());
+		//fxdiff FXOLAT-108: reset SCORM test
+		resetButton = LinkFactory.createButton("reset", main, this);
+		main.put("resetButton", resetButton);
 
 		putInitialPanel(main);
-	}
-	
-	protected TableDataModel getSummaryTableDataModel(UserRequest ureq, List<CmiData> datas, SequencerModel sequenceModel) {
-		SummaryTableDataModel model = new SummaryTableDataModel();
-
-		double score = 0;
-		String totalTime = null;
-		for(CmiData data:datas) {
-			String key = data.getKey();
-			if(CMI_RAW_SCORE.equals(key)) {
-				String value = data.getValue();
-				if(StringHelper.containsNonWhitespace(value)) {
-					try {
-						score += Double.parseDouble(value);
-					} catch (NumberFormatException e) {
-						//fail silently
-					}
-				}
-			}
-			else if(CMI_TOTAL_TIME.equals(key)) {
-				String value = data.getValue();
-				if(StringHelper.containsNonWhitespace(value)) {
-					if(totalTime == null) {
-						totalTime = value;
-					}
-					else {
-						totalTime = ScoUtils.addTimes(totalTime, value);
-					}
-				}
-			}
-		}
-		model.setScore(Double.toString(score));
-		model.setTotalTime(totalTime);
-		
-		String modifiedDateMs = sequenceModel == null ? "" : sequenceModel.getManifestModifiedDate();
-		if(StringHelper.containsNonWhitespace(modifiedDateMs)) {
-			long timestamp = Long.parseLong(modifiedDateMs);
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(timestamp);
-			Date lastModificationDate = cal.getTime();
-			
-			DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale());
-			String formattedDate = format.format(lastModificationDate);
-			model.setLastModificationDate(formattedDate);
-		}
-		
-		return model;
 	}
 
 	@Override
@@ -164,7 +125,14 @@ public class ScormResultDetailsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		//fxdiff FXOLAT-108: reset SCORM test
+		if(source == resetButton) {
+			String title = translate("reset.title");
+			User user = userCourseEnvironment.getIdentityEnvironment().getIdentity().getUser();
+			String name = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
+			String text = translate("reset.text", new String[]{name});
+			resetConfirmationBox = activateOkCancelDialog(ureq, title, text, resetConfirmationBox);
+		}
 	}
 	
 	@Override
@@ -172,10 +140,6 @@ public class ScormResultDetailsController extends BasicController {
 		if (source == summaryTableCtr) {
 			TableEvent tEvent = (TableEvent)event;
 			if (tEvent.getActionId().equals("sel")) {
-				
-				
-				
-				
 				TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 				tableConfig.setPreferencesOffered(true, "scormAssessmentDetails");
 				
@@ -188,7 +152,11 @@ public class ScormResultDetailsController extends BasicController {
 				cmiTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cmis.column.header.key", 2, null, ureq.getLocale()));
 				cmiTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cmis.column.header.value", 3, null, ureq.getLocale()));
 
-				cmiTableCtr.setTableDataModel(new CmiTableDataModel(getTranslator(), rawDatas));
+				// <BPS-252> BPS-252_3	
+				int rowId = tEvent.getRowId();
+				List<CmiData> data = ((SummaryTableDataModelMultiResults)summaryTableCtr.getTableDataModel()).getObject(rowId);
+				cmiTableCtr.setTableDataModel(new CmiTableDataModel(getTranslator(), data));
+				// </BPS-252> BPS-252_3
 				
 				removeAsListenerAndDispose(cmc);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), cmiTableCtr.getInitialComponent());
@@ -196,56 +164,14 @@ public class ScormResultDetailsController extends BasicController {
 
 				cmc.activate();
 			}
-		}
-	}
-	
-	public class SummaryTableDataModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
-		private String score;
-		private String totalTime;
-		private String lastModificationDate;
-		
-		public SummaryTableDataModel() {
-			//
-		}
-
-		public String getScore() {
-			return score;
-		}
-
-		public void setScore(String score) {
-			this.score = score;
-		}
-
-		public String getTotalTime() {
-			return totalTime;
-		}
-
-		public void setTotalTime(String totalTime) {
-			this.totalTime = totalTime;
-		}
-
-		public String getLastModificationDate() {
-			return lastModificationDate;
-		}
-
-		public void setLastModificationDate(String lastModificationDate) {
-			this.lastModificationDate = lastModificationDate;
-		}
-
-		public int getColumnCount() {
-			return 3;
-		}
-
-		public int getRowCount() {
-			return 1;
-		}
-
-		public Object getValueAt(int row, int col) {
-			switch(col) {
-				case 0: return lastModificationDate;
-				case 1: return totalTime;
-				case 2: return score;
-				default: return "ERROR";
+		//fxdiff FXOLAT-108: reset SCORM test
+		} else if ( source == resetConfirmationBox) {
+			if (DialogBoxUIFactory.isOkEvent(event)) {
+				//delete scorm
+				String username = userCourseEnvironment.getIdentityEnvironment().getIdentity().getName();
+				CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+				ScormAssessmentManager.getInstance().deleteResults(username, courseEnv, node);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 	}
@@ -307,4 +233,106 @@ public class ScormResultDetailsController extends BasicController {
 			}
 		}
 	}
+	
+	// <OLATCE-289>
+	/**
+	 * Description:<br>
+	 * A TableDataModel for multi scorm results files.
+	 * 
+	 * <P>
+	 * Initial Date:  07.01.2010 <br>
+	 * @author thomasw
+	 */
+	public class SummaryTableDataModelMultiResults implements TableDataModel {
+		
+		private final Map<Date, List<CmiData>> objects;
+		
+		/**
+		 * Array of Keys of the Object-Map. The Key is at the same time the 
+		 * String representation of the last modified date.
+		 */
+		private Date[] objectKeys;
+		
+		public SummaryTableDataModelMultiResults(Map<Date, List<CmiData>> datas) {
+			objects = datas;
+			if(objects != null) {
+				objectKeys = objects.keySet().toArray(new Date[objects.size()]);
+			}
+		}
+
+		public int getColumnCount() {
+			return 3;
+		}
+
+		public int getRowCount() {
+			return objects == null ? 0 : objects.size();
+		}
+
+		public Object getValueAt(int row, int col) {
+			Date dateKey = objectKeys[row];
+			List<CmiData> cmiObject = objects.get(dateKey);
+			String[] result = calcTimeAndScore(cmiObject);
+			switch (col) {
+				case 0:
+					return dateKey;
+				case 1:
+					return result[0];
+				case 2:
+					return result[1];
+				default: return "ERROR";
+			}
+		}
+		
+		private String[] calcTimeAndScore(List<CmiData> cmiObject) {
+			double score = 0;
+			String totalTime = null;
+			for(CmiData data:cmiObject) {
+				String key = data.getKey();
+				if(CMI_RAW_SCORE.equals(key)) {
+					String value = data.getValue();
+					if(StringHelper.containsNonWhitespace(value)) {
+						try {
+							score += Double.parseDouble(value);
+						} catch (NumberFormatException e) {
+							//fail silently
+						}
+					}
+				}
+				else if(CMI_TOTAL_TIME.equals(key)) {
+					String value = data.getValue();
+					if(StringHelper.containsNonWhitespace(value)) {
+						if(totalTime == null) {
+							totalTime = value;
+						}
+						else {
+							totalTime = ScoUtils.addTimes(totalTime, value);
+						}
+					}
+				}
+			}
+			String[] result =  new String[2];
+			result[0] = totalTime;
+			result[1] = "" + score;
+			return result;
+		}
+
+		@Override
+		public Object createCopyWithEmptyList() {
+			return new SummaryTableDataModelMultiResults(new HashMap<Date, List<CmiData>>());
+		}
+
+		@Override
+		public List<CmiData> getObject(int row) {
+			Date dateKey = objectKeys[row];
+			List<CmiData> cmiObject = objects.get(dateKey);
+			return cmiObject;
+		}
+
+		@Override
+		@SuppressWarnings({"unused","rawtypes"}) 
+		public void setObjects(List objects) {
+			//
+		}
+	}
+	// </OLATCE-289>
 }

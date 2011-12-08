@@ -108,7 +108,7 @@ public class SharedFolderDisplayController extends DefaultController {
 
 		if (item == null) {
 			sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());
-			controller = new FolderRunController(sharedFolder, true, true, ureq, getWindowControl());
+			controller = new FolderRunController(sharedFolder, true, true, false, ureq, getWindowControl());
 			controller.addControllerListener(this);
 		} else {
 			controller = new WebsiteDisplayController(ureq, getWindowControl(), sharedFolder, item.getName());

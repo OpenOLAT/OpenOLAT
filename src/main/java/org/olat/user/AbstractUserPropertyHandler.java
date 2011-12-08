@@ -129,7 +129,9 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 			// remove fields with null or empty value from o_userfield table (hibernate)
 			// sparse data storage
 			if (value == null || value.length() == 0) {
-				((UserImpl)user).getProperties().remove(name);
+				//fxdiff: store each value
+				((UserImpl)user).getProperties().put(name, "");
+				//((UserImpl)user).getProperties().remove(name);
 			} else {
 				((UserImpl)user).getProperties().put(name, value);
 			}

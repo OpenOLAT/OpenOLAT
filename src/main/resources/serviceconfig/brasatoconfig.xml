@@ -23,7 +23,8 @@
 						<entry key="smtpPwd" value="${smtp.pwd}"/>
 						<entry key="sslEnabled" value="${smtp.sslEnabled}"/>
 						<entry key="sslCheckCertificate" value="${smtp.sslCheckCertificate}"/>
-						<entry key="mailFrom" value="${adminemail}"/>
+						<entry key="mailFrom" value="${fromemail}"/>
+						<entry key="mailReplyTo" value="${adminemail}"/>
 						<entry key="mailSupport" value="${supportemail}"/>
 						<entry key="mailAttachmentMaxSize" value="${mail.attachment.maxsize}"/>
 					</map>
@@ -33,7 +34,7 @@
 				<property name="applicationName" value="${application.name}" />
 			</bean>
 
-			<bean class="org.olat.core.helpers.Settings"  depends-on="org.olat.core.util.WebappHelper" init-method="init" destroy-method="destroy">
+			<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper" init-method="init" destroy-method="destroy">
 				<property name="persistedProperties">
 					<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
 						<constructor-arg index="0" ref="coordinatorManager" />
@@ -97,6 +98,8 @@
 					NOTE: please use only a-z, 0-9 and _ as characters (those which are safe in the url encoding without converting)
 				 -->
 				<property name="version" value="${build.version}" />
+				<property name="buildIdentifier" value="${build.identifier}" />
+				<property name="repoRevision" value="${build.repo.revision}" />
 				<property name="applicationName" value="${application.name}" />
 				<property name="clusterMode" value="${cluster.mode}"/>
 				<property name="nodeId" value="${node.id}"/>

@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.catalog.CatalogEntry;
+import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -47,11 +50,14 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
+import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -512,6 +518,61 @@ public class PublishProcess {
 		}
 	}
 
+//VCRP-3: add catalog entry in publish wizard
+	protected void publishToCatalog(String choiceValue, List<CategoryLabel> labels) {
+		
+		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		Property prop = cpm.findCourseNodeProperty(rootNode, null, null, "catalog-choice");
+		if(prop == null) {
+			prop = cpm.createCourseNodePropertyInstance(rootNode, null, null, "catalog-choice", null, null, choiceValue, null);
+			cpm.saveProperty(prop);
+		} else {
+			prop.setStringValue(choiceValue);
+			cpm.updateProperty(prop);
+		}
+		
+		if("yes".equals(choiceValue) && labels != null) {
+			CatalogManager cm = CatalogManager.getInstance();
+			List<CatalogEntry> refParentCategories = cm.getCatalogCategoriesFor(repositoryEntry);
+			
+			a_a:
+			for(CategoryLabel label:labels) {
+				CatalogEntry category = label.getCategory();
+				CatalogEntry parentCategory = label.getParentCategory();
+				if(label.isDeleted()) {
+					//test
+					if(category.getKey() != null) {
+						List<CatalogEntry> children = cm.getChildrenOf(category);
+						for(CatalogEntry child:children) {
+							if(child.getRepositoryEntry() != null && child.getRepositoryEntry().equalsByPersistableKey(repositoryEntry)) {
+								cm.deleteCatalogEntry(child);
+							}
+						}
+					}
+				} else if(category.getKey() == null) {
+					//it's a new entry -> check if not already in catalog at this position
+					for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {
+						CatalogEntry refParentCategory = refIt.next();
+						if(refParentCategory.equalsByPersistableKey(parentCategory)) {
+							refIt.remove();
+							break a_a;
+						}
+					}
+					
+					category.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
+					cm.addCatalogEntry(parentCategory, category);
+				} else {
+					for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {
+						CatalogEntry refParentCategory = refIt.next();
+						if(refParentCategory.equalsByPersistableKey(category)) {
+							refIt.remove();
+						}
+					}
+				}
+			}
+		}
+	}
 
 	void clearPublishSet() {
 		resultingCourseRun = null;

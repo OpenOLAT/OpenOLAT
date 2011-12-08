@@ -196,8 +196,12 @@ public class ClassPathStaticDispatcher extends LogDelegator implements Dispatche
 		// /bla/blu.html
 		Package pakkage;
 		pakkage = Package.getPackage(packageName);
-		MediaResource mr = createClassPathStaticFileMediaResourceFor(pakkage, relPath);
-		ServletUtil.serveResource(hreq, hres, mr);
+		if(pakkage == null){
+			logWarn("could not find package '"+packageName+"' and relPath '"+relPath+"'", null);
+		}else{
+			MediaResource mr = createClassPathStaticFileMediaResourceFor(pakkage, relPath);
+			ServletUtil.serveResource(hreq, hres, mr);
+		}
 	}
 	
 	/**

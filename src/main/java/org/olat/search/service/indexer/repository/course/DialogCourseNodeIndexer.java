@@ -37,6 +37,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
@@ -128,6 +129,8 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
 				leafResourceContext.setFilePath(filename);
 				leafResourceContext.setDocumentType(TYPE_FILE);
+				//fxdiff FXOLAT-97: high CPU load tracker
+				WorkThreadInformations.set("Index Dialog VFSLeaf=" + filename + " at " + leafResourceContext.getResourceUrl());
   			Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
 	  		indexWriter.addDocument(document);
 			} else {
@@ -145,6 +148,9 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 			throw new InterruptedException(iex.getMessage());
 	  } catch (Exception ex) {
 			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
+		//fxdiff FXOLAT-97: high CPU load tracker
+		} finally {
+  		WorkThreadInformations.unset();
 		}
 	}
 

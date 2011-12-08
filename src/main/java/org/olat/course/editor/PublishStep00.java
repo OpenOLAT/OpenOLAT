@@ -24,6 +24,8 @@ package org.olat.course.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.catalog.CatalogEntry;
+import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,9 +44,14 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.StatusDescriptionHelper;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -60,14 +67,34 @@ class PublishStep00 extends BasicStep {
 
 	private PublishProcess publishProcess;
 	private OLATResourceable ores;
+	
+	private final boolean hasCatalog;
+	private final boolean hasPublishableChanges;
 
 	public PublishStep00(UserRequest ureq, CourseEditorTreeModel cetm, ICourse course) {
 		super(ureq);
 		this.ores = course;
 		publishProcess = PublishProcess.getInstance(course, cetm, ureq.getLocale());
+		
+		//VCRP-3: add catalog entry in publish wizard
+		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		
+		Property prop = cpm.findCourseNodeProperty(rootNode, null, null, "catalog-choice");
+		if(prop == null) {
+			hasCatalog = false;
+		} else if("no".equals(prop.getStringValue())) {
+			hasCatalog = true;
+		} else {
+			RepositoryEntry repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
+			hasCatalog = !CatalogManager.getInstance().getCatalogCategoriesFor(repositoryEntry).isEmpty();
+		}
+		
+		hasPublishableChanges = publishProcess.hasPublishableChanges();
+		
 		setI18nTitleAndDescr("publish.header", null);
 		// proceed with direct access as next step.
-		setNextStep(new PublishStep01(ureq, publishProcess.hasPublishableChanges()));
+		setNextStep(new PublishStep01(ureq, course, hasPublishableChanges, hasCatalog));
 	}
 
 	/**
@@ -75,7 +102,8 @@ class PublishStep00 extends BasicStep {
 	 */
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		// in any case allow next or finish
-		if(publishProcess.hasPublishableChanges()){
+		//VCRP-3: add catalog entry in publish wizard
+		if(hasPublishableChanges || !hasCatalog){
 			//this means we have possible steps 00a (error messages) and 00b (warning messages)
 			return PrevNextFinishConfig.NEXT;
 		}else{
@@ -98,7 +126,12 @@ class PublishStep00 extends BasicStep {
 		 * prepares all data needed for next step(s)
 		 */
 		runContext.put("publishProcess", publishProcess);
-		runContext.put("selectedCourseAccess",String.valueOf(repoEntry.getAccess()));
+		//fxdiff VCRP-1,2: access control of resources
+		if(repoEntry.isMembersOnly()) {
+			runContext.put("selectedCourseAccess", RepositoryEntry.MEMBERS_ONLY);
+		} else {
+			runContext.put("selectedCourseAccess",String.valueOf(repoEntry.getAccess()));
+		}
 		return new PublishStep00Form(ureq, wControl, form, publishProcess, runContext);
 	}
 

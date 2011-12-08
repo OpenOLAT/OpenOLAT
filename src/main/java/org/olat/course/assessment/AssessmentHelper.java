@@ -21,16 +21,18 @@
 
 package org.olat.course.assessment;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
@@ -67,6 +69,8 @@ public class AssessmentHelper {
 	public static final float MAX_SCORE_SUPPORTED = 10000f;
 	/** Lowest score value supported by OLAT * */
 	public static final float MIN_SCORE_SUPPORTED = -10000f;
+	//fxdiff VCRP-4: assessment overview with max score
+	private final static DecimalFormat scoreFormat = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
 
 	/**
 	 * Wraps an identity and it's score evaluation / attempts in a wrapper object
@@ -226,9 +230,15 @@ public class AssessmentHelper {
 	 * @param score The score to be rounded
 	 * @return The rounded score for GUI presentation
 	 */
+	//fxdiff VCRP-4: assessment overview with max score
 	public static String getRoundedScore(Float score) {
 		if (score == null) return null;
-		return Formatter.roundToString(score.floatValue(), 3);
+
+		//cluster_OK the formatter is not multi-thread and costly to create
+		synchronized(scoreFormat) {
+			return scoreFormat.format(score);
+		}
+		//return Formatter.roundToString(score.floatValue(), 3);
 	}
 
 	public static final String KEY_TYPE = "type";
@@ -239,9 +249,13 @@ public class AssessmentHelper {
 	public static final String KEY_TITLE_LONG = "long.title";
 	public static final String KEY_PASSED = "passed";
 	public static final String KEY_SCORE = "score";
+	public static final String KEY_SCORE_F = "fscore";
 	public static final String KEY_ATTEMPTS = "attempts";
 	public static final String KEY_DETAILS = "details";
 	public static final String KEY_SELECTABLE = "selectable";
+	//fxdiff VCRP-4: assessment overview with max score
+	public static final String KEY_MIN = "minScore";
+	public static final String KEY_MAX = "maxScore";
 	
 
 	
@@ -315,9 +329,19 @@ public class AssessmentHelper {
 					hasDisplayableValuesConfigured = true;
 					Float score = scoreEvaluation.getScore();
 					if (score != null) {
+						//fxdiff VCRP-4: assessment overview with max score
 						nodeData.put(KEY_SCORE, AssessmentHelper.getRoundedScore(score));
+						nodeData.put(KEY_SCORE_F, score);
 						hasDisplayableUserValues = true;
 					}
+					//fxdiff VCRP-4: assessment overview with max score
+					if(!(assessableCourseNode instanceof STCourseNode)) {
+						Float maxScore = assessableCourseNode.getMaxScoreConfiguration();
+						nodeData.put(KEY_MAX, maxScore);
+						Float minScore = assessableCourseNode.getMinScoreConfiguration();
+						nodeData.put(KEY_MIN, minScore);
+					}
+					
 				}
 				// passed
 				if (assessableCourseNode.hasPassedConfigured()) {

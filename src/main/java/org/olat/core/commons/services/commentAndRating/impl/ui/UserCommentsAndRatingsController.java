@@ -116,10 +116,10 @@ public class UserCommentsAndRatingsController extends BasicController implements
 		}
 		// Add ratings view
 		this.userCommentsAndRatingsVC.contextPut("viewIdent", CodeHelper.getRAMUniqueID());
+		this.userCommentsAndRatingsVC.contextPut("enableRatings", Boolean.valueOf(enableRatings));
 		if (enableRatings) {
 			this.userRatingsManager = UserRatingsManager.getInstance(ores, oresSubPath);
 			if (securityCallback.canRate()) {
-				this.userCommentsAndRatingsVC.contextPut("enableRatings", Boolean.valueOf(enableRatings));
 				ratingUserC = new RatingComponent("userRating", 0, RATING_MAX, true);
 				ratingUserC.addListener(this);
 				this.userCommentsAndRatingsVC.put("ratingUserC", ratingUserC);

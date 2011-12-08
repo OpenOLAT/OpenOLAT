@@ -33,6 +33,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.portfolio.EPLoggingAction;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
@@ -78,9 +79,10 @@ public class EPArtefactWizzardStepCallback implements StepRunnerCallback {
 			hasChanges = true;
 			AbstractArtefact locArtefact = (AbstractArtefact) runContext.get("artefact");
 			ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-
+			PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+			
 			// set the defined signature level, if its not from inside olat
-			if (locArtefact.getSignature() < 0 && runContext.containsKey("copyright.accepted") && (Boolean) runContext.get("copyright.accepted")){
+			if (locArtefact.getSignature() < 0 && ( (runContext.containsKey("copyright.accepted") && (Boolean) runContext.get("copyright.accepted")) || !portfolioModule.isCopyrightStepEnabled() ) ) {
 				locArtefact.setSignature(-1 * locArtefact.getSignature());
 			}
 			

@@ -33,21 +33,17 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 import org.olat.search.service.SearchResourceContext;
 
 /**
  * Common abstract indexer. Used as base class for indexers.
  * @author Christian Guretzki
  */
-public abstract class AbstractIndexer implements Indexer {
+public abstract class AbstractIndexer extends LogDelegator implements Indexer{
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractIndexer.class);
-	
-	public Map<String,Indexer> childIndexers = new HashMap<String,Indexer>();
-	
+	public Map<String,Indexer> childIndexers = new HashMap<String,Indexer>();	
 
 	/**
 	 * Bean setter method used by spring. 
@@ -60,7 +56,7 @@ public abstract class AbstractIndexer implements Indexer {
 		try {
 			for (Indexer indexer:indexerList) {
 				childIndexers.put(indexer.getSupportedTypeName(), indexer);
-				log.debug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
+				logDebug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
 			} 
 		}	catch (ClassCastException cce) {
 				throw new StartupException("Configured indexer is not of type Indexer", cce);
@@ -73,14 +69,14 @@ public abstract class AbstractIndexer implements Indexer {
 	 */
 	public void doIndex(SearchResourceContext searchResourceContext, Object object, OlatFullIndexer indexerWriter) throws IOException, InterruptedException {
 		for (Indexer indexer : childIndexers.values()) {
-			if (log.isDebug()) log.debug("Start doIndex for indexer.typeName=" + indexer.getSupportedTypeName());
+			if (isLogDebugEnabled()) logDebug("Start doIndex for indexer.typeName=" + indexer.getSupportedTypeName());
 			try {
 			  indexer.doIndex(searchResourceContext, object, indexerWriter);
 			} catch (InterruptedException iex) {
 				throw iex;
 			}	catch (Throwable ex) {
 				// FIXME:chg: Workaround to fix indexing-abort
-				log.warn("Exception in diIndex indexer.typeName=" + indexer.getSupportedTypeName(),ex);
+				logWarn("Exception in diIndex indexer.typeName=" + indexer.getSupportedTypeName(),ex);
 			}
 		}
 	}
@@ -93,7 +89,7 @@ public abstract class AbstractIndexer implements Indexer {
 	 * @return
 	 */
 	public boolean checkAccess(BusinessControl businessControl, Identity identity, Roles roles) {
-		if (log.isDebug()) log.debug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
+		if (isLogDebugEnabled()) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
 		ContextEntry contextEntry = businessControl.popLauncherContextEntry();
 		if (contextEntry != null) {
 			// there is an other context-entry => go further
@@ -106,11 +102,11 @@ public abstract class AbstractIndexer implements Indexer {
 					AbstractIndexer childIndexer = entSet.getValue() instanceof AbstractIndexer ? (AbstractIndexer) entSet.getValue() : null;					
 					Indexer foundSubChildIndexer = childIndexer == null ? null : childIndexer.getChildIndexers().get(type);
 					if (foundSubChildIndexer != null) {
-						if (log.isDebug()) log.debug("took a childindexer for ores= " + ores + " not directly linked (means businesspath is not the same stack as indexer -> childindexer). type= " +type + " . indexer parent-type not on businesspath=" + childIndexer.getSupportedTypeName());
+						if (isLogDebugEnabled()) logDebug("took a childindexer for ores= " + ores + " not directly linked (means businesspath is not the same stack as indexer -> childindexer). type= " +type + " . indexer parent-type not on businesspath=" + childIndexer.getSupportedTypeName());
 						return foundSubChildIndexer.checkAccess(contextEntry, businessControl, identity, roles);
 					}
 				}				
-				log.error("could not find an indexer for type="+type + " businessControl="+businessControl + " identity=" + identity);
+				logError("could not find an indexer for type="+type + " businessControl="+businessControl + " identity=" + identity, null);
 				return false;
 			}
 			return indexer.checkAccess(contextEntry, businessControl, identity, roles);

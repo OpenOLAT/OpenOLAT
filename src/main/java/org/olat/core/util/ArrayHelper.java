@@ -122,7 +122,7 @@ public class ArrayHelper {
 		String[] newArray = new String[oldArray.length + 1];
 		int targetPos = (addAtTheEnd ? 0 : 1);
 		System.arraycopy(oldArray, 0, newArray, targetPos, oldArray.length);
-		int newValuePos = (addAtTheEnd ? newArray.length : 0);
+		int newValuePos = (addAtTheEnd ? newArray.length : 1);
 		newArray[newValuePos - 1] = doBeAddedValue;
 		return newArray;
 	}

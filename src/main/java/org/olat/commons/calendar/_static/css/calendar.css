@@ -366,6 +366,12 @@ a.o_cal_config_remove_cal:hover {
 	background: url(calendar_add.png) no-repeat 0 0;
 	float: left; display: inline;
 }
+	.o_cal_config_importevent {
+	position: relative;
+	width: 20px; height: 16px;
+	background: url(calendar_import.png) no-repeat 0 0;
+	float: left; display: inline;
+}
 .o_cal_config_readonly {
 	position: relative;
 	width: 20px; height: 16px;
@@ -375,6 +381,10 @@ a.o_cal_config_remove_cal:hover {
 a.o_cal_config_addevent:hover {
 	width: 20px; height: 16px;
 	background: url(calendar_add_over.png) no-repeat 0 0;
+}
+a.o_cal_config_importevent:hover {
+	width: 20px; height: 16px;
+	background: url(calendar_import_over.png) no-repeat 0 0;
 }
 
 /* colorchooser */
@@ -465,10 +475,11 @@ div.o_cal_links {}
 	.o_cal_wv_print ul { list-style-type: none; margin-left: 0; }
 	.o_cal_event { clear:left; margin: 0.2em 0; }
 	.o_cal_wv_list * { float: left; width: 100%; } /* float all elements in order to fully include floating children */
-	.o_cal_event span { padding: 0 0.4em; display: block; }
+	.o_cal_event span { padding: 0 0.4em; display:block; }
 	.o_cal_date { font-weight: bold; }
 	.o_cal_time { width: 25%; } 
 	.o_cal_subject { width: 40%; border-left-style: solid; border-left-width: thick; }
+	.o_cal_subject p { padding:0 0.4em; margin:0;  }
 	.o_cal_location { float: right; width: 34%; } /* Since subject has a 1px border, decrease the width of location by 1% */
 	.o_cal_config_scrollwrapper { width: auto; height: auto; overflow: visible; overflow-x: visible; }
 	.o_cal_config_calendar { border-width: 0; border-left-style: solid; border-left-width: thick; float: none; display: block;}

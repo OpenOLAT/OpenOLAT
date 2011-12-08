@@ -45,7 +45,7 @@
 
 <bean id="registrationPresetUsername.byEmail"
 		class="org.olat.registration.SelfRegistrationUserNameFromEmailUserNameCreationInterceptor" lazy-init="true">
-		<property name="allowChangeOfUsername" value="false"/>
+		<property name="allowChangeOfUsername" value="${registration.preset.username.allowChanges}"/>
 		<property name="emailDomain" value="${registration.preset.username.domain}"/>
 </bean>
 

@@ -21,7 +21,10 @@
 
 package org.olat.core.commons.services.commentAndRating;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRating;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -184,5 +187,13 @@ public abstract class UserRatingsManager extends BasicManager {
 	 * @return
 	 */
 	public abstract int deleteAllRatingsIgnoringSubPath();
+	
+	/**
+	 * Return the most rated resources
+	 * @param limit The maximum number of resources returned
+	 * @return
+	 */
+	//fxdiff
+	public abstract List<OLATResourceableRating> getMostRatedResourceables(int maxResults);
 
 }

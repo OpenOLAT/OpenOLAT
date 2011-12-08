@@ -27,6 +27,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
+import java.awt.color.CMMException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -54,7 +55,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author Alexander Schneider, srosse
  */
-public class ImageHelper {
+public class ImageHelper implements IImageHelper {
 	
 	private static final String OUTPUT_FORMAT = "jpeg";
 	
@@ -108,7 +109,7 @@ public class ImageHelper {
 	 * @param maxSize the maximum size (height or width) of the new scaled image
 	 * @return
 	 */
-	public static Size scaleImage(InputStream image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
+	public Size scaleImage(InputStream image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
 		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 		try {
 			BufferedImage imageSrc = ImageIO.read(image);
@@ -157,6 +158,9 @@ public class ImageHelper {
 			}
 			return null;
 		} catch (IOException e) {
+			return null;
+		//fxdiff FXOLAT-109: prevent red screen if the image has wrong EXIF data
+		} catch (CMMException e) {
 			return null;
 		} finally {
 			FileUtils.closeSafely(ins);
@@ -217,6 +221,9 @@ public class ImageHelper {
 			}
 			return writeTo(scaleTo(imageSrc, scaledSize), scaledImage, scaledSize, getImageFormat(scaledImage));
 		} catch (IOException e) {
+			return false;
+		//fxdiff FXOLAT-109: prevent red screen if the image has wrong EXIF data
+		} catch (CMMException e) {
 			return false;
 		}
 	}

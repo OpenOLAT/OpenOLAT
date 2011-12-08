@@ -21,6 +21,9 @@
 
 package org.olat.admin.search;
 
+import org.apache.log4j.Level;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,8 +34,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.LogRealTimeViewerController;
 import org.olat.search.service.SearchServiceFactory;
-import org.olat.search.service.SearchServiceImpl;
+import org.olat.search.service.indexer.IndexCronGenerator;
 
 /**
 *  Description:<br>
@@ -61,6 +65,13 @@ public class SearchAdminController extends BasicController {
 		startIndexingButton = LinkFactory.createButtonSmall("button.startindexing", myContent, this);
 		stopIndexingButton = LinkFactory.createButtonSmall("button.stopindexing", myContent, this);
 		myContent.contextPut("searchstatus", SearchServiceFactory.getService().getStatus());
+		
+		IndexCronGenerator generator = (IndexCronGenerator)CoreSpringFactory.getBean("&searchIndexCronGenerator");
+		if(generator.isCronEnabled()) {
+			myContent.contextPut("cronExpression", generator.getCron());
+		} else {
+			myContent.contextPut("cronExpression", Boolean.FALSE);
+		}
     
 		searchAdminForm = new SearchAdminForm(ureq, wControl);
 		listenTo(searchAdminForm);
@@ -68,9 +79,20 @@ public class SearchAdminController extends BasicController {
 		searchAdminForm.setIndexInterval(
 				SearchServiceFactory.getService().getIndexInterval()
 		);
+		
+		SearchModule searchModule = (SearchModule)CoreSpringFactory.getBean("searchModule");
+		searchAdminForm.setFileBlackList(searchModule.getCustomFileBlackList());
+		searchAdminForm.setExcelFileEnabled(searchModule.getExcelFileEnabled());
+		searchAdminForm.setPptFileEnabled(searchModule.getPptFileEnabled());
+		searchAdminForm.setPdfFileEnabled(searchModule.getPdfFileEnabled());
 	
 		myContent.put("searchAdminForm", searchAdminForm.getInitialComponent());
 		main.setContent(myContent);
+		
+		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, wControl, "org.olat.search", Level.DEBUG, true);
+		listenTo(logViewController);
+		myContent.put("logViewController", logViewController.getInitialComponent());
+
 		putInitialPanel(main);
 	}
 
@@ -96,6 +118,12 @@ public class SearchAdminController extends BasicController {
 		if (source == searchAdminForm) {
 			if (event == Event.DONE_EVENT) {
 				SearchServiceFactory.getService().setIndexInterval(searchAdminForm.getIndexInterval());
+				
+				SearchModule searchModule = (SearchModule)CoreSpringFactory.getBean("searchModule");
+				searchModule.setCustomFileBlackList(searchAdminForm.getFileBlackList());
+				searchModule.setExcelFileEnabled(searchAdminForm.isExcelFileEnabled());
+				searchModule.setPptFileEnabled(searchAdminForm.isPptFileEnabled());
+				searchModule.setPdfFileEnabled(searchAdminForm.isPdfFileEnabled());
 				return;
 			}
 		}

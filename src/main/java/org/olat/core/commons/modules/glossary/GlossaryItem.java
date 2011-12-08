@@ -23,6 +23,7 @@ import java.net.URI;
 import java.text.Collator;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -42,6 +43,7 @@ public class GlossaryItem implements Comparable<Object> {
 	private ArrayList<String> glossFlexions;
 	private ArrayList<String> glossSynonyms;
 	private ArrayList<URI> glossLinks;
+	private List<Revision> revHistory;
 
 	public GlossaryItem(String glossTerm, String glossDef) {
 		super();
@@ -113,6 +115,23 @@ public class GlossaryItem implements Comparable<Object> {
 		return getGlossTerm();
 	}
 	
+	/**
+	 * @return Return the list of revisions
+	 */
+	public List<Revision> getRevHistory() {
+		if(revHistory == null) {
+			revHistory = new ArrayList<Revision>();
+		}
+		return revHistory;
+	}
+
+	/**
+	 * @param revHistory The list of revisions
+	 */
+	public void setRevHistory(List<Revision> revHistory) {
+		this.revHistory = revHistory;
+	}
+
 	/**
 	 * @return Returns the glossFlexions.
 	 */

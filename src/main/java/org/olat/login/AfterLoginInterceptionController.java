@@ -22,6 +22,7 @@ package org.olat.login;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +35,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
 import org.olat.core.gui.control.generic.wizard.WizardInfoController;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -54,7 +57,7 @@ import org.olat.properties.PropertyManager;
  */
 public class AfterLoginInterceptionController extends BasicController {
 
-	private CloseableModalController cmc;
+	private CloseableModalWindowWrapperController cmc;
 	private WizardInfoController wiz;
 	private VelocityContainer vC;
 	private Panel actualPanel;
@@ -66,10 +69,13 @@ public class AfterLoginInterceptionController extends BasicController {
 	private boolean actualForceUser;
 	// must match with keys in XML
 	private static final String CONTROLLER_KEY = "controller";
+	private static final String CONTROLLER = "controller-instance";
 	private static final String FORCEUSER_KEY = "forceUser";
 	private static final String REDOTIMEOUT_KEY = "redoTimeout";
 	private static final String I18NINTRO_KEY = "i18nIntro";
-
+	private static final String SIZE_KEY = "size"; 
+	protected static final String ORDER_KEY = "order";
+	
 	private static final String PROPERTY_CAT = "afterLogin";
 
 	public AfterLoginInterceptionController(UserRequest ureq, WindowControl wControl) {
@@ -87,32 +93,59 @@ public class AfterLoginInterceptionController extends BasicController {
 
 		// loop over possible controllers and check if user already did it before
 		// configured timeout
-		int initialSize = aftctrls.size();
-		int j = 0;
-		for (int i = 0; i < initialSize; i++) {
-			int correction = 0;
-			Map<String, Object> ctrlMap = aftctrls.get(j);
+		for(Iterator<Map<String,Object>> mapInfosIt=aftctrls.iterator(); mapInfosIt.hasNext(); ) {
+			Map<String,Object> ctrlMap = mapInfosIt.next();
 			String ctrlName = ((AutoCreator) ctrlMap.get(CONTROLLER_KEY)).getClassName();
 			// checking for recurring entries
 			if (ctrlMap.containsKey(REDOTIMEOUT_KEY)) {
 				// redo-timeout not yet over, so don't do again
 				Long redoTimeout = Long.parseLong((String) ctrlMap.get(REDOTIMEOUT_KEY));
 				if (((Calendar.getInstance().getTimeInMillis() / 1000) - redoTimeout) < getLastRunTimeForController(ctrlName)) {
-					aftctrls.remove(ctrlMap);
-					correction = -1;
+					mapInfosIt.remove();
 				}
 			} else { // check if run already for non-recurring entries
 				if (getRunStateForController(ctrlName)) {
-					aftctrls.remove(ctrlMap);
-					correction = -1;
+					mapInfosIt.remove();
 				}
 			}
-			j = i + correction + 1;
 		}
 
 		// break if nothing survived cleanup or invalid configuration
-		if (aftctrls == null || aftctrls.size() == 0) { return; }
+		if (aftctrls == null || aftctrls.size() == 0) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			return;
+		}
+		
+		//fxdiff BAKS-20 instantiate controllers in advance to allow back
+		for(Iterator<Map<String,Object>> mapInfosIt=aftctrls.iterator(); mapInfosIt.hasNext(); ) {
+			Map<String,Object> mapInfos = mapInfosIt.next();
+			if (mapInfos.containsKey(CONTROLLER_KEY)) {
+				ControllerCreator creator = (ControllerCreator) mapInfos.get(CONTROLLER_KEY);
+				Controller ctrl = creator.createController(ureq, wControl);
+				if(ctrl instanceof SupportsAfterLoginInterceptor) {
+					SupportsAfterLoginInterceptor loginInterceptor = (SupportsAfterLoginInterceptor)ctrl;
+					if(loginInterceptor.isInterceptionRequired(ureq)) {
+						mapInfos.put(CONTROLLER, ctrl);
+					} else {
+						mapInfosIt.remove();
+					}
+				} else if (ctrl != null ){
+					mapInfos.put(CONTROLLER, ctrl);
+				} else {
+					mapInfosIt.remove();
+				}
+			} else {
+				mapInfosIt.remove();
+			}
+		}
+		if (aftctrls.isEmpty()) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			return;
+		}
 
+		// sort controllers according to config
+		aftctrls = AfterLoginInterceptionManager.sortControllerListByOrder(aftctrls);
+		
 		wiz = new WizardInfoController(ureq, aftctrls.size());
 		vC.put("wizard", wiz.getInitialComponent());
 		vC.contextPut("ctrlCount", aftctrls.size());
@@ -121,9 +154,14 @@ public class AfterLoginInterceptionController extends BasicController {
 		putControllerToPanel(ureq, wControl, 0);
 		vC.put("actualPanel", actualPanel);
 
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), vC, true, translate("runonce.title"));
+		cmc = new CloseableModalWindowWrapperController(ureq, getWindowControl(), translate("runonce.title"), vC, "interceptionPopup");
+		cmc.setCloseable(false);
+		cmc.setIgnoreCookie(true);
 		cmc.activate();
+		setPopupSizeForCtr(0);
 		listenTo(cmc);
+		// if controller could not be created, go to the next one ore close the wizzard 
+		if (actCtrl == null) activateNextOrCloseModal(ureq); 
 	}
 
 	private Long getLastRunTimeForController(String ctrlName) {
@@ -139,7 +177,22 @@ public class AfterLoginInterceptionController extends BasicController {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * 
+	 */
+	private void setPopupSizeForCtr(int ctrNr){
+		if (cmc != null){
+			Map<String, Object> mapEntry = aftctrls.get(ctrNr);
+			if (mapEntry.containsKey(SIZE_KEY)) {
+				String[] size = mapEntry.get(SIZE_KEY).toString().split("x");
+				cmc.resizeWindow(Integer.parseInt(size[0]), Integer.parseInt(size[1]));
+			}else{
+				cmc.setInitialWindowSize(300,	 400);
+			}
+		}
+	}
+	
 	private void saveOrUpdatePropertyForController(UserRequest ureq, String ctrlName) {
 		for (Property prop : ctrlPropList) {
 			if (prop.getName().equals(ctrlName)) {
@@ -165,25 +218,24 @@ public class AfterLoginInterceptionController extends BasicController {
 		actualCtrNr = ctrNr;
 		wiz.setCurStep(ctrNr + 1);
 		Map<String, Object> mapEntry = aftctrls.get(ctrNr);
-		AutoCreator ctrCreator = null;
-		if (mapEntry.containsKey(CONTROLLER_KEY)) {
-			ctrCreator = (AutoCreator) mapEntry.get(CONTROLLER_KEY);
-		} else {
-			throw new RuntimeException("at least a controller must be defined");
-		}
+				
 		actualForceUser = false;
 		if (mapEntry.containsKey(FORCEUSER_KEY)) {
 			actualForceUser = Boolean.valueOf(mapEntry.get(FORCEUSER_KEY).toString());
 		}
 
-		actCtrl = ctrCreator.createController(ureq, wControl);
+		removeAsListenerAndDispose(actCtrl);
+		actCtrl = (Controller)mapEntry.get(CONTROLLER);
+		if (actCtrl == null) {
+			return;
+		}
 		listenTo(actCtrl);
 		if (mapEntry.containsKey(I18NINTRO_KEY)) {
 			String[] introComb = ((String) mapEntry.get(I18NINTRO_KEY)).split(":");
 			vC.contextPut("introPkg", introComb[0]);
 			vC.contextPut("introKey", introComb[1]);
 		}
-
+		setPopupSizeForCtr(ctrNr);
 		actualPanel.setContent(actCtrl.getInitialComponent());
 	}
 
@@ -193,6 +245,7 @@ public class AfterLoginInterceptionController extends BasicController {
 	@Override
 	protected void doDispose() {
 		// nothing to dispose as we listen to actCtrl
+		removeAsListenerAndDispose(actCtrl);
 		aftctrls = null;
 	}
 
@@ -213,7 +266,7 @@ public class AfterLoginInterceptionController extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == cmc && event == cmc.CLOSE_MODAL_EVENT && actualForceUser) {
+		if (source == cmc && event == CloseableModalWindowController.CLOSE_WINDOW_EVENT && actualForceUser) {
 			// show warning if this is a task, where user is forced to do it
 			showWarning("runonce.forced");
 			cmc.activate();
@@ -224,13 +277,24 @@ public class AfterLoginInterceptionController extends BasicController {
 			// save state of this controller
 			String ctrlName = actCtrl.getClass().getName();
 			saveOrUpdatePropertyForController(ureq, ctrlName);
-
+			
 			// go to next
-			if ((actualCtrNr + 1) < aftctrls.size()) {
-				putControllerToPanel(ureq, getWindowControl(), actualCtrNr + 1);
-			} else {
-				cmc.deactivate();
-			}
+			activateNextOrCloseModal(ureq);
+		} else if (source == actCtrl && event == Event.CANCELLED_EVENT && !actualForceUser){
+			// do not persist state. controller sent an cancel event
+			activateNextOrCloseModal(ureq);
+		}
+	}
+	
+	
+	// fxdiff: failsafe continueing
+	private void activateNextOrCloseModal(UserRequest ureq){
+		if ((actualCtrNr + 1) < aftctrls.size()) {
+			putControllerToPanel(ureq, getWindowControl(), actualCtrNr + 1);
+		} else {
+			removeAsListenerAndDispose(actCtrl);
+			cmc.deactivate();
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 

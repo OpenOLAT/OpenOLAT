@@ -114,9 +114,23 @@
     			<entry key='${ldap.attributename.email}' value='email' />
     			<entry key='${ldap.attributename.firstName}' value='firstName' />
     			<entry key='${ldap.attributename.lastName}' value='lastName' />
+    			
     			<!-- example for another mapping
     			<entry key='description' value='orgUnit' />
     			-->
+    			
+    			<!-- some generic usable mappings to allow config by properties -->
+    			<entry key='${ldap.attrib.gen.map.ldapkey1}' value='${ldap.attrib.gen.map.olatkey1}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey2}' value='${ldap.attrib.gen.map.olatkey2}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey3}' value='${ldap.attrib.gen.map.olatkey3}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey4}' value='${ldap.attrib.gen.map.olatkey4}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey5}' value='${ldap.attrib.gen.map.olatkey5}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey6}' value='${ldap.attrib.gen.map.olatkey6}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey7}' value='${ldap.attrib.gen.map.olatkey7}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey8}' value='${ldap.attrib.gen.map.olatkey8}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey9}' value='${ldap.attrib.gen.map.olatkey9}' />
+    			<entry key='${ldap.attrib.gen.map.ldapkey10}' value='${ldap.attrib.gen.map.olatkey10}' />
+    			
     		</map>
     	</property>
    		<!-- 
@@ -128,6 +142,9 @@
     	<property name="staticUserProperties">
     		<map>
      			<!-- <entry key='institutionalName' value='MyInstitution' /> -->
+     			<entry key='${ldap.attrib.static.olatkey1}' value='${ldap.attrib.static.value1}' />
+     			<entry key='${ldap.attrib.static.olatkey2}' value='${ldap.attrib.static.value2}' />
+     			<entry key='${ldap.attrib.static.olatkey3}' value='${ldap.attrib.static.value3}' />
     		</map>
     	</property>
     	<!-- 
@@ -140,6 +157,9 @@
     	<property name="syncOnlyOnCreateProperties">
     		<set>
     			<!-- <value>email</value> -->
+    			<value>${ldap.attrib.sync.once.olatkey1}</value>
+    			<value>${ldap.attrib.sync.once.olatkey2}</value>
+    			<value>${ldap.attrib.sync.once.olatkey3}</value>
     		</set>
     	</property>
     </bean>

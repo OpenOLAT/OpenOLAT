@@ -30,10 +30,10 @@ package org.olat.core.commons.controllers.linkchooser;
  * 
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.activity.IUserActivityLogger;
 import org.olat.core.util.vfs.VFSContainer;
 
 public abstract class CustomMediaChooserController extends DefaultController {
@@ -62,6 +62,9 @@ public abstract class CustomMediaChooserController extends DefaultController {
 	 */
 	abstract public CustomMediaChooserController getInstance(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			String[] suffixes, String fileName);
+	
+	//fxdiff
+	abstract public Mapper getMapperInstance(VFSContainer rootDir, String[] suffixes, String fileName);
 
 	/**
 	 * @return Title for media chooser tabbed pane

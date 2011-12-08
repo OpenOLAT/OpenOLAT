@@ -15,10 +15,13 @@
 package de.bps.olat.portal.links;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -29,10 +32,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.xml.XStreamHelper;
+
+import com.thoughtworks.xstream.XStream;
 
 public class LinksPortlet extends AbstractPortlet {
 	
@@ -54,10 +63,13 @@ public class LinksPortlet extends AbstractPortlet {
 	private static final String ELEM_LINK_TITLE = "Title";
 	private static final String ELEM_LINK_URL = "URL";
 	private static final String ELEM_LINK_DESC = "Description";
+	private static final String ELEM_LINK_IDENT = "Identifier";
 	private static final String ELEM_LINK_TARGET = "Target";
 	private static final String ELEM_LINK_LANG = "Language";
 	
 	private static HashMap<String, PortletInstitution> content;
+
+	private static File fxConfXStreamFile;
 	private Controller runCtr;
 	
 	/**
@@ -76,41 +88,133 @@ public class LinksPortlet extends AbstractPortlet {
 		return p;
 	}
 	
-	private void init() {
+	private static void init() {
 		OLog logger = Tracing.createLoggerFor(LinksPortlet.class);
 		if(logger.isDebug()) logger.debug("START: Loading remote portlets content.");
 		
 		File configurationFile = new File(WebappHelper.getContextRoot() + CONFIG_FILE);
+		// fxdiff: have file outside of war/olatapp
+		File fxConfFolder = new File(WebappHelper.getUserDataRoot() + "/customizing/linksPortlet");
+		if (!fxConfFolder.exists()) {
+			fxConfFolder.mkdir();
+		}
+		File fxConfFile = new File(fxConfFolder + "/olat_portals_links.xml");
+		fxConfXStreamFile = new File(fxConfFolder + "/olat_portals_xstream.xml");
+		if (!fxConfFile.exists() && !fxConfXStreamFile.exists()) {
+			try {
+				fxConfFile.createNewFile();
+				FileUtils.copyFileToFile(configurationFile, fxConfFile, false);
+				logger.info("portal links portlet: copied initial config from " + CONFIG_FILE);
+			} catch (IOException e) {
+				new AssertException("could not copy an initial portal links config to olatdata", e);
+			}
+		}
 		
 		// this map contains the whole data
 		HashMap<String, PortletInstitution> portletMap = new HashMap<String, PortletInstitution>();
 
-		SAXReader reader = new SAXReader();
-		try {
-			Document doc = reader.read(configurationFile);
-			Element rootElement = doc.getRootElement();
-			List<Element> lstInst = rootElement.elements(ELEM_INSTITUTION);
-			for( Element instElem : lstInst ) {
-				String inst = instElem.attributeValue(ATTR_INSTITUTION_NAME);
-				List<Element> lstTmpLinks = instElem.elements(ELEM_LINK);
-				List<PortletLink> lstLinks = new ArrayList<PortletLink>(lstTmpLinks.size());
-				for( Element linkElem: lstTmpLinks ) {
-					String title = linkElem.elementText(ELEM_LINK_TITLE);
-					String url = linkElem.elementText(ELEM_LINK_URL);
-					String target = linkElem.elementText(ELEM_LINK_TARGET);
-					String lang = linkElem.elementText(ELEM_LINK_LANG);
-					String desc = linkElem.elementText(ELEM_LINK_DESC);
-					lstLinks.add(new PortletLink(title, url, target, lang, desc));
+		if (!fxConfXStreamFile.exists()){
+			SAXReader reader = new SAXReader();
+			try {
+				// fxdiff: read from fx-config-file in olatdata
+				Document doc = reader.read(fxConfFile);
+				Element rootElement = doc.getRootElement();
+				List<Element> lstInst = rootElement.elements(ELEM_INSTITUTION);
+				for( Element instElem : lstInst ) {
+					String inst = instElem.attributeValue(ATTR_INSTITUTION_NAME);
+					List<Element> lstTmpLinks = instElem.elements(ELEM_LINK);
+					List<PortletLink> lstLinks = new ArrayList<PortletLink>(lstTmpLinks.size());
+					for( Element linkElem: lstTmpLinks ) {
+						String title = linkElem.elementText(ELEM_LINK_TITLE);
+						String url = linkElem.elementText(ELEM_LINK_URL);
+						String target = linkElem.elementText(ELEM_LINK_TARGET);
+						String lang = linkElem.elementText(ELEM_LINK_LANG);
+						String desc = linkElem.elementText(ELEM_LINK_DESC);
+						String identifier = linkElem.elementText(ELEM_LINK_IDENT);
+						lstLinks.add(new PortletLink(title, url, target, lang, desc, identifier));
+					}
+					portletMap.put(inst, new PortletInstitution(inst, lstLinks));
 				}
-				portletMap.put(inst, new PortletInstitution(inst, lstLinks));
+			} catch (Exception e) {
+				logger.error("Error reading configuration file", e);
+			} finally {
+				content = portletMap;
 			}
-		} catch (Exception e) {
-			logger.error("Error reading configuration file", e);
-		} finally {
-			content = portletMap;
-		}
+			// lazy migrate to new format
+			saveLinkList(content);
+			FileUtils.copyFileToFile(fxConfFile, new File(fxConfFile + ".bak"), true);
+		} else {
+			XStream xstream = XStreamHelper.createXStreamInstance();
+			xstream.alias("LinksPortlet", Map.class);
+			xstream.alias(ELEM_LINK, PortletLink.class);
+			xstream.alias(ELEM_INSTITUTION, PortletInstitution.class);
+			xstream.aliasAttribute(PortletInstitution.class, ATTR_INSTITUTION_NAME, ATTR_INSTITUTION_NAME);
+			content = (HashMap<String, PortletInstitution>) XStreamHelper.readObject(xstream, fxConfXStreamFile);
+		}		
 	}
 	
+	public static boolean saveLinkList(HashMap<String, PortletInstitution> portletMap){
+		XStream xstream = XStreamHelper.createXStreamInstance();
+		xstream.alias("LinksPortlet", Map.class);
+		xstream.alias(ELEM_LINK, PortletLink.class);
+		xstream.alias(ELEM_INSTITUTION, PortletInstitution.class);
+		xstream.aliasAttribute(PortletInstitution.class, ATTR_INSTITUTION_NAME, ATTR_INSTITUTION_NAME);
+		String output = xstream.toXML(portletMap);
+		XStreamHelper.writeObject(xstream, fxConfXStreamFile, portletMap);
+		return (output.length() != 0);		
+	}
+	
+	public static PortletLink getLinkByIdentifier(String identifier){
+		for (Iterator<String> iterator = content.keySet().iterator(); iterator.hasNext();) {
+			String inst = iterator.next();
+			PortletInstitution portletsForInst = content.get(inst);
+			List<PortletLink> instLinks = portletsForInst.getLinks();
+			for (PortletLink portletLink : instLinks) {
+				if (portletLink.getIdentifier().equals(identifier)) return portletLink;
+			}
+		}
+		return null;
+	}
+	
+	public static void removeLink(PortletLink link){
+		if (link == null) return;
+		for (Iterator<String> iterator = content.keySet().iterator(); iterator.hasNext();) {
+			String inst = iterator.next();
+			PortletInstitution portletsForInst = content.get(inst);
+			List<PortletLink> instLinks = portletsForInst.getLinks();
+			for (PortletLink portletLink : instLinks) {
+				if (portletLink.getIdentifier().equals(link.getIdentifier())) {
+					instLinks.remove(link);
+					break;
+				}
+			}
+		}
+		saveLinkList(content);
+	}
+	
+	public static void updateLink(PortletLink link){
+		if (link == null) return;
+		for (Iterator<String> iterator = content.keySet().iterator(); iterator.hasNext();) {
+			String inst = iterator.next();
+			PortletInstitution portletsForInst = content.get(inst);
+			List<PortletLink> instLinks = portletsForInst.getLinks();
+			boolean existingLink = false;
+			for (PortletLink portletLink : instLinks) {
+				if (portletLink.getIdentifier().equals(link.getIdentifier())) {
+					portletLink = link;
+					existingLink = true;
+					break;
+				} 
+			}
+			if (!existingLink && portletsForInst == link.getInstitution()) {				
+				portletsForInst.addLink(link);
+				break;
+			}
+		}
+		saveLinkList(content);
+	}
+	
+		
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()
 	 */
@@ -118,6 +222,11 @@ public class LinksPortlet extends AbstractPortlet {
 		return getTranslator().translate("portlet.title");
 	}	
 
+	public static void reInit(UserRequest ureq){		
+		content = null;
+		init();
+	}
+	
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getDescription()
 	 */
@@ -223,13 +332,24 @@ class PortletInstitution {
 class PortletLink {
 	
 	private String title, url, target, language, description;
+	private String identifier;
+	private transient PortletInstitution institution;
 	
-	public PortletLink(String title, String url, String target, String language, String description) {
-		this.title = title;
-		this.url = url;
-		this.target = target;
-		this.language = language;
-		this.description = description;
+	public PortletLink(String title, String url, String target, String language, String description, String identifier) {
+		setTitle(title);
+		setUrl(url);
+		setTarget(target);
+		setLanguage(language);
+		setDescription(description);
+		setIdentifier(identifier);
+	}
+
+	public PortletInstitution getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(PortletInstitution institution) {
+		this.institution = institution;
 	}
 
 	public String getTitle() {
@@ -270,5 +390,20 @@ class PortletLink {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public void setIdentifier(String identifier){
+		if (identifier == null) {
+			this.identifier = UUID.randomUUID().toString().replace("-", "");
+		} else {
+			this.identifier = identifier;
+		}
+	}
+	
+	public String getIdentifier(){
+		if (!StringHelper.containsNonWhitespace(identifier)){
+			setIdentifier(null);
+		}
+		return identifier;
 	}
 }

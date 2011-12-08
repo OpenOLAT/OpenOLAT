@@ -43,6 +43,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.MimedFileMediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -146,10 +147,8 @@ public class ScormArchiveWizardController extends BasicController {
 					showFileButton = LinkFactory.createButton("showfile", finishedVC, this);
 					finishedVC.contextPut("nodetitle", node.getShortTitle());
 					
-					boolean hasResults = ScormExportManager.getInstance().hasResults(course.getCourseEnvironment(), node, getTranslator());
-					if(hasResults) {
-					  doExport(ureq, (ScormCourseNode)node);
-					
+					targetFileName = doExport(ureq, (ScormCourseNode)node);
+					if(StringHelper.containsNonWhitespace(targetFileName)) {
 					  finishedVC.contextPut("filename", targetFileName);
 		    	  wc.setWizardTitle(getTranslator().translate("wizard.finished.title"));
 					  wc.setNextWizardStep(getTranslator().translate("wizard.finished.howto"), finishedVC);
@@ -171,13 +170,13 @@ public class ScormArchiveWizardController extends BasicController {
 		}
 	}
 	
-	private void doExport(UserRequest ureq, ScormCourseNode node) {
+	private String doExport(UserRequest ureq, ScormCourseNode node) {
 		ICourse course = CourseFactory.loadCourse(courseId);
 		exportDir = CourseFactory.getOrCreateDataExportDirectory(ureq.getIdentity(), course.getCourseTitle());
 		UserManager um = UserManager.getInstance();
     charset = um.getUserCharset(ureq.getIdentity());
     
     ScormExportManager sreManager = ScormExportManager.getInstance();
-		targetFileName = sreManager.exportResults(course.getCourseEnvironment(), node, getTranslator(), exportDir, charset);
+		return sreManager.exportResults(course.getCourseEnvironment(), node, getTranslator(), exportDir, charset);
 	}
 }

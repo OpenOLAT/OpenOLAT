@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 public class CustomCSS extends LogDelegator implements Disposable {
 	private String mapperBaseURI;
 	private String relCssFilename;
+	private String relCssFileIframe;
 	private Mapper cssUriMapper;
 	private MapperRegistry registry;
 	private JSAndCSSComponent jsAndCssComp;
@@ -69,6 +70,57 @@ public class CustomCSS extends LogDelegator implements Disposable {
 	 */
 	public CustomCSS(final VFSContainer cssBaseContainer,
 			final String relCssFilename, UserSession uSess) {
+		createCSSUriMapper(cssBaseContainer);
+		this.relCssFilename = relCssFilename;
+		registerMapper(cssBaseContainer, uSess);
+		// initialize js and css component
+		this.jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(),
+				null, null, false, null);
+		String fulluri = mapperBaseURI + relCssFilename;
+		// load CSS after the theme
+		this.jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
+	}
+	
+	public CustomCSS(final VFSContainer cssBaseContainer,
+			final String relCssFileMain, final String relCssFileIFrame, UserSession uSess ) {
+		createCSSUriMapper(cssBaseContainer);
+		this.relCssFilename = relCssFileMain;
+		this.relCssFileIframe = relCssFileIFrame;
+		registerMapper(cssBaseContainer, uSess);
+		
+		// initialize js and css component
+		this.jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(),
+				null, null, false, null);
+		String fulluri = mapperBaseURI + relCssFilename;
+		// load CSS after the theme
+		this.jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
+		
+	}
+
+	/**
+	 * @param cssBaseContainer
+	 * @param uSess
+	 */
+	private void registerMapper(final VFSContainer cssBaseContainer,
+			UserSession uSess) {
+		this.registry = MapperRegistry.getInstanceFor(uSess);
+		// Register mapper as cacheable
+		String mapperID = VFSManager.getRealPath(cssBaseContainer);
+		if (mapperID == null) {
+			// Can't cache mapper, no cacheable context available
+			this.mapperBaseURI  = registry.register(cssUriMapper);
+		} else {
+			// Add classname to the file path to remove conflicts with other
+			// usages of the same file path
+			mapperID = this.getClass().getSimpleName() + ":" + mapperID + System.currentTimeMillis();
+			this.mapperBaseURI  = registry.registerCacheable(mapperID, cssUriMapper);				
+		}
+	}
+
+	/**
+	 * @param cssBaseContainer
+	 */
+	private void createCSSUriMapper(final VFSContainer cssBaseContainer) {
 		cssUriMapper = new Mapper() {
 			public MediaResource handle(String relPath,
 					HttpServletRequest request) {
@@ -81,26 +133,9 @@ public class CustomCSS extends LogDelegator implements Disposable {
 				return mr;
 			}
 		};
-		this.relCssFilename = relCssFilename;
-		this.registry = MapperRegistry.getInstanceFor(uSess);
-		// Register mapper as cacheable
-		String mapperID = VFSManager.getRealPath(cssBaseContainer);
-		if (mapperID == null) {
-			// Can't cache mapper, no cacheable context available
-			this.mapperBaseURI  = registry.register(cssUriMapper);
-		} else {
-			// Add classname to the file path to remove conflicts with other
-			// usages of the same file path
-			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-			this.mapperBaseURI  = registry.registerCacheable(mapperID, cssUriMapper);				
-		}
-		// initialize js and css component
-		this.jsAndCssComp = new JSAndCSSComponent("jsAndCssComp", this.getClass(),
-				null, null, false, null);
-		String fulluri = mapperBaseURI + relCssFilename;
-		// load CSS after the theme
-		this.jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
 	}
+	
+
 
 	/**
 	 * Get the js and css component that embedds the CSS file
@@ -118,6 +153,17 @@ public class CustomCSS extends LogDelegator implements Disposable {
 	 */
 	public String getCSSURL() {
 		return mapperBaseURI + relCssFilename;
+	}
+
+	/**
+	 * @return Returns the relCssFileIframe.
+	 */
+	public String getCSSURLIFrame() {
+		if (relCssFileIframe != null) {
+			return mapperBaseURI + relCssFileIframe;
+		} else {
+			return getCSSURL();
+		}
 	}
 
 	/**

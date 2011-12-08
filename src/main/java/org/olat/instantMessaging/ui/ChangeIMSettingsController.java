@@ -77,6 +77,8 @@ public class ChangeIMSettingsController extends BasicController {
 		rosterForm = new RosterForm(ureq, wControl, imPrefs);
 		listenTo(rosterForm);
 		myContent.put("rosterform", rosterForm.getInitialComponent());
+		//fxdiff: hide external server info. see FXOLAT-46
+		myContent.contextPut("hideExternalClientInfo", InstantMessagingModule.getAdapter().getConfig().isHideExternalClientInfo());
 		
 		myContent.contextPut("chatusername", InstantMessagingModule.getAdapter().getUserJid(changeableIdentity.getName()));
 		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(changeableIdentity, ClientManager.PROVIDER_INSTANT_MESSAGING);

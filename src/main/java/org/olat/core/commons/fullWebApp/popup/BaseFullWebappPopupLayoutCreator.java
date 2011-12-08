@@ -88,5 +88,20 @@ public class BaseFullWebappPopupLayoutCreator implements
 				lureq, lwControl, oplm.getFullWebappParts());
 		return pbwc;
 	}
+	
+	//fxdiff
+	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq, WindowControl lwControl,
+			ControllerCreator contentControllerCreator) {
+		BaseFullWebappPopupLayout oplm;
+		if (!(contentControllerCreator instanceof BaseFullWebappPopupLayout)) {
+			oplm = BaseFullWebappPopupLayoutFactory.createMinimalPopupLayout(contentControllerCreator);
+		} else {
+			oplm = (BaseFullWebappPopupLayout) contentControllerCreator;
+		}
+
+		PopupBrowserWindowController pbwc = new BaseFullWebappPopupBrowserWindow(lureq, lwControl, oplm.getFullWebappParts());
+		return pbwc;
+	}
+
 
 }

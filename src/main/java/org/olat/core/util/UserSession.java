@@ -82,7 +82,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
   //clusterNOK cache ??
 	private static Set<UserSession> authUserSessions = new HashSet<UserSession>(101);
 	private static Map<String, Identity> userNameToIdentity = new HashMap<String, Identity>(101);
-	private static int sessionTimeoutInSec = 1800;
+	private static int sessionTimeoutInSec = 300;
+	private static int sessionTimeoutAuthInSec = 7200;
 	private static Set<String> authUsersNamesOtherNodes = new HashSet<String>(101);
 
 	// things to put into that should not be clear when signing on (e.g. remember
@@ -139,7 +140,11 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			}
 		}
 		//set a possible changed session timeout interval
-		session.setMaxInactiveInterval(UserSession.sessionTimeoutInSec);
+		if(us.isAuthenticated()) {
+			session.setMaxInactiveInterval(UserSession.sessionTimeoutAuthInSec);
+		} else {
+			session.setMaxInactiveInterval(UserSession.sessionTimeoutInSec);
+		}
 		return us;
 	}
 
@@ -162,9 +167,15 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		if (session==null) {
 			return null;
 		}
-		session.setMaxInactiveInterval(UserSession.sessionTimeoutInSec);
+
 		synchronized (session) {//o_clusterOK by:se
-			return (UserSession) session.getAttribute(USERSESSIONKEY);
+			UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
+			if(us != null && us.isAuthenticated()) {
+				session.setMaxInactiveInterval(UserSession.sessionTimeoutAuthInSec);
+			} else {
+				session.setMaxInactiveInterval(UserSession.sessionTimeoutInSec);
+			}
+			return us;
 		}
 	}
 
@@ -254,6 +265,12 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	public void setIdentity(Identity identity) {
 		identityEnvironment.setIdentity(identity);
+		//fxdiff FXOLAT-231: event on GUI Preferences extern changes
+		if(identity.getKey() != null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ores);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, ores);
+		}
 	}
 
 	/**
@@ -479,6 +496,9 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, false), ORES_USERSESSION);
 				Tracing.logDebug("signOffAndClear() deregistering usersession from eventbus, id="+sessionInfo, getClass());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ORES_USERSESSION);
+				//fxdiff FXOLAT-231: event on GUI Preferences extern changes
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ores);
 				registeredWithBus = false;
 			}
 		} catch (Exception e) {
@@ -671,6 +691,13 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
 	public void event(Event event) {
+		//fxdiff FXOLAT-231: event on GUI Preferences extern changes
+		if("preferences.changed".equals(event.getCommand())) {
+			Identity identity = identityEnvironment.getIdentity();
+			guiPreferences = PreferencesFactory.getInstance().getPreferencesFor(identity, identityEnvironment.getRoles().isGuestOnly());
+			return;
+		}
+
 		Tracing.logDebug("event() START", getClass());
 		SignOnOffEvent se = (SignOnOffEvent) event;
 		Tracing.logDebug("event() is SignOnOffEvent. isSignOn="+se.isSignOn(), getClass());
@@ -769,7 +796,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @param sessionTimeoutInSec
 	 */
 	public static void setGlobalSessionTimeout(int sessionTimeoutInSec) {
-		UserSession.sessionTimeoutInSec = sessionTimeoutInSec;
+		UserSession.sessionTimeoutAuthInSec = sessionTimeoutInSec;
 		Set<UserSession> sessionSnapShot = new HashSet<UserSession>(authUserSessions);
 		for (UserSession session : sessionSnapShot) {
 			try{

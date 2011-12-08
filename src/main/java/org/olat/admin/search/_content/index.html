@@ -21,6 +21,11 @@
 	#if ($searchstatus.IndexExists == true)
 	  $r.translate("search.label.index.creation.date") : $searchstatus.indexCreationDate<br />
 	#end
+	#if ($cronExpression == false)
+		$r.translate("index.cron") : $r.translate("index.cron.disabled")<br />
+	#else
+		$r.translate("index.cron") : $cronExpression<br />
+	#end
 </fieldset>
 
 <fieldset>
@@ -45,3 +50,5 @@ $r.render("searchAdminForm")
 	$searchstatus.fullIndexerStatus.fileTypeCounters<br />
 	$r.translate("fullindexer.doc.excluded.document.count") : $searchstatus.fullIndexerStatus.excludedDocumentCount
 </fieldset>
+
+$r.render("logViewController")

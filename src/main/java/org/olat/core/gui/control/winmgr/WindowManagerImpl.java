@@ -286,6 +286,7 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	 */
 	public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator contentControllerCreator) {
 		BaseChiefController cc = new BaseChiefController(ureq);
+		cc.addBodyCssClass("b_body_popup");
 		//supports the open(ureq) method
 		PopupBrowserWindowController sbasec = pbwcc.createNewPopupBrowserController(ureq, cc.getWindowControl(), contentControllerCreator);
 		//the content controller for the popupwindow is generated and set
@@ -293,6 +294,20 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 		cc.setContentController(true, sbasec);
 		return sbasec;
 	}
+	
+	//fxdiff
+	public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(UserRequest ureq, ControllerCreator contentControllerCreator) {
+		BaseChiefController cc = new BaseChiefController(ureq);
+		cc.addBodyCssClass("b_body_popup");
+		//supports the open(ureq) method
+		PopupBrowserWindowController sbasec = pbwcc.createNewUnauthenticatedPopupWindowController(ureq, cc.getWindowControl(), contentControllerCreator);
+		//the content controller for the popupwindow is generated and set
+		//at the moment the open method is called!!
+		cc.setContentController(true, sbasec);
+		return sbasec;
+	}
+	
+	
 	/**
 	 * needed only by guidebugdispatchercontroller for the gui debug mode!
 	 * @param idDivsForced

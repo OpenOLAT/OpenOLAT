@@ -27,9 +27,12 @@ o_info.initialPageLoadFinished = false;
 o_info.o_winid = $o_winid;
 o_info.uriprefix="$r.relWinLink()";
 o_info.bc="$o_bc";
+o_info.businessPath="";
 o_info.dirty_form = "$r.escapeDoubleQuotes($r.translate("form.dirty"))";
 o_info.locale = "$r.getLanguageCode()";
 o_info.lastClickTime = new Date().getTime();
+##fxdiff
+o_info.drop = true;
 ## olat layout specific
 o_info.o_baseURI = "$r.staticLink("")";
 o_info.b_classPathStaticBaseURI = "${classPathStaticBaseURI}";
@@ -52,8 +55,10 @@ o_info.initialPageLoadFinished = true;
 </script>
 ## Basic JS libraries for DOM manipulation and visual effects
 <script type="text/javascript" src="$r.staticLink("js/prototype/prototype.js")"></script>
-<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
+##fxdiff add dragdrop
 <script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/effects.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/dragdrop.js")"></script>
+<script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/scriptaculous.js")"></script>
 <script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/controls.js")"></script>
 <script type="text/javascript" src="$r.staticLink("js/scriptaculous/src/sound.js")"></script>
 ## EXT JS library
@@ -142,7 +147,7 @@ $r.renderHeaderIncludes()
 ## Page title taken from org.olat.core package
 <title>$r.translate("page.appname") - $r.translate("page.title")</title></head>
 ## TODO:fj pb: Review order
-<body onload="b_start();" id="b_body" class="b_lang_$r.getLanguageCode()">
+<body onload="b_start();" id="b_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end b_lang_$r.getLanguageCode()">
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.
 <!-- START guiDebug -->

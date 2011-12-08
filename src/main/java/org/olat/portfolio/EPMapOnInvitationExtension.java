@@ -20,9 +20,6 @@
  */
 package org.olat.portfolio;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -31,7 +28,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
-import org.olat.home.HomeMainController;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 
@@ -54,6 +50,10 @@ public class EPMapOnInvitationExtension {
 			
 			@Override
 			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+				//fxdiff FXOLAT-151: better check invitation
+				if(!ureq.getUserSession().getRoles().isInvitee()) {
+					return null;
+				}
 				
 				PortfolioStructureMap map = getMapFromContext(ce);
 				EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
@@ -77,8 +77,16 @@ public class EPMapOnInvitationExtension {
 
 			@Override
 			public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-				if (getMapFromContext(ce) == null) return false;
-				return true;
+				//fxdiff FXOLAT-151: better check invitation
+				if(!ureq.getUserSession().getRoles().isInvitee()) {
+					return false;
+				}
+				
+				final EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+				PortfolioStructureMap map = getMapFromContext(ce);
+				if (map == null) return false;
+				boolean visible = ePFMgr.isMapVisible(ureq.getIdentity(), map.getOlatResource());
+				return visible;
 			}
 			
 			/**

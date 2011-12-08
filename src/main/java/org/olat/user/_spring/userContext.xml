@@ -235,6 +235,7 @@
             <value>
                     generateTestUsers=${user.generateTestUsers}
                     passwordChangeAllowed=${password.change.allowed}
+                    passwordChangeAllowedLDAP=${ldap.propagatePasswordChangedOnLdapServer}
                     adminUserName=administrator
             </value>
     </property>
@@ -271,5 +272,11 @@
 <bean class="org.olat.user.HomePageConfigManagerImpl">
 	<constructor-arg ref="userDeletionManager"></constructor-arg>
 </bean>
+
+		<!-- Inbox in users Home -->
+	<bean id="mailBoxExtension" class="org.olat.user.MailBoxExtension">
+		<constructor-arg index="0" ref="userDeletionManager" />
+		<property name="mailManager" ref="mailManager" />
+	</bean>
 
 </beans>

@@ -63,7 +63,7 @@ public class FeedMainController extends BasicController implements Activateable,
 	private Feed feed;
 	private Link editFeedButton;
 	private CloseableModalController cmc;
-	private FormBasicController feedFormCtr;
+	private FeedFormController feedFormCtr;
 	private VelocityContainer vcMain, vcInfo, vcRightCol;
 	private ItemsController itemsCtr;
 	private LockResult lock;
@@ -173,11 +173,8 @@ public class FeedMainController extends BasicController implements Activateable,
 			if (lock.isSuccess()) {
 				if (feed.isExternal()) {
 					oldFeedUrl = feed.getExternalFeedUrl();
-					feedFormCtr = new ExternalFeedFormController(ureq, getWindowControl(), feed, uiFactory.getTranslator());
-				} else {
-					// Default for podcasts is that they are edited within OLAT
-					feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
-				}
+				} 
+				feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
 				activateModalDialog(feedFormCtr);
 			} else {
 				showInfo("feed.is.being.edited.by", lock.getOwner().getName());
@@ -232,21 +229,17 @@ public class FeedMainController extends BasicController implements Activateable,
 						}
 						// Set the URIs correctly
 						helper.setURIs();
+					} 
+					//handle image-changes if any
+					if (feedFormCtr.isImageDeleted()) {
+						feedManager.deleteImage(feed);
 					} else {
-						if (feedFormCtr instanceof FeedFormController) {
-							FeedFormController internalFormCtr = (FeedFormController) feedFormCtr;
-							if (internalFormCtr.imageDeleted()) {
-								feedManager.deleteImage(feed);
-							} else {
-								// set the image
-								FileElement image = null;
-								image = internalFormCtr.getFile();
-								feedManager.setImage(image, feed);
-							}							
-						} else {
-							// it's an external feed form, nothing to do in this case
-						}
-					}
+						// set the image
+						FileElement image = null;
+						image = feedFormCtr.getFile();
+						feedManager.setImage(image, feed);
+					}							
+					
 					// Eventually update the feed
 					feed = feedManager.updateFeedMetadata(feed);
 					// Dispose the feedFormCtr
@@ -269,7 +262,7 @@ public class FeedMainController extends BasicController implements Activateable,
 			}
 		} else if (source == itemsCtr && event.equals(ItemsController.HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT)) {
 			oldFeedUrl = feed.getExternalFeedUrl();			
-			feedFormCtr = new ExternalFeedFormController(ureq, getWindowControl(), feed, uiFactory.getTranslator());
+			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
 			activateModalDialog(feedFormCtr);
 		} else if (source == itemsCtr && event.equals(ItemsController.FEED_INFO_IS_DIRTY_EVENT)) {
 			vcInfo.setDirty(true);

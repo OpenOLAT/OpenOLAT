@@ -1,8 +1,20 @@
 <div class="o_module_cp_wrapper b_clearfix">
-	#if($r.available("search_input"))
-  		<div id="o_local_fulltextsearch">$r.render("search_input")</div>		
-    #end
-	
+	#if($r.available("search_input") || $r.available("previous") || $r.available("next") || $r.available("print"))
+		<div id="o_local_fulltextsearch"><div class="o_cp_navigation">
+			#if($r.available("previous"))
+				$r.render("previous")
+			#end
+			#if($r.available("next"))
+				$r.render("next")
+			#end
+			#if($r.available("print"))
+				$r.render("print")
+			#end
+			#if($r.available("search_input"))
+				$r.render("search_input")
+			#end
+		</div></div>		
+	#end
 	<div class="b_floatscrollbox">
 	$r.render("cpContent")
 	</div>

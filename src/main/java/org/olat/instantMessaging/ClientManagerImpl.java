@@ -41,7 +41,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.event.GenericEventListener;
 
@@ -214,50 +213,67 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 			// OLAT-3556: masking this error temporarily
 			//@TODO
 			//@FIXME
-			Tracing.logWarn("Identity not found for username="+username, ClientManagerImpl.class);
+			logWarn("Identity not found for username="+username, null);
 			return null;
 		}
+		return getInstantMessagingCredentialsForUser(identity);
+	}
+
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public String getInstantMessagingCredentialsForUser(Identity identity) {
+		if(identity == null) return null;
 		// synchronized: not needed here, since the credentials are only created once for a user (when that user logs in for the very first time).
 		// And a user will almost! never log in at the very same time from two different machines.
 		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, PROVIDER_INSTANT_MESSAGING);
-		InstantMessaging im = InstantMessagingModule.getAdapter();
+		
 		if (auth == null) { // create new authentication for provider and also a new IM-account
-			
-			//if account exists on IM server but not on OLAT delete it first
-			if (im.hasAccount(username)) {
-				im.deleteAccount(username);
-			}
-			
-			String pw = RandomStringUtils.randomAlphanumeric(6);
-			if (im.createAccount(username, pw,
-					getFullname(identity), identity.getUser().getProperty(UserConstants.EMAIL, null))) {
-				auth = BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, PROVIDER_INSTANT_MESSAGING,
-						identity.getName().toLowerCase(), pw);
-				Tracing.logAudit("New instant messaging authentication account created for user:" + username, this.getClass());
-				return auth.getCredential();
-			} else {
-				Tracing.logWarn("new instant messaging account creation failed for user: " + username, ClientManagerImpl.class);
-				return null;
-			}
+			auth = createIMAuthentication(identity);
 		} 
 		/**
 		 * this does not decouple IM from the loginprocess, move account recreations in background thread somewhere else
 		 * maybe to the login background thread...
 		 */
-//		else {
-//			//user has IM account credentials on OLAT, check whether account on IM server side exists
-//			if (!im.hasAccount(username)) {
-//				boolean success = im.createAccount(username, auth.getCredential(), getFullname(identity), identity.getUser().getProperty(UserConstants.EMAIL, null));
-//				if (success) {
-//					Tracing.logAudit("New instant messaging authentication account created for user:" + username, this.getClass());
-//				} else {
-//					Tracing.logWarn("new instant messaging account creation failed for user: " + username, ClientManagerImpl.class);
-//				}
-//			}
-//		}
-		return auth.getCredential();
+		//fxdiff: FXOLAT-233 
+		if (auth != null) return auth.getCredential();
+		else return "";
 	}
 	
+	@Override
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public void checkInstantMessagingCredentialsForUser(Long identityKey) {
+		if(identityKey == null) return;
+		boolean auth = BaseSecurityManager.getInstance().hasAuthentication(identityKey, PROVIDER_INSTANT_MESSAGING);
+		if (!auth) { // create new authentication for provider and also a new IM-account
+			 Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			 if(identity != null) {
+				 createIMAuthentication(identity);
+			 }
+		} 
+	}
+
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	private Authentication createIMAuthentication(Identity identity) {
+		String username = identity.getName();
+		InstantMessaging im = InstantMessagingModule.getAdapter();
+	//if account exists on IM server but not on OLAT delete it first
+		if (im.hasAccount(username)) {
+			im.deleteAccount(username);
+		}
+		
+		String pw = RandomStringUtils.randomAlphanumeric(6);
+		if (im.createAccount(username, pw,
+				getFullname(identity), identity.getUser().getProperty(UserConstants.EMAIL, null))) {
+			Authentication auth = BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, PROVIDER_INSTANT_MESSAGING,
+					identity.getName().toLowerCase(), pw);
+			logAudit("New instant messaging authentication account created for user:" + username, null);
+			return auth;
+		} else {
+			logWarn("new instant messaging account creation failed for user: " + username, null);
+			return null;
+		}
+	}
+
+
 	/**
 	 * 
 	 * @param identity

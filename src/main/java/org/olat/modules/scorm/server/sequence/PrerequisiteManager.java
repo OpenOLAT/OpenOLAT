@@ -61,7 +61,7 @@ public class PrerequisiteManager extends BasicManager{
 	public PrerequisiteManager(String org, ISettingsHandler settings) {
 		this.settings = settings;
 		if (!populateFromDisk(org)) {
-			System.out.println("could not load in tracking model");
+			logError("could not load in tracking model: " + org, null);
 		}
 	}
 

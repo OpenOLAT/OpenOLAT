@@ -55,6 +55,7 @@ public class Item implements Serializable, Dated {
 	private Date lastModified;
 	private Date publishDate;
 	private Enclosure enclosure;
+	private int width, height;	//fxdiff FXOLAT-118: size for video podcast
 	private transient FileElement mediaFile;
 	// An item can either be in draft version or it is published
 	// -> 'not draft' is equivalent to 'published'
@@ -271,6 +272,22 @@ public class Item implements Serializable, Dated {
 	 */
 	public FileElement getMediaFile() {
 		return mediaFile;
+	}
+	//fxdiff FXOLAT-118: size for video podcast
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
 	}
 
 	/**

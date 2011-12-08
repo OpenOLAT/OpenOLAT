@@ -57,7 +57,8 @@ public class GlossaryItemEditorController extends BasicController implements Act
 	 * @param glossaryItemList
 	 * @param glossaryItem	to be null, if a new Item should be generated and added to List
 	 */
-	protected GlossaryItemEditorController(UserRequest ureq, WindowControl control, VFSContainer glossaryFolder, List<GlossaryItem> glossaryItemList, GlossaryItem glossaryItem) {
+	protected GlossaryItemEditorController(UserRequest ureq, WindowControl control, VFSContainer glossaryFolder, List<GlossaryItem> glossaryItemList, GlossaryItem glossaryItem,
+			boolean add) {
 		super(ureq, control);
 		editorVC = createVelocityContainer("editor");
 		
@@ -71,7 +72,7 @@ public class GlossaryItemEditorController extends BasicController implements Act
 
 		glossEditTabP = new TabbedPane("tp", ureq.getLocale());
 		
-		itmCtrl = new GlossaryTermAndSynonymController(ureq, control, glossaryItem, glossaryFolder);
+		itmCtrl = new GlossaryTermAndSynonymController(ureq, control, glossaryItem, glossaryFolder, add);
 		listenTo(itmCtrl);
 		glossEditTabP.addTab(translate("term.and.synonyms.title"), itmCtrl.getInitialComponent());
 		

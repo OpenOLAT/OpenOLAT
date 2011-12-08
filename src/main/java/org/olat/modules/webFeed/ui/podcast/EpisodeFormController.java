@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
@@ -64,6 +65,8 @@ public class EpisodeFormController extends FormBasicController {
 	private Item episode;
 	private Feed podcast;
 	private TextElement title;
+	private TextElement widthEl;	//fxdiff FXOLAT-118: size for video podcast
+	private TextElement heightEl;
 	private RichTextElement desc;
 	private VFSContainer baseDir;
 	private FileElement file;
@@ -104,6 +107,26 @@ public class EpisodeFormController extends FormBasicController {
 		episode.setMediaFile(getFile());
 		// Set episode as published (no draft feature for podcast)
 		episode.setDraft(false);
+		
+		//fxdiff FXOLAT-118: size for video podcast
+		String width = widthEl.getValue();
+		if(StringHelper.containsNonWhitespace(width)) {
+			try {
+				episode.setWidth(Integer.parseInt(width));
+			} catch (NumberFormatException e) {
+				//silently catch
+			}
+		}
+		
+		String height = heightEl.getValue();
+		if(StringHelper.containsNonWhitespace(height)) {
+			try {
+				episode.setHeight(Integer.parseInt(height));
+			} catch (NumberFormatException e) {
+				//silently catch
+			}
+		}
+		
 		this.fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
@@ -142,6 +165,8 @@ public class EpisodeFormController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		// Since mimetype restrictions have been proved to be problematic, let us
 		// validate the file ending instead as a pragmatic solution.
+		boolean allOk = true;
+		
 		String name = file.getUploadFileName();
 		if (name != null) {
 			boolean isValidFileType = name.toLowerCase().matches(MIME_TYPES_ALLOWED);
@@ -149,16 +174,41 @@ public class EpisodeFormController extends FormBasicController {
 			if (!isValidFileType || !isFilenameValid) {
 				if(!isValidFileType) {
 					file.setErrorKey("feed.form.file.type.error", null);
+					allOk = false;
 				} else if (!isFilenameValid) {
 					file.setErrorKey("podcastfile.name.notvalid", null);
+					allOk = false;
 				}
-				return false;
 			} else {
 				file.clearError();
 				flc.setDirty(true);
 			}
 		}
-		return super.validateFormLogic(ureq);
+		
+		//fxdiff FXOLAT-118: size for video podcast
+		String width = widthEl.getValue();
+		widthEl.clearError();
+		if(StringHelper.containsNonWhitespace(width)) {
+			try {
+				episode.setWidth(Integer.parseInt(width));
+			} catch (NumberFormatException e) {
+				widthEl.setErrorKey("podcast.episode.file.size.error", null);
+				allOk = false;
+			}
+		}
+		
+		String height = heightEl.getValue();
+		heightEl.clearError();
+		if(StringHelper.containsNonWhitespace(height)) {
+			try {
+				episode.setHeight(Integer.parseInt(height));
+			} catch (NumberFormatException e) {
+				heightEl.setErrorKey("podcast.episode.file.size.error", null);
+				allOk = false;
+			}
+		}
+		
+		return allOk && super.validateFormLogic(ureq);
 	}
 	
 	private boolean validateFilename(String filename) {
@@ -196,6 +246,11 @@ public class EpisodeFormController extends FormBasicController {
 		File mediaFile = FeedManager.getInstance().getItemEnclosureFile(episode, podcast);
 		file.setInitialFile(mediaFile);
 		file.addActionListener(this, FormEvent.ONCHANGE);
+		
+		String width = episode.getWidth() > 0 ? Integer.toString(episode.getWidth()) : "";
+		widthEl = uifactory.addTextElement("video-width", "podcast.episode.file.width", 12, width, flc);
+		String height = episode.getHeight() > 0 ? Integer.toString(episode.getHeight()) : "";
+		heightEl = uifactory.addTextElement("video-height", "podcast.episode.file.height", 12, height, flc);
 
 		// Submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());

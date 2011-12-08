@@ -26,6 +26,8 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -490,14 +492,35 @@ public class LDAPLoginModule implements Initializable {
 	}
 
 	public void setLdapBases(List<String> ldapBasesConfig) {
-		ldapBases = ldapBasesConfig;
+		// fxdiff: FXOLAT-141 allow setting in one line
+		ArrayList<String> listToUse = new ArrayList<String>();
+		if (ldapBasesConfig != null) {
+			for (String baseEntry : ldapBasesConfig) {
+				if (StringHelper.containsNonWhitespace(baseEntry) && baseEntry.contains("!#")) {
+					String[] oneLineList = baseEntry.split("!#");
+					List<String> oneLineListArr = Arrays.asList(oneLineList);
+					for (String oneLineEntry : oneLineListArr) {
+						if (StringHelper.containsNonWhitespace(oneLineEntry)) {
+							listToUse.add(oneLineEntry.trim());
+						}
+					}
+				} else {
+					listToUse.add(baseEntry.trim());
+				}
+			}
+		}
+		ldapBases = listToUse;
 	}
 
 	public void setUserAttributeMapper(Map<String, String> userAttributeMapper) {
 		// trim map
 		userAttrMap = new HashMap<String, String>();
 		for (Entry<String, String>  entry : userAttributeMapper.entrySet()) {
-			userAttrMap.put(entry.getKey().trim(), entry.getValue().trim());
+			String ldapAttrib = entry.getKey().trim();
+			String olatProp = entry.getValue().trim();
+			if (StringHelper.containsNonWhitespace(ldapAttrib) && StringHelper.containsNonWhitespace(olatProp)){
+				userAttrMap.put(ldapAttrib, olatProp);
+			}
 		}		
 		// optimizes for later usage
 		userAttr = userAttrMap.keySet().toArray(new String[userAttrMap.size()]);
@@ -514,8 +537,10 @@ public class LDAPLoginModule implements Initializable {
 	public void setSyncOnlyOnCreateProperties(Set<String> syncOnlyOnCreatePropertiesConfig) {
 		// trim map
 		syncOnlyOnCreateProperties = new HashSet<String>();
-		for (String  value : syncOnlyOnCreatePropertiesConfig) {
-			syncOnlyOnCreateProperties.add(value.trim());
+		for (String value : syncOnlyOnCreatePropertiesConfig) {
+			if (StringHelper.containsNonWhitespace(value)){
+				syncOnlyOnCreateProperties.add(value.trim());
+			}
 		}		
 	}
 
@@ -523,7 +548,11 @@ public class LDAPLoginModule implements Initializable {
 		// trim map
 		staticUserProperties = new HashMap<String, String>();
 		for (Entry<String, String>  entry : staticUserPropertiesMap.entrySet()) {
-			staticUserProperties.put(entry.getKey().trim(), entry.getValue().trim());
+			String olatPropKey = entry.getKey().trim();
+			String staticValue = entry.getValue().trim();
+			if (StringHelper.containsNonWhitespace(olatPropKey) && StringHelper.containsNonWhitespace(staticValue)){
+				staticUserProperties.put(olatPropKey, staticValue);
+			}
 		}		
 	}
 

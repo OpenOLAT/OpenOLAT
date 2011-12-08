@@ -57,6 +57,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DBFactory;
@@ -65,7 +67,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -97,6 +98,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 	private BaseSecurity securityManager;
 	private UserManager userManager;
 	private UserDeletionManager userDeletionManager;
+	private boolean pagingSupportedAlreadyFound;
 
 	static {
 		UTC_TIME_ZONE = TimeZone.getTimeZone(TimeZones.UTC_ID);
@@ -147,12 +149,16 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 				lastSyncDate = ((LDAPEvent)event).getTimestamp();
 			} else if(LDAPEvent.DO_SYNCHING.equals(event.getCommand())) {
 				doHandleBatchSync();
+			} else if(LDAPEvent.DO_FULL_SYNCHING.equals(event.getCommand())) {
+				lastSyncDate = null;
+				doHandleBatchSync();
 			}
 		}
 	}
 	
 	private void doHandleBatchSync() {
-		if(WebappHelper.getNodeId() != 1) return;
+		//fxdiff: also run on nodes != 1 as nodeid = tomcat-id in fx-environment
+//		if(WebappHelper.getNodeId() != 1) return;
 		
 		Runnable batchSyncTask = new Runnable() {
 			public void run() {
@@ -374,12 +380,14 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		String objctClass = LDAPLoginModule.getLdapUserObjectClass();
 		StringBuilder filter = new StringBuilder();
 		if (syncTime == null) {
+			logDebug("LDAP get user attribs since never -> full sync!");
 			filter.append("(objectClass=").append(objctClass).append(")");
 		} else {
 			String dateFormat = LDAPLoginModule.getLdapDateFormat();
 			SimpleDateFormat generalizedTimeFormatter = new SimpleDateFormat(dateFormat);
 			generalizedTimeFormatter.setTimeZone(UTC_TIME_ZONE);
 			String syncTimeForm = generalizedTimeFormatter.format(syncTime);
+			logDebug("LDAP get user attribs since " + syncTime + " -> means search with date restriction-filter: " + syncTimeForm);
 			filter.append("(&(objectClass=").append(objctClass).append(")(|(");
 			filter.append(LDAPLoginModule.getLdapUserLastModifiedTimestampAttribute()).append(">=").append(syncTimeForm);
 			filter.append(")(");
@@ -390,12 +398,17 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 
 		searchInLdap(new LdapVisitor() {
 			public void visit(SearchResult result) {
-				ldapUserList.add(result.getAttributes());
+				Attributes resAttribs = result.getAttributes();
+				logDebug("        found : " + resAttribs.size() + " attributes in result " + result.getName());
+				ldapUserList.add(resAttribs);
 			}
 		}, filter.toString(), LDAPLoginModule.getUserAttrs(), ctx);
 		
+		logDebug("attrib search returned " + ldapUserList.size() + " results");
+		
 		return ldapUserList;
 	}
+	
 
 	/**
 	 * Delete all Identities in List and removes them from LDAPSecurityGroup
@@ -440,6 +453,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			String value = keyValuePair.getValue();
 			if(value == null) {
 				if(user.getProperty(propName, null) != null) {
+					logDebug("removed property " + propName + " for identity " + identity);
 					user.setProperty(propName, value);
 				}
 			} else {
@@ -454,6 +468,8 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 				user.setProperty(staticProperty.getKey(), staticProperty.getValue());
 			}
 		}
+		//fxdiff: FXOLAT-228: update user
+		userManager.updateUser(user);
 	}
 
 	/**
@@ -476,7 +492,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		String email = getAttributeValue(userAttributes.get(LDAPLoginModule.mapOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
 		// Lookup user
 		if (securityManager.findIdentityByName(uid) != null) {
-			logError("Can't create user with username='" + uid + "', does already exist in OLAT database", null);
+			logError("Can't create user with username='" + uid + "', this username does already exist in OLAT database", null);
 			return;
 		}
 		if (!MailHelper.isValidEmailAddress(email)) {
@@ -484,8 +500,8 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			logError("Cannot try to lookup user " + uid + " by email with an invalid email::" + email, null);
 			return;
 		}
-		if (userManager.findIdentityByEmail(email) != null) {
-			logError("Can't create user with email='" + email + "', does already exist in OLAT database", null);
+		if (userManager.userExist(email) ) {
+			logError("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database", null);
 			return;
 		}
 		
@@ -498,11 +514,11 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			while (neAttr.hasMore()) {
 				Attribute attr = neAttr.next();
 				String olatProperty = mapLdapAttributeToOlatProperty(attr.getID());
-				if (attr.get() != uid) {
+				if (!attr.getID().equalsIgnoreCase(LDAPLoginModule.mapOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)) ) {
 					String ldapValue = getAttributeValue(attr);
 					if (olatProperty == null || ldapValue == null) continue;
 					user.setProperty(olatProperty, ldapValue);
-				}
+				} 
 			}
 			// Add static user properties from the configuration
 			Map<String, String> staticProperties = LDAPLoginModule.getStaticUserProperties();
@@ -567,8 +583,13 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 					}
 				}
 			}
-			if (olatPropertyMap.size() == 1 && olatPropertyMap.get(LDAPConstants.LDAP_USER_IDENTIFYER) != null) return null;
-			return olatPropertyMap;
+			if (olatPropertyMap.size() == 1 && olatPropertyMap.get(LDAPConstants.LDAP_USER_IDENTIFYER) != null) {
+				logDebug("propertymap for identity " + identity.getName() + " contains only userID, NOTHING TO SYNC!");
+				return null;
+			} else {
+				logDebug("propertymap for identity " + identity.getName() + " contains " + olatPropertyMap.size() + " items (" + olatPropertyMap.keySet() + ") to be synced later on");
+				return olatPropertyMap;
+			}
 
 		} catch (NamingException e) {
 			logError("NamingException when trying to prepare user properties for LDAP sync", e);
@@ -727,15 +748,16 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			try {
 				if(paging) {
 					byte[] cookie = null;
-					ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
+					ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.CRITICAL) });
 					do {
 						NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 						while (enm.hasMore()) {
 							visitor.visit(enm.next());
 						}
-				        cookie = getCookie(ctx);
+				    cookie = getCookie(ctx);
 					} while (cookie != null);
 				} else {
+					ctx.setRequestControls(null); // reset on failure, see FXOLAT-299
 					NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 					while (enm.hasMore()) {
 						visitor.visit(enm.next());
@@ -751,6 +773,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			} catch (Exception e) {
 				logError("Exception when trying to fetch deleted users from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
 			}
+			logDebug("finished search for ldapBase:: " + ldapBase);
 		}
 	}
 	
@@ -772,6 +795,8 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 	}
 	
 	private boolean isPagedResultControlSupported(LdapContext ctx) {
+		// FXOLAT-299, might return false on 2nd execution
+		if (pagingSupportedAlreadyFound == true) return true;
 		try {
 			SearchControls ctl = new SearchControls();
 			ctl.setReturningAttributes(new String[]{"supportedControl"});
@@ -789,6 +814,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 					while (vals.hasMore()){
 						String value = (String) vals.next();
 						if(value.equals(PAGED_RESULT_CONTROL_OID))
+							pagingSupportedAlreadyFound = true;
 							return true;
 					}
 				}
@@ -808,10 +834,11 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 	 * 
 	 */
 	public boolean doBatchSync(LDAPError errors) {
-		if(WebappHelper.getNodeId() != 1) {
-			logWarn("Sync happens only on node 1", null);
-			return false;
-		}
+		//fxdiff: also run on nodes != 1 as nodeid = tomcat-id in fx-environment
+//		if(WebappHelper.getNodeId() != 1) {
+//			logWarn("Sync happens only on node 1", null);
+//			return false;
+//		}
 		
 		// o_clusterNOK
 		// Synchronize on class so that only one thread can read the
@@ -850,6 +877,9 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			// Get time before sync to have a save sync time when sync is successful
 			String sinceSentence = (lastSyncDate == null ? " (full sync)" : " since last sync from " + lastSyncDate);
 			doBatchSyncDeletedUsers(ctx, sinceSentence);
+			// fxdiff: see FXOLAT-299
+			// bind again to use an initial unmodified context. lookup of server-properties might fail otherwise!
+			ctx = bindSystem();
 			doBatchSyncNewAndModifiedUsers(ctx, sinceSentence, errors);
 			
 			// update sync time and set running flag
@@ -938,23 +968,29 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		List<Attributes> newLdapUserList = new ArrayList<Attributes>();
 		Map<Identity, Map<String, String>> changedMapIdentityMap = new HashMap<Identity, Map<String, String>>();
 		for (Attributes userAttrs: ldapUserList) {
-			String user = getAttributeValue(userAttrs.get(LDAPLoginModule.mapOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
-			Identity identity = findIdentyByLdapAuthentication(user, errors);
-			if (identity != null) {
-				Map<String, String> changedAttrMap = prepareUserPropertyForSync(userAttrs, identity);
-				if (changedAttrMap != null) changedMapIdentityMap.put(identity, changedAttrMap);
-			} else if (errors.isEmpty()) {
-				String[] reqAttrs = LDAPLoginModule.checkReqAttr(userAttrs);
-				if (reqAttrs == null) {
-					newLdapUserList.add(userAttrs);
+			String user = null;
+			try {				
+				user = getAttributeValue(userAttrs.get(LDAPLoginModule.mapOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
+				Identity identity = findIdentyByLdapAuthentication(user, errors);
+				if (identity != null) {
+					Map<String, String> changedAttrMap = prepareUserPropertyForSync(userAttrs, identity);
+					if (changedAttrMap != null) changedMapIdentityMap.put(identity, changedAttrMap);
+				} else if (errors.isEmpty()) {
+					String[] reqAttrs = LDAPLoginModule.checkReqAttr(userAttrs);
+					if (reqAttrs == null) {
+						newLdapUserList.add(userAttrs);
+					}
+					else logWarn("Error in LDAP batch sync: can't create user with username::" + user + " : missing required attributes::"
+							+ ArrayUtils.toString(reqAttrs), null);
+				} else {
+					logWarn(errors.get(), null);
 				}
-				else logWarn("Error in LDAP batch sync: can't create user with username::" + user + " : missing required attributes::"
-						+ ArrayUtils.toString(reqAttrs), null);
-			} else {
-				logWarn(errors.get(), null);
-			}
-			if(++count % 20 == 0) {
-				DBFactory.getInstance().intermediateCommit();
+				if(++count % 20 == 0) {
+					DBFactory.getInstance().intermediateCommit();
+				}
+			}	catch (Exception e) {
+				// catch here to go on with other users on exeptions!
+				logError("some error occured in looping over set of changed user-attributes, actual user " + user + ". Will still continue with others.", e);
 			}
 		}
 		
@@ -963,6 +999,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			logInfo("LDAP batch sync: no users to sync" + sinceSentence);
 		} else {
 			for (Identity ident : changedMapIdentityMap.keySet()) {
+				// sync user is exception save, no try/catch needed
 				syncUser(changedMapIdentityMap.get(ident), ident);
 				//REVIEW Identity are not saved???
 				if(++count % 20 == 0) {
@@ -975,15 +1012,48 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		// create new users
 		if (newLdapUserList.isEmpty()) {
 			logInfo("LDAP batch sync: no users to create" + sinceSentence);
-		} else {
-			
+		} else {			
 			for (Attributes userAttrs: newLdapUserList) {
-				createAndPersistUser(userAttrs);
-				if(++count % 20 == 0) {
-					DBFactory.getInstance().intermediateCommit();
+				try {
+					createAndPersistUser(userAttrs);
+					if(++count % 20 == 0) {
+						DBFactory.getInstance().intermediateCommit();
+					}
+				} catch (Exception e) {
+					// catch here to go on with other users on exeptions!
+					logError("some error occured while creating new users, actual userAttribs " + userAttrs + ". Will still continue with others.", e);
 				}
 			}
 			logInfo("LDAP batch sync: " + newLdapUserList.size() + " users created" + sinceSentence);
+		}
+		
+		//fxdiff: FXOLAT-228: update user
+		DBFactory.getInstance().intermediateCommit();
+	}
+	
+	
+	// TODO: not finished!
+	public void doSyncSingleUser(Identity ident){
+		LdapContext ctx = bindSystem();
+		if (ctx == null) {
+			logError("could not bind to ldap", null);
+		}		
+		String userDN = searchUserDN(ident.getName(), ctx);
+
+		final List<Attributes> ldapUserList = new ArrayList<Attributes>();
+		// TODO: use userDN instead of filter to get users attribs
+		searchInLdap(new LdapVisitor() {
+			public void visit(SearchResult result) {
+				Attributes resAttribs = result.getAttributes();
+				logDebug("        found : " + resAttribs.size() + " attributes in result " + result.getName());
+				ldapUserList.add(resAttribs);
+			}
+		}, userDN, LDAPLoginModule.getUserAttrs(), ctx);
+		
+		Attributes attrs = ldapUserList.get(0);
+		Map<String, String> olatProToSync = prepareUserPropertyForSync(attrs, ident);
+		if (olatProToSync != null) {
+			syncUser(olatProToSync, ident);
 		}
 	}
 
@@ -1026,5 +1096,42 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 	
 	public interface LdapVisitor {
 		public void visit(SearchResult searchResult) throws NamingException ;
+	}
+
+	/**
+	 * remove all cached authentications for fallback-login. useful if users logged in first with a default pw and changed it outside in AD/LDAP, but OLAT doesn't know about.
+	 * removing fallback-auths means login is only possible by AD/LDAP and if server is reachable!
+	 * see FXOLAT-284
+	 */
+	@Override
+	public void removeFallBackAuthentications() {
+		if (LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
+			BaseSecurity secMgr = BaseSecurityManager.getInstance();
+			SecurityGroup ldapGroup = secMgr.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
+			if (ldapGroup == null) {
+				logError("Error getting user from OLAT security group '" + LDAPConstants.SECURITY_GROUP_LDAP + "' : group does not exist", null);
+			}
+			List<Identity> ldapIdents = secMgr.getIdentitiesOfSecurityGroup(ldapGroup);
+			logInfo("found " + ldapIdents.size() + " identies in ldap security group");
+			int count=0;
+			for (Identity identity : ldapIdents) {
+				Authentication auth = secMgr.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());				
+				if (auth!=null){
+					secMgr.deleteAuthentication(auth);
+					count++;
+				}
+				if (count % 20 == 0){
+					DBFactory.getInstance().intermediateCommit();
+				}
+			}
+			logInfo("removed cached authentications (fallback login provider: " + BaseSecurityModule.getDefaultAuthProviderIdentifier() + ") for " + count + " users.");			
+		}
+	}
+
+	@Override
+	public boolean isIdentityInLDAPSecGroup(Identity ident) {
+		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+		SecurityGroup ldapSecurityGroup = secMgr.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
+		return ldapSecurityGroup != null && secMgr.isIdentityInSecurityGroup(ident, ldapSecurityGroup);
 	}
 }

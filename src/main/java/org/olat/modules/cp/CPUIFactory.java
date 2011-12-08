@@ -67,8 +67,8 @@ public class CPUIFactory {
 	 * @param initialUri can be NULL, will use first page then
 	 * @return a CPDisplayController
 	 */
-	public CPDisplayController createContentOnlyCPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean activateFirstPage, String initialUri, OLATResourceable ores) {
-		return new CPDisplayController(ureq, wControl, rootContainer, false, activateFirstPage, initialUri, ores);		
+	public CPDisplayController createContentOnlyCPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean activateFirstPage, boolean showNavigation, String initialUri, OLATResourceable ores) {
+		return new CPDisplayController(ureq, wControl, rootContainer, false, showNavigation, activateFirstPage, true, initialUri, ores);		
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class CPUIFactory {
 	 * @return A main layout controller
 	 */
 	public MainLayout3ColumnsController createMainLayoutController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, String contentEncoding, String jsEncoding, boolean activateFirstPage, String initialUri, OLATResourceable ores) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, activateFirstPage, initialUri, ores);
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, activateFirstPage, true, initialUri, ores);
 		cpCtr.setContentEncoding(contentEncoding);
 		cpCtr.setJSEncoding(jsEncoding);
 		MainLayout3ColumnsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), null, cpCtr.getInitialComponent(), rootContainer.getName());
@@ -156,7 +156,7 @@ public class CPUIFactory {
 	 */
 	public OLATResourceableListeningWrapperController createMainLayoutResourceableListeningWrapperController(OLATResourceable res, UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean activateFirstPage, String initialUri) {
 		//fxdiff BAKS-7 Resume function
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, activateFirstPage, initialUri, res);
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, activateFirstPage, true, initialUri, res);
 		MainLayout3ColumnsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), null, cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr);
 		return new OLATResourceableListeningWrapperController(ureq, wControl, res, layoutCtr, cpCtr, ureq.getIdentity());
@@ -197,7 +197,7 @@ public class CPUIFactory {
 	 * @return A main layout preview controller
 	 */
 	public LayoutMain3ColsPreviewController createMainLayoutPreviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, null, null);		
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, null, null);		
 		LayoutMain3ColsPreviewController layoutCtr = new LayoutMain3ColsPreviewController(ureq, wControl, cpCtr.getMenuComponent(), null, cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		return layoutCtr;

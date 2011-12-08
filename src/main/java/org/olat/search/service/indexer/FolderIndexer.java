@@ -28,6 +28,7 @@ import org.apache.lucene.document.Document;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -105,6 +106,8 @@ public abstract class FolderIndexer extends AbstractIndexer {
 	        myFilePath = filePath + "/" + leaf.getName();
 				}
 				leafResourceContext.setFilePath(myFilePath);
+				//fxdiff FXOLAT-97: high CPU load tracker
+				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
 				Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
 	  		indexWriter.addDocument(document);
 			} else {
@@ -122,6 +125,9 @@ public abstract class FolderIndexer extends AbstractIndexer {
 			throw new InterruptedException(iex.getMessage());
 	  } catch (Exception ex) {
 			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
+		//fxdiff FXOLAT-97: high CPU load tracker
+		} finally {
+  		WorkThreadInformations.unset();
 		}
 	}
 	

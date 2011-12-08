@@ -39,6 +39,7 @@ import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.MergeSource;
@@ -570,6 +571,84 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			rootVersionsContainer = new LocalFolderImpl(rootVersionFolder);
 		}
 		return rootVersionsContainer;
+	}
+	
+	@Override
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	public boolean delete(OrphanVersion orphan) {
+		VFSLeaf versionLeaf = orphan.getVersionsLeaf();
+
+		if (versionLeaf == null) return true; //already deleted
+		Versions versions = orphan.getVersions();
+		for (VFSRevision versionToDelete : versions.getRevisions()) {
+			RevisionFileImpl versionImpl = (RevisionFileImpl) versionToDelete;
+			versionImpl.setContainer(orphan.getVersionsLeaf().getParentContainer());
+			VFSLeaf fileToDelete = versionImpl.getFile();
+			if (fileToDelete != null) {
+				fileToDelete.delete();
+			}
+		}
+		versionLeaf.delete();
+		return true;
+	}
+
+	@Override
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	public List<OrphanVersion> orphans() {
+		List<OrphanVersion> orphans = new ArrayList<OrphanVersion>();
+		VFSContainer versionsContainer = getRootVersionsContainer();
+		crawlForOrphans(versionsContainer, orphans);
+		return orphans;
+	}
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	private void crawlForOrphans(VFSContainer container, List<OrphanVersion> orphans) {
+		List<VFSItem> children = container.getItems();
+		for(VFSItem child:children) {
+			if(child instanceof VFSContainer) {
+				crawlForOrphans((VFSContainer)child, orphans);
+			}
+			if(child instanceof VFSLeaf) {
+				VFSLeaf versionsLeaf = (VFSLeaf)child;
+				if(child.getName().endsWith(".xml")) {
+					Versions versions = isOrphan(versionsLeaf);
+					if(versions == null) {
+						continue;
+					} else {
+						List<VFSRevision> revisions = versions.getRevisions();
+						if(revisions != null) {
+							for(VFSRevision revision:revisions) {
+								if(revision instanceof RevisionFileImpl) {
+									((RevisionFileImpl)revision).setContainer(container);
+								}
+							}
+						}
+					}
+					File originalFile = reversedOriginFile(child);
+					if(!originalFile.exists()) {
+						VFSLeaf orphan = new LocalFileImpl(originalFile);
+						orphans.add(new OrphanVersion(orphan, versionsLeaf, versions));
+					}
+				}
+			}
+		}
+	}
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	private Versions isOrphan(VFSLeaf potentialOrphan) {
+		try {
+			VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, potentialOrphan);
+			return versions;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	private File reversedOriginFile(VFSItem versionXml) {
+		String path = File.separatorChar + versionXml.getName().substring(0, versionXml.getName().length() - 4);
+		for(VFSContainer parent=versionXml.getParentContainer(); parent != null && !parent.isSame(getRootVersionsContainer()); parent = parent.getParentContainer()) {
+			path = File.separatorChar + parent.getName() + path;
+		}
+		
+		return new File(getCanonicalRoot(), path);
 	}
 
 	/**

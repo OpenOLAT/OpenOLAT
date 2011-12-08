@@ -1179,7 +1179,11 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (calendarAccess != null) {
 			newGroup.calendarAccess = calendarAccess;
 		}
-
+		//fxdiff VCRP-8: collaboration tools folder access control
+		Long folderAccess = ct.lookupFolderAccess();
+		if(folderAccess != null) {
+			newGroup.folderAccess = folderAccess;
+		}
 		String info = ct.lookupNews();
 		if (info != null && !info.trim().equals("")) {
 			newGroup.info = info.trim();
@@ -1295,9 +1299,9 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 					ct.saveCalendarAccess(calendarAccess);
 				}
 				//fxdiff VCRP-8: collaboration tools folder access control
-			//TODO SR if(group.folderAccess != null) {
-			//TODO SR 	  ct.saveFolderAccess(group.folderAccess);				  
-			//TODO SR 	}
+				if(group.folderAccess != null) {
+				  ct.saveFolderAccess(group.folderAccess);				  
+				}
 				if (group.info != null) {
 					ct.saveNews(group.info);
 				}

@@ -205,7 +205,7 @@
             <entry key="hibernate.query.substitutions"><value>true 1, false 0, yes 'Y', no 'N'</value></entry>           
             <!-- for development phase only: -->
             <entry key="hibernate.c3p0.debugUnreturnedConnectionStackTraces"><value>true</value></entry>
-            <entry key="hibernate.c3p0.unreturnedConnectionTimeout"><value>120</value></entry>
+            <entry key="hibernate.c3p0.unreturnedConnectionTimeout"><value>${hibernate.connection.timeout}</value></entry>
             <!-- end for development phase only -->
 
              <entry key="hibernate.transaction.factory_class"><value>org.hibernate.transaction.JDBCTransactionFactory</value></entry>

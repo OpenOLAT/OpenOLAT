@@ -62,8 +62,6 @@
 	</property>
 	
 	
-	
-	
 	<!-- Three Logs are available within a course:
 		- Adminlog, logs administrative activity in the course
 		- Userlog, logs the course user activity, where the user is identifiable

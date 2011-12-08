@@ -22,6 +22,7 @@ package org.olat.core.commons.modules.glossary;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -59,9 +60,12 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 	private GlossaryItem duplicateGlossItem;
 	private static final String CMD_DELETE_SYNONYM = "delete.synonym.";
 	private static final String SYNONYM_TEXT_ELEMENT = "synonym.";
+	private final boolean add;
 
-	protected GlossaryTermAndSynonymController(UserRequest ureq, WindowControl control, GlossaryItem glossaryItem, VFSContainer glossaryFolder) {
+	protected GlossaryTermAndSynonymController(UserRequest ureq, WindowControl control, GlossaryItem glossaryItem, VFSContainer glossaryFolder,
+			boolean add) {
 		super(ureq, control, FormBasicController.LAYOUT_VERTICAL);
+		this.add = add;
 		this.glossaryItem = glossaryItem;
 		this.glossaryFolder = glossaryFolder;
 		initForm(ureq);
@@ -98,6 +102,17 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		// update synonym-list and re-initialize
 		glossaryItem.setGlossSynonyms(glossItemSynonyms);
 		createOrUpdateSynonymLayout(this.flc, glossItemSynonyms);
+		
+		Revision revision = new Revision();
+		revision.setAuthor(new Author(getIdentity()));
+		revision.setJavaDate(new Date());
+		if(add) {
+			revision.setRevisionflag("added");
+		} else {
+			revision.setRevisionflag("changed");
+		}
+		
+		glossaryItem.getRevHistory().add(revision);
 		
 		if (!checkForDuplicatesInGlossary()){
 			showError("term.error.alreadyused", duplicateGlossItem.getGlossTerm());

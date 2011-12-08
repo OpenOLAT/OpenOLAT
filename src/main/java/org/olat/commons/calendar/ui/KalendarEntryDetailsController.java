@@ -29,7 +29,11 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController;
+import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -44,6 +48,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 
 
 public class KalendarEntryDetailsController extends BasicController {
@@ -56,8 +63,11 @@ public class KalendarEntryDetailsController extends BasicController {
 	private TabbedPane pane;
 	private KalendarEntryForm eventForm;
 	private LinkProvider activeLinkProvider;
+	private CustomMediaChooserController customMediaChooserCtr;
 	private DialogBoxController deleteYesNoController;
 	private CopyEventToCalendarController copyEventToCalendarController;
+	private ExternalLinksController externalLinksController;
+	private MediaLinksController mediaLinksController;
 	private Link deleteButton;
 
 	public KalendarEntryDetailsController(UserRequest ureq, KalendarEvent kalendarEvent, KalendarRenderWrapper calendarWrapper,
@@ -95,6 +105,23 @@ public class KalendarEntryDetailsController extends BasicController {
 		if (!isReadOnly) {
 			//course node links
 			pane.addTab(translate("tab.links"), linkVC);
+			
+			//custom media chooser
+			if (CoreSpringFactory.containsBean(CustomMediaChooserController.class.getName())) {
+				CustomMediaChooserController customMediaChooserFactory = (CustomMediaChooserController) CoreSpringFactory.getBean(CustomMediaChooserController.class.getName());
+				customMediaChooserCtr = customMediaChooserFactory.getInstance(ureq, wControl, null, null, null); 
+				if (customMediaChooserCtr != null) {
+					listenTo(customMediaChooserCtr);
+					mediaLinksController = new MediaLinksController(ureq, wControl, kalendarEvent, customMediaChooserCtr);
+					pane.addTab(customMediaChooserCtr.getTabbedPaneTitle(), mediaLinksController.getInitialComponent());	
+					listenTo(mediaLinksController);
+				}				
+			}
+			
+			//list of links
+			externalLinksController = new ExternalLinksController(ureq, wControl, kalendarEvent);
+			pane.addTab(translate("tab.links.extern"), externalLinksController.getInitialComponent());
+			listenTo(externalLinksController);
 		}
 		
 		// wrap everything in a panel
@@ -149,7 +176,9 @@ public class KalendarEntryDetailsController extends BasicController {
 			else if (event.equals(Event.CANCELLED_EVENT))
 				mainPanel.setContent(mainVC);
 		} else if (source == activeLinkProvider) {
-			fireEvent(ureq, Event.DONE_EVENT);
+			if(kalendarEvent.getCalendar() != null) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}else if (source == eventForm) {
 			if (event == Event.DONE_EVENT) {
 				// ok, save edited entry
@@ -197,6 +226,45 @@ public class KalendarEntryDetailsController extends BasicController {
 				eventForm.setEntry(kalendarEvent);
 				// user canceled, finish workflow
 				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if (source == customMediaChooserCtr) {
+			boolean doneSuccessfully = true;
+			if(event instanceof URLChoosenEvent) {
+				URLChoosenEvent urlEvent = (URLChoosenEvent)event;
+				String url = urlEvent.getURL();
+				List<KalendarEventLink> links = kalendarEvent.getKalendarEventLinks();
+				
+				String provider = customMediaChooserCtr.getClass().getSimpleName();
+				String id = url;
+				String displayName = StringHelper.containsNonWhitespace(urlEvent.getDisplayName()) ? urlEvent.getDisplayName() : url;
+				String uri = url.contains("://") ? url : (Settings.getServerContextPathURI() + url);
+				String iconCssClass = urlEvent.getIconCssClass();
+				if(!StringHelper.containsNonWhitespace(iconCssClass)) {
+					iconCssClass = CSSHelper.createFiletypeIconCssClassFor(url);
+				}
+				links.add(new KalendarEventLink(provider, id, displayName, uri, iconCssClass));
+			
+				Kalendar cal = kalendarEvent.getCalendar();
+				doneSuccessfully = CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(cal, kalendarEvent);
+			}
+			
+			if (doneSuccessfully) {
+				fireEvent(ureq, event);
+			} else {
+				showError("cal.error.save");
+				fireEvent(ureq, Event.FAILED_EVENT);
+			}
+		} else if (source == externalLinksController || source == mediaLinksController) {
+			//save externals links
+			Kalendar cal = kalendarEvent.getCalendar();
+			if (kalendarEvent.getCalendar() != null) {
+				boolean doneSuccessfully = CalendarManagerFactory.getInstance().getCalendarManager().updateEventFrom(cal, kalendarEvent);
+				if (doneSuccessfully) {
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else {
+					showError("cal.error.save");
+					fireEvent(ureq, Event.FAILED_EVENT);
+				}
 			}
 		}
 	}

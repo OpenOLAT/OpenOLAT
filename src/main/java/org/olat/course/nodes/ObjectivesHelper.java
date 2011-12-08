@@ -21,6 +21,8 @@
 
 package org.olat.course.nodes;
 
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -45,8 +47,11 @@ public class ObjectivesHelper {
 	 * @return the wrapper component
 	 */
 	public static Component createLearningObjectivesComponent(String learningObjectives, UserRequest ureq) {
-		VelocityContainer vc = new VelocityContainer("learningObjs", VELOCITY_ROOT + "/objectives.html", new PackageTranslator(PACKAGE, ureq
-				.getLocale()), null);
+		return createLearningObjectivesComponent(learningObjectives, ureq.getLocale());
+	}
+	//fxdiff FXOLAT-116: SCORM improvements
+	public static Component createLearningObjectivesComponent(String learningObjectives, Locale locale) {
+		VelocityContainer vc = new VelocityContainer("learningObjs", VELOCITY_ROOT + "/objectives.html", new PackageTranslator(PACKAGE, locale), null);
 		vc.contextPut("learningObjectives", learningObjectives);
 		return vc;
 	}

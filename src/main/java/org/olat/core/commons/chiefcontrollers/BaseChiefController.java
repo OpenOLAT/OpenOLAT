@@ -23,6 +23,8 @@
 package org.olat.core.commons.chiefcontrollers;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -43,6 +45,7 @@ import org.olat.core.gui.control.WindowControlInfoImpl;
 import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.guistack.GuiStackSimpleImpl;
 import org.olat.core.gui.control.info.WindowControlInfo;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControl;
@@ -51,8 +54,10 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
@@ -90,26 +95,49 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	private Controller developmentC;
 
 	private Controller jsLoggerC;
-	
+
+	private Set<String> bodyCssClasses = new HashSet<String>();
+
 	private final WindowBackOffice wbo;
 	
 	private static Mapper jsTranslationMapper;
 	private static String jsTranslationMapperPath;
-	
-	private static final boolean jsMathEnabled;
-	
+
+	private static boolean jsMathEnabled;
+
 	static {
-		// initialize global javascript translation mapper - shared in VM by all users
+		// initialize global javascript translation mapper - shared in VM by all
+		// users
 		jsTranslationMapper = new JSTranslatorMapper();
 		jsTranslationMapperPath = GlobalMapperRegistry.getInstance().register(JSTranslatorMapper.class, jsTranslationMapper);
 
-		// check if mandatory jsmath files are unzipped, write error otherwhise
-		File jsMathImages = new File(WebappHelper.getContextRoot() + "/static/js/jsMath/fonts");
-		if (!jsMathImages.exists() || !jsMathImages.isDirectory() || !(jsMathImages.list().length > 0)) {
-			log.error("jsMath images needed by body.html are not deployed properly. This can result in JS errors. Run \"mvn olat:font\" to deploy the necessary jsMath images and restart tomcat");
+		// check if mandatory jsmath files are unzipped, write error otherwise
+		// fxdiff: we don't want to extract on servers where jsMath is symlinked
+		// for all OLATs!
+		String fDir = WebappHelper.getContextRoot() + "/static/js/jsMath/";
+		File jsMath = new File(fDir);
+		try {
+			if (jsMath.exists() && FileUtils.isSymlink(jsMath)) {
+				log.info("found a symlink to local jsMath fonts. wont extract fonts.zip, jsMath is ready!");
+				jsMathEnabled = true;
+			} else {
+				File jsMathImages = new File(fDir + "/fonts");
+				if (!jsMathImages.exists() || !jsMathImages.isDirectory() || !(jsMathImages.list().length > 0)) {
+					File fZip = new File(fDir + "/fonts.zip");
+					if (fZip.exists()) {
+						log.info("could not find jsMath fonts, try to unzip fonts.zip. please wait...");
+						jsMathEnabled = ZipUtil.unzip(fZip, new File(fDir));
+					}
+				} else {
+					jsMathEnabled = true;
+				}
+			}
+		} catch (Exception e) {
+			log.error("error finding jsMath: " + e);
 			jsMathEnabled = false;
-		} else {
-			jsMathEnabled = true;
+		}
+		if (!jsMathEnabled) {
+			log.error("jsMath fonts are not available (neither by symlink nor by fonts.zip). Please unzip the file ``fonts.zip'' before starting olat.");
 		}
 	}
 	
@@ -142,22 +170,29 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		mainvc.contextPut("o_winid", String.valueOf(mainPanel.getDispatchID()));
 		// add jsMath library
 		mainvc.contextPut("jsMathEnabled", Boolean.valueOf(jsMathEnabled));
+		// add optional css classes
+		mainvc.contextPut("bodyCssClasses", bodyCssClasses);
+
 		mainPanel.setContent(mainvc);
 
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
-		wbo  = winman.createWindowBackOffice("basechiefwindow", this);
+		wbo = winman.createWindowBackOffice("basechiefwindow", this);
 		Window w = wbo.getWindow();
-		
-		// part that builds the css and javascript lib includes (<script src="..."> and <rel link
-		// e.g. 
-		// <script type="text/javascript" src="/demo/g/2/js/jscalendar/calendar.js"></script>
 
-		mainvc.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());	
-		
-		// control part for ajax-communication. returns an empty panel if ajax is not enabled, so that ajax can be turned on on the fly for development mode
+		// part that builds the css and javascript lib includes (<script
+		// src="..."> and <rel link
+		// e.g.
+		// <script type="text/javascript"
+		// src="/demo/g/2/js/jscalendar/calendar.js"></script>
+
+		mainvc.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());
+
+		// control part for ajax-communication. returns an empty panel if ajax
+		// is not enabled, so that ajax can be turned on on the fly for
+		// development mode
 		jsServerC = wbo.createAJAXController(ureq);
-		mainvc.put("jsServer", jsServerC.getInitialComponent());	
-		
+		mainvc.put("jsServer", jsServerC.getInitialComponent());
+
 		// init with no bookmark (=empty bc)
 		mainvc.contextPut("o_bc", "");
 		
@@ -167,10 +202,10 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		// the current GUI theme and the global settings that contains the
 		// font-size. both are pushed as objects so that window.dirty always reads
 		// out the correct value
-		mainvc.contextPut("theme", w.getGuiTheme());		
-		mainvc.contextPut("globalSettings", winman.getGlobalSettings());		
-		mainvc.contextPut("isScreenReader", winman.isForScreenReader());		
-		
+		mainvc.contextPut("theme", w.getGuiTheme());
+		mainvc.contextPut("globalSettings", winman.getGlobalSettings());
+		mainvc.contextPut("isScreenReader", winman.isForScreenReader());
+
 		// content panel
 		contentPanel = new Panel("olatContentPanel");
 		mainvc.put("olatContentPanel", contentPanel);
@@ -256,11 +291,16 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		// Inline translation interceptor. when the translation tool is enabled it
 		// will start the translation tool in translation mode, if the overlay
 		// feature is enabled it will start in customizing mode
-		if (ureq.getUserSession().isAuthenticated() && ureq.getUserSession().getRoles().isOLATAdmin() && (I18nModule.isTransToolEnabled() || I18nModule.isOverlayEnabled())) {
+		// fxdiff: allow user-managers to use the inline translation also. TODO:
+		// do this with a proper right-mgmt!
+		if (ureq.getUserSession().isAuthenticated()
+				&& (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isUserManager())
+				&& (I18nModule.isTransToolEnabled() || I18nModule.isOverlayEnabled())) {
 			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
 			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED, Boolean.FALSE);
-			I18nManager.getInstance().setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);			
+			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED,
+					Boolean.FALSE);
+			I18nManager.getInstance().setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);
 			mainvc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
 		}
 
@@ -296,7 +336,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-	// nothing to listen to at the moment
+		// nothing to listen to at the moment
 	}
 
 	/**
@@ -385,14 +425,15 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 *      org.olat.core.gui.control.Controller)
 	 */
 	public void setContentController(boolean autoDisposeOnWindowClose, Controller contentController) {
-		if (this.contentController != null) throw new AssertException("can only set contentController once!");
+		if (this.contentController != null)
+			throw new AssertException("can only set contentController once!");
 		this.contentController = contentController;
 		this.autoDisposeOnWindowClose = autoDisposeOnWindowClose;
 		
 		currentGuiStack = new GuiStackSimpleImpl(contentController.getInitialComponent());
-		contentPanel.setContent(currentGuiStack.getPanel());		
-//	REVIEW:12-2007:CodeCleanup
-		//contentPanel.setContent(contentController.getInitialComponent());
+		contentPanel.setContent(currentGuiStack.getPanel());
+		// REVIEW:12-2007:CodeCleanup
+		// contentPanel.setContent(contentController.getInitialComponent());
 	}
 	
 	/**
@@ -401,6 +442,37 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 */
 	public static boolean isJsMathEnabled() {
 		return jsMathEnabled;
+	}
+
+	/**
+	 * adds a css-Classname to the OLAT body-tag
+	 * 
+	 * @param cssClass
+	 *            the name of a css-Class
+	 */
+	public void addBodyCssClass(String cssClass) {
+		// sets class for full page refreshes
+		bodyCssClasses.add(cssClass);
+
+		// only relevant in AJAX mode
+		JSCommand jsc = new JSCommand("try { $('b_body').addClassName('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
+		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+
+	}
+
+	/**
+	 * removes the given css-Classname from the OLAT body-tag
+	 * 
+	 * @param cssClass
+	 *            the name of a css-Class
+	 */
+	public void removeBodyCssClass(String cssClass) {
+		// sets class for full page refreshes
+		bodyCssClasses.remove(cssClass);
+		
+		//only relevant in AJAX mode
+		JSCommand jsc = new JSCommand("try { $('b_body').removeClassName('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
+		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 	}
 
 }

@@ -21,7 +21,13 @@
 
 package org.olat.course.run.glossary;
 
+import java.util.Properties;
+
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
+import org.olat.core.commons.modules.glossary.GlossarySecurityCallback;
+import org.olat.core.commons.modules.glossary.GlossarySecurityCallbackImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowControl;
@@ -93,7 +99,7 @@ public class CourseGlossaryFactory {
 	 * @return
 	 */
 	public static GlossaryMainController createCourseGlossaryMainRunController(WindowControl lwControl, UserRequest lureq, CourseConfig cc,
-			boolean allowGlossaryEditing) {
+			boolean hasGlossaryRights) {
 		if (cc.hasGlossary()) {
 			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(cc.getGlossarySoftKey(),
 					false);
@@ -101,8 +107,17 @@ public class CourseGlossaryFactory {
 				// seems to be removed
 				return null;
 			}
+			boolean owner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(lureq.getIdentity(), repoEntry.getOwnerGroup());
 			VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(repoEntry.getOlatResource());
-			return new GlossaryMainController(lwControl, lureq, glossaryFolder, repoEntry.getOlatResource(), allowGlossaryEditing);
+			Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+			boolean editUsersEnabled =  "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
+			GlossarySecurityCallback secCallback;
+			if (lureq.getUserSession().getRoles().isGuestOnly()) {
+				secCallback = new GlossarySecurityCallbackImpl();				
+			} else {
+				secCallback = new GlossarySecurityCallbackImpl(hasGlossaryRights, owner, editUsersEnabled, lureq.getIdentity().getKey());				
+			}
+			return new GlossaryMainController(lwControl, lureq, glossaryFolder, repoEntry.getOlatResource(), secCallback, true);
 		}
 		return null;
 	}

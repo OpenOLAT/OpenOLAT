@@ -32,6 +32,10 @@
 				QuotaMB=${folder.quotamb}
 				<!-- The personal folder's root relative to the user data root. -->
 				Root=${folder.root}
+				<!-- Allow to send document to extern people -->
+				SendDocToExtern=${folder.sendDocumentToExtern}
+				<!-- Restrict sending document to links to enforce authentication -->
+				SendDocLinkOnly=${folder.sendDocumentLinkOnly}
              </value>
       </property>
 </bean>

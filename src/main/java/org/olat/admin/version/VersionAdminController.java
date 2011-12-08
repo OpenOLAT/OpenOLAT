@@ -21,16 +21,13 @@
 package org.olat.admin.version;
 
 import org.olat.admin.SystemAdminMainController;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.version.SimpleVersionConfig;
 
 /**
  * 
@@ -41,66 +38,32 @@ import org.olat.core.util.vfs.version.SimpleVersionConfig;
  * <P>
  * Initial Date:  21 sept. 2009 <br>
  *
- * @author srosse
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class VersionAdminController extends FormBasicController {
+//fxdiff FXOLAT-127: file versions maintenance tool
+public class VersionAdminController extends BasicController {
 	
-	private SingleSelection numOfVersions;
+	private final VersionSettingsForm settingsForm;
+	private final VersionMaintenanceForm maintenanceForm;
 	
-	private String[] keys = new String[] {
-			"0","2","3","4","5","10","25","50","-1"
-	};
-	
-	private String[] values = new String[] {
-			"0","2","3","4","5","10","25","50","-1"
-	};
+	private VelocityContainer mainVC;
 
 	public VersionAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// use combined translator from system admin main
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
+
+		settingsForm = new VersionSettingsForm(ureq, getWindowControl());
+		listenTo(settingsForm);
 		
-		initForm(this.flc, this, ureq);
+		maintenanceForm = new VersionMaintenanceForm(ureq, this.getWindowControl());
+		listenTo(maintenanceForm);
 		
-		values[0] = getTranslator().translate("version.off");
-		values[values.length - 1] = getTranslator().translate("version.unlimited");
-	}
-	
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// First add title and context help
-		setFormTitle("version.title");
-		setFormDescription("version.intro");
-		setFormContextHelp(VersionAdminController.class.getPackage().getName(), "version.html", "help.hover.version");
+		mainVC = createVelocityContainer("admin");
+		mainVC.put("settings", settingsForm.getInitialComponent());
+		mainVC.put("maintenance", maintenanceForm.getInitialComponent());
 		
-		numOfVersions = uifactory.addDropdownSingleselect("version.numOfVersions", formLayout, keys, values, null);
-		Long maxNumber = getNumOfVersions();
-		if(maxNumber == null) {
-			numOfVersions.select("0", true);
-		} else if (maxNumber.longValue() == -1l) {
-			numOfVersions.select("-1", true);
-		} else {
-			String str = maxNumber.toString();
-			boolean found = false;
-			for(String value:values) {
-				if(value.equals(str)) {
-					found = true;
-					break;
-				}
-			}
-			
-			if(found) {
-				numOfVersions.select(str, true);
-			} else {
-				//set a default value if the saved number is not in the list,
-				//normally not possible but...
-				numOfVersions.select("10", true);
-			}
-		}
-		
-		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		putInitialPanel(mainVC);
 	}
 
 	@Override
@@ -108,27 +71,10 @@ public class VersionAdminController extends FormBasicController {
 		//
 	}
 
+
 	@Override
-	protected void formOK(UserRequest ureq) {
-		String num = numOfVersions.getSelectedKey();
-		if(num == null || num.length() == 0) return;
-		
-		try {
-			int maxNumber = Integer.parseInt(num);
-			setNumOfVersions(maxNumber);
-			getWindowControl().setInfo("saved");
-		} catch (NumberFormatException e) {
-			showError("version.notANumber");
-		}
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
-	
-	public Long getNumOfVersions() {
-		SimpleVersionConfig config = (SimpleVersionConfig) CoreSpringFactory.getBean(SimpleVersionConfig.class);
-		return config.getMaxNumberOfVersionsProperty();
-	}
-	
-	public void setNumOfVersions(int maxNumber) {
-		SimpleVersionConfig config = (SimpleVersionConfig) CoreSpringFactory.getBean(SimpleVersionConfig.class);
-		config.setMaxNumberOfVersionsProperty(new Long(maxNumber));
-	}
+
 }

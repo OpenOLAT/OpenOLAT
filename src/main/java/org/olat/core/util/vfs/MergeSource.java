@@ -197,23 +197,43 @@ public class MergeSource extends AbstractVirtualContainer {
 		if (path.equals("/")) return this;
 		
 		String childName = VFSManager.extractChild(path);
+		VFSItem vfsItem = null; 
 		for (Iterator iter = mergedContainers.iterator(); iter.hasNext();) {
 			VFSContainer container = (VFSContainer) iter.next();
-			if (container.getName().equals(childName)) {
-				VFSItem vfsItem =  container.resolve(path.substring(childName.length() + 1));
+			String nextPath = path.substring(childName.length() + 1);
+			// fxdiff FXOLAT-176 a namedContainer doesn't match with its own getName()! -> work with delegate
+			boolean nameMatch = container.getName().equals(childName);
+			if (container instanceof NamedContainerImpl && !nameMatch) {
+				// Special case: sometimes the path refers to the named containers
+				// delegate container, so try this one as well
+				container = ((NamedContainerImpl) container).getDelegate();
+				String name = container.getName();
+				if (name == null) {
+					// FXOLAT-195 The delegate of the named container does not
+					// have a name, so abort the special case and continue with
+					// next container
+					continue;
+				}
+				nameMatch = name.equals(childName);
+			}
+			if (nameMatch) {
+				vfsItem = container.resolve(nextPath);
 				// set default filter on resolved file if it is a container
 				if (vfsItem != null && vfsItem instanceof VFSContainer) {
 					VFSContainer resolvedContainer = (VFSContainer) vfsItem;
 					resolvedContainer.setDefaultItemFilter(defaultFilter);
 				}
 				return vfsItem;
-
 			}
 		}
 
 		for (Iterator iter = mergedContainersChildren.iterator(); iter.hasNext();) {
 			VFSContainer container = (VFSContainer) iter.next();
-			VFSItem vfsItem = container.resolve(path);
+			// fxdiff FXOLAT-176 a namedContainer doesn't match with its own getName()! -> work with delegate
+			if (container instanceof NamedContainerImpl) {
+				container = ((NamedContainerImpl) container).getDelegate();
+			}
+			vfsItem = container.resolve(path);
 			if (vfsItem != null) {
 				// set default filter on resolved file if it is a container
 				if (vfsItem instanceof VFSContainer) {
@@ -225,7 +245,7 @@ public class MergeSource extends AbstractVirtualContainer {
 		}
 		return null;
 	}
-
+	
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getLocalSecurityCallback()
 	 */

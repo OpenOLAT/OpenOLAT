@@ -14,30 +14,69 @@
  */
 package de.bps.olat.portal.links;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 
 public class LinksPortletRunController extends BasicController {	
 	
+	private static final String LINKADD = "linkadd";
+	private static final String LINKID = "linkid";
+	private static final String LINKDEL = "linkdel";
 	private VelocityContainer portletVC;
+	private Link editButton;
+	private Panel viewPanel;
+	private LinksPortletEditController editorCtrl;
+	private CloseableCalloutWindowController linkEditorCalloutCtr;
+	private Link backLink;
+	private DialogBoxController delLinkCtrl;
 	
 	protected LinksPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		portletVC = this.createVelocityContainer("portlet");
-		String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
-		if (lang == null) lang = I18nManager.getInstance().getLocaleKey(I18nModule.getDefaultLocale());
+		initOrUpdatePortletView(ureq);
+		
+		//edit link
+		if (ureq.getUserSession().getRoles().isOLATAdmin()){
+			editButton = LinkFactory.createButtonXSmall("editor.button", portletVC, this);
+		}
 
-		boolean isGuest = !ureq.getUserSession().isAuthenticated();
+		viewPanel = new Panel("view");
+		viewPanel.setContent(portletVC);
+		putInitialPanel(viewPanel);
+	}
+	
+	private void initOrUpdatePortletView(UserRequest ureq){
+		String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
+		if (lang == null) {
+			lang = I18nManager.getInstance().getLocaleKey(I18nModule.getDefaultLocale());
+		}
+		// fxdiff: compare with language-base not with variant...
+		int underlinePos = lang.indexOf("_");
+		if (underlinePos != -1){
+			lang = lang.substring(0,underlinePos);
+		}
+		
+		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		String inst = new String();
 		if(!isGuest) inst = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, getLocale());
 		
@@ -63,14 +102,12 @@ public class LinksPortletRunController extends BasicController {
 			}
 		}
 		
-		// In Template einfügen
 		if (sb.length() > 0) {
 			String portletContent = "<ul>" + sb.toString() + "</ul>";
 			portletVC.contextPut("content", portletContent);
 		} else {
 			portletVC.contextPut("content", translate("no.content.found"));
 		}
-		putInitialPanel(this.portletVC);
 	}
 	
 	/**
@@ -82,8 +119,15 @@ public class LinksPortletRunController extends BasicController {
 	 */
 	private void appendContentFor(Map<String, PortletInstitution> content,
 			String inst, String lang, StringBuffer sb) {
+		String linkLang = "";
+		int underlinePos = -1;
 		for( PortletLink link : content.get(inst).getLinks() ) {
-			if(link.getLanguage().equals(lang) | link.getLanguage().equals(LinksPortlet.LANG_ALL))
+			linkLang = link.getLanguage();
+			underlinePos = linkLang.indexOf("_");
+			if (underlinePos != -1){
+				linkLang= linkLang.substring(0,underlinePos);
+			}
+			if(linkLang.equals(lang) | linkLang.equals(LinksPortlet.LANG_ALL))
 				appendContent(link, sb);
 		}
 	}
@@ -116,7 +160,7 @@ public class LinksPortletRunController extends BasicController {
 		sb.append(target);
 		sb.append("\">");
 		sb.append(title);
-		sb.append("</a> - ");
+		sb.append("</a>");
 		sb.append(descr);
 		return sb.toString();
 	}
@@ -125,7 +169,107 @@ public class LinksPortletRunController extends BasicController {
 	 * @see org.olat.gui.control.DefaultController#event(org.olat.gui.UserRequest, org.olat.gui.components.Component, org.olat.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		// no events to catch
+		if (source == editButton){
+			buildEditorPanel();
+		} else if (source == backLink) {
+			LinksPortlet.reInit(ureq);
+			initOrUpdatePortletView(ureq);
+			viewPanel.setContent(portletVC);				
+		}	else if (source instanceof Link) {
+			// clicked on a link in editor-mode -> open editor in callout
+			Link link = (Link) source;
+			String linkName = link.getComponentName();
+			if (linkName.contains(LINKID)){
+				String identifier = linkName.substring(LINKID.length());
+				PortletLink portLink = LinksPortlet.getLinkByIdentifier(identifier);
+				if (portLink != null) {
+					popupLinkEditor(ureq, portLink, link);
+				} else {
+					showError("error.link.not.found");
+				}
+			} else if (linkName.contains(LINKADD)){
+				// add a link to institution:
+				PortletLink newLink = new PortletLink("", "", "", I18nManager.getInstance().getLocaleKey(ureq.getLocale()), "", null);
+				// find institution and port in link!
+				String institution = link.getCommand().substring(LINKADD.length());
+				PortletInstitution inst = LinksPortlet.getContent().get(institution);
+				newLink.setInstitution(inst);
+				popupLinkEditor(ureq, newLink, link);
+			} else if (linkName.contains(LINKDEL)){
+				String identifier = linkName.substring(LINKDEL.length());
+				PortletLink portLink = LinksPortlet.getLinkByIdentifier(identifier);
+				delLinkCtrl = activateYesNoDialog(ureq, translate("del.link.title"), translate("del.link.text", portLink.getTitle()), delLinkCtrl);
+				delLinkCtrl.setUserObject(portLink);
+			}
+		}
+	}
+	
+	private void popupLinkEditor(UserRequest ureq, PortletLink portLink, Link glueLink) {
+		String title = translate("link.editor.title");				
+		removeAsListenerAndDispose(editorCtrl);
+		editorCtrl = new LinksPortletEditController(ureq, getWindowControl(), portLink);
+		listenTo(editorCtrl);
+		
+		removeAsListenerAndDispose(linkEditorCalloutCtr);
+		linkEditorCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), editorCtrl.getInitialComponent(), glueLink, title, true, null);
+		listenTo(linkEditorCalloutCtr);
+		linkEditorCalloutCtr.activate();
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == editorCtrl && event == Event.DONE_EVENT) {
+			LinksPortlet.reInit(ureq);
+			linkEditorCalloutCtr.deactivate();
+			buildEditorPanel();
+		} else if (source == delLinkCtrl && DialogBoxUIFactory.isYesEvent(event) ){
+			LinksPortlet.removeLink( (PortletLink) delLinkCtrl.getUserObject() );
+			showInfo("del.link.success");
+			buildEditorPanel();
+		}
+	}
+	
+	private void buildEditorPanel(){
+		VelocityContainer editorVC = this.createVelocityContainer("editorLinkOverview");
+		Map<String, PortletInstitution> content = LinksPortlet.getContent();
+		if (content != null && !content.isEmpty() ) {
+			ArrayList<String> allInst = new ArrayList<String>();
+			ArrayList<String> allInstTranslated = new ArrayList<String>();
+			HashMap<Integer, ArrayList<String>> allInstWithLinkIds = new HashMap<Integer, ArrayList<String>>();
+			int instCount = 1;
+			for (Iterator<String> iterator = content.keySet().iterator(); iterator.hasNext();) {
+				String inst = iterator.next();
+				allInst.add(inst);
+				String instTranslated = inst;
+				if (inst.equals(LinksPortlet.ACCESS_ALL)) instTranslated = translate("access.all");
+				if (inst.equals(LinksPortlet.ACCESS_REG)) instTranslated = translate("access.registered.users");
+				if (inst.equals(LinksPortlet.ACCESS_GUEST)) instTranslated = translate("access.guests");
+				allInstTranslated.add(instTranslated);		
+				
+				PortletInstitution portletsForInst = content.get(inst);
+				// collect identifiers to find them in VC.
+				ArrayList<String> instLinksIdentifiers = new ArrayList<String>();
+				
+				// add add-link per institution
+				LinkFactory.createCustomLink(LINKADD + inst, LINKADD + inst, "add.link", Link.BUTTON_XSMALL, editorVC, this);
+				
+				for (PortletLink link : portletsForInst.getLinks()) {
+					String linkID = link.getIdentifier();
+					LinkFactory.createCustomLink(LINKID + linkID, "inst" + inst, link.getTitle(), Link.LINK + Link.NONTRANSLATED, editorVC, this);
+					// add remove-links
+					LinkFactory.createCustomLink(LINKDEL + linkID, "inst" + inst, "-", Link.BUTTON_XSMALL + Link.NONTRANSLATED, editorVC, this);					
+					instLinksIdentifiers.add(linkID);
+				}
+				allInstWithLinkIds.put(instCount, instLinksIdentifiers);
+				instCount++;
+			}
+			editorVC.contextPut("allInst", allInst);
+			editorVC.contextPut("allInstTranslated", allInstTranslated);
+			editorVC.contextPut("allInstWithLinkIds", allInstWithLinkIds);
+		}
+		
+		backLink = LinkFactory.createLinkBack(editorVC, this);		
+		viewPanel.setContent(editorVC);
 	}
 
 	/**

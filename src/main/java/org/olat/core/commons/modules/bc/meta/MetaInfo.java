@@ -52,6 +52,12 @@ public interface MetaInfo {
 	 * @return True upon success.
 	 */
 	public boolean delete();
+	
+	/**
+	 * fxdiff:
+	 * @return the unique id of the file or create one if it previously not exists
+	 */
+	public String getUUID();
 
 	/**
 	 * @return name of the initial author (OLAT user name)

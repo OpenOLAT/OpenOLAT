@@ -325,7 +325,8 @@ public abstract class FeedManagerImpl extends FeedManager {
 					}
 				} else {
 					// There's no repo entry image -> delete the feed image as well.
-					deleteImage(feed);
+					//fxdiff:  FXOLAT-271  (we don't want to delete image)
+					//deleteImage(feed);
 				}
 			}
 		}

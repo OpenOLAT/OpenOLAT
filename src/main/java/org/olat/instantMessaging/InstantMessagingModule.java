@@ -65,7 +65,8 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	private IMConfig config;
 	private static boolean enabled = false;
 	private static final String CONFIG_SYNCED_BUDDY_GROUPS = "issynced";
-	private static final String CONFIG_SYNCED_LEARNING_GROUPS = "syncedlearninggroups";
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public static final String CONFIG_SYNCED_LEARNING_GROUPS = "syncedlearninggroups";
 	OLog log = Tracing.createLoggerFor(this.getClass());
 	@Autowired
 	private PropertyManager propertyManager;
@@ -151,7 +152,9 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
    * @param configurationName
    * @return String
    */
-  private String createPropertyName(Class clazz, String configurationName) {
+
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+  public static String createPropertyName(Class clazz, String configurationName) {
           return clazz.getName() + "::" + configurationName;
   }
 
@@ -244,8 +247,7 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		if (instantMessaging.getConfig().isEnabled()) {
-			String imUsername = instantMessaging.getIMUsername(identity.getName());
-			instantMessaging.deleteAccount(imUsername);
+			instantMessaging.deleteAccount(identity.getName());
 			log.debug("Deleted IM account for identity=" + identity);
 		}
 	}
@@ -286,24 +288,6 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	@Override
 	public void event(Event event) {
 		// synchronistion of learning groups needs the whole olat course stuff loaded
-		if (event instanceof FrameworkStartedEvent) {
-			boolean success = false;
-			try {
-				List props = propertyManager.findProperties(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_LEARNING_GROUPS));
-				if (props.size() == 0) {
-					if (isSyncLearningGroups()) {
-						instantMessaging.synchronizeLearningGroupsWithIMServer();
-						Property property = propertyManager.createPropertyInstance(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_LEARNING_GROUPS), null,  null, Boolean.toString(true), null);
-						propertyManager.saveProperty(property);
-					}
-				}
-				database.commitAndCloseSession();
-				success = true;
-			} finally {
-				if (!success) {
-					database.rollbackAndCloseSession();
-				}
-			}
-		}
+		//fxdiff: FXOLAT-219 decrease the load for synching groups
 	}
 }

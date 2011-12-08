@@ -109,7 +109,7 @@ public class MoveCopySubtreeController extends BasicController {
 				CourseEditorTreeNode insertParent = course.getEditorTreeModel().getCourseEditorNodeById(selectedNode.getIdent());
 
 				// check if insert position is within the to-be-copied tree
-				if (checkIfIsChild(insertParent, moveCopyFrom)) {					
+				if (course.getEditorTreeModel().checkIfIsChild(insertParent, moveCopyFrom)) {					
 					this.showError("movecopynode.error.overlap");
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 					return;
@@ -161,28 +161,6 @@ public class MoveCopySubtreeController extends BasicController {
 		for (int i = 0; i < copyFrom2.getChildCount(); i++) {
 			recursiveCopy(course.getEditorTreeModel().getCourseEditorNodeById(copyFrom2.getChildAt(i).getIdent()), insertedEditorTreeNode, i, false, course);
 		}
-	}
-
-	/**
-	 * Check if prospectChild is a child of sourceTree.
-	 * 
-	 * @param prospectChild
-	 * @param sourceTree
-	 * @return
-	 */
-	private boolean checkIfIsChild(CourseEditorTreeNode prospectChild, CourseEditorTreeNode sourceTree) {
-		// FIXME:ms:b would it be simpler to check the parents?
-		// INode par;
-		// for (par = prospectChild.getParent(); par != null && par != sourceTree;
-		// par = par.getParent());
-		// return (par == sourceTree);
-		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
-		if (sourceTree.getIdent().equals(prospectChild.getIdent())) return true;
-		for (int i = 0; i < sourceTree.getChildCount(); i++) {
-			INode child = sourceTree.getChildAt(i);
-			if (checkIfIsChild(prospectChild, course.getEditorTreeModel().getCourseEditorNodeById(child.getIdent()))) return true;
-		}
-		return false;
 	}
 
 	protected void doDispose() {

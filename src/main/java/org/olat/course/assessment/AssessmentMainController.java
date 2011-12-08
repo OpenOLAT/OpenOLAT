@@ -23,19 +23,19 @@ package org.olat.course.assessment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.admin.securitygroup.gui.UserControllerFactory;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -86,12 +86,14 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.ProjectBrokerCourseNode;// TODO:cg 04.11.2010 ProjectBroker : no assessment-tool in V1.0 , remove projectbroker completely form assessment-tool gui
+import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.context.BGContextTableModel;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 
 /**
@@ -143,6 +145,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	Map<Long, UserCourseEnvironment> localUserCourseEnvironmentCache; // package visibility for avoiding synthetic accessor method
 	// List of groups to which the user has access rights in this course
 	private List<BusinessGroup> coachedGroups;
+	//Is tutor from the security group of repository entry
+	private boolean repoTutor = false;
 
 	// some state variables
 	private AssessableCourseNode currentCourseNode;
@@ -234,7 +238,10 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			nodeChoose = createVelocityContainer("nodechoose");
 
 			// Initialize all groups that the user is allowed to coach
-			coachedGroups = getAllowedGroupsFromGroupmanagement(ureq.getIdentity()); 
+			coachedGroups = getAllowedGroupsFromGroupmanagement(ureq.getIdentity());
+			
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
+			repoTutor = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(getIdentity(), re.getTutorGroup());
 
 			// preload the assessment cache to speed up everything as background thread
 			// the thread will terminate when finished
@@ -269,7 +276,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			//fill the user list for the 
 			this.mode = MODE_USERFOCUS;
 			this.identitiesList = getAllIdentitisFromGroupmanagement();
-			doSimpleUserChoose(ureq, this.identitiesList);
+			//fxdiff FXOLAT-108: improve results table of tests
+			doUserChooseWithData(ureq, identitiesList, null, null);
 			
 			GenericTreeModel menuTreeModel = (GenericTreeModel)menuTree.getTreeModel();
 			TreeNode userNode = menuTreeModel.findNodeByUserObject(CMD_USERFOCUS);
@@ -309,7 +317,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				} else if (cmd.equals(CMD_USERFOCUS)) {
 					this.mode = MODE_USERFOCUS;
 					this.identitiesList = getAllIdentitisFromGroupmanagement();
-					doSimpleUserChoose(ureq, this.identitiesList);
+					//fxdiff FXOLAT-108: improve results table of tests
+					doUserChooseWithData(ureq, identitiesList, null, null);
 				} else if (cmd.equals(CMD_GROUPFOCUS)) {
 					this.mode = MODE_GROUPFOCUS;
 					doGroupChoose(ureq);
@@ -329,7 +338,15 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		} else if (source == backLinkGC){
 			setContent(nodeListCtr.getInitialComponent());
 		} else if (source == backLinkUC){
-			setContent(groupChoose);
+			if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
+				if(mode == MODE_GROUPFOCUS) {
+					setContent(groupListCtr.getInitialComponent());
+				} else {
+					setContent(nodeListCtr.getInitialComponent());
+				}
+			} else {
+				setContent(groupChoose);
+			}
 		} else if (source == showAllCourseNodesButton) {
 			enableFilteringCourseNodes(false);
 		}  else if (source == filterCourseNodesButton) {
@@ -436,7 +453,12 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					CourseNode node = course.getRunStructure().getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
 					this.currentCourseNode = (AssessableCourseNode) node;
 					// cast should be save, only assessable nodes are selectable
-					doGroupChoose(ureq);
+					if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
+						identitiesList = getAllIdentitisFromGroupmanagement();
+						doUserChooseWithData(ureq, this.identitiesList, null, currentCourseNode);
+					} else {
+						doGroupChoose(ureq);
+					}
 				}
 			} else if (event.equals(TableController.EVENT_FILTER_SELECTED)) {
 				this.currentCourseNode = (AssessableCourseNode) nodeListCtr.getActiveFilter();
@@ -559,13 +581,15 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	/**
 	 * @return List of all course participants
 	 */
-	List<Identity> getAllIdentitisFromGroupmanagement() {
+	/*List<Identity> getAllIdentitisFromGroupmanagement() {
 		List<Identity> allUsersList = new ArrayList<Identity>();
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		Iterator<BusinessGroup> iter = this.coachedGroups.iterator();
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		while (iter.hasNext()) {
 			BusinessGroup group = iter.next();
 			SecurityGroup secGroup = group.getPartipiciantGroup();
+			secGroups.add(secGroup);
 			List<Identity> identities = secMgr.getIdentitiesOfSecurityGroup(secGroup);
 			for (Iterator<Identity> identitiyIter = identities.iterator(); identitiyIter.hasNext();) {
 				Identity identity = identitiyIter.next();
@@ -575,6 +599,48 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				}
 			}
 		}
+		
+		List<Long> idKeys = secMgr.getIdentitiesOfSecurityGroups(secGroups);
+		System.out.println();
+		
+		//fxdiff VCRP-1,2: access control of resources
+		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+			if(re.getParticipantGroup() != null) {
+				for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
+					if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
+						allUsersList.add(identity);
+					}
+				}
+			}
+		}
+		
+		return allUsersList;
+	}*/
+	
+	List<Identity> getAllIdentitisFromGroupmanagement() {
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for (BusinessGroup group: coachedGroups) {
+			secGroups.add(group.getPartipiciantGroup());
+		}
+		
+		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
+		Set<Identity> smashDuplicates = new HashSet<Identity>(usersList);
+		List<Identity> allUsersList = new ArrayList<Identity>(usersList);
+		
+		//fxdiff VCRP-1,2: access control of resources
+		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+			if(re.getParticipantGroup() != null) {
+				for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
+					if (!smashDuplicates.contains(identity)) {
+						allUsersList.add(identity);
+					}
+				}
+			}
+		}
+
 		return allUsersList;
 	}
 
@@ -605,6 +671,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		removeAsListenerAndDispose(groupListCtr);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("groupchoose.nogroups"));
+		//fxdiff VCRP-4: assessment overview with max score
+		tableConfig.setPreferencesOffered(true, "assessmentGroupList");
 		groupListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(groupListCtr);
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 0, CMD_CHOOSE_GROUP, ureq.getLocale()));
@@ -644,7 +712,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 
 	private void doUserChooseWithData(UserRequest ureq, List<Identity> identities, BusinessGroup group, AssessableCourseNode courseNode) {
 		ICourse course = CourseFactory.loadCourse(ores);
-		if (mode == MODE_GROUPFOCUS) {
+		//fxdiff FXOLAT-108: improve results table of tests
+		if (mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS) {
 			this.nodeFilters = addAssessableNodesToList(course.getRunStructure().getRootNode(), group);
 			if (courseNode == null && this.nodeFilters.size() > 0) {
 				this.currentCourseNode = (AssessableCourseNode) this.nodeFilters.get(0);
@@ -655,8 +724,14 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		removeAsListenerAndDispose(userListCtr);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("userchoose.nousers"));
+		if(mode == MODE_USERFOCUS) {
+			tableConfig.setPreferencesOffered(true, "assessmentSimpleUserList");
+		} else if(mode == MODE_GROUPFOCUS){
+			//fxdiff VCRP-4: assessment overview with max score
+			tableConfig.setPreferencesOffered(true, "assessmentGroupUsersNode");
+		}
 		
-		if (mode == MODE_GROUPFOCUS) {
+		if (mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS) {
 			userListCtr = new TableController(tableConfig, ureq, getWindowControl(), 
 					this.nodeFilters, courseNode, 
 					translate("nodesoverview.filter.title"), null,propertyHandlerTranslator);
@@ -668,15 +743,15 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		// Wrap identities with user course environment and user score view
 		List<AssessedIdentityWrapper> wrappedIdentities = new ArrayList<AssessedIdentityWrapper>();
 		for (int i = 0; i < identities.size(); i++) {
-			Identity identity = (Identity) identities.get(i);
+			Identity identity = identities.get(i);
 			// if course node is null the wrapper will only contain the identity and no score information
 			AssessedIdentityWrapper aiw = AssessmentHelper.wrapIdentity(identity,
 			this.localUserCourseEnvironmentCache, course, courseNode);
 			wrappedIdentities.add(aiw);
 		}
 		// Add the wrapped identities to the table data model
-		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, ureq.getLocale(), isAdministrativeUser);
-		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS);
+		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, ureq.getLocale(), isAdministrativeUser, mode == MODE_USERFOCUS);
+		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS);
 		userListCtr.setTableDataModel(tdm);
 
 
@@ -703,7 +778,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		// set main vc to userchoose
 		setContent(userChoose);
 	}
-
+	
+	//fxdiff FXOLAT-108: improve results table of tests
+	/*
 	private void doSimpleUserChoose(UserRequest ureq, List<Identity> identities) {
 		// Init table headers
 		removeAsListenerAndDispose(userListCtr);
@@ -721,6 +798,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		// set main vc to userchoose
 		setContent(userChoose);
 	}
+	*/
 
 	private void doNodeChoose(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(ores);
@@ -730,18 +808,41 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
 		tableConfig.setDownloadOffered(false);
 		tableConfig.setColumnMovingOffered(false);
-		tableConfig.setSortingEnabled(false);
+		//fxdiff VCRP-4: assessment overview with max score
+		tableConfig.setSortingEnabled(true);
 		tableConfig.setDisplayTableHeader(true);
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
+		//fxdiff VCRP-4: assessment overview with max score
+		tableConfig.setPreferencesOffered(true, "assessmentNodeList");
 		
 		nodeListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(nodeListCtr);
+		
+		//fxdiff VCRP-4: assessment overview with max score
+		final IndentedNodeRenderer nodeRenderer = new IndentedNodeRenderer() {
+			@Override
+			public boolean isIndentationEnabled() {
+				return nodeListCtr.getTableSortAsc() && nodeListCtr.getTableSortCol() == 0;
+			}
+		};
+		
 		// table columns		
-		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, 
-				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new IndentedNodeRenderer()));
-		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1,
-				CMD_SELECT_NODE, ureq.getLocale()));
+		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0,
+				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, nodeRenderer){
+					@Override
+					//fxdiff VCRP-4: assessment overview with max score
+					public int compareTo(int rowa, int rowb) {
+						//the order is already ok
+						return rowa - rowb;
+					}
+		});
+		//fxdiff VCRP-4: assessment overview with max score
+		nodeListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", 2, null, ureq.getLocale(),
+				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
+		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", 3, null, ureq.getLocale(),
+				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
+		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1, CMD_SELECT_NODE, ureq.getLocale()));
 		
 		// get list of course node data and populate table data model 
 		CourseNode rootNode = course.getRunStructure().getRootNode();		
@@ -811,6 +912,17 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					|| assessableCourseNode.hasCommentConfigured()) {
 					hasDisplayableValuesConfigured = true;
 				}
+				
+				//fxdiff VCRP-4: assessment overview with max score
+				if(assessableCourseNode.hasScoreConfigured()) {
+					if(!(courseNode instanceof STCourseNode)) {
+						Float min = assessableCourseNode.getMinScoreConfiguration();
+						nodeData.put(AssessmentHelper.KEY_MIN, min);
+						Float max = assessableCourseNode.getMaxScoreConfiguration();
+						nodeData.put(AssessmentHelper.KEY_MAX, max);
+					}
+				}
+
 				if (assessableCourseNode.isEditableConfigured()) {
 					// Assessable course nodes are selectable when they are aditable
 					nodeData.put(AssessmentHelper.KEY_SELECTABLE, Boolean.TRUE);
@@ -885,14 +997,16 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		if ( (courseNode == null) || ( group == null ) ) {
 			return true;
 		}
-		if (getGroupIdentitiesFromGroupmanagement(group).size()==0) {
+		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+		List<Identity> identities = secMgr.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup(), 0, 1);		
+		if (identities.isEmpty()) {
 			// group has no participant, can not evalute  
 			return false;
 		}
 		ICourse course = CourseFactory.loadCourse(ores);
 		// check if course node is visible for group
 		// get first identity to use this identity for condition interpreter
-		Identity identity = getGroupIdentitiesFromGroupmanagement(group).get(0);
+		Identity identity = identities.get(0);
 		IdentityEnvironment identityEnvironment = new IdentityEnvironment();
 		identityEnvironment.setIdentity(identity);
 		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());

@@ -64,4 +64,13 @@ public class FeedResourceSecurityCallback implements FeedSecurityCallback {
 	public boolean mayEditMetadata() {
 		return isAdmin || isOwner;
 	}
+
+	/**
+	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
+	 */
+	//fxdiff BAKS-18
+	@Override
+	public boolean mayViewAllDrafts() {
+		return isAdmin || isOwner;
+	}
 }

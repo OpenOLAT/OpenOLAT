@@ -2,7 +2,7 @@
 	<ul>
 	#foreach($link in $linkList)
 		<li>
-			<a href="$link.getTarget()" target="$link.getHtmlTarget()" class="b_link_extern">$link.getDescription()</a>
+			<a href="#if($link.intern) $mapperBaseUrl$link.getTarget() #else $link.getTarget() #end" target="$link.getHtmlTarget()" class="b_link_extern">$link.getDescription()</a>
 			#if($showLinkComments)
 			<div>
 				$link.getComment()

@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
+import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
@@ -53,13 +55,16 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.CourseFactory;
@@ -100,6 +105,7 @@ public class DialogElementsController extends BasicController {
 	private TableController tableCtr;
 	private CourseNode courseNode;
 	private FileUploadController fileUplCtr;
+	private LinkChooserController fileCopyCtr;
 	private Panel dialogPanel;
 	private ForumManager forumMgr;
 	private DialogElement recentDialogElement, selectedElement;
@@ -286,6 +292,50 @@ public class DialogElementsController extends BasicController {
 					throw new OLATRuntimeException(DialogElementsController.class, "Error while adding new 'file discussion' element with filename: "+filename, e);
 				}
 			}
+		} else if (source == fileCopyCtr) {
+			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				// reset recent element
+				recentDialogElement = null;
+				showOverviewTable(ureq, forumCallback);
+			} else if (event instanceof URLChoosenEvent) {
+				URLChoosenEvent choosenEvent = (URLChoosenEvent)event;
+				String fileUrl = choosenEvent.getURL();
+				if(fileUrl.indexOf("://") < 0) {
+					//copy file
+					VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
+					VFSLeaf vl = (VFSLeaf) courseContainer.resolve(fileUrl);
+					OlatRootFolderImpl forumContainer = getForumContainer(recentDialogElement.getForumKey());
+					VFSLeaf copyVl = forumContainer.createChildLeaf(vl.getName());
+					if(copyVl == null) {
+						copyVl = (VFSLeaf)forumContainer.resolve(vl.getName());
+					}
+					VFSManager.copyContent(vl, copyVl);
+					
+					// get size of file
+					String fileSize = StringHelper.formatMemory(copyVl.getSize());
+
+					DialogElement element = new DialogElement();
+					element.setAuthor(recentDialogElement.getAuthor());
+					element.setDate(new Date());
+					element.setFilename(vl.getName());
+					element.setForumKey(recentDialogElement.getForumKey());
+					element.setFileSize(fileSize);
+
+					// do logging
+					//ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_UPLOADED, getClass(), LoggingResourceable.wrapUploadFile(filename));
+
+					// inform subscription manager about new element
+					if (subsContext != null) {
+						NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity());
+					}
+					//everything when well so save the property
+					dialogElmsMgr.addDialogElement(coursePropMgr, courseNode, element);
+				}
+				
+				//not supported
+				recentDialogElement = null;
+				showOverviewTable(ureq, forumCallback);
+			}
 		} else if (source == confirmDeletionCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				DialogCourseNode node = (DialogCourseNode) courseNode;
@@ -339,6 +389,16 @@ public class DialogElementsController extends BasicController {
 			recentDialogElement.setForumKey(forum.getKey());
 			recentDialogElement.setAuthor(ureq.getIdentity().getName());
 			dialogPanel.setContent(fileUplCtr.getInitialComponent());
+		} else if (source == copyButton) {
+			Forum forum = forumMgr.addAForum();
+			VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
+			fileCopyCtr = new MyLinkChooserController(ureq, getWindowControl(), courseContainer, null);
+			listenTo(fileCopyCtr);
+			
+			recentDialogElement = new DialogElement();
+			recentDialogElement.setForumKey(forum.getKey());
+			recentDialogElement.setAuthor(ureq.getIdentity().getName());
+			dialogPanel.setContent(fileCopyCtr.getInitialComponent());
 		}
 
 	}
@@ -373,5 +433,23 @@ public class DialogElementsController extends BasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	private class MyLinkChooserController extends LinkChooserController {
+		public MyLinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String uploadRelPath) {
+			super(ureq, wControl, rootDir, uploadRelPath, null, "", null);
+		}
+		
+		@Override
+		//this is a hack to overwrite the package used by the BasicController
+		protected VelocityContainer createVelocityContainer(String page) {
+			setTranslator(Util.createPackageTranslator(LinkChooserController.class, getLocale()));
+			velocity_root = Util.getPackageVelocityRoot(LinkChooserController.class);
+			return super.createVelocityContainer(page);
+		}
 
+		@Override
+		public void event(UserRequest ureq, Controller source, Event event) {
+			fireEvent(ureq, event);
+		}
+	}
 }

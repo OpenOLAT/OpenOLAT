@@ -20,9 +20,13 @@
  */
 package org.olat.instantMessaging;
 
-import org.olat.core.logging.OLog;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+
+import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 
 
 /**
@@ -36,8 +40,7 @@ import org.olat.core.logging.Tracing;
  * @author Roman Haag, roman.haag@frentix.com
  * @author guido
  */
-public class IMNameHelper {
-	private static OLog log = Tracing.createLoggerFor(IMNameHelper.class);
+public class IMNameHelper extends LogDelegator {
 
 	private String instanceID;
 	private String USERNAME_INSTANCE_DELIMITER = "_";
@@ -66,6 +69,15 @@ public class IMNameHelper {
 		// replace "@" by "_at_" --> this allows "@" also for olat-usernames
 		String imUsername = olatUsername.replace("@", config.getReplaceStringForEmailAt());
 		if (config.isMultipleInstances()) {
+			if (olatUsername.contains(USERNAME_INSTANCE_DELIMITER + instanceID)){
+				// build stacktrace to find bad places in code:
+				OLATRuntimeException ore = new OLATRuntimeException("stacktrace for calls to IMNameHelper.getIMUsernameByOlatUsername()", null);
+				final Writer result = new StringWriter();
+				final PrintWriter printWriter = new PrintWriter(result);
+				ore.printStackTrace(printWriter);
+				logError("Double wrapping of olat-username! check the usage of it, as this IMUser (given olat-username: " + olatUsername + " imUsername: " + imUsername + " ) already contained the instanceID!! Calling Stack: " + result.toString(), null);
+				return olatUsername.toLowerCase();
+			}
 			return (imUsername + USERNAME_INSTANCE_DELIMITER + instanceID).toLowerCase();
 		}
 		else {
@@ -90,7 +102,7 @@ public class IMNameHelper {
 				try {
 					imUsername = imUsername.substring(0, imUsername.lastIndexOf(USERNAME_INSTANCE_DELIMITER));										
 				} catch (StringIndexOutOfBoundsException e) {
-					log.error("Can not extract OLAT username from Jabber username::" + imUsername, e);					
+					logError("Can not extract OLAT username from Jabber username::" + imUsername, e);					
 					return "?";
 				}
 			}

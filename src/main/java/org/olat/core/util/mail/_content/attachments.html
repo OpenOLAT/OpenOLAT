@@ -1,0 +1,5 @@
+<ul class="b_mail_attachments"">
+	#foreach ($attachment in $attachments)
+		<li><a href="$mapperBaseURI/attachments/$attachment.key/$attachment.name" class="b_with_small_icon_left $attachment.cssClass" target="_blank"><span>$attachment.name</span></a></li>
+	#end
+</ul>

@@ -21,6 +21,8 @@
 
 package org.olat.course.run.navigation;
 
+import java.util.List;
+
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.course.nodes.CourseNode;
@@ -52,6 +54,8 @@ public class NodeClickedRef {
 	// no node is selected
 	// (which can only be the case if even the root course node is not visible)
 	private String selectedNodeId;
+	
+	private List<String> openNodeIds;
 
 	// the coursenode which was called when clicking the treenode (used only to
 	// update scoring on that coursenode).
@@ -61,6 +65,9 @@ public class NodeClickedRef {
 	// the resulting controller, the subtreelistener, and the subtree: fetched
 	// from the coursenode
 	private NodeRunConstructionResult nodeConstructionResult;
+	
+	
+	private boolean handledBySubTreeModelListener;
 
 	/**
 	 * @param treeModel
@@ -70,20 +77,22 @@ public class NodeClickedRef {
 	 * @param nodeConstructionResult null means that no new node controller has
 	 *          been created, but is was handled by the subtreemodellistener
 	 */
-	NodeClickedRef(TreeModel treeModel, boolean visible, String selectedNodeId, CourseNode calledCourseNode,
-			NodeRunConstructionResult nodeConstructionResult) {
+	NodeClickedRef(TreeModel treeModel, boolean visible, String selectedNodeId, List<String> openNodeIds, CourseNode calledCourseNode,
+			NodeRunConstructionResult nodeConstructionResult, boolean handledBySubTreeModelListener) {
 		this.treeModel = treeModel;
 		this.visible = visible;
 		this.selectedNodeId = selectedNodeId;
+		this.openNodeIds = openNodeIds;
 		this.calledCourseNode = calledCourseNode;
 		this.nodeConstructionResult = nodeConstructionResult;
+		this.handledBySubTreeModelListener = handledBySubTreeModelListener;
 	}
 
 	/**
 	 * @return if handled by the sublistener
 	 */
 	public boolean isHandledBySubTreeModelListener() {
-		return nodeConstructionResult == null;
+		return handledBySubTreeModelListener;
 	}
 
 	/**
@@ -97,13 +106,21 @@ public class NodeClickedRef {
 	 * @return the selected node id
 	 */
 	public String getSelectedNodeId() {
-		String subNodeId = nodeConstructionResult.getSelectedTreeNodeId();
-		// if subNodeId != null (e.g. a inner node of a content-packaging -> select this node
-		if (subNodeId != null) {
-			return subNodeId;
-		} else {
+		if(nodeConstructionResult == null) {
 			return selectedNodeId;
+		} else {
+			String subNodeId = nodeConstructionResult.getSelectedTreeNodeId();
+			// if subNodeId != null (e.g. a inner node of a content-packaging -> select this node
+			if (subNodeId != null) {
+				return subNodeId;
+			} else {
+				return selectedNodeId;
+			}
 		}
+	}
+	
+	public List<String> getOpenNodeIds() {
+		return openNodeIds;
 	}
 
 	/**
@@ -124,6 +141,7 @@ public class NodeClickedRef {
 	 * @return the run controller or null
 	 */
 	public Controller getRunController() {
+		if(calledCourseNode == null || nodeConstructionResult == null) return null;
 		RepositoryManager.setLastUsageNowFor(calledCourseNode.getReferencedRepositoryEntry());
 		return nodeConstructionResult.getRunController();
 	}

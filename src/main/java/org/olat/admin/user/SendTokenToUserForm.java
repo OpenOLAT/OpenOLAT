@@ -119,15 +119,18 @@ public class SendTokenToUserForm extends FormBasicController {
 		Preferences prefs = user.getUser().getPreferences();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
 		String emailAdress = user.getUser().getProperty(UserConstants.EMAIL, locale);
-		dummyKey = Encoder.encrypt(emailAdress);
+		if (emailAdress != null) {
+			dummyKey = Encoder.encrypt(emailAdress);
 
-		String serverpath = Settings.getServerContextPathURI();
-		Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
-		String body = userTrans.translate("pwchange.intro", new String[] { user.getName() })
-				+ userTrans.translate("pwchange.body", new String[] {
-						serverpath, dummyKey, I18nManager.getInstance().getLocaleKey(locale)
-				});
-		return escapeLanguage(body);
+			String serverpath = Settings.getServerContextPathURI();
+			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
+			String body = userTrans.translate("pwchange.intro", new String[] { user.getName() })
+					+ userTrans.translate("pwchange.body", new String[] {
+							serverpath, dummyKey, I18nManager.getInstance().getLocaleKey(locale)
+					});
+			return escapeLanguage(body);
+		}
+		else return "This function is not available for users without an email-adress!";
 	}
 	
 	private void sendToken(UserRequest ureq, String text) {
@@ -135,7 +138,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
 		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(user, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		if (auth == null) { 
-			showWarning("password.cantchange");
+			showWarning("changeuserpwd.failed");
 			return;
 		}
 		
@@ -150,7 +153,7 @@ public class SendTokenToUserForm extends FormBasicController {
 			tk = rm.createTemporaryKeyByEmail(emailAdress, ip, rm.PW_CHANGE);
 		}
 		if(text.indexOf(dummyKey) < 0) {
-			showWarning("password.cantchange");
+			showWarning("changeuserpwd.failed");
 			return;
 		}
 		String body = text.replace(dummyKey, tk.getRegistrationKey());

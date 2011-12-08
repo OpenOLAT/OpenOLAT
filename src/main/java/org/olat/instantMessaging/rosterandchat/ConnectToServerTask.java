@@ -63,8 +63,8 @@ public class ConnectToServerTask implements Runnable {
 					
 				} else {
 					
-					if (!im.hasAccount(client.getChatUsername())) {
-						boolean success = im.createAccount(client.getChatUsername(), client.getPassword(), client.getFullName(), client.getEmail());
+					if (!im.hasAccount(client.getUsername())) {
+						boolean success = im.createAccount(client.getUsername(), client.getPassword(), client.getFullName(), client.getEmail());
 						if (success) {
 							log.audit("New instant messaging authentication account created for user:" + client.getChatUsername());
 							client.closeConnection(true);
@@ -82,8 +82,8 @@ public class ConnectToServerTask implements Runnable {
 					log.info("User is not authorized to connect to Instant Messaging server (username, server): " + client.getChatUsername() + ", " + client.getServerName()+
 							". Make sure this users have an account on the IM server. I will try to recreate the account now");
 					
-					if (!im.hasAccount(client.getChatUsername())) {
-						boolean success = im.createAccount(client.getChatUsername(), client.getPassword(), client.getFullName(), client.getEmail());
+					if (!im.hasAccount(client.getUsername())) {
+						boolean success = im.createAccount(client.getUsername(), client.getPassword(), client.getFullName(), client.getEmail());
 						if (success) {
 							log.audit("New instant messaging account created for user:" + client.getChatUsername());
 							client.closeConnection(true);

@@ -315,6 +315,24 @@ public class FeedViewHelper {
 		}
 		return lastModified;
 	}
+	
+	//fxdiff FXOLAT-118: size for video podcast
+	public String getWidth(Item item) {
+		int width = item.getWidth();
+		if(width > 0 && width < 2000) {
+			return Integer.toString(width);
+		}
+		return "400";
+	}
+	
+	//fxdiff FXOLAT-118: size for video podcast
+	public String getHeight(Item item) {
+		int height = item.getHeight();
+		if(height > 0 && height < 2000) {
+			return Integer.toString(height);
+		}
+		return "300";
+	}
 
 	/**
 	 * @return The jump in link

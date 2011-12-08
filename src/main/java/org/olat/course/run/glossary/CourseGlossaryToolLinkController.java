@@ -21,9 +21,11 @@
  */
 package org.olat.course.run.glossary;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
+import org.olat.core.commons.modules.glossary.OpenAuthorProfilEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -40,6 +42,7 @@ import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -47,6 +50,9 @@ import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.user.HomePageConfig;
+import org.olat.user.HomePageConfigManagerImpl;
+import org.olat.user.HomePageDisplayController;
  
 /**
  * Description:<br>
@@ -144,6 +150,7 @@ public class CourseGlossaryToolLinkController extends BasicController {
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						GlossaryMainController glossaryController = CourseGlossaryFactory.createCourseGlossaryMainRunController(lwControl, lureq, cc,
 								allowGlossaryEditing);
+						listenTo(glossaryController);
 						if (glossaryController == null) {
 							// happens in the unlikely event of a user who is in a course and
 							// now
@@ -166,6 +173,37 @@ public class CourseGlossaryToolLinkController extends BasicController {
 				openInNewBrowserWindow(ureq, layoutCtrlr);
 				return;// immediate return after opening new browser window!
 			}
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event instanceof OpenAuthorProfilEvent) {
+			OpenAuthorProfilEvent uriEvent = (OpenAuthorProfilEvent)event;
+			Long identityKey = uriEvent.getKey();
+			if(identityKey == null) return;
+			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
+			if(identity == null) return;
+			
+			final HomePageConfig homePageConfig = HomePageConfigManagerImpl.getInstance().loadConfigFor(identity.getName());
+			
+			ControllerCreator ctrlCreator = new ControllerCreator() {
+				public Controller createController(UserRequest lureq, WindowControl lwControl) {
+					HomePageDisplayController homePageCtrl = new HomePageDisplayController(lureq, lwControl, homePageConfig);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, homePageCtrl
+							.getInitialComponent(), null);
+					// dispose glossary on layout dispose
+					layoutCtr.addDisposableChildController(homePageCtrl); 
+					return layoutCtr;
+				}
+			};
+
+			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
+			// open in new browser window
+			openInNewBrowserWindow(ureq, layoutCtrlr);
+			return;// immediate return after opening new browser window!
+		} else {
+			super.event(ureq, source, event);
 		}
 	}
 

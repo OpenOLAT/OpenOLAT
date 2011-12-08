@@ -38,6 +38,7 @@ import org.olat.core.gui.GUIInterna;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.threadlog.RequestBasedLogLevelManager;
@@ -123,6 +124,8 @@ public class OLATServlet extends HttpServlet {
 		Tracing.setUreq(request);
 		I18nManager.attachI18nInfoToThread(request);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(request);
+		//fxdiff FXOLAT-97: high CPU load tracker
+		WorkThreadInformations.set("Serve request: " + request.getRequestURI());
 
 		try{
 		  if (requestBasedLogLevelManager!=null) requestBasedLogLevelManager.activateRequestBasedLogLevel(request);
@@ -130,6 +133,8 @@ public class OLATServlet extends HttpServlet {
 			dispatcher.execute(request, response, null);
 		} finally {
 			if (requestBasedLogLevelManager!=null) requestBasedLogLevelManager.deactivateRequestBasedLogLevel();
+			//fxdiff FXOLAT-97: high CPU load tracker
+			WorkThreadInformations.unset();
 			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 			I18nManager.remove18nInfoFromThread();
 			Tracing.setUreq(null);

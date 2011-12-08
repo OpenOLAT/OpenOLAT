@@ -216,6 +216,14 @@ public interface CalendarManager extends UserDataDeletable {
 	 * @return true if success
 	 */
 	public boolean updateEventAlreadyInSync(final Kalendar cal, final KalendarEvent kalendarEvent);
+	
+	/**
+	 * Update a calendar with the events from an other calendar
+	 * @param cal
+	 * @param importedCal
+	 * @return true if success
+	 */
+	public boolean updateCalendar(final Kalendar cal, final Kalendar importedCal);
 
 	/**
 	 * Get a calendar by type and id.

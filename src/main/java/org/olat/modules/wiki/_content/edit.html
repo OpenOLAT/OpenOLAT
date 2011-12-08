@@ -52,16 +52,7 @@
 			<input type="submit" onclick="javascript:insertTags('[[',']]',document.getElementById('wikiLinkChooser').value)" value="$r.translateInAttribute("link.insert")" class="b_button b_small" />
 		</div>
 	#end
-	#if($fileList.size() > 0)
-		<div class="o_wikimod_filechooser">
-			<select style="position:relative" id="mediaFileChooser" size="1">
-				#foreach($file in $fileList)
-					<option value="$r.escapeHtml($file.getName())">$file.getName()</option>
-				#end
-			</select>
-			<input type="submit" onclick="javascript:insertMediaTag(document.getElementById('mediaFileChooser').value)" value="$r.translateInAttribute("media.insert")" class="b_button b_small" />
-		</div>
-	#end
+	$r.render("fileList")
 
 	## EDIT FORM
 	<div class="o_wikimod_editform_wrapper">

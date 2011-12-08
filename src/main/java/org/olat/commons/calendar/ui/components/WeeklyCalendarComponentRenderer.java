@@ -46,6 +46,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -221,13 +222,14 @@ public class WeeklyCalendarComponentRenderer implements ComponentRenderer {
 		}
 		sb.append("</span></div>\n");
 		// event name (subject)
-		sb.append("<div class=\"o_cal_subject " + eventWrapper.getCssClass() + "\"><span>\n");
+		//fxdiff BAKS-13: firefox doesn't break lines with only <br />, we need <p>
+		sb.append("<div class=\"o_cal_subject " + eventWrapper.getCssClass() + "\"><p>");
 		if (hidden) {
 			sb.append("-");
 		} else {
-			sb.append(escapedSubject);
+			sb.append(escapedSubject.replace("<br />", "</p><p>"));
 		}
-		sb.append("</span></div>\n");
+		sb.append("</p></div>\n");
 		// location
 		if (StringHelper.containsNonWhitespace(event.getLocation())) {
 			sb.append("<div class=\"o_cal_location\"><span>\n");
@@ -648,12 +650,28 @@ public class WeeklyCalendarComponentRenderer implements ComponentRenderer {
 			for (Iterator iter = kalendarEventLinks.iterator(); iter.hasNext();) {
 				KalendarEventLink link = (KalendarEventLink) iter.next();
 				sb.append("<br /><b>");				
-				sb.append("<a href=\"javascript:top.o_openUriInMainWindow('").append(link.getURI()).append("')\" title=\"").append(StringEscapeUtils.escapeHtml(link.getDisplayName())).append("\" ");
+				//fxdiff
+				String uri = link.getURI();
 				String iconCssClass = link.getIconCssClass();
-				if (StringHelper.containsNonWhitespace(iconCssClass)) {
-					sb.append("class=\"b_with_small_icon_left ").append(iconCssClass).append("\"");
+				if(!StringHelper.containsNonWhitespace(iconCssClass)) {
+					String displayName = link.getDisplayName();
+					iconCssClass = CSSHelper.createFiletypeIconCssClassFor(displayName);
 				}
-				sb.append(" onclick=\"return o2cl();\">").append(link.getDisplayName()).append("</a>");
+				
+				if(uri.contains("://")) {
+					sb.append("<a href=\"").append(uri).append("\" title=\"").append(StringEscapeUtils.escapeHtml(link.getDisplayName())).append("\" ");
+					
+					if (StringHelper.containsNonWhitespace(iconCssClass)) {
+						sb.append("class=\"b_with_small_icon_left ").append(iconCssClass).append("\"");
+					}
+					sb.append(" target=\"_blank\">").append(link.getDisplayName()).append("</a>");
+				} else {
+					sb.append("<a href=\"javascript:top.o_openUriInMainWindow('").append(uri).append("')\" title=\"").append(StringEscapeUtils.escapeHtml(link.getDisplayName())).append("\" ");
+					if (StringHelper.containsNonWhitespace(iconCssClass)) {
+						sb.append("class=\"b_with_small_icon_left ").append(iconCssClass).append("\"");
+					}
+					sb.append(" onclick=\"return o2cl();\">").append(link.getDisplayName()).append("</a>");
+				} 
 				sb.append("</b>");
 			}
 			sb.append("</div>");

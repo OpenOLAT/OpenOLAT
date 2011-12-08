@@ -21,11 +21,12 @@
 
 package org.olat.admin.sysinfo;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.lang.management.MemoryUsage;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -45,6 +46,7 @@ import org.olat.admin.cache.AllCachesController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.persistence.DBFactory;
@@ -62,7 +64,6 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.helpers.Settings;
@@ -172,21 +173,28 @@ public class SysinfoController extends BasicController implements Activateable2 
 		tabbedPane.addTab(ACTION_SESSIONS, usessC.getInitialComponent());
 		tabbedPane.addTab(ACTION_INFOMSG,infoMsgCtrl.getInitialComponent());
 		tabbedPane.addTab(ACTION_ERRORS, myErrors);
-		tabbedPane.addTab(ACTION_LOGLEVELS, myLoglevels);
+		//fxdiff: FXOLAT-79 check fxadmin-rights
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		String FXADMIN_SECURITY_GROUP = "fxadmins"; // see FrentixOlatModule
+		SecurityGroup fxAdminGroup = securityManager.findSecurityGroupByName(FXADMIN_SECURITY_GROUP);
+		boolean isFXAdmin = securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), fxAdminGroup);
+		if (isFXAdmin) tabbedPane.addTab(ACTION_LOGLEVELS, myLoglevels);		
 		tabbedPane.addTab(ACTION_SYSINFO, mySysinfo);
 		tabbedPane.addTab(ACTION_SNOOP, mySnoop);
-		tabbedPane.addTab("requestloglevel", requestLoglevelController.getInitialComponent());
+		if (isFXAdmin) tabbedPane.addTab("requestloglevel", requestLoglevelController.getInitialComponent());
 		tabbedPane.addTab("usersessions", sessionAdministrationController.getInitialComponent());
 		tabbedPane.addTab(ACTION_LOCKS, lockController.getInitialComponent());
-		tabbedPane.addTab(getTranslator().translate("sess.multiuserevents"), myMultiUserEvents);
-		tabbedPane.addTab(ACTION_HIBERNATEINFO, myHibernateInfo);
+		// fxdiff: not usable:	tabbedPane.addTab(getTranslator().translate("sess.multiuserevents"), myMultiUserEvents);
+		if (isFXAdmin) tabbedPane.addTab(ACTION_HIBERNATEINFO, myHibernateInfo);
 		
-		AutoCreator controllerCreator = (AutoCreator)CoreSpringFactory.getBean("clusterAdminControllerCreator");
-		clusterController = controllerCreator.createController(ureq, wControl);
-		tabbedPane.addTab("Cluster", clusterController.getInitialComponent());
+		//fxdiff: no cluster anyway:
+//		AutoCreator controllerCreator = (AutoCreator)CoreSpringFactory.getBean("clusterAdminControllerCreator");
+//		clusterController = controllerCreator.createController(ureq, wControl);
+//		tabbedPane.addTab("Cluster", clusterController.getInitialComponent());
 
 		cachePanel = new Panel("cachepanel");
-		tabbedPane.addTab("caches", cachePanel);
+		//fxdiff: FXOLAT-79 check fxadmin-rights
+		if (isFXAdmin) tabbedPane.addTab("caches", cachePanel);
 		
 		VelocityContainer myBuildinfo = createVelocityContainer("buildinfo");
 		fillBuildInfoTab(myBuildinfo);		
@@ -220,6 +228,11 @@ public class SysinfoController extends BasicController implements Activateable2 
 		Map<String, String> m = new HashMap<String, String>();
 		m.put("key", "Version");
 		m.put("value", Settings.getFullVersionInfo());
+		properties.add(m);
+		
+		m = new HashMap<String, String>();
+		m.put("key", "HG changeset on build");
+		m.put("value", Settings.getRepoRevision());
 		properties.add(m);
 		
 		m = new HashMap<String, String>();
@@ -258,7 +271,7 @@ public class SysinfoController extends BasicController implements Activateable2 
 		m = new HashMap<String, String>();
 		m.put("key", "jsMathEnabled");
 		boolean jsMathEnabled = BaseChiefController.isJsMathEnabled();
-		m.put("value", Boolean.toString(jsMathEnabled) + (jsMathEnabled ? "" : " (run 'mvn olat:font' to enable)"));
+		m.put("value", Boolean.toString(jsMathEnabled));
 		properties.add(m);
 		
 		m = new HashMap<String, String>();
@@ -306,6 +319,25 @@ public class SysinfoController extends BasicController implements Activateable2 
 				appendFormattedKeyValue(sb, "Total Memory", StringHelper.formatMemory(r.totalMemory()));
 				appendFormattedKeyValue(sb, "Free Memory", StringHelper.formatMemory(r.freeMemory()));
 				appendFormattedKeyValue(sb, "Max Memory", StringHelper.formatMemory(r.maxMemory()));
+				
+				sb.append("<br />Detailed Memory Information (Init/Used/Max)<br/> ");
+				Iterator<MemoryPoolMXBean> iter = ManagementFactory.getMemoryPoolMXBeans().iterator();
+				while (iter.hasNext()) {
+				    MemoryPoolMXBean item = iter.next();
+				    String name = item.getName();
+				    MemoryType type = item.getType();
+				    appendFormattedKeyValue(sb, name, " Type: " + type);
+				    MemoryUsage usage = item.getUsage();
+				    appendFormattedKeyValue(sb, "Usage", StringHelper.formatMemory(usage.getInit()) + "/" + StringHelper.formatMemory(usage.getUsed()) + "/" + StringHelper.formatMemory(usage.getMax()));
+				    MemoryUsage peak = item.getPeakUsage();
+				    appendFormattedKeyValue(sb, "Peak", StringHelper.formatMemory(peak.getInit()) + "/" + StringHelper.formatMemory(peak.getUsed()) + "/" + StringHelper.formatMemory(peak.getMax()));
+				    MemoryUsage collections = item.getCollectionUsage();
+				    if (collections!= null){
+				    	appendFormattedKeyValue(sb, "Collections", StringHelper.formatMemory(collections.getInit()) + "/" + StringHelper.formatMemory(collections.getUsed()) + "/" + StringHelper.formatMemory(collections.getMax()));
+				    }
+				    sb.append("<hr/>");
+				}
+				
 				int controllerCnt = DefaultController.getControllerCount();
 				sb.append("<br />Controller Count (active and not disposed):"+controllerCnt);
 				sb.append("<br />Concurrent Dispatching Threads: "+DispatcherAction.getConcurrentCounter());

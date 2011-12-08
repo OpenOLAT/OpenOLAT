@@ -85,6 +85,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManagerImpl;
+import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
@@ -977,8 +978,7 @@ public class CourseFactory extends BasicManager {
 		CourseConfig courseConfig = courseEnvironment.getCourseConfig();
 		if (courseConfig.hasCustomCourseCSS()) {
 			// Notify the current tab that it should load a custom CSS
-			VFSContainer courseContainer = courseEnvironment.getCourseFolderContainer();
-			customCSS = new CustomCSS(courseContainer, courseConfig.getCssLayoutRef(), usess);
+			return CourseLayoutHelper.getCustomCSS(usess, courseEnvironment);
 		}
 		return customCSS;
 	}

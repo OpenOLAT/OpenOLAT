@@ -47,7 +47,9 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.Versionable;
 
@@ -380,7 +382,7 @@ public class HTMLEditorController extends FormBasicController {
 
 	
 	/**
-	 * Helper method to get a meaningfull debugging filename from the vfs
+	 * Helper method to get a meaningful debugging filename from the vfs
 	 * container and the file path
 	 * 
 	 * @param root
@@ -389,10 +391,17 @@ public class HTMLEditorController extends FormBasicController {
 	 */
 	private String getFileDebuggingPath(VFSContainer root, String relPath) {
 		String path = relPath;
-		VFSContainer dir = root;
-		while (dir != null) {
-			path = "/" + dir.getName() + path;
-			dir = dir.getParentContainer();
+		//fxdiff: FXOLAT-167
+		VFSItem item = root.resolve(relPath);
+		if (item instanceof LocalFileImpl) {
+			LocalFileImpl file = (LocalFileImpl) item;
+			path = file.getBasefile().getAbsolutePath();
+		} else {
+			VFSContainer dir = root;
+			while (dir != null) {
+					path = "/" + dir.getName() + path;
+					dir = dir.getParentContainer();
+			}
 		}
 		return path;
 	}

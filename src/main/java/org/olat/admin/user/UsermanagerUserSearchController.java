@@ -466,9 +466,13 @@ public class UsermanagerUserSearchController extends BasicController implements 
 								if (runContext.containsKey("validChange") && ((Boolean) runContext.get("validChange")).booleanValue()) {
 									HashMap<String, String> attributeChangeMap = (HashMap<String, String>) runContext.get("attributeChangeMap");
 									HashMap<String, String> roleChangeMap = (HashMap<String, String>) runContext.get("roleChangeMap");
-									if (!(attributeChangeMap.size()==0 && roleChangeMap.size()==0)){
+									List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
+									List<Long> partGroups = (List<Long>) runContext.get("partGroups");
+									List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
+									if (attributeChangeMap.size() != 0 || roleChangeMap.size() != 0 || ownGroups.size() != 0 || partGroups.size() != 0){
+										Identity addingIdentity = ureq1.getIdentity();
 										ubcMan.changeSelectedIdentities(selectedIdentities, attributeChangeMap, roleChangeMap, notUpdatedIdentities,
-											isAdministrativeUser, getTranslator());
+											isAdministrativeUser, ownGroups, partGroups, mailGroups, getTranslator(), addingIdentity);
 										hasChanges = true;
 									}
 								}

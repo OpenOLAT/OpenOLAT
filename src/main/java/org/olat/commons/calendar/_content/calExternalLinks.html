@@ -1,0 +1,20 @@
+<table>
+	<thead>
+		<tr>
+			<th>$r.translate("tab.links.extern.url")</th>
+			<th>$r.translate("tab.links.extern.name")</th>
+			<th></th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+	#foreach($link in $links)
+		<tr>
+			<td>$r.render("url_$link.id") #if($r.available("url_${link.id}_ERROR")) $r.render("url_${link.id}_ERROR") #end</td>
+			<td>$r.render("displayName_$link.id") #if($r.available("displayName_${link.id}_ERROR")) $r.render("displayName_${link.id}_ERROR") #end</td>
+			<td>$r.render("add_$link.id")</td>
+			<td>$r.render("del_$link.id")</td>
+		</tr>
+	#end
+	</tbody>
+</table>

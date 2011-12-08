@@ -36,7 +36,7 @@ public interface Draggable {
 	 * used by the Droppable to add these ids (the ids of the div(s) surrounding the draggable elements) to the ids which are accepted to be dropped. 
 	 * @return a list of ids(Strings)
 	 */
-	public List getContainerIds();
+	public List<String> getContainerIds();
 	
 	/**
 	 * 

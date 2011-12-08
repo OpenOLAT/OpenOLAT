@@ -21,15 +21,22 @@
 
 package org.olat.admin.search;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 
 /**
  * Fulltext search input form.
@@ -39,6 +46,10 @@ import org.olat.core.gui.control.WindowControl;
 public class SearchAdminForm extends FormBasicController {
 	
 	private TextElement indexInterval;
+	private TextElement blackList;
+	private MultipleSelectionElement excelFileEnabled;
+	private MultipleSelectionElement pptFileEnabled;
+	private MultipleSelectionElement pdfFileEnabled;
 	private FormSubmit submit;
 	
 	/**
@@ -58,6 +69,54 @@ public class SearchAdminForm extends FormBasicController {
 		indexInterval.setValue(Long.toString(v));
 	}
 	
+	public List<String> getFileBlackList() {
+		String value = blackList.getValue();
+		if(StringHelper.containsNonWhitespace(value)) {
+			String[] files = value.split(",");
+			Set<String> list = new HashSet<String>();
+			for(String file:files) {
+				list.add(file);
+			}
+			return new ArrayList<String>(list);
+		}
+		return Collections.emptyList();
+	}
+	
+	public void setFileBlackList(List<String> files) {
+		if(files == null) return;
+		
+		StringBuilder sb = new StringBuilder();
+		for(String file:files) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(file);
+		}
+		blackList.setValue(sb.toString());
+	}
+	
+	public boolean isPptFileEnabled() {
+		return pptFileEnabled.isMultiselect() && pptFileEnabled.isSelected(0);
+	}
+	
+	public void setPptFileEnabled(boolean enabled) {
+		pptFileEnabled.select("on", enabled);
+	}
+	
+	public boolean isExcelFileEnabled() {
+		return excelFileEnabled.isMultiselect() && excelFileEnabled.isSelected(0);
+	}
+	
+	public void setExcelFileEnabled(boolean enabled) {
+		excelFileEnabled.select("on", enabled);
+	}
+	
+	public boolean isPdfFileEnabled() {
+		return pdfFileEnabled.isMultiselect() && pdfFileEnabled.isSelected(0);
+	}
+	
+	public void setPdfFileEnabled(boolean enabled) {
+		pdfFileEnabled.select("on", enabled);
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -71,6 +130,14 @@ public class SearchAdminForm extends FormBasicController {
 		indexInterval.setRegexMatchCheck("\\d+", "error.index.interval.must.be.number");
 		//indexInterval.setMinValueCheck(0, "error.index.interval.must.be.number");
 		indexInterval.setDisplaySize(4);
+		
+		blackList = uifactory.addTextAreaElement("search.admin.label.blackList", 3, 80, "", formLayout);
+		blackList.setExampleKey("search.admin.label.blackList.example", null);
+		
+		excelFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enableExcel", formLayout, new String[]{"on"}, new String[]{""}, null);
+		pptFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enablePpt", formLayout, new String[]{"on"}, new String[]{""}, null);
+		pdfFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enablePdf", formLayout, new String[]{"on"}, new String[]{""}, null);
+
 		submit = new FormSubmit("submit", "submit");
 		formLayout.add(submit);
 	}

@@ -44,7 +44,8 @@ import org.olat.core.util.WebappHelper;
 
 public class ContextHelpModule extends AbstractOLATModule implements Destroyable {
 	public static final String CHELP_DIR = "/_chelp/";
-	public static final String CHELP_STATIC_DIR = CHELP_DIR + "/_static/";
+	//fxdiff FXOLAT-185:fix loading of files in jar
+	public static final String CHELP_STATIC_DIR = CHELP_DIR + "_static/";
 	
 	private static final String CONFIG_CONTEXTHELP_ENABLED = "contextHelpEnabled";
 	private static final String CONFIG_RATING_ENABLED = "ratingEnabled";

@@ -25,9 +25,8 @@ import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -37,15 +36,10 @@ import org.olat.core.logging.Tracing;
  * Initial Date:  11.08.2008 <br>
  * @author guido
  */
-public class AdminUserConnection {
-	
-	final static OLog log = Tracing.createLoggerFor(AdminUserConnection.class);
-	
+public class AdminUserConnection extends LogDelegator {
+
 	private XMPPConnection connection;
-	private String serverName;
-	private String adminUsername;
-	private String adminPassword;
-	private String nodeId;
+	private IMConfig imConfig;
 
 	/**
 	 * [used by spring]
@@ -54,25 +48,26 @@ public class AdminUserConnection {
 	 * @param adminPassword
 	 * @param nodeId
 	 */
-	private AdminUserConnection(String serverName, String adminUsername, String adminPassword, String nodeId, boolean enabled) {
-		if (serverName == null || adminUsername == null || adminPassword == null) {
+	private AdminUserConnection(IMConfig imConfig) {
+		if (imConfig == null || imConfig.getAdminName() == null || imConfig.getAdminPassword() == null || imConfig.getServername() == null) {
 			throw new StartupException("Instant Messaging settings for admin user are not correct");
 		}
-		this.serverName = serverName;
-		this.adminUsername = adminUsername;
-		this.adminPassword = adminPassword;
-		this.nodeId = nodeId;
-		if (enabled) {
+		this.imConfig = imConfig;
+
+		if (imConfig.isEnabled()) {
 			final int LOOP_CNT=5;
 			for(int i=0; i<LOOP_CNT; i++) {
 				try{
-					connect(serverName, adminUsername, adminPassword, nodeId);
+					connect(imConfig.getServername(), imConfig.getAdminName(), imConfig.getAdminPassword(), imConfig.getNodeId());
 					break; // leave if connect works fine
 				} catch(AssertException e) {
 					if (i+1==LOOP_CNT) {
-						throw e;
+						// fxdiff: allow startup without IM
+						logError("Could not connect to IM within " + LOOP_CNT + " attempts. IM will not be available for this OLAT instance! You could try to enable it later by reconnect in IMAdmin.", e);
+						return;
+//						throw e; // dont throw anything, spring gets confused during startup!
 					}
-					log.error("Could not connect to IM (yet?). Retrying in 2sec...", e);
+					logError("Could not connect to IM (yet?). Retrying in 2sec...", e);
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException e1) {
@@ -89,7 +84,8 @@ public class AdminUserConnection {
 			conConfig.setNotMatchingDomainCheckEnabled(false);
 			conConfig.setSASLAuthenticationEnabled(false);
 			//the admin reconnects automatically upon server restart or failure but *not* on a resource conflict and a manual close of the connection
-			conConfig.setReconnectionAllowed(true);
+			//fxdiff: FXOLAT-233 don't reconnect upon lost connection here, each sendPacket will try for its own. this reconnection never stops!
+			conConfig.setReconnectionAllowed(false);
 			//conConfig.setDebuggerEnabled(true);
 			if (connection == null || !connection.isAuthenticated()) {
 				connection = new XMPPConnection(conConfig);
@@ -97,35 +93,34 @@ public class AdminUserConnection {
 				connection.addConnectionListener(new ConnectionListener() {
 	
 					public void connectionClosed() {
-						log.warn("IM admin connection closed!");
+						logWarn("IM admin connection closed!", null);
 					}
 	
 					public void connectionClosedOnError(Exception arg0) {
-						log.warn("IM admin connection closed on exception!", arg0);
+						logWarn("IM admin connection closed on exception!", arg0);
 					}
 	
 					public void reconnectingIn(int arg0) {
-						log.warn("IM admin connection reconnectingIn "+arg0);
+						logWarn("IM admin connection reconnectingIn "+arg0, null);
 					}
 	
 					public void reconnectionFailed(Exception arg0) {
-						log.warn("IM admin connection reconnection failed: ", arg0);
+						logWarn("IM admin connection reconnection failed: ", arg0);
 					}
 	
 					public void reconnectionSuccessful() {
-						log.warn("IM admin connection reconnection successful");
+						logWarn("IM admin connection reconnection successful", null);
 					}
 					
 				});
 				if (nodeId != null) {
 					connection.login(adminUsername, adminPassword, "node"+nodeId);
-					log.info("connected to IM at "+servername+" with user "+adminUsername+" and nodeId "+nodeId);
+					logInfo("connected to IM at "+servername+" with user "+adminUsername+" and nodeId "+nodeId);
 				} else {
 					connection.login(adminUsername, adminPassword);
-					log.info("connected to IM at "+servername+" with user "+adminUsername);
+					logInfo("connected to IM at "+servername+" with user "+adminUsername);
 				}
 			}
-			//TODO:gs why does auto reconnect not work
 		} catch (XMPPException e) {
 			throw new AssertException("Instant Messaging is enabled in olat.properties but instant messaging server not running: "
 					+ e.getMessage());
@@ -145,6 +140,7 @@ public class AdminUserConnection {
 	 * @return a valid connection to the IM server for the admin user
 	 */
 	public XMPPConnection getConnection() {
+		if (!precheckConnection()) return null;
 		return connection;
 	}
 	
@@ -160,7 +156,21 @@ public class AdminUserConnection {
 	public void resetAndReconnect() {
 		if (connection != null) {
 			if (connection.isConnected()) connection.disconnect();
-			connect(this.serverName, this.adminUsername, this.adminPassword, this.nodeId);
+			connect(imConfig.getServername(), imConfig.getAdminName(), imConfig.getAdminPassword(), imConfig.getNodeId());
+		}
+	}
+	
+	//fxdiff: FXOLAT-233 precheck if connection is still available, or try once to reconnect.
+	private boolean precheckConnection(){
+		if (connection != null && connection.isConnected()) return true;
+		else {
+			try {
+				resetAndReconnect();
+			} catch (Exception e) {
+				logWarn("the lost IM connection could not be recovered", null);
+				return false;
+			}
+			return (connection != null && connection.isConnected());
 		}
 	}
 

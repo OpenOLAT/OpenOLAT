@@ -184,13 +184,16 @@ class I18nConfigController extends FormBasicController {
 				enabledLangKeys.add(defaultLocale.toString());
 				showWarning("configuration.default.lang.must.be.enabed", defaultLocale.toString());
 			}
-			// Check if fallback language is still enabled
-			String fallbackLangKey = I18nModule.getFallbackLocale().toString();
-			if (!enabledLangKeys.contains(fallbackLangKey)) {
-				enabledLangSelection.select(fallbackLangKey, true);
-				enabledLangKeys.add(fallbackLangKey);
-				showWarning("configuration.fallback.lang.must.be.enabed", fallbackLangKey);
-			}
+			
+// fxdiff FXOLAT-40 don't force fallback language to be enabled in the GUI, 
+// conflict with languages with country/variant information
+//			// Check if fallback language is still enabled
+//			String fallbackLangKey = I18nModule.getFallbackLocale().toString();
+//			if (!enabledLangKeys.contains(fallbackLangKey)) {
+//				enabledLangSelection.select(fallbackLangKey, true);
+//				enabledLangKeys.add(fallbackLangKey);
+//				showWarning("configuration.fallback.lang.must.be.enabed", fallbackLangKey);
+//			}
 
 			I18nModule.setEnabledLanguageKeys(enabledLangKeys);
 

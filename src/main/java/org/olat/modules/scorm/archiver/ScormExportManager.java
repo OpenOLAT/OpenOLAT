@@ -23,6 +23,8 @@ package org.olat.modules.scorm.archiver;
 import java.io.File;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityShort;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -120,6 +122,9 @@ public class ScormExportManager extends BasicManager {
 		
 		VFSContainer scormRoot = ScormDirectoryHelper.getScormRootFolder();
 		List<Identity> users = ScoreAccountingHelper.loadUsers(courseEnv);
+		//fxdiff: FXOLAT-249 prevent connection timeout if collecting data take a long time
+		DBFactory.getInstance().commitAndCloseSession();
+		
 		for (Identity identity : users) {
 			String username = identity.getName();
 			VFSItem userFolder = scormRoot.resolve(username);

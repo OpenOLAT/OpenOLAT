@@ -53,6 +53,8 @@ public class FolderConfig {
 	private static final String TMP_DIR = "/tmp";
 	private static final String VERSION_DIR = "/.version";
 	private static FolderVersioningConfigurator versioningConfigurator;
+	private static boolean sendDocumentToExtern;
+	private static boolean sendDocumentLinkOnly;
 	
 	
 	/*
@@ -206,6 +208,23 @@ public class FolderConfig {
 	public static void setFolderRoot(String newFolderRoot) {
 		folderRoot = newFolderRoot.replace('\\', '/');
 	}
+	
+	/**
+	 * Allow to send document to extern e-mail addresses
+	 * @param sendDocumentToExtern_
+	 */
+	public static void setSendDocumentToExtern(boolean sendDocumentToExtern_) {
+		sendDocumentToExtern = sendDocumentToExtern_;
+	}
+	
+	/**
+	 * Restrict sending e-mail to links to the documents (which enforce login for
+	 * the recipient)
+	 * @param sendDocumentLinkOnly_
+	 */
+	public static void setSendDocumentLinkOnly(boolean sendDocumentLinkOnly_) {
+		sendDocumentLinkOnly = sendDocumentLinkOnly_;
+	}
 
 	/**
 	 * @return the canonical path to the meta root directory.
@@ -240,6 +259,23 @@ public class FolderConfig {
 	 */
 	public static void setDefaultQuotaKB(long l) {
 		quotaKB = l;
+	}
+	
+	/**
+	 * Allow to send document to extern e-mail addresses
+	 * @return true to allow extern e-mail address
+	 */
+	public static boolean getSendDocumentToExtern() {
+		return sendDocumentToExtern;
+	}
+	
+	/**
+	 * Restrict sending e-mail to links to the documents (which enforce login for
+	 * the recipient)
+	 * @return true to restrict to links only
+	 */
+	public static boolean getSendDocumentLinkOnly() {
+		return sendDocumentLinkOnly;
 	}
 	
 	public static FolderVersioningConfigurator getVersioningConfigurator() {

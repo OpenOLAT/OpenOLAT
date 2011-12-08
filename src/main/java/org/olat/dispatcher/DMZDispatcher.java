@@ -22,6 +22,7 @@
 
 package org.olat.dispatcher;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -36,7 +37,10 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ChiefControllerCreator;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.exception.MsgFactory;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
@@ -47,6 +51,9 @@ import org.olat.core.util.i18n.I18nManager;
  * @author Mike Stock
  */
 public class DMZDispatcher implements Dispatcher {
+	//fxdiff FXOLAT-113: business path in DMZ
+	public static final String DMZDISPATCHER_BUSINESSPATH =  "DMZDispatcher:businessPath";
+	
 	/**
 	 * set by spring to create the starting workflow for /dmz/
 	 */
@@ -289,6 +296,13 @@ public class DMZDispatcher implements Dispatcher {
 					window = occ.getWindow();
 					window.setUriPrefix(uriPrefix);
 					ws.registerWindow(window);
+					//fxdiff FXOLAT-113: business path in DMZ
+					String businessPath = (String) usess.removeEntryFromNonClearedStore(DMZDISPATCHER_BUSINESSPATH);
+					if (businessPath != null) {
+						List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+						DTabs dts = (DTabs) window.getAttribute("DTabs");
+						dts.activate(ureq, null, null, ces);
+					}
 					
 					window.dispatchRequest(ureq, true);
 				

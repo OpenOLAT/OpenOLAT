@@ -25,12 +25,15 @@ package org.olat.modules.cp;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.search.ui.SearchController;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
 import org.olat.core.gui.components.htmlsite.NewInlineUriEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -39,9 +42,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -81,7 +86,16 @@ public class CPDisplayController extends BasicController implements Activateable
 	private String selNodeId;
 	private HtmlStaticPageComponent cpComponent;
 	private IFrameDisplayController cpContentCtr;
-	private Controller searchCtrl;
+	private SearchController searchCtrl;
+	private Link nextLink;
+	private Link previousLink;
+	//fxdiff VCRP-14: print cp
+	private Link printLink;
+	private String mapperBaseURL;
+	private CPPrintMapper printMapper;
+	
+	private CPSelectPrintPagesController printController;
+	private CloseableModalController printPopup;
 
 	/**
 	 * @param ureq
@@ -89,8 +103,8 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * @param showMenu
 	 * @param activateFirstPage
 	 */
-	CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean activateFirstPage,
-			String initialUri, OLATResourceable ores) {
+	CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
+			boolean activateFirstPage, boolean showPrint, String initialUri, OLATResourceable ores) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
 
@@ -132,6 +146,33 @@ public class CPDisplayController extends BasicController implements Activateable
 			cpTree.setTreeModel(ctm);
 			cpTree.addListener(this);
 		}
+		
+		//fxdiff VCRP-14: print cp
+		if(showPrint) {
+			printLink = LinkFactory.createLink("print", myContent, this);
+			printLink.setCustomEnabledLinkCSS("b_small_icon o_cp_print_icon");
+			printLink.setCustomDisplayText("Print");
+			printLink.setTooltip("print", false);
+			
+			String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
+			printMapper = new CPPrintMapper(ctm, rootContainer, themeBaseUri);
+			mapperBaseURL = registerMapper(printMapper);
+			printMapper.setBaseUri(mapperBaseURL);
+		}
+		
+		//fxdiff VCRP-13: cp navigation
+		if(showNavigation) {
+			nextLink = LinkFactory.createLink("next", myContent, this);
+			nextLink.setCustomEnabledLinkCSS("b_small_icon o_cp_next_icon");
+			nextLink.setCustomDisplayText("&nbsp;&nbsp;");
+			nextLink.setTooltip("next", false);
+			previousLink = LinkFactory.createLink("previous", myContent, this);
+			previousLink.setCustomEnabledLinkCSS("b_small_icon o_cp_previous_icon");
+			previousLink.setCustomDisplayText("&nbsp;&nbsp;");
+			previousLink.setTooltip("next", false);
+		  myContent.put("next", nextLink);
+		  myContent.put("previous", previousLink);
+		}
 
 		LoggingResourceable nodeInfo = null;
 		if (activateFirstPage) {
@@ -155,6 +196,8 @@ public class CPDisplayController extends BasicController implements Activateable
 				selNodeId = node.getIdent();
 
 				nodeInfo = LoggingResourceable.wrapCpNode(nodeUri);
+				//fxdiff VCRP-13: cp navigation
+				updateNextPreviousLink(node);
 				//fxdiff BAKS-7 Resume function
 				if(node.getUserObject() != null) {
 					String identifierRes = (String)node.getUserObject();
@@ -176,6 +219,8 @@ public class CPDisplayController extends BasicController implements Activateable
 				} else {
 					selNodeId = newNode.getIdent();
 				}
+				//fxdiff VCRP-13: cp navigation
+				updateNextPreviousLink(newNode);
 				//fxdiff BAKS-7 Resume function
 				if(newNode.getUserObject() != null) {
 					String identifierRes = (String)newNode.getUserObject();
@@ -203,11 +248,19 @@ public class CPDisplayController extends BasicController implements Activateable
 		if(cpContentCtr != null) {
 			cpContentCtr.setContentEncoding(encoding);
 		}
+		//fxdiff VCRP-14: print cp
+		if(printMapper != null) {
+			printMapper.setContentEncoding(encoding);
+		}
 	}
 	
 	public void setJSEncoding(String encoding) {
 		if(cpContentCtr != null) {
 			cpContentCtr.setJSEncoding(encoding);
+		}
+		//fxdiff VCRP-14: print cp
+		if(printMapper != null) {
+			printMapper.setJSEncoding(encoding);
 		}
 	}
 
@@ -238,6 +291,25 @@ public class CPDisplayController extends BasicController implements Activateable
 				// adjust the tree selection to the current choice if found
 				selectTreeNode(ureq, nue.getNewUri());
 			}
+		//fxdiff VCRP-13: cp navigation
+		} else if (source == nextLink) {
+			TreeNode nextUri = (TreeNode)nextLink.getUserObject();
+			switchToPage(ureq, nextUri);
+			if(cpTree != null) {
+				cpTree.setSelectedNode(nextUri);
+			}
+			fireEvent(ureq, new TreeNodeEvent(nextUri));
+		//fxdiff VCRP-13: cp navigation
+		} else if (source == previousLink) {
+			TreeNode previousUri = (TreeNode)previousLink.getUserObject();
+			if(cpTree != null) {
+				cpTree.setSelectedNode(previousUri);
+			}
+			switchToPage(ureq, previousUri);
+			fireEvent(ureq, new TreeNodeEvent(previousUri));
+		//fxdiff VCRP-14: print cp
+		} else if (source == printLink) {
+			selectPagesToPrint(ureq);
 		}
 	}
 	
@@ -253,6 +325,24 @@ public class CPDisplayController extends BasicController implements Activateable
 					selectTreeNode(ureq, nue.getNewUri());
 				}// else ignore (e.g. misplaced olatcmd event (inner olat link found in a
 					// contentpackaging file)
+			//fxdiff VCRP-14: print cp
+			} else if (source == printPopup) {
+				removeAsListenerAndDispose(printPopup);
+				removeAsListenerAndDispose(printController);
+				printController = null;
+				printPopup = null;
+			//fxdiff VCRP-14: print cp
+			} else if (source == printController) {
+				if(Event.DONE_EVENT == event) {
+					List<String> nodeToPrint = printController.getSelectedNodeIdents();
+					printPages(nodeToPrint);
+				}
+				
+				printPopup.deactivate();
+				removeAsListenerAndDispose(printPopup);
+				removeAsListenerAndDispose(printController);
+				printController = null;
+				printPopup = null;
 			}
 	}
 	
@@ -274,6 +364,27 @@ public class CPDisplayController extends BasicController implements Activateable
 			selectTreeNode(ureq, newNode);
 			switchToPage(ureq, new TreeEvent(TreeEvent.COMMAND_TREENODES_SELECTED, newNode.getIdent()));
 		}
+	}
+
+	//fxdiff VCRP-14: print cp
+	private void printPages(final List<String> selectedNodeIds) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("window.open('" + mapperBaseURL + "/print.html', '_print','height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location= no,scrollbars=1');");
+		printMapper.setSelectedNodeIds(selectedNodeIds);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
+	}
+		
+	//fxdiff VCRP-14: print cp
+	private void selectPagesToPrint(UserRequest ureq) {
+		removeAsListenerAndDispose(printController);
+		removeAsListenerAndDispose(printPopup);
+		
+		printController = new CPSelectPrintPagesController(ureq, getWindowControl(), ctm);
+		listenTo(printController);
+		
+		printPopup = new CloseableModalController(getWindowControl(), "cancel", printController.getInitialComponent(), true, translate("print.node.list.title"));
+		listenTo(printPopup);
+		printPopup.activate();
 	}
 
 	/**
@@ -298,6 +409,21 @@ public class CPDisplayController extends BasicController implements Activateable
 				// course), we fire an event with the chosen node)
 				fireEvent(ureq, new TreeNodeEvent(newNode));
 			}
+			updateNextPreviousLink(newNode);
+		}
+	}
+	
+	//fxdiff VCRP-13: cp navigation
+	private void updateNextPreviousLink(TreeNode currentNode) {
+		if(nextLink != null) {
+			TreeNode nextNode = ctm.getNextNodeWithContent(currentNode);
+			nextLink.setEnabled(nextNode != null);
+			nextLink.setUserObject(nextNode);
+		}
+		if(previousLink != null) {
+			TreeNode previousNode = ctm.getPreviousNodeWithContent(currentNode);
+			previousLink.setEnabled(previousNode != null);
+			previousLink.setUserObject(previousNode);
 		}
 	}
 
@@ -313,6 +439,12 @@ public class CPDisplayController extends BasicController implements Activateable
 		// switch to the new page
 		String nodeId = te.getNodeId();
 		TreeNode tn = ctm.getNodeById(nodeId);
+		if(tn != null) {
+			switchToPage(ureq, tn);
+		}
+	}
+	
+	public void switchToPage(UserRequest ureq, TreeNode tn) {
 		String identifierRes = (String) tn.getUserObject();
 		//fxdiff BAKS-7 Resume function
 		Long id = Long.parseLong(tn.getIdent());
@@ -350,6 +482,8 @@ public class CPDisplayController extends BasicController implements Activateable
 				cpTree.setDirty(false);
 			}
 		}
+		
+		updateNextPreviousLink(tn);
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.CP_GET_FILE, getClass(), LoggingResourceable.wrapCpNode(identifierRes));
 	}
 

@@ -83,20 +83,20 @@
 		
 	<bean id="org.olat.im.AdminConnection" 
 	class="org.olat.instantMessaging.AdminUserConnection" destroy-method="dispose">
-		<constructor-arg index="0" value="${instantMessaging.server.name}" />
-		<constructor-arg index="1" value="${instantMessaging.admin.username}" />
-		<constructor-arg index="2" value="${instantMessaging.admin.password}" />
-		<constructor-arg index="3" value="${node.id}" />
-		<constructor-arg index="4" value="${instantMessaging.enable}"/>
+		<constructor-arg ref="org.olat.im.IMConfig" />
 	</bean>
 		
 	<bean id="org.olat.im.IMConfig" class="org.olat.instantMessaging.IMConfig">
 		<property name="enabled" value="${instantMessaging.enable}" />
 		<property name="servername" value="${instantMessaging.server.name}" />
+		<property name="nodeId" value="${node.id}" />		
 		<property name="multipleInstances" value="${instantMessaging.multipleInstances}"/>
 		<property name="generateTestUsers" value="${instantMessaging.generateTestUsers}" />
+		<property name="adminName" value="${instantMessaging.admin.username}" />		
 		<property name="adminPassword" value="${instantMessaging.admin.password}" />
 		<property name="replaceStringForEmailAt" value="${instantMessaging.replaceStringForEmailAt}" />
+		<!--  fxdiff: FXOLAT-46 -->
+		<property name="hideExternalClientInfo" value="${instantMessaging.hideExternalClientInfo}" />
 		
 		<!-- adjust for you needs-->
 		
@@ -116,5 +116,23 @@
 		<constructor-arg index="1" value="${instance.id}" />
 	</bean>
 	
-	<bean id="IMPrefsManager" class="org.olat.instantMessaging.ImPrefsManager" />
+	<bean id="IMPrefsManager" class="org.olat.instantMessaging.ImPrefsManager">
+		<property name="awarenessVisible" value="${instantMessaging.awarenessVisible}" />
+	</bean>
+	
+	<!-- fxdiff FXOLAT-219 decrease the load on openfire while synching -->
+	<bean id="instantMessagingSyncTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+	    <property name="jobDetail" ref="org.olat.instantMessaging.sync.learning.groups" />
+    	<!-- repeat every 10 seconds -->
+    	<property name="repeatInterval" value="10000" />
+    	<!-- never repeat -->
+    	<property name="repeatCount" value="0"/>
+			<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
+	    <property name="startDelay" value="${instantMessaging.sync.learning.groups.start.delay}" />
+	</bean>
+	
+	<bean id="org.olat.instantMessaging.sync.learning.groups" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	  <property name="jobClass" value="org.olat.instantMessaging.InstantMessagingJob"/>
+	</bean>
+
 </beans>

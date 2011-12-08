@@ -35,6 +35,14 @@ public class TreeEvent extends Event {
 	 */
 	public static final String COMMAND_TREENODE_CLICKED = "tectncl";
 	/**
+	 * Comment for <code>COMMAND_TREENODE_CLICKED</code>
+	 */
+	public static final String COMMAND_TREENODE_OPEN = "tectnopen";
+	/**
+	 * Comment for <code>COMMAND_TREENODE_CLICKED</code>
+	 */
+	public static final String COMMAND_TREENODE_CLOSE = "tectnclose";
+	/**
 	 * Comment for <code>COMMAND_TREENODES_SELECTED</code>
 	 */
 	public static final String COMMAND_TREENODES_SELECTED = "tectnsel";
@@ -50,6 +58,7 @@ public class TreeEvent extends Event {
 		
 	private String nodeId;
 	private List nodeIds;
+	private String subCommand;
 
 	/**
 	 * 
@@ -57,7 +66,12 @@ public class TreeEvent extends Event {
 	 * @param nodeId
 	 */
 	public TreeEvent(String command, String nodeId) {
+		this(command, null, nodeId);
+	}
+	
+	public TreeEvent(String command, String subCommand, String nodeId) {
 		super(command);
+		this.subCommand = subCommand;
 		this.nodeId = nodeId;
 	}
 
@@ -66,7 +80,16 @@ public class TreeEvent extends Event {
 	 * @param nodeIds
 	 */
 	public TreeEvent(String command, List nodeIds) {
+		this(command, null, nodeIds);
+	}
+	
+	/**
+	 * @param command
+	 * @param nodeIds
+	 */
+	public TreeEvent(String command, String subCommand, List nodeIds) {
 		super(command);
+		this.subCommand = subCommand;
 		this.nodeIds = nodeIds;
 	}
 
@@ -84,8 +107,12 @@ public class TreeEvent extends Event {
 		return nodeIds;
 	}
 	
+	public String getSubCommand() {
+		return subCommand;
+	}
+
 	public String toString() {
-		return "TreeEvent:{cmd:"+getCommand()+", nodeid:"+nodeId+"}";
+		return "TreeEvent:{cmd:"+getCommand()+"," + (subCommand == null ? "" : "sub:" + subCommand) + " nodeid:"+nodeId+"}";
 	}
 
 }

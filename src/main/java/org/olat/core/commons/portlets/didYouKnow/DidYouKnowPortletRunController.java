@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
@@ -37,8 +38,10 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 
 /**
  * Description:<br>
@@ -70,6 +73,33 @@ public class DidYouKnowPortletRunController extends DefaultController {
 		int numbTips = -1;
 		// search in property file from this package for all questions
 		Properties propertiesFile = I18nManager.getInstance().getResolvedProperties(trans.getLocale(), trans.getPackageName());
+		
+		//fxdiff FXOLAT-103 lookup in base language if nothing found in original language
+		if (propertiesFile.size() == 0) {
+			String langCode = trans.getLocale().getLanguage();
+			String countryCode = trans.getLocale().getCountry();
+			String variant = trans.getLocale().getVariant();
+			// first try without variant
+			if (StringHelper.containsNonWhitespace(variant)) {
+				Locale loc = I18nManager.getInstance().getLocaleOrNull(langCode + "_" + countryCode);
+				if (loc == null) {
+					loc = I18nManager.getInstance().getLocaleOrNull(langCode);
+				}
+				if (loc != null) {					
+					propertiesFile = I18nManager.getInstance().getResolvedProperties(loc, trans.getPackageName());
+				}
+			}
+			// if still nothing found, try without country
+			if (propertiesFile.size() == 0) {
+				if (StringHelper.containsNonWhitespace(countryCode)) {
+					Locale loc = I18nManager.getInstance().getLocaleOrNull(langCode);
+					if (loc != null) {					
+						propertiesFile = I18nManager.getInstance().getResolvedProperties(loc, trans.getPackageName());
+					}			
+				}
+			}
+		}
+		
 		Set keys =  propertiesFile.keySet();
 		for (Iterator iterator = keys.iterator(); iterator.hasNext();) {
 			String key = (String) iterator.next();

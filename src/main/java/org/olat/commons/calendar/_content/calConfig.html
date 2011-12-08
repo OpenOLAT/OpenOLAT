@@ -45,6 +45,11 @@ $r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-callist
 		    href="$r.commandURIbg("add", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
   		  $r.bgTarget() 
 	  	  title="$r.translateInAttribute("cal.add.event")"></a>
+	  	<a class="o_cal_config_importevent" 
+		    href="$r.commandURIbg("import", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
+  		  $r.bgTarget() 
+	  	  title="$r.translateInAttribute("cal.import.event")"></a> 
+	  	  
     #else
 	    <div class="o_cal_config_readonly" 		    
 	  	  title="$r.translateInAttribute("cal.add.readonly")"></div>

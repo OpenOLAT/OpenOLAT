@@ -20,6 +20,7 @@
 */
 package org.olat.portfolio.ui.artefacts.collect;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -28,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
@@ -47,12 +49,16 @@ public class EPCollectStep01 extends BasicStep {
 		super(ureq);
 		this.artefact = artefact;
 		setI18nTitleAndDescr("step1.description", "step1.short.descr");
-		//signature > 0 means, collection wizzard can be sure its from OLAT, < 0 means get an approval by user (the target value is the negative one)
-		if (artefact.getSignature() > 0 ){
+		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		//signature > 0 means, collection wizard can be sure its from OLAT, < 0 means get an approval by user (the target value is the negative one)
+		if (!portfolioModule.isCopyrightStepEnabled() && !portfolioModule.isReflexionStepEnabled()){
+			// skip copyright AND reflexion step
+			setNextStep(new EPCollectStep04(ureq, artefact));
+		} else if (artefact.getSignature() > 0 || !portfolioModule.isCopyrightStepEnabled()){
 			setNextStep(new EPCollectStep03(ureq, artefact));
-		} else {
+		} else if (portfolioModule.isCopyrightStepEnabled() ){
 			setNextStep(new EPCollectStep02(ureq, artefact));
-		}
+		} 
 	}
 
 	/**

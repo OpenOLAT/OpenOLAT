@@ -55,6 +55,10 @@ public class PortfolioAdminController extends FormBasicController  {
 	
 	private static String[] enabledKeys = new String[]{"on"};
 	private String[] enabledValues;
+
+	private MultipleSelectionElement copyrightStepCB;
+
+	private MultipleSelectionElement reflexionStepCB;
 	
 	public PortfolioAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "adminconfig");
@@ -95,6 +99,19 @@ public class PortfolioAdminController extends FormBasicController  {
 				handlerEnabled.addActionListener(listener, FormEvent.ONCHANGE);
 				handlersEnabled.add(handlerEnabled);
 			}
+			
+			// configure steps in artefact collection wizard
+			FormLayoutContainer wizardFlc = FormLayoutContainer.createDefaultFormLayout("flc_wizard", getTranslator());
+			layoutContainer.add(wizardFlc);	
+			copyrightStepCB = uifactory.addCheckboxesHorizontal("wizard.step.copyright", wizardFlc, enabledKeys, enabledValues, null);
+			copyrightStepCB.select(enabledKeys[0], portfolioModule.isCopyrightStepEnabled());
+			copyrightStepCB.addActionListener(listener, FormEvent.ONCHANGE);
+			
+			reflexionStepCB = uifactory.addCheckboxesHorizontal("wizard.step.reflexion", wizardFlc, enabledKeys, enabledValues, null);
+			reflexionStepCB.select(enabledKeys[0], portfolioModule.isReflexionStepEnabled());
+			reflexionStepCB.addActionListener(listener, FormEvent.ONCHANGE);
+			
+			
 		}
 	}
 	
@@ -120,6 +137,12 @@ public class PortfolioAdminController extends FormBasicController  {
 			EPArtefactHandler<?> handler = (EPArtefactHandler<?>)source.getUserObject();
 			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
 			portfolioModule.setEnableArtefactHandler(handler, enabled);
+		} else if(source == reflexionStepCB){
+			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
+			portfolioModule.setReflexionStepEnabled(enabled);
+		} else if(source == copyrightStepCB){
+			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
+			portfolioModule.setCopyrightStepEnabled(enabled);
 		}
 	}
 }

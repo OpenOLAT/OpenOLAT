@@ -4,11 +4,20 @@
 	<p>
 		$r.translate("imadmin.plugin.intro")
 	</p>
+	<p>Status: 
+	#if($IMConnectionStatus)
+		<font color="green">ALL OK!</font>
+	#else
+		<font color="red">No Connection to Server!!</font>
+	#end
+	</p>
 	<ul>
-	#set ($info= ["$IMServerAdminGUI", "$IMServerAdminUsername", "$IMServerAdminPw"]) 
+	##fxdiff: hide admin-im-pw
+	#set ($info= ["$IMServerAdminGUI", "$IMServerAdminUsername", "onlyServerAdminKnowsThis"]) 
 	<li>$r.translate("imadmin.plugin.webconsole", $info)</li>
 	<li>$r.render("imadmin.plugin.check") $r.translate("imadmin.plugin.check.info")</li>
 	<li>$r.render("imadmin.plugin.admin.reconnect") $r.translate("imadmin.plugin.admin.connection")</li>
+	<li>$r.render("sync.all.users") $r.translate("imadmin.plugin.sync.allusers")</li>
 	</ul>
 </fieldset>
 

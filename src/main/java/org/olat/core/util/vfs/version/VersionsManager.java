@@ -148,5 +148,11 @@ public abstract class VersionsManager extends BasicManager {
 	 * @return
 	 */
 	public abstract boolean rename(VFSItem item, String newname);
+	
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	public abstract List<OrphanVersion> orphans();
+	
+	//fxdiff FXOLAT-127: file versions maintenance tool
+	public abstract boolean delete(OrphanVersion orphan);
 
 }

@@ -95,6 +95,11 @@ public class ContextHelpIndexer extends AbstractIndexer {
 			String[] identifyerSplit = helpPageIdentifyer.split(":");
 			String bundleName = identifyerSplit[0];
 			String page = identifyerSplit[1];
+			//fxdiff: FXOLAT-221: don't use velocity on images
+			if(page == null || !page.endsWith(".html")) {
+				continue;
+			}
+			
 			// Translator with default locale. Locale is set to each language in the
 			// language iteration below
 			Translator pageTranslator = new PackageTranslator(bundleName, I18nModule.getDefaultLocale());

@@ -50,7 +50,7 @@
 				<script type="text/javascript">
 				/* <![CDATA[ */
 				#if ($!helper.getMediaType($episode.getEnclosure()) == "video")
-					BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",400,300,"video");
+					BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",$!helper.getWidth($episode),$!helper.getHeight($episode),"video");
 				#else
 					BPlayer.insertPlayer("$!helper.getMediaUrl($episode)","o_podcast_episode_$velocityCount",400,24,"sound");
 				#end

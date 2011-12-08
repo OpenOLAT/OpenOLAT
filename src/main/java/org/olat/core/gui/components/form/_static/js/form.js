@@ -28,7 +28,10 @@ function b_form_updateFormElementVisibility(formName, selectionElementName, depe
 
 	// dependentElement can be null if dependentElement is of type spacer or static text
 	// in this case the element is not a form element and thus won't be found
-	if (selectionValue == ruleValue) {
+	// <OLATCE-289>
+	if (selectionValue == ruleValue 
+		|| (selectionElement.checked != null && ruleValue == selectionElement.checked.toString())) {
+	// </OLATCE-289>
 		if (ruleResult) {
 			b_form_enableFormElement(formName, dependentElement, dependentElementName, hideDisabledElements);
 		} else {

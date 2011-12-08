@@ -65,7 +65,7 @@ public class CourseModule extends AbstractOLATModule {
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	private static String helpCourseSoftkey;
 	private static CoordinatorManager coordinatorManager;
-	private Map deployedCourses;
+	private Map<String, RepositoryEntry> deployedCourses;
 	private boolean deployCoursesEnabled;
 	private PropertyManager propertyManager;
 	private CourseFactory courseFactory;
@@ -174,7 +174,7 @@ public class CourseModule extends AbstractOLATModule {
 	private RepositoryEntry deployCourse(DeployableCourseExport export, int access) {
 		// let's see if we previously deployed demo courses...
 		
-		RepositoryEntry re = (RepositoryEntry) getDeployedCourses().get(export.getIdentifier());
+		RepositoryEntry re = getDeployedCourses().get(export.getIdentifier());
 		if (re != null) {
 			logInfo("Course '" + export.getIdentifier() + "' has been previousely deployed. Skipping.");
 			return re;
@@ -189,7 +189,7 @@ public class CourseModule extends AbstractOLATModule {
 				return null;
 			}
 			re = courseFactory.deployCourseFromZIP(file, access);
-			if (re != null) markAsDeployed(export, re, false);
+			if (re != null) markAsDeployed(export, re);
 			return re;
 		}
 		return null;
@@ -202,8 +202,19 @@ public class CourseModule extends AbstractOLATModule {
 	 * @param courseExportPath
 	 * @param re
 	 */
-	private void markAsDeployed(DeployableCourseExport export, RepositoryEntry re, boolean update) {
-		Property prop = propertyManager.createPropertyInstance(null, null, null, "_o3_", "deployedCourses", export.getVersion(), re.getKey(), export.getIdentifier(), null);
+	private void markAsDeployed(DeployableCourseExport export, RepositoryEntry re) {
+		List<Property> props = propertyManager.findProperties(null, null, null, "_o3_", "deployedCourses");
+		Property prop = null;
+		for (Property property : props) {
+			if (property.getLongValue() == re.getKey()){
+				prop = property;
+			}
+		}
+		if (prop == null) {
+			prop = propertyManager.createPropertyInstance(null, null, null, "_o3_", "deployedCourses", export.getVersion(), re.getKey(), export.getIdentifier(), null);
+		}
+		prop.setFloatValue(export.getVersion());
+		prop.setStringValue(export.getIdentifier());
 		propertyManager.saveProperty(prop);
 		deployedCourses.put(export.getIdentifier(), re);
 	}
@@ -213,11 +224,11 @@ public class CourseModule extends AbstractOLATModule {
 	 * 
 	 * @return
 	 */
-	private Map getDeployedCourses() {
+	private Map<String, RepositoryEntry> getDeployedCourses() {
 		if (deployedCourses != null) return deployedCourses;
-		List props = propertyManager.findProperties(null, null, null, "_o3_", "deployedCourses");
-		deployedCourses = new HashMap(props.size());
-		for (Iterator iter = props.iterator(); iter.hasNext();) {
+		List<?> props = propertyManager.findProperties(null, null, null, "_o3_", "deployedCourses");
+		deployedCourses = new HashMap<String, RepositoryEntry>(props.size());
+		for (Iterator<?> iter = props.iterator(); iter.hasNext();) {
 			Property prop = (Property) iter.next();
 			Long repoKey = prop.getLongValue();
 			RepositoryEntry re = null;
@@ -225,14 +236,27 @@ public class CourseModule extends AbstractOLATModule {
 			if (re != null) {
 				//props with floatValue null are old entries - delete them.
 				if (prop.getFloatValue() == null) {
-					//those are courses deployed with the old mechanism, delete them and redeploy
-					logInfo("This course was already deployed but has old property values. Deleting it and redeploy course: "+prop.getStringValue());
-					deleteCourseAndProperty(prop, re);
-					re = null; //do not add to deployed courses
+					//those are courses deployed with the old mechanism, check, if they exist and what should be done with them:
+					//fxdiff: no delete! 
+					logInfo("This course was already deployed and has old property values. course: "+prop.getStringValue());
+					for (DeployableCourseExport export: deployableCourseExports) {
+						if (export.getIdentifier().equals(prop.getStringValue())) {
+							logInfo("found this old course in the deployable courses list");
+							if (export.isRedeploy()){
+								// found in deployableCourses again and it should be redeployed, therefore delete:
+								logInfo("marked as to be redeployed, therefore delete first!");
+								deleteCourseAndProperty(prop, re);
+								re = null; //do not add to deployed courses
+							} else {
+								logInfo("no redeploy! just update its version.");
+								markAsDeployed(export, re);
+							}
+						}
+					}
 				} else {
 					//check if latest version if course is installed
 					for (DeployableCourseExport export: deployableCourseExports) {
-						if (export.getIdentifier().equals(prop.getStringValue()) && export.getVersion() > prop.getFloatValue()) {
+						if (export.getIdentifier().equals(prop.getStringValue()) && export.getVersion() > prop.getFloatValue() && export.isRedeploy()) {
 							//we have a newer version - delete the old course
 							logInfo("There is a new version for this course available. Deleting it and redeploy course: "+prop.getStringValue());
 							deleteCourseAndProperty(prop, re);

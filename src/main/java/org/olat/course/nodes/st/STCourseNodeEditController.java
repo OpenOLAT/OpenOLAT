@@ -82,6 +82,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public static final String CONFIG_VALUE_DISPLAY_TOC = "toc";
 	// display a detailed peek view
 	public static final String CONFIG_VALUE_DISPLAY_PEEKVIEW = "peekview";
+	//do not display peek view, delegate to first child CourseNode
+	public static final String CONFIG_VALUE_DISPLAY_DELEGATE = "delegate";
 	// key to display the enabled child node peek views
 	public static final String CONFIG_KEY_PEEKVIEW_CHILD_NODES = "peekviewChildNodes";
 	// key to store the number of columns
@@ -146,7 +148,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		chosenFile = (String) stNode.getModuleConfiguration().get(CONFIG_KEY_FILE); 
 		editorEnabled = (CONFIG_VALUE_DISPLAY_FILE.equals(stNode.getModuleConfiguration().getStringValue(CONFIG_KEY_DISPLAY_TYPE)));
 		
-		allowRelativeLinks = stNode.getModuleConfiguration().getBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
+		allowRelativeLinks = stNode.getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 
 		nodeDisplayConfigFormController = new STCourseNodeDisplayConfigFormController(ureq, wControl, stNode.getModuleConfiguration(), editorModel.getCourseEditorNodeById(stNode.getIdent()));
 		listenTo(nodeDisplayConfigFormController);
@@ -290,7 +292,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				} else { // user generated overview
 					editorEnabled = false;
 					configvc.contextPut("editorEnabled", Boolean.valueOf(editorEnabled));
-					fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+					//fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 					// Let other config values from old config setup remain in config,
 					// maybe used when user switches back to other config (OLAT-5610)
 				}

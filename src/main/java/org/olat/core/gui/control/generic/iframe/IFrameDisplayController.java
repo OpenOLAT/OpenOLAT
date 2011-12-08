@@ -823,7 +823,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			// window. 
 			Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
 			CustomCSS currentCustomCSS = (CustomCSS) myWindow.getAttribute(BaseFullWebappController.CURRENT_CUSTOM_CSS_KEY);
-			if (currentCustomCSS != null)	customCssURL = currentCustomCSS.getCSSURL();
+			if (currentCustomCSS != null)	customCssURL = currentCustomCSS.getCSSURLIFrame();
 			// done, remove us as listener
 			getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		}

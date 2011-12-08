@@ -40,10 +40,12 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class EmailOrUsernameFormController extends FormBasicController {
 
+	private final String initialEmail;//fxdiff FXOLAT-113: business path in DMZ
 	private TextElement emailOrUsername;
 
-	public EmailOrUsernameFormController(UserRequest ureq, WindowControl wControl) {
+	public EmailOrUsernameFormController(UserRequest ureq, WindowControl wControl, String initialEmail) {
 		super(ureq, wControl);
+		this.initialEmail = initialEmail;
 		initForm(ureq);
 	}
 
@@ -73,7 +75,8 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		emailOrUsername = uifactory.addTextElement("emailOrUsername", "email.or.username", -1, null, formLayout);
+		//fxdiff FXOLAT-113: business path in DMZ
+		emailOrUsername = uifactory.addTextElement("emailOrUsername", "email.or.username", -1, initialEmail, formLayout);
 		emailOrUsername.setMandatory(true);
 		emailOrUsername.setNotEmptyCheck("email.or.username.maynotbeempty");
 		

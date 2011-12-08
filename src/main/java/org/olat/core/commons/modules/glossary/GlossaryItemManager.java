@@ -68,10 +68,12 @@ public class GlossaryItemManager extends BasicManager {
 	private static final String OLD_GLOSSARY_FILENAME = "glossary.textmarker.xml";
 	private static final String GLOSSARY_FILENAME = "glossary.xml";
 	private static final String XML_GLOSSARY_ITEM_NAME = "glossentry";
+	private static final String XML_REVISION_NAME = "revision";
 	private static final String GLOSSARY_CONFIG_PROPERTIES_FILE = "glossary.properties";
 	public static final String NO_MS_VALUE = "ms-none";
 	public static final String MS_KEY = "morphological.service.identifier";
 	public static final String REGISTER_ONOFF = "register.index.enabled";
+	public static final String EDIT_USERS = "edit.by.users.enabled";
 	private static final OLATResourceable glossaryEventBus = OresHelper.createOLATResourceableType("glossaryEventBus");
 	CacheWrapper glossaryCache;
 	private CoordinatorManager coordinatorManager;
@@ -225,6 +227,7 @@ public class GlossaryItemManager extends BasicManager {
 		});
 
 		xstream.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
+		xstream.alias(XML_REVISION_NAME, Revision.class);
 		glossaryItemArr = removeEmptyGlossaryItems(glossaryItemArr);
 		XStreamHelper.writeObject(xstream, glossaryFile, glossaryItemArr);
 	}
@@ -290,6 +293,7 @@ public class GlossaryItemManager extends BasicManager {
 		if (glossaryFile == null) { return new ArrayList<GlossaryItem>(); }
 		XStream xstream = XStreamHelper.createXStreamInstance();
 		xstream.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
+		xstream.alias(XML_REVISION_NAME, Revision.class);
 		Object glossObj = XStreamHelper.readObject(xstream, glossaryFile.getInputStream());
 		if (glossObj instanceof ArrayList) {
 			ArrayList<GlossaryItem> glossItemsFromFile = (ArrayList<GlossaryItem>) glossObj;

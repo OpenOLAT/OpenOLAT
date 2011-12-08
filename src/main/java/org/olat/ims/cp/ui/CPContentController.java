@@ -24,6 +24,7 @@ package org.olat.ims.cp.ui;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,6 +37,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.iframe.NewIframeUriEvent;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.CPManager;
@@ -123,7 +126,12 @@ public class CPContentController extends BasicController {
 	private void setContent(UserRequest ureq, String filePath) {
 		if (filePath.toLowerCase().lastIndexOf(FILE_SUFFIX_HTM) >= (filePath.length() - 4)) {
 			if (mceCtr != null) mceCtr.dispose();
-			mceCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), currentPage.getRootDir(), filePath, false);
+			//fxdiff FXOLAT-125: virtual file system for CP
+			VFSContainer rootDir = currentPage.getRootDir();
+			String virtualRootFolderName = translate("cpfileuploadcontroller.virtual.root");
+			VFSContainer pseudoContainer = new VFSRootCPContainer(virtualRootFolderName, cp, rootDir, getTranslator());
+
+			mceCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), pseudoContainer, filePath, false);
 			mceCtr.setCancelButtonEnabled(false);
 			mceCtr.setSaveCloseButtonEnabled(false);
 			mceCtr.setShowMetadataEnabled(false);

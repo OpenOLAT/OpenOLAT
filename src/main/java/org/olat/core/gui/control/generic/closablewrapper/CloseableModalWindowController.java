@@ -57,11 +57,34 @@ public class CloseableModalWindowController extends BasicController {
 		mainVC = createVelocityContainer("modalwindow");
 		if (title != null) mainVC.contextPut("title", title);
 		mainVC.put("content", modalContent);
+		setCloseable(true);
+		setIgnoreCookie(false);
 		modalId = "o_"+id;
 		mainVC.contextPut("panelName", modalId);		
 		putInitialPanel(mainVC);
 	}
 
+	/**
+	 * fxdiff:: FXOLAT-232
+	 * make the "CloseableModal..."  not closable ^^
+	 * 
+	 * @param closeable
+	 */
+	public void setCloseable(boolean closeable){
+		mainVC.contextPut("closeable", closeable);
+	}
+	
+	/**
+	 * fxdiff:: FXOLAT-232
+	 * make the ext-window ignore the cookie-value for width and height.
+	 * i.e. every subsequent <code>setInitialWindowSize</code> call will ignore the cookie
+	 * 
+	 * @param ignore
+	 */
+	public void setIgnoreCookie(boolean ignore){
+		mainVC.contextPut("ignorecookie", ignore);
+	}
+	
 	/**
 	 * set the initial size of modal window. if changed by user once, this won't
 	 * be read until cookies have expired or got deleted!
@@ -74,6 +97,27 @@ public class CloseableModalWindowController extends BasicController {
 		mainVC.contextPut("height", height);
 	}
 
+	/**
+	 * fxdiff: FXOLAT-232 make ext-window resizable
+	 *  
+	 *  resizes the Ext-Window to the given size.
+	 *  Note: this is async. resize is done on next successful poll
+	 *  
+	 * @param width
+	 * @param height
+	 */
+	public void resizeWindow(int width, int height){
+		setInitialWindowSize(width, height);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("if( Ext.getCmp('").append(modalId).append("') != null ) {");
+		sb.append("  Ext.getCmp('").append(modalId).append("').setHeight(").append(height).append(");");
+		sb.append("  Ext.getCmp('").append(modalId).append("').setWidth(").append(width).append(");");
+		//sb.append("console.log('manually resize the window to ").append(width).append(" and ").append(height).append(" (the js-way)');  ");
+		sb.append("}");
+		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(sb.toString()));
+	}
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,

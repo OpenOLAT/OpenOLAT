@@ -1,4 +1,3 @@
-
 /**
  *
  * BPS Bildungsportal Sachsen GmbH<br>
@@ -21,7 +20,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.olat.core.configuration.Initializable;
 import org.olat.core.logging.Tracing;
 
 public class SSLConfigurationModule {

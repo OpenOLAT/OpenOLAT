@@ -36,6 +36,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
+import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.ImageHelper.Size;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -64,6 +65,8 @@ public class PDFToThumbnail implements ThumbnailSPI {
 		InputStream in = null;
 		PDDocument document = null;
 		try {
+			//fxdiff FXOLAT-97: high CPU load tracker
+			WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
 			in = pdfFile.getInputStream();
 			document = PDDocument.load(in);
 			if (document.isEncrypted()) {
@@ -86,6 +89,8 @@ public class PDFToThumbnail implements ThumbnailSPI {
 			log.warn("Unable to create image from pdf file.", e);
 			throw new CannotGenerateThumbnailException(e);
 		} finally {
+			//fxdiff FXOLAT-97: high CPU load tracker
+			WorkThreadInformations.unset();
 			FileUtils.closeSafely(in);
 			if (document != null) {
 				try {

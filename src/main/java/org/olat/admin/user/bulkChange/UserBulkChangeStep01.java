@@ -57,7 +57,7 @@ import org.olat.user.UserManager;
  * <P>
  * Initial Date: 30.01.2008 <br>
  * 
- * @author rhaag
+ * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 class UserBulkChangeStep01 extends BasicStep {
 
@@ -68,7 +68,7 @@ class UserBulkChangeStep01 extends BasicStep {
 	public UserBulkChangeStep01(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("step1.description", null);
-		setNextStep(new UserBulkChangeStep02(ureq));
+		setNextStep(new UserBulkChangeStep01a(ureq));
 	}
 
 	/**
@@ -163,7 +163,6 @@ class UserBulkChangeStep01 extends BasicStep {
 			return true;
 		}
 
-		@SuppressWarnings("synthetic-access")
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("step1.title");

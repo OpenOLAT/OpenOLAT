@@ -55,16 +55,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
-import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.CourseModule;
-import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -111,7 +107,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, File cpRoot, String resourceId, String courseIdNodeId, String lesson_mode,
-			String credit_mode, boolean previewMode, boolean activate) {
+			String credit_mode, boolean previewMode, boolean activate, boolean fullWindow) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
@@ -186,18 +182,20 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		// bootId is the item the user left the sco last time or the first one
 		String bootId = scormAdapter.getScormLastAccessedItemId();
 		// if bootId is -1 all course sco's are completed, we show a message
-		if (bootId.equals("-1")) {
-			iframectr.getInitialComponent().setVisible(false);
-			showInfo("scorm.course.completed");
-			
-		} else {
+		// <OLATCE-289>
+//		if (bootId.equals("-1")) {
+//			iframectr.getInitialComponent().setVisible(false);
+//			showInfo("scorm.course.completed");
+//			
+//		} else {
 			scormAdapter.launchItem(bootId);
 			TreeNode bootnode = treeModel.getNodeByScormItemId(bootId);
 
 			iframectr.setCurrentURI((String) bootnode.getUserObject());
 			menuTree.setSelectedNodeId(bootnode.getIdent());
 			
-		}
+//		}
+		// </OLATCE-239>
 		updateNextPreviousButtons(bootId);
 		
 		myContent.put("contentpackage", iframectr.getInitialComponent());
@@ -205,11 +203,13 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		if (activate) {
 			if (previewMode) {
 				LayoutMain3ColsPreviewController ctr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), (showMenu ? menuTree : null), null, myContent, "scorm" + resourceId);
-				ctr.activate();
+				if(fullWindow)
+					ctr.setAsFullscreen(ureq);
 				columnLayoutCtr = ctr;
 			} else {
 				LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), (showMenu ? menuTree : null), null, myContent, "scorm" + resourceId);
-				ctr.activate();
+				if(fullWindow)
+					ctr.setAsFullscreen(ureq);
 				columnLayoutCtr = ctr;
 			}
 		} else {
@@ -307,6 +307,12 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		iframectr.setJSEncoding(encoding);
 	}
 
+	//fxdiff FXOLAT-116: SCORM improvements
+	public void close() {
+		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
+			((LayoutMain3ColsBackController)columnLayoutCtr).deactivate();
+		}
+	}
 	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -324,6 +330,17 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 			fireEvent(ureq, Event.FAILED_EVENT);
 		}
 		 
+	}
+	
+	@Override
+	//fxdiff FXOLAT-116: SCORM improvements
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == columnLayoutCtr) {
+			if(event == Event.BACK_EVENT) {
+				fireEvent(ureq, Event.BACK_EVENT);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 	
 	private void  switchToNextOrPreviousSco(Link link) {
@@ -424,6 +441,16 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController {
 		} else {
 			previousScoTop.setVisible(false);
 			previousScoBottom.setVisible(false);
+		}
+	}
+	
+	public void activate(){
+		if (columnLayoutCtr instanceof LayoutMain3ColsPreviewController) {
+			LayoutMain3ColsPreviewController ctrl = (LayoutMain3ColsPreviewController) columnLayoutCtr;
+			ctrl.activate();
+		} else if (columnLayoutCtr instanceof LayoutMain3ColsBackController){
+			LayoutMain3ColsBackController ctrl =  (LayoutMain3ColsBackController)columnLayoutCtr;
+			ctrl.activate();
 		}
 	}
 

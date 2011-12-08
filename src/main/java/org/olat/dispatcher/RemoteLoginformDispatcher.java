@@ -26,6 +26,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.dispatcher.Dispatcher;
@@ -135,6 +136,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 			int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				// redirect to authenticated environment
+				UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 				
 				final String origUri = request.getRequestURI();
 				String restPart = origUri.substring(uriPrefix.length());

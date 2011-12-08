@@ -149,7 +149,10 @@ public class PreviewRunController extends MainLayoutBasicController {
 					getWindowControl().setWarning(translate("warn.notvisible"));
 					return;
 				}
-				if (nclr.isHandledBySubTreeModelListener()) return;
+				if (nclr.isHandledBySubTreeModelListener()) {
+					//not used:
+					return;
+				}
 				
 				// set the new treemodel
 				treeModel = nclr.getTreeModel();
@@ -157,16 +160,23 @@ public class PreviewRunController extends MainLayoutBasicController {
 				
 				// set the new tree selection
 				luTree.setSelectedNodeId(nclr.getSelectedNodeId());
+				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 
 				// get the controller (in this case it is a preview controller). Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
-				if (currentNodeController != null && !currentNodeController.isDisposed()) currentNodeController.dispose();
-				currentNodeController = nclr.getRunController();
+				if(nclr.getRunController() != null) {
+					if (currentNodeController != null && !currentNodeController.isDisposed()){
+						currentNodeController.dispose();
+					}
+					currentNodeController = nclr.getRunController();
+				}
 				
 				CourseNode cn = nclr.getCalledCourseNode();
-				Condition c = cn.getPreConditionVisibility();
-				String visibilityExpr = (c.getConditionExpression() == null? translate("details.visibility.none") : c.getConditionExpression());
-				detail.contextPut("visibilityExpr", visibilityExpr);
-				detail.contextPut("coursenode", cn);
+				if(cn != null) {
+					Condition c = cn.getPreConditionVisibility();
+					String visibilityExpr = (c.getConditionExpression() == null? translate("details.visibility.none") : c.getConditionExpression());
+					detail.contextPut("visibilityExpr", visibilityExpr);
+					detail.contextPut("coursenode", cn);
+				}
 
 				Component nodeComp = currentNodeController.getInitialComponent();
 				content.setContent(nodeComp);
@@ -222,6 +232,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		luTree.setTreeModel(treeModel);
 		String selNodeId = nclr.getSelectedNodeId();
 		luTree.setSelectedNodeId(selNodeId);
+		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 
 		// dispose old node controller
 		if (currentNodeController != null) {

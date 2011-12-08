@@ -27,9 +27,13 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -38,12 +42,24 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.MailerWithTemplate;
+import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
+import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.BusinessGroupTableModel;
 
 /**
@@ -57,11 +73,17 @@ import org.olat.group.ui.BusinessGroupTableModel;
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 public class GroupOverviewController extends BasicController {
+	private static final String TABLE_ACTION_UNSUBSCRIBE = "unsubscribe";
 	private VelocityContainer vc;
 	private TableController tblCtr;
 	private GroupOverviewModel tableDataModel;
 	private WindowControl wControl;
 	private Identity identity;
+	private Link addGroups;
+	private CloseableModalWindowWrapperController calloutCtrl;
+	private GroupSearchController groupsCtrl;
+	private DialogBoxController removeFromGrpDlg;
+	private DialogBoxController sendMailDlg;
 	private static String TABLE_ACTION_LAUNCH ;
 
 	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, Boolean canStartGroups) {
@@ -76,6 +98,7 @@ public class GroupOverviewController extends BasicController {
 		
 		vc = createVelocityContainer("groupoverview");
 		buildTableController(ureq, control); 
+		addGroups = LinkFactory.createButton("add.groups", vc, this);		
 		vc.put("table.groups", tblCtr.getInitialComponent());	
 		putInitialPanel(vc);
 	}
@@ -96,7 +119,8 @@ public class GroupOverviewController extends BasicController {
 		tblCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 1, TABLE_ACTION_LAUNCH, ureq.getLocale()));
 		tblCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.role", 2, null, ureq.getLocale()));
 		tblCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.user.joindate", 3, null, ureq.getLocale()));
-				
+		tblCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_UNSUBSCRIBE, "table.user.unsubscribe", translate("table.user.unsubscribe")));
+
 		//build data model
 		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		BaseSecurity sm = BaseSecurityManager.getInstance();
@@ -161,9 +185,17 @@ public class GroupOverviewController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(	UserRequest ureq, Component source, Event event) {
-		// no events to catch
+		if (source == addGroups){
+			groupsCtrl = new GroupSearchController(ureq, getWindowControl());
+			listenTo(groupsCtrl);
+			
+			calloutCtrl = new CloseableModalWindowWrapperController(ureq, getWindowControl(), translate("add.groups"), groupsCtrl.getInitialComponent(), "ccgroupadd");
+			calloutCtrl.setInitialWindowSize(500, 400);
+//			calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, groupsCtrl.getInitialComponent(), addGroups, translate("add.groups"), false, null);
+			listenTo(calloutCtrl);
+			calloutCtrl.activate();
+		}
 	}
 	
 	/**
@@ -184,15 +216,112 @@ public class GroupOverviewController extends BasicController {
 					if (currBusinessGroup==null) {
 						//group seems to be removed meanwhile, reload table and show error
 						showError("group.removed");
-						buildTableController(ureq, wControl); 
-						vc.put("table.groups", tblCtr.getInitialComponent());	
+						updateGroupsTable(ureq);	
 					}
 					else {
 						BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), true, null);
 					}
+				} else if (actionid.equals(TABLE_ACTION_UNSUBSCRIBE)){
+					// fxdiff: FXOLAT-101 see similar doBuddyGroupLeave() in BGMainController
+					String groupName = currBusinessGroup.getName();
+					BaseSecurity securityManager = BaseSecurityManager.getInstance();
+					List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(currBusinessGroup.getOwnerGroup());
+					List<Identity> partList = securityManager.getIdentitiesOfSecurityGroup(currBusinessGroup.getPartipiciantGroup());
+					
+					String rmText = translate("unsubscribe.text", new String[]{NotificationHelper.getFormatedName(identity), groupName});
+					if ((ownerList.size() == 1 && partList.size() == 0) || (ownerList.size() == 0 && partList.size() == 1)) {
+						rmText += " <br/>" + translate("unsubscribe.group.del");
+					}
+					removeFromGrpDlg = activateYesNoDialog(ureq, translate("unsubscribe.title"), rmText, removeFromGrpDlg);
+					removeFromGrpDlg.setUserObject(currBusinessGroup);
 				}
 			}
-		}		
+		}	else if (source == groupsCtrl && event instanceof AddToGroupsEvent){
+			AddToGroupsEvent groupsEv = (AddToGroupsEvent) event;
+			if (groupsEv.getOwnerGroupKeys().isEmpty() && groupsEv.getParticipantGroupKeys().isEmpty()){
+				// no groups selected
+				showWarning("group.add.result.none");
+			} else {
+				if (calloutCtrl != null) calloutCtrl.deactivate();				
+				String[] resultTextArgs = GroupAddManager.getInstance().addIdentityToGroups(groupsEv, identity, getIdentity());
+				if (resultTextArgs != null){
+					String message = translate("group.add.result", resultTextArgs);
+					getWindowControl().setInfo(message);
+				} else {		
+					showWarning("group.add.result.none");
+				}
+				updateGroupsTable(ureq);
+			}			
+		} else if (source == removeFromGrpDlg && DialogBoxUIFactory.isYesEvent(event)){
+			//fxdiff: FXOLAT-138 let user decide to send notif-mail or not
+			sendMailDlg = activateYesNoDialog(ureq, translate("unsubscribe.title"), translate("send.email.notif"), sendMailDlg);
+		} else if (source == sendMailDlg){
+			if (DialogBoxUIFactory.isYesEvent(event))
+				removeUserFromGroup(ureq, true);
+			else
+				removeUserFromGroup(ureq, false);
+		}
+			
 	}
 
+	/**
+	 * 
+	 * @param ureq
+	 * @param doSendMail
+	 */
+	private void removeUserFromGroup(UserRequest ureq, boolean doSendMail) {
+		// fxdiff: FXOLAT-101 see similar doBuddyGroupLeave() in BGMainController
+		final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroup currBusinessGroup = (BusinessGroup) removeFromGrpDlg.getUserObject();
+		String groupName = currBusinessGroup.getName();
+		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
+		SecurityGroup owners = currBusinessGroup.getOwnerGroup();
+		List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
+		List<Identity> partList = securityManager.getIdentitiesOfSecurityGroup(currBusinessGroup.getPartipiciantGroup());
+
+		if ((ownerList.size() == 1 && partList.size() == 0) || (ownerList.size() == 0 && partList.size() == 1)) {
+			// really delete the group as it has no more owners/participants
+			if(doSendMail)
+				bgm.deleteBusinessGroupWithMail(currBusinessGroup, wControl, ureq, getTranslator(), null);
+			else
+				bgm.deleteBusinessGroup(currBusinessGroup);
+		} else {
+			// 1) remove as owner
+			if (securityManager.isIdentityInSecurityGroup(identity, owners)) {
+				bgm.removeOwnerAndFireEvent(ureq.getIdentity(), identity, currBusinessGroup, flags, false);
+			}
+
+			// 2) remove as participant
+			final BusinessGroup toRemFromGroup = currBusinessGroup;
+			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor() {
+				public void execute() {
+					bgm.removeParticipantAndFireEvent(getIdentity(), identity, toRemFromGroup, flags, false);
+				}
+			});
+
+			// 3) notify user about this action:
+			if(doSendMail){
+				MailTemplate mailTemplate = BGMailHelper.createRemoveParticipantMailTemplate(currBusinessGroup, getIdentity());
+				MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+				MailerResult mailerResult = mailer.sendMail(null, identity, null, null, mailTemplate, null);
+				MailHelper.printErrorsAndWarnings(mailerResult, wControl, getLocale());
+			}
+		}
+
+		updateGroupsTable(ureq);
+		showInfo("unsubscribe.successful", groupName);	
+	}
+	
+	/**
+	 * @param ureq
+	 * update Table
+	 */
+	private void updateGroupsTable(UserRequest ureq) {
+		buildTableController(ureq, wControl); 
+		vc.put("table.groups", tblCtr.getInitialComponent());
+	}
+
+
+	
 }

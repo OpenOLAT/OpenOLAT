@@ -902,4 +902,34 @@ public class FileUtils {
 		log.debug(String.format("cpio %,13d bytes %6.2f ms avg %6.1f Mbps %s%n", tot, dtim/1000/1000, bps/1024, wt));
 		return tot;
 	}
+	
+	/**
+	 * from a newer version of apache commons.io Determines whether the specified
+	 * file is a Symbolic Link rather than an actual file.
+	 * <p>
+	 * Will not return true if there is a Symbolic Link anywhere in the path, only
+	 * if the specific file is.
+	 * 
+	 * @param file the file to check
+	 * @return true if the file is a Symbolic Link
+	 * @throws IOException if an IO error occurs while checking the file
+	 * @since Commons IO 2.0
+	 */
+	public static boolean isSymlink(File file) throws IOException {
+		if (file == null) { throw new NullPointerException("File must not be null"); }
+		if ("\\".equals(File.separatorChar) ) { return false; } // Windows doesn't know symlinks!
+		File fileInCanonicalDir = null;
+		if (file.getParent() == null) {
+			fileInCanonicalDir = file;
+		} else {
+			File canonicalDir = file.getParentFile().getCanonicalFile();
+			fileInCanonicalDir = new File(canonicalDir, file.getName());
+		}
+
+		if (fileInCanonicalDir.getCanonicalFile().equals(fileInCanonicalDir.getAbsoluteFile())) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 }

@@ -81,6 +81,7 @@ public class PortfolioConfigForm extends FormBasicController {
 	
 	private Controller previewCtr;
 	private LayoutMain3ColsBackController columnLayoutCtr;
+	private boolean isDirty;
 	private final PortfolioCourseNode courseNode;
 	
 	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, ICourse course, PortfolioCourseNode courseNode) {
@@ -148,6 +149,10 @@ public class PortfolioConfigForm extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	public void setDirtyFromOtherForm(boolean dirty){
+		this.isDirty = dirty;		
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -156,6 +161,10 @@ public class PortfolioConfigForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (isDirty) {
+			showWarning("form.dirty");
+			return;
+		}
 		if (source == changeMapLink || source == chooseMapLink) {
 			removeAsListenerAndDispose(searchController);
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{EPTemplateMapResource.TYPE_NAME}, translate("select.map2"),
@@ -164,6 +173,10 @@ public class PortfolioConfigForm extends FormBasicController {
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));
 			listenTo(cmc);
+		if (isDirty) {
+			showWarning("form.dirty");
+			return;
+		}
 			cmc.activate();
 		}	else if (source == editMapLink) {
 			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, courseNode);

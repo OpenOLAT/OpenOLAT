@@ -32,15 +32,17 @@ public class LLModel implements Serializable {
 	private String description = "";
 	private String comment = "";
 	private String htmlTarget = "_blank";
+	private boolean intern = false;
 
 	public LLModel() {
 		// nothing to do
 	}
 
-	public LLModel(final String target, final String description, final String comment) {
+	public LLModel(final String target, final String description, final String comment, final boolean intern) {
 		this.target = target;
 		this.description = description;
 		this.comment = comment;
+		this.intern = intern;
 	}
 
 	/**
@@ -99,4 +101,17 @@ public class LLModel implements Serializable {
 		this.comment = comment;
 	}
 
+	/**
+	 * @return True if it's an intern link
+	 */
+	public boolean isIntern() {
+		return intern;
+	}
+
+	/**
+	 * @param intern
+	 */
+	public void setIntern(boolean intern) {
+		this.intern = intern;
+	}
 }

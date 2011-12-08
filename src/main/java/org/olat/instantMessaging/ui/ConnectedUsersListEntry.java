@@ -143,7 +143,8 @@ public class ConnectedUsersListEntry implements Serializable{
 	/**
 	 * @return Returns the username.
 	 */
-	protected String getUsername() {
+	//fxdiff -> baks
+	public String getUsername() {
 		return username;
 	}
 
@@ -191,8 +192,9 @@ public class ConnectedUsersListEntry implements Serializable{
 
 	/**
 	 * @return Returns the jabberId.
+	 * fxdiff: public
 	 */
-	protected String getJabberId() {
+	public String getJabberId() {
 		return jabberId;
 	}
 

@@ -125,6 +125,10 @@ public interface WindowManager extends Disposable {
 	 * @return
 	 */
 	public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator controllerCreator);
+	
+	//fxdiff
+	public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(UserRequest ureq, ControllerCreator controllerCreator);
+
 
 	/**
 	 * 

@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
@@ -190,7 +191,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	@Override
 	public void addActionListener(Controller listener, int action) {
 		super.addActionListener(listener, action);
-		if (action == FormEvent.ONCHANGE) {
+		if (action == FormEvent.ONCHANGE && Settings.isDebuging()) {
 			log.warn("Do not use the onChange event in Textfields / TextAreas as this has often unwanted side effects. " +
 					"As the onchange event is only tiggered when you click outside a field or navigate with the tab to the next element " +
 					"it will suppress the first attempt to the submit click as by clicking " +

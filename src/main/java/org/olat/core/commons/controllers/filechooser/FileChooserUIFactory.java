@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.NamedLeaf;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSContainerFilter;
@@ -165,6 +166,11 @@ public class FileChooserUIFactory {
 		// direction is not necessarily the same as the opposite check
 		while ( tmpItem != null && !rootContainer.isSame(tmpItem) && !tmpItem.isSame(rootContainer)) {
 			String itemFileName = tmpItem.getName();
+			//fxdiff FXOLAT-125: virtual file system for CP
+			if(tmpItem instanceof NamedLeaf) {
+				itemFileName = ((NamedLeaf)tmpItem).getDelegate().getName();
+			}
+
 			// Special case: check if this is a named container, see OLAT-3848
 			for (NamedContainerImpl namedRootChild : namedRootChilds) {
 				if (namedRootChild.isSame(tmpItem)) {

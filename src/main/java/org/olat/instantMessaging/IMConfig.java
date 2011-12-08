@@ -45,6 +45,10 @@ public class IMConfig {
 	private boolean syncPersonalGroups;
 	private boolean syncLearningGroups;
 	public static final String RESOURCE = "OLAT";
+	// fxdiff: FXOLAT-46
+	private boolean hideExternalClientInfo;
+	private String adminName;
+	private String nodeId;
 	
 	
 	
@@ -98,6 +102,22 @@ public class IMConfig {
 		this.adminPassword = adminPassword;
 	}
 	
+	public void setAdminName(String adminName) {
+		this.adminName = adminName;
+	}
+	
+	public String getAdminName(){
+		return adminName;
+	}
+	
+	public void setNodeId(String nodeId){
+		this.nodeId = nodeId;
+	}
+	
+	public String getNodeId(){
+		return nodeId;
+	}
+	
 	public boolean generateTestUsers() {
 		return generateTestUsers;
 	}
@@ -110,6 +130,7 @@ public class IMConfig {
 		return CONFERENCE_PREFIX+"."+servername;
 	}
 	
+	// attention! always returns the default admin-name "admin"
 	public String getAdminUsername() {
 		return adminUsername;
 	}
@@ -144,6 +165,21 @@ public class IMConfig {
 
 	public void setSyncLearningGroups(boolean syncLearningGroups) {
 		this.syncLearningGroups = syncLearningGroups;
+	}
+	
+	// fxdiff: FXOLAT-46
+	/**
+	 * @param hideExternalClientInfo The hideExternalClientInfo to set.
+	 */
+	public void setHideExternalClientInfo(boolean hideExternalClientInfo) {
+		this.hideExternalClientInfo = hideExternalClientInfo;
+	}
+
+	/**
+	 * @return Returns the hideExternalClientInfo.
+	 */
+	public boolean isHideExternalClientInfo() {
+		return hideExternalClientInfo;
 	}
 
 }

@@ -139,12 +139,20 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		} else if (source == configForm) {
 			if (event == Event.DONE_EVENT) {
 				configForm.getUpdatedConfig();
+				configForm.setDirtyFromOtherForm(false);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if (event == Event.CHANGED_EVENT) {
+				// disable modification in other forms!
+				configForm.setDirtyFromOtherForm(true);
 			}
 		} else if (source == textForm) {
 			if (event == Event.DONE_EVENT) {
 				textForm.getUpdatedConfig();
+				configForm.setDirtyFromOtherForm(false);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if (event == Event.CHANGED_EVENT) {
+				// disable modification in other forms!
+				configForm.setDirtyFromOtherForm(true);
 			}
 		} else if (source == scoringController) {
 			if (event == Event.CANCELLED_EVENT) {

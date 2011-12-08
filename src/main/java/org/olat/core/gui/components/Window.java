@@ -49,6 +49,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.control.winmgr.MediaResourceMapper;
 import org.olat.core.gui.control.winmgr.WindowBackOfficeImpl;
 import org.olat.core.gui.exception.MsgFactory;
@@ -73,6 +74,7 @@ import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
 import org.olat.core.util.component.ComponentVisitor;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -437,6 +439,8 @@ public class Window extends Container {
 											Tracing.logDebug("Perf-Test: Window durationBeforeHandleDirties=" + durationBeforeHandleDirties, Window.class);
 										}
 										Command co = handleDirties();
+										//fxdiff FXOLAT-119: update business path
+										Command co2 = handleBusinessPath(ureq);
 										if (isDebugLog) {
 											long durationAfterHandleDirties = System.currentTimeMillis() - debug_start;
 											Tracing.logDebug("Perf-Test: Window durationAfterHandleDirties=" + durationAfterHandleDirties, Window.class);
@@ -449,6 +453,9 @@ public class Window extends Container {
 										wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
 										if (co != null) { // see method handleDirties for the rare case of co == null even if there are dirty components;
 											wbackofficeImpl.sendCommandTo(co);
+										}
+										if (co2 != null) { // see method handleDirties for the rare case of co == null even if there are dirty components;
+											wbackofficeImpl.sendCommandTo(co2);
 										}
 									}
 								}
@@ -840,6 +847,19 @@ public class Window extends Container {
 		return attributes.remove(key);
 	}
 	
+	//fxdiff FXOLAT-119: update business path
+	public Command handleBusinessPath(UserRequest ureq) {
+		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
+		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
+			StringBuilder sb = new StringBuilder();
+			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(p.getBusinessPath());
+			String url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
+			sb.append("try { o_info.businessPath='").append(url).append("';");
+			sb.append("b_shareActiveSocialUrl(); } catch(e) { }");
+			return new JSCommand(sb.toString());
+		}
+		return null;
+	}
 
 	/**
 	 * to be called by Window.java or the AjaxController only!

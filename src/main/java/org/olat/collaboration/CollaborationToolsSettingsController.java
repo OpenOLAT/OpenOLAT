@@ -60,6 +60,7 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private ChoiceOfToolsForm cots;
 	private NewsFormController newsController;
 	private CalendarForm calendarForm;
+	private FolderForm folderForm;
 
 	boolean lastCalendarEnabledState;
 	private Controller quotaCtr;
@@ -107,13 +108,25 @@ public class CollaborationToolsSettingsController extends BasicController {
 			vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
 		} else {
 			lastCalendarEnabledState = false;
-			vc_collabtools.contextPut("folderToolEnabled", Boolean.FALSE);
+			vc_collabtools.contextPut("calendarToolEnabled", Boolean.FALSE);
 		}
 		
 		// update quota form: only show when enabled
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER) && ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
-			vc_collabtools.put("quota", quotaCtr.getInitialComponent());
+			//fxdiff VCRP-8: collaboration tools folder access control
+			if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+				vc_collabtools.put("quota", quotaCtr.getInitialComponent());
+			}
+			vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
+			if(folderForm != null) {
+				removeAsListenerAndDispose(folderForm);
+			}
+			Long lFolderAccess = collabTools.lookupFolderAccess();
+			int access = lFolderAccess == null ? CollaborationTools.FOLDER_ACCESS_ALL : lFolderAccess.intValue();
+			folderForm = new FolderForm(ureq, getWindowControl(), access);
+			listenTo(folderForm);
+			vc_collabtools.put("folderform", folderForm.getInitialComponent());
 		} else {
 			vc_collabtools.contextPut("folderToolEnabled", Boolean.FALSE);
 		}
@@ -191,6 +204,15 @@ public class CollaborationToolsSettingsController extends BasicController {
 			// update quota form: only show when enabled
 			if (collabTools.isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 				vc_collabtools.contextPut("folderToolEnabled", Boolean.TRUE);
+				//fxdiff VCRP-8: collaboration tools folder access control
+				if(folderForm != null) {
+					removeAsListenerAndDispose(folderForm);
+				}
+				Long lFolderAccess = collabTools.lookupFolderAccess();
+				int access = lFolderAccess == null ? CollaborationTools.FOLDER_ACCESS_ALL : lFolderAccess.intValue();
+				folderForm = new FolderForm(ureq, getWindowControl(), access);
+				listenTo(folderForm);
+				vc_collabtools.put("folderform", folderForm.getInitialComponent());
 				if (ureq.getUserSession().getRoles().isOLATAdmin()) {
 					vc_collabtools.put("quota", quotaCtr.getInitialComponent());
 				}
@@ -210,7 +232,10 @@ public class CollaborationToolsSettingsController extends BasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(
 					new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class)
 			);
-		} 	
+		//fxdiff VCRP-8: collaboration tools folder access control
+		} else if (source == folderForm) {
+			collabTools.saveFolderAccess(new Long(folderForm.getFolderAccess()));
+		}
 	}
 
 
@@ -282,6 +307,53 @@ class ChoiceOfToolsForm extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+}
+
+//fxdiff VCRP-8: collaboration tools folder access control
+class FolderForm extends FormBasicController {
+	
+	private SingleSelection folderAccessEl;
+	private int folderAccess;
+	
+	public FolderForm(UserRequest ureq, WindowControl wControl, int folderAccess) {
+		super(ureq, wControl);
+		this.folderAccess = folderAccess;
+		initForm(ureq);
+	}
+
+	public int getFolderAccess() {
+		if (folderAccessEl.isOneSelected() && folderAccessEl.getSelectedKey().equals("all")){
+			return CollaborationTools.FOLDER_ACCESS_ALL;
+		} else {
+			return CollaborationTools.FOLDER_ACCESS_OWNERS;
+		}
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("folder.access.title");
+		
+		String[] keys = new String[] { "owner", "all" };
+		String values[] = new String[] {
+				translate("folder.access.owners"),
+				translate("folder.access.all")
+		};
+		folderAccessEl = uifactory.addRadiosVertical("folder.access", "folder.access", formLayout, keys, values);
+		String selectedKey = (folderAccess == CollaborationTools.FOLDER_ACCESS_ALL) ? "all" : "owner";
+		folderAccessEl.select(selectedKey, true);
+		
+		uifactory.addFormSubmitButton("submit", formLayout);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }
 

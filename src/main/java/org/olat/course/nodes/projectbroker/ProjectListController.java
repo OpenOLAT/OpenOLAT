@@ -214,12 +214,13 @@ public class ProjectListController extends BasicController implements GenericEve
 			ProjectBrokerManagerFactory.getProjectGroupManager().sendGroupChangeEvent(project, courseId, ureq.getIdentity());
 			getLogger().debug("Created a new project=" + project);
 			projectController = new ProjectController(ureq, this.getWindowControl(), userCourseEnv, nodeEvaluation, project, true, moduleConfig);
-			projectController.addControllerListener(this);
+			listenTo(projectController);
 			mainPanel.pushContent(projectController.getInitialComponent());
 		} else if (event.getCommand().equals(OPEN_IDENTITY_CMD)){
 			Link link = (Link) source;
 			if (calloutCtrl!=null) {
 				calloutCtrl.deactivate();
+				removeAsListenerAndDispose(calloutCtrl);
 				calloutCtrl = null;
 			}
 			openUserInPopup(ureq, (Identity) link.getUserObject());
@@ -340,7 +341,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			int row = tableEvent.getRowId();
 			String targetDomID = ProjectManagerColumnRenderer.PROJECTMANAGER_COLUMN_ROW_IDENT + row;
 			String title = translate("projectlist.callout.title", projectAt.getTitle());
-			
+			removeAsListenerAndDispose(calloutCtrl);
 			calloutCtrl = new CloseableCalloutWindowController(urequest, getWindowControl(), identityVC, targetDomID, title, true, null);
 			calloutCtrl.activate();
 			listenTo(calloutCtrl);	

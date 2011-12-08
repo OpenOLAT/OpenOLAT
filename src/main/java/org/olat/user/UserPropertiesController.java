@@ -34,10 +34,11 @@ import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.properties.Property;
@@ -80,7 +81,8 @@ public class UserPropertiesController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.prop.moddat", 6, null, ureq.getLocale()));
 		// property selection / id only for admins
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("choose", "table.header.action", translate("action.choose")));
+			//fxdiff FXOLAT-149
+			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.action", translate("delete")));
 		}
 		tdm = new PropTableDataModel(l);
 		tableCtr.setTableDataModel(tdm);
@@ -108,8 +110,22 @@ public class UserPropertiesController extends BasicController {
 					// Tell parentController that a subject has been found
 					fireEvent(ureq, new PropFoundEvent(foundProp));
 				}
+				//fxdiff FXOLAT-149
+				else if (actionid.equals("delete")) {
+					int rowid = te.getRowId();
+					foundProp = (Property) tdm.getObject(rowid);
+					activateYesNoDialog(ureq, "really", "do you really", null);
+				}
 			}
 		}
+		//fxdiff FXOLAT-149
+		else if (DialogBoxUIFactory.isYesEvent(event) && foundProp != null) {
+			PropertyManager.getInstance().deleteProperty(foundProp);
+			tdm.getObjects().remove(foundProp);
+			tableCtr.modelChanged();
+			foundProp = null;
+		}
+
 	}
 
 	/**

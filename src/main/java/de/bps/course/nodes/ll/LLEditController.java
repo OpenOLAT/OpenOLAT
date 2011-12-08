@@ -25,6 +25,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -71,7 +72,7 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 				userCourseEnv);
 		this.listenTo(accessibilityCondContr);
 
-		llFormContr = new LLEditForm(ureq, getWindowControl(), this.moduleConfiguration);
+		llFormContr = new LLEditForm(ureq, getWindowControl(), this.moduleConfiguration, course.getCourseEnvironment());
 		llFormContr.addControllerListener(this);
 		editVc.put("llEditForm", llFormContr.getInitialComponent());
 
@@ -146,6 +147,10 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 		List<LLModel> linkList = (List<LLModel>) moduleConfig.get(LLCourseNode.CONF_LINKLIST);
 		if (linkList != null) {
 			for (LLModel link : linkList) {
+				if (link.isIntern() && StringHelper.containsNonWhitespace(link.getTarget()) && 
+						StringHelper.containsNonWhitespace(link.getDescription())) {
+					return true;
+				}
 				if (link.getTarget().isEmpty() || link.getDescription().isEmpty()) { return false; }
 				URL target = null;
 				try {

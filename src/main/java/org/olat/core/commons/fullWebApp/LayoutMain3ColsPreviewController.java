@@ -20,17 +20,20 @@
  */
 package org.olat.core.commons.fullWebApp;
 
+import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 
 /**
  * <h3>Description:</h3>
@@ -49,7 +52,10 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	private LayoutMain3ColsController layoutCtr;
 	private VelocityContainer previewVC;
 	private Link backLink;
-
+	private boolean fullScreen = false;
+	
+	private BaseChiefController thebaseChief;
+	
 	/**
 	 * Constructor for creating a 3 col based menu on the main area
 	 * @param ureq
@@ -88,7 +94,7 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 		if (source == backLink){
 			// remove the preview workflow from the stack and notify listeners
 			// about the back click
-			getWindowControl().pop();
+			deactivate();//fxdiff FXOLAT-116: SCORM improvements
 			fireEvent(ureq, Event.BACK_EVENT);
 		}
 	}
@@ -103,7 +109,20 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	 * Activate this preview workflow
 	 */
 	public void activate() {
-		getWindowControl().pushToMainArea(previewVC);
+		if(fullScreen)
+			getWindowControl().pushAsModalDialog(previewVC);
+		else
+			getWindowControl().pushToMainArea(previewVC);
+	}
+	
+	//fxdiff FXOLAT-116: SCORM improvements
+	public void setAsFullscreen(UserRequest ureq) {
+		ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
+		if (cc instanceof BaseChiefController) {
+			thebaseChief = (BaseChiefController) cc;
+			thebaseChief.addBodyCssClass("b_full_screen");
+		}
+		fullScreen = true;
 	}
 	
 	/**
@@ -111,12 +130,17 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	 */
 	public void deactivate() {
 		getWindowControl().pop();
+		// fxdiff FXOLAT-116: SCORM improvements
+		if (fullScreen) {
+			thebaseChief.removeBodyCssClass("b_full_screen");
+		}
 	}
 
 
 	@Override
 	protected void doDispose() {
 		// child controller autodisposed
+		thebaseChief = null;
 	}
 
 	

@@ -26,6 +26,7 @@ package org.olat.core.commons.services.search;
  * @author Christian Guretzki
  */
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -33,6 +34,7 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -61,12 +63,14 @@ public class SearchModule extends AbstractOLATModule {
 	private static final String CONF_RESTART_DAY_OF_WEEK = "restartDayOfWeek";
 	private static final String CONF_PPT_FILE_ENABLED = "pptFileEnabled";
 	private static final String CONF_EXCEL_FILE_ENABLED = "excelFileEnabled";
+	private static final String CONF_PDF_FILE_ENABLED = "pdfFileEnabled";
 	private static final String CONF_PDF_TEXT_BUFFERING = "pdfTextBuffering";
 	private static final String CONF_SPELL_CHECK_ENABLED = "spellCheckEnabled";
 	private static final String CONF_TEMP_PDF_TEXT_BUF_PATH = "pdfTextBufferPath";
 	private static final String CONF_MAX_FILE_SIZE = "maxFileSize";
 	private static final String CONF_RAM_BUFFER_SIZE_MB = "ramBufferSizeMb";
 	private static final String CONF_USE_COMPOUND_FILE = "useCompoundFile";
+	private static final String CONF_FILE_BLACK_LIST = "fileBlackList";
 	
 	// Default values
 	private static final int    DEFAULT_RESTART_INTERVAL = 0;
@@ -91,6 +95,7 @@ public class SearchModule extends AbstractOLATModule {
 	private int maxHits;
 	private int maxResults;
 	private List<String> fileBlackList;
+	private List<String> customFileBlackList;
 
 	private int numberIndexWriter;
 	private int folderPoolSize;
@@ -101,6 +106,7 @@ public class SearchModule extends AbstractOLATModule {
 	private int restartDayOfWeek;
 	private boolean pptFileEnabled;
 	private boolean excelFileEnabled;
+	private boolean pdfFileEnabled;
 	private boolean pdfTextBuffering;
 	private boolean isSpellCheckEnabled;
 	private String fullTempPdfTextBufferPath;
@@ -145,7 +151,8 @@ public class SearchModule extends AbstractOLATModule {
 	/**
 	 * Read config-parameter from configuration and store this locally.
 	 */
-	public void init() {
+	@Override
+	public void initDefaultProperties() {
 		log.debug("init start...");
 		String indexPath = getStringConfigParameter(CONF_INDEX_PATH, "/tmp", false);
 		log.debug("init indexPath=" + indexPath);
@@ -171,11 +178,64 @@ public class SearchModule extends AbstractOLATModule {
     restartDayOfWeek = getIntConfigParameter(CONF_RESTART_DAY_OF_WEEK, DEFAULT_RESTART_DAY_OF_WEEK);
     pptFileEnabled = getBooleanConfigParameter(CONF_PPT_FILE_ENABLED, true);	
     excelFileEnabled = getBooleanConfigParameter(CONF_EXCEL_FILE_ENABLED, true);
+    pdfFileEnabled = getBooleanConfigParameter(CONF_PDF_FILE_ENABLED, true);
     pdfTextBuffering = getBooleanConfigParameter(CONF_PDF_TEXT_BUFFERING, true);
     isSpellCheckEnabled = getBooleanConfigParameter(CONF_SPELL_CHECK_ENABLED, true);
     maxFileSize = Integer.parseInt(getStringConfigParameter(CONF_MAX_FILE_SIZE, "0", false));
     ramBufferSizeMB = Double.parseDouble(getStringConfigParameter(CONF_RAM_BUFFER_SIZE_MB, DEFAULT_RAM_BUFFER_SIZE_MB, false));
     useCompoundFile = getBooleanConfigParameter(CONF_USE_COMPOUND_FILE, false);
+	}
+	
+	@Override
+	public void init() {
+		//black list
+		String blackList = getStringPropertyValue(CONF_FILE_BLACK_LIST, true);
+		if(StringHelper.containsNonWhitespace(blackList)) {
+			String[] files = blackList.split(",");
+			if(customFileBlackList == null) {
+				customFileBlackList = new ArrayList<String>();
+			} else {
+				customFileBlackList.clear();
+			}
+			for(String file:files) {
+				if(!customFileBlackList.contains(file) && !fileBlackList.contains(file)) {
+					customFileBlackList.add(file);
+				}
+			}
+		}
+		
+		//ppt enabled
+		String pptEnabled = getStringPropertyValue(CONF_PPT_FILE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(pptEnabled)) {
+			pptFileEnabled = "true".equals(pptEnabled);
+		}
+		
+		//excel enabled
+		String excelEnabled = getStringPropertyValue(CONF_EXCEL_FILE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(excelEnabled)) {
+			excelFileEnabled = "true".equals(excelEnabled);
+		}
+		
+		//pdf enabled
+		String pdfEnabled = getStringPropertyValue(CONF_PDF_FILE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(pdfEnabled)) {
+			pdfFileEnabled = "true".equals(pdfEnabled);
+		}
+		
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		init();
+	}
+	
+	public void setCustomFileBlackList(List<String> files) {
+		StringBuilder sb = new StringBuilder();
+		for(String file:files) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(file);
+		}
+		setStringProperty(CONF_FILE_BLACK_LIST, sb.toString(), true);
 	}
 
 	/**
@@ -239,7 +299,18 @@ public class SearchModule extends AbstractOLATModule {
 	 * @return Space seperated list of non indexed files.
 	 */
 	public List<String> getFileBlackList() {
-		return fileBlackList;
+		List<String> list = new ArrayList<String>();
+		if(fileBlackList != null) {
+			list.addAll(fileBlackList);
+		}
+		if(customFileBlackList != null) {
+			list.addAll(customFileBlackList);
+		}
+		return list;
+	}
+	
+	public List<String> getCustomFileBlackList() {
+		return customFileBlackList;
 	}
 
 	/**
@@ -297,12 +368,31 @@ public class SearchModule extends AbstractOLATModule {
 	public boolean getPptFileEnabled() {
 		return pptFileEnabled;
 	}
-
+	
+	public void setPptFileEnabled(boolean enabled) {
+		String value = Boolean.toString(enabled);
+		this.setStringProperty(CONF_PPT_FILE_ENABLED, value, true);
+	}
+	
 	/**
 	 * @return TRUE: index Excel-files.
 	 */
 	public boolean getExcelFileEnabled() {
 		return excelFileEnabled;
+	}
+	
+	public void setExcelFileEnabled(boolean enabled) {
+		String value = Boolean.toString(enabled);
+		this.setStringProperty(CONF_EXCEL_FILE_ENABLED, value, true);
+	}
+	
+	public boolean getPdfFileEnabled() {
+		return pdfFileEnabled;
+	}
+	
+	public void setPdfFileEnabled(boolean enabled) {
+		String value = Boolean.toString(enabled);
+		this.setStringProperty(CONF_PDF_FILE_ENABLED, value, true);
 	}
 
 	/**
@@ -333,18 +423,6 @@ public class SearchModule extends AbstractOLATModule {
 	
 	public List<Long> getRepositoryBlackList() {
 		return repositoryBlackList;
-	}
-	
-	@Override
-	protected void initDefaultProperties() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

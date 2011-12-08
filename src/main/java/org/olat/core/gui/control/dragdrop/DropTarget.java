@@ -30,5 +30,7 @@ package org.olat.core.gui.control.dragdrop;
  * @author Felix
  */
 public interface DropTarget {
+	
+	public Object getTarget();
 
 }

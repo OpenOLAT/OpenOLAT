@@ -726,8 +726,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			// calculate the new businesscontext for the forum clicked
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLFOLDER);
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, bwControl);
-
-			collabToolCtr = collabTools.createFolderController(ureq, bwControl, sc);
+			//fxdiff VCRP-8: collaboration tools folder access control
+			collabToolCtr = collabTools.createFolderController(ureq, bwControl, businessGroup, isAdmin, sc);
 			listenTo(collabToolCtr);
 			mainPanel.setContent(collabToolCtr.getInitialComponent());
 		} else if (ACTIVITY_MENUSELECT_MEMBERSLIST.equals(cmd)) {

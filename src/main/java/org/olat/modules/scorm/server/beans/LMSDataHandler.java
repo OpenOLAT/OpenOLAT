@@ -174,6 +174,12 @@ public class LMSDataHandler {
 	 * @return LMSResultsBean
 	 */
 	public LMSResultsBean getCMIData(String itemIndex) {
+		// <OLATCE-289>
+		//ignore completed state -> ability to launch the scorm depends on the number of attempts
+		if (itemIndex.equals(Integer.toString(SequenceManager.COURSE_COMPLETED_VALUE))) {
+			itemIndex = "0";
+		}
+		// </OLATCE-289>
 		// HAS THIS COURSE BEEN COMPLETED
 		if (itemIndex.equals(Integer.toString(SequenceManager.COURSE_COMPLETED_VALUE))) {
 			isCourseCompleted = true;
@@ -183,16 +189,18 @@ public class LMSDataHandler {
 		else {
 			itemId = findItemFromIndex(Integer.parseInt(itemIndex));
 			// has this particular item been completed?
-			if (hasItemBeenCompleted(itemId)) {
-				isItemCompleted = true;
-			}
+			// <OLATCE-289>
+			//if (hasItemBeenCompleted(itemId)) {
+			//	isItemCompleted = true;
+			//}
 			// does this item have prerequisites?
-			else if (!checkItemsPrerequisites(itemId)) {
-				hasPrerequisites = true;
-				generatePrereqBean();
-			}
+			//else if (!checkItemsPrerequisites(itemId)) {
+			//	hasPrerequisites = true;
+			//	generatePrereqBean();
+			//}
 			// WE CAN LAUNCH THIS ITEM
-			else {
+			//else {
+			// </OLATCE-289>
 				// if this is a sco
 				if (isItemSco(itemId)) {
 					// load this scos model
@@ -209,7 +217,7 @@ public class LMSDataHandler {
 					isSco = false;
 					isUpdating = false;
 				}
-			}
+			//}
 		}
 		return new LMSResultsBean(itemIndex, Boolean.toString(isSco), cmiStrings, Boolean.toString(isUpdating), getPreReqStrings(), Boolean
 				.toString(isItemCompleted), Boolean.toString(isCourseCompleted), Boolean.toString(hasPrerequisites));

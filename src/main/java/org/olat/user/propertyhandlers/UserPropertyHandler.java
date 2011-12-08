@@ -66,6 +66,13 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 */
 	public String getGroup();
 
+	
+	/**
+	 * 
+	 * @param groupName The group identifyer string of this UserPropertyHandler
+	 */
+	public void setGroup(String groupName);
+	
 	/**
 	 * @param user the user for which we want to get the value
 	 * @param locale the current users locale or NULL if default locale should be

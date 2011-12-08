@@ -76,7 +76,7 @@ public class SharedFolderEditorController extends DefaultController {
 		
 		re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		sharedFolder = SharedFolderManager.getInstance().getNamedSharedFolder(re);
-		folderRunController = new FolderRunController(sharedFolder, true, true, ureq, getWindowControl());
+		folderRunController = new FolderRunController(sharedFolder, true, true, false, ureq, getWindowControl());
 		vcEdit.put("folder", folderRunController.getInitialComponent());
 		
 		setInitialComponent(vcEdit);

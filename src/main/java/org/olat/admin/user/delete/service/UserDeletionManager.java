@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -59,10 +60,14 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKeyImpl;
 import org.olat.repository.delete.service.DeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+
+import com.thoughtworks.xstream.XStream;
 
 
 /**
@@ -303,6 +308,14 @@ public class UserDeletionManager extends BasicManager {
 			secMgr.removeIdentityFromSecurityGroup(identity, secGroup);
 			logInfo("Removing user=" + identity + " from security group="  + secGroup.toString());
 		}
+		
+		// fxdiff: FXOLAT-44 delete emails still in change-workflow
+		RegistrationManager rm = RegistrationManager.getInstance();
+		String key = identity.getUser().getProperty("emchangeKey", null);
+		TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
+		if (tempKey != null) {
+			rm.deleteTemporaryKey(tempKey);
+		}		
 		
 		// can be used, if there is once the possibility to delete identities without db-constraints...
 		//if neither email nor login should be kept, REALLY DELETE Identity

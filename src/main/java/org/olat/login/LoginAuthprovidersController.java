@@ -70,7 +70,7 @@ import org.olat.login.auth.AuthenticationProvider;
  * Initial Date:  02.09.2007 <br>
  * @author patrickb
  */
-public class LoginAuthprovidersController extends MainLayoutBasicController {
+public class LoginAuthprovidersController extends MainLayoutBasicController implements Activateable2 {
 
 
 	private static final String ACTION_LOGIN = "login";
@@ -84,6 +84,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController {
 	private VelocityContainer content;
 	private Controller authController;
 	private Panel dmzPanel;
+	private GenericTreeNode checkNode;
+	private GenericTreeNode accessibilityNode;
+	private GenericTreeNode aboutNode;
 	private MenuTree olatMenuTree;
 	private LayoutMain3ColsController columnLayoutCtr;
 	
@@ -121,8 +124,26 @@ public class LoginAuthprovidersController extends MainLayoutBasicController {
 		listenTo(columnLayoutCtr); // for later autodisposing
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
-	
-	
+
+	@Override
+	//fxdiff FXOLAT-113: business path in DMZ
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("browsercheck".equals(type)) {
+			showBrowserCheckPage(ureq);
+			olatMenuTree.setSelectedNodeId(checkNode.getIdent());
+		} else if ("accessibility".equals(type)) {
+			showAccessibilityPage();
+			olatMenuTree.setSelectedNodeId(accessibilityNode.getIdent());
+		} else if ("about".equals(type)) {
+			showAboutPage(ureq);
+			olatMenuTree.setSelectedNodeId(aboutNode.getIdent());
+		} else if(authController instanceof Activateable2) {
+			((Activateable2)authController).activate(ureq, entries, state);
+		}
+	}
 
 	private VelocityContainer initLoginContent(UserRequest ureq, String provider) {
 		// in every case we build the container for pages to fill the panel
@@ -206,39 +227,13 @@ public class LoginAuthprovidersController extends MainLayoutBasicController {
 						getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 					}
 				} else if (cmd.equals(ACTION_BROWSERCHECK)) {
-					VelocityContainer browserCheck = createVelocityContainer("browsercheck");
-					browserCheck.contextPut("isBrowserAjaxReady", Boolean.valueOf(!Settings.isBrowserAjaxBlacklisted(ureq)));
-					dmzPanel.pushContent(browserCheck);
+					showBrowserCheckPage(ureq);//fxdiff FXOLAT-113: business path in DMZ
 				} else if (cmd.equals(ACTION_COOKIES)) {
 					dmzPanel.pushContent(createVelocityContainer("cookies"));
 				} else if (cmd.equals(ACTION_ABOUT)) {
-					VelocityContainer aboutVC = createVelocityContainer("about");
-					// Add version info and licenses
-					aboutVC.contextPut("version", Settings.getFullVersionInfo());
-					aboutVC.contextPut("license", WebappHelper.getOlatLicense());
-					// Add translator and languages info
-					I18nManager i18nMgr = I18nManager.getInstance();
-					Set<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
-					Map<String, String> langNames = new HashMap<String, String>();
-					Map<String, String> langTranslators = new HashMap<String, String>();
-					String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);
-					String[] names = new String[enabledKeys.length];
-					for (int i = 0; i < enabledKeys.length; i++) {
-						String key = enabledKeys[i];
-						String langName = i18nMgr.getLanguageInEnglish(key, I18nModule.isOverlayEnabled());
-						langNames.put(key, langName);
-						names[i] = langName;
-						String author = i18nMgr.getLanguageAuthor(key);
-						langTranslators.put(key, author);
-					}
-					ArrayHelper.sort(enabledKeys, names, true, true, true);
-					aboutVC.contextPut("enabledKeys", enabledKeys);
-					aboutVC.contextPut("langNames", langNames);
-					aboutVC.contextPut("langTranslators", langTranslators);
-					dmzPanel.pushContent(aboutVC);
+					showAboutPage(ureq);//fxdiff FXOLAT-113: business path in DMZ
 				} else if (cmd.equals(ACTION_ACCESSIBILITY)) {
-					VelocityContainer accessibilityVC = createVelocityContainer("accessibility");
-					dmzPanel.pushContent(accessibilityVC);
+					showAccessibilityPage();//fxdiff FXOLAT-113: business path in DMZ
 				}
 			}
 		} else if (event.getCommand().equals(ACTION_LOGIN)) { 
@@ -247,6 +242,45 @@ public class LoginAuthprovidersController extends MainLayoutBasicController {
 			content = initLoginContent(ureq, ureq.getParameter(ATTR_LOGIN_PROVIDER));
 			dmzPanel.pushContent(content);
 		}
+	}
+	//fxdiff FXOLAT-113: business path in DMZ
+	protected void showAccessibilityPage() {
+		VelocityContainer accessibilityVC = createVelocityContainer("accessibility");
+		dmzPanel.pushContent(accessibilityVC);
+	}
+	//fxdiff FXOLAT-113: business path in DMZ
+	protected void showBrowserCheckPage(UserRequest ureq) {
+		VelocityContainer browserCheck = createVelocityContainer("browsercheck");
+		browserCheck.contextPut("isBrowserAjaxReady", Boolean.valueOf(!Settings.isBrowserAjaxBlacklisted(ureq)));
+		dmzPanel.pushContent(browserCheck);
+	}
+	//fxdiff FXOLAT-113: business path in DMZ
+	protected void showAboutPage(UserRequest ureq) {
+	//fxdiff FXOLAT-139
+		VelocityContainer aboutVC = createVelocityContainer("aboutpro");
+		// Add version info and licenses
+		aboutVC.contextPut("version", Settings.getFullVersionInfo());
+		aboutVC.contextPut("license", WebappHelper.getOlatLicense());
+		// Add translator and languages info
+		I18nManager i18nMgr = I18nManager.getInstance();
+		Set<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
+		Map<String, String> langNames = new HashMap<String, String>();
+		Map<String, String> langTranslators = new HashMap<String, String>();
+		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);
+		String[] names = new String[enabledKeys.length];
+		for (int i = 0; i < enabledKeys.length; i++) {
+			String key = enabledKeys[i];
+			String langName = i18nMgr.getLanguageInEnglish(key, I18nModule.isOverlayEnabled());
+			langNames.put(key, langName);
+			names[i] = langName;
+			String author = i18nMgr.getLanguageAuthor(key);
+			langTranslators.put(key, author);
+		}
+		ArrayHelper.sort(enabledKeys, names, true, true, true);
+		aboutVC.contextPut("enabledKeys", enabledKeys);
+		aboutVC.contextPut("langNames", langNames);
+		aboutVC.contextPut("langTranslators", langTranslators);
+		dmzPanel.pushContent(aboutVC);
 	}
 
 	@Override
@@ -265,7 +299,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController {
 				//getWindowControl().setError(translate("login.notavailable", OLATContext.getSupportaddress()));
 				DispatcherAction.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {
-				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
+				// fxdiff: show useradmin-mail for pw-requests
+				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 			}
 		
 		}
@@ -297,19 +332,19 @@ public class LoginAuthprovidersController extends MainLayoutBasicController {
 			root.addChild(gtn);
 		}
 		
-		gtn = new GenericTreeNode();
+		gtn = checkNode = new GenericTreeNode();//fxdiff FXOLAT-113: business path in DMZ
 		gtn.setTitle(translate("menu.check"));
 		gtn.setUserObject(ACTION_BROWSERCHECK);
 		gtn.setAltText(translate("menu.check.alt"));
 		root.addChild(gtn);
 
-		gtn = new GenericTreeNode();
+		gtn = accessibilityNode = new GenericTreeNode();//fxdiff FXOLAT-113: business path in DMZ
 		gtn.setTitle(translate("menu.accessibility"));
 		gtn.setUserObject(ACTION_ACCESSIBILITY);
 		gtn.setAltText(translate("menu.accessibility.alt"));
 		root.addChild(gtn);
 
-		gtn = new GenericTreeNode();
+		gtn = aboutNode = new GenericTreeNode();//fxdiff FXOLAT-113: business path in DMZ
 		gtn.setTitle(translate("menu.about"));
 		gtn.setUserObject(ACTION_ABOUT);
 		gtn.setAltText(translate("menu.about.alt"));

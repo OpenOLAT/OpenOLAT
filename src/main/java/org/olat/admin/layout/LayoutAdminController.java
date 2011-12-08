@@ -69,7 +69,14 @@ public class LayoutAdminController extends FormBasicController {
 		String[] keys = getThemes();
 		String enabledTheme = Settings.getGuiThemeIdentifyer();
 		themeSelection = uifactory.addDropdownSingleselect("themeSelection", "form.theme", themeAdminFormContainer, keys, keys, null);
-		themeSelection.select(enabledTheme, true);
+		// fxdiff
+		// select current theme if available but don't break on unavailable theme
+		for (String theme : keys) {
+			if (theme.equals(enabledTheme)) {
+				themeSelection.select(enabledTheme, true);				
+				break;
+			}
+		}
 		themeSelection.addActionListener(listener, FormEvent.ONCHANGE);	
 	}
 

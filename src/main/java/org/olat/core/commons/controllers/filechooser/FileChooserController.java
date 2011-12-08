@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.ajax.tree.TreeNodeClickedEvent;
 import org.olat.core.gui.control.generic.folder.FolderTreeModel;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
@@ -160,7 +161,8 @@ public class FileChooserController extends BasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == selectLink) {
 			if (selectedItem != null) {
-				if (onlyLeafsSelectable && selectedItem instanceof VFSContainer) {
+				//fxdiff FXOLAT-125: virtual file system for CP
+				if (onlyLeafsSelectable && !(selectedItem instanceof VFSLeaf)) {
 					showWarning("filechooser.tree.error.only.leafs", selectedItem.getName());
 				} else {
 					fireEvent(ureq, new FileChoosenEvent(selectedItem));					

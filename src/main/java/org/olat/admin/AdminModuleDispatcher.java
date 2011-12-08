@@ -24,6 +24,8 @@ package org.olat.admin;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.admin.sysinfo.InfoMessageManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.media.ServletUtil;
@@ -46,7 +48,8 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private final static  String PARAMETER_NBR_SESSIONS = "nbrsessions";
 	private final static  String PARAMETER_SESSIONTIMEOUT ="sec";
 	
-	private final static  String CMD_SET_MAINTENANCE_MESSAGE    = "setmaintenancemessage"; 
+	private final static  String CMD_SET_MAINTENANCE_MESSAGE    = "setmaintenancemessage";
+	private final static  String CMD_SET_INFO_MESSAGE    				= "setinfomessage"; 
 	private final static  String CMD_SET_LOGIN_BLOCKED          = "setloginblocked";
 	private final static  String CMD_SET_LOGIN_NOT_BLOCKED      = "setloginnotblocked";
 	private final static  String CMD_SET_MAX_SESSIONS           = "setmaxsessions";
@@ -58,10 +61,10 @@ public class AdminModuleDispatcher implements Dispatcher {
 	/** 
 	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
-	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
+	public void execute(HttpServletRequest request, HttpServletResponse response, @SuppressWarnings("unused") String uriPrefix) {
 		String cmd = request.getParameter(PARAMETER_CMD);
-		if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE)) {
-			handleSetMaintenanceMessage(request, response);
+		if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE) || cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)) {
+			handleSetMaintenanceOrInfoMessage(request, response, cmd);
 		} else {
 			if (AdminModule.checkSessionAdminToken(request, response)) {
 				handleSessionsCommand(request, response, cmd);
@@ -157,11 +160,17 @@ public class AdminModuleDispatcher implements Dispatcher {
 	 * @param request
 	 * @param response
 	 */
-	private void handleSetMaintenanceMessage(HttpServletRequest request, HttpServletResponse response) {
+	private void handleSetMaintenanceOrInfoMessage(HttpServletRequest request, HttpServletResponse response, String cmd) {
 		if (AdminModule.checkMaintenanceMessageToken(request, response)) {
 			String message = request.getParameter(PARAMETER_MSG);
-			AdminModule.setMaintenanceMessage(message);
-			ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
+			if (cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)){
+				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
+				mrg.setInfoMessage(message);
+				ServletUtil.serveStringResource(request, response, "Ok, new infoMessage is::" + message);
+			} else if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE)){
+				AdminModule.setMaintenanceMessage(message);
+				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
+			}
 		} else {
 			DispatcherAction.sendForbidden(request.getPathInfo(), response);
 		}

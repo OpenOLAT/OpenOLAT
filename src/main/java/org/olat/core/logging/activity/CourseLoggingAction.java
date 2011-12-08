@@ -83,12 +83,14 @@ public class CourseLoggingAction extends BaseLoggingAction {
 	
 	public static final ILoggingAction COURSE_ENTERING = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.retrieve, ActionVerb.launch, ActionObject.course).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(StringResourceableType.targetIdentity));
 	
 	public static final ILoggingAction COURSE_LEAVING = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.exit, ActionVerb.exit, ActionObject.course).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course).
-					or().addMandatory(OlatResourceableType.course, OlatResourceableType.genRepoEntry).addOptional(OlatResourceableType.businessGroup));
+					or().addMandatory(OlatResourceableType.course, OlatResourceableType.genRepoEntry).addOptional(OlatResourceableType.businessGroup).
+					or().addMandatory(OlatResourceableType.genRepoEntry, StringResourceableType.targetIdentity).addOptional(OlatResourceableType.businessGroup).addOptional(OlatResourceableType.sharedFolder).addOptional(OlatResourceableType.course).
+					or().addMandatory(OlatResourceableType.course, StringResourceableType.targetIdentity));
 	
 	public static final ILoggingAction COURSE_NAVIGATION_NODE_ACCESS = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.retrieve, ActionVerb.launch, ActionObject.node).setTypeList(

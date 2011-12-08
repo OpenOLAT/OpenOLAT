@@ -63,11 +63,12 @@ import org.olat.course.config.ui.CourseCalendarConfigController;
 import org.olat.course.config.ui.CourseChatSettingController;
 import org.olat.course.config.ui.CourseConfigGlossaryController;
 import org.olat.course.config.ui.CourseEfficencyStatementController;
-import org.olat.course.config.ui.CourseLayoutController;
 import org.olat.course.config.ui.CourseSharedFolderController;
+import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
 import org.olat.course.run.RunMainController;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.glossary.GlossaryRegisterSettingsController;
 import org.olat.repository.PropPupForm;
@@ -98,7 +99,7 @@ public class RepositoryEditPropertiesController extends BasicController {
 	private PropPupForm propPupForm;
 	private CourseChatSettingController ccc;
 	private CourseSharedFolderController csfC;
-	private CourseLayoutController clayoutC;
+	private CourseLayoutGeneratorController clayoutC;
 	private CourseEfficencyStatementController ceffC;
 	private CourseCalendarConfigController calCfgCtr;
 	private CourseConfigGlossaryController cglosCtr;
@@ -200,10 +201,8 @@ public class RepositoryEditPropertiesController extends BasicController {
 				  // push on controller stack and register <this> as controllerlistener
 				  tabbedPane.addTab(translate("tab.chat"), ccc.getInitialComponent());
 			  }
-			  VFSContainer namedContainerImpl = new NamedContainerImpl(	translate("coursefolder", course.getCourseTitle()),
-						course.getCourseFolderContainer());
-			  clayoutC = new CourseLayoutController(ureq, getWindowControl(), changedCourseConfig, namedContainerImpl);
-			  this.listenTo(clayoutC);
+			  clayoutC = new CourseLayoutGeneratorController(ureq, getWindowControl(), changedCourseConfig, course.getCourseEnvironment());
+			  listenTo(clayoutC);
 			  tabbedPane.addTab(translate("tab.layout"), clayoutC.getInitialComponent());
 
 			  csfC = new CourseSharedFolderController(ureq, getWindowControl(), changedCourseConfig);
@@ -220,11 +219,15 @@ public class RepositoryEditPropertiesController extends BasicController {
 
 			  cglosCtr = new CourseConfigGlossaryController(ureq, getWindowControl(), changedCourseConfig, course.getResourceableId());
 			  this.listenTo(cglosCtr);
-			  tabbedPane.addTab(translate("tab.glossary"), cglosCtr.getInitialComponent());			  
+			  tabbedPane.addTab(translate("tab.glossary"), cglosCtr.getInitialComponent());		
 			}     
 		} else if (repositoryEntry.getOlatResource().getResourceableTypeName().equals(GlossaryResource.TYPE_NAME)){
 			GlossaryRegisterSettingsController glossRegisterSetCtr = new GlossaryRegisterSettingsController(ureq, getWindowControl(), repositoryEntry.getOlatResource());
 			tabbedPane.addTab(translate("tab.glossary.register"), glossRegisterSetCtr.getInitialComponent());
+			
+			GlossaryEditSettingsController glossEditCtr = new GlossaryEditSettingsController(ureq, getWindowControl(), repositoryEntry.getOlatResource());
+			tabbedPane.addTab(translate("tab.glossary.edit"), glossEditCtr.getInitialComponent());
+		
 		}
 
 		bgVC.put("descTB", tabbedPane);

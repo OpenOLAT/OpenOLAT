@@ -4,6 +4,9 @@
     #end
 	#if ($security.mayOpenNewThread())
 		$r.render("dialog.upload.file")
+	    #if ($r.available("dialog.copy.file"))
+			$r.render("dialog.copy.file")
+		#end
 	#end
 </div>
 <hr />

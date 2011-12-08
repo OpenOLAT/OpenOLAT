@@ -94,7 +94,9 @@ class TextFlexiCellRenderer implements FlexiCellRenderer {
 			Formatter formatter = Formatter.getInstance(translator.getLocale());
 			target.append( formatter.formatDateAndTime((Date)cellValue) );
 		} else {
-			target.append( cellValue.toString() );
+			if (cellValue != null) {
+				target.append( cellValue.toString() );
+			}
 		}
 	}
 

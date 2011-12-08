@@ -221,7 +221,13 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 			Portlet portlet = portletsIter.next();
 			log.debug("initPortlets portletName=" + portlet.getName());
 			if (portlet.isEnabled()) {
-				PortletContainer pc = PortletFactory.getPortletContainerFor(portlet, getWindowControl(), ureq);			
+				PortletContainer pc = null;
+				//fxdiff make the system tolerant to portlet errors
+				try {
+					pc = PortletFactory.getPortletContainerFor(portlet, getWindowControl(), ureq);
+				} catch (Exception e) {
+					log.error("Cannot open a portlet: " + portlet, e);
+				}			
 				pc.addControllerListener(this);
 				// remember this portlet container
 				this.portletContainers.put(portlet.getName(), pc);

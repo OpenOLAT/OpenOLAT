@@ -38,5 +38,10 @@ public class BasePopupWindowControllerCreator implements PopupBrowserWindowContr
 		PopupBrowserWindowController pbwc = new SimplePopupWindowBaseController(lureq, lwControl, contentControllerCreator); 	
 		return pbwc;
 	}
-
+	
+	//fxdiff
+	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq, WindowControl lwControl,
+			ControllerCreator contentControllerCreator) {
+		return createNewPopupBrowserController(lureq, lwControl, contentControllerCreator);
+	}
 }

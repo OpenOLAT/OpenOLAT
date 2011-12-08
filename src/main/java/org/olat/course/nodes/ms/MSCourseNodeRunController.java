@@ -98,9 +98,9 @@ public class MSCourseNodeRunController extends DefaultController {
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, (infoTextUser == null ? "" : infoTextUser));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX));
+	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
+	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
+	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
 	private void exposeUserDataToVC(UserCourseEnvironment userCourseEnv, AssessableCourseNode courseNode) {

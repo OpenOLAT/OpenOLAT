@@ -63,8 +63,13 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 	 * @param location the relative file path (e.g. _static/my/file.css)
 	 */
 	public ClasspathMediaResource(Package pakkage, String location) {
-		this.location = location;		
-		this.url = getClass().getResource("/" + pakkage.getName().replace(".", "/") + "/" + location);
+		this.location = location;
+		//fxdiff FXOLAT-185:fix loading of files in jar
+		StringBuilder sb = new StringBuilder();
+		sb.append('/').append(pakkage.getName().replace(".", "/"));
+		if(!location.startsWith("/")) sb.append('/');
+		sb.append(location);
+		this.url = getClass().getResource(sb.toString());
 		init(pakkage.getName());
 	}
 	

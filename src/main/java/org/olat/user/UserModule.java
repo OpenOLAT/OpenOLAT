@@ -32,6 +32,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
@@ -43,6 +44,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.ldap.LDAPLoginManager;
 import org.olat.login.AfterLoginConfig;
 import org.olat.login.AfterLoginInterceptionManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -61,6 +63,7 @@ public class UserModule extends AbstractOLATModule {
 	private BaseSecurity securityManager;
 	private SecurityGroup adminGroup, authorGroup, olatuserGroup, anonymousGroup, groupmanagerGroup, usermanagerGroup;
 	private static boolean pwdchangeallowed;
+	private static boolean pwdchangeallowedLDAP;
 	private static String adminUserName;
 	private List<DefaultUser> defaultUsers;
 	private List<DefaultUser> testUsers;
@@ -120,6 +123,7 @@ public class UserModule extends AbstractOLATModule {
 	 */
 	public void init() {
 		pwdchangeallowed = getBooleanConfigParameter("passwordChangeAllowed", true);
+		pwdchangeallowedLDAP = getBooleanConfigParameter("passwordChangeAllowedLDAP", false);
 		
 		int count = 0;
 		for (String regexp : loginBlacklist) {
@@ -275,7 +279,39 @@ public class UserModule extends AbstractOLATModule {
 		return loginBlacklistChecked;
 	}
 
-	public static boolean isPwdchangeallowed() {
+	/**
+	 * checks whether the given identity is allowed to change it's own password.
+	 * default settings (olat.properties) : 
+	 * <ul>
+	 *  <li>LDAP-user are not allowed to change their pw</li>
+	 *  <li>other users are allowed to change their pw</li>
+	 * </ul>
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public static boolean isPwdchangeallowed(Identity id) {
+		
+		if(id == null) return isAnyPwdchangeallowed();
+		
+		// if this is set to false, noone can change their pw
+		if (!pwdchangeallowed)
+			return false;
+		LDAPLoginManager ldapLoginManager = (LDAPLoginManager) CoreSpringFactory.getBean("org.olat.ldap.LDAPLoginManager");
+		if (ldapLoginManager.isIdentityInLDAPSecGroup(id)) {
+			// it's an ldap-user
+			return pwdchangeallowedLDAP;
+		}
+		return pwdchangeallowed;
+	}
+	
+	/**
+	 * use this if you don't have an identity-object (DMZ), and just want to
+	 * check, if anyone could change his password
+	 * 
+	 * @return
+	 */
+	private static boolean isAnyPwdchangeallowed() {
 		return pwdchangeallowed;
 	}
 	

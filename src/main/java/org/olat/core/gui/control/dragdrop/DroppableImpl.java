@@ -33,7 +33,7 @@ import java.util.List;
  * @author Felix Jost
  */
 public class DroppableImpl implements Droppable {
-	private List accepted = new ArrayList();
+	private List<Draggable> accepted = new ArrayList<Draggable>();
 	
 	/**
 	 * @see org.olat.core.gui.control.dragdrop.Droppable#addAcceptedDraggable(org.olat.core.gui.control.dragdrop.Draggable)
@@ -46,7 +46,7 @@ public class DroppableImpl implements Droppable {
 	 * 
 	 * @return a list of accepted Dragables
 	 */
-	public List getAccepted() {
+	public List<Draggable> getAccepted() {
 		return accepted;
 	}
 	

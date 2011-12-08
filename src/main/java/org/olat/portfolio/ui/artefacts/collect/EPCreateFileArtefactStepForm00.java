@@ -20,6 +20,9 @@
  */
 package org.olat.portfolio.ui.artefacts.collect;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -90,6 +94,19 @@ public class EPCreateFileArtefactStepForm00 extends StepFormBasicController {
 			uifactory.addFormSubmitButton("stepform.submit", formLayout);
 		}
 		
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		if (fileupload.isUploadSuccess()){
+			String type = fileupload.getUploadMimeType();
+			String fileName = fileupload.getUploadFileName(); 
+			if (StringHelper.containsNonWhitespace(type) && StringHelper.containsNonWhitespace(fileName) && fileName.contains(".")) {
+				return true;
+			}
+			fileupload.setErrorKey("unsupported.filetype", null);
+		}
+		return false;
 	}
 
 	/**

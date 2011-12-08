@@ -36,11 +36,17 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
+import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -75,7 +81,24 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer((BCCourseNode) ne.getCourseNode(), courseEnv);
 		VFSSecurityCallback scallback = new FolderNodeCallback(namedContainer.getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 		namedContainer.setLocalSecurityCallback(scallback);
-		frc = new FolderRunController(namedContainer, false, true, ureq, getWindowControl());
+	
+		// fxdiff VCRP-12: copy files from course folder
+		// Allow copying of files from course folder if allowed to write and user
+		// has course editor rights (course owner and users in a right group with
+		// the author right)
+		VFSContainer courseContainer = null;
+		if(scallback.canWrite() && scallback.canCopy()) {
+			Identity identity = ureq.getIdentity();
+			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+			RepositoryManager rm = RepositoryManager.getInstance();
+			RepositoryEntry entry = rm.lookupRepositoryEntry(course, true);
+			if (isOlatAdmin || rm.isOwnerOfRepositoryEntry(identity, entry)
+					|| courseEnv.getCourseGroupManager().hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)) {
+				// use course folder as copy source
+				courseContainer = courseEnv.getCourseFolderContainer();
+			}
+		}
+		frc = new FolderRunController(namedContainer, false, true, true, ureq, getWindowControl(), null, null, courseContainer);
 		setInitialComponent(frc.getInitialComponent());
 	}
 

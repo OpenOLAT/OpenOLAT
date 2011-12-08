@@ -32,8 +32,12 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.extensions.action.GenericActionExtension;
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.event.FrameworkStartedEvent;
+import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -65,9 +69,12 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 	private VFSContainer portfolioRoot;
 	private List<String> availableMapStyles = new ArrayList<String>();
 	private boolean offerPublicMapList;
+	private boolean isReflexionStepEnabled;
+	private boolean isCopyrightStepEnabled;
 	
 	public PortfolioModule(){
-		BusinessGroupManagerImpl.getInstance().registerDeletableGroupDataListener(this);		
+		BusinessGroupManagerImpl.getInstance().registerDeletableGroupDataListener(this);
+		FrameworkStartupEventChannel.registerForStartupEvent(this);
 	}
 	
 	@Override
@@ -98,7 +105,33 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			setOfferPublicMapList("true".equals(offerPublicSetting));
 		}
 		
+		boolean stepRef = getBooleanPropertyValue("wizard.step.reflexion");
+		setReflexionStepEnabled(stepRef);
+		boolean stepCopy = getBooleanPropertyValue("wizard.step.copyright");
+		setCopyrightStepEnabled(stepCopy);	
+		
 		logInfo("ePortfolio is enabled: " + Boolean.toString(enabled));
+	}
+	
+	private void enableExtensions(boolean enabled){
+		try {
+			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep")).setEnabled(enabled);
+			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.pool")).setEnabled(enabled);
+			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.maps")).setEnabled(enabled);
+			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.structuredmaps")).setEnabled(enabled);	
+			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.sharedmaps")).setEnabled(enabled);
+		} catch (Exception e) {
+			// do nothing when extension don't exist.
+		}
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof FrameworkStartedEvent) {
+			enableExtensions(isEnabled());
+		} else {
+			super.event(event);
+		}
 	}
 
 	@Override
@@ -117,6 +150,11 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 				availableMapStyles.add(style);
 			}
 		}
+		
+		boolean stepRef = getBooleanConfigParameter("wizard.step.reflexion", true);
+		setReflexionStepEnabled(stepRef);
+		boolean stepCopy = getBooleanConfigParameter("wizard.step.copyright", true);
+		setCopyrightStepEnabled(stepCopy);
 		
 		setOfferPublicMapList(getBooleanConfigParameter("portfolio.offer.public.map.list", true));
 	}
@@ -139,6 +177,8 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 	public void setEnabled(boolean enabled) {
 		if(this.enabled != enabled) {
 			setStringProperty("portfolio.enabled", Boolean.toString(enabled), true);
+			this.enabled = enabled;
+			enableExtensions(enabled);
 		}
 	}
 	
@@ -301,6 +341,32 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * should the artefact collect wizard contain a step to collect a reflexion
+	 * @return
+	 */
+	public boolean isReflexionStepEnabled(){
+		return isReflexionStepEnabled;
+	}
+	
+	/**
+	 * should the artefact collect wizard contain a step to ask user for copyright on content
+	 * @return
+	 */
+	public boolean isCopyrightStepEnabled(){
+		return isCopyrightStepEnabled;
+	}
+	
+	public void setReflexionStepEnabled(boolean isReflexionStepEnabled) {
+		this.isReflexionStepEnabled = isReflexionStepEnabled;
+		setBooleanProperty("wizard.step.reflexion", isReflexionStepEnabled, true);
+	}
+
+	public void setCopyrightStepEnabled(boolean isCopyrightStepEnabled) {
+		this.isCopyrightStepEnabled = isCopyrightStepEnabled;
+		setBooleanProperty("wizard.step.copyright", isCopyrightStepEnabled, true);
 	}
 	
 }

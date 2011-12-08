@@ -1,4 +1,5 @@
 <h4>$r.translate("sessionadministration.title")</h4>
+<i>Session Admin-Token: $!sessionToken</i>
 <div class="sessionadmin">
 #if ($loginBlocked)
 	$r.render("session.admin.allow.login.link")
@@ -19,6 +20,7 @@ $r.render("session.admin.invalidate.all.link")
 		&nbsp;&nbsp;$r.render("session.admin.reject.dmz.requests.link")
 	#end
 #end
+<br/>
 <br /><br />
 $r.render("session.admin.oldest.session.form")
 <br /><br />

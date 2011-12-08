@@ -26,14 +26,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
 import javax.mail.internet.AddressException;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -61,6 +60,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
+import org.olat.registration.TemporaryKeyImpl;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -134,6 +134,13 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		this.myContent.put("c", c);
 		putInitialPanel(this.myContent);
 	}
+	
+	@Override
+	public boolean isInterceptionRequired(UserRequest ureq) {
+		if (ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isInvitee()
+				|| ureq.getUserSession().getRoles().isGuestOnly()) return false;
+		else return true; 
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -203,6 +210,13 @@ public class ProfileAndHomePageEditController extends BasicController implements
 									emailChanged = true;
 									// change email address to old address until it is verified
 									ProfileAndHomePageEditController.this.identityToModify.getUser().setProperty("email", currentEmail);
+								} else {
+									// fxdiff: FXOLAT-44 delete previous change-workflows
+									String key = ProfileAndHomePageEditController.this.identityToModify.getUser().getProperty("emchangeKey", null);
+									TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
+									if (tempKey != null) {
+										rm.deleteTemporaryKey(tempKey);
+									}		
 								}
 							}
 							if (!um.updateUserFromIdentity(ProfileAndHomePageEditController.this.identityToModify)) {
@@ -279,7 +293,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		cal.add(Calendar.DAY_OF_WEEK, ChangeEMailController.TIME_OUT);
 		String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(cal.getTime());
 		// create body and subject for email
-		body = this.translator.translate("email.change.body", new String[] { serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&lang=" + ureq.getLocale().getLanguage(), time })
+		body = this.translator.translate("email.change.body", new String[] { serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&lang=" + ureq.getLocale().getLanguage(), time, currentEmail, changedEmail })
 				+ SEPARATOR + this.translator.translate("email.change.wherefrom", new String[] { serverpath, today, ip });
 		subject = translate("email.change.subject");
 		// send email

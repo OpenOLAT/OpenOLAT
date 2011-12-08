@@ -19,6 +19,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.home.InviteeHomeMainController;
+import org.olat.login.SupportsAfterLoginInterceptor;
+import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
 
 import com.thoughtworks.xstream.XStream;
@@ -32,7 +38,12 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date:  19.05.2009 <br>
  * @author bja
  */
-public class ChangeEMailExecuteController extends ChangeEMailController {
+public class ChangeEMailExecuteController extends ChangeEMailController implements SupportsAfterLoginInterceptor {
+	
+	private static final String PRESENTED_EMAIL_CHANGE_REMINDER = "presentedemailchangereminder";
+	
+
+	protected static final String PACKAGE_HOME = ProfileAndHomePageEditController.class.getPackage().getName();
 	
 	public ChangeEMailExecuteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -50,6 +61,35 @@ public class ChangeEMailExecuteController extends ChangeEMailController {
 		}
 	}
 	
+	@Override
+	//fxdiff BAKS-20 instantiate controllers
+	public boolean isInterceptionRequired(UserRequest ureq) {
+		User user = ureq.getIdentity().getUser();
+		if(StringHelper.containsNonWhitespace(user.getProperty("emchangeKey", null))) {
+			if (isLinkTimeUp()) {
+				deleteRegistrationKey();
+				return false;
+			} else {
+				if (isLinkClicked()) {
+					changeEMail(getWindowControl());
+				} else {
+	    		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_EMAIL_CHANGE_REMINDER));
+	    		if (alreadySeen == null) {
+	    			getWindowControl().setWarning(getPackageTranslator().translate("email.change.reminder"));
+	    			ureq.getUserSession().putEntry(PRESENTED_EMAIL_CHANGE_REMINDER, Boolean.TRUE);
+	    		}
+				}
+			}
+		} else {
+			String value = user.getProperty("emailDisabled", null);
+			if (value != null && value.equals("true")) {
+				Translator translator = Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale());
+				getWindowControl().setWarning(translator.translate("email.disabled"));
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * change email
 	 * @param wControl

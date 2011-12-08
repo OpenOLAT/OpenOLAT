@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.util.Formatter;
+import org.olat.course.assessment.AssessmentHelper;
 
 /**
  * Initial Date:  12.01.2005
@@ -74,7 +75,7 @@ public class QTIResultTableModel extends BaseTableDataModelWithoutFilter impleme
 					return Formatter.formatDuration(resultSet.getDuration().longValue());
 				}
 			}
-			case 2: return "" + resultSet.getScore();
+			case 2: return "" + AssessmentHelper.getRoundedScore(resultSet.getScore());
 			default: return "error";
 		}	
 	}

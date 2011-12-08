@@ -133,6 +133,7 @@ public class IndexWriterWorker implements Runnable {
 		}	
 		try {
 			indexWriter.close();
+			indexWriter = null;
 			closed = true;
 			if (log.isDebug()) log.debug("IndexWriter " + id + " closed");
 		} catch (IOException e) {

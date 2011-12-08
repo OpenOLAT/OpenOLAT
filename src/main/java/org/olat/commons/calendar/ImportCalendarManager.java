@@ -31,17 +31,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -59,6 +65,99 @@ public class ImportCalendarManager extends BasicManager {
 	private static final OLog log = Tracing.createLoggerFor(ImportCalendarManager.class);
 
 	public static String PROP_CATEGORY	 = "Imported-Calendar";
+	public static String PROP_CATEGORY_IMP	 = "Imported-Calendar-To";
+	
+	
+	public static boolean importCalendarIn(Kalendar cal, String importUrl) {
+		try {
+			String calendarContent = getContentFromUrl(importUrl);
+			CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+			Kalendar importedCal = calManager.buildKalendarFrom(calendarContent, cal.getType(), cal.getCalendarID());
+			boolean imported = calManager.updateCalendar(cal, importedCal);
+			if(imported) {
+				PropertyManager pm = PropertyManager.getInstance();
+				List<Property> p = pm.findProperties(null, null, cal.getType(), 0l, PROP_CATEGORY_IMP, cal.getCalendarID());
+				if(p.isEmpty()) {
+					long timestamp = System.currentTimeMillis();
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance(cal.getType(), 0l);
+					Property prop = pm.createPropertyInstance(null, null, ores, PROP_CATEGORY_IMP, cal.getCalendarID(), null, timestamp, null, importUrl);
+					pm.saveProperty(prop);
+				} else {
+					Property prop = p.get(0);
+					String textVal = prop.getTextValue();
+					if(!textVal.contains(importUrl)) {
+						prop.setTextValue(textVal + "|" + importUrl);
+					}
+				}
+			}
+			return imported;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	/**
+	 * Method used by the cron job
+	 * @return
+	 */
+	public static boolean updateCalendarIn() {
+		List<Property> properties = loadPropertiesByImportCategory();
+		log.audit("Begin to update " + properties.size() + " calendars.");
+		
+		int count = 0;
+		for(Property property:properties) {
+			String type = property.getResourceTypeName();
+			String id = property.getName();
+			String importUrls = property.getTextValue();
+			if(!StringHelper.containsNonWhitespace(importUrls) || !StringHelper.containsNonWhitespace(type) || !StringHelper.containsNonWhitespace(id)) {
+				continue;
+			}
+			
+			for(StringTokenizer tokenizer = new StringTokenizer(importUrls, "|"); tokenizer.hasMoreTokens(); ) {
+				String importUrl = tokenizer.nextToken();
+				CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+				Kalendar cal = calManager.getCalendar(type + "dru", id);
+				if(importCalendarIn(cal, importUrl)) {
+					log.audit("Updated successfully calendar: " + type + " / " + id);
+				} else {
+					log.audit("Failed to update calendar: " + type + " / " + id);
+				}
+				
+				if(count++ % 20 == 0) {
+					DBFactory.getInstance().intermediateCommit();
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static List<Property> loadPropertiesByImportCategory() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p from org.olat.properties.Property as p where ")
+			.append(" p.category = :category")
+			.append(" and p.resourceTypeId = :restypeid");
+
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setString("category", PROP_CATEGORY_IMP);
+		query.setLong("restypeid", new Long(0));
+
+		List<Property> properties = query.list();
+		return properties;		
+	}
+	
+	public static boolean importCalendarIn(KalendarRenderWrapper calenderWrapper, InputStream in) {
+		try {
+			String calendarContent = getContentFromStream(in);
+			Kalendar cal = calenderWrapper.getKalendar();
+			CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+			Kalendar importedCal = calManager.buildKalendarFrom(calendarContent, cal.getType(), cal.getCalendarID());
+			return calManager.updateCalendar(cal, importedCal);
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
 	
 	/**
 	 * Save the imported calendar
@@ -113,19 +212,19 @@ public class ImportCalendarManager extends BasicManager {
 	 * @param ureq
 	 * @return
 	 */
-	public static List getImportedCalendarsForIdentity(UserRequest ureq) {
+	public static List<KalendarRenderWrapper> getImportedCalendarsForIdentity(UserRequest ureq) {
 		// initialize the calendars list
-		List calendars = new ArrayList();
+		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 		
 		// read all the entries from the database
 		PropertyManager pm = PropertyManager.getInstance();
-		List properties = pm.listProperties(ureq.getIdentity(), null, null, PROP_CATEGORY, null);
+		List<Property> properties = pm.listProperties(ureq.getIdentity(), null, null, PROP_CATEGORY, null);
 		
 		// return the list of calendar objects
-		Iterator propertyIter = properties.iterator();
+		Iterator<Property> propertyIter = properties.iterator();
 		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		while (propertyIter.hasNext()) {
-			Property calendarProperty = (Property)propertyIter.next();
+			Property calendarProperty = propertyIter.next();
 			String calendarName = calendarProperty.getName();
 			KalendarRenderWrapper calendarWrapper = calManager.getImportedCalendar(ureq.getIdentity(), calendarName);
 			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
@@ -148,12 +247,11 @@ public class ImportCalendarManager extends BasicManager {
 	 */
 	public static void reloadUrlImportedCalendars(UserRequest ureq) {
 		// read all the entries from the database
-		List properties = PropertyManager.getInstance().listProperties(ureq.getIdentity(), null, null, PROP_CATEGORY, null);
+		List<Property> properties = PropertyManager.getInstance().listProperties(ureq.getIdentity(), null, null, PROP_CATEGORY, null);
 		// return the list of calendar objects
-		Iterator propertyIter = properties.iterator();
-		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		Iterator<Property> propertyIter = properties.iterator();
 		while (propertyIter.hasNext()) {
-			Property calendarProperty = (Property)propertyIter.next();
+			Property calendarProperty = propertyIter.next();
 			String calendarName = calendarProperty.getName();
 			String calendarUrl = calendarProperty.getStringValue();
 			long timestampLastupdate = calendarProperty.getLongValue();
@@ -222,7 +320,7 @@ public class ImportCalendarManager extends BasicManager {
 	}
 	
 	private static String getImportedCalendarType() {
-		return CalendarManagerFactory.getInstance().getCalendarManager().TYPE_USER;
+		return CalendarManager.TYPE_USER;
 	}
 	
 	
@@ -236,15 +334,18 @@ public class ImportCalendarManager extends BasicManager {
 	}
 
 	public static String getContentFromUrl(String url) throws IOException {
-		InputStream in=(new URL(url)).openStream();
-	    BufferedReader dis = new BufferedReader(new InputStreamReader(in));
-	    StringBuffer fBuf = new StringBuffer() ;
-	    String line;
-	    while ( (line = dis.readLine()) != null) {
-	    	fBuf.append (line + "\n");
-	    }
-	    in.close ();
+		InputStream in = new URL(url).openStream();
+		return getContentFromStream(in);
+	}
+	
+	public static String getContentFromStream(InputStream in) throws IOException {
+		BufferedReader dis = new BufferedReader(new InputStreamReader(in));
+		StringBuffer fBuf = new StringBuffer() ;
+		String line;
+		while ( (line = dis.readLine()) != null) {
+			fBuf.append (line + "\n");
+		}
+		in.close ();
 		return fBuf.toString();
 	}
-
 }

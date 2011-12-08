@@ -90,4 +90,7 @@ public interface ClientManager {
 	 */
 	public String getInstantMessagingCredentialsForUser(String username);
 
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public void checkInstantMessagingCredentialsForUser(Long identityKey);
+
 }

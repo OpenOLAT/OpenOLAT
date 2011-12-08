@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -223,6 +224,15 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @return boolean
 	 */
 	private boolean allowedToManageUser(UserRequest ureq, Identity identity) {
+		
+		//fxdiff 	FXOLAT-184 prevent editing of users that are in frentix-superadmin group (except "frentix" wants to change own profile)
+		Identity editor = ureq.getUserSession().getIdentity();
+		SecurityGroup frentixSuperAdminGroup =  BaseSecurityManager.getInstance().findSecurityGroupByName("fxadmins");
+		if(BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, frentixSuperAdminGroup)){
+			if(editor.equals(identity)) return true;
+			return false;
+		}
+		
 		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		if (isOlatAdmin) return true;
 

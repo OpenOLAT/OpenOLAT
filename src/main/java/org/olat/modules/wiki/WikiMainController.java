@@ -118,7 +118,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private String pageId;
 	private VFSContainer wikiContainer;
 	private OLATResourceable ores;
-	private VelocityContainer articleContent, navigationContent, discussionContent, editContent, content, versioningContent, mediaMgntContent, imageDisplay;
+	private VelocityContainer articleContent, navigationContent, discussionContent, editContent, content, versioningContent, mediaMgntContent, imageDisplay, fileListVC;
 	private WikiEditArticleForm wikiEditForm;
 	private WikiMarkupComponent wikiMenuComp, wikiArticleComp, wikiVersionDisplayComp;
 	private ContextualSubscriptionController cSubscriptionCtrl;
@@ -283,7 +283,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 		fileUplCtr = new FileUploadController(getWindowControl(), WikiManager.getInstance().getMediaFolder(ores), ureq, (int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false);
 		listenTo(fileUplCtr);
 		editContent.put("fileUplCtr", fileUplCtr.getInitialComponent());
-		editContent.contextPut("fileList", wiki.getMediaFileList());
+		// fxdiff FXOLAT-216: Dedicated file list container to not loose data in main form when uploading a new file
+		fileListVC = createVelocityContainer("filelist");
+		fileListVC.contextPut("fileList", wiki.getMediaFileList());
+		editContent.put("fileList", fileListVC);
 		editContent.contextPut("linkList", wiki.getListOfAllPageNames());
 		tabs.addTab(translate("tab.edit"), editContent);
 
@@ -649,7 +652,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			} else if (event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
 				FolderEvent fEvent = (FolderEvent)event;
 				createMediaMetadataFile(fEvent.getFilename(), ureq.getIdentity().getKey());
-				editContent.contextPut("fileList", wiki.getMediaFileList());
+				fileListVC.contextPut("fileList", wiki.getMediaFileList());
 			}
 		} else if (source == breadCrumpCtr) {
 			/*************************************************************************
@@ -697,7 +700,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				TableMultiSelectEvent tmse = (TableMultiSelectEvent) event;
 				if (tmse.getAction().equals(ACTION_DELETE_MEDIAS)) {
 						deleteMediaFile(mediaFilesTableModel.getObjects(tmse.getSelection()), ureq);
-						editContent.contextPut("fileList", wiki.getMediaFileList());
+						fileListVC.contextPut("fileList", wiki.getMediaFileList());
 				}
 			}
 		} else if (source == archiveWikiDialogCtr) {

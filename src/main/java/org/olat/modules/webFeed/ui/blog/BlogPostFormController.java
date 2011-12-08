@@ -98,6 +98,9 @@ public class BlogPostFormController extends FormBasicController {
 		setValues();
 		if(!currentlyDraft || post.getModifierKey() > 0) {
 			post.setModifierKey(ureq.getIdentity().getKey());
+		//fxdiff BAKS-18
+		} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
+			post.setModifierKey(ureq.getIdentity().getKey());
 		}
 		post.setDraft(false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -149,6 +152,9 @@ public class BlogPostFormController extends FormBasicController {
 		if (source == draftLink) {
 			setValues();
 			if(!currentlyDraft || post.getModifierKey() > 0) {
+				post.setModifierKey(ureq.getIdentity().getKey());
+			//fxdiff BAKS-18
+			} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
 				post.setModifierKey(ureq.getIdentity().getKey());
 			}
 			post.setDraft(true);

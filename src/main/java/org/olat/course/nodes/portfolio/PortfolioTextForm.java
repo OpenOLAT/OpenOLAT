@@ -238,7 +238,7 @@ public class PortfolioTextForm extends FormBasicController {
 		} else if (event.wasTriggerdBy(FormEvent.ONCHANGE)){
 			showWarningWhenInUse();
 		}
-		super.formInnerEvent(ureq, source, event);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void showWarningWhenInUse(){

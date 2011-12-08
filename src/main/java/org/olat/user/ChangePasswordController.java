@@ -38,7 +38,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.ldap.LDAPError;
@@ -78,10 +77,10 @@ public class ChangePasswordController extends BasicController implements Support
 		super(ureq, wControl);
 
 		// if a user is not allowed to change his/her own password, say it here
-		if (!UserModule.isPwdchangeallowed()) {
+		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
 			String text = translate("notallowedtochangepwd", new String[] { WebappHelper.getMailConfig("mailSupport") });
 			Controller simpleMsg = MessageUIFactory.createSimpleMessage(ureq, wControl, text);
-			listenTo(simpleMsg);//register controller to be disposed automatically on dispose of Change password controller
+			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller
 			putInitialPanel(simpleMsg.getInitialComponent());
 			return;
 		}
@@ -90,8 +89,13 @@ public class ChangePasswordController extends BasicController implements Support
 		if (!mgr.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
 				Constants.PERMISSION_ACCESS, 
-				OresHelper.lookupType(this.getClass())))
-			throw new OLATSecurityException("Insufficient permission to access ChangePasswordController");
+				OresHelper.lookupType(this.getClass()))) {
+			String text = "Insufficient permission to access ChangePasswordController";
+			Controller simpleMsg = MessageUIFactory.createSimpleMessage(ureq, wControl, text);
+			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller
+			putInitialPanel(simpleMsg.getInitialComponent());			
+			return;
+		}
 
 		myContent = createVelocityContainer("pwd");
 		//adds "provider_..." variables to myContent
@@ -103,6 +107,13 @@ public class ChangePasswordController extends BasicController implements Support
 		myContent.put("chpwdform", chPwdForm.getInitialComponent());
 
 		putInitialPanel(myContent);
+	}
+
+	@Override
+	public boolean isInterceptionRequired(UserRequest ureq) {
+		if (ureq.getUserSession().getRoles() == null || ureq.getUserSession().getRoles().isInvitee()
+				|| ureq.getUserSession().getRoles().isGuestOnly()) return false;
+		else return true; 
 	}
 
 	/**

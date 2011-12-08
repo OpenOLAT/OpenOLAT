@@ -9,4 +9,20 @@
 	<div class="o_cpeditor_menu_tree">		
 		$r.render("cptreecontroller.tree")
 	</div>
+	
+<script type="text/javascript">
+/* <![CDATA[ */
+	if(o_info.objectMap.containsKey('o_streePanel$treeId')) {
+		var tree = o_info.objectMap.get('o_streePanel$treeId');
+		tree.on('beforeclick', function() {
+			if(o_info.linkbusy) return;
+			if(o2c == 0 || confirm(o_info.dirty_form)) {
+				return;
+			} else {
+				return false;
+			}
+		});
+	};
+/* ]]> */
+</script>
 </div>

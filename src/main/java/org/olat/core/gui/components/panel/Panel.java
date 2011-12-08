@@ -22,7 +22,7 @@
 package org.olat.core.gui.components.panel;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -32,9 +32,12 @@ import org.olat.core.gui.components.Container;
 import org.olat.core.gui.control.dragdrop.DragAndDrop;
 import org.olat.core.gui.control.dragdrop.DragAndDropImpl;
 import org.olat.core.gui.control.dragdrop.DragSource;
+import org.olat.core.gui.control.dragdrop.DragSourceImpl;
 import org.olat.core.gui.control.dragdrop.Draggable;
 import org.olat.core.gui.control.dragdrop.DraggableCreator;
 import org.olat.core.gui.control.dragdrop.DropEvent;
+import org.olat.core.gui.control.dragdrop.DropTarget;
+import org.olat.core.gui.control.dragdrop.DropTargetImpl;
 import org.olat.core.gui.control.dragdrop.DroppableImpl;
 import org.olat.core.logging.AssertException;
 
@@ -71,17 +74,17 @@ public class Panel extends Container {
 	 */
 	protected void doDispatchRequest(UserRequest ureq) {
 		if (dragAndDropImpl != null) {
+			//fxdiff
 			// a drop is dispatched to the panel
 			DroppableImpl di = dragAndDropImpl.getDroppableImpl();
 			if (di != null) {
 				String dropid = ureq.getParameter("v");
-				List accDrags = di.getAccepted();
-				for (Iterator it_accdrags = accDrags.iterator(); it_accdrags.hasNext();) {
-					Draggable dr = (Draggable) it_accdrags.next();
+				for (Draggable dr:di.getAccepted()) {
 					DragSource ds = dr.find(dropid);
 					if (ds != null) {
 						// found!
-						fireEvent(ureq, new DropEvent(ds, null));
+						DropTarget dt = new DropTargetImpl(this);
+						fireEvent(ureq, new DropEvent(ds, dt));
 						return;
 					}
 					
@@ -182,10 +185,12 @@ public class Panel extends Container {
 			dragAndDropImpl = new DragAndDropImpl(new DraggableCreator() {
 				public Draggable createDraggable() {
 					Draggable drag = new Draggable() {
-						public List getContainerIds() {
+						@Override
+						public List<String> getContainerIds() {
 							return Panel.this.draggableGetContainerIds();
 						}
 
+						@Override
 						public DragSource find(String dragElementId) {
 							return Panel.this.draggableFind(dragElementId);
 						}};
@@ -207,33 +212,28 @@ public class Panel extends Container {
 	 * @return
 	 */
 	protected DragSource draggableFind(String dragElementId) {
+		//fxdiff
 		Component toRender = getContent();
-		DragSource ds = null;
 		if (toRender != null) {
-			String id = "o_c"+toRender.getDispatchID();
+			String id = "o_c" + toRender.getDispatchID();
 			if (dragElementId.equals(id)) {
-				ds = new DragSource() {
-	
-					public Object getSource() {
-						return Panel.this;
-					}
-	
-					public String getSubId() {
-						// no subid for the panel, since the panel itself is the only thing that can be dragged
-						return null;
-					}};
+				return new DragSourceImpl(this);
 			}
-		} // else: the object dropped disappear in the meantime...? TODO:double-check
-		return ds;
+		}
+		String id = "o_c" + getDispatchID();
+		if (dragElementId.equals(id)) {
+			return new DragSourceImpl(this);
+		}
+		// else: the object dropped disappear in the meantime...? TODO:double-check
+		return null;
 	}
 
 	/**
 	 * @return
 	 */
-	protected List draggableGetContainerIds() {
-		List ids = new ArrayList();
-		ids.add("o_c"+getDispatchID());
-		return ids;
+	protected List<String> draggableGetContainerIds() {
+		//fxdiff
+		return Collections.singletonList("o_c" + getDispatchID());
 	}
 	
 	

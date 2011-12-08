@@ -23,15 +23,17 @@ package org.olat.instantMessaging;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.jivesoftware.smack.packet.Presence;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
@@ -43,12 +45,11 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.LogDelegator;
-import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
-import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
@@ -61,6 +62,7 @@ import org.olat.instantMessaging.syncservice.RemoteAccountCreation;
 import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -131,10 +133,10 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		// we have to make sure the user has an account on the instant messaging
 		// server
 		// by calling this it gets created if not yet exists.
-		addedUsername = nameHelper.getIMUsernameByOlatUsername(addedUsername);
+		String imUsername = nameHelper.getIMUsernameByOlatUsername(addedUsername);
 		groupOwnerUsername = nameHelper.getIMUsernameByOlatUsername(groupOwnerUsername);
 		
-		boolean hasAccount = accountService.hasAccount(addedUsername);
+		boolean hasAccount = accountService.hasAccount(imUsername);
 		if (!hasAccount) clientManager.getInstantMessagingCredentialsForUser(addedUsername);
 		// we do not check whether a group already exists, we create it each time
 		List<String> list = new ArrayList<String>();
@@ -283,28 +285,33 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		}
 		return sessionCount;
 	}
-
-	 /**
-	 * @see org.olat.instantMessaging.InstantMessaging#synchonizeBuddyRoster(org.olat.group.BusinessGroup)
-	 */
-	public boolean synchonizeBuddyRoster(BusinessGroup group) {
+	
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	private boolean synchonizeBuddyRoster(BusinessGroup group, Set<Long> checkedIdentities) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		SecurityGroup owners = group.getOwnerGroup();
-		SecurityGroup participants = group.getPartipiciantGroup();
-		List<Identity> users = securityManager.getIdentitiesOfSecurityGroup(owners);
-		users.addAll(securityManager.getIdentitiesOfSecurityGroup(participants));
-		
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		secGroups.add(group.getOwnerGroup());
+		secGroups.add(group.getPartipiciantGroup());
+		List<IdentityShort> users = securityManager.getIdentitiesShortOfSecurityGroups(secGroups);
+
 		int counter = 0;
 		List<String> usernames = new ArrayList<String>();
-		for (Iterator<Identity> iter = users.iterator(); iter.hasNext();) {
-			Identity ident = iter.next();
+		for (IdentityShort ident:users) {
 			logDebug("getting im credentials for user::" + ident.getName());
 			// as jive only adds users to a group that already exist we have to make
 			// sure they have an account.
-			clientManager.getInstantMessagingCredentialsForUser(ident.getName());
+			if(checkedIdentities == null || !checkedIdentities.contains(ident.getKey())) {
+				clientManager.checkInstantMessagingCredentialsForUser(ident.getKey());
+				if(checkedIdentities != null) {
+					checkedIdentities.add(ident.getKey());
+				}
+				
+				if (counter % 25 == 0) {
+					DBFactory.getInstance().intermediateCommit();
+				}
+				counter++;
+			}
 			usernames.add(nameHelper.getIMUsernameByOlatUsername(ident.getName()));
-			if (counter %6 == 0) DBFactory.getInstance().intermediateCommit();
-			counter++;
 		}
 		String groupId = InstantMessagingModule.getAdapter().createChatRoomString(group);
 		if (users.size() > 0 ) { // only sync groups with users
@@ -324,58 +331,60 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	 * 
 	 * @see org.olat.instantMessaging.InstantMessaging#synchronizeLearningGroupsWithIMServer()
 	 */
+
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
 	public boolean synchronizeLearningGroupsWithIMServer() {
+		if (!(adminConnecion != null && adminConnecion.getConnection() != null && adminConnecion.getConnection().isConnected())) {
+			return false;
+		}
 		logInfo("Starting synchronisation of LearningGroups with IM server");
+		long start = System.currentTimeMillis();
+		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		//pull as admin
 		Roles roles = new Roles(true, true, true, true, false, true, false);
 		List<RepositoryEntry> allCourses = rm.queryByTypeLimitAccess(null, CourseModule.getCourseTypeName(), roles);
+		boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
+		Set<Long> checkedIdentities = new HashSet<Long>();
+		
 		int counter = 0;
-		for (Iterator<RepositoryEntry> iterator = allCourses.iterator(); iterator.hasNext();) {
-			RepositoryEntry entry = iterator.next();
-			ICourse course = null;
-			try{
-				course = CourseFactory.loadCourse(entry.getOlatResource());
-			} catch (Exception e) {
-				logError("Could not load Course! OlatResourcable: "+entry.getOlatResource(), e);
-				continue;
-			}
+		for (RepositoryEntry entry: allCourses) {
+			OLATResource courseResource = entry.getOlatResource();
+			List<BGContext> contexts = contextManager.findBGContextsForResource(courseResource, BusinessGroup.TYPE_LEARNINGROUP, true, true);
 			
-			CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
-			List<BusinessGroup> groups = groupManager.getAllLearningGroupsFromAllContexts();
-				for (Iterator<BusinessGroup> iter = groups.iterator(); iter.hasNext();) {
-					BusinessGroup group = iter.next();
-					
-					boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
+			List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+			for (BGContext bgContext:contexts) {
+				groups.addAll(contextManager.getGroupsOfBGContext(bgContext));
+			}
+	
+			for (BusinessGroup group:groups) {
 					boolean isLearn = group.getType().equals(BusinessGroup.TYPE_LEARNINGROUP);
-					
 					if (isLearn && !syncLearn) {
 						String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
 						if (deleteRosterGroup(groupID)) {
 							logInfo("deleted unwanted group: "+group.getResourceableTypeName()+" "+groupID, null);
 						}
-						counter++;
-						if (counter%6==0) {
-							DBFactory.getInstance(false).intermediateCommit();
-						}
-						continue;
-					}
-						
-					if (!synchonizeBuddyRoster(group)) {
+					} else if (!synchonizeBuddyRoster(group, checkedIdentities)) {
 						logError("couldn't sync group: "+group.getResourceableTypeName(), null);
 					}
 					counter++;
 					if (counter%6==0) {
 						DBFactory.getInstance(false).intermediateCommit();
 					}
-				}
+					
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+			}
 				
 			if (counter%6==0) {
 				DBFactory.getInstance(false).intermediateCommit();
 			}
 		}
-		logInfo("Ended synchronisation of LearningGroups with IM server: Synched "+counter+" groups");
+		logInfo("Ended synchronisation of LearningGroups with IM server: Synched "+counter+" groups in " + (System.currentTimeMillis() - start) + " (ms)");
 		return true;
 	}
 
@@ -387,21 +396,25 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	 * @return true if successfull, false if IM server is not running
 	 */
 	public boolean synchronizeAllBuddyGroupsWithIMServer() {
+		if (adminConnecion != null && adminConnecion.getConnection() != null && adminConnecion.getConnection().isConnected()) {
 			logInfo("Started synchronisation of BuddyGroups with IM server.");
 			BGContextManager cm = BGContextManagerImpl.getInstance();
 			//null as argument pulls all buddygroups
 			List<BusinessGroup> groups = cm.getGroupsOfBGContext(null);
 			int counter = 0;
-			for (Iterator<BusinessGroup> iter = groups.iterator(); iter.hasNext();) {
-				BusinessGroup group = iter.next();
-				synchonizeBuddyRoster(group);
-				counter++;
-				if (counter%6==0) {
-					DBFactory.getInstance(false).intermediateCommit();
+			//fxdiff: FXOLAT-219 decrease the load for synching groups
+			Set<Long> checkedIdentites = new HashSet<Long>();
+			for (BusinessGroup group: groups) {
+				if(synchonizeBuddyRoster(group, checkedIdentites)) {
+					counter++;
 				}
+				//make an intermediate commit already
 			}
 			logInfo("Ended synchronisation of BuddyGroups with IM server: Synched "+counter+" groups");
 			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -519,6 +532,11 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		this.adminConnecion = adminConnection;
 	}
 	
+	// use rarely, as this is normally linked by spring!
+	public AdminUserConnection getAdminUserConnection(){
+		return this.adminConnecion;
+	}
+	
 	/**
 	 * 
 	 * @see org.olat.instantMessaging.InstantMessaging#resetAdminConnection()
@@ -560,5 +578,74 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	void setSessionCount(int sessionCount) {
 		this.sessionCount = sessionCount;
 	}
+	
+	public String synchronizeAllOLATUsers(){
+		StringBuilder sb = new StringBuilder();
+		InstantMessaging im = InstantMessagingModule.getAdapter();
+		logInfo("Started synchronisation of all OLAT users with IM server.");
+		List<Identity> allIdentities = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(null, null, false, null, null, null, null, null);
+		int identCount = 0;
+		int authCount = 0;
+		int imDelCount = 0;
+		int imCreateCount = 0;
+		for (Identity identity : allIdentities) {
+			if (BaseSecurityManager.getInstance().getRoles(identity).isGuestOnly()) continue;
+			String userName = identity.getName();
+			boolean hasIMAccount = im.hasAccount(userName);
+			// try to detect double wrapped users on IM-Server
+			String imUserName = im.getIMUsername(userName);
+			int index = imUserName.indexOf("_");
+			if (index >= 0){ // only for names in multipleInstance-mode
+				String instanceID = imUserName.substring(index);
+				String badIMName = (imUserName + instanceID).toLowerCase();
+				if (accountService.hasAccount(badIMName)) {
+					logWarn("found an invalid IM account with double encoded username in multi instance mode. will remove this account in IM-server: " + badIMName, null);
+					sb.append("removed IM account with double instanceID:").append(badIMName);
+					accountService.deleteAccount(badIMName);
+				}			
+			}
+			
+			//TODO: try to connect with auth-token, if not working, resync IM-PW
+			
+			Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING);
+			if (auth != null && !hasIMAccount) {
+				// there is an invalid auth token, but no IM-account, remove auth
+				BaseSecurityManager.getInstance().deleteAuthentication(auth);
+				DBFactory.getInstance().intermediateCommit();
+				auth = null;
+				authCount++;
+			}
+			if (auth == null) {
+				if (hasIMAccount) {
+					// remove existing account, to later have auth and im-pw in sync!
+					im.deleteAccount(userName);
+					imDelCount++;
+				}				
+				String pw = RandomStringUtils.randomAlphanumeric(6);
+				String fullName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + identity.getUser().getProperty(UserConstants.LASTNAME, null);
+				boolean success = im.createAccount(userName, pw, fullName, identity.getUser().getProperty(UserConstants.EMAIL, null));
+				if (success) {
+					auth = BaseSecurityManager.getInstance().createAndPersistAuthentication(identity, ClientManager.PROVIDER_INSTANT_MESSAGING, userName.toLowerCase(), pw);
+					imCreateCount++;
+				}					
+			}
+						
+			// TODO: sync users buddylist!?
+			
+			identCount ++;
+			if (identCount % 20 == 0) {
+				DBFactory.getInstance().intermediateCommit();
+			}	
+		}	
+		sb.append(" looped over ").append(identCount).append(" identities to sync.");
+		sb.append("  removed invalid authentication tokens: ").append(authCount);
+		sb.append("  deleted IM-accounts before recreation: ").append(imDelCount);
+		sb.append("  recreated IM-accounts and authentications: ").append(imCreateCount);
+		String status = sb.toString();
+		logInfo(" Sync status: " + status);
+		logInfo("Ended synchronisation of all OLAT users.");
+		return status;
+	}
+	
 
 }

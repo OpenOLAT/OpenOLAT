@@ -43,6 +43,7 @@ import org.olat.modules.scorm.manager.ScormManager;
 import org.olat.modules.scorm.server.beans.LMSDataFormBean;
 import org.olat.modules.scorm.server.beans.LMSDataHandler;
 import org.olat.modules.scorm.server.beans.LMSResultsBean;
+import org.olat.modules.scorm.server.sequence.ItemSequence;
 
 /**
  * OLATApiAdapter implements the ApiAdapter Interface from the pfplms code which was initially
@@ -206,6 +207,9 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 		if (!isLaunched) return;
 		isLaunched = false;
 		if (commit) olatCommit(false); // Stupid "implicit commit"
+		// <OLATCE-289>
+		archiveScoData();
+		// </OLATCE-289>
 	}
 
 	/**
@@ -286,6 +290,17 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 					}
 				}
 			}
+		// <OLATCE-289>
+		}else{
+				//if "isACommit" is false, this is a lmsFinish and the apiCallback shall save the points an passed information
+				if (apiCallback != null) {
+					String rawScore = cmiData.get(SCORE_IDENT);
+					if (rawScore != null && !rawScore.equals("")) {
+						scoresProp.put(olatScoId, rawScore);
+					}
+					apiCallback.lmsFinish(olatScoId, scoresProp);
+				}
+			// </OLATCE-289>
 		}
 		
 		lmsDataBean.setDataAsMap(cmiData);
@@ -304,6 +319,28 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 		LMSResultsBean lmsBean = odatahandler.getResultsBean();
 		return lmsBean.getItemID();
 	}
+	
+	//<OLATCE-289>
+	/**
+	 * Archive the current SCORM CMI Data, see ItemSequence.archiveScoData
+	 * @return
+	 */
+	public boolean archiveScoData() {
+		boolean success = false;
+		try {
+			String itemId = scormManager.getSequence().findItemFromIndex(Integer.valueOf(olatScoId));
+			ItemSequence item = scormManager.getSequence().getItem(itemId);
+			if (item != null) {
+				success = item.archiveScoData();
+			}
+		} catch (Exception e) {
+			if(isLogDebugEnabled()) {
+				logWarn("Error at OLATApiAdapter.archiveScoData(): " + e.getMessage(), e);
+			}
+		}
+		return success;
+	}
+	// </OLATCE-289>
 	
 	/**
 	 * @param itemId
@@ -415,24 +452,34 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 	 * @see ch.ethz.pfplms.scorm.api.ApiAdapterInterface#LMSCommit(java.lang.String)
 	 */
 	public final String LMSCommit (String s) {
-		String rv = core.LMSCommit(s);
-		if (rv.equals("false")) return rv;
-		rv = olatCommit(true); 
-		say ("LMSCommit("+s+")="+rv);
-		return rv;
+		try {
+			String rv = core.LMSCommit(s);
+			if (rv.equals("false")) return rv;
+			rv = olatCommit(true); 
+			say ("LMSCommit("+s+")="+rv);
+			return rv;
+		} catch (Exception e) {
+			logError("LMSCommit failed: " + s, e);
+			return "false";
+		}
 	}
 	
 	/**
 	 * @see ch.ethz.pfplms.scorm.api.ApiAdapterInterface#LMSFinish(java.lang.String)
 	 */
 	public final String LMSFinish (String s) {
-		String rv = core.LMSFinish(s);
-		say ("LMSFinish("+s+")="+rv);
-		say(" ----------------- ");
-		if (rv.equals("false")) return rv;
-		olatFinish(true);
-		core.reset();
-		return rv;
+		try {
+			String rv = core.LMSFinish(s);
+			say ("LMSFinish("+s+")="+rv);
+			say(" ----------------- ");
+			if (rv.equals("false")) return rv;
+			olatFinish(true);
+			core.reset();
+			return rv;
+		} catch (Exception e) {
+			logError("LMSFinish failed: " + s, e);
+			return "false";
+		}
 	}
 	
 	/**

@@ -67,8 +67,16 @@ package org.olat.modules.scorm.server.sequence;
  */
 
 
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.server.servermodels.ScoDocument;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import uk.ac.reload.moonunit.contentpackaging.SCORM12_Core;
 /**
@@ -168,6 +176,38 @@ public class ItemSequence {
     public void updateClientModel(String[][] entries){
 			_scoDataModel.doLmsCommit(entries);
     }
+    
+  	// <OLATCE-289>
+    /**
+     * This method copies the current cmi-file to a new file with timestamp so that all attempts
+     * can be evaluated by the assessment tool.
+     * @return
+     */
+    public boolean archiveScoData() {
+    	File currentCmiFile = _scoDataModel.getFile().getAbsoluteFile();
+    	LocalFileImpl currentCmiFileVFS = new LocalFileImpl(_scoDataModel.getFile().getAbsoluteFile());
+
+    	String suffix = "." + FileUtils.getFileSuffix(currentCmiFile.getName());
+    	
+    	String newFileName = currentCmiFile.getName().substring(0, currentCmiFile.getName().indexOf(suffix))
+    												+ "_" + String.valueOf(System.currentTimeMillis()
+    												+ suffix);
+    		
+    	File outf = new File(currentCmiFile.getParentFile(), newFileName);
+			OutputStream os = null;
+			try {
+				os = new FileOutputStream(outf);
+			} catch (FileNotFoundException e) {
+				return false;
+			}
+			InputStream is = currentCmiFileVFS.getInputStream();
+			FileUtils.copy(is, os);
+			FileUtils.closeSafely(os);
+			FileUtils.closeSafely(is);
+    	
+    	return true;
+    }
+  	// </OLATCE-289>
 
     /**
      * Method to set the sco type for this class and if its an

@@ -36,7 +36,7 @@ public abstract class EPAbstractMap extends EPStructureElement implements Portfo
 	/**
 	 * @uml.property  name="ownerGroup"
 	 */
-	private SecurityGroup ownerGroup;
+	transient private SecurityGroup ownerGroup;
 
 
 	/**

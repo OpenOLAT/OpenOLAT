@@ -27,6 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -115,9 +119,12 @@ public class ServletUtil {
 
 		try {
 			Long size = mr.getSize();
-			// if the size is known, set it to make browser's life easier
-			if (size != null) {
-				httpResp.setContentLength(size.intValue());
+			Long lastModified = mr.getLastModified();
+
+			//fxdiff FXOLAT-118: accept range to deliver videos for iPad (implementation based on Tomcat)
+			List<Range> ranges = parseRange(httpReq, httpResp, (lastModified == null ? -1 : lastModified.longValue()), (size == null ? 0 : size.longValue()));
+			if(ranges != null) {
+				httpResp.setHeader("Accept-Ranges", "bytes");
 			}
 			// maybe some more preparations
 			mr.prepare(httpResp);
@@ -137,10 +144,33 @@ public class ServletUtil {
 				} else {
 					out = httpResp.getOutputStream();
 				}
+
+				if (ranges != null && ranges.size() == 1) {
+          Range range = ranges.get(0);
+          httpResp.addHeader("Content-Range", "bytes " + range.start + "-" + range.end + "/" + range.length);
+          long length = range.end - range.start + 1;
+          if (length < Integer.MAX_VALUE) {
+          	httpResp.setContentLength((int) length);
+          } else {
+              // Set the content-length as String to be able to use a long
+          	httpResp.setHeader("content-length", "" + length);
+          }
+
+          try {
+          	httpResp.setBufferSize(2048);
+          } catch (IllegalStateException e) {
+          	// Silent catch
+          }
+          copy(out, in, range);
+				} else {
+					if (size != null) {
+						httpResp.setContentLength(size.intValue());
+					}
+					// buffer input stream
+					bis = new BufferedInputStream(in);
+					FileUtils.copy(bis, out);
+				}
 				
-				// buffer input stream
-				bis = new BufferedInputStream(in);
-				FileUtils.copy(bis, out);
 				if (debug) {
 					long rstop = System.currentTimeMillis();
 					log.debug("time to serve (mr="+mr.getClass().getName()+") "+ (size == null ? "n/a" : "" + size) + " bytes: " + (rstop - rstart));
@@ -154,7 +184,151 @@ public class ServletUtil {
 		}
 	}
 	
+	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
+	protected static void copy(OutputStream ostream, InputStream resourceInputStream, Range range) throws IOException {
+		IOException exception = null;
 
+		InputStream istream = new BufferedInputStream(resourceInputStream, 2048);
+		exception = copyRange(istream, ostream, range.start, range.end);
+
+		// Clean up the input stream
+		istream.close();
+
+		// Rethrow any exception that has occurred
+		if (exception != null) throw exception;
+	}
+	
+	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
+	protected static IOException copyRange(InputStream istream, OutputStream ostream, long start, long end) {
+		try {
+			istream.skip(start);
+		} catch (IOException e) {
+			return e;
+		}
+
+		IOException exception = null;
+		long bytesToRead = end - start + 1;
+
+		byte buffer[] = new byte[2048];
+		int len = buffer.length;
+		while ((bytesToRead > 0) && (len >= buffer.length)) {
+			try {
+				len = istream.read(buffer);
+				if (bytesToRead >= len) {
+					ostream.write(buffer, 0, len);
+					bytesToRead -= len;
+				} else {
+					ostream.write(buffer, 0, (int) bytesToRead);
+					bytesToRead = 0;
+				}
+			} catch (IOException e) {
+				exception = e;
+				len = -1;
+			}
+			if (len < buffer.length) break;
+		}
+
+		return exception;
+	}
+
+	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
+	protected static List<Range> parseRange(HttpServletRequest request, HttpServletResponse response, long lastModified, long fileLength)
+			throws IOException {
+		
+		String headerValue = request.getHeader("If-Range");
+
+    if (headerValue != null) {
+        long headerValueTime = (-1L);
+        try {
+          headerValueTime = request.getDateHeader("If-Range");
+        } catch (IllegalArgumentException e) {
+          //
+        }
+
+        if (headerValueTime != (-1L)) {
+            // If the timestamp of the entity the client got is older than
+            // the last modification date of the entity, the entire entity
+            // is returned.
+            if (lastModified > (headerValueTime + 1000))
+                return Collections.emptyList();
+        }
+    }
+
+		if (fileLength == 0) return null;
+
+		// Retrieving the range header (if any is specified
+		String rangeHeader = request.getHeader("Range");
+
+		if (rangeHeader == null) return null;
+		// bytes is the only range unit supported (and I don't see the point
+		// of adding new ones).
+		if (!rangeHeader.startsWith("bytes")) {
+			response.addHeader("Content-Range", "bytes */" + fileLength);
+			response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+			return null;
+		}
+
+		rangeHeader = rangeHeader.substring(6);
+
+		// Vector which will contain all the ranges which are successfully
+		// parsed.
+		List<Range> result = new ArrayList<Range>();
+		StringTokenizer commaTokenizer = new StringTokenizer(rangeHeader, ",");
+
+		// Parsing the range list
+		while (commaTokenizer.hasMoreTokens()) {
+			String rangeDefinition = commaTokenizer.nextToken().trim();
+
+			Range currentRange = new Range();
+			currentRange.length = fileLength;
+
+			int dashPos = rangeDefinition.indexOf('-');
+
+			if (dashPos == -1) {
+				response.addHeader("Content-Range", "bytes */" + fileLength);
+				response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+				return null;
+			}
+
+			if (dashPos == 0) {
+
+				try {
+					long offset = Long.parseLong(rangeDefinition);
+					currentRange.start = fileLength + offset;
+					currentRange.end = fileLength - 1;
+				} catch (NumberFormatException e) {
+					response.addHeader("Content-Range", "bytes */" + fileLength);
+					response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+					return null;
+				}
+
+			} else {
+
+				try {
+					currentRange.start = Long.parseLong(rangeDefinition.substring(0, dashPos));
+					if (dashPos < rangeDefinition.length() - 1) currentRange.end = Long.parseLong(rangeDefinition.substring(dashPos + 1,
+							rangeDefinition.length()));
+					else currentRange.end = fileLength - 1;
+				} catch (NumberFormatException e) {
+					response.addHeader("Content-Range", "bytes */" + fileLength);
+					response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+					return null;
+				}
+
+			}
+
+			if (!currentRange.validate()) {
+				response.addHeader("Content-Range", "bytes */" + fileLength);
+				response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+				return null;
+			}
+
+			result.add(currentRange);
+		}
+
+		return result;
+	}
+  
 	private static void pseudoStreamFlashResource(HttpServletRequest httpReq, HttpServletResponse httpResp,  MediaResource mr) {
 		Long range = getRange(httpReq);
 		long seekPos = range == null ? 0l : range.longValue();
@@ -290,4 +464,32 @@ public class ServletUtil {
 			}
 		}
 	}
+	
+	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
+  protected static class Range {
+    public long start;
+    public long end;
+    public long length;
+
+    /**
+     * Validate range.
+     */
+    public boolean validate() {
+        if (end >= length)
+            end = length - 1;
+        return ( (start >= 0) && (end >= 0) && (start <= end)
+                 && (length > 0) );
+    }
+
+    public void recycle() {
+        start = 0;
+        end = 0;
+        length = 0;
+    }
+    
+    @Override
+    public String toString() {
+    	return start + "-" + end + "/" + length;
+    }
+  }
 }

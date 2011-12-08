@@ -40,4 +40,7 @@ public interface PopupBrowserWindowControllerCreator {
 	 * @return
 	 */
 	public PopupBrowserWindowController createNewPopupBrowserController(UserRequest lureq, WindowControl lwControl, ControllerCreator contentControllerCreator);
+	
+	//fxdiff
+	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq, WindowControl lwControl, ControllerCreator contentControllerCreator);
 }

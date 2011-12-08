@@ -56,6 +56,7 @@
 				-->
 				<entry key="org.olat.user.ProfileFormController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Users Profile-Form (Home->Settings)" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />
@@ -486,6 +487,7 @@
 				
 				<entry key="org.olat.course.assessment.EfficiencyStatementController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+					<property name="description" value="Efficiency-Statements" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />
@@ -549,6 +551,7 @@
 				
 				<entry key="org.olat.admin.user.UserShortDescription">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Short description of a user" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />
@@ -562,6 +565,7 @@
 
 				<entry key="org.olat.admin.user.imp.UserImportController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Userimport wizard" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />
@@ -629,8 +633,8 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
-								<ref bean="userPropertyBirthDay" />
-								<ref bean="userPropertyGender" />
+								<!-- <ref bean="userPropertyBirthDay" />
+								<ref bean="userPropertyGender" /> -->
 								<!--
 								Example IdentityAttributes matching to the usertracking LoggingObject  
 								
@@ -703,6 +707,49 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<!-- fxdiff: FXOLAT-227 user properties used for group-mail-function -->
+				<entry key="org.olat.group.ui.run.BusinessGroupSendToChooserForm">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyLastName" />														
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>						
+					</bean>
+				</entry>	
+				
+				
+				<!-- fxdiff: FXOLAT-93 user properties used in Businesscards (mitgleidersite) -->
+				<entry key="com.frentix.olat.user.UserBusinessCardController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="BusinessCards in Membersite" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />	
+								<ref bean="userPropertyOrgUnit" />
+								<ref bean="userPropertyTelOffice" />
+								<ref bean="userPropertyEmail" />										
+							</list>
+						</property>						
+					</bean>
+				</entry>	
+				
+				<!-- fxdiff: FXOLAT-356 user properties used for the mail-footer line together with i18nkey: "footer.with.userdata" -->
+				<entry key="org.olat.core.util.mail.MailHelper">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties used for the mail footer for emails sent from this system. Configure i18nkey: 'footer.with.userdata' accordingly. " />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />	
+								<ref bean="userPropertyInstitutionalName" />
+							</list>
+						</property>						
+					</bean>
+				</entry>			
 				
 				<!--
 					Default configuration in case nothing else matches.

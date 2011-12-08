@@ -90,6 +90,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		boolean canWrite = currentContainer.canWrite() == VFSConstants.YES;
 		boolean canDelete = false;
 		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
+		boolean canMail = fc.isCanMail();
 		for (Iterator<VFSItem> iter = fc.getCurrentContainerChildren().iterator(); iter.hasNext();) {
 			VFSItem child = iter.next();
 			if (child.canDelete() == VFSConstants.YES) {
@@ -131,6 +132,22 @@ public class FolderComponentRenderer implements ComponentRenderer {
 			}
 			
 			if(canWrite) {
+				if(fc.getExternContainerForCopy() != null && (fc.getExternContainerForCopy().getLocalSecurityCallback() == null ||
+						fc.getExternContainerForCopy().getLocalSecurityCallback().canCopy())) {
+					//option copy file
+					target.append("<li><a class=\"b_briefcase_newfile\" href=\"");
+					ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "copyfile"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+					target.append("\"");
+					if (iframePostEnabled) { // add ajax iframe target
+						StringOutput so = new StringOutput();
+						ubu.appendTarget(so);
+						target.append(so.toString());
+					}
+					target.append(">");
+					target.append(translator.translate("copyfile"));
+					target.append("</a></li>");
+				}
+				
 				// option upload	
 				target.append("<li><a class=\"b_briefcase_upload\" href=\"");
 				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "ul"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
@@ -181,7 +198,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		target.append(listRenderer.render(fc, ubu, translator, iframePostEnabled));
 
 		if (fc.getCurrentContainerChildren().size() > 0) {
-			if (canWrite || canDelete) {
+			if (canWrite || canDelete || canMail) {
 				
 				
 				target.append("<div class=\"b_togglecheck\">");
@@ -194,6 +211,16 @@ public class FolderComponentRenderer implements ComponentRenderer {
 				target.append("</a></div>");
 				
 				target.append("<div class=\"b_briefcase_commandbuttons b_button_group\">");
+				
+				//fxdiff BAKS-2: send documents by mail
+				if(canMail) {
+					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
+					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
+					target.append("\" value=\"");
+					target.append(StringEscapeUtils.escapeHtml(translator.translate("send")));
+					target.append("\"/>");
+				}
+				
 				if (canDelete) {
 					// delete
 					target.append("<input type=\"submit\" class=\"b_button\" name=\"");

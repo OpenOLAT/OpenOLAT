@@ -40,6 +40,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.components.WeeklyCalendarComponent;
 import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.KalendarGUIEditEvent;
+import org.olat.commons.calendar.ui.events.KalendarGUIImportEvent;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -89,6 +90,7 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 	private ImportedCalendarConfigurationController importedCalendarConfig;
 	private KalendarEntryDetailsController editController;
 	private SearchAllCalendarsController searchController;
+	private ImportCalendarController importCalendarController;
 	private CalendarSubscription calendarSubscription;
 	private Controller subscriptionController;
 	private String caller;
@@ -175,11 +177,12 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 		this.importedCalendarWrappers = importedCalendarWrappers;
 		this.calendarSubscription = calendarSubscription;
 		this.caller = caller;
+		
+		// fxdiff OLAT-6399
+		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 
 		// main panel
 		mainPanel = new Panel("mainPanel");
-		
-		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		// main velocity controller
 		vcMain = createVelocityContainer("indexWeekly");
@@ -408,12 +411,16 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 			if(affectedCal!=null) {
 			  ThreadLocalUserActivityLogger.log(getCalLoggingAction(), getClass(), LoggingResourceable.wrap(ureq.getIdentity()), LoggingResourceable.wrap(affectedCal));			
 			}
+		} else if (source == importCalendarController) {
+			cmc.deactivate();
 		} else if(source == cmc && event == CloseableModalController.CLOSE_MODAL_EVENT){
 			//DO NOT DEACTIVATE AS ALREADY CLOSED BY CloseableModalController INTERNALLY
 			weeklyCalendar.setDirty(true);
 		} else if (source == calendarConfig || source == importedCalendarConfig) {
 			if (event instanceof KalendarGUIAddEvent) {
 				pushAddEventController((KalendarGUIAddEvent)event, ureq);
+			} else if (event instanceof KalendarGUIImportEvent) {
+				pushImportEventController((KalendarGUIImportEvent)event, ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				importedCalendarWrappers = ImportCalendarManager.getImportedCalendarsForIdentity(ureq);
 				importedCalendarConfig.setCalendars(importedCalendarWrappers);
@@ -559,6 +566,19 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 		
 		// set logging action
 		setCalLoggingAction(CalendarLoggingAction.CALENDAR_ENTRY_CREATED);
+	}
+	
+	private void pushImportEventController(KalendarGUIImportEvent importEvent, UserRequest ureq) {
+		KalendarRenderWrapper calendarWrapper = weeklyCalendar.getKalendarRenderWrapper(importEvent.getCalendarID());
+
+		removeAsListenerAndDispose(importCalendarController);
+
+		importCalendarController = new ImportCalendarController(ureq, getWindowControl(), calendarWrapper);
+		listenTo(importCalendarController);
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCalendarController.getInitialComponent());
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	protected void doDispose() {

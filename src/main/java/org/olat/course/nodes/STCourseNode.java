@@ -139,6 +139,9 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 			// reuse the Run controller from the "Single Page" building block, since
 			// we need to do exactly the same task
 			Boolean allowRelativeLinks = getModuleConfiguration().getBooleanEntry(STCourseNodeEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
+			if(allowRelativeLinks == null) {
+				allowRelativeLinks = Boolean.FALSE;
+			}
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), relPath, null, allowRelativeLinks
 					.booleanValue(), ores);
@@ -189,7 +192,23 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 		// displayed in the ST-Runcontroller
 		return new NodeRunConstructionResult(cont);
 	}
-
+	
+	/**
+	 * Checks if the given CourseNode is of type "Structure Node" and if it is set
+	 * to delegate to it's first visible child
+	 * 
+	 * @param nodeToCheck
+	 * @return returns true if the given coursenNode is a STCourseNode and is configured to delegate
+	 */
+	public static boolean isDelegatingSTCourseNode(CourseNode nodeToCheck) {
+		if (!(nodeToCheck instanceof STCourseNode)) return false;
+		
+		STCourseNode node = (STCourseNode) nodeToCheck;
+		String displayMode = node.getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE,
+				STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
+		return (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE.equals(displayMode));
+	}
+	
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,

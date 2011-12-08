@@ -34,11 +34,11 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.resource.OresHelper;
 
 public abstract class LDAPLoginManager extends BasicManager {
-	
+
 	public static final OLATResourceable ldapSyncLockOres = OresHelper.createOLATResourceableInstance(LDAPLoginManager.class, 0l);
-	
+
 	public abstract LdapContext bindSystem();
-	
+
 	public abstract Attributes bindUser(String uid, String pwd, LDAPError errors);
 
 	public abstract void changePassword(Identity identity, String pwd, LDAPError errors);
@@ -64,5 +64,16 @@ public abstract class LDAPLoginManager extends BasicManager {
 	public abstract boolean acquireSyncLock();
 	
 	public abstract void freeSyncLock();
+	
+	public abstract void doSyncSingleUser(Identity ident);
 
+	public abstract void removeFallBackAuthentications();
+
+	/**
+	 * returns true, if the given identity is member of the LDAP-securitygroup
+	 * 
+	 * @param ident
+	 * @return
+	 */
+	public abstract boolean isIdentityInLDAPSecGroup(Identity ident);
 }

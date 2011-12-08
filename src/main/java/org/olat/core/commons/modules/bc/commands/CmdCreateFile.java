@@ -102,7 +102,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		
 		//check for quota
 		long quotaLeft = VFSManager.getQuotaLeftKB(folderComponent.getCurrentContainer());
-		if (quotaLeft < -2) {
+		if (quotaLeft <= 0 && quotaLeft != -1 ) {
 			String supportAddr = WebappHelper.getMailConfig("mailSupport");
 			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
 			this.getWindowControl().setError(msg);

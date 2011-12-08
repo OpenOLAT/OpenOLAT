@@ -33,7 +33,6 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LogModule;
 import org.olat.user.UserPropertiesConfig;
 
@@ -52,15 +51,15 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 
 	
 	private Map<String, UserPropertyHandler> userPropertyNameLookupMap;
-	private Map<String, List> userPropertyUsageContextsLookupMap = new HashMap();
+	private Map<String, List<UserPropertyHandler>> userPropertyUsageContextsLookupMap = new HashMap<String, List<UserPropertyHandler>>();
 	
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, UserPropertyUsageContext> userPropertyUsageContexts;
 
 	public void init() {
-		List<UserPropertyHandler> userPropertyHandlers = getUserPropertyHandlersFor(USER_PROPERTY_LOG_CONFIGURATION, false);
+		List<UserPropertyHandler> userPropHandlers = getUserPropertyHandlersFor(USER_PROPERTY_LOG_CONFIGURATION, false);
 		Set<String> userProperties = new LinkedHashSet<String>();
-		for (Iterator<UserPropertyHandler> iterator = userPropertyHandlers.iterator(); iterator.hasNext();) {
+		for (Iterator<UserPropertyHandler> iterator = userPropHandlers.iterator(); iterator.hasNext();) {
 			userProperties.add(iterator.next().getName());
 		}
 		LogModule.setUserProperties(userProperties);
@@ -72,6 +71,10 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 	 */
 	public void setUserPropertyUsageContexts(Map<String,UserPropertyUsageContext> userPropertyUsageContexts) {
 		this.userPropertyUsageContexts = userPropertyUsageContexts;
+	}
+	
+	public Map<String,UserPropertyUsageContext> getUserPropertyUsageContexts(){
+		return this.userPropertyUsageContexts;
 	}
 
 	/**
@@ -171,11 +174,11 @@ public class UserPropertiesConfigImpl extends LogDelegator implements UserProper
 		UserPropertyUsageContext currentUsageConfig = userPropertyUsageContexts.get(usageIdentifyer);
 		if (currentUsageConfig == null) {
 			currentUsageConfig = userPropertyUsageContexts.get("default");
-			Tracing.logWarn("Could not find user property usage configuration for usageIdentifyer::" + usageIdentifyer
-					+ ", please check yout olat_userconfig.xml file. Using default configuration instead.", UserPropertiesConfigImpl.class);
-			if (currentUsageConfig == null) {
-				throw new OLATRuntimeException("Missing default user property usage configuratoin in olat_userconfig.xml", null);
-			}
+			logWarn(
+					"Could not find user property usage configuration for usageIdentifyer::" + usageIdentifyer
+							+ ", please check yout olat_userconfig.xml file. Using default configuration instead.", null);
+			if (currentUsageConfig == null) { throw new OLATRuntimeException(
+					"Missing default user property usage configuratoin in olat_userconfig.xml", null); }
 		}
 		return currentUsageConfig;
 	}

@@ -20,6 +20,7 @@
  */
 package org.olat.portfolio.ui.artefacts.collect;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -28,6 +29,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
@@ -47,7 +49,13 @@ public class EPCollectStep02 extends BasicStep {
 		super(ureq);
 		this.artefact = artefact;
 		setI18nTitleAndDescr("step2.description", "step2.short.descr");
-		setNextStep(new EPCollectStep03(ureq, artefact));
+		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		if (!portfolioModule.isCopyrightStepEnabled() && !portfolioModule.isReflexionStepEnabled()){
+			// skip copyright AND reflexion step
+			setNextStep(new EPCollectStep04(ureq, artefact));
+		} else {		
+			setNextStep(new EPCollectStep03(ureq, artefact));
+		}
 	}
 
 	/**

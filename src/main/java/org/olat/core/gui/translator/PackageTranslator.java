@@ -49,6 +49,10 @@ public class PackageTranslator extends LogDelegator implements Translator {
 		this.fallBackTranslator = fallBackTranslator;
 		this.fallBack = fallBack;
 	}
+	
+	public void setFallBack(PackageTranslator fallback){
+		this.fallBackTranslator = fallback;
+	}
 
 	/**
 	 * @param packageName
@@ -146,6 +150,9 @@ public class PackageTranslator extends LogDelegator implements Translator {
 				// try with fallBackToDefaultLocale 
 				val = translate(key, args, true );
 			}
+		} 
+		if (val != null){
+			fallBackLevel = 0;
 		}
 		// else value got translated or there is at least an error message telling
 		// which key was not found.

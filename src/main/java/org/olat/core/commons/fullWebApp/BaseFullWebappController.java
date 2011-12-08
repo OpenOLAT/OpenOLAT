@@ -32,6 +32,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEvent;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
+import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
@@ -43,6 +44,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.OncePanel;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -116,7 +118,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 	// the sites list
 	private List<SiteInstance> sites;
 	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<SiteInstance, BornSiteInstance>();
-	private static final int MAX_TABS = 5;
 	private int navLinkCounter = 1;
 	//fxdiff BAKS-7 Resume function
 	private Map<SiteInstance,HistoryPoint> siteToBusinessPath = new HashMap<SiteInstance,HistoryPoint>();
@@ -126,6 +127,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 	protected Controller contentCtrl;
 	private Panel initialPanel;
 	private DTabs myDTabsImpl;
+	private static Integer MAX_TAB;
 	
 	public BaseFullWebappController(UserRequest ureq, WindowControl ouisc_wControl,
 			BaseFullWebappControllerParts baseFullWebappControllerParts) {
@@ -425,7 +427,10 @@ public class BaseFullWebappController extends BasicController implements Generic
 				activateSite(sites.get(0), ureq, null, null);
 			}
 		}
-		if (sites == null && contentCtrl == null) { throw new AssertException("either one site has to be present or a content controller"); }
+		if (sites == null && contentCtrl == null) { 
+		  // fxdiff: FXOLAT-190  RS if no sites displayed... show empty page instead
+			main.setContent(TextFactory.createTextComponentFromString("empty", "", null, false, null));
+		}
 
 		// set maintenance message
 		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
@@ -797,12 +802,26 @@ public class BaseFullWebappController extends BasicController implements Generic
 	//fxdiff BAKS-7 Resume function
 	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
 		// fxdiff: read from props
-		if (dtabs.size() >= MAX_TABS) {
+		if (dtabs.size() >= getMaxTabs()) {
 			getWindowControl().setError(translate("warn.tabsfull"));
 			return null;
 		}
 		DTabImpl dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		return dt;
+	}
+
+	/**
+	 * fxdiff: load max dTab-Amount from Properties, set default to 5
+	 * @return
+	 */
+	private int getMaxTabs() {
+		if (MAX_TAB == null) {
+			PersistedProperties prop = new PersistedProperties(this);
+			prop.init();
+			prop.setIntPropertyDefault("max.dtabs", 5);
+			MAX_TAB = prop.getIntPropertyValue("max.dtabs");
+		}
+		return MAX_TAB;
 	}
 
 	/**

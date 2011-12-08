@@ -21,7 +21,9 @@
 package org.olat.admin.user.bulkChange;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,6 +31,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.admin.user.groups.GroupSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -50,8 +53,11 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Util;
+import org.olat.group.ui.BusinessGroupTableModel;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -119,8 +125,11 @@ class UserBulkChangeStep02 extends BasicStep {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			// use custom translator with fallback to user properties translator
 			UserManager um = UserManager.getInstance();
-			setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
-			flc.setTranslator(getTranslator());
+			Translator pt1 = um.getPropertyHandlerTranslator(getTranslator());
+			Translator pt2 = Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale(), pt1);
+			Translator pt3 = Util.createPackageTranslator(GroupSearchController.class, ureq.getLocale(), pt2);
+			setTranslator(pt3);
+			flc.setTranslator(pt3);
 			initForm(ureq);
 		}
 
@@ -263,6 +272,30 @@ class UserBulkChangeStep02 extends BasicStep {
 					colPos + 1), tableColumnModel);
 
 			uifactory.addTableElement("newUsers", tableDataModel, formLayoutVertical);
+
+			//fxdiff: 101 add group overview
+			HashSet<Long> allGroups = new HashSet<Long>(); 
+			List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");
+			List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
+			allGroups.addAll(ownGroups);
+			allGroups.addAll(partGroups);
+			List<Long> mailGroups = (List<Long>) getFromRunContext("mailGroups");
+			
+			if (allGroups.size() != 0) {
+				uifactory.addSpacerElement("space", formLayout, true);
+				uifactory.addStaticTextElement("add.to.groups", "", formLayout);
+				FlexiTableColumnModel groupColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.group.name"));
+				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("description"));
+				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.group.type"));
+				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.role"));
+				groupColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("send.email"));
+				
+				FlexiTableDataModel groupDataModel = FlexiTableDataModelFactory.createFlexiTableDataModel(new GroupAddOverviewModel(Arrays.asList(allGroups.toArray(new Long[]{})), ownGroups, partGroups, mailGroups, getTranslator()), groupColumnModel);
+				
+				uifactory.addTableElement("groupOverview", groupDataModel, formLayout);
+			}
+			
 		}
 
 		/**
@@ -292,4 +325,5 @@ class UserBulkChangeStep02 extends BasicStep {
 			}
 		}
 	}
+	
 }

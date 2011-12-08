@@ -30,7 +30,6 @@ import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSItem;
@@ -63,13 +62,16 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root) {
 		setRootNode(createNode(root));
-		makeChildren(getRootNode(), root);
+		getRootNode().getChildCount();
+		// fxdiff: 
+		//makeChildren(getRootNode(), root);
 	}
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root, VFSItemFilter filter) {
 		this.filter = filter;
 		setRootNode(createNode(root));
-		makeChildren(getRootNode(), root);
+		getRootNode().getChildCount();
+		//makeChildren(getRootNode(), root);
 	}
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root,
@@ -77,7 +79,8 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 		this.filter = filter;
 		this.comparator = comparator;
 		setRootNode(createNode(root));
-		makeChildren(getRootNode(), root);
+		getRootNode().getChildCount();
+		//makeChildren(getRootNode(), root);
 	}
 
 	/**
@@ -86,14 +89,14 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	 * @param node
 	 * @param root
 	 */
-	private void makeChildren(GenericTreeNode node, OlatRootFolderImpl root) {
+	protected void makeChildren(OlatRootFolderTreeNode node, OlatRootFolderImpl root) {
 		List<MetaTagged> children = castToMetaTaggables(root.getItems(filter));
 		if (comparator != null) {
 			Collections.sort(children, comparator);
 		}
 		for (OlatRelPathImpl child : castToRelPathItems(children)) {
 			// create a node for each child and add it
-			GenericTreeNode childNode = createNode(child);
+			OlatRootFolderTreeNode childNode = createNode(child);
 			node.addChild(childNode);
 			if (child instanceof OlatRootFolderImpl) {
 				// add the child's children recursively
@@ -142,8 +145,8 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	 * 
 	 * @param item
 	 */
-	private GenericTreeNode createNode(OlatRelPathImpl item) {
-		GenericTreeNode node = new GenericTreeNode();
+	private OlatRootFolderTreeNode createNode(OlatRelPathImpl item) {
+		OlatRootFolderTreeNode node = new OlatRootFolderTreeNode(item, this);
 		MetaInfo meta = MetaInfoFactory.createMetaInfoFor(item);
 		if (meta != null) {
 			String title = meta.getTitle();
@@ -165,8 +168,8 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	 * @see org.olat.core.gui.components.tree.GenericTreeModel#getRootNode()
 	 */
 	@Override
-	public GenericTreeNode getRootNode() {
-		return (GenericTreeNode) super.getRootNode();
+	public OlatRootFolderTreeNode getRootNode() {
+		return (OlatRootFolderTreeNode) super.getRootNode();
 	}
 
 }

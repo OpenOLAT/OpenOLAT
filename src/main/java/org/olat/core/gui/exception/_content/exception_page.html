@@ -104,6 +104,11 @@ $r.renderHeaderIncludes()
 	$r.translate('error.time') <strong>$time</strong>
 	<br />
 	$r.translate('error.addinfo') <strong>$detailedmessage</strong>
+	<br />
+	$r.translate('error.businesspath.previous') <strong>#if($!prevbusinesspath) $prevbusinesspath #else $r.translate('error.businesspath.unkown') #end </strong>
+	<br />
+	$r.translate('error.businesspath') <strong>#if($!lastbusinesspath) $lastbusinesspath #else $r.translate('error.businesspath.unkown') #end </strong>
+	
 	#if($!knownissuelink)
 	<br />
 	Known Issue: <strong>$knownissuelink</strong>
@@ -127,9 +132,8 @@ $r.renderHeaderIncludes()
 	<div class="b_with_small_icon_left">
 		<form method="get" name="reportform" action="$r.relLink('')error/" id="ofo_366191">
 			<input type="hidden" name="username" value="$username" />
-			<textarea cols="70" rows="15" name="textarea" >$r.translate('error.errnum') $errnum
-		$r.translate('error.time') $time
-		---------------------------------------------
+			<input type="hidden" name="fx_errnum" value="${errnum}" />
+			<textarea cols="70" rows="15" name="textarea" >$r.translate('error.errnum') ${errnum}&#10;$r.translate('error.businesspath.previous') #if($!prevbusinesspath) $prevbusinesspath #else $r.translate('error.businesspath.unkown') #{end}&#10;$r.translate('error.businesspath') #if($!lastbusinesspath) $lastbusinesspath #else $r.translate('error.businesspath.unkown') #{end}&#10;$r.translate('error.time') ${time}&#10;---------------------------------------------
 			</textarea>
 			<div class="b_button_group">
 				<input type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="b_button" />

@@ -50,10 +50,18 @@ public class OLATAuthManager extends BasicManager {
 	private static OLog log = Tracing.createLoggerFor(OLATAuthenticationController.class);
 	
 	/**
-	 * Change the password of an identity
-	 * @param doer Identity who is changing the password
-	 * @param identity Identity who's password is beeing changed.
-	 * @param newPwd New password.
+	 * Change the password of an identity. if the given identity is a LDAP-User,
+	 * the pw-change is propagated to LDAP (according to config) NOTE: caller of
+	 * this method should check if identity is allowed to change it's own pw [
+	 * UserModule.isPwdchangeallowed(Identity ident) ], applies only if doer
+	 * equals identity
+	 * 
+	 * @param doer
+	 *            Identity who is changing the password
+	 * @param identity
+	 *            Identity who's password is beeing changed.
+	 * @param newPwd
+	 *            New password.
 	 * @return True upon success.
 	 */
 	public static boolean changePassword(Identity doer, Identity identity, String newPwd) {

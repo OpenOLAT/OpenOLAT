@@ -29,6 +29,8 @@ import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.log4j.Level;
+import org.olat.admin.user.UserSearchController;
+import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -50,6 +53,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPEvent;
 import org.olat.ldap.LDAPLoginManager;
+import org.olat.ldap.LDAPLoginModule;
 
 /**
  * Description:<br>
@@ -72,6 +76,11 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private Integer amountUsersToDelete;
 	private List<Identity> identitiesToDelete;
 	private LDAPLoginManager ldapLoginManager;
+	private Link fullSyncStartLink;
+	private UserSearchController userSearchCtrl;
+	private CloseableCalloutWindowController calloutCtr;
+	private Link syncOneUserLink;
+	private Link removeFallBackAuthsLink;
 
 	protected LDAPAdminController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
@@ -82,10 +91,18 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		updateLastSyncDateInVC();
 		// Create start LDAP sync link
 		syncStartLink = LinkFactory.createButton("sync.button.start", ldapAdminVC, this);
+		fullSyncStartLink = LinkFactory.createButton("full.sync.button.start", ldapAdminVC, this);
+		// sync one user only
+//		syncOneUserLink = LinkFactory.createButton("one.user.sync.button.start", ldapAdminVC, this);
+		
+		// remove olat-fallback authentications for ldap-users, see FXOLAT-284
+		if (LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
+			removeFallBackAuthsLink = LinkFactory.createButton("remove.fallback.auth", ldapAdminVC, this);
+		}
 		// Create start delete User link
 		deletStartLink = LinkFactory.createButton("delete.button.start", ldapAdminVC, this);
 		// Create real-time log viewer
-		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, control, "org.olat.ldap", Level.INFO, true);
+		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, control, "org.olat.ldap", Level.DEBUG, true);
 		listenTo(logViewController);
 		ldapAdminVC.put("logViewController", logViewController.getInitialComponent());
 		//
@@ -125,11 +142,28 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			// Start sync job
 			// Disable start link during sync
 			syncStartLink.setEnabled(false);
+			fullSyncStartLink.setEnabled(false);
 			LDAPEvent ldapEvent = new LDAPEvent(LDAPEvent.DO_SYNCHING);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ldapEvent, LDAPLoginManager.ldapSyncLockOres);
 			showInfo("admin.synchronize.started");
 		}
-
+		else if (source == fullSyncStartLink){
+			// Start sync job
+			// Disable start link during sync
+			syncStartLink.setEnabled(false);
+			fullSyncStartLink.setEnabled(false);
+			LDAPEvent ldapEvent = new LDAPEvent(LDAPEvent.DO_FULL_SYNCHING);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ldapEvent, LDAPLoginManager.ldapSyncLockOres);
+			showInfo("admin.synchronize.started");			
+		}
+		else if (source == syncOneUserLink){
+			userSearchCtrl = new UserSearchController(ureq, getWindowControl(), false);
+			listenTo(userSearchCtrl);
+			calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), userSearchCtrl.getInitialComponent(), syncOneUserLink, null, true, null);
+			calloutCtr.addDisposableChildController(userSearchCtrl);
+			calloutCtr.activate();
+			listenTo(calloutCtr);
+		}
 		else if (source == deletStartLink) {
 			// cancel if some one else is making sync or delete job
 			if (!ldapLoginManager.acquireSyncLock()) {
@@ -140,7 +174,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 				// check and get LDAP connection
 				LdapContext ctx = ldapLoginManager.bindSystem();
 				if (ctx == null) {
-					showError("LDAP connection ERROR");
+					showError("delete.error.connection");
 					return;
 				}
 				// get deleted users
@@ -148,7 +182,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 				try {
 					ctx.close();
 				} catch (NamingException e) {
-					showError("Could not close LDAP connection on manual delete sync");
+					showError("delete.error.connection.close");
 					logError("Could not close LDAP connection on manual delete sync", e);
 				}
 				if (identitiesToDelete != null && identitiesToDelete.size() != 0) {
@@ -189,6 +223,10 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 					ldapLoginManager.freeSyncLock();
 				}
 			}
+		} else if (source == removeFallBackAuthsLink){
+			removeFallBackAuthsLink.setEnabled(false);
+			ldapLoginManager.removeFallBackAuthentications();		
+			showInfo("opsuccess");
 		}
 
 	}
@@ -217,6 +255,10 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 				}
 				ldapLoginManager.freeSyncLock();
 				deletStartLink.setEnabled(true);
+			}	else if (source == userSearchCtrl){
+				calloutCtr.deactivate();
+				Identity choosenIdent = ((SingleIdentityChosenEvent)event).getChosenIdentity();
+				ldapLoginManager.doSyncSingleUser(choosenIdent);
 			}
 		}
 	}
@@ -238,6 +280,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		}
 		// re-enable start link
 		syncStartLink.setEnabled(true);
+		fullSyncStartLink.setEnabled(true);
 		// update last sync date
 		updateLastSyncDateInVC();
 	}

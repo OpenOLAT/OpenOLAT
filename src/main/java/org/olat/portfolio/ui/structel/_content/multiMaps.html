@@ -23,7 +23,7 @@
 	#if($map.getClass().getSimpleName() == "EPStructuredMapTemplate") #set($addTempStamp = "template") #end
 	<li class="$!mapStyles.get($index) $!addTempStamp">	 
 		<h4>$map.title</h4> 
-		$map.shortenedDescription
+		<div class="b_map_descr">$map.shortenedDescription</div>
 		<div class="b_map_info">
 		#if ($owners.get($index)) <p>$r.translate("map.owners", $owners.get($index)) </p> #end
 		<p>$amounts.get($index)

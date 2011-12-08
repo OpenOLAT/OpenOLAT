@@ -1,0 +1,19 @@
+$r.render("backLink") <br/>
+<p>$r.translate("link.editor.overview.intro")</p>
+
+#if ($!allInst)
+	#foreach( $instTrans in $allInstTranslated )
+		#set ($id = ($velocityCount - 1) )
+		#set ( $inst = $allInst.get($id) )
+		<br/>
+		<b>$r.translate("link.institution"): <i>$instTrans</i> </b> 
+		<div class="b_float_right"> $r.render("linkadd$inst") </div><br/>
+		<ul>
+		#foreach( $linkID in $allInstWithLinkIds.get($velocityCount) )
+			#set($linkEditorLink = "linkid$linkID")
+			#set($linkDelLink = "linkdel$linkID")
+		  <li>$r.render("$linkEditorLink") $r.render("$linkDelLink")</li>
+		#end
+		</ul>		
+	#end
+#end

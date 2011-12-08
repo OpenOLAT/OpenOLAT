@@ -21,14 +21,14 @@
 
 package org.olat.search.service.document.file;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
@@ -54,14 +54,13 @@ public class XmlDocument extends FileDocument {
 		return htmlDocument.getLuceneDocument();
 	}
 	
+	//fxdiff FXOLAT-97: index run in infinite loop
 	protected String readContent(VFSLeaf leaf) throws IOException {
-		BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
-    String inputString = FileUtils.load(bis, "utf-8");
+		InputStream is = leaf.getInputStream();
     // Remove all HTML and &nbsp; Tags
-    if (log.isDebug() ) log.debug("HTML content with tags :" + inputString);
-    String output = FilterFactory.getHtmlTagsFilter().filter(inputString);
+    String output = new NekoHTMLFilter().filter(is);
     if (log.isDebug() ) log.debug("HTML content without tags :" + output);
-  	bis.close();
+  	FileUtils.closeSafely(is);
 		return output;
 	}
 

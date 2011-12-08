@@ -110,6 +110,8 @@ public class RemoteSessionsOnIMServerOverXMPP  implements InstantMessagingSessio
 	
 	private IQ sendPacket(IQ packet) {
 		XMPPConnection con = adminUser.getConnection();
+		//fxdiff: FXOLAT-233 
+		if (con==null) return null;
 		try {
 			packet.setFrom(con.getUser());
 			PacketCollector collector = con.createPacketCollector(new PacketIDFilter(packet.getPacketID()));

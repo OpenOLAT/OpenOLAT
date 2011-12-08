@@ -73,7 +73,8 @@ public class NodeAssessmentTableDataModel extends DefaultTableDataModel {
 				case 2:
 					return nodeData.get(AssessmentHelper.KEY_ATTEMPTS);
 				case 3:
-					return nodeData.get(AssessmentHelper.KEY_SCORE);
+					//fxdiff VCRP-4: assessment overview with max score
+					return nodeData.get(AssessmentHelper.KEY_SCORE_F);
 				case 4:
 					return nodeData.get(AssessmentHelper.KEY_PASSED);
 				case 5:
@@ -81,6 +82,14 @@ public class NodeAssessmentTableDataModel extends DefaultTableDataModel {
 					Boolean courseNodeEditable = (Boolean) nodeData.get(AssessmentHelper.KEY_SELECTABLE);
 					if (nodesSelectable && courseNodeEditable.booleanValue()) return trans.translate("select");
 					else return null;
+				case 6:
+					//min score
+					Float minScore = (Float)nodeData.get(AssessmentHelper.KEY_MIN);
+					return minScore == null ? null : minScore;
+				case 7:
+					//max score
+					Float maxScore = (Float)nodeData.get(AssessmentHelper.KEY_MAX);
+					return maxScore == null ? null : maxScore;
 				default:
 					return "error";
 			}

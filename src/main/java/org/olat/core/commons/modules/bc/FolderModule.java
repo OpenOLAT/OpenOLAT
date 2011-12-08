@@ -41,6 +41,8 @@ public class FolderModule extends AbstractOLATModule {
 	private static final String CONFIG_ROOT = "Root";
 	private static final String CONFIG_LIMITULMB = "LimitULMB";
 	private static final String CONFIG_QUOTAMB = "QuotaMB";
+	private static final String CONFIG_SENDDOCLINKONLY = "SendDocLinkOnly";
+	private static final String CONFIG_SENDDOCTOEXTERN = "SendDocToExtern";
 	private FolderVersioningConfigurator versioning;
 	
 	/**
@@ -75,6 +77,14 @@ public class FolderModule extends AbstractOLATModule {
 		int quotaMB = getIntConfigParameter(CONFIG_QUOTAMB, 100);
 		FolderConfig.setDefaultQuotaKB(quotaMB * 1024);
 		log.info("Default user quota set to " + FolderConfig.getDefaultQuotaKB() + " KB.");
+		
+		//set default
+		boolean sendDocLinkyOnly = getBooleanConfigParameter(CONFIG_SENDDOCLINKONLY, true);
+		FolderConfig.setSendDocumentLinkOnly(sendDocLinkyOnly);
+		
+		//set default
+		boolean sendDocToExtern = getBooleanConfigParameter(CONFIG_SENDDOCTOEXTERN, false);
+		FolderConfig.setSendDocumentToExtern(sendDocToExtern);
 		
 		// create tmp directory
 		File fTmp = new File(FolderConfig.getCanonicalTmpDir());

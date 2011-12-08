@@ -121,7 +121,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @param wControl
 	 */
 	public FolderRunController(UserRequest ureq, WindowControl wControl) {
-		this(new BriefcaseWebDAVProvider().getContainer(ureq.getIdentity()), true, true, ureq, wControl);
+		this(new BriefcaseWebDAVProvider().getContainer(ureq.getIdentity()), true, true, true, ureq, wControl);
 	}
  	 	 	 	
 	/**
@@ -132,7 +132,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @param wControl
 	 */
 	public FolderRunController(VFSContainer rootContainer, boolean displayWebDAVLink, UserRequest ureq, WindowControl wControl) { 
-		this(rootContainer, displayWebDAVLink, false, ureq, wControl, null, null);
+		this(rootContainer, displayWebDAVLink, false, false, ureq, wControl, null, null);
 	}
 	
 	/**
@@ -142,8 +142,8 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @param ureq
 	 * @param wControl
 	 */
-	public FolderRunController(VFSContainer rootContainer, boolean displayWebDAVLink, boolean displaySearch, UserRequest ureq, WindowControl wControl) { 
-		this(rootContainer, displayWebDAVLink, displaySearch, ureq, wControl, null, null);
+	public FolderRunController(VFSContainer rootContainer, boolean displayWebDAVLink, boolean displaySearch, boolean canMail, UserRequest ureq, WindowControl wControl) { 
+		this(rootContainer, displayWebDAVLink, displaySearch, canMail, ureq, wControl, null, null);
 	}
 
 	/**
@@ -170,12 +170,44 @@ public class FolderRunController extends BasicController implements Activateable
 	 *            not use this feature.
 	 */
 	public FolderRunController(VFSContainer rootContainer,
-			boolean displayWebDAVLink, boolean displaySearch, UserRequest ureq,
+			boolean displayWebDAVLink, boolean displaySearch, boolean canMail, UserRequest ureq,
 			WindowControl wControl, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel) {
+		this(rootContainer, displayWebDAVLink, displaySearch, canMail, ureq, wControl, filter, customLinkTreeModel, null);
+	}
+
+	/**
+	 * Constructor for a folder controller with an optional file filter and an
+	 * optional custom link model for editor. Use this one if you don't wan't to
+	 * display all files in the file browser or if you want to use a custom link
+	 * tree model in the editor.
+	 * 
+	 * @param rootContainer
+	 *            The folder base. User can not navigate out of this container.
+	 * @param displayWebDAVLink
+	 *            true: show the webDAV link; false: hide the webDAV link
+	 * @param displaySearch
+	 *            true: display the search field; false: omit the search field.
+	 *            Note: for guest users the search is always omitted.
+	 * @param ureq
+	 *            The user request object
+	 * @param wControl
+	 *            The window control object
+	 * @param filter
+	 *            A file filter or NULL to not use a filter
+	 * @param customLinkTreeModel
+	 *            A custom link tree model used in the HTML editor or NULL to
+	 *            not use this feature.
+	 * @param externContainerForCopy
+	 *            A container to copy files from
+	 */
+	public FolderRunController(VFSContainer rootContainer,
+			boolean displayWebDAVLink, boolean displaySearch, boolean canMail, UserRequest ureq,
+			WindowControl wControl, VFSItemFilter filter,
+			CustomLinkTreeModel customLinkTreeModel, VFSContainer externContainerForCopy) {
 
 		super(ureq, wControl);
-		
+
 		folderContainer = this.createVelocityContainer("run");
 		editQuotaButton = LinkFactory.createButtonSmall("editQuota", folderContainer, this);
 		
@@ -202,7 +234,8 @@ public class FolderRunController extends BasicController implements Activateable
 		}
 		
 		
-		folderComponent = new FolderComponent(ureq, "foldercomp", rootContainer, filter, customLinkTreeModel);
+		folderComponent = new FolderComponent(ureq, "foldercomp", rootContainer, filter, customLinkTreeModel, externContainerForCopy);
+		folderComponent.setCanMail(ureq.getUserSession().getRoles().isGuestOnly() ? false : canMail); // guests can never send mail
 		folderComponent.addListener(this);
 		folderContainer.put("foldercomp", folderComponent);
 		if (WebDAVManager.getInstance().isEnabled() && displayWebDAVLink)

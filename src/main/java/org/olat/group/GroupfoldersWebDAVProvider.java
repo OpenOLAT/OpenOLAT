@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -38,6 +39,8 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 /**
  * 
  * Description:<br>
@@ -84,8 +87,28 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 					q = QuotaManager.getInstance().createQuota(tools.getFolderRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 				}
 				
-				SubscriptionContext sc = new SubscriptionContext(group, "toolfolder");
-				FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(q, sc);
+				//fxdiff VCRP-8: collaboration tools folder access control
+				boolean writeAccess;
+				boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, group.getOwnerGroup());
+				if (!isOwner) {
+					// check if participants have read/write access
+					int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
+					Long lFolderAccess = tools.lookupFolderAccess();
+					if (lFolderAccess != null) {
+						folderAccess = lFolderAccess.intValue();
+					}
+					writeAccess = (folderAccess == CollaborationTools.CALENDAR_ACCESS_ALL);
+				} else {
+					writeAccess = true;
+				}
+				
+				VFSSecurityCallback secCallback;
+				if(writeAccess) {
+					SubscriptionContext sc = new SubscriptionContext(group, "toolfolder");
+					secCallback = new FullAccessWithQuotaCallback(q, sc);
+				} else {
+					secCallback = new ReadOnlyCallback();
+				}
 				grpContainer.setLocalSecurityCallback(secCallback);
 				
 				// add container

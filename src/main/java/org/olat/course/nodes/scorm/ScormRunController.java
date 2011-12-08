@@ -1,23 +1,23 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <p>
-*/ 
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <p>
+ */
 
 package org.olat.course.nodes.scorm;
 
@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -37,8 +38,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.ObjectivesHelper;
@@ -56,18 +57,20 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
- * Description: <BR/>Run controller for content packaging course nodes <P/>
+ * Description: <BR/>
+ * Run controller for content packaging course nodes
+ * <P/>
  * 
  * @author Felix Jost
  */
-public class ScormRunController extends BasicController implements ScormAPICallback {
+public class ScormRunController extends BasicController implements ScormAPICallback, GenericEventListener {
 
 	private ModuleConfiguration config;
 	private File cpRoot;
 	private Panel main;
 	private VelocityContainer startPage;
 
-	//private Translator translator;
+	// private Translator translator;
 	private ScormAPIandDisplayController scormDispC;
 	private ScormCourseNode scormNode;
 
@@ -77,14 +80,14 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	private UserCourseEnvironment userCourseEnv;
 	private ChooseScormRunModeForm chooseScormRunMode;
 	private boolean isPreview;
-	
+
 	private Identity identity;
 	private boolean isAssessable;
 
 	/**
-	 * Use this constructor to launch a CP via Repository reference key set in the
-	 * ModuleConfiguration. On the into page a title and the learning objectives
-	 * can be placed.
+	 * Use this constructor to launch a CP via Repository reference key set in
+	 * the ModuleConfiguration. On the into page a title and the learning
+	 * objectives can be placed.
 	 * 
 	 * @param config
 	 * @param ureq
@@ -96,38 +99,76 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			ScormCourseNode scormNode, boolean isPreview) {
 		super(ureq, wControl);
 		// assertion to make sure the moduleconfig is valid
-		if (!ScormEditController.isModuleConfigValid(config)) throw new AssertException("scorm run controller had an invalid module config:"
-				+ config.toString());
+		if (!ScormEditController.isModuleConfigValid(config))
+			throw new AssertException("scorm run controller had an invalid module config:" + config.toString());
 		this.isPreview = isPreview;
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
 		this.identity = ureq.getIdentity();
-		
+
 		addLoggingResourceable(LoggingResourceable.wrap(scormNode));
 		init(ureq);
 	}
 
 	private void init(UserRequest ureq) {
 
-		startPage = createVelocityContainer ("run");
-		// show browse mode option only if not assessable, hide it if in "real test mode"
-		isAssessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE);
+		startPage = createVelocityContainer("run");
+		// show browse mode option only if not assessable, hide it if in
+		// "real test mode"
+		isAssessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 
-		chooseScormRunMode = new ChooseScormRunModeForm(ureq, getWindowControl(), !isAssessable);
-		listenTo(chooseScormRunMode);
-		startPage.put("chooseScormRunMode", chooseScormRunMode.getInitialComponent());			
-		
+		// <OLATCE-289>
+		// attemptsDependOnScore means that attempts are only incremented when a
+		// score was given back by the SCORM
+		// set start button if max attempts are not reached
+		if (!maxAttemptsReached()) {
+			chooseScormRunMode = new ChooseScormRunModeForm(ureq, getWindowControl(), !isAssessable);
+			listenTo(chooseScormRunMode);
+			startPage.put("chooseScormRunMode", chooseScormRunMode.getInitialComponent());
+			startPage.contextPut("maxAttemptsReached", Boolean.FALSE);
+		} else {
+			startPage.contextPut("maxAttemptsReached", Boolean.TRUE);
+		}
+		// </OLATCE-289>
+
 		main = new Panel("scormrunmain");
-		// scorm always has a start page
-		doStartPage(ureq);
-		
+		doStartPage();
 		putInitialPanel(main);
+
+		boolean doSkip = config.getBooleanSafe(ScormEditController.CONFIG_SKIPLAUNCHPAGE, true);
+		if (isAssessable && doSkip && !maxAttemptsReached()) {
+			doLaunch(ureq, true);
+			//CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.createOLATResourceableType(getClass().getName()));
+			getWindowControl().getWindowBackOffice().addCycleListener(this);
+			
+//			Component scormContent = scormDispC.getInitialComponent();
+//			fireEvent(ureq, new FullWidthReplaceRequestEvent(true, scormContent));
+		}
 	}
+
+	// <OLATCE-289>
+	/**
+	 * @return true if attempts of the user are equal to the maximum number of
+	 *         attempts.
+	 */
+	private boolean maxAttemptsReached() {
+		int maxAttempts = config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0);
+		boolean maxAttemptsReached = false;
+		if (maxAttempts > 0) {
+			if (scormNode.getUserAttempts(userCourseEnv) >= maxAttempts) {
+				maxAttemptsReached = true;
+			}
+		}
+		return maxAttemptsReached;
+	}
+
+	// </OLATCE-289>
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
+	 *      org.olat.core.gui.components.Component,
+	 *      org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -135,22 +176,33 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
+	 *      org.olat.core.gui.control.Controller,
+	 *      org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == scormDispC) { // just pass on the event.
-			doStartPage(ureq);
-			fireEvent(ureq, event);
+			// <OLATCE-289>
+			if (event.equals(Event.BACK_EVENT)) {
+				if (maxAttemptsReached()) {
+					startPage.contextPut("maxAttemptsReached", Boolean.TRUE);
+				}
+				doStartPage();
+			} else {
+				// </OLATCE-289>
+				doStartPage();
+				fireEvent(ureq, event);
+			}
 		} else if (source == null) { // external source
 			if (event instanceof TreeEvent) {
 				scormDispC.switchToPage((TreeEvent) event);
 			}
 		} else if (source == chooseScormRunMode) {
-			doLaunch(ureq);
+			doLaunch(ureq, true);
+			scormDispC.activate();
 		}
 	}
 
-	private void doStartPage(UserRequest ureq) {
+	private void doStartPage() {
 
 		// push title and learning objectives, only visible on intro page
 		startPage.contextPut("menuTitle", scormNode.getShortTitle());
@@ -159,13 +211,13 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// Adding learning objectives
 		String learningObj = scormNode.getLearningObjectives();
 		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
+			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, getLocale());
 			startPage.put("learningObjectives", learningObjectives);
 			startPage.contextPut("hasObjectives", Boolean.TRUE);
 		} else {
 			startPage.contextPut("hasObjectives", Boolean.FALSE);
 		}
-		
+
 		if (isAssessable) {
 			ScoreEvaluation scoreEval = scormNode.getUserScoreEvaluation(userCourseEnv);
 			Float score = scoreEval.getScore();
@@ -179,70 +231,89 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		main.setContent(startPage);
 	}
 
-	private void doLaunch(UserRequest ureq) {
+	private void doLaunch(UserRequest ureq, boolean doActivate) {
 		if (cpRoot == null) {
-			// it is the first time we start the contentpackaging from this instance
+			// it is the first time we start the contentpackaging from this
+			// instance
 			// of this controller.
 			// need to be strict when launching -> "true"
 			RepositoryEntry re = ScormEditController.getScormCPReference(config, true);
-			if (re == null) throw new AssertException("configurationkey 'CONFIG_KEY_REPOSITORY_SOFTKEY' of BB CP was missing");
+			if (re == null)
+				throw new AssertException("configurationkey 'CONFIG_KEY_REPOSITORY_SOFTKEY' of BB CP was missing");
 			cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 			addLoggingResourceable(LoggingResourceable.wrapScormRepositoryEntry(re));
-			// should always exist because references cannot be deleted as long as
+			// should always exist because references cannot be deleted as long
+			// as
 			// nodes reference them
-			if (cpRoot == null) throw new AssertException("file of repository entry " + re.getKey() + " was missing");
+			if (cpRoot == null)
+				throw new AssertException("file of repository entry " + re.getKey() + " was missing");
 		}
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)
 
 		String courseId;
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
+		// fxdiff FXOLAT-116: SCORM improvements
+		final boolean fullWindow = config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, false);
 
 		if (isPreview) {
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();
-			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null, cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, true);
+			scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
+					cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, true, doActivate,
+					fullWindow);
 		} else {
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
-			if(isAssessable) {
-				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this, cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL, ScormConstants.SCORM_MODE_CREDIT, false, true);
-				scormNode.incrementUserAttempts(userCourseEnv);
-			} else if(chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)){
-				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null, cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL, ScormConstants.SCORM_MODE_CREDIT, false, true);
+			if (isAssessable) {
+				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, this,
+						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
+						ScormConstants.SCORM_MODE_CREDIT, false, doActivate, fullWindow);
+				// <OLATCE-289>
+				// scormNode.incrementUserAttempts(userCourseEnv);
+				// </OLATCE-289>
+			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
+				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
+						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
+						ScormConstants.SCORM_MODE_CREDIT, false, doActivate, fullWindow);
 			} else {
-				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null, cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, true);
+				scormDispC = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(), showMenu, null,
+						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, doActivate,
+						fullWindow);
 			}
 		}
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 		scormDispC.showNavButtons(showNavButtons);
 		String height = (String) config.get(ScormEditController.CONFIG_HEIGHT);
-		if ( ! height.equals(ScormEditController.CONFIG_HEIGHT_AUTO)) {
+		if (!height.equals(ScormEditController.CONFIG_HEIGHT_AUTO)) {
 			scormDispC.setHeightPX(Integer.parseInt(height));
 		}
 		String contentEncoding = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
-		if ( ! contentEncoding.equals(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO)) {
+		if (!contentEncoding.equals(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO)) {
 			scormDispC.setContentEncoding(contentEncoding);
 		}
 		String jsEncoding = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);
-		if ( ! jsEncoding.equals(NodeEditController.CONFIG_JS_ENCODING_AUTO)) {
+		if (!jsEncoding.equals(NodeEditController.CONFIG_JS_ENCODING_AUTO)) {
 			scormDispC.setJSEncoding(jsEncoding);
 		}
-		
+		scormDispC.addControllerListener(this);
 		// the scormDispC activates itself
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.modules.scorm.ScormAPICallback#lmsCommit(java.lang.String, java.util.Properties)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.olat.modules.scorm.ScormAPICallback#lmsCommit(java.lang.String,
+	 * java.util.Properties)
 	 */
 	public void lmsCommit(String olatSahsId, Properties scoScores) {
 		// only write score info when node is configured to do so
-		if(isAssessable) {		
+		if (isAssessable) {
 			// do a sum-of-scores over all sco scores
 			float score = 0f;
 			for (Iterator it_score = scoScores.values().iterator(); it_score.hasNext();) {
 				String aScore = (String) it_score.next();
 				float ascore = Float.parseFloat(aScore);
-				score+= ascore;
+				score += ascore;
 			}
 			float cutval = scormNode.getCutValueConfiguration().floatValue();
 			boolean passed = (score >= cutval);
@@ -250,18 +321,86 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			boolean incrementAttempts = false;
 			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementAttempts);
 			userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
-						
-			if (Tracing.isDebugEnabled(this.getClass())) {
-				String msg = "for scorm node:"+scormNode.getIdent()+" ("+scormNode.getShortTitle()+") a lmsCommit for scoId "+olatSahsId+" occured, total sum = "+score+", cutvalue ="+cutval+", passed: "+passed+", all scores now = "+scoScores.toString();
-				Tracing.logDebug(msg, this.getClass());
+
+			if (isLogDebugEnabled()) {
+				String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
+						+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
+						+ ", all scores now = " + scoScores.toString();
+				logDebug(msg, null);
 			}
 		}
 	}
-	
+
+	// <BPS-620>
+	/**
+	 * @see org.olat.modules.scorm.ScormAPICallback#lmsFinish(java.lang.String,
+	 *      java.util.Properties)
+	 */
+	public void lmsFinish(String olatSahsId, Properties scoProperties) {
+		if (isAssessable) {
+			// do a sum-of-scores over all sco scores
+			// <OLATEE-27>
+			float score = -1f;
+			// </OLATEE-27>
+			for (Iterator<Object> it_score = scoProperties.values().iterator(); it_score.hasNext();) {
+				// <OLATEE-27>
+				if (score == -1f) {
+					score = 0f;
+				}
+				// </OLATEE-27>
+				String aScore = (String) it_score.next();
+				float ascore = Float.parseFloat(aScore);
+				score += ascore;
+			}
+
+			float cutval = scormNode.getCutValueConfiguration().floatValue();
+			ScoreEvaluation sceval;
+			boolean passed = (score >= cutval);
+			// if advanceScore option is set update the score only if it is
+			// higher
+			// <OLATEE-27>
+			if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
+				if (score > (scormNode.getUserScoreEvaluation(userCourseEnv).getScore() != null ? scormNode.getUserScoreEvaluation(
+						userCourseEnv).getScore() : -1)) {
+					// </OLATEE-27>
+					sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
+					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
+					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+				} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+					sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
+					scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
+					userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+				}
+			} else {
+				// <OLATEE-27>
+				if (score == -1f) {
+					score = 0f;
+				}
+				// </OLATEE-27>
+				sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, true);
+				userCourseEnv.getScoreAccounting().scoreInfoChanged(scormNode, sceval);
+			}
+
+			if (isLogDebugEnabled()) {
+				String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
+						+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
+						+ ", all scores now = " + scoProperties.toString();
+				logDebug(msg, null);
+			}
+		}
+
+		if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
+			doStartPage();
+			scormDispC.close();
+		}
+	}
+
+	// </BPS-620>
 
 	/**
-	 * @return true if there is a treemodel and an event listener ready to be used
-	 *         in outside this controller
+	 * @return true if there is a treemodel and an event listener ready to be
+	 *         used in outside this controller
 	 */
 	public boolean isExternalMenuConfigured() {
 		return (config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU).booleanValue());
@@ -290,5 +429,13 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	public ControllerEventListener getTreeNodeClickListener() {
 		return treeNodeClickListener;
 	}
-	
+
+	@Override
+	public void event(Event event) {
+		if (event == Window.END_OF_DISPATCH_CYCLE) {
+			scormDispC.activate();
+			getWindowControl().getWindowBackOffice().removeCycleListener(this);
+		}
+	}
+
 }

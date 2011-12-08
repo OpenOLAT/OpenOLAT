@@ -1,5 +1,6 @@
 package org.olat.ldap.ui;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -23,6 +24,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.Encoder;
@@ -41,8 +44,9 @@ import org.olat.registration.RegistrationManager;
 import org.olat.user.UserModule;
 
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 
-public class LDAPAuthenticationController extends AuthenticationController{
+public class LDAPAuthenticationController extends AuthenticationController implements Activateable2 {
 	public static final String PROVIDER_LDAP = "LDAP";
 	
 	private VelocityContainer loginComp;
@@ -62,7 +66,7 @@ public class LDAPAuthenticationController extends AuthenticationController{
 		
 		loginComp = createVelocityContainer("ldaplogin");
 		
-		if(UserModule.isPwdchangeallowed() && LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if(UserModule.isPwdchangeallowed(null) && LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			pwLink = LinkFactory.createLink("menu.pw", loginComp, this);
 			pwLink.setCustomEnabledLinkCSS("o_login_pwd");
 		}
@@ -89,25 +93,28 @@ public class LDAPAuthenticationController extends AuthenticationController{
 @Override
 protected void event(UserRequest ureq, Component source, Event event) {
 	if (source == pwLink) {
-			// double-check if allowed first
-			if (!UserModule.isPwdchangeallowed() || !LDAPLoginModule.isPropagatePasswordChangedOnLdapServer())
-				throw new OLATSecurityException("chose password to be changed, but disallowed by config");
-
-			
-			removeAsListenerAndDispose(subController);
-			subController = new PwChangeController(ureq, getWindowControl());
-			listenTo(subController);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
-			listenTo(cmc);
-			
-			cmc.activate();
-
+		openChangePassword(ureq, null);	//fxdiff FXOLAT-113: business path in DMZ
 	} else if (source == anoLink) {
 			if (AuthHelper.doAnonymousLogin(ureq, ureq.getLocale()) == AuthHelper.LOGIN_OK) return;
 			else showError("login.error", WebappHelper.getMailConfig("mailSupport"));
 		}
+	}
+	//fxdiff FXOLAT-113: business path in DMZ
+	protected void openChangePassword(UserRequest ureq, String initialEmail) {
+		// double-check if allowed first
+		if (!UserModule.isPwdchangeallowed(ureq.getIdentity()) || !LDAPLoginModule.isPropagatePasswordChangedOnLdapServer())
+			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
+
+		
+		removeAsListenerAndDispose(subController);
+		subController = new PwChangeController(ureq, getWindowControl(), initialEmail);
+		listenTo(subController);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		listenTo(cmc);
+		
+		cmc.activate();
 	}
 	
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -186,6 +193,21 @@ protected void event(UserRequest ureq, Component source, Event event) {
 		}
 	}
 	
+	@Override
+	//fxdiff FXOLAT-113: business path in DMZ
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("changepw".equals(type)) {
+			String email = null;
+			if(entries.size() > 1) {
+				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
+			}
+			openChangePassword(ureq, email);
+		}
+	}
+	
 	public static Identity authenticate(String username, String pwd, LDAPError ldapError) {
 		
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
@@ -210,10 +232,10 @@ protected void event(UserRequest ureq, Component source, Event event) {
 				BaseSecurity secMgr = BaseSecurityManager.getInstance();
 				Authentication auth = secMgr.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 				if (auth == null) {
-					// Reuse exising authentication token
+					// Create new authentication token
 					secMgr.createAndPersistAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, Encoder.encrypt(pwd));
 				} else {
-					// Create new authenticaten token
+					// Reuse existing authentication token
 					auth.setCredential(Encoder.encrypt(pwd));
 					DBFactory.getInstance().updateObject(auth);
 				}				

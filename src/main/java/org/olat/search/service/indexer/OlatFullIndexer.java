@@ -130,8 +130,8 @@ public class OlatFullIndexer implements Runnable {
 	public void startIndexing() {
     //	 Start updateThread
 		if ( (indexingThread == null) || !indexingThread.isAlive()) {
-			log.info("start full indexing thread...");
 			if (stopIndexing) {
+				log.info("start full indexing thread...");
 				indexingThread = new Thread(this, "FullIndexer");
 				stopIndexing = false;
 				resetDocumentCounters();
@@ -224,8 +224,9 @@ public class OlatFullIndexer implements Runnable {
 			fullIndexerStatus.setIndexSize(indexWriter.maxDoc());
 			indexWriter.optimize();
 			indexWriter.close();
+			indexWriter = null;
+			indexWriterWorkers = null;
 		} catch (IOException e) {
-			e.printStackTrace();
 			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
 		} finally {
 			DBFactory.getInstance().commitAndCloseSession();
@@ -303,6 +304,7 @@ public class OlatFullIndexer implements Runnable {
 		}
 		fullIndexerStatus.setStatus(FullIndexerStatus.STATUS_STOPPED);
 		stopIndexing = true;
+		indexingThread = null;
 		try {
 			log.info("quit indexing run.");
 		} catch (NullPointerException nex) {

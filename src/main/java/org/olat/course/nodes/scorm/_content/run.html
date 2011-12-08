@@ -53,4 +53,10 @@
 	</div>
 #end
 
+## <OLATCE-289>
+#if ($maxAttemptsReached)
+	$r.translate("attempts.max.reached")
+#else
 	$r.render("chooseScormRunMode")
+#end
+## </OLATCE-289>

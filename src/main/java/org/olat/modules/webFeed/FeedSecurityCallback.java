@@ -48,4 +48,10 @@ public interface FeedSecurityCallback {
 	 * @return Whether items may be deleted or not
 	 */
 	boolean mayDeleteItems();
+	
+	/**
+	 * @return If the user can view all drafts
+	 */
+	//fxdiff BAKS-18
+	boolean mayViewAllDrafts();
 }

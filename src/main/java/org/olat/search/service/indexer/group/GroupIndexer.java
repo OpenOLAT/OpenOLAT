@@ -23,10 +23,12 @@ package org.olat.search.service.indexer.group;
 
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -37,6 +39,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.GroupDocument;
 import org.olat.search.service.indexer.AbstractIndexer;
@@ -106,23 +112,19 @@ public class GroupIndexer extends AbstractIndexer {
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		Long key = contextEntry.getOLATResourceable().getResourceableId();
 		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
-		List oGroups = bman.findBusinessGroupsOwnedBy(null, identity, null);
-		List aGroups = bman.findBusinessGroupsAttendedBy(null, identity, null);
-		
-		boolean inGroup = false; //TODO
-		for (Iterator it_ogroups = oGroups.iterator(); !inGroup && it_ogroups.hasNext();) {
-			BusinessGroup gr = (BusinessGroup) it_ogroups.next();
-			Long grk = gr.getKey();
-			if (grk.equals(key)) inGroup = true;
-		}
-		for (Iterator it_agroups = aGroups.iterator(); !inGroup && it_agroups.hasNext();) {
-			BusinessGroup gr = (BusinessGroup) it_agroups.next();
-			Long grk = gr.getKey();
-			if (grk.equals(key)) inGroup = true;
-		}
+		BusinessGroup group = bman.loadBusinessGroup(key, false);
+		boolean inGroup = bman.isIdentityInBusinessGroup(identity, group);
 		if (inGroup) {
 			return super.checkAccess(businessControl, identity, roles);
 		} else {
+			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+			if(acModule.isEnabled()) {
+				ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+				OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
+				if(acFrontendManager.isResourceAccessControled(resource, new Date())) {
+					return super.checkAccess(businessControl, identity, roles);
+				}
+			}
 			return false;
 		}
 	}

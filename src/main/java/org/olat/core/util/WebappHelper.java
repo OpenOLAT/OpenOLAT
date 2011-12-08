@@ -78,8 +78,9 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		Resource res = new ClassPathResource(CoreSpringFactory.class.getCanonicalName().replaceAll("\\.", "\\/")+".class");
 		try {
 			String fullPath = res.getURL().toString();
-			if (fullPath.contains("/WEB-INF")) {
-				fullPath = fullPath.substring(fullPath.indexOf("file:")+5, fullPath.indexOf("/WEB-INF"));
+
+			if (fullPath.contains(File.separator + "WEB-INF")) {
+				fullPath = fullPath.substring(fullPath.indexOf("file:")+5, fullPath.indexOf(File.separator + "WEB-INF"));
 			} else {
 				fullPath = servletContext.getRealPath("/");
 			}
@@ -244,6 +245,9 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		if (!fUserData.exists()) {
 			if (!fUserData.mkdirs()) throw new StartupException("Unable to create userdata dir '" + userDataRoot + "'. Please fix!");
 		}
+		//fxdiff: reset tmp-dir from within application to circumvent startup-params. 
+		//do not write to system default (/var/tmp) as this leads to permission problems with multiple instances on one host!
+		System.setProperty("java.io.tmpdir", userDataRoot+"/tmp");
 		log.info("Setting userdata root to: "+userDataRoot);
 		WebappHelper.userDataRoot = userDataRoot;
 	}
@@ -277,7 +281,8 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 *	key="smtpUser"
 	 *	key="smtpPwd"
 	 *	key="mailSupport"
-	 *  key="mailFrom"
+	 *  key="mailReplyTo" - default from (reply-to)
+	 *  key="mailFrom" - real from address
 	 * @param string
 	 * @return
 	 */

@@ -21,11 +21,23 @@
 }
 
 /* the glossary term */
-dt {
-	font-size: 110%;
+.o_glossary dt {
 	font-weight: bold;
-	font-variant: small-caps;
 }
+
+dt span.o_glossary_author {
+	font-weight: normal;
+}
+
+dt span.o_glossary_modifier {
+	font-weight: normal;
+	color: #98221F;
+}
+
+dt span.o_glossary_modifier a, dt span.o_glossary_modifier a:hover {
+	color: #98221F;
+}
+
 dt o_glossary_synonym {
 	font-size: 80%;
 	font-variant: small-caps;

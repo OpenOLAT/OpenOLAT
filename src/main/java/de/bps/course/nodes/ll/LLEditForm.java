@@ -18,7 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.controllers.linkchooser.MediaChooserController;
+import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,9 +36,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 import de.bps.course.nodes.LLCourseNode;
@@ -60,12 +68,17 @@ public class LLEditForm extends FormBasicController {
 	private List<TextElement> lDescriptionInputList;
 	private List<TextElement> lCommentInputList;
 	private List<FormLink> lDelButtonList;
+	private List<FormLink> lCustomMediaButtonList;
 	private List<LLModel> linkList;
 	private List<FormLink> lAddButtonList;
 	private FormLayoutContainer titleContainer;
 	private long counter = 0;
+	private MediaChooserController mediaChooserController;
+	private CloseableModalController mediaDialogBox;
+	private LLModel currentLink;
+	private final CourseEnvironment courseEnv;
 
-	public LLEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig) {
+	public LLEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, CourseEnvironment courseEnv) {
 		super(ureq, wControl);
 		this.moduleConfig = moduleConfig;
 		// read existing links from config
@@ -82,6 +95,11 @@ public class LLEditForm extends FormBasicController {
 		this.lAddButtonList = new ArrayList<FormLink>(linkList.size());
 		// list of all link deletion action buttons
 		this.lDelButtonList = new ArrayList<FormLink>(linkList.size());
+		//list of all custom media buttons
+		this.lCustomMediaButtonList = new ArrayList<FormLink>(linkList.size());
+		
+		this.courseEnv = courseEnv;
+
 		initForm(this.flc, this, ureq);
 	}
 
@@ -102,7 +120,12 @@ public class LLEditForm extends FormBasicController {
 		for (int i = 0; i < lTargetInputList.size(); i++) {
 			LLModel link = (LLModel) lTargetInputList.get(i).getUserObject();
 			String linkValue = lTargetInputList.get(i).getValue();
-			if(!linkValue.contains("://")) {
+			if(link.isIntern()) {
+				if(!linkValue.contains("://") && !linkValue.startsWith("/")) {
+					linkValue = "/".concat(linkValue.trim());
+					lTargetInputList.get(i).setValue(linkValue);
+				}
+			} else if(!linkValue.contains("://")) {
 				linkValue = "http://".concat(linkValue.trim());
 				lTargetInputList.get(i).setValue(linkValue);
 			}
@@ -151,16 +174,79 @@ public class LLEditForm extends FormBasicController {
 				if (linkList.size() == 1) {
 					// clear this line
 					lTargetInputList.get(0).setValue("");
+					lTargetInputList.get(0).setEnabled(true);
 					lDescriptionInputList.get(0).setValue("");
 					lCommentInputList.get(0).setValue("");
 				} else {
 					final LLModel link = (LLModel) ((FormLink) source).getUserObject();
 					removeFormLink(link);
 				}
+			} else if (lCustomMediaButtonList.contains(source)) {
+				currentLink = (LLModel) ((FormLink) source).getUserObject();
+				
+				removeAsListenerAndDispose(mediaDialogBox);
+				removeAsListenerAndDispose(mediaChooserController);
+				
+				VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
+				mediaChooserController = new MediaChooserController(ureq, getWindowControl(), courseContainer, null, null, "", null);
+				listenTo(mediaChooserController);
+				
+				mediaDialogBox = new CloseableModalController(getWindowControl(), translate("choose"), mediaChooserController.getInitialComponent());
+				mediaDialogBox.activate();
+				listenTo(mediaDialogBox);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == mediaDialogBox) {
+			removeAsListenerAndDispose(mediaDialogBox);
+			removeAsListenerAndDispose(mediaChooserController);
+			mediaDialogBox = null;
+			mediaChooserController = null;
+		} else if (source == mediaChooserController) {
+			if(event instanceof URLChoosenEvent) {
+				URLChoosenEvent choosenEvent = (URLChoosenEvent)event;
+				String url = choosenEvent.getURL();
+				if(url.startsWith(Settings.getServerContextPathURI())) {
+					//doesn't allow absolute path -> the mapper check if the link is in the list!
+					url = url.substring(Settings.getServerContextPathURI().length());
+				}
+				currentLink.setTarget(url);
+				currentLink.setIntern(true);
+				currentLink.setHtmlTarget("_blank");
+				if(StringHelper.containsNonWhitespace(choosenEvent.getDisplayName())) {
+					currentLink.setDescription(choosenEvent.getDisplayName());
+				}
+
+				int index = 0;
+				for(TextElement targetEl:lTargetInputList) {
+					if(currentLink.equals(targetEl.getUserObject())) {
+						targetEl.setValue(url);
+						targetEl.setEnabled(false);
+						lDescriptionInputList.get(index).setValue(currentLink.getDescription());
+						lHtmlTargetInputList.get(index).select(BLANK_KEY, true);
+						break;
+					}
+					index++;
+				}
+			}
+			mediaDialogBox.deactivate();
+			removeAsListenerAndDispose(mediaDialogBox);
+			removeAsListenerAndDispose(mediaChooserController);
+			mediaDialogBox = null;
+			mediaChooserController = null;
+		}
+		
+		super.event(ureq, source, event);
 	}
 
 	/**
@@ -185,6 +271,7 @@ public class LLEditForm extends FormBasicController {
 		titleContainer.contextPut("lCommentInputList", lCommentInputList);
 		titleContainer.contextPut("lAddButtonList", lAddButtonList);
 		titleContainer.contextPut("lDelButtonList", lDelButtonList);
+		titleContainer.contextPut("lCustomMediaButtonList", lCustomMediaButtonList);
 
 		subm = new FormSubmit("subm", "submit");
 
@@ -211,6 +298,7 @@ public class LLEditForm extends FormBasicController {
 		// add link target
 		TextElement lTarget = uifactory.addTextElement("target" + counter, null, -1, link.getTarget(), titleContainer);
 		lTarget.clearError();
+		lTarget.setEnabled(!link.isIntern());
 		lTarget.setDisplaySize(40);
 		lTarget.setMandatory(true);
 		lTarget.setNotEmptyCheck("ll.table.target.error");
@@ -262,6 +350,13 @@ public class LLEditForm extends FormBasicController {
 		delButton.setUserObject(link);
 		titleContainer.add(delButton);
 		lDelButtonList.add(index, delButton);
+		// custom media action button
+		FormLink mediaButton = new FormLinkImpl("media" + counter, "media" + counter, "  ", Link.NONTRANSLATED);
+		mediaButton.setCustomEnabledLinkCSS("b_small o_ll_browse");
+		mediaButton.setUserObject(link);
+		titleContainer.add(mediaButton);
+		lCustomMediaButtonList.add(index, mediaButton);
+		
 		// increase the counter to enable unique component names
 		counter++;
 	}
@@ -307,5 +402,11 @@ public class LLEditForm extends FormBasicController {
 			}
 		}
 		titleContainer.remove(lDelButtonList.remove(i));
+		for (i = 0; i < lCustomMediaButtonList.size(); i++) {
+			if (lCustomMediaButtonList.get(i).getUserObject().equals(link)) {
+				break;
+			}
+		}
+		titleContainer.remove(lCustomMediaButtonList.remove(i));
 	}
 }

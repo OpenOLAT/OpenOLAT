@@ -42,6 +42,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.ui.artefacts.view.details.FileArtefactDetailsController;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
@@ -166,9 +167,11 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 		VFSItem file = ePFManager.getArtefactContainer(artefact).resolve(filename);
 		if (file != null && file instanceof VFSLeaf) {
 			try {
-				Document doc = FileDocumentFactory.createDocument(context, (VFSLeaf)file);
-				String content = doc.get(AbstractOlatDocument.CONTENT_FIELD_NAME);
-				sb.append(content);
+				if (SearchServiceFactory.getFileDocumentFactory().isFileSupported((VFSLeaf)file)) {
+					Document doc = FileDocumentFactory.createDocument(context, (VFSLeaf)file);
+					String content = doc.get(AbstractOlatDocument.CONTENT_FIELD_NAME);
+					sb.append(content);
+				}
 			} catch (Exception e) {
 				log.error("", e);
 			}

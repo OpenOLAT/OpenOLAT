@@ -27,6 +27,7 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
@@ -42,6 +43,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -173,33 +175,53 @@ public class RESTDispatcher implements Dispatcher {
 				if (!usess.isAuthenticated() || !restIdentity.equalsByPersistableKey(usess.getIdentity())) {
 					// Re-authenticate user session for this user and start a fresh
 					// standard OLAT session
-					AuthHelper.doLogin(restIdentity, RestSecurityHelper.SEC_TOKEN, ureq);					
+					int loginStatus = AuthHelper.doLogin(restIdentity, RestSecurityHelper.SEC_TOKEN, ureq);			
+					if (loginStatus == AuthHelper.LOGIN_OK) {
+						//fxdiff: FXOLAT-268 update last login date and register active user
+						UserDeletionManager.getInstance().setIdentityAsActiv(restIdentity);
+					} else {
+						//error, redirect to login screen
+						DispatcherAction.redirectToDefaultDispatcher(response);
+					}
 				} else if (Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER") == null) {
 					// Session is already available, but no main window (Head-less REST
 					// session). Only create the base chief controller and the window
 					AuthHelper.createAuthHome(ureq);
+					// no need to call setIdentityAsActive as this was already done by RestApiLoginFilter...
 				}
 			}
 		}
 		
 		boolean auth = usess.isAuthenticated();
 		if (auth) {
-			usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
+			//fxdiff FXOLAT-113: business path in DMZ
+			setBusinessPathInUserSession(usess, businessPath);
 			
-			String url = getRedirectToURL(usess);
-			DispatcherAction.redirectTo(response, url);
+			//fxdiff
+			if (Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER") == null) {
+				// Session is already available, but no main window (Head-less REST
+				// session). Only create the base chief controller and the window
+				AuthHelper.createAuthHome(ureq);
+				String url = getRedirectToURL(usess) + ";jsessionid=" + usess.getSessionInfo().getSession().getId();
+				DispatcherAction.redirectTo(response, url);
+			} else {
+				String url = getRedirectToURL(usess);
+				DispatcherAction.redirectTo(response, url);
+			}
 		} else {
 			//prepare for redirect
-			usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
+			//fxdiff FXOLAT-113: business path in DMZ
+			setBusinessPathInUserSession(usess, businessPath);
 			String invitationAccess = ureq.getParameter(AuthenticatedDispatcher.INVITATION);
-			
-			
 			if (invitationAccess != null && LoginModule.isInvitationEnabled()) {
 			// try to log in as anonymous
 				// use the language from the lang paramter if available, otherwhise use the system default locale
 				Locale guestLoc = getLang(ureq);
 				int loginStatus = AuthHelper.doInvitationLogin(invitationAccess, ureq, guestLoc);
 				if ( loginStatus == AuthHelper.LOGIN_OK) {
+					Identity invite = usess.getIdentity();
+					//fxdiff: FXOLAT-268 update last login date and register active user
+					UserDeletionManager.getInstance().setIdentityAsActiv(invite);					
 					//logged in as invited user, continue
 					String url = getRedirectToURL(usess);
 					DispatcherAction.redirectTo(response, url);
@@ -230,6 +252,23 @@ public class RESTDispatcher implements Dispatcher {
 						DispatcherAction.redirectToDefaultDispatcher(response); 
 					}
 				}
+			}
+		}
+	}
+	
+	/**
+	 * The method allows for a finite sets of business path to redirect to the DMZ
+	 * @param usess
+	 * @param businessPath
+	 */
+	//fxdiff FXOLAT-113: business path in DMZ
+	private void setBusinessPathInUserSession(UserSession usess, String businessPath) {
+		if(StringHelper.containsNonWhitespace(businessPath) && usess != null) {
+			if(businessPath.startsWith("[changepw:0]") || "[registration:0]".equals(businessPath) || "[guest:0]".equals(businessPath)
+					|| "[browsercheck:0]".equals(businessPath) || "[accessibility:0]".equals(businessPath) || "[about:0]".equals(businessPath)) {
+				usess.putEntryInNonClearedStore(DMZDispatcher.DMZDISPATCHER_BUSINESSPATH, businessPath);
+			} else {
+				usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
 			}
 		}
 	}

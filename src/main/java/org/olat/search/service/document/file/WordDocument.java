@@ -40,7 +40,7 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class WordDocument extends FileDocument {
-	private static final OLog log = Tracing.createLoggerFor(WordOOXMLDocument.class);
+	private static final OLog log = Tracing.createLoggerFor(WordDocument.class);
 
 	public final static String FILE_TYPE = "type.file.word";
 
@@ -75,6 +75,7 @@ public class WordDocument extends FileDocument {
       }
 			return sb.toString();
 		} catch (Exception e) {
+			log.warn("could not read in word document: " + leaf + " please check, that this is not an docx/rtf/html file!");
 			throw new DocumentException(e.getMessage());
 		} finally {
 			if (bis != null) {

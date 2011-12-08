@@ -124,6 +124,29 @@ public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 			artefact.setFulltextContent(xml);
 			FileUtils.closeSafely(in);
 		}
+		String origBPath = artefact.getBusinessPath();
+		String artSource = "";
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(origBPath);
+		if (origBPath.contains(CourseNode.class.getSimpleName())){
+			// blog-post from inside a course, rebuild "course-name - feed-name"
+			OLATResourceable ores = bc.popLauncherContextEntry().getOLATResourceable();
+			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(ores.getResourceableId());
+			artSource = repoEntry.getDisplayname();
+			if (feed!=null) {
+				artSource += " - " + feed.getTitle();
+			}
+		} else if (origBPath.contains(RepositoryEntry.class.getSimpleName())){
+			// blog-post from blog-LR, only get name itself
+			if (feed!=null) {
+				artSource = feed.getTitle();
+			}			
+		} else {
+			// collecting a post from live-blog, [Identity:xy]
+			if (feed!=null) {
+				artSource = feed.getTitle();
+			}			
+		}		
+		artefact.setSource(artSource);		
 	}
 
 	@Override

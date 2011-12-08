@@ -1,4 +1,4 @@
-/**
+ /**
  * OLAT - Online Learning and Training<br>
  * http://www.olat.org
  * <p>
@@ -35,8 +35,10 @@ import java.io.StringReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
@@ -63,6 +65,7 @@ import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.RRule;
+import net.fortuna.ical4j.model.property.Summary;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.model.property.XProperty;
@@ -83,7 +86,9 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -464,7 +469,10 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	 */
 	private KalendarEvent getKalendarEvent(VEvent event) {
 		// subject
-		String subject = event.getSummary().getValue();
+		Summary eventsummary = event.getSummary();
+		String subject = "";
+		if (eventsummary != null)
+			subject = eventsummary.getValue();
 		// start
 		Date start = event.getStartDate().getDate();
 		Duration dur = event.getDuration();
@@ -486,7 +494,14 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			end = new Date(end.getTime() - (1000 * 60 * 60 * 24));
 		}
 		
-		KalendarEvent calEvent = new KalendarEvent(event.getUid().getValue(), subject, start, end);
+		// fxdiff: 
+		Uid eventuid = event.getUid();
+		String uid;
+		if (eventuid != null)
+			uid = eventuid.getValue();
+		else
+			uid = CodeHelper.getGlobalForeverUniqueID();
+		KalendarEvent calEvent = new KalendarEvent(uid, subject, start, end);
 		calEvent.setAllDayEvent(isAllDay);
 		
 		// classification
@@ -530,7 +545,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			if (linkProperty != null) {
 				String encodedLink = linkProperty.getValue();
 				StringTokenizer st = new StringTokenizer(encodedLink, "§", false);
-				if (st.countTokens() == 4) {
+				if (st.countTokens() >= 4) {
 					String provider = st.nextToken();
 					String id = st.nextToken();
 					String displayName = st.nextToken();
@@ -836,7 +851,38 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		// inform all controller about calendar change for reload
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new KalendarModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
 		return successfullyPersist;
-    }
+  }
+	
+	public boolean updateCalendar(final Kalendar cal, final Kalendar importedCal) {
+		OLATResourceable calOres = getOresHelperFor(cal);
+		Boolean updatedSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Boolean>() {
+			public Boolean execute() {
+				Map<String,KalendarEvent> uidToEvent = new HashMap<String,KalendarEvent>();
+				for(KalendarEvent event:cal.getEvents()) {
+					if(StringHelper.containsNonWhitespace(event.getID())) {
+						uidToEvent.put(event.getID(), event);
+					}
+				}
+				
+				Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
+				for(KalendarEvent importedEvent:importedCal.getEvents()) {
+					String uid = importedEvent.getID();
+					if(uidToEvent.containsKey(uid)) {
+						loadedCal.removeEvent(importedEvent); // remove old event
+						loadedCal.addEvent(importedEvent); // add changed event
+					} else {
+						loadedCal.addEvent(importedEvent);
+					}
+				}
+				
+				boolean successfullyPersist = persistCalendar(cal);
+				// inform all controller about calendar change for reload
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new KalendarModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
+				return new Boolean(successfullyPersist);
+			}
+		});
+		return updatedSuccessful.booleanValue();
+	}
 	
 	/**
 	 * Load a calendar when a calendar exists or create a new one.

@@ -38,16 +38,18 @@ import org.olat.search.service.document.ForumMessageDocument;
  */
 public abstract class ForumIndexer extends AbstractIndexer {
 	
-	protected ForumManager forumManager;
-
 
 	public ForumIndexer() {
-		forumManager = ForumManager.getInstance();
+		//
 	}
 		
 	public void doIndexAllMessages(SearchResourceContext parentResourceContext, Forum forum, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
+		if (forum == null) {
+			logWarn("tried to index a forum that could not be found! skipping. context: " + parentResourceContext.getResourceUrl(), null);
+			return;
+		}
 		// loop over all messages of a forum
-		List<Message> messages = forumManager.getMessagesByForum(forum);
+		List<Message> messages = ForumManager.getInstance().getMessagesByForum(forum);
 		for(Message message : messages) {
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setBusinessControlFor(message);

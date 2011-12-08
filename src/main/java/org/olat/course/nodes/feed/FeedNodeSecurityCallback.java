@@ -37,11 +37,13 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	private NodeEvaluation ne;
 	private boolean isOlatAdmin;
 	private boolean isGuestOnly;
+	private boolean isOwner;
 
-	public FeedNodeSecurityCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isGuestOnly) {
+	public FeedNodeSecurityCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isOwner, boolean isGuestOnly) {
 		this.ne = ne;
 		this.isOlatAdmin = isOlatAdmin;
 		this.isGuestOnly = isGuestOnly;
+		this.isOwner = isOwner;
 	}
 
 	/**
@@ -74,5 +76,14 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	public boolean mayEditItems() {
 		if (isGuestOnly) return false;
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+	}
+
+	/**
+	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
+	 */
+	@Override
+	//fxdiff BAKS-18
+	public boolean mayViewAllDrafts() {
+		return isOwner || isOlatAdmin;
 	}
 }

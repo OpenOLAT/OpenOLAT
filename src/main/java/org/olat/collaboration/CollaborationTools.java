@@ -21,17 +21,15 @@
 
 package org.olat.collaboration;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -189,6 +187,15 @@ public class CollaborationTools implements Serializable {
 	 * Owners and members have write access to the calendar.
 	 */
 	public static final int CALENDAR_ACCESS_ALL = 1;
+	/**
+	 * Only owners have write access to the folder.
+	 */
+	//fxdiff VCRP-8: collaboration tools folder access control
+	public static final int FOLDER_ACCESS_OWNERS = 0;
+	/**
+	 * Owners and members have write access to the folder.
+	 */
+	public static final int FOLDER_ACCESS_ALL = 1;
 	
 	
 	/**
@@ -196,6 +203,8 @@ public class CollaborationTools implements Serializable {
 	 */
 	private final static String KEY_NEWS = "news";
 	private final static String KEY_CALENDAR_ACCESS = "cal";
+	//fxdiff VCRP-8: collaboration tools folder access control
+	private final static String KEY_FOLDER_ACCESS = "folder";
 
 	//o_clusterOK by guido
 	Hashtable<String, Boolean> cacheToolStates;
@@ -352,15 +361,31 @@ public class CollaborationTools implements Serializable {
 	 * @return Copnfigured FolderRunController
 	 */
 	public FolderRunController createFolderController(UserRequest ureq, WindowControl wControl,
-			final SubscriptionContext subsContext) {
+			BusinessGroup businessGroup, boolean isAdmin, final SubscriptionContext subsContext) {
 		// do not use a global translator since in the fututre a collaborationtools
 		// may be shared among users
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		String relPath = getFolderRelPath();
 		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
 		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(trans.translate("folder"), rootContainer);
-		namedContainer.setLocalSecurityCallback(new CollabSecCallback(relPath, subsContext));
-		FolderRunController frc = new FolderRunController(namedContainer, true, true, ureq, wControl);
+		
+		//fxdiff VCRP-8: collaboration tools folder access control
+		boolean writeAccess;
+		boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(ureq.getIdentity(), businessGroup.getOwnerGroup());
+		if (!(isAdmin || isOwner)) {
+			// check if participants have read/write access
+			int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
+			Long lFolderAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupFolderAccess();
+			if (lFolderAccess != null) {
+				folderAccess = lFolderAccess.intValue();
+			}
+			writeAccess = (folderAccess == CollaborationTools.CALENDAR_ACCESS_ALL);
+		} else {
+			writeAccess = true;
+		}
+
+		namedContainer.setLocalSecurityCallback(new CollabSecCallback(writeAccess, relPath, subsContext));
+		FolderRunController frc = new FolderRunController(namedContainer, true, true, true, ureq, wControl);
 		return frc;
 	}
 
@@ -725,14 +750,41 @@ public class CollaborationTools implements Serializable {
 		}
 	}
 	
+	//fxdiff VCRP-8: collaboration tools folder access control
+	public Long lookupFolderAccess() {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FOLDER_ACCESS);
+		if (property == null) { // no entry
+			return null;
+		}
+		// read the long value of the existing property
+		return property.getLongValue();
+	}
+	
+	//fxdiff VCRP-8: collaboration tools folder access control
+	public void saveFolderAccess(Long folderrAccess) {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FOLDER_ACCESS);
+		if (property == null) { // create a new one
+			Property nP = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FOLDER_ACCESS, null, folderrAccess, null, null);
+			npm.saveProperty(nP);
+		} else { // modify the existing one
+			property.setLongValue(folderrAccess);
+			npm.updateProperty(property);
+		}
+	}
+	
 	public class CollabSecCallback implements VFSSecurityCallback {
-
+		
+		//fxdiff VCRP-8: collaboration tools folder access control
+		private final boolean write;
 		private Quota folderQuota = null;
 		private SubscriptionContext subsContext;
 
-		public CollabSecCallback(String relPath, SubscriptionContext subsContext) {
+		public CollabSecCallback(boolean write, String relPath, SubscriptionContext subsContext) {
 			this.subsContext = subsContext;
 			initFolderQuota(relPath);
+			this.write = write;
 		}
 
 		private void initFolderQuota(String relPath) {
@@ -749,11 +801,11 @@ public class CollaborationTools implements Serializable {
 		}
 
 		public boolean canWrite() {
-			return true;
+			return write;
 		}
 
 		public boolean canDelete() {
-			return true;
+			return write;
 		}
 
 		public boolean canList() {
@@ -765,7 +817,7 @@ public class CollaborationTools implements Serializable {
 		}
 		
 		public boolean canDeleteRevisionsPermanently() {
-			return true;
+			return write;
 		}
 
 		public Quota getQuota() {

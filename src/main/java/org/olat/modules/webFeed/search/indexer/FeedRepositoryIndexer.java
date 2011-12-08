@@ -27,8 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.dispatching.Path;
@@ -49,9 +48,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * 
  * @author gwassmann
  */
-public abstract class FeedRepositoryIndexer implements Indexer {
-
-	private static final OLog log = Tracing.createLoggerFor(FeedRepositoryIndexer.class);
+public abstract class FeedRepositoryIndexer extends LogDelegator implements Indexer {
 
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry,
@@ -73,8 +70,8 @@ public abstract class FeedRepositoryIndexer implements Indexer {
 		String repoEntryName = "*name not available*";
 		try {
 			repoEntryName = repositoryEntry.getDisplayname();
-			if (log.isDebug()) {
-				log.info("Indexing: " + repoEntryName);
+			if (isLogDebugEnabled()) {
+				logDebug("Indexing: " + repoEntryName);
 			}
 			Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
 
@@ -90,13 +87,15 @@ public abstract class FeedRepositoryIndexer implements Indexer {
 			Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperBaseURL);
 
 			// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
-			log.info("PublishedItems size=" + feed.getPublishedItems().size());
+			if (isLogDebugEnabled()) {
+				logDebug("PublishedItems size=" + feed.getPublishedItems().size());
+			}
 			for (Item item : feed.getPublishedItems()) {
 				OlatDocument itemDoc = new FeedItemDocument(item, searchResourceContext, mediaUrlFilter);
 				indexer.addDocument(itemDoc.getLuceneDocument());
 			}
 		} catch (NullPointerException e) {
-			log.error("Error indexing feed:" + repoEntryName, e);
+			logError("Error indexing feed:" + repoEntryName, e);
 		}
 
 	}

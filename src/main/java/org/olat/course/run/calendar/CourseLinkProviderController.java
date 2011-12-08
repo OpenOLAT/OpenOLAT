@@ -84,9 +84,16 @@ public class CourseLinkProviderController extends BasicController implements Lin
 				// we do not use the tree event's getSelectedNodeIDs, instead
 				// we walk through the model and fetch the children in order
 				// to keep the sorting.
-				List kalendarEventLinks = kalendarEvent.getKalendarEventLinks();
+				//fxdiff
+				List<KalendarEventLink> kalendarEventLinks = kalendarEvent.getKalendarEventLinks();
 				TreeNode rootNode = selectionTree.getTreeModel().getRootNode();
-				kalendarEventLinks.clear();
+				for(Iterator<KalendarEventLink> linkIt = kalendarEventLinks.iterator(); linkIt.hasNext(); ) {
+					KalendarEventLink link = linkIt.next();
+					if(COURSE_LINK_PROVIDER.equals(link.getProvider())) {
+						linkIt.remove();
+					}
+				}
+				
 				clearSelection(rootNode);
 				rebuildKalendarEventLinks(rootNode, te.getNodeIds(), kalendarEventLinks);
 				// if the calendarevent is already associated with a calendar, save the modifications.

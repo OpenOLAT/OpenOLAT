@@ -59,6 +59,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
@@ -491,7 +493,9 @@ public class GroupController extends BasicController {
 			} else {
 				ccIdentities = null;	
 			}
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(toBeRemoved, ccIdentities, null, mailTemplate, sender);
+			//fxdiff VCRP-16: intern mail system
+			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, toBeRemoved, ccIdentities, null, mailTemplate, sender);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}
@@ -537,7 +541,9 @@ public class GroupController extends BasicController {
 			} else {
 				ccIdentities = null;	
 			}
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(identitiesAddedEvent.getAddedIdentities(), ccIdentities, null, mailTemplate, sender);
+			//fxdiff VCRP-16: intern mail system
+			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesAddedEvent.getAddedIdentities(), ccIdentities, null, mailTemplate, sender);
 			MailHelper.appendErrorsAndWarnings(mailerResult, errorMessage, infoMessage, ureq.getLocale());
 		}
 		// report any errors on screen

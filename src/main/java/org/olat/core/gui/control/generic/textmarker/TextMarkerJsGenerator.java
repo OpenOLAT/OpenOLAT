@@ -24,6 +24,7 @@ package org.olat.core.gui.control.generic.textmarker;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.modules.glossary.GlossaryItem;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.util.Encoder;
@@ -77,6 +78,9 @@ public class TextMarkerJsGenerator {
 			sb.append("new Array(\"");
 			for (Iterator iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
 				String termFlexionSynonym = (String) iterator2.next();
+				//fxdiff:  FXOLAT-235  fix quotationsmarks that break the js code
+				termFlexionSynonym = StringEscapeUtils.escapeJava(termFlexionSynonym);
+				
 				sb.append(termFlexionSynonym);
 				sb.append("\"");
 				if (iterator2.hasNext()) sb.append(",\"");

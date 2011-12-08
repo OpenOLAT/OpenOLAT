@@ -118,6 +118,7 @@ public class CloseableCalloutWindowController extends BasicController {
 		} else {
 			// Fallback to old-school modal dialog
 			cmc = new CloseableModalController(wControl, "close", calloutWindowContent, true, title, closable);
+			listenTo(cmc);
 			putInitialPanel(new Panel("empty"));
 		}
 	}

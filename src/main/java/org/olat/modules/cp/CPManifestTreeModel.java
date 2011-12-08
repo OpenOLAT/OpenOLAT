@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,6 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.resources.IMSEntityResolver;
@@ -50,9 +50,10 @@ import org.olat.ims.resources.IMSEntityResolver;
 public class CPManifestTreeModel extends GenericTreeModel {
 
 	private Element rootElement;
-	private Map	nsuris = new HashMap(2);
-	private Map hrefToTreeNode = new HashMap();
-	private Map resources; // keys: resource att 'identifier'; values: resource att 'href'
+	private final Map<String,String>	nsuris = new HashMap<String,String>(2);
+	private final Map<String,TreeNode> hrefToTreeNode = new HashMap<String,TreeNode>();
+	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
+	private final List<TreeNode> treeNodes = new ArrayList<TreeNode>();
 
 	/**
 	 * Constructor of the content packaging tree model
@@ -76,7 +77,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		if (elResources == null) throw new AssertException("could not find element resources");
 		
 		List resourcesList = elResources.elements("resource");
-		resources = new HashMap(resourcesList.size());
+		resources = new HashMap<String,String>(resourcesList.size());
 		for (Iterator iter = resourcesList.iterator(); iter.hasNext();) {
 			Element elRes = (Element) iter.next();
 			String identVal = elRes.attributeValue("identifier");
@@ -101,11 +102,47 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	 * @return TreeNode representing this href
 	 */
 	public TreeNode lookupTreeNodeByHref(String href) {
-		return (TreeNode) hrefToTreeNode.get(href);
+		return hrefToTreeNode.get(href);
+	}
+	
+	//fxdiff VCRP-13: cp navigation
+	public List<TreeNode> getFlattedTree() {
+		return new ArrayList<TreeNode>(treeNodes);
+	}
+	
+	//fxdiff VCRP-13: cp navigation
+	public TreeNode getNextNodeWithContent(TreeNode node) {
+		if(node == null) return null;
+		int index = treeNodes.indexOf(node);
+		
+		for(int i=index+1; i<treeNodes.size(); i++) {
+			TreeNode nextNode = treeNodes.get(i);
+			if(nextNode.getUserObject() != null) {
+				return nextNode;
+			}
+		}
+		
+		return null;
+	}
+	
+	public TreeNode getPreviousNodeWithContent(TreeNode node) {
+		if(node == null) return null;
+		int index = treeNodes.indexOf(node);
+		
+		for(int i=index; i-->0; ) {
+			TreeNode nextNode = treeNodes.get(i);
+			if(nextNode.getUserObject() != null) {
+				return nextNode;
+			}
+		}
+
+		return null;
 	}
 
 	private GenericTreeNode buildNode(Element item) {
 		GenericTreeNode gtn = new GenericTreeNode();
+		//fxdiff VCRP-13: cp navigation
+		treeNodes.add(gtn);
 
 		// extract title
 		String title = item.elementText("title");
@@ -122,7 +159,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			String identifierref = item.attributeValue("identifierref");
 			XPath meta = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
 			meta.setNamespaceURIs(nsuris);
-			String href = (String) resources.get(identifierref);
+			String href = resources.get(identifierref);
 			if (href != null) {
 				gtn.setUserObject(href);
 				// allow lookup of a treenode given a href so we can quickly adjust the menu if the user clicks on hyperlinks within the text

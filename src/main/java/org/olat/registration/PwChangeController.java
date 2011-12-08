@@ -54,6 +54,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 
 /**
  * Description:<br>
@@ -81,6 +82,16 @@ public class PwChangeController extends BasicController {
 	 * @param wControl
 	 */
 	public PwChangeController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, null);
+	}
+	
+	/**
+	 * Controller to change a user's password.
+	 * @param ureq
+	 * @param wControl
+	 */
+	//fxdiff FXOLAT-113: business path in DMZ
+	public PwChangeController(UserRequest ureq, WindowControl wControl, String initialEmail) {
 		super(ureq, wControl);
 		myContent = createVelocityContainer("pwchange");
 		wic = new WizardInfoController(ureq, 4);
@@ -90,7 +101,8 @@ public class PwChangeController extends BasicController {
 		pwKey = ureq.getHttpReq().getParameter("key");
 		if (pwKey == null || pwKey.equals("")) {
 			// no temporarykey is given, we assume step 1
-			createEmailForm(ureq, wControl);
+			//fxdiff FXOLAT-113: business path in DMZ
+			createEmailForm(ureq, wControl, initialEmail);
 			putInitialPanel(myContent);
 		} else {
 			// we check if given key is a valid temporary key
@@ -99,7 +111,8 @@ public class PwChangeController extends BasicController {
 			if (tempKey == null) {
 				// error, there should be an entry
 				getWindowControl().setError(translate("pwkey.missingentry"));
-				createEmailForm(ureq, wControl);
+				//fxdiff FXOLAT-113: business path in DMZ
+				createEmailForm(ureq, wControl, initialEmail);
 				// load view in layout
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, myContent, null);
 				putInitialPanel(layoutCtr.getInitialComponent());
@@ -120,11 +133,12 @@ public class PwChangeController extends BasicController {
 	/**
 	 * just needed for creating EmailForm
 	 */
-	private void createEmailForm(UserRequest ureq, WindowControl wControl) {
+	//fxdiff FXOLAT-113: business path in DMZ
+	private void createEmailForm(UserRequest ureq, WindowControl wControl, String initialEmail) {
 		myContent.contextPut("title", translate("step1.pw.title"));
 		myContent.contextPut("text", translate("step1.pw.text"));
 		removeAsListenerAndDispose(emailOrUsernameCtr);
-		emailOrUsernameCtr = new EmailOrUsernameFormController(ureq, wControl);
+		emailOrUsernameCtr = new EmailOrUsernameFormController(ureq, wControl, initialEmail);
 		listenTo(emailOrUsernameCtr);
 		pwarea.setContent(emailOrUsernameCtr.getInitialComponent());
 	}
@@ -195,7 +209,7 @@ public class PwChangeController extends BasicController {
 				if (identity != null) {
 					// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
 					Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-					if (auth == null) { 
+					if (auth == null || !UserModule.isPwdchangeallowed(identity)) { 
 						getWindowControl().setWarning(translate("password.cantchange"));
 						return;
 					}

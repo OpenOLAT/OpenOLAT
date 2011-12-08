@@ -55,6 +55,7 @@ import org.olat.instantMessaging.ClientManager;
 import org.olat.instantMessaging.ConncectedUsersHelper;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.ui.ConnectedClientsListController;
 
 /**
@@ -98,7 +99,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private Map<String, NewMessageIconInfo> showNewMessageHolder = new HashMap<String, NewMessageIconInfo>(2);
 
 	private EventBus singleUserEventCenter;
-	private OLATResourceable ass;
+	public static final OLATResourceable ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 
 	public InstantMessagingMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -213,7 +214,6 @@ public class InstantMessagingMainController extends BasicController implements G
 		newMsgIcon.put("chats", chatMgrCtrl.getInitialComponent());
 		
 		
-		ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventCenter.registerFor(this, getIdentity(), ass);
 		
@@ -401,6 +401,13 @@ public class InstantMessagingMainController extends BasicController implements G
 				}
 				return;
 			} 
+		}
+		
+		if(event instanceof OpenInstantMessageEvent) {
+			String jabberId = ((OpenInstantMessageEvent)event).getJabberId();
+			UserRequest ureq = ((OpenInstantMessageEvent)event).getUreq();
+			chatMgrCtrl.createChat(ureq, getWindowControl(), jabberId);
+			return;
 		}
 		
 		InstantMessagingEvent imEvent = (InstantMessagingEvent)event;

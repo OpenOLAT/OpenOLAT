@@ -180,10 +180,17 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		ArrayHelper.sort(referencelangKeys, referenceLangValues, false, true, false);
 		// Build css classes for reference languages
 		String[] referenceLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(referencelangKeys, "b_with_small_icon_left");
-		// Preset first of the reference locales
+		// fxdiff: FXOLAT-213 Use first reference locale as default
+		referenceLocale = i18nMgr.getLocaleOrNull(referenceLangs.get(0));
+		// Override with user preset
 		Preferences guiPrefs = usess.getGuiPreferences();
 		String referencePrefs = (String) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
-		referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
+		for (String refLang : referencelangKeys) {
+			if (referencePrefs.equals(refLang)) {
+				referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
+				break;
+			}
+		}
 		referenceLangSelection = formFactory.addDropdownSingleselect("start.referenceLangSelection", formLayout, referencelangKeys,
 				referenceLangValues, referenceLangCssClasses);
 		referenceLangSelection.select(referenceLocale.toString(), true);

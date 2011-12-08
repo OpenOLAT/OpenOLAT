@@ -35,8 +35,6 @@ import org.olat.portfolio.EPAbstractHandler;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 
 /**
  * 
@@ -70,6 +68,10 @@ public class WikiArtefactHandler extends EPAbstractHandler<WikiArtefact>  {
 		OLATResourceable ores = null;
 		if (source instanceof OLATResourceable){
 			ores = (OLATResourceable) source;
+			// fxdiff: FXOLAT-148 a wiki from a businessgroup needs to be wrapped accordingly!
+			if (artefact.getBusinessPath().contains(BusinessGroup.class.getSimpleName())) {
+				ores = OresHelper.createOLATResourceableInstance(BusinessGroup.class, ores.getResourceableId());
+			}
 			Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
 			String pageName = getPageName(artefact.getBusinessPath());
 			page = wiki.getPage(pageName, true);

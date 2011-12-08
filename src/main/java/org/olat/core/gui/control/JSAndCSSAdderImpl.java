@@ -293,6 +293,11 @@ public class JSAndCSSAdderImpl extends JSAndCSSAdder implements ComponentRendere
 	 * @see org.olat.core.gui.control.JSAndCSSAdder#getMappedPathFor(java.lang.Class, java.lang.String)
 	 */
 	public String getMappedPathFor(Class baseClass, String fileName) {
+		//fxdiff make it possible to put absolute paths to js-files
+		// e.g. /olat/raw/fx-OLAT/themes/frentix/myjs.js FXOLAT-310
+		if(baseClass == null){
+			return fileName;
+		}
 		String packkey = getKey(baseClass); 
 		String mappath = keyToPath.get(packkey);
 		if (mappath == null) {

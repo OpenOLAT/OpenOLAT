@@ -53,6 +53,7 @@ public class GroupXStream {
 		xstream.aliasAttribute(Group.class, "showWaitingList", "showWaitingList");
 		xstream.aliasAttribute(Group.class, "description", "description");
 		xstream.aliasAttribute(Group.class, "info", "info");
+		xstream.aliasAttribute(Group.class, "folderAccess", "folderAccess");
 		
 		//CollabTools
 		xstream.aliasAttribute(Group.class, "tools", "CollabTools");
@@ -147,6 +148,7 @@ class Group {
 	public List<String> areaRelations;
 	public Long calendarAccess;
 	public String info;
+	public Long folderAccess;
 }
 
 class CollabTools {

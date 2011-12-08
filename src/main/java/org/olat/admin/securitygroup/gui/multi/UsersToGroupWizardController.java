@@ -45,10 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.WizardController;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 
@@ -150,7 +147,7 @@ public class UsersToGroupWizardController extends WizardController {
 			if (event == Event.DONE_EVENT) {
 				// calc stuff, preview
 
-				List existIdents = securityManager.getIdentitiesOfSecurityGroup(securityGroup);
+				List<Identity> existIdents = securityManager.getIdentitiesOfSecurityGroup(securityGroup);
 				oks = new ArrayList<Identity>();
 				List<String> isanonymous = new ArrayList<String>();
 				List<String> notfounds = new ArrayList<String>();
@@ -207,11 +204,11 @@ public class UsersToGroupWizardController extends WizardController {
 		}
 	}
 
-	private String listNames(List names) {
+	private String listNames(List<String> names) {
 		StringBuilder sb = new StringBuilder();
 		int cnt = names.size();
 		for (int i = 0; i < cnt; i++) {
-			String identname = (String) names.get(i);
+			String identname = names.get(i);
 			sb.append(identname);
 			if (i < cnt - 1) sb.append(", ");
 		}
@@ -260,6 +257,7 @@ class UserIdsForm extends FormBasicController {
 		
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 

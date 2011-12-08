@@ -26,8 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.admin.user.UserTableDataModel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
@@ -35,6 +37,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ta.StatusForm;
 import org.olat.course.nodes.ta.StatusManager;
 import org.olat.course.properties.CoursePropertyManager;
@@ -56,29 +59,41 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 	private static final String COL_DETAILS = "details";
 	private static final String COL_ATTEMPTS = "attempts";
 	private static final String COL_SCORE = "score";
+	//fxdiff VCRP-4: assessment overview with max score
+	private static final String COL_MINSCORE = "minScore";
+	private static final String COL_MAXSCORE = "maxScore";
 	private static final String COL_PASSED = "passed";
 	private static final String COL_STATUS = "status";
 
-	private List colMapping;	
+	private List<String> colMapping;	
 	private List<String> userPropertyNameList;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = AssessedIdentitiesTableDataModel.class.getCanonicalName();
 	private Translator translator;
+	
+	private String identifyer;
 
 	/**
 	 * @param objects List of wrapped identities (AssessedIdentityWrapper)
 	 * @param courseNode the current courseNode
 	 */
 	public AssessedIdentitiesTableDataModel(List objects, AssessableCourseNode courseNode, Locale locale, boolean isAdministrativeUser) {
+		this(objects, courseNode, locale, isAdministrativeUser, false);
+	}
+	
+		public AssessedIdentitiesTableDataModel(List objects, AssessableCourseNode courseNode, Locale locale, boolean isAdministrativeUser,
+				boolean compatibilityUserProperties) {
 		super(objects);
 		this.courseNode = courseNode;		
 		this.setLocale(locale);
 		this.translator = Util.createPackageTranslator(this.getClass(), locale);
 		
-		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		//fxdiff FXOLAT-108: improve results table of tests
+		identifyer = compatibilityUserProperties ? UserTableDataModel.class.getCanonicalName() : usageIdentifyer;
+		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(identifyer, isAdministrativeUser);
 		
 		colCount = 0; // default
-		colMapping = new ArrayList();
+		colMapping = new ArrayList<String>();
 		// store all configurable column positions in a lookup array
 		colMapping.add(colCount++, COL_NAME);		
 		Iterator <UserPropertyHandler> propHandlerIterator =  userPropertyHandlers.iterator();
@@ -97,7 +112,10 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 				colMapping.add(colCount++, COL_ATTEMPTS);				
 			}
 			if (courseNode.hasScoreConfigured()) {
-				colMapping.add(colCount++, COL_SCORE);	
+				colMapping.add(colCount++, COL_SCORE);
+				//fxdiff VCRP-4: assessment overview with max score
+				colMapping.add(colCount++, COL_MINSCORE);
+				colMapping.add(colCount++, COL_MAXSCORE);
 			}
 			if (courseNode.hasStatusConfigured()) { 
 				colMapping.add(colCount++, COL_STATUS);				
@@ -141,7 +159,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 
 		// lookup the column name first and 
 		// deliver value based on the column name
-		String colName = (String) colMapping.get(col);
+		String colName = colMapping.get(col);
 		if (colName.equals(COL_NAME)) return identity.getName();
 		else if (userPropertyNameList.contains(colName)) return identity.getUser().getProperty(colName, getLocale());		
 		else if (colName.equals(COL_DETAILS)) return wrappedIdentity.getDetailsListView();
@@ -149,8 +167,21 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
   	else if (colName.equals(COL_SCORE)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
 			if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
-			return AssessmentHelper.getRoundedScore(scoreEval.getScore());
-		}	else if (colName.equals(COL_STATUS)) {
+		//fxdiff VCRP-4: assessment overview with max score
+			return scoreEval.getScore();
+  	} else if (colName.equals(COL_MINSCORE)) {
+  	//fxdiff VCRP-4: assessment overview with max score
+			if(!(courseNode instanceof STCourseNode)) {
+				return courseNode.getMinScoreConfiguration();
+			}
+			return "";
+  	} else if (colName.equals(COL_MAXSCORE)) {
+  	//fxdiff VCRP-4: assessment overview with max score
+			if(!(courseNode instanceof STCourseNode)) {
+				return courseNode.getMaxScoreConfiguration();
+			}
+			return "";
+  	}	else if (colName.equals(COL_STATUS)) {
 			return getStatusFor(courseNode, wrappedIdentity);
 		}else if (colName.equals(COL_PASSED)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
@@ -195,20 +226,30 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 		userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.name", colCount++, editCmd, getLocale()));
 		
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);			
-			userListCtr.addColumnDescriptor(userPropertyHandler.getColumnDescriptor(i+1, null, getLocale()));	
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			//fxdiff FXOLAT-108: improve results table of tests
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(identifyer , userPropertyHandler);
+			userListCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(i+1, null, getLocale()));	
 			colCount++;
 		}		
 		if ( (courseNode != null) && isNodeOrGroupFocus) {			
-			if (courseNode.hasDetails()) {				
-				userListCtr.addColumnDescriptor((courseNode.getDetailsListViewHeaderKey() == null ? false : true), 
-						new DefaultColumnDescriptor(courseNode.getDetailsListViewHeaderKey(), colCount++, null, getLocale()));
+			if (courseNode.hasDetails()) {
+			//fxdiff VCRP-4: assessment overview with max score
+				String headerKey = courseNode.getDetailsListViewHeaderKey();
+				userListCtr.addColumnDescriptor((headerKey == null ? false : true), 
+						new DefaultColumnDescriptor(headerKey == null ? "table.header.details" : headerKey, colCount++, null, getLocale()));
 			}
 			if (courseNode.hasAttemptsConfigured()) {				
 				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.attempts", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 			}
 			if (courseNode.hasScoreConfigured()) {				
-				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.score", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+						new ScoreCellRenderer()));
+			//fxdiff VCRP-4: assessment overview with max score
+				userListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+						new ScoreCellRenderer()));
+				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
+						new ScoreCellRenderer()));
 			}
 			if (courseNode.hasStatusConfigured()) {				
 				userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.status", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));

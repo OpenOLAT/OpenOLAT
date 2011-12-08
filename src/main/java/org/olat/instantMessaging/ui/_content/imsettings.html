@@ -1,6 +1,8 @@
 $r.render("onlinelistform")
 $r.render("rosterform")
 
+## fxdiff: FXOLAT-46
+#if (!$hideExternalClientInfo)
 <fieldset>
 	<legend>$r.translate("title.imclient.extern")</legend>
 	<p>
@@ -12,3 +14,4 @@ $r.render("rosterform")
 		$r.translate("imclient.extern.pw") <input type="text" value="$password" readonly="readonly"/>
 	</p>
 </fieldset>
+#end

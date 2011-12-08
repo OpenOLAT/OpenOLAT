@@ -26,7 +26,25 @@
 	<p>
 		$r.render("sync.button.start")
 	</p>
+	<p>
+		$r.render("full.sync.button.start")
+	</p>
+	#if ($r.available("one.user.sync.button.start"))
+	<p>
+		$r.render("one.user.sync.button.start")
+	</p>
+	#end
 </fieldset>
+
+#if($r.available("remove.fallback.auth"))
+<fieldset>
+	<legend>$r.translate("ldap.maintenance")</legend>
+	$r.translate("remove.fallback.auth.info")
+	<p>
+		$r.render("remove.fallback.auth")
+	</p>
+</fieldset>
+#end
 
 <fieldset>
 	<legend>$r.translate("admin.logview.title")</legend>

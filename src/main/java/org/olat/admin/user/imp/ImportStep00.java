@@ -22,8 +22,10 @@
 package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,8 +53,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Description:<br>
@@ -141,6 +147,22 @@ class ImportStep00 extends BasicStep {
 
 			idents = new ArrayList<Object>();
 			newIdents = new ArrayList<List<String>>();
+			// fxdiff: check also emails in change-workflow, see OLAT-5723
+			Set<String> tempEmailsInUse = new HashSet<String>();
+			RegistrationManager rm = RegistrationManager.getInstance();
+			List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
+			if (tk != null) {
+				for (TemporaryKey temporaryKey : tk) {
+					XStream xml = new XStream();
+					Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
+					for(Map.Entry<String, String> mailEntry:mails.entrySet()) {
+						tempEmailsInUse.add(mailEntry.getKey());
+						tempEmailsInUse.add(mailEntry.getValue());
+					}
+				}
+			}
+			// fxdiff >
+			
 			// Note: some values are fix and required: login, pwd and lang, those
 			// can not be configured in the config file
 			// because they are not user properties.
@@ -282,7 +304,16 @@ class ImportStep00 extends BasicStep {
 							if (thisKey.equals(UserConstants.EMAIL)) {
 								// check that no user with same email is already in list
 								Integer mailPos = importedEmails.indexOf(thisValue);
-								if (mailPos != -1) {
+								// fxdiff
+								boolean duplicate = mailPos != -1;
+								if (!duplicate) {
+									duplicate |= tempEmailsInUse.contains(thisValue);
+								}
+								if(!duplicate) {
+									duplicate |= um.isEmailInUse(thisValue);
+								}
+
+								if (duplicate) { // fxdiff >
 									mailPos++;
 									textAreaElement.setErrorKey("error.email.douplicate",
 											new String[] { String.valueOf(i + 1), thisValue, mailPos.toString() });

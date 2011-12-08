@@ -25,9 +25,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.util.Properties;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;
@@ -133,14 +145,32 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	private OLATResourceable PROPERTIES_CHANGED_EVENT_CHANNEL;
 	private CoordinatorManager coordinatorManager;
 	
+	private boolean secured;
+	
+	static {
+  	Security.insertProviderAt(new BouncyCastleProvider(), 1);
+	}
+	
+	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, boolean secured) {
+		this.coordinatorManager = coordinatorManager;
+		this.propertiesChangedEventListener = listener;
+		this.secured = secured;
+	}
+	
 	/**
 	 * [used by spring]
 	 * @param provide coordinatorManager via DI
+	 * fxdiff: needs to be public while another constructor is also public (due to spring loading)
 	 */
-	private PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener) {
+	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener) {
 		this.coordinatorManager = coordinatorManager;
 		// Keep handle for dispose process
 		this.propertiesChangedEventListener = listener;
+	}
+	
+	// fxdiff: backward compatibility
+	public PersistedProperties(GenericEventListener listener) {
+		this(CoordinatorManager.getInstance(), listener);
 	}
 
 	/**
@@ -168,14 +198,24 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	public void loadPropertiesFromFile() {
 		// Might get an event after beeing disposed. Should not be the case, but you never know with multi user events accross nodes.
 		if (propertiesChangedEventListener != null && configurationPropertiesFile.exists()) {
-			FileInputStream is;
+			InputStream is;
 			try {
 				is = new FileInputStream(configurationPropertiesFile);
+				
+				if(secured) {
+					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
+	        Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
+	        cipher.init(Cipher.DECRYPT_MODE, key, generateIV(cipher), random);
+	        is =  new CipherInputStream(is, cipher);	
+				}
+				
 				configuredProperties.load(is);
 				is.close();
 			} catch (FileNotFoundException e) {
 				logError("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			} catch (IOException e) {
+				logError("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
+			} catch (Exception e) {
 				logError("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			}
 		}
@@ -374,6 +414,14 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 					if (!directory.exists()) directory.mkdirs();
 				}
 				fileStream = new FileOutputStream(configurationPropertiesFile);
+				
+				if(secured) {
+					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
+					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
+        	cipher.init(Cipher.ENCRYPT_MODE, key, generateIV(cipher), random);
+        	fileStream =  new CipherOutputStream(fileStream, cipher);	
+				}
+				
 				configuredProperties.store(fileStream, null);
 				// Flush and close before sending events to other nodes to make changes appear on other node
 				fileStream.flush();
@@ -384,6 +432,8 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 			} catch (FileNotFoundException e) {
 				logError("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			} catch (IOException e) {
+				logError("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
+			} catch (Exception e) {
 				logError("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			} finally {
 				try {
@@ -429,5 +479,23 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		}		
 		return tmp;
 	}
+
+  
+	private static final String salt = "A long, but constant phrase that will be used each time as the salt.";
+  private static final int iterations = 2000;
+  private static final int keyLength = 128;
+  private static final SecureRandom random = new SecureRandom();
+  
+	private static SecretKey generateKey(String passphrase) throws Exception {
+    PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(), iterations, keyLength);
+    SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC");
+    return keyFactory.generateSecret(keySpec);
+	}
+  
+	private static IvParameterSpec generateIV(Cipher cipher) throws Exception {
+    byte [] ivBytes = new byte[cipher.getBlockSize()];
+    random.nextBytes(ivBytes);
+    return new IvParameterSpec(ivBytes);
+  }
 
 }

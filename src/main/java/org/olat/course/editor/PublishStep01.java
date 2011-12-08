@@ -29,13 +29,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
+import org.olat.course.ICourse;
 import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
 
@@ -52,17 +52,17 @@ class PublishStep01 extends BasicStep {
 	private PrevNextFinishConfig prevNextConfig;
 	private boolean hasPublishableChanges;
 
-	public PublishStep01(UserRequest ureq, boolean hasPublishableChanges) {
+	public PublishStep01(UserRequest ureq, ICourse course, boolean hasPublishableChanges, boolean hasCatalog) {
 		super(ureq);
 		setI18nTitleAndDescr("publish.access.header", null);
 		
+		//VCRP-3: add catalog entry in publish wizard
 		this.hasPublishableChanges = hasPublishableChanges;
-		if(hasPublishableChanges){
-			setNextStep(new PublishStep00a(ureq));
+		setNextStep(new PublishStepCatalog(ureq, course, hasPublishableChanges));
+		if(hasCatalog){
 			prevNextConfig = PrevNextFinishConfig.BACK_NEXT_FINISH;
 		}else{
-			setNextStep(Step.NOSTEP);
-			prevNextConfig = PrevNextFinishConfig.BACK_FINISH;
+			prevNextConfig = PrevNextFinishConfig.BACK_NEXT;
 		}
 	}
 
@@ -87,11 +87,9 @@ class PublishStep01 extends BasicStep {
 
 		private SingleSelection accessSelbox;
 		private String selectedAccess;
-		private boolean hasPublishableChanges2;
 
 		PublishStep01AccessForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext, boolean hasPublishableChanges2) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
-			this.hasPublishableChanges2 = hasPublishableChanges2;
 			selectedAccess = (String) getFromRunContext("selectedCourseAccess");
 			initForm(ureq);
 		}
@@ -108,12 +106,8 @@ class PublishStep01 extends BasicStep {
 				//only change if access was changed
 				addToRunContext("changedaccess", newAccess);
 			}
-			if(hasPublishableChanges2){
-				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-			}else{
-				fireEvent(ureq, StepsEvent.INFORM_FINISHED);
-			}
-		
+
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
 		@Override
@@ -127,13 +121,15 @@ class PublishStep01 extends BasicStep {
 					"" + RepositoryEntry.ACC_OWNERS,
 					"" + RepositoryEntry.ACC_OWNERS_AUTHORS,
 					"" + RepositoryEntry.ACC_USERS,
-					"" + RepositoryEntry.ACC_USERS_GUESTS
+					"" + RepositoryEntry.ACC_USERS_GUESTS,
+					RepositoryEntry.MEMBERS_ONLY//fxdiff VCRP-1,2: access control of resources
 				};
 			String[] values = new String[] {
 				pt.translate("cif.access.owners"),
 				pt.translate("cif.access.owners_authors"),
 				pt.translate("cif.access.users"),
 				pt.translate("cif.access.users_guests"),
+				pt.translate("cif.access.membersonly"),//fxdiff VCRP-1,2: access control of resources
 			};
 			//use the addDropDownSingleselect method with null as label i18n - key, because there is no label to set. OLAT-3682
 			accessSelbox = uifactory.addDropdownSingleselect("accessBox",null, fic, keys, values, null);

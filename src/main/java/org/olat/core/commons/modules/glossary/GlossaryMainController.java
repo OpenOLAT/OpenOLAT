@@ -19,8 +19,10 @@
  */
 package org.olat.core.commons.modules.glossary;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -41,10 +43,14 @@ import org.olat.core.gui.control.generic.dtabs.Activateable;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
@@ -62,7 +68,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private VelocityContainer glistVC;
 	private Link addButton;
 	private LockResult lockEntry = null;
-	private boolean editModeEnabled;
+	private final GlossarySecurityCallback glossarySecCallback;
+	private final boolean eventProfil;
 	private DialogBoxController deleteDialogCtr;
 	private Controller glossEditCtrl;
 	private ArrayList<GlossaryItem> glossaryItemList;
@@ -73,19 +80,23 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private OLATResourceable resourceable;
 	private static final String CMD_EDIT = "cmd.edit.";
 	private static final String CMD_DELETE = "cmd.delete.";
+	private static final String CMD_AUTHOR = "cmd.author.";
+	private static final String CMD_MODIFIER = "cmd.modifier.";
 	private static final String REGISTER_LINK = "register.link.";
+	private final Formatter formatter;
 
-	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResourceable res, boolean allowGlossaryEditing) {
+	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResourceable res,
+			GlossarySecurityCallback glossarySecCallback, boolean eventProfil) {
 		super(ureq, control);
-		this.editModeEnabled = allowGlossaryEditing;
+		this.glossarySecCallback = glossarySecCallback;
 		this.glossaryFolder = glossaryFolder;
+		this.eventProfil = eventProfil;
 		this.resourceable = res;
 		addLoggingResourceable(CoreLoggingResourceable.wrap(res, OlatResourceableType.genRepoEntry));
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		glistVC = createVelocityContainer("glossarylist");
 
-		addButton = LinkFactory.createButtonSmall("cmd.add", glistVC, this);
-		initEditView(ureq, allowGlossaryEditing);
+		formatter = Formatter.getInstance(getLocale());
 
 		glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
@@ -93,7 +104,12 @@ public class GlossaryMainController extends BasicController implements Activatea
 		glistVC.contextPut("registerEnabled", registerEnabled);
 		if (!registerEnabled) {
 			filterIndex = "all";
-		}		
+		}
+		glistVC.contextPut("userAllowToEditEnabled", new Boolean(glossarySecCallback.isUserAllowToEditEnabled()));
+		
+		addButton = LinkFactory.createButtonSmall("cmd.add", glistVC, this);
+		initEditView(ureq, glossarySecCallback.canAdd());
+
 		updateRegisterAndGlossaryItems();
 		
 		Link showAllLink = LinkFactory.createCustomLink(REGISTER_LINK + "all", REGISTER_LINK + "all", "glossary.list.showall", Link.LINK,
@@ -166,7 +182,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addButton) {
 			removeAsListenerAndDispose(glossEditCtrl);
-			glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, null);
+			glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, null, true);
 			listenTo(glossEditCtrl);
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(getWindowControl(), "close", glossEditCtrl.getInitialComponent());
@@ -179,7 +195,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 				GlossaryItem currentGlossaryItem = (GlossaryItem) button.getUserObject();
 				if (cmd.startsWith(CMD_EDIT)) {
 					removeAsListenerAndDispose(glossEditCtrl);
-					glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, currentGlossaryItem);
+					glossEditCtrl = new GlossaryItemEditorController(ureq, getWindowControl(), glossaryFolder, glossaryItemList, currentGlossaryItem, false);
 					listenTo(glossEditCtrl);
 					removeAsListenerAndDispose(cmc);
 					cmc = new CloseableModalController(getWindowControl(), "close", glossEditCtrl.getInitialComponent());
@@ -193,14 +209,34 @@ public class GlossaryMainController extends BasicController implements Activatea
 					deleteDialogCtr = activateYesNoDialog(ureq, null, translate("glossary.delete.dialog", currentGlossaryItem.getGlossTerm()),
 							deleteDialogCtr);
 				} 
-			}
-			else if (button.getCommand().startsWith(REGISTER_LINK)) {
+			} else if (button.getCommand().startsWith(REGISTER_LINK)) {
 				filterIndex = cmd.substring(cmd.lastIndexOf(".") + 1);
 
 				updateRegisterAndGlossaryItems();				
 			}
+		} else if (source == glistVC) {
+			String cmd = event.getCommand();
+			if(cmd.startsWith(CMD_AUTHOR)) {
+				String url = event.getCommand().substring(CMD_AUTHOR.length());
+				openProfil(ureq, url, true);
+			} else if (cmd.startsWith(CMD_MODIFIER)) {
+				String url = event.getCommand().substring(CMD_MODIFIER.length());
+				openProfil(ureq, url, false);
+			}
 		}
-
+	}
+	
+	private void openProfil(UserRequest ureq, String pos, boolean author) {
+		int id = Integer.parseInt(pos);
+		
+		List<GlossaryItemWrapper> wrappers = (List<GlossaryItemWrapper>)glistVC.getContext().get("editAndDelButtonList");
+		for(GlossaryItemWrapper wrapper:wrappers) {
+			if(id == wrapper.getId()) {
+				Revision revision = author ? wrapper.getAuthorRevision() : wrapper.getModifierRevision();
+				Long identityKey = revision.getAuthor().extractKey();
+				fireEvent(ureq, new OpenAuthorProfilEvent(identityKey));
+			}
+		}
 	}
 
 	@Override
@@ -246,11 +282,11 @@ public class GlossaryMainController extends BasicController implements Activatea
 	 * @return a list (same size as GlossaryItems) which contains again lists with
 	 *         one editButton and one deleteButton
 	 */
-	private List<List<Link>> updateView(ArrayList<GlossaryItem> gIList, String choosenFilterIndex) {
-		List<List<Link>> editAndDelButtonList = new ArrayList<List<Link>>(gIList.size());
+	private List<GlossaryItemWrapper> updateView(ArrayList<GlossaryItem> gIList, String choosenFilterIndex) {
 		int linkNum = 1;
 		Set<String> keys = new HashSet<String>();
 		StringBuilder bufDublicates = new StringBuilder();
+		List<GlossaryItemWrapper> items = new ArrayList<GlossaryItemWrapper>();
 		Collections.sort(gIList);
 		
 		glistVC.contextPut("filterIndex", choosenFilterIndex);		
@@ -263,30 +299,31 @@ public class GlossaryMainController extends BasicController implements Activatea
 		}
 		
 		for (GlossaryItem gi : gIList) {
-			Link tmpEditButton = LinkFactory.createCustomLink(CMD_EDIT + linkNum, CMD_EDIT + linkNum, "cmd.edit", Link.BUTTON_SMALL, glistVC,
+			boolean canEdit = glossarySecCallback.canEdit(gi);
+			if(canEdit) {
+				Link tmpEditButton = LinkFactory.createCustomLink(CMD_EDIT + linkNum, CMD_EDIT + linkNum, "cmd.edit", Link.BUTTON_SMALL, glistVC,
 					this);
-			tmpEditButton.setUserObject(gi);
-			Link tmpDelButton = LinkFactory.createCustomLink(CMD_DELETE + linkNum, CMD_DELETE + linkNum, "cmd.delete", Link.BUTTON_SMALL,
+				tmpEditButton.setUserObject(gi);
+				Link tmpDelButton = LinkFactory.createCustomLink(CMD_DELETE + linkNum, CMD_DELETE + linkNum, "cmd.delete", Link.BUTTON_SMALL,
 					glistVC, this);
-			tmpDelButton.setUserObject(gi);
-			List<Link> tmpList = new ArrayList<Link>(2);
-			tmpList.add(tmpEditButton);
-			tmpList.add(tmpDelButton);
-
+				tmpDelButton.setUserObject(gi);
+			}
+			
+			GlossaryItemWrapper wrapper = new GlossaryItemWrapper(gi, linkNum);
 			if (keys.contains(gi.getGlossTerm()) && (bufDublicates.indexOf(gi.getGlossTerm()) == -1)) {
 				bufDublicates.append(gi.getGlossTerm());
 				bufDublicates.append(" ");
 			} else {
 				keys.add(gi.getGlossTerm());
 			}
-			editAndDelButtonList.add(tmpList);
+			items.add(wrapper);
 			linkNum++;
 		}
 		
-		if ((bufDublicates.length() > 0) && editModeEnabled) {
+		if ((bufDublicates.length() > 0) && glossarySecCallback.canAdd()) {
 			showWarning("warning.contains.dublicates", bufDublicates.toString());
 		}
-		return editAndDelButtonList;
+		return items;
 	}
 
 	/**
@@ -307,5 +344,156 @@ public class GlossaryMainController extends BasicController implements Activatea
 			}
 		}
 	}
+	
+	public class GlossaryItemWrapper {
+		
+		private final int id;
+		private final GlossaryItem delegate;
 
+		public GlossaryItemWrapper(GlossaryItem delegate, int id) {
+			this.delegate = delegate;
+			this.id = id;
+		}
+		
+		public int getId() {
+			return id;
+		}
+
+		public String getIndex() {
+			return delegate.getIndex();
+		}
+		
+		public boolean hasAuthor() {
+			Revision authorRev = getAuthorRevision();
+			return authorRev != null && StringHelper.containsNonWhitespace(authorRev.getAuthor().getLink());
+		}
+		
+		public String getAuthorName() {
+			Revision authorRev = getAuthorRevision();
+			return authorRev == null ? null : getRevisionAuthorFullName(authorRev); 
+		}
+		
+		public String getAuthorCmd() {
+			return eventProfil ? CMD_AUTHOR + id : null; 
+		}
+		
+		public String getAuthorLink() {
+			Revision authorRev = getAuthorRevision();
+			return getLink(authorRev);
+		}
+		
+		public boolean hasModifier() {
+			Revision modifierRev = getModifierRevision();
+			return modifierRev != null && StringHelper.containsNonWhitespace(modifierRev.getAuthor().getLink());
+		}
+		
+		public String getModifierName() {
+			Revision modifierRev = getModifierRevision();
+			return modifierRev == null ? null : getRevisionAuthorFullName(modifierRev); 
+		}
+		
+		public String getModifierCmd() {
+			return eventProfil ? CMD_MODIFIER + id : null; 
+		}
+		
+		public String getModifierLink() {
+			Revision modifierRev = getModifierRevision();
+			return getLink(modifierRev);
+		}
+		
+		public String getCreationDate() {
+			Revision authorRev = getAuthorRevision();
+			return getMessageDate(authorRev);
+		}
+		
+		public String getLastModificationDate() {
+			Revision modifierRev = getModifierRevision();
+			return getMessageDate(modifierRev);
+		}
+		
+		private String getMessageDate(Revision rev) {
+			if(rev == null) return "";
+			Date date = rev.getJavaDate();
+			if(date == null) return "";
+			String dateStr = formatter.formatDate(date);
+			return translate("glossary.item.at", new String[]{ dateStr });
+		}
+
+		public List<Revision> getRevHistory() {
+			return delegate.getRevHistory();
+		}
+
+		public ArrayList<String> getGlossFlexions() {
+			return delegate.getGlossFlexions();
+		}
+
+		public ArrayList<String> getGlossSynonyms() {
+			return delegate.getGlossSynonyms();
+		}
+
+		public String getGlossDef() {
+			return delegate.getGlossDef();
+		}
+
+		public ArrayList<URI> getGlossLinks() {
+			return delegate.getGlossLinks();
+		}
+
+		public ArrayList<GlossaryItem> getGlossSeeAlso() {
+			return delegate.getGlossSeeAlso();
+		}
+
+		public String getGlossTerm() {
+			return delegate.getGlossTerm();
+		}
+		
+		private String getLink(Revision rev) {
+			if(rev == null || rev.getAuthor() == null) return null;
+			String url = rev.getAuthor().getLink();
+			if(StringHelper.containsNonWhitespace(url) && url.startsWith("[") && url.endsWith("]")) {
+				int indexUsername = url.indexOf("[Username:");
+				if(indexUsername > 0) {
+					url = url.substring(0, indexUsername);
+				}
+				BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
+				return BusinessControlFactory.getInstance().getAsURIString(bc, true);
+			}
+			return null;
+		}
+		
+		public Revision getAuthorRevision() {
+			List<Revision> revisions = delegate.getRevHistory();
+			if(revisions == null || revisions.isEmpty()) return null;
+			Revision revision = revisions.get(0);
+			if(revision.getAuthor() != null && "added".equals(revision.getRevisionflag())) {
+				return revision;
+			}
+			return null;
+		}
+		
+		public Revision getModifierRevision() {
+			List<Revision> revisions = delegate.getRevHistory();
+			if(revisions == null || revisions.isEmpty()) return null;
+			
+			Revision lastRevision = revisions.get(revisions.size() - 1);
+			if(lastRevision.getAuthor() != null && "changed".equals(lastRevision.getRevisionflag())) {
+				return lastRevision;
+			}
+			return null;
+		}
+		
+		private String getRevisionAuthorFullName(Revision revision) {
+			if(revision == null || revision.getAuthor() == null) return null;
+			
+			StringBuilder sb = new StringBuilder();
+			if(StringHelper.containsNonWhitespace(revision.getAuthor().getFirstname())) {
+				sb.append(revision.getAuthor().getFirstname());
+			}
+			if(StringHelper.containsNonWhitespace(revision.getAuthor().getSurname())) {
+				if(sb.length() > 0) sb.append(' ');
+				sb.append(revision.getAuthor().getSurname());
+			}
+			return sb.toString();
+		}
+	}
 }

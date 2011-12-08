@@ -55,6 +55,8 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.properties.Property;
+import org.olat.properties.PropertyManager;
 
 /**
  *  @author Christian Guretzki
@@ -104,6 +106,10 @@ public class SessionAdministrationController extends BasicController {
 			rejectDMZReuqestsLink = LinkFactory.createButton("session.admin.reject.dmz.requests.link", myContent, this);
 			allowDMZRequestsLink = LinkFactory.createButton("session.admin.allow.dmz.requests.link", myContent, this);
 		}
+		PropertyManager pm = PropertyManager.getInstance();
+		Property p = pm.findProperty(null, null, null, AdminModule.SYSTEM_PROPERTY_CATEGORY, AdminModule.PROPERTY_SESSION_ADMINISTRATION);
+		String sessionToken = (p == null ? "" : p.getStringValue());
+		myContent.contextPut("sessionToken", sessionToken);
 		allowLoginLink = LinkFactory.createButton("session.admin.allow.login.link", myContent, this);
 		sessionAdminOldestSessionForm  = new SessionAdminOldestSessionForm(ureq, wControl, getTranslator());
 		listenTo(sessionAdminOldestSessionForm);

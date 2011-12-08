@@ -22,12 +22,17 @@
 package org.olat.search.service.indexer;
 
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WorkThreadInformations;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -123,8 +128,13 @@ public class FolderIndexerWorker implements Runnable{
 			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
 				String myFilePath = fPath + "/" + leaf.getName();
 				leafResourceContext.setFilePath(myFilePath);
+				//fxdiff FXOLAT-97: high CPU load tracker
+				setInfoFiles(myFilePath, leaf);
+				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
   			Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
-  			writer.addDocument(document);
+  			if(document != null) {//document wihich are disabled return null
+  				writer.addDocument(document);
+  			}
 			} else {
 				if (log.isDebug()) log.debug("Documenttype not supported. file=" + leaf.getName());
 			}
@@ -140,9 +150,27 @@ public class FolderIndexerWorker implements Runnable{
 			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (Exception ex) {
 			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
+		//fxdiff FXOLAT-97: high CPU load tracker
+		} finally {
+			WorkThreadInformations.unset();
 		}
 	}
-
+	
+	private void setInfoFiles(String filePath, VFSLeaf leaf) {
+		try {
+			File file = new File(FolderConfig.getCanonicalTmpDir(), "threadInfos");
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			if(leaf instanceof LocalImpl) {
+				filePath = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
+			}
+			File infoFile = new File(file, Thread.currentThread().getName());
+			FileUtils.save(infoFile, filePath, "UTF-8");
+		} catch (Exception e) {
+			log.error("Cannot write info message about FolderIndexerWorker: " + filePath, e);
+		}
+	}
 
 	public void setParentResourceContext(SearchResourceContext newParentResourceContext) {
 		this.parentResourceContext = newParentResourceContext;

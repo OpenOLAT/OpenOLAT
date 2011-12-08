@@ -83,16 +83,21 @@ public class ContextHelpDocument extends OlatDocument {
 		contextHelpDocument.setCssIcon("b_contexthelp_icon");
 		contextHelpDocument.setTitle(pageTranslator.translate("chelp." + page.split("\\.")[0] + ".title") + " (" + lang + ")");
 		
-		VelocityHelper vh = VelocityHelper.getInstance();
-		String mergedContent = vh.mergeContent(pagePath, ctx, null);
-		// Remove any HTML stuff from page
-    Matcher m = HTML_TAG_PATTERN.matcher(mergedContent);
-    mergedContent = m.replaceAll(" ");
-    // Remove all &nbsp
-    m = HTML_SPACE_PATTERN.matcher(mergedContent);
-    mergedContent = m.replaceAll(" ");
-    // Finally set content
-		contextHelpDocument.setContent(mergedContent);
+		try {
+			VelocityHelper vh = VelocityHelper.getInstance();
+			String mergedContent = vh.mergeContent(pagePath, ctx, null);
+			// Remove any HTML stuff from page
+			Matcher m = HTML_TAG_PATTERN.matcher(mergedContent);
+			mergedContent = m.replaceAll(" ");
+			// Remove all &nbsp
+			m = HTML_SPACE_PATTERN.matcher(mergedContent);
+			mergedContent = m.replaceAll(" ");
+			// Finally set content
+			contextHelpDocument.setContent(mergedContent);
+		} catch (Exception e) {
+			log.error("Error indexing context help: " + bundleName + " / " + page + " in " + pageTranslator.getLocale(), e);
+			contextHelpDocument.setContent("");
+		}
 		
 		if (log.isDebug()) log.debug(contextHelpDocument.toString());
 		return contextHelpDocument.getLuceneDocument();

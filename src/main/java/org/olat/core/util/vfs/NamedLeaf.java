@@ -48,7 +48,11 @@ public class NamedLeaf implements VFSLeaf {
 		this.name = name;
 		this.delegate = delegate;
 	}
-
+	
+	//fxdiff FXOLAT-125: virtual file system for CP
+	public VFSLeaf getDelegate() {
+		return delegate;
+	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSLeaf#getInputStream()

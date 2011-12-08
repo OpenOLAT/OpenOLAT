@@ -48,6 +48,7 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -99,7 +100,9 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 		String nodeId = this.getIdent();
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-		FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isGuest);
+		//fxdiff BAKS-18
+		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), entry);
+		FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
 		FeedMainController podcastCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createMainController(entry.getOlatResource(), ureq, control,
 				callback, courseId, nodeId);
@@ -125,7 +128,9 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 			String nodeId = this.getIdent();
 			boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 			boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-			FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isGuest);
+			//fxdiff BAKS-18
+			boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), entry);
+			FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
 			FeedUIFactory uiFactory = PodcastUIFactory.getInstance(ureq.getLocale());
 			Controller peekViewController = new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, nodeId, uiFactory, 2, "o_podcast_peekview");
 			return peekViewController;

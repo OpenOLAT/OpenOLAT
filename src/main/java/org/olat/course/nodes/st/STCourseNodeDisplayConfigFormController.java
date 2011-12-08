@@ -59,7 +59,7 @@ import org.olat.modules.ModuleConfiguration;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class STCourseNodeDisplayConfigFormController extends FormBasicController {
-	private static final String[] keys_displayType = new String[] { "system", "peekview", "file" };
+	private static final String[] keys_displayType = new String[] { "system", "peekview", "file", "delegate" };
 
 	// read current configuration
 	private String displayConfig = null;
@@ -131,13 +131,16 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		// 
 		FormUIFactory formFact = FormUIFactory.getInstance();
 		// Display type
-		String[] values_displayType = new String[] { translate("form.system"), translate("form.peekview"), translate("form.self") };
+		String[] values_displayType = new String[] { translate("form.system"), translate("form.peekview"), translate("form.self"),
+				translate("form.delegate") };
 		displayTypeRadios = formFact.addRadiosVertical("selforsystemoverview", formLayout, keys_displayType, values_displayType);
 		displayTypeRadios.addActionListener(this, FormEvent.ONCLICK);
 		if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
 			displayTypeRadios.select("file", true);
 		} else if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
 			displayTypeRadios.select("peekview", true);
+		} else if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE)) {
+			displayTypeRadios.select("delegate", true);
 		} else {
 			displayTypeRadios.select("system", true);
 		}
@@ -153,9 +156,11 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 			RulesFactory.createHideRule(displayTypeRadios, "file", selectedPeekviewChildren, formLayout);
 			RulesFactory.createHideRule(displayTypeRadios, "system", selectedPeekviewChildren, formLayout);
 			RulesFactory.createShowRule(displayTypeRadios, "peekview", selectedPeekviewChildren, formLayout);
+			RulesFactory.createHideRule(displayTypeRadios, "delegate", selectedPeekviewChildren, formLayout);
 			RulesFactory.createHideRule(displayTypeRadios, "file", spacerChild, formLayout);
 			RulesFactory.createHideRule(displayTypeRadios, "system", spacerChild, formLayout);
 			RulesFactory.createShowRule(displayTypeRadios, "peekview", spacerChild, formLayout);
+			RulesFactory.createHideRule(displayTypeRadios, "delegate", spacerChild, formLayout);
 			// Pre-select the first MAX_PEEKVIEW_CHILD_NODES child nodes if none is
 			// selected to reflect meaningfull default configuration
 			preselectConfiguredOrMaxChildNodes();
@@ -172,7 +177,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		if (columnsConfig == 2) {
 			displayTwoColumns.selectAll();
 		}
-		if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
+		if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE) || displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE)) {
 			displayTwoColumns.setVisible(false);
 		}
 		// 
@@ -180,9 +185,11 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		RulesFactory.createHideRule(displayTypeRadios, "file", displayTwoColumns, formLayout);
 		RulesFactory.createShowRule(displayTypeRadios, "peekview", displayTwoColumns, formLayout);
 		RulesFactory.createShowRule(displayTypeRadios, "system", displayTwoColumns, formLayout);
+		RulesFactory.createHideRule(displayTypeRadios, "delegate", displayTwoColumns, formLayout);
 		RulesFactory.createHideRule(displayTypeRadios, "file", spacerCols, formLayout);
 		RulesFactory.createShowRule(displayTypeRadios, "peekview", spacerCols, formLayout);
 		RulesFactory.createShowRule(displayTypeRadios, "system", spacerCols, formLayout);
+		RulesFactory.createHideRule(displayTypeRadios, "delegate", spacerCols, formLayout);
 	}
 
 	/**
@@ -303,6 +310,9 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 					}
 					moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, selectedPeekviewChildNodesConfig);
 				}
+			} else if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE.equals(displayType)) {
+					moduleConfig.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE,
+						STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE);
 			} else {
 				// the old auto generated TOC view without peekview
 				moduleConfig

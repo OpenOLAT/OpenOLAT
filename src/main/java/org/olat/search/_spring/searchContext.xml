@@ -70,8 +70,9 @@
 	       <property name="arguments">
 	             <value>
 	        		generateIndexAtStartup=${generate.index.at.startup}		
-					<!-- restartInterval in ms (0=no restart) -->
-					restartInterval=0
+					<!-- restartInterval in ms (0=no restart) 
+					fxdiff FXOLAT-221: start indexer at different times for each instance -->
+					restartInterval=${search.indexing.restart.interval}	
 					tempIndexPath=temp_search_index
 					tempSpellCheckPath=temp_spellcheck_index
 					pdfTextBufferPath=temp_pdf_text_buf
@@ -84,7 +85,7 @@
 					maxFileSize=10485760
 					<!-- Control indexer prozess -->		
 					numberIndexWriter=0
-					folderPoolSize=10
+					folderPoolSize=4
 					<!-- Define automatic restart time window e.g. 01:00-02:59 restartWindowStart=1 restartWindowEnd=3 -->
 					restartWindowStart=${restart.window.start}
 					restartWindowEnd=${restart.window.end}
@@ -95,6 +96,7 @@
 					<!-- updater runs every xx ms (0=stopped) -->
 					<!-- The updater is NOT implemented for all index elements, do not use it for now! -->
 					updateInterval=0
+					ramBufferSizeMb=16
 					
 	          </value>
 	       </property>

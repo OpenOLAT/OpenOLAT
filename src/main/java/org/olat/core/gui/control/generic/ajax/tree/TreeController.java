@@ -214,6 +214,11 @@ public class TreeController extends BasicController {
 
 		putInitialPanel(mainVC);
 	}
+	
+	//fxdiff FXOLAT-132: alert unsaved changes in HTML editor
+	public long getTreePanelID() {
+		return mainVC.getDispatchID();
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,

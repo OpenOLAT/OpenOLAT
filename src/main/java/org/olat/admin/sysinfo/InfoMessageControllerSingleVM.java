@@ -20,6 +20,7 @@
 */
 package org.olat.admin.sysinfo;
 
+import org.olat.admin.AdminModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.gui.UserRequest;
@@ -32,6 +33,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.properties.Property;
+import org.olat.properties.PropertyManager;
 
 /**
  * Description:<br>
@@ -60,6 +63,10 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		infoMsgEdit = createVelocityContainer("infomsgEdit");
 		infoMsgView.contextPut("cluster", Boolean.FALSE);
 		infoMsgEdit.contextPut("cluster", Boolean.FALSE);
+		PropertyManager pm = PropertyManager.getInstance();
+		Property p = pm.findProperty(null, null, null, AdminModule.SYSTEM_PROPERTY_CATEGORY, AdminModule.PROPERTY_MAINTENANCE_MESSAGE);
+		String adminToken = (p == null ? "" : p.getStringValue());
+		infoMsgView.contextPut("admintoken", adminToken);
 		
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
 		maintenancemsgEditButton = LinkFactory.createButton("maintenancemsgEdit", infoMsgView, this);

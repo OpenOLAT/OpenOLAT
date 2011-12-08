@@ -166,6 +166,8 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 	}
 
 	private void updateLogViewFromWriter() {
+		if(logViewerVC == null) return;
+		
 		StringBuffer sb = writer.getBuffer();
 		String log = sb.toString();
 		if (removeLogNoise) {

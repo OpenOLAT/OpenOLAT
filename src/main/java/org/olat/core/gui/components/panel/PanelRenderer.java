@@ -21,8 +21,14 @@
 
 package org.olat.core.gui.components.panel;
 
+import java.util.List;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.control.dragdrop.DragAndDropImpl;
+import org.olat.core.gui.control.dragdrop.Draggable;
+import org.olat.core.gui.control.dragdrop.DroppableImpl;
+import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -56,20 +62,20 @@ public class PanelRenderer implements ComponentRenderer {
 		
 		Component toRender = panel.getContent();
 		
-		// alpha-quality for drag and drop
-		/*if (renderer.getGlobalSettings().getAjaxFlags().isDragAndDropEnabled()) {
+		//fxdiff alpha-quality for drag and drop
+		if (renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled()) {
 			DragAndDropImpl dndi = panel.doGetDragAndDrop();
 			if (dndi != null) {
 				DroppableImpl di = dndi.getDroppableImpl();
 				if (di != null) {
-					String urivar = renderer.getComponentPrefix(panel)+"_dropurl";
+					String urivar = Renderer.getComponentPrefix(panel) + "_dropurl";
 					sb.append("<script type=\"text/javascript\">var ").append(urivar).append(" = \"");
 					boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 					ubu.buildURI(sb, null, null, iframePostEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 					sb.append("\";</script>");
 				}
 			}
-		}*/
+		}
 		
 		
 		if (toRender != null) {
@@ -100,7 +106,15 @@ public class PanelRenderer implements ComponentRenderer {
 		Panel panel = (Panel) source;
 		Component toRender = panel.getContent();
 		
-		/*if (renderer.getGlobalSettings().getAjaxFlags().isDragAndDropEnabled()) {
+		if (toRender != null) {
+			// delegate header rendering to the content
+			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);
+		}
+		
+		//fxdiff
+		if (renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled()
+				&& panel.doGetDragAndDrop() != null) {
+			//renderer.getGlobalSettings().getAjaxFlags().isDragAndDropEnabled()
 			// first activate the drag and drop
 			// drag and drop to look at
 			DragAndDropImpl dndi = panel.doGetDragAndDrop();
@@ -108,29 +122,27 @@ public class PanelRenderer implements ComponentRenderer {
 				DroppableImpl di = dndi.getDroppableImpl();
 				if (di != null) {
 					boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();					
-					String compPrefix = renderer.getComponentPrefix(panel);
+					String compPrefix = Renderer.getComponentPrefix(panel);
+					String urivar = Renderer.getComponentPrefix(panel) + "_dropurl";
+					
 					// we have a droppable
-					List dragIds = di.getAccepted();
-					if (dragIds.size() > 0) {
-						for (Iterator it_dragids = dragIds.iterator(); it_dragids.hasNext();) {
-							Draggable draga = (Draggable) it_dragids.next();
-							List cids = draga.getContainerIds();
-							sb.append("Droppables.add('").append(compPrefix).append("',{containment:[");
-							int clen = cids.size();
-							for (int i = 0; i < clen; i++) {
-								sb.append("\"").append((String)cids.get(i)).append("\"");
-								if (i < clen-1) sb.append(",");
-							}
-							String urivar = renderer.getComponentPrefix(panel)+"_dropurl";
-							sb.append("],onDrop:function(el){o_info.drop=true;");
-							if (iframePostEnabled) {
-								sb.append("var f = $('o_oaap'); f.v.value=el.id; f.action = ").append(urivar).append("; f.submit();");
-							} else {
-								//TODO: also use the global post form, but the form must have a different target(self)
-								sb.append("document.location.href = ").append(urivar).append(" + \"?v=\"+el.id;");
-							}
-								sb.append("}});\n");
+					for (Draggable draga: di.getAccepted()) {
+						List<String> cids = draga.getContainerIds();
+						sb.append("Droppables.add('").append(compPrefix).append("',{containment:[");
+						int clen = cids.size();
+						for (int i = 0; i < clen; i++) {
+							sb.append("\"").append(cids.get(i)).append("\"");
+							if (i < clen-1) sb.append(",");
 						}
+						sb.append("]");
+						sb.append(",onDrop:function(el){o_info.drop=true;");
+						if (iframePostEnabled) {
+							sb.append("var f = $('o_oaap'); f.v.value=el.id; f.action = ").append(urivar).append("; f.submit();");
+						} else {
+							//TODO: also use the global post form, but the form must have a different target(self)
+							sb.append("document.location.href = ").append(urivar).append(" + \"?v=\"+el.id;");
+						}
+						sb.append("}});\n");
 					}
 				}
 				
@@ -139,28 +151,11 @@ public class PanelRenderer implements ComponentRenderer {
 					// render code for - draggable -
 					Draggable drag = dndi.getDraggable();
 					if (drag != null) {
-						String id = renderer.getComponentPrefix(toRender);
-						sb.append("new Draggable('").append(id).append("', {revert:function(el){if (o_info.drop) {o_info.drop = false; return false;} else return true;}});\n");						
+						String id = Renderer.getComponentPrefix(toRender);
+						sb.append("new Draggable('").append(id).append("',{handle:'handle',revert:function(el){if (o_info.drop) {o_info.drop = false; return false;} else return true;}});\n");
 					}
 				}
 			}
-			
-			
-			//<script type="text/javascript">
-			//Droppables.add('cart', {accept:'products', 
-			//onDrop:function(element){
-			//new Ajax.Updater('items', '/shop/add', {
-			//onLoading:function(request){Element.show('indicator')}, 
-			//onComplete:function(request){Element.hide('indicator')}, 
-			//parameters:'id=' + encodeURIComponent(element.id), 
-			//evalScripts:true, asynchronous:true})}, hoverclass:'cart-active'})</script>
-
-			
-		}*/
-		
-		if (toRender != null) {
-			// delegate header rendering to the content
-			renderer.renderBodyOnLoadJSFunctionCall(sb, toRender, rstate);
 		}
 	}
 

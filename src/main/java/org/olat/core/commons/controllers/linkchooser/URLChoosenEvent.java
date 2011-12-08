@@ -33,15 +33,25 @@ import org.olat.core.gui.control.Event;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class URLChoosenEvent extends Event {
-	private String url;
+	private final String url;
+	private final String displayName;
+	private final String htmlTarget;
+	private final String iconCssClass;
 
 	/**
 	 * Constructor for this even.
 	 * @param url The URL that has been selected
 	 */
 	public URLChoosenEvent(String url) {
+		this(url, null, null, null);
+	}
+	
+	public URLChoosenEvent(String url, String displayName, String htmlTarget, String iconCssClass) {
 		super("urlchoosenevent");
 		this.url = url;
+		this.displayName = displayName;
+		this.htmlTarget = htmlTarget;
+		this.iconCssClass = iconCssClass;
 	}
 
 	/**
@@ -49,5 +59,26 @@ public class URLChoosenEvent extends Event {
 	 */
 	public String getURL() {
 		return url;
+	}
+
+	/**
+	 * @return the display name of the link (can be null)
+	 */
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	/**
+	 * @return The HTML target
+	 */
+	public String getHtmlTarget() {
+		return htmlTarget;
+	}
+
+	/**
+	 * @return the css class icon for the file
+	 */
+	public String getIconCssClass() {
+		return iconCssClass;
 	}
 }

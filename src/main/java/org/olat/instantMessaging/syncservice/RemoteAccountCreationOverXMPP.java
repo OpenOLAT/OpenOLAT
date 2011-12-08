@@ -70,6 +70,8 @@ public class RemoteAccountCreationOverXMPP implements RemoteAccountCreation {
 	
 	private boolean sendPacket(IQ packet) {
 		XMPPConnection con = adminUser.getConnection();
+		//fxdiff: FXOLAT-233 
+		if (con==null) return false;
 		try {
 			packet.setFrom(con.getUser());
 			PacketCollector collector = con.createPacketCollector(new PacketIDFilter(packet.getPacketID()));

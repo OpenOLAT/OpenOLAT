@@ -20,12 +20,15 @@
  */
 package org.olat.login;
 
+import org.olat.core.gui.UserRequest;
+
 /**
  * Description:<br>
  * Marker Interface only. Controllers which are intended for use with
  * AfterLoginInterceptor-mechanism, implement this.
  * 
  * They have to send an Event.DONE_EVENT in order to let the workflow continue.
+ * Its allowed to send an Event.CANCELLED_EVENT which doesn't persist a state of the actual controller in wizzard, but still continues. 
  * 
  * <P>
  * Initial Date: 25.11.2009 <br>
@@ -33,5 +36,7 @@ package org.olat.login;
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
 public interface SupportsAfterLoginInterceptor {
-	// marker only
+	
+	public boolean isInterceptionRequired(UserRequest ureq);
+	
 }

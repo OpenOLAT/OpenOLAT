@@ -57,9 +57,10 @@ public class ScormMainManager extends BasicManager {
 	 *          "review"
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
 	 */
+	//fxdiff FXOLAT-116: SCORM improvements
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu, ScormAPICallback apiCallback, 
-			File cpRoot, String resourceId, String courseId, String lesson_mode, String credit_mode, boolean previewMode, boolean activate) {
-		return new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot, resourceId, courseId, lesson_mode, credit_mode, previewMode, activate);
+			File cpRoot, String resourceId, String courseId, String lesson_mode, String credit_mode, boolean previewMode, boolean activate, boolean fullWindow) {
+		return new ScormAPIandDisplayController(ureq, wControl, showMenu, apiCallback, cpRoot, resourceId, courseId, lesson_mode, credit_mode, previewMode, activate, fullWindow);
 	}
 	
 }

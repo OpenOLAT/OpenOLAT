@@ -23,7 +23,9 @@
 package org.olat.core.gui.exception;
 
 import java.util.Date;
+import java.util.List;
 
+import org.apache.velocity.context.Context;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -38,13 +40,19 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.manager.MailManager;
 
 /**
  * Description: <br>
@@ -166,6 +174,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		} else {
 			msg.contextPut("debug", Boolean.FALSE);			
 		}
+		msg.contextPut("listenerInfoRaw", componentListenerInfo);
 		msg.contextPut("listenerInfo", Formatter.escWithBR(componentListenerInfo).toString());			
 		msg.contextPut("stacktrace", OLATRuntimeException.throwableToHtml(th));			
 		
@@ -187,8 +196,30 @@ public class ExceptionWindowController extends DefaultChiefController {
 		// out the correct value
 		msg.contextPut("theme", w.getGuiTheme());		
 		msg.contextPut("globalSettings", ws.getWindowManager().getGlobalSettings());		
-
 		
+		UserSession session = ureq.getUserSession();
+		if(session != null &&  session.getLastHistoryPoint() != null) {
+			HistoryPoint point = session.getLastHistoryPoint();
+			String businessPath = point.getBusinessPath();
+			if(StringHelper.containsNonWhitespace(businessPath)) {
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(businessPath);
+				String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+				msg.contextPut("lastbusinesspath", url);
+			}
+			
+			List<HistoryPoint> stack = session.getHistoryStack();
+			if(stack != null && stack.size() > 1) {
+				HistoryPoint prevPoint = stack.get(stack.size() - 2);
+				String prevBusinessPath = prevPoint.getBusinessPath();
+				if(StringHelper.containsNonWhitespace(prevBusinessPath)) {
+					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(prevBusinessPath);
+					String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+					msg.contextPut("prevbusinesspath", url);
+				}
+			}
+			
+		}
+
 		w.setContentPane(msg);
 		setWindow(w);
 	}

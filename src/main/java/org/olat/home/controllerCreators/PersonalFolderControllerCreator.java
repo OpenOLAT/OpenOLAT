@@ -55,6 +55,6 @@ public class PersonalFolderControllerCreator extends AutoCreator  {
 	 */
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl lwControl) {
-		return new FolderRunController(PersonalFolderManager.getInstance().getContainer(ureq.getIdentity()), true, true, ureq, lwControl);
+		return new FolderRunController(PersonalFolderManager.getInstance().getContainer(ureq.getIdentity()), true, true, true, ureq, lwControl);
 	}
 }

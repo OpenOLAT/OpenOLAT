@@ -271,7 +271,7 @@ public class UserInfoMainController extends MainLayoutBasicController {
 			namedFolder.setLocalSecurityCallback(secCallback);
 			
 			removeAsListenerAndDispose(folderRunController);
-			folderRunController = new FolderRunController(namedFolder, false, true, ureq, getWindowControl());
+			folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, getWindowControl());
 			listenTo(folderRunController);
 			myContent.put("userinfo", folderRunController.getInitialComponent());
 

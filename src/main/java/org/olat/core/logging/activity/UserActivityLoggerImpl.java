@@ -527,7 +527,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 						ILoggingResourceable resourceInfo = it2.next();
 						log_.info("id: "+resourceInfo.getId()+", name="+resourceInfo.getName()+", type="+resourceInfo.getType()+", toString: "+resourceInfo.toString());
 					}
-					log_.error("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), 
+					log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), 
 							new Exception("UserActivityLoggerImpl.getCombinedOrderedLoggingResourceables()"));
 				}
 			}
@@ -555,6 +555,10 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	}
 
 	public void log(ILoggingAction loggingAction, Class<?> callingClass, ILoggingResourceable... lriOrNull) {
+		Long logStart = null;
+		if (log_.isDebug()) {
+			logStart = System.currentTimeMillis();
+		}
 		final ActionType actionType = stickyActionType_!=null ? stickyActionType_ : loggingAction.getResourceActionType();
 
 		// don't log entries with loggingAction type 'tracking'
@@ -571,20 +575,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// to the database below right away
 		List<ILoggingResourceable> resourceInfos = getCombinedOrderedLoggingResourceables(lriOrNull);
 		
-		if (loggingAction.getTypeListDefinition()==null) {
-			// this is a foul!
-			log_.warn("LoggingAction has no ResourceableTypeList defined: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug());
-		} else {
-			// good boy
-			String errorMsg = loggingAction.getTypeListDefinition().executeCheckAndGetErrorMessage(resourceInfos);
-			if (errorMsg!=null) {
-				// we found an inconsistency
-				// lets make this a warn
-				log_.warn("LoggingAction reported an inconsistency: "+loggingAction.getActionVerb()+" "+loggingAction.getActionObject()+", action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug()+
-						", expected: "+loggingAction.getTypeListDefinition().toString()+
-						", actual: "+convertLoggingResourceableListToString(resourceInfos), new Exception("OLAT-4653"));
-			}
-		}
+//fxdiff: see FXOLAT-104, move up here to remove targetIdentity before checking the LoggingResourcables, because of often obsolete delivery of targetIdentity. 
+//		TargetIdentity is often missing in XYLoggingAction.
 		
 		if (session_==null) {
 			// then I can't log - log information without session/user information isn't of much use
@@ -614,27 +606,44 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 					crudAction.name()+":"+actionVerb.name()+", "+actionObject+", "+
 					convertLoggingResourceableListToString(resourceInfos), new Exception());
 			return;
-		}
+		}		
 		
-		Long identityKey = identity.getKey();
-		
+		Long identityKey = identity.getKey();		
 		if (actionType!=ActionType.admin) {
 			final String identityKeyStr = String.valueOf(identityKey);
-			for (Iterator it = resourceInfos.iterator(); it.hasNext();) {
-				ILoggingResourceable lr = (ILoggingResourceable) it.next();
-				if (lr.getResourceableType()==StringResourceableType.targetIdentity) {
-					if (log_.isDebug() && !lr.getId().equals(identityKeyStr)) {
+			for (Iterator<ILoggingResourceable> it = resourceInfos.iterator(); it.hasNext();) {
+				ILoggingResourceable lr = it.next();
+				// fxdiff: we want this info as too much actionTypes are non-admin and log-entry will then be without value not containing targetIdent!, see FXOLAT-104
+				if (lr.getResourceableType()==StringResourceableType.targetIdentity && lr.getId().equals(identityKeyStr)) {
+					if (log_.isDebug()) {
 						// complain
 						final Writer strackTraceAsStringWriter = new StringWriter();
 						final PrintWriter printWriter = new PrintWriter(strackTraceAsStringWriter);
 						(new Exception("OLAT-4955 debug stacktrac")).printStackTrace(printWriter);
 						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug(), strackTraceAsStringWriter.toString());
 					}
-					// OLAT-4955: remove targetIdentity
+					// OLAT-4955: remove targetIdentity (fxdiff: only if same as executing identity!)
 					it.remove();
 				}
 			}
 		}
+// fxdiff: end of moved code		
+		
+		if (loggingAction.getTypeListDefinition()==null) {
+			// this is a foul!
+			log_.warn("LoggingAction has no ResourceableTypeList defined: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug());
+		} else {
+			// good boy
+			String errorMsg = loggingAction.getTypeListDefinition().executeCheckAndGetErrorMessage(resourceInfos);
+			if (errorMsg!=null) {
+				// we found an inconsistency
+				// lets make this a warn
+				log_.warn("LoggingAction reported an inconsistency: "+loggingAction.getActionVerb()+" "+loggingAction.getActionObject()+", action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug()+
+						", expected: "+loggingAction.getTypeListDefinition().toString()+
+						", actual: "+convertLoggingResourceableListToString(resourceInfos), new Exception("OLAT-4653"));
+			}
+		}
+
 		
 		String identityName;
 		if(isLogAnonymous_ && (actionType != ActionType.admin)) {
@@ -647,8 +656,11 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		final LoggingObject logObj = new LoggingObject(sessionId, identityKey, identityName, crudAction.name().substring(0,1), actionVerb.name(), actionObject);
 		
 		// do simpleDuration calculation & storing
-		LoggingObject lastLogObj = (LoggingObject) session_.getEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG);
-		if (lastLogObj!=null) {
+//		fxdiff: FXOLAT-94 don't do duration calculation, as its quite senseless (duration = timestamp of click 2 - click 1)
+// 		if still needed once, dont update the lastLogObj, but save duration with current one, 50x faster!		
+		
+//		LoggingObject lastLogObj = (LoggingObject) session_.getEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG);
+//		if (lastLogObj!=null) {
 			//lastLogObj = (LoggingObject) DBFactory.getInstance().loadObject(lastLogObj);
 			//			DBFactory.getInstance().updateObject(lastLogObj);
 			// Implementation Note:
@@ -675,35 +687,35 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			//         if that would be called it would simply fail in the BLACKHOLE@UZH setup
 			
 			// calculate the duration - take the simple diff of the two creationDate fields
-			Date currentTime = logObj.getCreationDate();
-			Date lastTime = lastLogObj.getCreationDate();
-			long duration;
-			if (lastTime==null) {
-				duration = -1;
-			} else if (currentTime==null) {
-				duration = System.currentTimeMillis() - lastTime.getTime();
-			} else {
-				duration = currentTime.getTime() - lastTime.getTime();
-			}
-			
-			DB db = DBFactory.getInstanceForClosing();
-			if (db!=null && db.isError()) {
-				// then we would run into an ERROR when we'd do more with this DB
-				// hence we just issue a log.info here with the details
-				//@TODO: lower to log_.info once we checked that it doesn't occur very often (best for 6.4)
-				log_.warn("log: DB is in Error state therefore the UserActivityLoggerImpl cannot update the simpleDuration of log_id "+lastLogObj.getKey()+" with value "+duration+", loggingObject: "+lastLogObj);
-			} else {
-				DBQuery update = DBFactory.getInstance().createQuery(
-						"update org.olat.core.logging.activity.LoggingObject set simpleDuration = :duration where log_id = :logid");
-				update.setLong("duration", duration);
-				update.setLong("logid", lastLogObj.getKey());
-				// we have to do FlushMode.AUTO (which is the default anyway)
-				update.executeUpdate(FlushMode.AUTO);
-			}
-		}
+//			Date currentTime = logObj.getCreationDate();
+//			Date lastTime = lastLogObj.getCreationDate();
+//			long duration;
+//			if (lastTime==null) {
+//				duration = -1;
+//			} else if (currentTime==null) {
+//				duration = System.currentTimeMillis() - lastTime.getTime();
+//			} else {
+//				duration = currentTime.getTime() - lastTime.getTime();
+//			}
+//			
+//			DB db = DBFactory.getInstanceForClosing();
+//			if (db!=null && db.isError()) {
+//				// then we would run into an ERROR when we'd do more with this DB
+//				// hence we just issue a log.info here with the details
+//				//@TODO: lower to log_.info once we checked that it doesn't occur very often (best for 6.4)
+//				log_.warn("log: DB is in Error state therefore the UserActivityLoggerImpl cannot update the simpleDuration of log_id "+lastLogObj.getKey()+" with value "+duration+", loggingObject: "+lastLogObj);
+//			} else {
+//				DBQuery update = DBFactory.getInstance().createQuery(
+//						"update org.olat.core.logging.activity.LoggingObject set simpleDuration = :duration where log_id = :logid");
+//				update.setLong("duration", duration);
+//				update.setLong("logid", lastLogObj.getKey());
+//				// we have to do FlushMode.AUTO (which is the default anyway)
+//				update.executeUpdate(FlushMode.AUTO);
+//			}
+//		}
 		
 		// store the current logging object in the session - for duration calculation at next log
-		session_.putEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG, logObj);
+//		session_.putEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG, logObj);
 
 		if (resourceInfos!=null && resourceInfos.size()!=0) {
 			// this should be the normal case - we do have LoggingResourceables which we can log
@@ -744,11 +756,11 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// fill the remaining fields
 		logObj.setBusinessPath(businessPath_);
 		logObj.setSourceClass(callingClass.getCanonicalName());
-		logObj.setSimpleDuration(-1);
+//		logObj.setSimpleDuration(duration);
 		logObj.setResourceAdminAction(actionType.equals(ActionType.admin)?true:false);
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		
-		//prepate the user properties, set them at once
+		//prepare the user properties, set them at once
 		List<String> tmpUserProperties = new ArrayList<String>(12);
 		for(Iterator<String> iterator = userProperties_.iterator(); iterator.hasNext();) {
 			String userPropString = identity.getUser().getPropertyOrIdentityEnvAttribute(iterator.next(), locale);
@@ -778,6 +790,10 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			log_.warn("log: DB is in Error state therefore the UserActivityLoggerImpl cannot store the following logging action into the loggingtable: "+logObj);
 		} else {
 			DBFactory.getInstance().saveObject(logObj);
+		}
+		if (log_.isDebug()) {
+			Long logEnd = System.currentTimeMillis();
+			log_.debug("log duration = " + (logEnd - logStart));
 		}
 	}
 

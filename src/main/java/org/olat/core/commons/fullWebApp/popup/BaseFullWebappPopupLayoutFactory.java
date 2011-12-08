@@ -61,6 +61,12 @@ public class BaseFullWebappPopupLayoutFactory {
 	}
 
 	
+	//fxdiff
+	public static BaseFullWebappPopupLayout createMinimalPopupLayout(ControllerCreator controllerCreator) {
+		BaseFullWebappPopupLayout layoutCC = new BaseFullWebappMinimalLayoutControllerCreator(controllerCreator);
+		return layoutCC;
+	}
+	
 	/**
 	 * Open a new Window which redirects somewhere else
 	 * @param ureq

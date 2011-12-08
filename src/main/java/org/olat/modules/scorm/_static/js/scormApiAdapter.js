@@ -119,7 +119,7 @@ function loadHTMLDoc(url,apiCall, param1, param2) {
 			if (req.status == 200) {
 				rteResponseText = req.responseText;
 				scormRTEresponse = rteResponseText.substring(rteResponseText.indexOf("<p>")+3,rteResponseText.indexOf("</p>")); 
-				dump(scormRTEresponse);
+				if (debug) dump(scormRTEresponse);
 			} else { if (debug) dump("There was a problem retrieving the XMLHttpRequest data:\n"+ req.statusText+"\n"); }
 		}
 	};

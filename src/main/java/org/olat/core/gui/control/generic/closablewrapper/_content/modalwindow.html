@@ -20,7 +20,8 @@ Ext.onReady(function(){
 		${panelName}winpop.close();
 	} else {
 		var pos = Ext.util.Cookies.get('${panelName}_pos');
-		if(pos != undefined) {
+		
+		if(pos != undefined && ($ignorecookie != true )) {
 			var posArr = pos.split(',');
 			winHeight = parseInt(posArr[0]);
 			winWidth = parseInt(posArr[1]);
@@ -62,7 +63,7 @@ Ext.onReady(function(){
 		var ${panelName}winpop = new Ext.Window({
 			id: '${panelName}',
 			title: '$!title',
-			closable:true,
+			closable: $closeable,
 			collapsible:false,
 			constrain: true,
 			resizable: true,

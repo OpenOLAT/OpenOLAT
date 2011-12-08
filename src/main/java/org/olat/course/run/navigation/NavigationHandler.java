@@ -21,6 +21,14 @@
 
 package org.olat.course.run.navigation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -30,7 +38,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -42,15 +49,18 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
+
 
 /**
  * Description: <br>
@@ -59,16 +69,20 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class NavigationHandler {
-	OLog log = Tracing.createLoggerFor(NavigationHandler.class);
+	private static final OLog log = Tracing.createLoggerFor(NavigationHandler.class);
 	
-	private static final String LOG_NODE_ACCESS = "NODE_ACCESS";
-	private static final String LOG_NODE_NO_ACCESS = "NODE_NO_ACCESS";
+
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean previewMode;
 
 	// remember so subsequent click to a subtreemodel's node has a handler
 	private ControllerEventListener subtreemodelListener = null;
+	
+	private String selectedCourseNodeId;
+	private Set<String> openCourseNodeIds = new HashSet<String>();
+	private List<String> openTreeNodeIds = new ArrayList<String>();
+	private Map<String,TreeModel> externalTreeModels = new HashMap<String,TreeModel>();
 
 	/**
 	 * @param userCourseEnv
@@ -98,7 +112,7 @@ public class NavigationHandler {
 		} else {
 			cn = calledCourseNode;
 		}
-		return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd);
+		return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, null, null);
 	}
 
 	/**
@@ -124,14 +138,57 @@ public class NavigationHandler {
 		Object userObject = selTN.getUserObject();
 		if (!(userObject instanceof NodeEvaluation)) {
 			// yes, appropriate
-			if (subtreemodelListener == null) throw new AssertException("no handler for subtreemodelcall!");
+			
+			NodeRunConstructionResult nrcr = null;
+			CourseNode internCourseNode = null;
+			GenericTreeModel subTreeModel;
+			if (subtreemodelListener == null) {
+				//throw new AssertException("no handler for subtreemodelcall!");
+				//reattach the subtreemodellistener
+				TreeNode internNode = getFirstInternParentNode(selTN);
+				NodeEvaluation prevEval = (NodeEvaluation) internNode.getUserObject();
+				internCourseNode = prevEval.getCourseNode();
+				
+				final OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.parseLong(internCourseNode.getIdent()));
+				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
+				nrcr = internCourseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, prevEval, nodecmd);
+				// remember as instance variable for next click
+				subtreemodelListener = nrcr.getSubTreeListener();
+				subTreeModel = (GenericTreeModel)nrcr.getSubTreeModel();
+				externalTreeModels.put(internCourseNode.getIdent(), subTreeModel);
+			} else {
+				TreeNode internNode = getFirstInternParentNode(selTN);
+				NodeEvaluation prevEval = (NodeEvaluation) internNode.getUserObject();
+				internCourseNode = prevEval.getCourseNode();
+				subTreeModel = (GenericTreeModel)externalTreeModels.get(internCourseNode.getIdent());
+			}
 			if (log.isDebug()){
 				log.debug("delegating to handler: treeNodeId = " + treeNodeId);
 			}
+
+			// update the node and event to match the new tree model
+			selTN = subTreeModel.findNodeByUserObject(userObject);
+			treeEvent = new TreeEvent(treeEvent.getCommand(), treeEvent.getSubCommand(), selTN.getIdent());
+
+			boolean dispatch = true;
+			if(userObject instanceof String) {
+				if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand())) {
+					openCourseNodeIds.add((String)userObject);
+					openTreeNodeIds.add((String)userObject);
+					dispatch = false;
+				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
+					removeChildrenFromOpenNodes(selTN);
+					dispatch = false;
+				}
+			}
+			
+			if(dispatch) {
 			// null as controller source since we are not a controller
-			subtreemodelListener.dispatchEvent(ureq, null, treeEvent);
-			// no node construction result indicates handled
-			ncr = new NodeClickedRef(null, true, null, null, null);
+				subtreemodelListener.dispatchEvent(ureq, null, treeEvent);
+				// no node construction result indicates handled
+			}
+			ncr = new NodeClickedRef(treeModel, true, null, null, internCourseNode, nrcr, true);
 		} else {
 			// normal dispatching to a coursenode.
 			// get the courseNode that was called
@@ -144,17 +201,25 @@ public class NavigationHandler {
 			// the new node controller. It is important that the old node controller is 
 			// disposed before the new one to not get conflicts with cacheable mappers that
 			// might be used in both controllers with the same ID (e.g. the course folder)
-			if (currentNodeController != null) {
-				currentNodeController.dispose();
+			if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand()) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
+				if(isInParentLine(calledCourseNode)) {
+					if (currentNodeController != null) {
+						currentNodeController.dispose();
+					}
+				}
+				ncr = doEvaluateJumpTo(ureq, wControl, calledCourseNode, listeningController, nodecmd, treeEvent.getSubCommand(), currentNodeController);
+			} else {
+				if (currentNodeController != null) {
+					currentNodeController.dispose();
+				}
+				ncr = doEvaluateJumpTo(ureq, wControl, calledCourseNode, listeningController, nodecmd, treeEvent.getSubCommand(), currentNodeController);
 			}
-			ncr = doEvaluateJumpTo(ureq, wControl, calledCourseNode, listeningController, nodecmd);
 		}
 		return ncr;
-
 	}
 
 	private NodeClickedRef doEvaluateJumpTo(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			ControllerEventListener listeningController, String nodecmd) {
+			ControllerEventListener listeningController, String nodecmd, String nodeSubCmd, Controller currentNodeController) {
 		NodeClickedRef nclr;
 		if (log.isDebug()){
 			log.debug("evaluateJumpTo courseNode = " + courseNode.getIdent() + ", " + courseNode.getShortName());
@@ -178,7 +243,7 @@ public class NavigationHandler {
 			// -> issue an user infomative msg
 			// nclr: the new treemodel, not visible, no selected nodeid, no
 			// calledcoursenode, no nodeconstructionresult
-			nclr = new NodeClickedRef(treeModel, false, null, null, null);
+			nclr = new NodeClickedRef(treeModel, false, null, null, null, null, false);
 		} else {
 			// calculate the NodeClickedRef
 			// 1. get the correct (new) nodeevaluation
@@ -207,13 +272,31 @@ public class NavigationHandler {
 				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
 				// nclr: the new treemodel, visible, selected nodeid, calledcoursenode,
 				// nodeconstructionresult
-				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
+				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
 			} else if (!CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).isEnabled()) {
 				Translator pT = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
 				Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, pT.translate("course.building.block.disabled.user"));
 				NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
-				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
-			}	else { // access ok
+				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
+			} else { // access ok
+				
+				// fxdiff FXOLAT-262
+				if (STCourseNode.isDelegatingSTCourseNode(courseNode) && (courseNode.getChildCount() > 0)) {
+					// the clicked node is a STCourse node and is set to "delegate", so
+					// delegate to its first visible child; if no child is visible, just skip and do normal eval
+					INode child;
+					for (int i = 0; i < courseNode.getChildCount(); i++) {
+						child = courseNode.getChildAt(i);
+						if (child instanceof CourseNode) {
+							CourseNode cn = (CourseNode) child;
+							NodeEvaluation cnEval = cn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+							if (cnEval.isVisible()) return this.doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
+									currentNodeController);
+						}
+					}
+				}
+					
+					
 				// access the node, display its result in the right pane
 				NodeRunConstructionResult ncr;
 				
@@ -224,10 +307,8 @@ public class NavigationHandler {
 				Long oresK = new Long(Long.parseLong(courseNode.getIdent()));
 				final OLATResourceable ores = OresHelper.createOLATResourceableInstance(oresC, oresK);
 				
-				//REVIEW:pb:this is responsible for building up the jumpable businesspath/REST URL kind of
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
-				
 				if (previewMode) {
 					ncr = new NodeRunConstructionResult(courseNode.createPreviewController(ureq, bwControl, userCourseEnv, nodeEval));
 				} else {
@@ -236,16 +317,47 @@ public class NavigationHandler {
 					// remember as instance variable for next click
 					subtreemodelListener = ncr.getSubTreeListener();
 					if (subtreemodelListener != null) {
-						addSubTreeModel(newCalledTreeNode, ncr.getSubTreeModel());
+						externalTreeModels.put(courseNode.getIdent(), ncr.getSubTreeModel());
+						if(!newSelectedNodeId.equals(ncr.getSelectedTreeNodeId())) {
+							TreeNode selectedNode = ncr.getSubTreeModel().getNodeById(ncr.getSelectedTreeNodeId());
+							openCourseNodeIds.add((String)selectedNode.getUserObject());
+						}
 					}
 				}
+				
+				if(TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd)) {
+					openCourseNodeIds.add(courseNode.getIdent());
+					newSelectedNodeId = convertToTreeNodeId(treeEval, selectedCourseNodeId);
+				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) {
+					removeChildrenFromOpenNodes(courseNode);
+					newSelectedNodeId = convertToTreeNodeId(treeEval, selectedCourseNodeId);
+					if(!isInParentLine(courseNode)) {
+						selectedCourseNodeId = courseNode.getIdent();
+					} else {
+						selectedCourseNodeId = null;
+						newSelectedNodeId = null;
+					}
+				} else {
+					//add the selected node to the open one, if not, strange behaviour
+					selectedCourseNodeId = courseNode.getIdent();
+					openCourseNodeIds.add(selectedCourseNodeId);
+				}
+				
+				openTreeNodeIds = convertToTreeNodeIds(treeEval, openCourseNodeIds);
+				reattachExternalTreeModels(treeEval);
+				
 
-				// nclr: the new treemodel, visible, selected nodeid, calledcoursenode,
-				// nodeconstructionresult
-				nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, courseNode, ncr);
-				// attach listener; we know we have a runcontroller here
-				if (listeningController != null) {
-					nclr.getRunController().addControllerListener(listeningController);
+				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
+						currentNodeController != null && !currentNodeController.isDisposed()) {
+					nclr = new NodeClickedRef(treeModel, true, null, openTreeNodeIds, null, null, false);
+				} else {
+					// nclr: the new treemodel, visible, selected nodeid, calledcoursenode,
+					// nodeconstructionresult
+					nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, openTreeNodeIds, courseNode, ncr, false);
+					// attach listener; we know we have a runcontroller here
+					if (listeningController != null) {
+						nclr.getRunController().addControllerListener(listeningController);
+					}
 				}
 				// write log information
 				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_NAVIGATION_NODE_ACCESS, getClass(),
@@ -253,6 +365,81 @@ public class NavigationHandler {
 			}
 		}
 		return nclr;
+	}
+	
+	private void reattachExternalTreeModels(TreeEvaluation treeEval) {
+		if(externalTreeModels == null || externalTreeModels.isEmpty()) return;
+		
+		for(Map.Entry<String, TreeModel> entry:externalTreeModels.entrySet()) {
+			String courseNodeId = entry.getKey();
+			TreeModel treeModel = entry.getValue();
+			
+			CourseNode courseNode = userCourseEnv.getCourseEnvironment().getRunStructure().getNode(courseNodeId);
+			TreeNode treeNode = treeEval.getCorrespondingTreeNode(courseNode);
+			if(treeNode != null) {
+				addSubTreeModel(treeNode, treeModel);
+			}
+		}
+	}
+	
+	private TreeNode getFirstInternParentNode(TreeNode node) {
+		while(node != null) {
+			if(node.getUserObject() instanceof NodeEvaluation) {
+				return node;
+			}
+			node = (TreeNode)node.getParent();
+		}
+		return null;
+	}
+
+	private void removeChildrenFromOpenNodes(TreeNode treeNode) {
+		openCourseNodeIds.remove(treeNode.getIdent());
+		openCourseNodeIds.remove(treeNode.getUserObject());
+		for(int i=treeNode.getChildCount(); i-->0; ) {
+			removeChildrenFromOpenNodes((TreeNode)treeNode.getChildAt(i));
+		}
+	}
+	
+	private void removeChildrenFromOpenNodes(CourseNode courseNode) {
+		openCourseNodeIds.remove(courseNode.getIdent());
+		for(int i=courseNode.getChildCount(); i-->0; ) {
+			removeChildrenFromOpenNodes((CourseNode)courseNode.getChildAt(i));
+		}
+	}
+	
+	private boolean isInParentLine(CourseNode courseNode) {
+		if(selectedCourseNodeId == null) return false;
+		
+		CourseNode selectedCourseNode = userCourseEnv.getCourseEnvironment().getRunStructure().getNode(selectedCourseNodeId);
+		while(selectedCourseNode != null) {
+			if(selectedCourseNode.getIdent().equals(courseNode.getIdent())) {
+				return true;
+			}
+			selectedCourseNode = (CourseNode)selectedCourseNode.getParent();
+		}
+		return false;
+	}
+	
+	private List<String> convertToTreeNodeIds(TreeEvaluation treeEval, Collection<String> courseNodeIds) {
+		if(courseNodeIds == null || courseNodeIds.isEmpty()) return new ArrayList<String>();
+
+		List<String> convertedIds = new ArrayList<String>(courseNodeIds.size());
+		for(String courseNodeId:courseNodeIds) {
+			convertedIds.add(convertToTreeNodeId(treeEval, courseNodeId));
+		}
+		return convertedIds;
+	}
+	
+	private String convertToTreeNodeId(TreeEvaluation treeEval, String courseNodeId) {
+		if(courseNodeId == null) return null;
+		
+		CourseNode courseNode = userCourseEnv.getCourseEnvironment().getRunStructure().getNode(courseNodeId);
+		TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
+		if(newCalledTreeNode == null) {
+			return courseNodeId;
+		} else {
+			return newCalledTreeNode.getIdent();
+		}
 	}
 
 	private void addSubTreeModel(TreeNode parent, TreeModel modelToAppend) {
@@ -265,8 +452,8 @@ public class NavigationHandler {
 		
 		// full cloning of ETH webclass energie takes about 4/100 of a second
 		for (int i = chdCnt; i > 0; i--) {
-			TreeNode chd = (TreeNode) root.getChildAt(i-1);
-			TreeNode chdc = (TreeNode) XStreamHelper.xstreamClone(chd);
+			INode chd = root.getChildAt(i-1);
+			INode chdc = (INode) XStreamHelper.xstreamClone(chd);
 			// always insert before already existing course building block children
 			parent.insert(chdc, 0);
 		}

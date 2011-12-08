@@ -57,4 +57,13 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 	public boolean mayEditMetadata() {
 		return false;
 	}
+
+	/**
+	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
+	 */
+	//fxdiff BAKS-18
+	@Override
+	public boolean mayViewAllDrafts() {
+		return false;
+	}
 }

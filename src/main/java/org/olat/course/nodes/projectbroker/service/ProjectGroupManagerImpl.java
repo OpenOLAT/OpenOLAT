@@ -152,10 +152,13 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 
 	public void updateAccountManagerGroupName(String groupName, String groupDescription, BusinessGroup accountManagerGroup) {
-		BusinessGroup reloadedBusinessGroup = (BusinessGroup)DBFactory.getInstance().loadObject(BusinessGroupImpl.class, accountManagerGroup.getKey());
-		reloadedBusinessGroup.setName(groupName);
-		reloadedBusinessGroup.setDescription(groupDescription);
-		BusinessGroupManagerImpl.getInstance().updateBusinessGroup(reloadedBusinessGroup);
+		// group could have been deleted, see FXOLAT-295
+		if (accountManagerGroup != null){
+			BusinessGroup reloadedBusinessGroup = (BusinessGroup)DBFactory.getInstance().loadObject(BusinessGroupImpl.class, accountManagerGroup.getKey());
+			reloadedBusinessGroup.setName(groupName);
+			reloadedBusinessGroup.setDescription(groupDescription);
+			BusinessGroupManagerImpl.getInstance().updateBusinessGroup(reloadedBusinessGroup);
+		}
 	}
 
 

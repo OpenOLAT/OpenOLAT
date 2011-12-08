@@ -33,19 +33,25 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -269,10 +275,60 @@ public class ScoreAccountingHelper {
 			firstIteration = false;
 			rowNumber++;
 		}
+		//fxdiff VCRP-4: assessment overview with max score
+		StringBuilder tableFooter = new StringBuilder();
+		tableFooter.append("\t\n").append("\t\n").append(t.translate("legend")).append("\t\n").append("\t\n");
+		Iterator iterNodes = myNodes.iterator();
+		while (iterNodes.hasNext()) {
+			AssessableCourseNode acnode = (AssessableCourseNode) iterNodes.next();
+			if (!acnode.hasScoreConfigured()) {
+				// only show min/max/cut legend when score configured
+				continue;
+			}
+			String minVal;
+			String maxVal;
+			String cutVal;
+			if(acnode instanceof STCourseNode || !acnode.hasScoreConfigured()) {
+				minVal = maxVal = cutVal = "-";
+			} else {
+				minVal = acnode.getMinScoreConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getMinScoreConfiguration());
+				maxVal = acnode.getMaxScoreConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getMaxScoreConfiguration());
+				cutVal = acnode.getCutValueConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getCutValueConfiguration());
+				if (acnode.hasPassedConfigured()) {
+					cutVal = acnode.getCutValueConfiguration() == null ? "-" : AssessmentHelper.getRoundedScore(acnode.getCutValueConfiguration());
+				} else {
+					cutVal = "-";
+				}
+			}
+			
+			tableFooter.append('"');
+			tableFooter.append(acnode.getShortTitle());
+			tableFooter.append('"');
+			tableFooter.append('\n');
+
+			tableFooter.append("\t\t");
+			tableFooter.append("minValue");
+			tableFooter.append('\t');
+			tableFooter.append(minVal);
+			tableFooter.append('\n');
+
+			tableFooter.append("\t\t");
+			tableFooter.append("maxValue");
+			tableFooter.append('\t');
+			tableFooter.append(maxVal);
+			tableFooter.append('\n');
+
+			tableFooter.append("\t\t");
+			tableFooter.append("cutValue");
+			tableFooter.append('\t');
+			tableFooter.append(cutVal);
+			tableFooter.append('\n');
+		}
 
 		table.append(tableHeader1);
 		table.append(tableHeader2);
 		table.append(tableContent);
+		table.append(tableFooter);
 		String tab = table.toString();
 
 		return tab;
@@ -285,23 +341,25 @@ public class ScoreAccountingHelper {
 	 * @param courseEnv
 	 * @return The list of identities from this course
 	 */
-	public static List loadUsers(CourseEnvironment courseEnv) {
-		List identites = new ArrayList();
+	//fxdiff VCRP-1,2: access control of resources
+	public static List<Identity> loadUsers(CourseEnvironment courseEnv) {
 		CourseGroupManager gm = courseEnv.getCourseGroupManager();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List groups = gm.getAllLearningGroupsFromAllContexts();
-
-		Iterator iter = groups.iterator();
-		while (iter.hasNext()) {
-			BusinessGroup group = (BusinessGroup) iter.next();
-			SecurityGroup participants = group.getPartipiciantGroup();
-			List ids = securityManager.getIdentitiesOfSecurityGroup(participants);
-			identites.addAll(ids);
+		List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+		
+		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
+		for (BusinessGroup group: groups) {
+			secGroups.add(group.getPartipiciantGroup());
 		}
-		return identites;
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+		if(re != null && re.getParticipantGroup() != null) {
+			secGroups.add(re.getParticipantGroup());
+		}
+		
+		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
 	}
-	
-	
 	
 	/**
 	 * Load all nodes which are assessable

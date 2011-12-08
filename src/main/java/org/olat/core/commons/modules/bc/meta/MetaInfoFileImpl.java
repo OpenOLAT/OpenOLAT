@@ -24,6 +24,7 @@ package org.olat.core.commons.modules.bc.meta;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -34,7 +35,9 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.parsers.SAXParser;
@@ -91,6 +94,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
   }
 	
 	// meta data
+  private String uuid;
 	private Long authorIdentKey = null;
 	private Long lockedByIdentKey = null;
 	private String comment = "";
@@ -153,6 +157,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if (!parseSAX(metaFile)) {
 			String metaDirPath = canonicalMetaPath.substring(0, canonicalMetaPath.lastIndexOf('/'));
 			new File(metaDirPath).mkdirs();
+			if(uuid == null) {
+				generateUUID();
+			}
 			write();
 		}
 		return true;
@@ -212,7 +219,63 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		}
 		
 		if (move) FileUtils.moveFileToDir(fSource, fTarget);
-		else FileUtils.copyFileToDir(fSource, fTarget, "meta info");
+		else {
+			//copy
+			 Map<String,String> pathToUuid = new HashMap<String,String>();
+			File mTarget = new File(fTarget, fSource.getName());
+			collectUUIDRec(mTarget, pathToUuid);
+			
+			if(FileUtils.copyFileToDir(fSource, fTarget, "copy metadata")) {
+				File endTarget = new File(fTarget, fSource.getName());
+				generateUUIDRec(endTarget, pathToUuid);
+			}
+		}
+	}
+	
+	private void collectUUIDRec(File mTarget, Map<String,String> pathToUuid) {
+		try {
+			if(mTarget.exists()) {
+				if(mTarget.isDirectory()) {
+					//TODO
+				} else {
+					MetaInfoFileImpl copyMeta = new MetaInfoFileImpl();
+					copyMeta.metaFile = mTarget;
+					if (copyMeta.parseSAX(mTarget)) {
+						pathToUuid.put(mTarget.getCanonicalPath(), copyMeta.getUUID());
+					}
+				}
+			}
+		} catch (IOException e) {
+			log.error("cannot collect current UUID before copy", e);
+		}
+	}
+
+	private void generateUUIDRec(File endTarget, Map<String,String> pathToUuid) {
+		if(!endTarget.exists()) {
+			return;
+		}
+
+		try {
+			if(endTarget.isDirectory()) {
+				for(File subEndTarget:endTarget.listFiles(new XmlFilter())) {
+					generateUUIDRec(subEndTarget, pathToUuid);
+				}
+			} else {
+				MetaInfoFileImpl copyMeta = new MetaInfoFileImpl();
+				copyMeta.metaFile = endTarget;
+				if (copyMeta.parseSAX(endTarget)) {
+					String tempUuid = pathToUuid.get(endTarget.getCanonicalPath());
+					if(StringHelper.containsNonWhitespace(tempUuid)) {
+						copyMeta.uuid =tempUuid;
+					} else {
+						copyMeta.generateUUID();
+					}
+					copyMeta.write();
+				}
+			}
+		} catch (IOException e) {
+			log.error("Cannot generate a new uuid on copy", e);
+		}
 	}
 	
 	/**
@@ -293,7 +356,11 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			bos = new BufferedOutputStream(new FileOutputStream(metaFile));
 			OutputStreamWriter sw = new OutputStreamWriter(bos, Charset.forName("UTF-8"));
 			sw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			sw.write("<meta>");
+			sw.write("<meta");
+			if(StringHelper.containsNonWhitespace(uuid)) {
+				sw.write(" uuid=\"" + uuid + "\"");
+			}
+			sw.write(">");		
 			sw.write("<author><![CDATA[" + (authorIdentKey == null ? "" : authorIdentKey.toString()) + "]]></author>");		
 			sw.write("<lock locked=\"" + locked + "\"" + (lockedDate == null ? "" : " date=\"" + lockedDate.getTime() + "\"")	+ "><![CDATA[" + (lockedByIdentKey == null ? "" : lockedByIdentKey) + "]]></lock>");
 			sw.write("<comment><![CDATA[" + filterForCData(comment) + "]]></comment>");
@@ -378,6 +445,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	  	synchronized(saxParser) {
 	  		in = new FileInputStream(fMeta);
 	  		saxParser.parse(in, this);
+	  		if(uuid == null) {
+		  		generateUUID();
+		  		write();
+		  	}
 	  	}
 	  } catch (SAXParseException ex) {
 	  	if(!parseSAXFiltered(fMeta)) {
@@ -518,6 +589,15 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		}	
 	}
 	
+	@Override
+	public String getUUID() {
+		return uuid;
+	}
+	
+	public void generateUUID() {
+		uuid = UUID.randomUUID().toString().replace("-", "");
+	}
+
 	/**
 	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getAuthorIdentity()
 	 */
@@ -860,7 +940,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	
 	@Override
 	public final void startElement(String uri, String localName, String qName, Attributes attributes) {
-		if ("lock".equals(qName)) {
+		if("meta".equals(qName)) {
+			uuid = attributes.getValue("uuid");
+		} else if ("lock".equals(qName)) {
 			locked ="true".equals(attributes.getValue("locked"));
 			String date = attributes.getValue("date");
 			if (date != null && date.length() > 0) {
@@ -954,6 +1036,13 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			cssClass = CSSHelper.createFiletypeIconCssClassFor(getName());
 		}
 		return cssClass;
+	}
+	
+	public class XmlFilter implements FileFilter {
+		@Override
+		public boolean accept(File file) {
+			return file.getName().endsWith(".xml");
+		}
 	}
 	
 	public class Thumbnail {

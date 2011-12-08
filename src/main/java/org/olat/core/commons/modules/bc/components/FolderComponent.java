@@ -75,11 +75,12 @@ public class FolderComponent extends Component {
 	// attached files anywhere at the time of deleting it
 	// likely to be resolved after user logs out, caches get cleared - and if not the server
 	// restart overnight definitely removes those .nfs files.
-	protected static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{".nfs", ".CVS", ".DS_Store"};
+	// fxdiff: FXOLAT-333 hide all shadow-files per default
+	protected static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{"."};
 
 	protected boolean sortAsc = true;													// asc or desc?
 	protected String sortCol = "";  													// column to sort
-
+	protected boolean canMail = false;
 	
 	private IdentityEnvironment identityEnv;
 	private VFSContainer rootContainer;
@@ -94,6 +95,7 @@ public class FolderComponent extends Component {
 	private final DateFormat dateTimeFormat;
 	private VFSItemExcludePrefixFilter exclFilter;
 	private CustomLinkTreeModel customLinkTreeModel;
+	private final VFSContainer externContainerForCopy;
 
 	/**
 	 * Wraps the folder module as a component.
@@ -113,10 +115,17 @@ public class FolderComponent extends Component {
 	public FolderComponent(UserRequest ureq, String name,
 			VFSContainer rootContainer, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel) {
+		this(ureq, name, rootContainer, filter, customLinkTreeModel, null);
+	}
+	
+	public FolderComponent(UserRequest ureq, String name,
+			VFSContainer rootContainer, VFSItemFilter filter,
+			CustomLinkTreeModel customLinkTreeModel, VFSContainer externContainerForCopy) {
 		super(name);
 		this.identityEnv = ureq.getUserSession().getIdentityEnvironment();
 		this.filter = filter;
 		this.customLinkTreeModel = customLinkTreeModel;
+		this.externContainerForCopy = externContainerForCopy;
 		exclFilter = new VFSItemExcludePrefixFilter(ATTACHMENT_EXCLUDE_PREFIXES);
 		Locale locale = ureq.getLocale();
 		collator = Collator.getInstance(locale);
@@ -181,6 +190,14 @@ public class FolderComponent extends Component {
 		} else {																																				// if same col as before, just change sorting to desc
 			sortAsc = !sortAsc;
 		}		
+	}
+	
+	public boolean isCanMail() {
+		return canMail;
+	}
+	
+	public void setCanMail(boolean canMail) {
+		this.canMail = canMail;
 	}
 
 	/**
@@ -436,6 +453,10 @@ public class FolderComponent extends Component {
 		return this.customLinkTreeModel; 
 	}
 	
+	public VFSContainer getExternContainerForCopy() {
+		return externContainerForCopy;
+	}
+
 	/**
 	 * 
 	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest, org.olat.core.gui.render.ValidationResult)

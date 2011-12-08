@@ -47,6 +47,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.webFeed.managers.FeedManager;
+import org.olat.modules.webFeed.managers.ValidatedURL;
 import org.olat.modules.webFeed.models.Feed;
 
 /**
@@ -73,6 +74,11 @@ class FeedFormController extends FormBasicController {
 	private FormLayoutContainer imageContainer;
 
 	/**
+	 * if form edits an external feed:
+	 */
+	private TextElement feedUrl;
+	
+	/**
 	 * @param ureq
 	 * @param control
 	 */
@@ -98,6 +104,10 @@ class FeedFormController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		feed.setTitle(title.getValue());
 		feed.setDescription(description.getValue());
+		
+		if(feed.isExternal())
+		feed.setExternalFeedUrl(feedUrl.isEmpty() ? null : feedUrl.getValue());
+		
 		feed.setLastModified(new Date());
 		// The image is retrieved by the main controller
 		this.fireEvent(ureq, Event.CHANGED_EVENT);
@@ -141,7 +151,48 @@ class FeedFormController extends FormBasicController {
 			description.setErrorKey("input.toolong", new String[]{"4000"});
 			allOk = false;
 		}
-		return allOk && super.validateFormLogic(ureq);
+		return allOk && validateExternalFeedUrl() && super.validateFormLogic(ureq);
+	}
+	
+	/**
+	 * validates the external feed-url
+	 * 
+	 * @return returns true if the external-feed url is an empty string or a valid url
+	 */
+	private boolean validateExternalFeedUrl(){
+		//if not external, there is no text-element, do not check, just return true
+		if(!feed.isExternal()) return true;
+		
+		boolean validUrl = false;
+		if(feedUrl.isEmpty()) {
+			//allowed
+			feedUrl.clearError();
+			validUrl = true;
+		} else {
+			//validated feed url
+			String url = feedUrl.getValue();
+			String type = feed.getResourceableTypeName();
+			ValidatedURL validatedUrl = FeedManager.getInstance().validateFeedUrl(url, type);
+			if(!validatedUrl.getUrl().equals(url)) {
+				feedUrl.setValue(validatedUrl.getUrl());
+			}
+			switch(validatedUrl.getState()) {
+				case VALID:
+					feedUrl.clearError();
+					validUrl = true;
+					break;
+				case NO_ENCLOSURE:
+					feedUrl.setErrorKey("feed.form.feedurl.invalid.no_media", null);
+					break;
+				case NOT_FOUND:
+					feedUrl.setErrorKey("feed.form.feedurl.invalid.not_found", null);
+					break;
+				case MALFORMED:
+					feedUrl.setErrorKey("feed.form.feedurl.invalid", null);
+					break;
+			}
+		}
+		return validUrl;
 	}
 
 	/**
@@ -224,6 +275,19 @@ class FeedFormController extends FormBasicController {
 		mimeTypes.add("image/gif");
 		file.limitToMimeType(mimeTypes, "feed.form.file.type.error.images", null);
 
+		// if external feed, display feed-url text-element:
+		if(feed.isExternal()){
+			feedUrl = uifactory.addTextElement("feedUrl", "feed.form.feedurl", 5000, feed.getExternalFeedUrl(), this.flc);
+			feedUrl.setDisplaySize(70);
+
+			String type = feed.getResourceableTypeName();
+			if(type != null && type.indexOf("BLOG") >= 0) {
+				feedUrl.setExampleKey("feed.form.feedurl.example", null);
+			} else {
+				feedUrl.setExampleKey("feed.form.feedurl.example_podcast", null);
+			}
+		}
+		
 		// Submit and cancelButton buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		this.flc.add(buttonLayout);
@@ -246,7 +310,7 @@ class FeedFormController extends FormBasicController {
 	/**
 	 * @return true if the image was deleted.
 	 */
-	public boolean imageDeleted() {
+	public boolean isImageDeleted() {
 		return imageDeleted;
 	}
 }

@@ -126,6 +126,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.controllers.RepositoryMainController;
 import org.olat.repository.site.RepositorySite;
+import org.olat.resource.accesscontrol.ui.SecurityGroupsRepositoryMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -208,8 +209,26 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course, final String initialViewIdentifier,
 			final boolean offerBookmark, final boolean showCourseConfigLink) {
-		super(ureq, wControl);		
-				
+		this(ureq, wControl, course, initialViewIdentifier, offerBookmark, showCourseConfigLink, false);
+	}
+
+	/**
+	 * fxdiff: change these two constructors to allow setting of launchFromSite
+	 * for CourseSite
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param course
+	 * @param initialViewIdentifier
+	 * @param offerBookmark
+	 * @param showCourseConfigLink
+	 * @param launchFromSite allows to set disposed controller after init!
+	 */
+	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course, final String initialViewIdentifier,
+			final boolean offerBookmark, final boolean showCourseConfigLink, final boolean launchFromSite) {
+
+		super(ureq, wControl);
+
 		this.course = course;
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		this.courseTitle = course.getCourseTitle();
@@ -229,6 +248,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// set up the components
 		all = new Panel("allofcourse");
 		luTree = new MenuTree("luTreeRun", this);
+		luTree.setExpandSelectedNode(false);
 		contentP = new Panel("building_block_content");
 
 		// get all group memberships for this course
@@ -391,14 +411,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		putInitialPanel(coursemain);
-		
-		//disposed message controller
-		//must be created beforehand
-		Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
-		Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry.getResourceableId());
-		Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty, courseCloser.getInitialComponent(), "disposed course" + this.course.getResourceableId());
-		setDisposedMsgController(disposedRestartController);
-		
+
+		if (!launchFromSite) {
+			// disposed message controller
+			// must be created beforehand
+			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
+			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl,
+					courseRepositoryEntry.getResourceableId());
+			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
+					courseCloser.getInitialComponent(), "disposed course" + this.course.getResourceableId());
+			setDisposedMsgController(disposedRestartController);
+		}
+
 		// add as listener to course so we are being notified about course events:
 		// - publish changes
 		// - assessment events
@@ -532,6 +556,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setTreeModel(treeModel);
 		String selNodeId = nclr.getSelectedNodeId();
 		luTree.setSelectedNodeId(selNodeId);
+		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 		CourseNode courseNode = nclr.getCalledCourseNode();
 		updateState(courseNode);
 
@@ -589,7 +614,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					return;
 				}
 				// a click to a subtree's node
-				if (nclr.isHandledBySubTreeModelListener()) return;
+				if (nclr.isHandledBySubTreeModelListener() || nclr.getSelectedNodeId() == null) {
+					if(nclr.getRunController() != null) {
+						//there is an update to the currentNodeController, apply it
+						if (currentNodeController != null && !currentNodeController.isDisposed()) {
+							currentNodeController.dispose();
+						}
+						currentNodeController = nclr.getRunController();
+						Component nodeComp = currentNodeController.getInitialComponent();
+						contentP.setContent(nodeComp);
+					}
+					return;
+				}
 
 				// set the new treemodel
 				treeModel = nclr.getTreeModel();
@@ -598,6 +634,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// set the new tree selection
 				String nodeId = nclr.getSelectedNodeId();
 				luTree.setSelectedNodeId(nodeId);
+				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 				currentCourseNode = nclr.getCalledCourseNode();
 				updateState(currentCourseNode);
 
@@ -791,7 +828,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				listenTo(currentToolCtr);
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
-
+		//fxdiff VCRP-1,2: access control of resources
+		} else if (cmd.equals("simplegroupmngt")) {
+			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
+				boolean mayModifyMembers = true;
+				currentToolCtr = new SecurityGroupsRepositoryMainController(ureq, getWindowControl(), course, courseRepositoryEntry, mayModifyMembers);
+				listenTo(currentToolCtr);
+				all.setContent(currentToolCtr.getInitialComponent());
+			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
+			
 		} else if (cmd.equals("rightmngt")) {
 			if (isCourseAdmin) {
 				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course, BusinessGroup.TYPE_RIGHTGROUP);
@@ -805,8 +850,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				listenTo(currentToolCtr);
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked statistic, but no according right");
-
-		}else if (cmd.equals("archiver")) {
+		} else if (cmd.equals("archiver")) {
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new IArchiverCallback() {
 					public boolean mayArchiveQtiResults() {
@@ -1087,6 +1131,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"));
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
+				//fxdiff VCRP-1,2: access control of resources
+				myTool.addLink("simplegroupmngt", translate("command.opensimplegroupmngt"));
+				//
 				myTool.addLink("groupmngt", translate("command.opengroupmngt"));
 			}
 			if (isCourseAdmin) {
@@ -1104,7 +1151,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				myTool.addLink("statistic", translate("command.openstatistic"));
 			}
-			
+
 			//
 			/*
 			 * if (isCourseAdmin) { myTool.addLink(TOOLBOX_LINK_COURSECONFIG,
@@ -1159,7 +1206,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// new toolbox 'general'
 		myTool.addHeader(translate("header.tools.general"));
-		if (cc.isCalendarEnabled()) {
+		if (cc.isCalendarEnabled() && !isGuest) {
 			myTool.addPopUpLink(ACTION_CALENDAR, translate("command.calendar"), null, null, "950", "750", false);
 		}
 		if (cc.hasGlossary()) {
@@ -1168,14 +1215,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (showCourseConfigLink) {
 		  myTool.addLink(TOOLBOX_LINK_COURSECONFIG, translate("command.courseconfig"));
 		}
-		myTool.addPopUpLink("personalnote", translate("command.personalnote"), null, null, "750", "550", false);
+		if (!isGuest) {
+			myTool.addPopUpLink("personalnote", translate("command.personalnote"), null, null, "750", "550", false);
+		}
 		if (offerBookmark && !isGuest) {
 			myTool.addLink(ACTION_BOOKMARK, translate("command.bookmark"), TOOL_BOOKMARK, null);
 			BookmarkManager bm = BookmarkManager.getInstance();
 			if (bm.isResourceableBookmarked(identity, courseRepositoryEntry)) myTool.setEnabled(TOOL_BOOKMARK, false);
 
 		}
-		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes()) {
+		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -1196,7 +1245,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		//add group chat to toolbox
 		boolean instantMsgYes = InstantMessagingModule.isEnabled();
 		boolean chatIsEnabled = CourseModule.isCourseChatEnabled() &&  cc.isChatEnabled();
-		if (instantMsgYes && chatIsEnabled) {
+		if (instantMsgYes && chatIsEnabled && !isGuest) {
 			// we add the course chat link controller to the toolbox
 			if (courseChatManagerCtr == null && ureq != null) createCourseGroupChatLink(ureq);
 			if (courseChatManagerCtr != null){
@@ -1207,7 +1256,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 		}
 		
-		if (CourseModule.displayParticipantsCount()) {
+		if (CourseModule.displayParticipantsCount() && !isGuest) {
 			addCurrentUserCount(myTool);
 		}
 	

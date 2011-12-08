@@ -139,7 +139,9 @@ public class ScoDocument extends XMLDocument {
 				if (getElement(root, "cmi.core.lesson_status").getText().equals("failed")) {
 					// remember the total time.
 					_totalTimeHolder = getElement(root, "cmi.core.total_time").getText();
-					isFailed = true;
+					// <OLATCE-289> when isFailed is set to true, the sco data is cleared but that is not correct
+					//isFailed = true;
+					// <OLATCE-289>
 				} else {
 					isFailed = false;
 				}

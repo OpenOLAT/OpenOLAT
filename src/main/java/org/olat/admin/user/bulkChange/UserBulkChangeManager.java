@@ -35,6 +35,7 @@ import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.admin.user.groups.GroupAddManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -92,7 +93,7 @@ public class UserBulkChangeManager extends BasicManager {
 	}
 
 	public void changeSelectedIdentities(List<Identity> selIdentities, HashMap<String, String> attributeChangeMap,
-			HashMap<String, String> roleChangeMap, ArrayList<String> notUpdatedIdentities, boolean isAdministrativeUser, Translator trans) {
+			HashMap<String, String> roleChangeMap, ArrayList<String> notUpdatedIdentities, boolean isAdministrativeUser, List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Translator trans, Identity addingIdentity) {
 
 		Translator transWithFallback = UserManager.getInstance().getPropertyHandlerTranslator(trans);
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
@@ -104,7 +105,7 @@ public class UserBulkChangeManager extends BasicManager {
 		String[] securityGroups = { Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS, Constants.GROUP_AUTHORS, Constants.GROUP_ADMIN };
 		UserManager um = UserManager.getInstance();
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-
+		GroupAddManager groupAddMgr = GroupAddManager.getInstance();
 
 		// loop over users to be edited:
 		for (Identity identity : selIdentities) {
@@ -186,6 +187,11 @@ public class UserBulkChangeManager extends BasicManager {
 				}
 			}
 			
+			// FXOLAT-101: add identity to new groups:
+			if (ownGroups.size() != 0 || partGroups.size() != 0){
+				groupAddMgr.addIdentityToGroups(ownGroups, partGroups, mailGroups, identity, addingIdentity);
+			}			
+			
 			// set status
 			if (roleChangeMap.containsKey("Status")) {
 				Integer status = Integer.parseInt(roleChangeMap.get("Status"));
@@ -206,7 +212,7 @@ public class UserBulkChangeManager extends BasicManager {
 
 			// commit changes for this user
 			db.intermediateCommit();
-		}
+		} // for identities
 
 	}
 

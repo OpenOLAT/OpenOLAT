@@ -112,6 +112,10 @@ class ContextHelpPageCrumbController extends CrumbBasicController  {
 				int suffixPos = relPath.lastIndexOf(".");
 				if (suffixPos > 0) {
 					String mediaName = relPath.substring(0, suffixPos);
+					//fxdiff FXOLAT-185:fix loading of files in jar
+					if(mediaName.startsWith("/")) {
+						mediaName = mediaName.substring(1, mediaName.length());
+					}
 					String postfix = relPath.substring(suffixPos);
 					// 1) try it with current language
 					String fileName = mediaName + "_" + getLocale().toString() + postfix;

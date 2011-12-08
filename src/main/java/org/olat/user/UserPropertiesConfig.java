@@ -21,9 +21,11 @@
 package org.olat.user;
 
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyUsageContext;
 
 /**
  * <h3>Description:</h3>
@@ -86,6 +88,16 @@ public interface UserPropertiesConfig {
 	 */
 	public List<UserPropertyHandler> getUserPropertyHandlersFor(String usageIdentifyer, boolean isAdministrativeUser);
 
+	/**
+	 * sets the list of userPropertyHandlers of this config
+	 */
+	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers);
+	
+	/**
+	 * returns a map containing all the userPropertyUsageContexts
+	 */
+	public Map<String,UserPropertyUsageContext> getUserPropertyUsageContexts();
+	
 	/**
 	 * Get all available property handlers. Do not use this for forms or tables,
 	 * use this only to cleanup things

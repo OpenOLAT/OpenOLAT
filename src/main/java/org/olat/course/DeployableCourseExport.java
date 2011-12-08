@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -47,6 +48,7 @@ public class DeployableCourseExport {
 	private int access = 4;
 	private Float version;
 	private String identifier;
+	private boolean redeploy = false;
 	//default for a demo course is false
 	private boolean helpCourse = false;
 	OLog log = Tracing.createLoggerFor(this.getClass());
@@ -101,19 +103,22 @@ public class DeployableCourseExport {
 	private File downloadZipFromUrl(URL url) {
 		try {
 			log.info("Downloading demo course file: "+url);
-			HttpURLConnection uc = (HttpURLConnection) url.openConnection();
-			int responseCode = uc.getResponseCode();
+			// fxdiff: allow local files as demo course source
+			URLConnection uc = url.openConnection();
 			String contentType = uc.getContentType();
 			int contentLength = uc.getContentLength();
-			if (responseCode != 200 || !contentType.startsWith("application/") || contentLength == -1) {
-				if (responseCode != 200) {
-					log.warn("Server response was not successful code: "+responseCode+" with url: " + courseUrl);
-				} else if (contentLength == -1) {
-					log.warn("File is empty!");
-				} else if (!contentType.startsWith("application/")) {
-					log.warn("File is not a binary file! ContentType is: " + contentType + " from url:" + courseUrl);
+			if (uc instanceof HttpURLConnection){
+				int responseCode = ((HttpURLConnection)uc).getResponseCode();
+				if (responseCode != 200 || !contentType.startsWith("application/") || contentLength == -1) {
+					if (responseCode != 200) {
+						log.warn("Server response was not successful code: "+responseCode+" with url: " + courseUrl);
+					} else if (contentLength == -1) {
+						log.warn("File is empty!");
+					} else if (!contentType.startsWith("application/")) {
+						log.warn("File is not a binary file! ContentType is: " + contentType + " from url:" + courseUrl);
+					}
+					return null;
 				}
-				return null;
 			}
 			InputStream raw = uc.getInputStream();
 			InputStream in = new BufferedInputStream(raw);
@@ -166,6 +171,14 @@ public class DeployableCourseExport {
 
 	public String getIdentifier() {
 		return identifier;
+	}
+
+	public void setRedeploy(boolean redeploy) {
+		this.redeploy = redeploy;
+	}
+
+	public boolean isRedeploy() {
+		return redeploy;
 	}
 
 }

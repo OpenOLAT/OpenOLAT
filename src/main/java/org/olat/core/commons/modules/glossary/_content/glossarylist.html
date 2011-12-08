@@ -1,8 +1,10 @@
 #if ($editModeEnabled)
 	<div class="o_glossary_addcommand">
-		$r.render("cmd.add")
+		#if($r.available("cmd.add"))
+			$r.render("cmd.add")
+		#end
 	</div>
-#end	
+#end
 <div class="o_glossary">
 	<h3>$r.translate("glossary.title")</h3><br/>
 	#if ($registerEnabled)
@@ -15,19 +17,42 @@
 		</div>
 	#end
 	<dl>
-	#foreach( $editAndDelButton in $editAndDelButtonList )
-		#set ($glossaryItem = $editAndDelButton.get(0).getUserObject())
+	#foreach($glossaryItem in $editAndDelButtonList )
 		#set ($glossaryItemIndex = $glossaryItem.getIndex())
 		#if ( $filterIndex == $glossaryItemIndex || $filterIndex == "all" )
 ##		<div class="o_glossary_entry">
 			#if ($editModeEnabled)
 				<div class="o_glossary_commands">
-					$r.render("cmd.edit.$velocityCount")
-					$r.render("cmd.delete.$velocityCount")
+					#if($r.available("cmd.edit.$velocityCount"))
+						$r.render("cmd.edit.$velocityCount")
+					#end
+					#if($r.available("cmd.delete.$velocityCount"))
+						$r.render("cmd.delete.$velocityCount")
+					#end
 				</div>
 			#end
 			<dt>
-				$glossaryItem.getGlossTerm() 
+				$glossaryItem.getGlossTerm()
+				#if($userAllowToEditEnabled)
+					#if($glossaryItem.hasAuthor())
+						<span class="o_glossary_author">$r.translate("glossary.item.published.by")
+						#if($glossaryItem.authorCmd)
+							<a href="$r.commandURI($glossaryItem.authorCmd)" target="o_glossary_profil" onclick="return o2cl()">$glossaryItem.authorName</a>
+						#else
+							<a href="$glossaryItem.authorLink" class="">$glossaryItem.authorName</a>#end
+							${glossaryItem.creationDate}
+							#if($glossaryItem.hasModifier()), #end</span>
+					#end
+					#if($glossaryItem.hasModifier())
+						<span class="o_glossary_modifier">$r.translate("glossary.item.modified.by.on")
+						#if($glossaryItem.modifierCmd)
+							<a href="$r.commandURI($glossaryItem.modifierCmd)" target="o_glossary_profil" onclick="return o2cl()" >$glossaryItem.modifierName</a>
+						#else
+							<a href="$glossaryItem.modifierLink" class="">$glossaryItem.modifierName</a>
+						#end
+						$glossaryItem.lastModificationDate</span>
+					#end
+				#end
 				#if ( $glossaryItem.getGlossSynonyms().size() > 0)
 				  <div class="o_glossary_synonym">
 					#foreach ( $glossSynonym in $glossaryItem.getGlossSynonyms() )  
@@ -47,7 +72,9 @@
 #if ($editModeEnabled)
 	<p />
 	<div class="o_glossary_addcommand">
-		$r.render("cmd.add")
+		#if($r.available("cmd.add"))
+			$r.render("cmd.add")
+		#end
 	</div>
 #end	
 

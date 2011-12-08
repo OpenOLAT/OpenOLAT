@@ -31,6 +31,7 @@ import org.olat.commons.calendar.ICalTokenGenerator;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.KalendarGUIAddEvent;
+import org.olat.commons.calendar.ui.events.KalendarGUIImportEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -51,6 +52,7 @@ public class KalendarConfigurationController extends BasicController {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
 
 	private static final Object CMD_ADD = "add";
+	private static final Object CMD_IMPORT = "import";
 	private static final Object CMD_TOGGLE_DISPLAY = "tglvis";
 	private static final Object CMD_CHOOSE_COLOR = "cc";
 	private static final Object CMD_ICAL_FEED = "if";
@@ -108,6 +110,10 @@ public class KalendarConfigurationController extends BasicController {
 				// add new event to calendar
 				String calendarID = ureq.getParameter(PARAM_ID);
 				fireEvent(ureq, new KalendarGUIAddEvent(calendarID, new Date()));
+			} else if (command.equals(CMD_IMPORT)) {
+				// add new event to calendar
+				String calendarID = ureq.getParameter(PARAM_ID);
+				fireEvent(ureq, new KalendarGUIImportEvent(calendarID));
 			} else if (command.equals(CMD_TOGGLE_DISPLAY)) {
 				String calendarID = ureq.getParameter(PARAM_ID);
 				KalendarRenderWrapper calendarWrapper = findKalendarRenderWrapper(calendarID);

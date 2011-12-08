@@ -22,6 +22,7 @@
 package org.olat.course.editor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,8 +32,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderRunController;
@@ -41,11 +40,13 @@ import org.olat.core.dispatcher.mapper.MapperRegistry;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
+import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -65,8 +66,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.JSCommand;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -86,13 +85,11 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
+import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -135,6 +132,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_KEEPOPEN_ERROR = "keep.open.error";
 	private static final String CMD_KEEPCLOSED_WARNING = "keep.closed.warning";
 	private static final String CMD_KEEPOPEN_WARNING = "keep.open.warning";
+	private static final String CMD_MULTI_SP = "cmp.multi.sp";
 
 	// NLS support
 	
@@ -159,6 +157,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_MOVECOPYNODE_ERROR_ROOTNODE = "movecopynode.error.rootnode";
 	private static final String NLS_COURSEFOLDER_NAME = "coursefolder.name";
 	private static final String NLS_COURSEFOLDER_CLOSE = "coursefolder.close";
+	private static final String NLS_ADMIN_HEADER = "command.admin.header";
+	private static final String NLS_MULTI_SPS = "command.multi.sps";
 	
 	private Boolean errorIsOpen = Boolean.TRUE;
 	private Boolean warningIsOpen = Boolean.FALSE;
@@ -194,6 +194,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private Link keepClosedWarningButton;
 	private Link keepOpenWarningButton;
 	private CloseableModalController cmc;
+	
+	private MultiSPController multiSPChooserCtr;
 
 	private OLATResourceable ores;
 	
@@ -238,6 +240,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			enableCustomCss(ureq);
 
 			menuTree = new MenuTree("luTree");
+			menuTree.setExpandSelectedNode(false);
+			//fxdiff VCRP-9: drag and drop in menu tree
+			menuTree.setDragAndDropEnabled(true);
+			menuTree.setDragAndDropGroup("courseEditorGroup");
 						
 
 			/*
@@ -266,6 +272,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				getWindowControl().setInfo(translate(NLS_PUBLISHED_LATEST, Formatter.getInstance(ureq.getLocale()).formatDateAndTime(d)));
 			}
 			menuTree.setTreeModel(cetm);
+			menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
 			menuTree.addListener(this);
 
 			selTree = new SelectionTree("selection", getTranslator());
@@ -296,6 +303,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					log.error("Error while trying to add a course buildingblock of type \""+courseNodeAlias +"\" to the editor", e);
 				}
 			}
+			
+			toolC.addHeader(translate(NLS_ADMIN_HEADER));
+			toolC.addLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), CMD_MULTI_SP, "b_toolbox_copy");
 
 			toolC.addHeader(translate(NLS_COMMAND_DELETENODE_HEADER));
 			toolC.addLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), CMD_DELNODE, "b_toolbox_delete");
@@ -336,6 +346,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				TreeEvent te = (TreeEvent) event;
 				String nodeId = te.getNodeId();
 				updateViewForSelectedNodeId(ureq, nodeId);				
+			//fxdiff VCRP-9: drag and drop in menu tree
+			} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
+				TreeDropEvent te = (TreeDropEvent) event;
+				dropNodeAsChild(ureq, course, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
 			}
 		} else if (source == main) {
 			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
@@ -587,6 +601,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 							publishManager.changeGeneralAccess(ureq1, newAccess, membersOnly);
 							hasChanges = true;
 						}
+						
+						//fxdiff VCRP-3: add catalog entry in publish wizard
+						if (runContext.containsKey("catalogChoice")) {
+							String choice = (String) runContext.get("catalogChoice");
+							List<CategoryLabel> categories = (List<CategoryLabel>)runContext.get("categories");
+							PublishProcess publishManager = (PublishProcess) runContext.get("publishProcess");
+							publishManager.publishToCatalog(choice, categories);
+						}
 
 						// signal correct completion and tell if changes were made or not.
 						return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
@@ -606,13 +628,24 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// Folder for course with custom link model to jump to course nodes
 				VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-				FolderRunController bcrun = new FolderRunController(namedCourseFolder, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
+				FolderRunController bcrun = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
 				bcrun.addLoggingResourceable(LoggingResourceable.wrap(course));
 				Component folderComponent = bcrun.getInitialComponent();
 				CloseableModalController clc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE),
 						folderComponent);
 				clc.activate();
 				
+			} else if (event.getCommand().equals(CMD_MULTI_SP)) {
+				removeAsListenerAndDispose(multiSPChooserCtr);
+				VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
+				CourseEditorTreeNode selectedNode = (CourseEditorTreeNode)menuTree.getSelectedNode();
+				multiSPChooserCtr = new MultiSPController(ureq, getWindowControl(), rootContainer, ores, selectedNode);
+				listenTo(multiSPChooserCtr);
+				
+				removeAsListenerAndDispose(cmc);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), multiSPChooserCtr.getInitialComponent());
+				listenTo(cmc);
+				cmc.activate();
 			}
 		} else if (source == nodeEditCntrllr) {
 			// event from the tabbed pane (any tab)
@@ -731,12 +764,95 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else {
 				tabbedNodeConfig.setVisible(true);
 			}
+		} else if (source == multiSPChooserCtr) {
+			cmc.deactivate();
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(multiSPChooserCtr);
+
+			if(event == Event.CHANGED_EVENT) {
+				menuTree.setDirty(true);
+				euce.getCourseEditorEnv().validateCourse();
+				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+			}
 		}
     } catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Controller,Event)]", e);			
 			this.dispose();
 			throw e;
 		}
+	}
+	
+	//fxdiff VCRP-9: drag and drop in menu tree
+	private void dropNodeAsChild(UserRequest ureq, ICourse course, String droppedNodeId, String targetNodeId, boolean asChild, boolean atTheEnd) {
+		menuTree.setDirty(true); // setDirty when moving
+		CourseNode droppedNode = cetm.getCourseNode(droppedNodeId);
+
+		int position;
+		CourseEditorTreeNode insertParent;
+		if(asChild) {
+			insertParent = cetm.getCourseEditorNodeById(targetNodeId);
+			position = atTheEnd ? -1 : 0;
+		} else {
+			CourseEditorTreeNode selectedNode = cetm.getCourseEditorNodeById(targetNodeId);
+			if(selectedNode.getParent() == null) {
+				//root node
+				insertParent = selectedNode;
+				position = 0;
+			} else {
+				insertParent = course.getEditorTreeModel().getCourseEditorNodeById(selectedNode.getParent().getIdent());
+				position = 0;
+				for(position=insertParent.getChildCount(); position-->0; ) {
+					if(insertParent.getChildAt(position).getIdent().equals(selectedNode.getIdent())) {
+						position++;
+						break;
+					}
+				}
+			}
+		}
+		
+		CourseEditorTreeNode moveFrom = course.getEditorTreeModel().getCourseEditorNodeById(droppedNode.getIdent());
+		//check if an ancestor is not dropped on a child
+		if (course.getEditorTreeModel().checkIfIsChild(insertParent, moveFrom)) {					
+			showError("movecopynode.error.overlap");
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+			return;
+		}
+		
+		//don't generate red screen for that. If the position is too high -> add the node at the end
+		if(position >= insertParent.getChildCount()) {
+			position = -1;
+		}
+
+		try {
+			if(position >= 0) {
+				insertParent.insert(moveFrom, position);
+			} else {
+				insertParent.addChild(moveFrom);
+			}
+		} catch (IndexOutOfBoundsException e) {
+			logError("", e);
+			//reattach the node as security, if not, the node is lost
+			insertParent.addChild(moveFrom);
+		}
+
+		moveFrom.setDirty(true);
+		//mark subtree as dirty
+		TreeVisitor tv = new TreeVisitor( new Visitor() {
+			public void visit(INode node) {
+				CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
+				cetn.setDirty(true);
+			}
+		}, moveFrom, true);
+		tv.visitAll();					
+		
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		showInfo("movecopynode.info.condmoved");
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_MOVED, getClass());
+
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 	}
 
 	/*
@@ -934,42 +1050,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		final ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 		CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 		if (cc.hasCustomCourseCSS()) {
-			cssFileRef = cc.getCssLayoutRef();
-			mapreg = MapperRegistry.getInstanceFor(ureq.getUserSession());
-			if (cssUriMapper != null) {
-				// deregister old mapper
-				mapreg.deregister(cssUriMapper);
+			CustomCSS localCustomCSS = CourseLayoutHelper.getCustomCSS(ureq.getUserSession(), course.getCourseEnvironment());
+			if (localCustomCSS != null) {
+				String fulluri = localCustomCSS.getCSSURL();			
+				// path
+				hc = new HtmlHeaderComponent("custom-css", null, "<link rel=\"StyleSheet\" href=\"" + fulluri
+						+ "\" type=\"text/css\" media=\"screen\"/>");
+				main.put("css-inset2", hc);
 			}
-			cssUriMapper = new Mapper() {
-				final VFSContainer courseFolder = course.getCourseFolderContainer();
-
-				@SuppressWarnings("unused")
-				public MediaResource handle(String relPath, HttpServletRequest request) {
-					VFSItem vfsItem = courseFolder.resolve(relPath);
-					MediaResource mr;
-					if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) mr = new NotFoundMediaResource(relPath);
-					else mr = new VFSMediaResource((VFSLeaf) vfsItem);
-					return mr;
-				}
-			};
-			
-			String uri;
-			// Register mapper as cacheable
-			String mapperID = VFSManager.getRealPath(course.getCourseFolderContainer());
-			if (mapperID == null) {
-				// Can't cache mapper, no cacheable context available
-				uri  = mapreg.register(cssUriMapper);
-			} else {
-				// Add classname to the file path to remove conflicts with other
-				// usages of the same file path
-				mapperID = this.getClass().getSimpleName() + ":" + mapperID;
-				uri = mapreg.registerCacheable(mapperID, cssUriMapper);				
-			}
-			final String fulluri = uri + cssFileRef; // the stylesheet's relative
-			// path
-			hc = new HtmlHeaderComponent("custom-css", null, "<link rel=\"StyleSheet\" href=\"" + fulluri
-					+ "\" type=\"text/css\" media=\"screen\"/>");
-			main.put("css-inset2", hc);
 		}
 	}
 

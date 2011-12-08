@@ -25,18 +25,18 @@
 		<property name="enabled" value="${portlet.system.events.enabled}" />
 		<property name="configuration">
 			<map>
-				<entry key="title_de" value="OLAT Systemausfälle" />
-				<entry key="description_de" value="Informationen zu OLAT Systemausfällen" />
-				<entry key="title_en" value="OLAT system breakdown" />
-				<entry key="description_en" value="Information on OLAT system breakdown" />
-				<entry key="title_fr" value="Défaillances du système OLAT" />
-				<entry key="description_fr" value="Informations sur les défaillances du système OLAT" />
-				<entry key="title_it" value="Disfunzioni del sistema OLAT" />
-				<entry key="description_it" value="Informazioni sulle disfunzioni del sistema OLAT" />
-				<entry key="title_es" value="Fallo del sistema OLAT" />
-				<entry key="description_es" value="Información de fallo del sistema OLAT" />
-				<entry key="title_gr" value="OLAT system breakdown" />
-				<entry key="description_gr" value="Information on OLAT system breakdown" />		
+			<!-- fxdiff: better translations, not too spoofy for poor users -->
+				<entry key="portletName" value="Iframe" />
+				<entry key="title_de" value="OLAT Systemmeldungen" />
+				<entry key="description_de" value="Informationen zum OLAT Systemstatus" />
+				<entry key="title_en" value="OLAT system information" />
+				<entry key="description_en" value="Information on OLAT system status" />
+				<entry key="title_fr" value="Informations au système OLAT" />
+				<entry key="description_fr" value="Informations sur l'état du système OLAT" />									
+				<entry key="title_it" value="Messaggio di sistema OLAT" />
+				<entry key="description_it" value="Messaggio di sistema OLAT" />
+				<entry key="title_es" value="Información sobre el sistema" />
+				<entry key="description_es" value="Información sobre el sistema" />	
 				<!-- absolute or relative URI to a HTML page that is displayed in iframe -->							
 				<entry key="uri" value="${portlet.sysinfo.url}" />
 				<!-- optional parameter editFilePath: if configures it must contain an -->

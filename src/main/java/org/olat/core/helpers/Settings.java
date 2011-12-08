@@ -77,19 +77,30 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	private static int nodeId;
 	private static String clusterMode;
 	private static Date buildDate;
+	private static String repoRevision;
+	private static String patchRepoRevision;
 	
 	/**
 	 * [used by spring]
 	 */
 	Settings() {
+		//
+	}
+	
+	// fxdiff: only set build id from build date if none is provided in olat.local.properties!
+	private static void setBuildIdFromBuildDate() {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+		buildIdentifier = formatter.format(buildDate);
+	}
+	
+	// fxdiff: only set build date 
+	private static void setBuildDate(){
 		//extract the latest build number as date where this class was compiled
 		Resource res = new ClassPathResource("org/olat/core/helpers/Settings.class");
 		try {
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 			buildDate = new Date(res.lastModified());
-			buildIdentifier = formatter.format(buildDate);
 		} catch (IOException e) {
-			buildIdentifier = "00000000";
+			buildDate = new Date();
 		}
 	}
 	
@@ -98,7 +109,27 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	 * @return a identifier for this build e.g. the build date of a class like 20100329
 	 */
 	public static String getBuildIdentifier() {
+		if (buildIdentifier == null) {
+			setBuildIdFromBuildDate();
+		} 
 		return buildIdentifier;
+	}
+	
+	/**
+	 * [spring]
+	 * @param buildId
+	 */
+	public void setBuildIdentifier(String buildId){
+		buildIdentifier = buildId;
+	}
+	
+	public void setRepoRevision(String repoRev){
+		repoRevision = repoRev;
+	}
+	
+	//fxdiff: get the mercurial changeset Information from the time this release had been built
+	public static String getRepoRevision(){
+		return repoRevision;
 	}
 	
 	/**
@@ -106,6 +137,9 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	 * @return the exacte date and time this class was comiled
 	 */
 	public static Date getBuildDate() {
+		if (buildDate == null){
+			setBuildDate();
+		}
 		return buildDate;
 	}
 
@@ -119,7 +153,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	public static boolean isDebuging() {
 		return debug;
 	}
-
 
 	/**
 	 * @return if ajax mode is system-wide enabled or not
@@ -234,7 +267,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	
 	public static String getFullVersionInfo() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(applicationName).append(" ").append(version).append(" (Build ").append(buildIdentifier).append(")");
+		sb.append(applicationName).append(" ").append(getVersion()).append(" (Build ").append(getBuildIdentifier()).append(")");
 		return sb.toString();
 	}
 	
@@ -283,7 +316,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	public void setDebug(boolean debug) {
 		Settings.debug = debug;
 	}
-
+	
 	/**
 	 * @see org.olat.core.configuration.ServiceLifeCycle#init()
 	 */
@@ -456,6 +489,8 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	 * IMPORTANT: as long as this is used to track errors also, the format must be the same as in error-logs!
 	 * therefore also return something in single-vm-mode!
 	 */
+	// as long as this is used to track errors also, the format must be the same as in error-logs!
+	// therefore also return something in single-vm-mode!
 	public static String getNodeInfo() {
 		return "N"+nodeId;
 //		if (clusterMode.equalsIgnoreCase("Cluster")) {

@@ -46,6 +46,7 @@ import org.olat.core.id.context.HistoryModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
+import org.olat.properties.PropertyManager;
 
 
 /**
@@ -63,6 +64,7 @@ public class ChangePrefsController extends BasicController {
 	private VelocityContainer myContent;
 	private Controller generalPrefsCtr;
 	private Controller specialPrefsCtr;
+	private Controller resetCtr;
 	
 	/**
 	 * Constructor for the change user preferences controller
@@ -82,8 +84,13 @@ public class ChangePrefsController extends BasicController {
 		specialPrefsCtr = new SpecialPrefsForm(ureq, wControl, changeableIdentity);
 		listenTo(specialPrefsCtr);
 		
+		// fxdiff FXOLAT-149
+		resetCtr = new UserPrefsResetForm(ureq, wControl, changeableIdentity);
+		listenTo(resetCtr);
+		
 		myContent.put("general", generalPrefsCtr.getInitialComponent());
 		myContent.put("special", specialPrefsCtr.getInitialComponent());
+		myContent.put("reset", resetCtr.getInitialComponent());
 		
 		putInitialPanel(myContent);
 	}
@@ -283,3 +290,79 @@ class SpecialPrefsForm extends FormBasicController {
 	
 }
 
+// fxdiff FXOLAT-149 
+/**
+ * Controller to reset the users GUI prefs and other preferences
+ */
+class UserPrefsResetForm extends FormBasicController {
+
+	private Identity tobeChangedIdentity;
+	private MultipleSelectionElement resetElements;
+	private String[] keys, values;
+	
+	public UserPrefsResetForm(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
+		super(ureq, wControl);
+		tobeChangedIdentity = changeableIdentity;
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("reset.title");
+		setFormDescription("reset.desc");
+		
+		keys = new String[]{"guiprefs", "sysprefs", "resume"};
+		values = new String[] {translate("reset.elements.guiprefs"), translate("reset.elements.sysprefs"), translate("reset.elements.resume")};
+		
+		resetElements = uifactory.addCheckboxesVertical("prefs", "reset.elements", formLayout, keys, values, null, 1);
+		
+		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		formLayout.add(buttonLayout);
+		uifactory.addFormSubmitButton("reset.submit", buttonLayout);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if (resetElements.isAtLeastSelected(1)) {
+			// Log out user first if logged in
+			Set<UserSession> sessions = UserSession.getAuthenticatedUserSessions();
+			for (UserSession session : sessions) {
+				Identity ident = session.getIdentity();
+				if (ident != null && tobeChangedIdentity.equalsByPersistableKey(ident)) {
+					session.signOffAndClear();
+					break;
+				}
+			}
+			// Delete gui prefs
+			if (resetElements.isSelected(0)) {
+				PropertyManager pm = PropertyManager.getInstance();
+				pm.deleteProperties(tobeChangedIdentity, null, null, null, "v2guipreferences");
+			}
+			// Reset preferences
+			if (resetElements.isSelected(1)) {
+				UserManager um = UserManager.getInstance();
+				User user = um.loadUserByKey(tobeChangedIdentity.getUser().getKey());
+				org.olat.core.id.Preferences preferences = user.getPreferences();
+				preferences.setFontsize(null);
+				preferences.setNotificationInterval(null);
+				preferences.setPresenceMessagesPublic(false);
+				preferences.setReceiveRealMail(null);
+				um.updateUser(user);
+				PropertyManager pm = PropertyManager.getInstance();
+				pm.deleteProperties(tobeChangedIdentity, null, null, null, "charset");
+			}
+			// Reset history
+			if (resetElements.isSelected(2)) {
+				HistoryManager.getInstance().deleteHistory(tobeChangedIdentity);
+			}
+			// reset form buttons
+			resetElements.uncheckAll();
+		}
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+}

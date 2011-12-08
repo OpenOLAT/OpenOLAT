@@ -25,7 +25,10 @@ package org.olat.admin.user.imp;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.admin.user.groups.GroupAddManager;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -159,6 +162,15 @@ public class UserImportController extends BasicController {
 							List<String> singleUser = it_news.next();
 							doCreateAndPersistIdentity(singleUser);
 						}
+						// fxdiff: 101 add to groups
+						Identity addingIdentity = ureq1.getIdentity();
+						List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
+						List<Long> partGroups = (List<Long>) runContext.get("partGroups");
+						List<Long> mailGroups = (List<Long>) runContext.get("mailGroups");
+						if (ownGroups.size() != 0 || partGroups.size() != 0){
+							List<Object> allIdents = (List<Object>) runContext.get("idents");
+							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, mailGroups, addingIdentity);
+						}
 						hasChanges = true;
 					}
 				} catch (Exception any) {
@@ -167,6 +179,7 @@ public class UserImportController extends BasicController {
 				// signal correct completion and tell if changes were made or not.
 				return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
 			}
+
 		};
 
 		importStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("title"));
@@ -175,4 +188,28 @@ public class UserImportController extends BasicController {
 		}
 	}
 
+	//fxdiff: 101 add idents to groups
+	void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Identity addingIdentity) {
+		GroupAddManager groupAddMgr = GroupAddManager.getInstance();
+
+		int counter = 0;
+		for (Object o : allIdents) {
+			Identity ident;
+			if (o instanceof Identity) {
+				// existing user
+				ident = (Identity) o;
+			} else {
+				List<String> userArray = (List<String>) o;
+				String identName = userArray.get(1);
+				ident = BaseSecurityManager.getInstance().findIdentityByName(identName);
+			}
+			if(ident != null){
+				groupAddMgr.addIdentityToGroups(ownGroups, partGroups, mailGroups, ident, addingIdentity);
+				counter ++;
+				if (counter % 5 == 0) {
+					DBFactory.getInstance().intermediateCommit();
+				}
+			}			
+		}		
+	}
 }

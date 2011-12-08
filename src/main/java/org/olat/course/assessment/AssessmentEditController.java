@@ -198,7 +198,11 @@ public class AssessmentEditController extends BasicController {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == detailsEditController) {
-			// anything to do??
+			//fxdiff FXOLAT-108: reset SCORM test
+			if(event == Event.CHANGED_EVENT) {
+				doUpdateAssessmentData(ureq.getIdentity());
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		} else if (source == alreadyLockedDialogController) {
 			if (event == Event.CANCELLED_EVENT || DialogBoxUIFactory.isOkEvent(event)) {
 				//ok clicked or box closed
@@ -227,14 +231,16 @@ public class AssessmentEditController extends BasicController {
 		}
 
 		if (assessmentForm.isHasScore() && assessmentForm.isScoreDirty()) {
-			newScore = new Float(assessmentForm.getScore());
+		//fxdiff VCRP-4: assessment overview with max score
+			newScore = assessmentForm.getScore();
 			// Update properties in db later... see
 			// courseNode.updateUserSocreAndPassed...
 		}
 		
 		if (assessmentForm.isHasPassed()) {
-			if (assessmentForm.getCut() != null && StringHelper.containsNonWhitespace(assessmentForm.getScore())) {
-				newPassed = Float.parseFloat(assessmentForm.getScore()) >= assessmentForm.getCut().floatValue()
+			if (assessmentForm.getCut() != null && assessmentForm.getScore() != null) {
+			//fxdiff VCRP-4: assessment overview with max score
+				newPassed = assessmentForm.getScore() >= assessmentForm.getCut().floatValue()
 				          ? Boolean.TRUE : Boolean.FALSE;
 			} else {
         //"passed" info was changed or not 

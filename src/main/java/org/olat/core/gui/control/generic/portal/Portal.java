@@ -22,7 +22,6 @@
 package org.olat.core.gui.control.generic.portal;
 
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.control.Disposable;
 /**

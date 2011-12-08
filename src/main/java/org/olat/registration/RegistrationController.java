@@ -113,7 +113,13 @@ public class RegistrationController extends BasicController {
 			// no temporary key is given, we assume step 1. If this is the case, we
 			// render in a modal dialog, no need to add the 3cols layout controller
 			// wrapper
-			createLanguageForm(ureq, wControl);
+			//fxdiff FXOLAT-113: business path in DMZ
+			if(I18nModule.getEnabledLanguageKeys().size() == 1) {
+				wic.setCurStep(2);
+				createEmailForm(ureq);
+			} else {
+				createLanguageForm(ureq, wControl);
+			}
 			putInitialPanel(myContent);
 		} else {
 			// we check if given key is a valid temporary key
@@ -122,7 +128,13 @@ public class RegistrationController extends BasicController {
 			if (tempKey == null) {
 				// error, there should be an entry
 				showError("regkey.missingentry");
-				createLanguageForm(ureq, wControl);
+				//fxdiff FXOLAT-113: business path in DMZ
+				if(I18nModule.getEnabledLanguageKeys().size() == 1) {
+					wic.setCurStep(2);
+					createEmailForm(ureq);
+				} else {
+					createLanguageForm(ureq, wControl);
+				}
 			} else {
 				wic.setCurStep(3);
 				myContent.contextPut("pwdhelp", translate("pwdhelp"));

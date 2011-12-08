@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
 import org.olat.core.commons.services.commentAndRating.UserRatingsManager;
+import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRating;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -289,5 +290,30 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		}
 		return false;
 	}
+
+	@Override
+	//fxdiff
+	public List<OLATResourceableRating> getMostRatedResourceables(int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new ").append(OLATResourceableRating.class.getName()).append("(")
+			.append(" rating.resName, rating.resId, rating.resSubPath, avg(rating.rating))")
+			.append(" from ").append(UserRatingImpl.class.getName()).append(" as rating ")
+			.append(" where rating.resName=:resName and rating.resId=:resId")
+			.append(" group by rating.resName, rating.resId, rating.resSubPath")
+			.append(" order by avg(rating.rating) desc");
+
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setString("resName", getOLATResourceable().getResourceableTypeName());
+		query.setLong("resId", getOLATResourceable().getResourceableId());
+		
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
+		List<OLATResourceableRating> mostRated = query.list();
+		return mostRated;
+	}
+	
+	
 
 }

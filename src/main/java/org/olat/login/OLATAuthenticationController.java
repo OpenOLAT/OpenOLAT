@@ -61,8 +61,6 @@ import org.olat.user.UserModule;
 
 import com.thoughtworks.xstream.XStream;
 
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-
 /**
  * Initial Date:  04.08.2004
  *
@@ -93,7 +91,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 
 		loginComp = createVelocityContainer("olatlogin");
 		
-		if(UserModule.isPwdchangeallowed()) {
+		if(UserModule.isPwdchangeallowed(ureq.getIdentity())) {
 			pwLink = LinkFactory.createLink("menu.pw", loginComp, this);
 			pwLink.setCustomEnabledLinkCSS("o_login_pwd");
 		}
@@ -117,11 +115,9 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		// Check if form is triggered by external loginworkflow that has been failed
 		if (ureq.getParameterSet().contains(PARAM_LOGINERROR)) {
-			showError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
+			showError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
-		
-		// support email
-		loginComp.contextPut("supportmailaddress", WebappHelper.getMailConfig("mailSupport"));
+
 		putInitialPanel(loginComp);
 	}
 
@@ -138,42 +134,49 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	public void event(UserRequest ureq, Component source, Event event) {
 		
 		if (source == registerLink) {
-			removeAsListenerAndDispose(subController);
-			subController = new RegistrationController(ureq, getWindowControl());
-			listenTo(subController);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
-			listenTo(cmc);
-
-			cmc.activate();
-			
+			//fxdiff FXOLAT-113: business path in DMZ
+			openRegistration(ureq);
 		} else if (source == pwLink) {
-			
-			// double-check if allowed first
-			if (!UserModule.isPwdchangeallowed()) throw new OLATSecurityException("chose password to be changed, but disallowed by config");
-			
-			removeAsListenerAndDispose(subController);
-			subController = new PwChangeController(ureq, getWindowControl());
-			listenTo(subController);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
-			listenTo(cmc);
-			
-			cmc.activate();
-			
+			//fxdiff FXOLAT-113: business path in DMZ
+			openChangePassword(ureq, null);
 		} else if (source == anoLink){
 			
 			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				return;
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				showError("login.notavailable", WebappHelper.getMailConfig("mailSupport"));
+				showError("login.notavailable", null);
 			} else {
-				showError("login.error", WebappHelper.getMailConfig("mailSupport"));
+				showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
 			}
 		}
+	}
+	//fxdiff FXOLAT-113: business path in DMZ
+	protected void openRegistration(UserRequest ureq) {
+		removeAsListenerAndDispose(subController);
+		subController = new RegistrationController(ureq, getWindowControl());
+		listenTo(subController);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		listenTo(cmc);
+
+		cmc.activate();
+	}
+	//fxdiff FXOLAT-113: business path in DMZ
+	protected void openChangePassword(UserRequest ureq, String initialEmail) {
+		// double-check if allowed first
+		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) throw new OLATSecurityException("chose password to be changed, but disallowed by config");
+		
+		removeAsListenerAndDispose(subController);
+		subController = new PwChangeController(ureq, getWindowControl(), initialEmail);
+		listenTo(subController);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		listenTo(cmc);
+		
+		cmc.activate();
 	}
 
 	/**
@@ -191,7 +194,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 					showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
 					return;
 				} else {
-					showError("login.error", WebappHelper.getMailConfig("mailSupport"));
+					showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
 					return;
 				}
 			}
@@ -233,9 +236,20 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	}
 	
 	@Override
+	//fxdiff FXOLAT-113: business path in DMZ
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("changepw".equals(type)) {
+			String email = null;
+			if(entries.size() > 1) {
+				email = entries.get(1).getOLATResourceable().getResourceableTypeName();
+			}
+			openChangePassword(ureq, email);
+		} else if("registration".equals(type)) {
+			openRegistration(ureq);
+		}
 	}
 
 	/**

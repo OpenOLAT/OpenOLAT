@@ -1,0 +1,33 @@
+#if($!resMap && $resMap.size()>0)
+<div class="b_table_wrapper">
+<table>
+	<thead>
+		<tr>
+			<th class="b_first_child">$r.translate("table.group.name")</th>
+			<th>$r.translate("table.group.type")</th>
+			<th>$r.translate("description")</th>
+			<th>$r.translate("group.add.as", $r.translate("owner"))</th>
+			<th>$r.translate("group.add.as", $r.translate("attende"))</th>
+			<th class="b_last_child">$r.translate("send.email")</th>
+		</tr>
+	</thead>
+	<tbody>
+	#foreach($groupentry in $resMap.entrySet())
+		#set($title = $groupentry.getKey())
+		#set($id = $groupentry.getValue())
+		#set($group = $bGM.loadBusinessGroup("$id", false) )
+		<tr class="#if($velocityCount % 2 == 0) b_table_odd #end #if($velocityCount >= $resMap.size()) b_last_child #end" >
+			<td>$title</td>
+			<td>$r.translate($group.getType()) </td>
+			<td>$!group.getDescription()</td>
+			<td style="text-align: center;">$r.render("owner$id")</td>	
+			<td style="text-align: center;">$r.render("part$id")</td>	
+			<td style="text-align: center;">$r.render("mail$id")</td>			
+		</tr>
+	#end
+	</tbody>
+</table>
+</div>
+#elseif($resMap)
+	$r.translate("no.results")
+#end

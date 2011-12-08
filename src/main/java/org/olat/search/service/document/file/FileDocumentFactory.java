@@ -22,13 +22,14 @@
 package org.olat.search.service.document.file;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -50,9 +51,6 @@ public class FileDocumentFactory {
 
 	static FileDocumentFactory instance;
 
-	private static boolean pptFileEnabled;
-	private static boolean excelFileEnabled;
-
 	private final static String PDF_SUFFIX = "pdf";
 	private final static String EXCEL_SUFFIX = "xls";
 	private final static String WORD_SUFFIX = "doc";
@@ -73,36 +71,31 @@ public class FileDocumentFactory {
   //as a special parser;
   private static final String IMS_MANIFEST_FILE = "imsmanifest.xml";
   
-  private static List<String> checkFileSizeSuffixes;
-  private static long maxFileSize;
   private int  excludedFileSizeCount = 0;
 
-	private List<String> fileBlackList; 
+  
+  private static SearchModule searchModule;
   
 	/**
 	 * [used by spring]
 	 * @param searchModule
 	 */
-	public FileDocumentFactory(SearchModule searchModule) {
+	public FileDocumentFactory(SearchModule module) {
 		instance = this;
-		fileBlackList = searchModule.getFileBlackList();
-		pptFileEnabled = searchModule.getPptFileEnabled();
-		if (!pptFileEnabled) log.info("PPT files are disabled in indexer.");
-		excelFileEnabled = searchModule.getExcelFileEnabled();
-		if (!excelFileEnabled) log.info("Excel files are disabled in indexer.");
-		checkFileSizeSuffixes = searchModule.getFileSizeSuffixes();
-		maxFileSize = searchModule.getMaxFileSize();
+		searchModule = module;
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
 	throws DocumentNotImplementedException, IOException, DocumentException, DocumentAccessException {
 		
 		String fileName = leaf.getName();
-		String suffix = getSuffix(fileName);
+		String suffix = FileTypeDetector.getSuffix(leaf);
 		if (log.isDebug()) log.debug("suffix=" + suffix);
 
 		if (PDF_SUFFIX.indexOf(suffix) >= 0) {
-			return PdfDocument.createDocument(leafResourceContext, leaf);
+			if(searchModule.getPdfFileEnabled())
+				return PdfDocument.createDocument(leafResourceContext, leaf);
+			return null;
 		}
 		if (HTML_SUFFIX.indexOf(suffix) >= 0) {
 			return HtmlDocument.createDocument(leafResourceContext, leaf);
@@ -122,12 +115,12 @@ public class FileDocumentFactory {
 			return WordOOXMLDocument.createDocument(leafResourceContext, leaf);
 		}
 		if (suffix.indexOf(EXCEL_X_SUFFIX) >= 0) {
-			if (excelFileEnabled)
+			if (searchModule.getExcelFileEnabled())
 				return ExcelOOXMLDocument.createDocument(leafResourceContext, leaf);
 			return null;
 		}
 		if (suffix.indexOf(POWERPOINT_X_SUFFIX) >= 0) {
-			if(pptFileEnabled)
+			if(searchModule.getPptFileEnabled())
 				return PowerPointOOXMLDocument.createDocument(leafResourceContext, leaf);
 			return null;
 		}
@@ -137,12 +130,12 @@ public class FileDocumentFactory {
 			return WordDocument.createDocument(leafResourceContext, leaf);
 		}
 		if (POWERPOINT_SUFFIX.indexOf(suffix) >= 0) {
-			if(pptFileEnabled)
+			if(searchModule.getPptFileEnabled())
 				return PowerPointDocument.createDocument(leafResourceContext, leaf);
 			return null;
 		}
 		if (EXCEL_SUFFIX.indexOf(suffix) >= 0) {
-			if (excelFileEnabled)
+			if (searchModule.getExcelFileEnabled())
 				return ExcelDocument.createDocument(leafResourceContext, leaf);
 			return null;
 		}
@@ -155,16 +148,6 @@ public class FileDocumentFactory {
 		}
 		
 		return UnkownDocument.createDocument(leafResourceContext, leaf);
-	}
-
-	private static String getSuffix(String fileName) throws DocumentNotImplementedException {
-		int dotpos = fileName.lastIndexOf('.');
-		if (dotpos < 0 || dotpos == fileName.length() - 1) {
-			if (log.isDebug()) log.debug("I cannot detect the document suffix (marked with '.').");
-			throw new DocumentNotImplementedException("I cannot detect the document suffix (marked with '.') for " + fileName);
-		}
-		String suffix = fileName.substring(dotpos+1).toLowerCase();
-		return suffix;
 	}
 	
 	/**
@@ -181,18 +164,27 @@ public class FileDocumentFactory {
 		
 		String suffix;
 		try {
-			suffix = getSuffix(fileName);
+			suffix = FileTypeDetector.getSuffix(leaf);
 		} catch (DocumentNotImplementedException e) {
 			return false;
 		}
 		
 		// 1. Check if file is not on fileBlackList
-		if (fileBlackList.contains(fileName)) {
+		if (searchModule.getFileBlackList().contains(fileName)) {
 			// File name is on blacklist 
 			return false;
 		}
+		
+		if(leaf instanceof LocalImpl) {
+			String path = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
+			if (searchModule.getFileBlackList().contains(path)) {
+				return false;
+			}
+		}
+		
 		// 2. Check for certain file-type the file size
-		if (checkFileSizeSuffixes.contains(suffix)) {
+		if (searchModule.getFileSizeSuffixes().contains(suffix)) {
+			long maxFileSize = searchModule.getMaxFileSize();
 			if ( (maxFileSize != 0) && (leaf.getSize() > maxFileSize) ) {
 				log.info("File too big, exlude from search index. filename=" + fileName);
 				excludedFileSizeCount++;

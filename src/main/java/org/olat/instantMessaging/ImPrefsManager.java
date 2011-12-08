@@ -48,6 +48,9 @@ public class ImPrefsManager extends BasicManager {
 
 	private static ImPrefsManager INSTANCE;
 	private final static String LOCK_KEY = ImPrefsManager.class.toString();
+	
+	//fxdiff
+	private boolean awarenessVisible = false;
 
 	private ImPrefsManager() {
 		INSTANCE = this;
@@ -60,6 +63,15 @@ public class ImPrefsManager extends BasicManager {
 	 */
 	public static ImPrefsManager getInstance() {
 		return INSTANCE;
+	}
+
+	//fxdiff
+	public boolean isAwarenessVisible() {
+		return awarenessVisible;
+	}
+
+	public void setAwarenessVisible(boolean awarenessVisible) {
+		this.awarenessVisible = awarenessVisible;
 	}
 
 	/**
@@ -82,7 +94,8 @@ public class ImPrefsManager extends BasicManager {
 							imPrefs = new ImPreferences(identity);
 							imPrefs.setVisibleToOthers(true);
 							imPrefs.setOnlineTimeVisible(false);
-							imPrefs.setAwarenessVisible(false);
+							//fxdiff
+							imPrefs.setAwarenessVisible(isAwarenessVisible());
 							imPrefs.setRosterDefaultStatus(Presence.Mode.available.toString());
 							String props = XStreamHelper.toXML(imPrefs);
 							Property imProperty = PropertyManager.getInstance().createPropertyInstance(identity, null, null, null, ImPreferences.USER_PROPERTY_KEY, null, null, null, props);

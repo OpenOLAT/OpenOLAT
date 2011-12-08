@@ -4,7 +4,8 @@ $r.render("backLink")
 <fieldset>
 	<legend>Session Information</legend>
 	<table class="b_table">
-		<tr><td>$r.translate("sess.authent"):</td><td>$isauth</td></tr>
+		<tr><td>$r.translate("sess.authent"):</td><td>$isauth</td></tr> 
+		<tr><td>ID:</td><td>$!si.getSession().getId()</td></tr>
 		<tr><td>$r.translate("sess.first"):</td><td>$!si.getFirstname()</td></tr>
 		<tr><td>$r.translate("sess.last"):</td><td>$!si.getLastname()</td></tr>
 		<tr><td>$r.translate("sess.identity"):</td><td>$!si.getLogin()</td></tr>

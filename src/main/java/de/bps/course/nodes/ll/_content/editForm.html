@@ -1,11 +1,14 @@
 ##
 <table>
-	<tr>
-		<td>$r.translate("ll.table.target")</td>
-		<td>$r.translate("ll.table.html_target")</td>
-		<td>$r.translate("ll.table.description")</td>
-		<td colspan="2">$r.translate("ll.table.comment")</td>
-	</tr>
+	<thead>
+		<tr>
+			<td>$r.translate("ll.table.target")</td>
+			#if($lCustomMediaButtonList) <td></td> #end
+			<td>$r.translate("ll.table.html_target")</td>
+			<td>$r.translate("ll.table.description")</td>
+			<td colspan="2">$r.translate("ll.table.comment")</td>
+		</tr>
+	</thead>
 	#foreach($link in $linkList)
 		#set( $iter = $velocityCount - 1)
 		#set( $target = $lTargetInputList.get($iter).getName() )
@@ -26,6 +29,7 @@
 
 		<tr>
 			<td>$r.render($lTargetInputList.get($iter).getName())</td>
+			#if($lCustomMediaButtonList) <td>$r.render($lCustomMediaButtonList.get($iter).getName())</td> #end
 			<td>$r.render($lHtmlTargetInputList.get($iter).getName())</td>
 			<td>$r.render($lDescriptionInputList.get($iter).getName())</td>
 			<td>$r.render($lCommentInputList.get($iter).getName())</td>

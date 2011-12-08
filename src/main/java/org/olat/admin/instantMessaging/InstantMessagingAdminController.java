@@ -31,8 +31,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.instantMessaging.AdminUserConnection;
+import org.olat.instantMessaging.InstantMessaging;
 import org.olat.instantMessaging.InstantMessagingModule;
 
 /**
@@ -52,6 +55,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 	private FormSubmit submit;
 	private FormLinkImpl checkPlugin;
 	private FormLinkImpl reconnectAdminUser;
+	private FormLink doUserSyncButton;
 
 	public InstantMessagingAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "index");
@@ -61,18 +65,33 @@ public class InstantMessagingAdminController extends FormBasicController {
 		
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		InstantMessaging im = InstantMessagingModule.getAdapter();
 		if (source == doSyncButton) {
-			boolean hasError = InstantMessagingModule.getAdapter().synchronizeAllBuddyGroupsWithIMServer();
-			InstantMessagingModule.getAdapter().synchronizeLearningGroupsWithIMServer();
-			if (!hasError) {
-				showInfo("imadmin.sync.failed");
+			showInfo("imadmin.sync.cmd.dosync.caption");
+			boolean allOk = im.synchronizeAllBuddyGroupsWithIMServer();
+			allOk &= im.synchronizeLearningGroupsWithIMServer();
+			if (!allOk) {
+				refreshAndSetConnectionStatus();
+				showError("imadmin.sync.failed");
+				doSyncButton.setEnabled(false);
 			}
 		} else if (source == checkPlugin) {
-			String ok= InstantMessagingModule.getAdapter().checkServerPlugin();
+			String ok= im.checkServerPlugin();
 			showInfo("imadmin.plugin.version", ok);
 		} else if (source == reconnectAdminUser) {
-			InstantMessagingModule.getAdapter().resetAdminConnection();
+			try {
+				im.resetAdminConnection();
+			} catch (Exception e) {
+				refreshAndSetConnectionStatus();
+				getWindowControl().setError("Connection not possible: " + e.getMessage());
+				return;
+			} 
+			refreshAndSetConnectionStatus();
+			doSyncButton.setEnabled(true);
 			showInfo("imadmin.plugin.admin.connection.done");
+		} else if (source == doUserSyncButton) {
+			String result = im.synchronizeAllOLATUsers();
+			getWindowControl().setWarning(result);
 		}
 	}
 	
@@ -91,13 +110,20 @@ public class InstantMessagingAdminController extends FormBasicController {
 		InstantMessagingModule.setIDLE_POLLTIME(idlePollTime.getIntValue());
 	}
 
+	private void refreshAndSetConnectionStatus(){
+		AdminUserConnection connection = InstantMessagingModule.getAdapter().getAdminUserConnection();
+		boolean connectionSuccessfull = (connection!=null && connection.getConnection()!= null && connection.getConnection().isConnected());
+		flc.contextPut("IMConnectionStatus", connectionSuccessfull);
+	}
+
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer mainLayout = FormLayoutContainer.createDefaultFormLayout("mainLayout", getTranslator());
 		formLayout.add(mainLayout);
 		
 		String imServerName = InstantMessagingModule.getAdapter().getConfig().getServername();
-		String imAdminUsername = InstantMessagingModule.getAdapter().getConfig().getAdminUsername();
+		String imAdminUsername = InstantMessagingModule.getAdapter().getConfig().getAdminName();
 		String imAdminPw = InstantMessagingModule.getAdapter().getConfig().getAdminPassword();
 		
 		
@@ -105,6 +131,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		flc.contextPut("IMServerAdminUsername", imAdminUsername);
 		flc.contextPut("IMServerAdminPw", imAdminPw);
 		
+		refreshAndSetConnectionStatus();
 		
 		checkPlugin = new FormLinkImpl("imadmin.plugin.check");
 		checkPlugin.setCustomEnabledLinkCSS("b_button");
@@ -113,14 +140,14 @@ public class InstantMessagingAdminController extends FormBasicController {
 		reconnectAdminUser = new FormLinkImpl("imadmin.plugin.admin.reconnect");
 		reconnectAdminUser.setCustomEnabledLinkCSS("b_button");
 		formLayout.add(reconnectAdminUser);
-		
-		
-		//doSyncButton = LinkFactory.createButton("imadmin.sync.cmd.dosync", imAdminVC, this);
+
 		doSyncButton = new FormLinkImpl("imadmin.sync.cmd.dosync");
 		doSyncButton.setCustomEnabledLinkCSS("b_button");
 		doSyncButton.setCustomDisabledLinkCSS("b_button b_button_disabled");
 		formLayout.add(doSyncButton);
 		
+		doUserSyncButton = uifactory.addFormLink("sync.all.users", formLayout, Link.BUTTON);
+				
 		idlePollTime = uifactory.addIntegerElement("idlepolltime", "imadming.idlepolltime", InstantMessagingModule.getIDLE_POLLTIME(), mainLayout);
 		idlePollTime.setExampleKey("imadming.idlepolltime.default", new String[]{""+InstantMessagingModule.getAdapter().getConfig().getIdlePolltime()});
 		idlePollTime.showExample(true);

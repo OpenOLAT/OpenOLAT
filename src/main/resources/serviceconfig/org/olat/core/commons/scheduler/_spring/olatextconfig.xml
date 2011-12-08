@@ -44,6 +44,7 @@ How to add a new job:
             <ref bean="updateQtiResultsTrigger${assessmentplugin.activate}" />
             <ref bean="invitationCleanupTrigger" />
             <ref bean="epDeadlineTrigger" />
+            <ref bean="instantMessagingSyncTrigger"/>
         </list>
     </property>
 </bean>
@@ -110,8 +111,10 @@ requests and therefore the session in never invalidated -->
     <map>
     	<!-- default is 5 minutes - values are milliseconds -->
     	<entry key="idleWaitTime" value="300000" />
-    	<!-- default is 60 minutes  - values are milliseconds -->
-    	<entry key="initialAutoLogOutCutTime" value="3600000" />
+    	<!-- default is 60 minutes  - values are milliseconds 
+    	fxdiff: we allow longer sessions. see also org.olat.core.util.UserSession
+    	-->
+    	<entry key="initialAutoLogOutCutTime" value="7200000" />
     </map>
   </property>
 </bean>
@@ -151,9 +154,14 @@ requests and therefore the session in never invalidated -->
 
 	<bean id="searchIndexingTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="org.olat.search.job.${search.indexing.cronjob}" />
-	    <property name="cronExpression" value="${search.indexing.cronjob.expression}" />
+	    <property name="cronExpression" ref="searchIndexCronGenerator" />
 		<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
 	    <property name="startDelay" value="300000" />
+	</bean>
+	
+	<bean id="searchIndexCronGenerator" class="org.olat.search.service.indexer.IndexCronGenerator">
+		<property name="tomcatId" value="${tomcat.id}" />
+		<property name="enabled" value="${search.indexing.cronjob}" />
 	</bean>
 	
 	<bean id="org.olat.search.job.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">

@@ -429,7 +429,7 @@
 						<list>
 							<value>
 								update o_stat_weekly as old,
-									(select businesspath,concat(year(creationdate),'-',lpad(week(creationdate,3),2,'0')) week, count(*) cnt from o_loggingtable where actionverb='launch' and actionobject='node' group by businesspath,week) as delta
+									(select businesspath,concat(year(creationdate),'-',lpad(week(creationdate,3),2,'0')) week, count(*) cnt from o_stat_temptable group by businesspath,week) as delta
 								SET old.value=old.value+delta.cnt
 									where old.week=delta.week and old.businesspath=delta.businesspath;							
 							</value>

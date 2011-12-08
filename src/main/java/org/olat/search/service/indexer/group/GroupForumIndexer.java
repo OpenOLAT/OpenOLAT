@@ -86,6 +86,11 @@ public class GroupForumIndexer extends ForumIndexer{
 		  forumSearchResourceContext.setDocumentContext(businessGroup.getKey() + " " + forumKey);
 			forumSearchResourceContext.setParentContextType(GroupDocument.TYPE);
 			forumSearchResourceContext.setParentContextName(businessGroup.getName());
+			if (forum == null) { // fxdiff: FXOLAT-104 warn about missing forums
+				logError("found a forum-key " + forumKey + " for businessgroup " + businessGroup.getName() + " [" + businessGroup.getKey() + "] to index a forum that could not be " +
+						"found by key! skip indexing, check if forum should still be enabled. context: " + forumSearchResourceContext.getResourceUrl(), null);
+				return;
+			}
 		  doIndexAllMessages(forumSearchResourceContext, forum, indexWriter );
 		}
 	}
