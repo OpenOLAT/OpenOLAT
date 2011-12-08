@@ -66,6 +66,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
@@ -309,7 +311,9 @@ public class EPShareListController extends FormBasicController {
 			String last = getIdentity().getUser().getProperty(UserConstants.LASTNAME, null);
 			String sender = first + " " + last;
 			String[] bodyArgs = new String[]{busLink, sender};
-			success = mailer.sendEmail(clList, translate("map.share.invitation.mail.subject"), translate("map.share.invitation.mail.body", bodyArgs));
+			//fxdiff VCRP-16: intern mail system
+			MailContext context = new MailContextImpl(map.getOlatResource(), null, getWindowControl().getBusinessControl().getAsString()); 
+			success = mailer.sendEmail(context, clList, translate("map.share.invitation.mail.subject"), translate("map.share.invitation.mail.body", bodyArgs));
 		} catch (AddressException e) {
 			logError("Error on sending invitation mail to contactlist, invalid address.", e);
 		} catch (MessagingException e) {

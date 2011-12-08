@@ -69,7 +69,7 @@ public class MailerResult {
 	 * 
 	 * @param failedIdentity
 	 */
-	void addFailedIdentites(Identity failedIdentity) {
+	public void addFailedIdentites(Identity failedIdentity) {
 		this.failedIdentites.add(failedIdentity);
 	}
 
@@ -78,7 +78,7 @@ public class MailerResult {
 	 * 
 	 * @param returnCode
 	 */
-	void setReturnCode(int returnCode) {
+	public void setReturnCode(int returnCode) {
 		this.returnCode = returnCode;
 	}
 

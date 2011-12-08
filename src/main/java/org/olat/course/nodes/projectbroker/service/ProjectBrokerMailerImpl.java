@@ -35,6 +35,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
@@ -176,7 +178,9 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		//       als Workaround wurde die Methode sendMailAsSeparateMails verwendet
 		List<Identity> enrolledIdentityList = new ArrayList<Identity>();
 		enrolledIdentityList.add(enrolledIdentity);
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(enrolledIdentityList, null, null, enrolledMailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, enrolledIdentityList, null, null, enrolledMailTemplate, null);
 		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getName() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
 		return mailerResult;
 	}
@@ -190,7 +194,9 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			if (identityNames.length()>0) identityNames.append(",");
 			identityNames.append(identity.getName());
 		}
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(projectManagerList, null, null, enrolledMailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, null, enrolledMailTemplate, null);
 		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
 		return mailerResult;
 	}
@@ -204,7 +210,9 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 			if (identityNames.length()>0) identityNames.append(",");
 			identityNames.append(identity.getName());
 		}
-		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(projectManagerList, null, null, enrolledMailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(project.getProjectBroker(), null, null);
+		MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, projectManagerList, null, null, enrolledMailTemplate, null);
 		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + mailerResult.getReturnCode());
 		return mailerResult;
 	}

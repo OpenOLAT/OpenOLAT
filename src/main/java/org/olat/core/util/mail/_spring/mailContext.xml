@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+	<!-- MAIL CONFIGURATION -->
+	<!-- ========================= -->
+	
+	<bean id="mailModule" class="org.olat.core.util.mail.MailModule" depends-on="org.olat.core.util.WebappHelper,coordinatorManager,org.olat.core.util.event.FrameworkStartupEventChannel">
+		<property name="persistedProperties">
+	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    	<constructor-arg index="0" ref="coordinatorManager"/>
+	    	<constructor-arg index="1" ref="mailModule" />
+	  	</bean>
+		</property>
+		<property name="webappHelper" ref="org.olat.core.util.WebappHelper"/>
+	</bean>
+	
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="mailModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				internSystem=${mail.intern}
+				receiveRealMailUserDefaultSetting=${mail.receiveRealMailUserDefaultSetting}
+			</value>
+		</property>
+	</bean>
+	
+	<!-- Mail admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.mailcfg" init-method="initExtensionPoints">
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.util.mail.ui.MailAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="mail" />
+		<property name="i18nActionKey" value="menu.mail"/>
+		<property name="i18nDescriptionKey" value="menu.mail.alt"/>
+		<property name="translationPackage" value="org.olat.core.util.mail"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="order" value="780" />
+	</bean> 
+	
+	<bean id="mailManager" class="org.olat.core.util.mail.manager.MailManager">
+		<constructor-arg index="0" ref="mailModule" />
+		<property name="dbInstance" ref="database"/>
+		<property name="notificationsManager" ref="org.olat.core.util.notifications.NotificationsManager"/>
+	</bean>
+	
+	<bean id="mailDBMappings" class="org.olat.core.commons.persistence.AdditionalDBMappings">
+		<property name="xmlFiles">
+			<list>								
+				<value>org/olat/core/util/mail/model/DBMail.hbm.xml</value>
+				<value>org/olat/core/util/mail/model/DBMailAttachment.hbm.xml</value>
+				<value>org/olat/core/util/mail/model/DBMailRecipient.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="org.olat.core.util.mail.manager.MailNotificationsHandler" class="org.olat.core.util.mail.manager.MailNotificationsHandler">
+		<property name="mailModule" ref="mailModule"/>
+	</bean>
+	
+	
+	<!--  the email-parent-menu  -->
+	<bean class="org.olat.core.util.mail.ui.MailActionExtension" name="mailAEparent" init-method="initExtensionPoints">
+		<property name="order" value="108" />
+		<property name="navigationKey" value="Mail" />
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="nodeIdentifierIfParent" value="homeEmailParent" />
+		<property name="translationPackage" value="org.olat.home" />
+		<property name="i18nActionKey" value="menu.mail" />
+		<property name="i18nDescriptionKey" value="menu.mail.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>	 
+	
+	<!-- The name of this extension is used by the NotificationUIFactory, don't change it  -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="mailAEinbox" init-method="initExtensionPoints" >
+		<property name="order" value="401" />
+		<property name="navigationKey" value="Inbox" />
+		<property name="actionController">	
+			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
+				<property name="factoryName" value="org.olat.core.util.mail.MailUIFactory"/>
+				<property name="factoryMethod" value="createInboxController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="i18nActionKey" value="mail.inbox"/>
+		<property name="i18nDescriptionKey" value="mail.inbox.alt"/>
+		<property name="parentTreeNodeIdentifier" value="homeEmailParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="mailAEoutbox" init-method="initExtensionPoints" >
+		<property name="order" value="402" />
+		<property name="navigationKey" value="Outbox" />
+		<property name="actionController">	
+			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
+				<property name="factoryName" value="org.olat.core.util.mail.MailUIFactory"/>
+				<property name="factoryMethod" value="createOutboxController"/>
+			</bean>
+		</property>
+		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
+		<property name="i18nActionKey" value="mail.outbox"/>
+		<property name="i18nDescriptionKey" value="mail.outbox.alt"/>
+		<property name="parentTreeNodeIdentifier" value="homeEmailParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	
+</beans>

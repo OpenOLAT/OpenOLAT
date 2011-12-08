@@ -47,6 +47,7 @@ import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -107,7 +108,10 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 		}
 	
 	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
-		return (MainLayoutController) getLaunchController( res,  ureq,  wControl);
+		MainLayoutController layoutCtr = (MainLayoutController) getLaunchController( res,  ureq,  wControl);
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		return wrapper;
 	}
 	
 	/**

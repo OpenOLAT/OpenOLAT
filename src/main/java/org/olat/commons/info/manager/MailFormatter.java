@@ -38,4 +38,6 @@ public interface MailFormatter {
 		public String getSubject(InfoMessage msg);
 		
 		public String getBody(InfoMessage msg);
+		//fxdiff VCRP-16: intern mail system
+		public String getBusinessPath();
 }

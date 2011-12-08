@@ -21,18 +21,18 @@
  */
 package org.olat.core.util.mail;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.mail.Address;
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -44,8 +44,8 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.manager.MailManager;
 
 /**
  * Description:<br>
@@ -104,7 +104,8 @@ public class MailerWithTemplate {
 	public MailerResult sendMailUsingTemplateContext(Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC, MailTemplate template,
 			Identity sender) {
 		MailerResult result = new MailerResult();
-		sendWithContext(template.getContext(), recipientTO, recipientsCC, recipientsBCC, template, sender, result);
+		//fxdiff VCRP-16: intern mail system
+		sendWithContext(template.getContext(), null, null, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
 		return result;
 	}
 	
@@ -123,22 +124,10 @@ public class MailerWithTemplate {
 
 		VelocityContext context = new VelocityContext();		
 		template.putVariablesInMailContext(context, recipientTO);
-		
-		MimeMessage msg = createWithContext(context, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
-		String subject=null;
-		String body=null;
-		try {
-			subject = msg.getSubject();
-			//
-			//assume String because the body text is set via setText(..,"utf-8")
-			//in the MailHelper
-			//see also http://java.sun.com/j2ee/1.4/docs/api/javax/mail/internet/MimeMessage.html#getContent()
-			body = (String)msg.getContent();
-		} catch (MessagingException e) {
-			result.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
-		} catch (IOException e) {
-			result.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
-		}
+		//fxdiff VCRP-16: intern mail system
+		MessageContent msg = createWithContext(context, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
+		String subject = msg.getSubject();
+		String body = msg.getBody();
 		return new String[]{subject, body};
 	}
 
@@ -159,11 +148,25 @@ public class MailerWithTemplate {
 	 * @return MailerResult with status and list of identites that could not be
 	 *         mailed to
 	 */
-	public MailerResult sendMail(Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC, MailTemplate template,
+	//fxdiff VCRP-16: intern mail system
+	public MailerResult sendRealMail(Identity recipientTO, MailTemplate template) {
+		MailerResult result = new MailerResult();
+		VelocityContext context = new VelocityContext();
+		MessageContent msg = createWithContext(context, recipientTO, null, null, template, null, result);
+		if(result.getReturnCode() != MailerResult.OK) {
+			return result;
+		}
+
+		MailManager.getInstance().sendExternMessage(null, null, recipientTO, null, null, null, null, msg.getSubject(), msg.getBody(), null, result);
+		return result;
+	}
+	
+	//fxdiff VCRP-16: intern mail system
+	public MailerResult sendMail(MailContext mCtxt, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC, MailTemplate template,
 			Identity sender) {
 		List<Identity> recipientsTO = new ArrayList<Identity>();
 		recipientsTO.add(recipientTO);
-		return sendMailAsSeparateMails(recipientsTO, recipientsCC, recipientsBCC, template, sender);
+		return sendMailAsSeparateMails(mCtxt, recipientsTO, recipientsCC, recipientsBCC, template, sender);
 	}
 
 	/**
@@ -189,6 +192,13 @@ public class MailerWithTemplate {
 	 */
 	public MailerResult sendMailAsSeparateMails(List<Identity> recipientsTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
 			MailTemplate template, Identity sender) {
+		return sendMailAsSeparateMails(null, recipientsTO, recipientsCC, recipientsBCC, template, sender);
+	}
+	//fxdiff VCRP-16: intern mail system
+	public MailerResult sendMailAsSeparateMails(MailContext mCtxt, List<Identity> recipientsTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
+			MailTemplate template, Identity sender) {
+		
+		String metaId = UUID.randomUUID().toString().replace("-", "");
 		MailerResult result = new MailerResult();
 		if (MailHelper.getMailhost() == null) {
 			result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
@@ -200,7 +210,7 @@ public class MailerWithTemplate {
 				// populate velocity context with variables
 				VelocityContext context = new VelocityContext();
 				template.putVariablesInMailContext(context, recipient);
-				sendWithContext(context, recipient, null, null, template, sender, result);
+				sendWithContext(context, mCtxt, metaId, recipient, null, null, template, sender, result);
 				if (!result.getFailedIdentites().contains(recipient)) {
 					isMailSendToRecipient = true;
 				}
@@ -213,10 +223,7 @@ public class MailerWithTemplate {
 				// populate velocity context with variables
 				VelocityContext context = new VelocityContext();
 				template.putVariablesInMailContext(context, recipient);
-				sendWithContext(context, null, cc, null, template, sender, result);
-				if (!result.getFailedIdentites().contains(recipient)) {
-					isMailSendToRecipient = true;
-				}
+				sendWithContext(context, mCtxt, metaId, recipient, null, null, template, sender, result);
 			}
 		}
 		if (recipientsBCC != null) {
@@ -224,14 +231,14 @@ public class MailerWithTemplate {
 				// populate velocity context with variables
 				VelocityContext context = new VelocityContext();
 				template.putVariablesInMailContext(context, recipient);
-				sendWithContext(context, recipient, null, null, template, sender, result);
-				if (!result.getFailedIdentites().contains(recipient)) {
-					isMailSendToRecipient = true;
-				}
+				sendWithContext(context, mCtxt, metaId, recipient, null, null, template, sender, result);
 			}
 		}
 		if(!isMailSendToRecipient) {
 			result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
+		}//only one successful to is needed to return OK
+		else if(isMailSendToRecipient && result.getReturnCode() == MailerResult.RECIPIENT_ADDRESS_ERROR) {
+			result.setReturnCode(MailerResult.OK);
 		}
 		return result;
 	}
@@ -248,7 +255,8 @@ public class MailerWithTemplate {
 	 * @param result
 	 * @return
 	 */
-	private MimeMessage createWithContext(VelocityContext context, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
+	//fxdiff VCRP-16: intern mail system
+	private MessageContent createWithContext(VelocityContext context, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
 			MailTemplate template, Identity sender, MailerResult result){
 		// prepare cc addresses - will stay the same for each mail
 		Address[] addressesCC = createAddressesFromIdentities(recipientsCC, result);
@@ -269,39 +277,33 @@ public class MailerWithTemplate {
 			recLocale = I18nManager.getInstance().getLocaleOrDefault(recipientTO.getUser().getPreferences().getLanguage());
 		}else if(recipientsCC!=null && recipientsCC.size()>0){
 			recLocale = I18nManager.getInstance().getLocaleOrDefault(recipientsCC.get(0).getUser().getPreferences().getLanguage());
+		}else if(recipientsBCC!=null && recipientsBCC.size()>0){
+			recLocale = I18nManager.getInstance().getLocaleOrDefault(recipientsBCC.get(0).getUser().getPreferences().getLanguage());
 		}
 		String subject = subjectWriter.toString();
 		String body = bodyWriter.toString() + MailHelper.getMailFooter(recLocale, sender) + "\n";
-	
-		// add sender to mail
-		Address from, to;
-		try {
-			if (sender == null) {
-				from = new InternetAddress(WebappHelper.getMailConfig("mailFrom"));
-			} else {
-				from = new InternetAddress(sender.getUser().getProperty(UserConstants.EMAIL, null));
-			}
-		} catch (AddressException e) {
-			result.setReturnCode(MailerResult.SENDER_ADDRESS_ERROR);
-			return null;
-		}
-		Address[] toArray = new Address[1];
-		if(recipientTO != null){
-			try {
-				to = new InternetAddress(recipientTO.getUser().getProperty(UserConstants.EMAIL, null));
-			} catch (AddressException e) {
-				result.addFailedIdentites(recipientTO);
-				// 	skip this user, go to next one
-				return null;
-			}
-			toArray[0] = to;
-		}else{
-			toArray = new Address[0];
-		}
-		
+
 		// create mime message
-		return MailHelper.createMessage(from, toArray, addressesCC, addressesBCC, body, subject, template.getAttachments(), result);
+		return new MessageContent(subject, body);
 		
+	}
+	
+	private class MessageContent {
+		private final String subject;
+		private final String body;
+		
+		public MessageContent(String subject, String body) {
+			this.subject = subject;
+			this.body = body;
+		}
+
+		public String getSubject() {
+			return subject;
+		}
+
+		public String getBody() {
+			return body;
+		}
 	}
 	
 	/**
@@ -314,7 +316,8 @@ public class MailerWithTemplate {
 	 * @param sender
 	 * @param result
 	 */
-	private void sendWithContext(VelocityContext context, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
+	//fxdiff VCRP-16: intern mail system
+	private void sendWithContext(VelocityContext context, MailContext mCtxt, String metaId, Identity recipientTO, List<Identity> recipientsCC, List<Identity> recipientsBCC,
 			MailTemplate template, Identity sender, MailerResult result) {		
 		List<Identity> identityTO = new ArrayList<Identity>();
 		if(recipientTO != null) identityTO.add(recipientTO);
@@ -343,11 +346,48 @@ public class MailerWithTemplate {
 			failedIdentitiesBCC.removeAll(failedIdentitiesCC);
 			recipientsBCC.removeAll(failedIdentitiesBCC);
 		}
-		MimeMessage msg = createWithContext(context, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
+		MessageContent msg = createWithContext(context, recipientTO, recipientsCC, recipientsBCC, template, sender, result);
 		if(msg != null && result.getReturnCode() == MailerResult.OK){
 			// send mail
-			MailHelper.sendMessage(msg, result);
+			List<File> attachmentList = new ArrayList<File>();
+			File[] attachments = template.getAttachments();
+			if(attachments != null) {
+				for(File attachment:attachments) {
+					if(attachment == null || !attachment.exists()) {
+						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
+					} else {
+						attachmentList.add(attachment);
+					}
+				}
+			}
+			
+			List<ContactList> ccList = createContactList(recipientsCC);
+			List<ContactList> bccList = createContactList(recipientsBCC);
+			MailerResult mgrResult = MailManager.getInstance().sendMessage(mCtxt, sender, null, recipientTO, null, null, ccList, bccList,
+					metaId, msg.getSubject(), msg.getBody(), attachmentList);
+			
+			if(mgrResult.getReturnCode() != MailerResult.OK) {
+				result.setReturnCode(mgrResult.getReturnCode());
+			}
+			if(mgrResult.getFailedIdentites() != null) {
+				for(Identity failedIdentity:mgrResult.getFailedIdentites()) {
+					result.addFailedIdentites(failedIdentity);
+				}
+			}
+			
 		}
+	}
+	//fxdiff VCRP-16: intern mail system
+	private List<ContactList> createContactList(List<Identity> recipients) {
+		if(recipients == null || recipients.isEmpty()) {
+			return null;
+		}
+		
+		ContactList contactList = new ContactList("");
+		contactList.addAllIdentites(recipients);
+		List<ContactList> list = new ArrayList<ContactList>(1);
+		list.add(contactList);
+		return list;
 	}
 
 	/**

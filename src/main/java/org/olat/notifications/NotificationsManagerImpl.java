@@ -484,13 +484,24 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			// nothing to do
 			}
 		};
-
-		MailerResult result = MailerWithTemplate.getInstance().sendMail(to, null, null, mailTempl, null);
-		if (result.getReturnCode() > 0) {
-			log.warn("Could not send email to identity " + to.getName() + ". (returncode="+result.getReturnCode()+", to="+to+")");
+		
+		MailerResult result = null;
+		try {
+			// fxdiff VCRP-16: intern mail system
+			result = MailerWithTemplate.getInstance().sendRealMail(to, mailTempl);
+		} catch (Exception e) {
+			// FXOLAT-294 :: sending the mail will throw nullpointer exception if To-Identity has no
+			// valid email-address!, catch it...
+		} 
+		if (result == null || result.getReturnCode() > 0) {
+			if(result!=null)
+				log.warn("Could not send email to identity " + to.getName() + ". (returncode=" + result.getReturnCode() + ", to=" + to + ")");
+			else
+				log.warn("Could not send email to identity " + to.getName() + ". (returncode = null) , to=" + to + ")");
 			return false;
+		} else {
+			return true;
 		}
-		return true;
 	}
 
 	/**
@@ -518,6 +529,12 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private Publisher findOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata) {
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(scontext.getResName() + "_" + scontext.getSubidentifier(),scontext.getResId());
 		//o_clusterOK by:cg
+		//fxdiff VCRP-16:prevent nested doInSync
+		Publisher pub = getPublisher(scontext.getResName(), scontext.getResId(), scontext.getSubidentifier());
+		if(pub != null) {
+			return pub;
+		}
+		
 		Publisher publisher = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Publisher>(){
 			public Publisher execute() {
 				Publisher p = getPublisher(scontext.getResName(), scontext.getResId(), scontext.getSubidentifier());
@@ -977,23 +994,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			SubscriptionItem si = null;
 			Publisher pub = subscriber.getPublisher();
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
+			if (isLogDebugEnabled()) logDebug("create subscription with handler: " + notifHandler.getClass().getName());
 			// do not create subscription item when deleted
 			if (isPublisherValid(pub)) {
 				if (isLogDebugEnabled()) logDebug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
 				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, latestEmailed);
 				if (subsInfo.hasNews()) {
-					String title = getFormatedTitle(subsInfo, subscriber, locale, mimeTypeTitle); 
-					
-					String itemLink = null;
-					if(subsInfo.getCustomUrl() != null) {
-						itemLink = subsInfo.getCustomUrl();
-					}
-					if(itemLink == null && pub.getBusinessPath() != null) {
-						itemLink = NotificationHelper.getURLFromBusinessPathString(pub, pub.getBusinessPath());
-					}
-					
-					String description = subsInfo.getSpecificInfo(mimeTypeContent, locale);
-					si = new SubscriptionItem(title, itemLink, description);
+					si = createSubscriptionItem(subsInfo, subscriber, locale, mimeTypeTitle, mimeTypeContent);
 				}
 			}
 			return si;
@@ -1001,6 +1008,23 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			log.error("Cannot generate a subscription item.", e);
 			return null;
 		}
+	}
+	
+	@Override
+	public SubscriptionItem createSubscriptionItem(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent) {
+		Publisher pub = subscriber.getPublisher();
+		String title = getFormatedTitle(subsInfo, subscriber, locale, mimeTypeTitle); 
+		
+		String itemLink = null;
+		if(subsInfo.getCustomUrl() != null) {
+			itemLink = subsInfo.getCustomUrl();
+		}
+		if(itemLink == null && pub.getBusinessPath() != null) {
+			itemLink = NotificationHelper.getURLFromBusinessPathString(pub, pub.getBusinessPath());
+		}
+		
+		String description = subsInfo.getSpecificInfo(mimeTypeContent, locale);
+		return new SubscriptionItem(title, itemLink, description);
 	}
 	
 	/**

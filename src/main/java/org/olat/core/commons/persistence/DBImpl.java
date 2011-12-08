@@ -39,7 +39,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.security.auth.DestroyFailedException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -888,4 +887,36 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			}
 		}
 	}
+	
+	//
+	// fxdiff qti-statistics (praktikum MK)
+	// Extensions used for native SQL queries
+	//
+	String dbVendor = null;
+	/**
+	 * [used by spring]
+	 * @param dbVendor
+	 */
+	public void setDbvendor(String dbVendor) {
+		this.dbVendor = dbVendor;
+	}
+
+	/**
+	 * Create a named hibernate query for the given name. Optionally the database
+	 * vendor is prepended to load database specific queries if available. Use
+	 * this only when absolutely necessary.
+	 * 
+	 * @param queryName The query name
+	 * @param vendorSpecific true: prepend the database vendor name to the query
+	 *          name, e.g. mysql_queryName; false: use queryName as is
+	 * @return the query or NULL if no such named query exists
+	 */
+	public DBQuery createNamedQuery(final String queryName, boolean vendorSpecific) {
+		if (queryName == null) {
+			throw new AssertException("queryName must not be NULL");
+		}
+		
+		beginTransaction(queryName);
+		return getDBManager().createNamedQuery(queryName, dbVendor, vendorSpecific);
+	}	
 }

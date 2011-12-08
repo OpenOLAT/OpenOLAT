@@ -22,27 +22,16 @@
 package org.olat.core.util.mail;
 
 import java.io.File;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.mail.Address;
 import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.Message.RecipientType;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.PackageTranslator;
@@ -52,10 +41,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Description:<br>
@@ -111,27 +103,8 @@ public class MailHelper {
 	 * 
 	 * @return MimeMessage
 	 */
-	public static MimeMessage createMessage() {
-		Properties p = new Properties();
-		p.put("mail.smtp.host", mailhost);
-		p.put("mail.smtp.timeout", mailhostTimeout);
-		p.put("mail.smtp.connectiontimeout", mailhostTimeout);
-		p.put("mail.smtp.ssl.enable", sslEnabled);
-		p.put("mail.smtp.ssl.checkserveridentity", sslCheckCertificate);
-		Session mailSession;
-		if (smtpAuth == null) {
-			mailSession = javax.mail.Session.getInstance(p);
-		} else {
-			// use smtp authentication from configuration
-			p.put("mail.smtp.auth", "true");
-			mailSession = Session.getDefaultInstance(p, smtpAuth); 
-		}
-		if (Tracing.isDebugEnabled(MailHelper.class)) {
-			// enable mail session debugging on console
-			mailSession.setDebug(true);
-		}
-		return new MimeMessage(mailSession);
-	}
+//fxdiff VCRP-16: intern mail system
+	//public static MimeMessage createMessage()
 
 	/**
 	 * create MimeMessage from given fields, this may be used for creation of
@@ -146,70 +119,17 @@ public class MailHelper {
 	 * @param result
 	 * @return
 	 */
-	public static MimeMessage createMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
-			String subject, File[] attachments, MailerResult result) {
-		if (Tracing.isDebugEnabled(MailHelper.class)) {
-			doDebugMessage(from, recipients, recipientsCC, recipientsBCC, body, subject, attachments);
-		}
+	//fxdiff VCRP-16: intern mail system
+	//protected static MimeMessage createMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
 
-		MimeMessage msg = MailHelper.createMessage();
-		try {
-			// TO, CC and BCC
-			msg.setFrom(from);
-			msg.setRecipients(RecipientType.TO, recipients);
-			if (recipientsCC != null) {
-				msg.setRecipients(RecipientType.CC, recipientsCC);
-			}
-			if (recipientsBCC != null) {
-				msg.setRecipients(RecipientType.BCC, recipientsBCC);
-			}
-			// message data
-			msg.setSubject(subject, "utf-8");
-
-			if (attachments != null && attachments.length > 0) {
-				// with attachment use multipart message
-				Multipart multipart = new MimeMultipart();
-				// 1) add body part
-				BodyPart messageBodyPart = new MimeBodyPart();
-				messageBodyPart.setText(body);
-				multipart.addBodyPart(messageBodyPart);
-				// 2) add attachments
-				for (File attachmentFile : attachments) {
-					// abort if attachment does not exist
-					if (attachmentFile == null || !attachmentFile.exists()) {
-						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
-						Tracing.logError("Tried to send mail wit attachment that does not exist::"
-								+ (attachmentFile == null ? null : attachmentFile.getAbsolutePath()), MailHelper.class);
-						return msg;
-					}
-					messageBodyPart = new MimeBodyPart();
-					DataSource source = new FileDataSource(attachmentFile);
-					messageBodyPart.setDataHandler(new DataHandler(source));
-					messageBodyPart.setFileName(attachmentFile.getName());
-					multipart.addBodyPart(messageBodyPart);
-				}
-				// Put parts in message
-				msg.setContent(multipart);
-			} else {
-				// without attachment everything is easy, just set as text
-				msg.setText(body, "utf-8");
-			}
-			msg.setSentDate(new Date());
-			msg.saveChanges();
-		} catch (MessagingException e) {
-			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
-			Tracing.logWarn("Could not create MimeMessage", e, MailHelper.class);
-		}
-		//
-		return msg;
-	}
 	
 	/**
 	 * Send an email message to the given TO, CC and BCC address. The result will
 	 * be stored in the result object. The message can contain attachments.<br>
 	 * At this point HTML mails are not supported.
 	 * 
-	 * @param from Address used as sender address. Must not be NULL
+	 * fxdiff: change from/replyto, see FXOLAT-74
+	 * @param replyTo Address used as reply-to address. The real sender is a no-reply-adress (see config: mailFrom). Must not be NULL
 	 * @param recipients Address array used as sender addresses. Must not be NULL
 	 *          and contain at lease one address
 	 * @param recipientsCC Address array used as CC addresses. Can be NULL
@@ -218,34 +138,10 @@ public class MailHelper {
 	 * @param subject Subject text of message. Must not be NULL
 	 * @param attachments File array used as attachments. Can be NULL
 	 * @param result MailerResult object that stores the result code
-	 */
-	public static void sendMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
-			String subject, File[] attachments, MailerResult result) {
-		//
-		MimeMessage msg = createMessage(from, recipients, recipientsCC, recipientsBCC, body, subject, attachments, result);
-		sendMessage(msg, result);
-	}
-	/**
-	 * send email with MimeMessage available
-	 * @param msg
-	 * @param result
-	 */
-	public static void sendMessage(MimeMessage msg, MailerResult result){
-		try{
-			if (mailhost==null || mailhost.length()==0 || mailhost.equalsIgnoreCase("disabled")) {
-				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
-				Tracing.logInfo("Did not send mail, mailhost undefined", MailHelper.class);
-				return;
-			}
-			if (result.getReturnCode() == MailerResult.OK) {
-				// now send the mail
-				Transport.send(msg);
-			}
-		} catch (MessagingException e) {
-			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
-			Tracing.logWarn("Could not send mail", e, MailHelper.class);
-		}
-	}
+
+	//fxdiff VCRP-16: intern mail system
+	//private static void sendMessage(Address from, Address[] recipients, Address[] recipientsCC, Address[] recipientsBCC, String body,
+	//		String subject, File[] attachments, MailerResult result)
 	
 	/**
 	 * @return the maximum size allowed for attachements in MB (default 5MB)
@@ -282,11 +178,27 @@ public class MailHelper {
 		}
 		// mail sent by a system user
 		User user = sender.getUser();
-		String institution = user.getProperty(UserConstants.INSTITUTIONALNAME, null);
-		if (institution == null) institution = "";
-		return trans.translate("footer.with.userdata", new String[] { user.getProperty(UserConstants.FIRSTNAME, null), user.getProperty(UserConstants.LASTNAME, null), sender.getName(),
-				institution, Settings.getServerContextPathURI() });
 
+		// FXOLAT-356: separate context for mail footer
+		// username / server-url are always first [0], [1].		
+		UserManager um = UserManager.getInstance();
+		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(MailHelper.class.getCanonicalName(), false);
+		ArrayList<String> uProps = new ArrayList<String>(userPropertyHandlers.size()+2);
+		uProps.add(sender.getName());
+		uProps.add(Settings.getServerContextPathURI());
+		
+		for (Iterator<UserPropertyHandler> iterator = userPropertyHandlers.iterator(); iterator.hasNext();) {
+			UserPropertyHandler handler = iterator.next();
+			uProps.add(handler.getUserProperty(user, locale));			
+		}
+		// add empty strings to prevent non-replaced wildcards like "{5}" etc. in emails.
+		while (uProps.size() < 15){
+			uProps.add("");
+		}
+		
+		String[] userProps = new String[]{};
+		userProps = ArrayHelper.toArray(uProps);
+		return trans.translate("footer.with.userdata", userProps);
 	}
 	
 	public static String getTitleForFailedUsersError(Locale locale) {

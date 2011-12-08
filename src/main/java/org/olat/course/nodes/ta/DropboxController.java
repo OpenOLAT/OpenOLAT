@@ -54,6 +54,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -275,7 +277,9 @@ public class DropboxController extends BasicController {
 							}
 						};
 							
-						MailerResult result = MailerWithTemplate.getInstance().sendMail(ureq.getIdentity(), null, null, mailTempl, null);
+						//fxdiff VCRP-16: intern mail system
+						MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+						MailerResult result = MailerWithTemplate.getInstance().sendMail(context, ureq.getIdentity(), null, null, mailTempl, null);
 						if(result.getFailedIdentites().size() > 0) {
 							List<Identity> disabledIdentities = new ArrayList<Identity>();
 							disabledIdentities = result.getFailedIdentites();

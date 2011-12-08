@@ -119,6 +119,8 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			// collect all identities in learning groups
 			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromLearningGroup(null));
+			//fxdiff VCRP-1,2: access control of resources
+			identitiesInGroups.addAll(cgm.getParticipants());
 			
 			// all identities with result and/or in learning groups
 			HashSet<Identity> identitiesAll = new HashSet<Identity>();
@@ -138,6 +140,8 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			// collect all identities in learning groups
 			HashSet<Identity> identitiesInGroups = new HashSet<Identity>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromLearningGroup(null));
+			//fxdiff VCRP-1,2: access control of resources
+			identitiesInGroups.addAll(cgm.getParticipants());
 			allIdentities.addAll(identitiesInGroups);
 			
 			// collect all learning groups

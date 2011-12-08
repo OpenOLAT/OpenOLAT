@@ -51,6 +51,8 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
@@ -190,7 +192,9 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 				} else {
 					ccIdentities = null;
 				}
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(ownerList, ccIdentities, null,
+				//fxdiff VCRP-16: intern mail system
+				MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, ownerList, ccIdentities, null,
 						mailNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				StringBuilder errorMessage = new StringBuilder();
 				StringBuilder warningMessage = new StringBuilder();

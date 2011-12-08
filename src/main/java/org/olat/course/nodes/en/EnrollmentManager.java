@@ -36,6 +36,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -166,7 +168,9 @@ public class EnrollmentManager  extends BasicManager {
 		// 3. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createRemoveMyselfMailTemplate(enrolledGroup, identity);
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-		MailerResult mailerResult = mailer.sendMail(identity, null, null, mailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 	}
 
@@ -189,7 +193,9 @@ public class EnrollmentManager  extends BasicManager {
 		// 3. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createRemoveWaitinglistMailTemplate(enrolledWaitingListGroup, identity);
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-		MailerResult mailerResult = mailer.sendMail(identity, null, null, mailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 	}
 
@@ -332,7 +338,9 @@ public class EnrollmentManager  extends BasicManager {
 		// 4. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createAddMyselfMailTemplate(group, identity);
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-		MailerResult mailerResult = mailer.sendMail(identity, null, null, mailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 
 
@@ -368,7 +376,9 @@ public class EnrollmentManager  extends BasicManager {
 		// 4. Send notification mail
 		MailTemplate mailTemplate = BGMailHelper.createAddWaitinglistMailTemplate(group, identity);
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-		MailerResult mailerResult = mailer.sendMail(identity, null, null, mailTemplate, null);
+		//fxdiff VCRP-16: intern mail system
+		MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+		MailerResult mailerResult = mailer.sendMail(context, identity, null, null, mailTemplate, null);
 		MailHelper.printErrorsAndWarnings(mailerResult, wControl, trans.getLocale());
 
 		return true;

@@ -54,6 +54,12 @@ public class SendMailFormatterForCourse implements MailFormatter {
 		this.translator = translator;
 		this.businessPath = businessPath;
 	}
+	
+	@Override
+	//fxdiff VCRP-16: intern mail system
+	public String getBusinessPath() {
+		return businessPath;
+	}
 
 	@Override
 	public String getSubject(InfoMessage msg) {

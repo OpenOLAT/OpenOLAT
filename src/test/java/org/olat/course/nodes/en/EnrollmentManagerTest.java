@@ -33,6 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
@@ -54,6 +55,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -252,7 +254,50 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	public DTabs getDTabs(){return null;};
 	public WindowControlInfo getWindowControlInfo(){return null;};
 	public void makeFlat(){};
-	public BusinessControl getBusinessControl() {return null;}
+	public BusinessControl getBusinessControl() {
+		
+		BusinessControl control = new BusinessControl() {
+
+			@Override
+			public String getAsString() {
+				return null;
+			}
+
+			@Override
+			public List<ContextEntry> getEntries() {
+				return null;
+			}
+
+			@Override
+			public ContextEntry popLauncherContextEntry() {
+				return null;
+			}
+
+			@Override
+			public ContextEntry getCurrentContextEntry() {
+				return null;
+			}
+
+			@Override
+			public void setCurrentContextEntry(ContextEntry cw) {
+				//
+			}
+
+			@Override
+			public void dropLauncherEntries() {
+				//
+			}
+
+			@Override
+			public boolean hasContextEntry() {
+				return false;
+			}
+			
+		};
+		
+		return control;
+		
+	}
 
 	public WindowBackOffice getWindowBackOffice() {
 		// TODO Auto-generated method stub

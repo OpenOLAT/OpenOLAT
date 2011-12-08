@@ -466,6 +466,16 @@ class TestUser implements User {
 			public void setLanguage(String l) {}
 
 			public void setPresenceMessagesPublic(boolean b) {}
+
+			@Override
+			public String getReceiveRealMail() {
+				return "false";
+			}
+
+			@Override
+			public void setReceiveRealMail(String receiveRealMail) {
+				//
+			}
 		});
 	}
 

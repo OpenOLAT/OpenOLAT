@@ -52,6 +52,8 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailLoggingAction;
 
@@ -207,10 +209,12 @@ public class ContactFormController extends BasicController {
 				//
 				boolean success = false;
 				try {
-					List<File> attachments = cntctForm.getAttachments();		
-					success = emailer.sendEmail(cntctForm.getEmailToContactLists(), cntctForm.getSubject(), cntctForm.getBody(), attachments);
+					List<File> attachments = cntctForm.getAttachments();
+					//fxdiff VCRP-16: intern mail system		
+					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+					success = emailer.sendEmail(context, cntctForm.getEmailToContactLists(), cntctForm.getSubject(), cntctForm.getBody(), attachments);
 					if(cntctForm.isTcpFrom()) {
-						success = emailer.sendEmailCC(cntctForm.getEmailFrom(), cntctForm.getSubject(), cntctForm.getBody(), attachments);
+						success = emailer.sendEmailCC(context, cntctForm.getEmailFrom(), cntctForm.getSubject(), cntctForm.getBody(), attachments);
 					}
 				} catch (AddressException e) {
 					//error in recipient email address(es)

@@ -135,6 +135,8 @@ public class ChangePasswordController extends BasicController implements Support
 					String newPwd = chPwdForm.getNewPasswordValue();
 					if(OLATAuthManager.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {
 						//TODO: verify that we are NOT in a transaction (changepwd should be commited immediately)				
+						// fxdiff: we need this event for the afterlogin-controller
+						fireEvent(ureq, Event.DONE_EVENT);
 						getLogger().audit("Changed password for identity."+provenIdent.getName());
 						showInfo("password.successful");
 					} else {

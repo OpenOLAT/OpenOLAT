@@ -28,6 +28,7 @@ import java.util.Locale;
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.hibernate.Hibernate;
 import org.olat.basesecurity.AuthHelper;
@@ -45,8 +46,8 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.manager.MailManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 
@@ -58,7 +59,7 @@ import org.olat.properties.PropertyManager;
 public class RegistrationManager extends BasicManager {
 
 	public final String PW_CHANGE = "PW_CHANGE";
-	protected final String REGISTRATION = "REGISTRATION";
+	public final String REGISTRATION = "REGISTRATION";//fxdiff FXOLAT-113: business path in DMZ
 	public static final String EMAIL_CHANGE = "EMAIL_CHANGE";
 	protected static final int REG_WORKFLOW_STEPS = 5;
 	protected static final int PWCHANGE_WORKFLOW_STEPS = 4;
@@ -101,7 +102,8 @@ public class RegistrationManager extends BasicManager {
 		Address from;
 		Address[] to;
 		try {
-			from = new InternetAddress(WebappHelper.getMailConfig("mailFrom"));
+			// fxdiff: change from/replyto, see FXOLAT-74
+			from = new InternetAddress(WebappHelper.getMailConfig("mailReplyTo"));
 			to = new Address[] { new InternetAddress(notificationMailAddress)};
 		} catch (AddressException e) {
 			Tracing.logError("Could not send registration notification message, bad mail address", e, RegistrationManager.class);
@@ -116,7 +118,9 @@ public class RegistrationManager extends BasicManager {
 		String subject = trans.translate("reg.notiEmail.subject", userParams);
 		String body = trans.translate("reg.notiEmail.body", userParams);
 		
-		MailHelper.sendMessage(from, to , null, null, body, subject, null, result);
+		//fxdiff VCRP-16: intern mail system
+		MimeMessage msg = MailManager.getInstance().createMimeMessage(from, to, null, null, body, subject, null, result);
+		MailManager.getInstance().sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
 			Tracing.logError("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), RegistrationManager.class);			
 		}

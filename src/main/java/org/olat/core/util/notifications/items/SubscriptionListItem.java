@@ -68,13 +68,13 @@ public class SubscriptionListItem {
 	public String getDescription() {
 		return description;
 	}
-
-	public String getIconCssClass() {
-		return iconCssClass;
-	}
 	
 	public String getDescriptionTooltip() {
 		return descriptionTooltip;
+	}
+
+	public String getIconCssClass() {
+		return iconCssClass;
 	}
 
 	/**
@@ -121,7 +121,9 @@ public class SubscriptionListItem {
 			sb.append(link);
 			sb.append("\">");
 		}
-		sb.append(description.trim());
+		if (StringHelper.containsNonWhitespace(description)) {
+			sb.append(description.trim());
+		}
 		if (StringHelper.containsNonWhitespace(link)) sb.append("</a>");
 		sb.append(" ").append(datePart.trim());
 		sb.append("</li>");

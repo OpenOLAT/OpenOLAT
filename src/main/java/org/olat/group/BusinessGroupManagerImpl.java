@@ -68,6 +68,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -630,9 +632,9 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		MailTemplate mailTemplate = BGMailHelper.createDeleteGroupMailTemplate(businessGroupTodelete, ureq.getIdentity());
 		if (mailTemplate != null) {
 			//fxdiff VCRP-16: intern mail system
-		//TODO SR MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
-		//TODO SR MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, null, mailTemplate, null);
-		//TODO SR MailHelper.printErrorsAndWarnings(mailerResult, wControl, ureq.getLocale());
+			MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, null, mailTemplate, null);
+			MailHelper.printErrorsAndWarnings(mailerResult, wControl, ureq.getLocale());
 		}
 		
 	}
@@ -1643,8 +1645,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 						if (mailTemplate != null) {
 							MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 							//fxdiff VCRP-16: intern mail system
-						//TODO SR MailContext context = new MailContextImpl("[BusinessGroup:" + group.getKey() + "]");
-							//TODO SR MailerResult mailerResult = mailer.sendMail(context, firstWaitingListIdentity, null, null, mailTemplate, null);
+							MailContext context = new MailContextImpl("[BusinessGroup:" + group.getKey() + "]");
+							MailerResult mailerResult = mailer.sendMail(context, firstWaitingListIdentity, null, null, mailTemplate, null);
 							// Does not report errors to current screen because this is the identity who triggered the transfer
 							Tracing.logWarn("Could not send WaitinglistTransferMail for identity=" + firstWaitingListIdentity.getName() , BusinessGroupManagerImpl.class);
 						}						

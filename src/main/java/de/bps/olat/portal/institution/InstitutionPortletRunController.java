@@ -183,7 +183,7 @@ public class InstitutionPortletRunController extends BasicController {
 						DTab dt = dts.getDTab(ores);
 						if (dt == null) {
 							// does not yet exist -> create and add
-							dt = dts.createDTab(ores, re.getDisplayname());
+							dt = dts.createDTab(ores, re, re.getDisplayname());
 							if (dt == null) return;
 							Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
 							dt.setController(launchController);

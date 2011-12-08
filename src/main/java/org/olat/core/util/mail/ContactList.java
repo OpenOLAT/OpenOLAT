@@ -22,17 +22,17 @@
 package org.olat.core.util.mail;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.Tracing;
+import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -50,14 +50,13 @@ import org.olat.core.util.StringHelper;
  * @author patrick
  */
 
-public class ContactList {
-
+public class ContactList extends LogDelegator {
 	private String name;
 	private String description;
 	//container for addresses contributed as strings
-	private Hashtable stringEmails = new Hashtable();
+	private Map<String, String> stringEmails = new Hashtable<String, String>();
 	//container for addresses contributed as identites
-	private Hashtable identiEmails = new Hashtable();
+	private Map<String, Identity> identiEmails = new Hashtable<String, Identity>();
 	private boolean emailPrioInstitutional = false;
 
 	/**
@@ -116,11 +115,21 @@ public class ContactList {
 	 */
 	public void add(Identity identity) {
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+		//fxdiff VCRP-5
+		if (email == null) {
+			logError("No email available for identity::" + identity.getName() + " - can not add to contact list", null);
+			return;
+		}
 		identiEmails.put(keyFrom(email), identity);
 	}
 	
 	public void remove(Identity identity) {
 		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+		//fxdiff VCRP-5
+		if (email == null) {
+			logError("No email available for identity::" + identity.getName() + " - can not remove from contact list", null);
+			return;
+		}
 		identiEmails.remove(keyFrom(email));
 	}
 
@@ -134,23 +143,44 @@ public class ContactList {
 	}
 
 	/**
+	 * ContactList-name as String encoded according to
+	 * http://www.ietf.org/rfc/rfc2047.txt
+	 * 
+	 * @return String encoded according to RFC2047
+	 */
+	public String getRFC2047Name() {
+		String rfc2047name;
+		// try to MIME-encode the name, if this fails, return the name un-encoded  
+		try {
+			rfc2047name = javax.mail.internet.MimeUtility.encodeWord(name, "UTF-8", null);
+		}
+		catch (java.io.UnsupportedEncodingException e) {
+			logWarn("Error MIME-encoding name: " + e, e);
+			rfc2047name = name;
+		}
+
+		return rfc2047name;
+	}
+
+
+	/**
 	 * ContactList-name as String formatted according to <a href =
-	 * "http://www.rfc.net/rfc2822.html"> RFC2822 </a>
+	 * "http://www.ietf.org/rfc/rfc2822.txt"> RFC2822 </a>
 	 * 
 	 * @return
 	 */
 	public String getRFC2822Name() {
-		return name + ":";
+		return getRFC2047Name() + ":";
 	}
 
 	/**
 	 * ContactList-name and e-mail adresses as String formatted according to
-	 * http://www.rfc.net/rfc2822.html
+	 * http://www.ietf.org/rfc/rfc2822.txt
 	 * 
 	 * @return
 	 */
 	public String getRFC2822NameWithAddresses() {
-		return name + ":" + toString() + ";";
+		return getRFC2822Name() + toString() + ";";
 	}
 
 	/**
@@ -168,30 +198,30 @@ public class ContactList {
 	 * 
 	 * @return
 	 */
-	public ArrayList getEmailsAsStrings() {
-		ArrayList ret = new ArrayList(stringEmails.values());
+	//fxdiff VCRP-16: intern mail system
+	public List<String> getEmailsAsStrings() {
+		List<String> ret = new ArrayList<String>(stringEmails.values());
 		/*
 		 * if priority is on institutional email get all the institutional emails
 		 * first, if they are present, remove the identity from the hashtable. If
 		 * they were not present, the user email is used in the next loop.
 		 */
-		Enumeration enumeration = identiEmails.elements();
+		List<Identity> copy = new ArrayList<Identity>(identiEmails.values());
 		String addEmail = null;
 		if (emailPrioInstitutional) {
-			while (enumeration.hasMoreElements()) {
-				Identity tmp = (Identity) enumeration.nextElement();
+			for (Iterator<Identity> it=copy.iterator(); it.hasNext(); ) {
+				Identity tmp = it.next();
 				addEmail = tmp.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
 				if (addEmail != null) {
 					ret.add(addEmail);
-					identiEmails.remove(tmp);
+					it.remove();
 				}
 			}
 		}
 		/*
 		 * loops over the (remaining) identities, fetches the user email.
 		 */
-		while (enumeration.hasMoreElements()) {
-			Identity tmp = (Identity) enumeration.nextElement();
+		for (Identity tmp : copy){
 			ret.add(tmp.getUser().getProperty(UserConstants.EMAIL, null));
 		}
 		return ret;
@@ -215,13 +245,12 @@ public class ContactList {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		String retVal = "";
 		String sep = "";
-		ArrayList emails = getEmailsAsStrings();
-		Iterator iter = emails.iterator();
-		while (iter.hasNext()) {
-			retVal += sep + (String) iter.next();
+		for (String email:getEmailsAsStrings()) {
+			retVal += sep + email;
 			sep = ", ";
 		}
 		return retVal;
@@ -232,10 +261,9 @@ public class ContactList {
 	 * 
 	 * @param listOfIdentity List containing Identites
 	 */
-	public void addAllIdentites(List listOfIdentity) {
-		Iterator iter = listOfIdentity.iterator();
-		while (iter.hasNext()) {
-			add((Identity) iter.next());
+	public void addAllIdentites(List<Identity> listOfIdentity) {
+		for (Identity identity:listOfIdentity) {
+			add(identity);
 		}
 	}
 
@@ -250,11 +278,11 @@ public class ContactList {
 		return InternetAddress.parse(toString());
 	}
 
-	Hashtable getStringEmails() {
+	public Map<String,String> getStringEmails() {
 		return stringEmails;
 	}
 
-	Hashtable getIdentiEmails() {
+	public Map<String,Identity> getIdentiEmails() {
 		return identiEmails;
 	}
 
@@ -265,7 +293,7 @@ public class ContactList {
 
 	private void setName(String nameP) {
 		if (!StringHelper.containsNoneOfCoDouSemi(nameP)){
-			Tracing.logWarn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT,null,ContactList.class);
+			logWarn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT, null);
 			//replace bad chars with bad char in rfc compliant comments
 			nameP = nameP.replaceAll(":","¦");
 			nameP = nameP.replaceAll(";","_");

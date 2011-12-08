@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 
@@ -98,11 +99,8 @@ public class ContactMessage {
 	}
 	
 	private ContactList cleanEMailList(ContactList emailList) {
-		Hashtable identityEmails = emailList.getIdentiEmails();
-		Enumeration enumeration = identityEmails.elements();
 		String value = "";
-		while (enumeration.hasMoreElements()) {
-			Identity identity = (Identity) enumeration.nextElement();
+		for (Identity identity: emailList.getIdentiEmails().values()) {
 			List<Identity> singleIdentityList = new ArrayList<Identity>();
 			singleIdentityList.add(identity);
 			MailerResult result = new MailerResult();

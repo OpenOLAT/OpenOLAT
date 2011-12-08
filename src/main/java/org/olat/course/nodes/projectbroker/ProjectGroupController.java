@@ -38,6 +38,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ActionType;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -159,7 +161,9 @@ public class ProjectGroupController extends BasicController {
 				} else {
 					ccIdentities = null;	
 				}
-				MailerResult mailerResult = mailer.sendMailAsSeparateMails(identitiesMoveEvent.getMovedIdentities(), ccIdentities, null, mailTemplate, null);
+				//fxdiff VCRP-16: intern mail system
+				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+				MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), ccIdentities, null, mailTemplate, null);
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), urequest.getLocale());
 			}
 			fireEvent(urequest, Event.CHANGED_EVENT );		

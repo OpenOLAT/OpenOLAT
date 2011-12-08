@@ -38,6 +38,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 	"classpath*:/org/olat/core/test/_spring/webapphelperMock.xml",
 	"classpath*:/org/olat/core/util/i18n/_spring/i18nCorecontext.xml",
 	"classpath*:/org/olat/core/test/_spring/coordinatorMock.xml",
+	//fxdiff VCRP-16: intern mail system
+	"classpath*:/org/olat/core/test/_spring/mailModuleMock.xml",
 	"classpath*:/org/olat/core/util/i18n/devtools/_spring/devtoolsCorecontext.xml",
 	"classpath*:/org/olat/core/util/_spring/utilCorecontext.xml"})
 

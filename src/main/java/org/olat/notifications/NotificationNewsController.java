@@ -25,7 +25,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -119,7 +118,7 @@ class NotificationNewsController extends BasicController implements Activateable
 		
 		newsVC.contextPut("subs", subs);
 		subsInfoMap = NotificationHelper.getSubscriptionMap(getLocale(), true, compareDate, subs);
-		NotificationSubscriptionAndNewsFormatter subsFormatter = new NotificationSubscriptionAndNewsFormatter(compareDate, getTranslator(), subsInfoMap);
+		NotificationSubscriptionAndNewsFormatter subsFormatter = new NotificationSubscriptionAndNewsFormatter(getTranslator(), subsInfoMap);
 		newsVC.contextPut("subsFormatter", subsFormatter);
 		return subs;
 	}

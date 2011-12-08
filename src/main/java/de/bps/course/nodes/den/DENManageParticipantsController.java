@@ -39,6 +39,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
@@ -239,7 +241,9 @@ public class DENManageParticipantsController extends BasicController {
 				} else {
 					ccIdentities = null;
 				}
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				//fxdiff VCRP-16: intern mail system
+				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
@@ -252,7 +256,9 @@ public class DENManageParticipantsController extends BasicController {
 				} else {
 					ccIdentities = null;
 				}
-				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
+				//fxdiff VCRP-16: intern mail system
+				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+				MailerResult mailerResult = MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, added, null, null, addedNotificationCtr.getMailTemplate(), ureq.getIdentity());
 				MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();

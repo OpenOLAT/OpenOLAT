@@ -176,8 +176,7 @@ public abstract class UserManager extends BasicManager {
 		return userNameAndPasswordSyntaxChecker.syntaxCheckOlatLogin(login);
 	}
 
-	// only package scope, used by user impl
-	UserPropertiesConfig getUserPropertiesConfig() {
+	public UserPropertiesConfig getUserPropertiesConfig() {
 		return userPropertiesConfig;
 	}
 
@@ -210,6 +209,9 @@ public abstract class UserManager extends BasicManager {
 	public boolean isUserViewReadOnly(String usageIdentifyer, UserPropertyHandler propertyHandler) {
 		return userPropertiesConfig.isUserViewReadOnly(usageIdentifyer, propertyHandler);
 	}
+	
+  // fxdiff: check also for emails in change-workflow
+	public abstract boolean isEmailInUse(String email);
 
 	/**
 	 * Spring setter

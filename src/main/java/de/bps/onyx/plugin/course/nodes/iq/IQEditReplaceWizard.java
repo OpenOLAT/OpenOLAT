@@ -32,6 +32,8 @@ import org.olat.core.gui.control.generic.wizard.WizardController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerWithTemplate;
@@ -147,7 +149,9 @@ public class IQEditReplaceWizard extends WizardController {
 					recipientsCC = new ArrayList<Identity>();
 					recipientsCC.add(ureq.getIdentity());
 				}
-				MailerWithTemplate.getInstance().sendMailAsSeparateMails(learners, recipientsCC, null, mailCtr.getMailTemplate(), ureq.getIdentity());
+				//fxdiff VCRP-16: intern mail system
+				MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+				MailerWithTemplate.getInstance().sendMailAsSeparateMails(context, learners, recipientsCC, null, mailCtr.getMailTemplate(), ureq.getIdentity());
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == searchCtr && event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {

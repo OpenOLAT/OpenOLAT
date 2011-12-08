@@ -61,7 +61,7 @@ public class ContextualSubscriptionController extends BasicController {
 		myContent = createVelocityContainer("consubs");
 		
 		if (subscriptionContext == null) {
-			setInitialComponent(new Panel("empty:nosubscription"));
+			putInitialPanel(new Panel("empty:nosubscription"));
 			return;
 		}
 		

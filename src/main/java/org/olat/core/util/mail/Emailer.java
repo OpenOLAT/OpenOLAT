@@ -23,16 +23,12 @@ package org.olat.core.util.mail;
 
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
-import javax.mail.Message.RecipientType;
 import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.helpers.Settings;
@@ -43,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.manager.MailManager;
 
 /**
  * 
@@ -54,6 +51,7 @@ import org.olat.core.util.i18n.I18nManager;
  */
 public class Emailer {
 	private String mailfrom;
+	private Identity mailFromIdentity;
 	private String footer; // footer appended to the end of the mail
 
 	/**
@@ -63,10 +61,19 @@ public class Emailer {
 	 * @param locale locale that should be used for message localization
 	 */
 	public Emailer(Locale locale) {
-		this.mailfrom =  WebappHelper.getMailConfig("mailFrom");
+		this.mailfrom =  WebappHelper.getMailConfig("mailReplyTo");
 		// initialize the mail footer with info about this OLAt installation
 		PackageTranslator trans = new PackageTranslator(Util.getPackageName(Emailer.class), locale);
 		footer = trans.translate("footer.no.userdata", new String[] { Settings.getServerContextPathURI() });
+	}
+
+	//fxdiff
+	public String getFooter() {
+		return footer;
+	}
+
+	public void setFooter(String footer) {
+		this.footer = footer;
 	}
 
 	/**
@@ -102,17 +109,12 @@ public class Emailer {
 			}
 		}
 		this.mailfrom = myMailfrom;
+		//fxdiff VCRP-16: intern mail system
+		this.mailFromIdentity = mailFromIdentity;
 		// initialize the mail footer with infos about this OLAT installation and the user who sent the mail
 		User user = mailFromIdentity.getUser();
-		
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
-		
-		PackageTranslator trans = new PackageTranslator(Util.getPackageName(Emailer.class), locale);
-		String institution = user.getProperty(UserConstants.INSTITUTIONALNAME, null);
-		if (institution == null) institution = "";
-		footer = trans.translate("footer.with.userdata", new String[] { user.getProperty(UserConstants.FIRSTNAME, null), user.getProperty(UserConstants.LASTNAME, null), mailFromIdentity.getName(),
-				institution, Settings.getServerContextPathURI()  });
-
+		footer = MailHelper.getMailFooter(locale, mailFromIdentity);
 	}
 
 	/**
@@ -133,59 +135,20 @@ public class Emailer {
 	 * @throws AddressException
 	 * @throws MessagingException
 	 */
-	public boolean sendEmail(List<ContactList> listOfContactLists, String subject, String body) throws AddressException, MessagingException {
-		return sendEmail(listOfContactLists, subject, body, null);
+	//fxdiff VCRP-16: intern mail system
+	public boolean sendEmail(MailContext context, List<ContactList> listOfContactLists, String subject, String body) throws AddressException, MessagingException {
+		return sendEmail(context, listOfContactLists, subject, body, null);
 	}
-	
-	public boolean sendEmail(List<ContactList> listOfContactLists, String subject, String body, List<File> attachments) throws AddressException, MessagingException {
-		/*
-		 * if the mailhost was not set in the olat.local.properties, we assume that no
-		 * emailing is wished.
-		 */
-		if (MailHelper.getMailhost() == null || MailHelper.getMailhost().equals("") || ((MailHelper.getMailhost() instanceof String) && ((String)MailHelper.getMailhost()).equalsIgnoreCase("disabled"))) return false;
-		MimeMessage msg = MailHelper.createMessage();
-		msg.setFrom(new InternetAddress(this.mailfrom));
-		msg.setSubject(subject, "utf-8");
-		msg.setText(body + footer, "utf-8");
-		msg.setSentDate(new Date());
-		for (ContactList tmp : listOfContactLists) {
-			InternetAddress groupName[] = InternetAddress.parse(tmp.getRFC2822Name() + ";");
-			InternetAddress members[] = tmp.getEmailsAsAddresses();
-			msg.addRecipients(RecipientType.TO, groupName);
-			msg.addRecipients(RecipientType.BCC, members);
-		}
-		msg.saveChanges();
-		
-		File[] attachmentsArray = null;
-		if(attachments != null && !attachments.isEmpty()) {
-			attachmentsArray = attachments.toArray(new File[attachments.size()]);
-		}
-		
-		MailerResult result = new MailerResult();
-		MailHelper.sendMessage(msg.getFrom()[0], msg.getRecipients(RecipientType.TO), msg.getRecipients(RecipientType.CC), msg
-				.getRecipients(RecipientType.BCC), body + footer, subject, attachmentsArray, result);
+	//fxdiff VCRP-16: intern mail system
+	public boolean sendEmail(MailContext context, List<ContactList> listOfContactLists, String subject, String body, List<File> attachments) throws AddressException, MessagingException {
+		body += footer;
+		MailerResult result = MailManager.getInstance().sendMessage(context, mailFromIdentity, mailfrom, null, null, null, null, listOfContactLists, null, subject, body, attachments);
 		return result.getReturnCode() == MailerResult.OK;
 	}
-	
-	public boolean sendEmailCC(String cc, String subject, String body, List<File> attachments) throws AddressException, MessagingException {
-		if (MailHelper.getMailhost() == null || MailHelper.getMailhost().equals("") || ((MailHelper.getMailhost() instanceof String) && ((String)MailHelper.getMailhost()).equalsIgnoreCase("disabled"))) return false;
-		MimeMessage msg = MailHelper.createMessage();
-		msg.setFrom(new InternetAddress(mailfrom));
-		msg.setRecipients(RecipientType.CC, InternetAddress.parse(cc));
-		msg.setSubject(subject, "utf-8");
-		msg.setText(body + footer, "utf-8");
-		msg.setSentDate(new Date());
-		msg.saveChanges();
-		MailerResult result = new MailerResult();
-		
-		File[] attachmentsArray = null;
-		if(attachments != null && !attachments.isEmpty()) {
-			attachmentsArray = attachments.toArray(new File[attachments.size()]);
-		}
-		
-		MailHelper.sendMessage(msg.getFrom()[0], msg.getRecipients(RecipientType.TO), msg.getRecipients(RecipientType.CC), msg
-				.getRecipients(RecipientType.BCC), body + footer, subject, attachmentsArray, result);
-		return true;
+	//fxdiff VCRP-16: intern mail system
+	public boolean sendEmailCC(MailContext context, Identity cc, String subject, String body, List<File> attachments) throws AddressException, MessagingException {
+		MailerResult result = MailManager.getInstance().sendMessage(context, mailFromIdentity, mailfrom, null, null, cc, null, null, null, subject, body, attachments);
+		return result.getReturnCode() == MailerResult.OK;
 	}
 
 	/**
@@ -198,37 +161,12 @@ public class Emailer {
 	 * @throws MessagingException
 	 * TODO:gs handle exceptions internally and may return some error codes or so to get rid of dependecy of mail/activatoin jars in olat
 	 */
+	//fxdiff VCRP-16: intern mail system
 	public boolean sendEmail(String mailto, String subject, String body) throws AddressException, SendFailedException, MessagingException {
-		return sendEmail(mailfrom, mailto, subject, body);
-	}
-	
-	private boolean sendEmail(String from, String mailto, String subject, String body) throws AddressException, SendFailedException,
-			MessagingException {
-		/*
-		 * if the mailhost was not set in the olat.local.properties, we assume that no
-		 * emailing is wished.
-		 */
-		if (MailHelper.getMailhost() == null || MailHelper.getMailhost().equals("") || ((MailHelper.getMailhost() instanceof String) && ((String)MailHelper.getMailhost()).equalsIgnoreCase("disabled"))) return false;
-		MimeMessage msg = MailHelper.createMessage();
-		msg.setFrom(new InternetAddress(from));
-		msg.setRecipients(RecipientType.TO, InternetAddress.parse(mailto));
-		msg.setSubject(subject, "utf-8");
-		msg.setText(body + footer, "utf-8");
-		msg.setSentDate(new Date());
-		msg.saveChanges();
-		MailerResult result = new MailerResult();
-		MailHelper.sendMessage(msg.getFrom()[0], msg.getRecipients(RecipientType.TO), msg.getRecipients(RecipientType.CC), msg
-				.getRecipients(RecipientType.BCC), body + footer, subject, null, result);
-		return true;
-	}
-
-	static InternetAddress asInternetAddressArray(String address) {
-		InternetAddress ia = null;
-		try {
-			ia = new InternetAddress(address);
-		} catch (AddressException ae) {
-			throw new RuntimeException("Error in InternetAddress : " + address);
-		}
-		return ia;
+		//OK context
+		body += footer;
+		//TO
+		MailerResult result = MailManager.getInstance().sendMessage(null, mailFromIdentity, mailfrom, null, mailto, null, null, null, null, subject, body, null);
+		return result.getReturnCode() == MailerResult.OK;
 	}
 }

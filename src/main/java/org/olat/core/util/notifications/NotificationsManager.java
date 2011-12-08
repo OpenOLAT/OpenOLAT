@@ -232,6 +232,16 @@ public abstract class NotificationsManager extends BasicManager {
 	 */
 	public abstract SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent, Date lowerDateBoundary);
 
+	/**
+	 * Create a subscription item from info without reloading all the subscription
+	 * @param subsInfo
+	 * @param subscriber
+	 * @param locale
+	 * @param mimeTypeTitle
+	 * @param mimeTypeContent
+	 * @return
+	 */
+	public abstract SubscriptionItem createSubscriptionItem(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent);
 
 	public abstract SubscriptionInfo getNoSubscriptionInfo();
 

@@ -77,6 +77,20 @@ public interface Preferences extends Serializable {
 	public void setInformSessionTimeout(boolean b);
 	
 	/**
+	 * @return True if the user wants to receive a real e-mail too and not only a message in
+	 * the OLAT Inbox
+	 */
+	//fxdiff VCRP-16: intern mail system
+	public String getReceiveRealMail();
+
+	/**
+	 * @param receiveRealMail Set if the user wants to receive a real e-mail
+	 * and not only a message in the OLAT intern Inbox.
+	 */
+	//fxdiff VCRP-16: intern mail system
+	public void setReceiveRealMail(String receiveRealMail);
+	
+	/**
 	 * Instant Messaging preferences
 	 * When enabled the presence messages are shown public
 	 * on the user list. Only visible in settings if module is loaded

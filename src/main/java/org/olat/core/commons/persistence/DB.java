@@ -24,6 +24,7 @@ package org.olat.core.commons.persistence;
 
 import java.util.List;
 
+import org.hibernate.Query;
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
 import org.olat.core.id.Persistable;
@@ -221,4 +222,22 @@ public interface DB {
 	 * @return True if any errors occured in the previous DB call.
 	 */
 	public boolean isError();
+	
+	
+	//
+	// fxdiff
+	// Extensions used for native SQL queries
+	//
+	/**
+	 * Create a named hibernate query for the given name. Optionally the database
+	 * vendor is prepended to load database specific queries if available. Use
+	 * this only when absolutely necessary.
+	 * 
+	 * @param queryName The query name
+	 * @param vendorSpecific true: prepend the database vendor name to the query
+	 *          name, e.g. mysql_queryName; false: use queryName as is
+	 * @return the query or NULL if no such named query exists
+	 */
+	public DBQuery createNamedQuery(final String queryName, boolean vendorSpecific);
+
 }

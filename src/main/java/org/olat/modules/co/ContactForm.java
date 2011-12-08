@@ -196,9 +196,8 @@ class ContactForm extends FormBasicController {
 	/**
 	 * @return
 	 */
-	protected String getEmailFrom() {
-		String ccMail = emailFrom.getUser().getProperty(UserConstants.EMAIL, null);
-		return ccMail;
+	protected Identity getEmailFrom() {
+		return emailFrom;
 	}
 
 	/**

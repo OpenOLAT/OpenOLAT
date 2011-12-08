@@ -13,4 +13,9 @@
 
 <bean id="coordinatorManager" class="org.olat.test.CoordinatorManagerMock" />
 
+<bean class="org.olat.core.util.event.FrameworkStartupEventChannel">
+	<constructor-arg type="String" value="${node.id}" />
+	<property name="coordinatorManager" ref="coordinatorManager" />
+</bean>
+
 </beans>

@@ -40,6 +40,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 
 /**
  * 
@@ -124,7 +126,9 @@ public class InfoMessageFrontendManagerImpl extends InfoMessageFrontendManager {
 				if(!StringHelper.containsNonWhitespace(body)) {
 					body = infoMessage.getMessage();
 				}
-				send = mailer.sendEmail(contacts, subject, body);
+				//fxdiff VCRP-16: intern mail system
+				MailContext context = new MailContextImpl(mailFormatter.getBusinessPath());
+				send = mailer.sendEmail(context, contacts, subject, body);
 			} catch (AddressException e) {
 				logError("Cannot send info messages", e);
 			} catch (MessagingException e) {

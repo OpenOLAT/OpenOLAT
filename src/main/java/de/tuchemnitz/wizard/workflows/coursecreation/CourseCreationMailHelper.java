@@ -33,6 +33,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
@@ -105,7 +107,8 @@ public class CourseCreationMailHelper {
 				// nothing to do
 			}
 		};
-		return MailerWithTemplate.getInstance().sendMail(ureq.getIdentity(), null, null, template, null);
+		//fxdiff VCRP-16: intern mail system
+		return MailerWithTemplate.getInstance().sendRealMail(ureq.getIdentity(), template);
 	}
 
 }

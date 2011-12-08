@@ -54,6 +54,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
@@ -533,7 +535,9 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			} else {
 				ccIdentities = null;	
 			}
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(recipients, ccIdentities, null, mailTemplate, sender);
+			//fxdiff VCRP-16: intern mail system
+			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+			MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, recipients, ccIdentities, null, mailTemplate, sender);
 			MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 		}
 	}

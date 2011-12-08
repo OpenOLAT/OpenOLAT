@@ -59,8 +59,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.PersistsEvent;
 import org.olat.core.util.notifications.NotificationHelper;
@@ -81,7 +79,6 @@ import org.olat.group.BusinessGroupManagerImpl;
  * @author gnaegi
  */
 public class NotificationsPortletRunController extends AbstractPortletRunController implements GenericEventListener {
-	private OLog log = Tracing.createLoggerFor(NotificationsPortletRunController.class);
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
@@ -178,32 +175,21 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	 */
   protected void reloadModel(SortingCriteria sortingCriteria) {
   	if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-		notificationsList = man.getValidSubscribers(identity);
-		// calc subscriptioninfo for all subscriptions and, if only those with news are to be shown, remove the other ones
-		for (Iterator<Subscriber> it_subs = notificationsList.iterator(); it_subs.hasNext();) {
-			Subscriber subscriber = it_subs.next();
-			Publisher pub = subscriber.getPublisher();
-			try {
-				NotificationsHandler notifHandler = man.getNotificationsHandler(pub);
-				if(notifHandler == null) {
-					it_subs.remove();
-				} else {
-					SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, compareDate);
-					if (!subsInfo.hasNews()) {
-						it_subs.remove();
-					}
+  		Map<Subscriber,SubscriptionInfo> subscriptionMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
+			
+			notificationsList = new ArrayList<Subscriber>();
+			for (Iterator<Map.Entry<Subscriber, SubscriptionInfo>> it_subs = subscriptionMap.entrySet().iterator(); it_subs.hasNext();) {
+				Map.Entry<Subscriber, SubscriptionInfo> sInfo = it_subs.next();
+				Subscriber subscrer = sInfo.getKey();
+				SubscriptionInfo infos = sInfo.getValue();
+				if(infos.hasNews()) {
+					notificationsList.add(subscrer);
 				}
-			} catch(Exception e) {
-				log.error("Cannot load publisher:" + pub, e);
 			}
-		}
-		
-		notificationsList = getSortedList(notificationsList, sortingCriteria );		
-		List<PortletEntry> entries = convertNotificationToPortletEntryList(notificationsList);
-
-		Map subscriptionMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
-		notificationListModel = new NotificationsPortletTableDataModel(entries, locale, subscriptionMap);
-		tableCtr.setTableDataModel(notificationListModel);
+			notificationsList = getSortedList(notificationsList, sortingCriteria );		
+			List<PortletEntry> entries = convertNotificationToPortletEntryList(notificationsList);
+			notificationListModel = new NotificationsPortletTableDataModel(entries, locale, subscriptionMap);
+			tableCtr.setTableDataModel(notificationListModel);
   	} else {
 			reloadModel(this.getPersistentManuallySortedItems());
 		}  	

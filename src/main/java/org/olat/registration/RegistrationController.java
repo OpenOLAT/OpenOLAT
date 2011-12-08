@@ -50,7 +50,9 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.mail.manager.MailManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -228,7 +230,7 @@ public class RegistrationController extends BasicController {
 				String ip = ureq.getHttpReq().getRemoteAddr();
 				String body = null;
 				String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-				Emailer mailer = new Emailer(ureq.getLocale());
+				MailManager mailM = MailManager.getInstance();
 				//TODO eMail Vorlagen
 				String serverpath = Settings.getServerContextPathURI();
 				boolean isMailSent = false;
@@ -241,7 +243,8 @@ public class RegistrationController extends BasicController {
 							+ SEPARATOR
 							+ getTranslator().translate("reg.wherefrom", new String [] { serverpath, today, ip });
 					try {
-						if (mailer.sendEmail(email, translate("reg.subject"), body)) isMailSent = true;
+						MailerResult result = mailM.sendExternMessage(null, null, null, email, null, null, null, translate("reg.subject"), body, null, null);
+						if (MailerResult.OK == result.getReturnCode()) isMailSent = true;
 					} catch (Exception e) {
 						// nothing to do, emailSent flag is false, errors will be reported to user
 					}
@@ -252,7 +255,8 @@ public class RegistrationController extends BasicController {
 					body = translate("login.body", identity.getName()) + SEPARATOR
 							+ getTranslator().translate("reg.wherefrom", new String[] { serverpath, today, ip });
 					try {
-						isMailSent = mailer.sendEmail(email, translate("login.subject"), body);
+						MailerResult result = mailM.sendExternMessage(null, null, null, email, null, null, null, translate("login.subject"), body, null, null);
+						if (MailerResult.OK == result.getReturnCode()) isMailSent = true;
 					} catch (Exception e) {
 						// nothing to do, emailSent flag is false, errors will be reported to user
 					}

@@ -39,7 +39,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogFileParser;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.mail.Emailer;
+import org.olat.core.util.mail.manager.MailManager;
 
 /**
  * Description:<br>
@@ -54,7 +54,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	private static final ErrorFeedbackMailer INSTANCE = new ErrorFeedbackMailer();
 
 	private ErrorFeedbackMailer() {
-	// private since singleton
+		// private since singleton
 	}
 
 	protected static ErrorFeedbackMailer getInstance() {
@@ -71,67 +71,43 @@ public class ErrorFeedbackMailer implements Dispatcher {
 		String errorNr = feedback.substring(0, feedback.indexOf("\n") - 1);
 		String username = request.getParameter("username");
 		try {
-            IdentityManager im = (IdentityManager)CoreSpringFactory.getBean("core.id.IdentityManager");
+			IdentityManager im = (IdentityManager) CoreSpringFactory.getBean("core.id.IdentityManager");
 			Identity ident = im.findIdentityByName(username);
-			//if null, user may crashed befor getting a valid session, try with guest user instead
-			if (ident == null) ident = im.findIdentityByName("guest");
-			Emailer emailer = new Emailer(ident, false);
-			String errorNum = parseErrorNumber(errorNr);
-			Collection logFileEntries = LogFileParser.getErrorToday(errorNum, false);
+			// if null, user may crashed befor getting a valid session, try with
+			// guest user instead
+			if (ident == null)
+				ident = im.findIdentityByName("guest");
+			Collection<String> logFileEntries = LogFileParser.getErrorToday(errorNr, false);
 			StringBuilder out = new StringBuilder();
 			if (logFileEntries != null) {
-				for (Iterator iter = logFileEntries.iterator(); iter.hasNext();) {
-					out.append((String) iter.next());
+				for (Iterator<String> iter = logFileEntries.iterator(); iter.hasNext();) {
+					out.append(iter.next());
 				}
 			}
-			emailer.sendEmail(WebappHelper.getMailConfig("mailSupport"), "Feedback from Error Nr.: " + errorNr, request.getParameter("textarea")
-					+ "\n------------------------------------------\n\n --- from user: "+username+" ---" + out.toString());
-		} catch (AddressException e) {
+			String to = WebappHelper.getMailConfig("mailSupport");
+			String subject = "Feedback from Error Nr.: " + errorNr;
+			String body = feedback + "\n------------------------------------------\n\n --- from user: " + username
+					+ " ---" + out.toString();
+			MailManager.getInstance().sendExternMessage(ident, null, null, to, null, null, null, subject, body, null, null);
+		} catch (Exception e) {
 			// error in recipient email address(es)
 			handleException(request, e);
 			return;
-		} catch (SendFailedException e) {
-			// error in sending message
-			// CAUSE: sender email address invalid
-			handleException(request, e);
-			return;
-		} catch (MessagingException e) {
-			// error in message-subject || .-body
-			handleException(request, e);
-			return;
-		} catch (AssertException e) {
-			handleException(request, e);
-			return;
-		} catch (NullPointerException e) {
-			handleException(request, e);
-			return;
 		}
-
 	}
 
-	private String parseErrorNumber(String errorNr) {
-		// try with format N<nodeId>-E<errorCode> first
-		Pattern r1 = Pattern.compile("N[0-9]+-E[0-9]+");
-		Matcher m1 = r1.matcher(errorNr);
-		if (m1.find()) return m1.group();
-		
-		Pattern r2 = Pattern.compile("E[0-9]+");
-		Matcher m2 = r2.matcher(errorNr);
-		if (m2.find()) return m2.group();
-		return "";
-		
-	}
 
 	private void handleException(HttpServletRequest request, Exception e) {
 		String feedback = request.getParameter("textarea");
 		String username = request.getParameter("username");
-		Tracing.logError("Error sending error feedback mail to olat support (" + WebappHelper.getMailConfig("mailSupport")
-				+ ") from: " + username + " with content: " + feedback, e, this.getClass());
+		Tracing.logError("Error sending error feedback mail to olat support (" + WebappHelper.getMailConfig("mailSupport") + ") from: "
+				+ username + " with content: " + feedback, e, this.getClass());
 
 	}
 
 	/**
-	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
+	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest,
+	 *      javax.servlet.http.HttpServletResponse, java.lang.String)
 	 */
 	public void execute(HttpServletRequest request, HttpServletResponse response, String uriPrefix) {
 		sendMail(request);

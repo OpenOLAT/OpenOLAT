@@ -16,7 +16,8 @@
 
 	<!-- Hibernate SessionFactory -->
     <!-- taken from: http://www.shoesobjects.com/blog/2004/11/21/1101083542880.html -->
-    <bean id="sessionFactory" class="org.olat.core.commons.persistence.OLATLocalSessionFactoryBean">
+    <bean id="sessionFactory" class="org.olat.core.commons.persistence.OLATLocalSessionFactoryBean"
+    	depends-on="databaseUpgrader">
         <!-- Setting datasource let Spring using the LocalDataSourceConnectionProvider. Some JUnit Tests fail if not the hibernate C3P0ConnectionProvider is used.
         Not using the dataSource property in the sessionFactory means setting the connection in the hibernateProperties.
         DataSources are still defined for the Upgrader and the Statistics feature.
@@ -93,6 +94,7 @@
 
 <bean id="database" class="org.olat.core.commons.persistence.DBImpl" destroy-method="destroy">
 	<property name="sessionFactory" ref="sessionFactory"/>
+	<property name="dbvendor" value="${db.vendor}" />
 </bean>
 
 <bean id="persistenceHelper" class="org.olat.core.commons.persistence.PersistenceHelper">

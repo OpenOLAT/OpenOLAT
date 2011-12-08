@@ -54,6 +54,8 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
@@ -284,8 +286,9 @@ public class DropboxScoringViewController extends BasicController {
 							// nothing to do
 						}
 					};
-						
-					MailerResult result = MailerWithTemplate.getInstance().sendMail(student, null, null, mailTempl, null);
+					//fxdiff VCRP-16: intern mail system
+					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+					MailerResult result = MailerWithTemplate.getInstance().sendMail(context, student, null, null, mailTempl, null);
 					
 					if(result.getReturnCode() > 0) {
 						am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode());

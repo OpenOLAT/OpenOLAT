@@ -25,8 +25,10 @@
 	    	<column name="presencemessagespublic"  unique="false" not-null="false"/>
 	    </property>	
     	<property name="informSessionTimeout">
-    		<column name="informsessiontimeout" not-null="true"/>
-	    </property>	     	  
+    		<column name="informsessiontimeout"  unique="false" not-null="false" length="16"/>
+	    </property>	     
+	    
+	    <property name="receiveRealMail" column="receiverealmail" unique="false" not-null="false" length="16" type="string"/>  
     </component>
 
 	<map name="properties" table="o_userproperty" cascade="all,delete-orphan" fetch="join">

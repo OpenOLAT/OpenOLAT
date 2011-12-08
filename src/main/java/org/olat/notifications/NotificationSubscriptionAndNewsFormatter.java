@@ -20,7 +20,6 @@
  */
 package org.olat.notifications;
 
-import java.util.Date;
 import java.util.Map;
 
 import org.olat.ControllerFactory;
@@ -41,12 +40,11 @@ import org.olat.core.util.notifications.SubscriptionItem;
  * @author gnaegi
  */
 public class NotificationSubscriptionAndNewsFormatter {
-	private Date compareDate;
+
 	private Translator translator;
 	private Map<Subscriber, SubscriptionInfo> subsInfoMap;
 
-	NotificationSubscriptionAndNewsFormatter(Date compareDate, Translator translator, Map<Subscriber, SubscriptionInfo> subsInfoMap) {
-		this.compareDate = compareDate;
+	NotificationSubscriptionAndNewsFormatter(Translator translator, Map<Subscriber, SubscriptionInfo> subsInfoMap) {
 		this.translator = translator;
 		this.subsInfoMap = subsInfoMap;
 	}
@@ -103,11 +101,9 @@ public class NotificationSubscriptionAndNewsFormatter {
 	}
 
 	public SubscriptionItem getSubscriptionItem(Subscriber sub) {
+		SubscriptionInfo subsInfo = subsInfoMap.get(sub);
 		NotificationsManager notiMgr = NotificationsManager.getInstance();
-		SubscriptionItem subscrItem = notiMgr.createSubscriptionItem(sub, translator.getLocale(), SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML, compareDate);
+		SubscriptionItem subscrItem = notiMgr.createSubscriptionItem(subsInfo, sub, translator.getLocale(), SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML);
 		return subscrItem;		
 	}
-
-	
-	
 }

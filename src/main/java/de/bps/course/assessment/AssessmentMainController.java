@@ -104,6 +104,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.context.BGContextTableModel;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -704,6 +706,15 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				Identity identity = identitiyIter.next();
 				if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
 					// only add if not already in list
+					allUsersList.add(identity);
+				}
+			}
+		}
+		//fxdiff VCRP-1,2: access control of resources
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+		if(re.getParticipantGroup() != null) {
+			for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
+				if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
 					allUsersList.add(identity);
 				}
 			}

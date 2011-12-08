@@ -249,6 +249,15 @@ public class ViteroUserToGroupController extends BasicController {
 			
 			List<Identity> repoOwners = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getOwnerGroup());
 			owners.addAll(repoOwners);
+			
+			if(repoEntry.getParticipantGroup() != null) {
+				List<Identity> repoParticipants = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getParticipantGroup());
+				participants.addAll(repoParticipants);
+			}
+			if(repoEntry.getTutorGroup() != null) {
+				List<Identity> repoTutors = securityManager.getIdentitiesOfSecurityGroup(repoEntry.getTutorGroup());
+				coaches.addAll(repoTutors);
+			}
 		}
 		return new ResourceMembers(owners, coaches, participants);
 	}

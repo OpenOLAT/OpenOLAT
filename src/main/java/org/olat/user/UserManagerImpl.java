@@ -92,6 +92,28 @@ public class UserManagerImpl extends UserManager {
 		DBFactory.getInstance().saveObject(user);
 		return user;
 	}
+	
+	// fxdiff: check also for emails in change-workflow
+	public boolean isEmailInUse(String email) {
+		DB db = DBFactory.getInstance();
+		String[] emailProperties = {UserConstants.EMAIL, UserConstants.INSTITUTIONALEMAIL};
+		for(String emailProperty:emailProperties) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select count(user) from org.olat.core.id.User user where ")
+				.append("user.properties['")
+				.append(emailProperty)
+				.append("']=:email_value");
+			
+			String query = sb.toString();
+			DBQuery dbq = db.createQuery(query);
+			dbq.setString("email_value", email);
+			Number countEmail = (Number)dbq.uniqueResult();
+			if(countEmail.intValue() > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * @see org.olat.user.UserManager#findIdentityByEmail(java.lang.String)

@@ -151,7 +151,8 @@ public class BulkDeleteController extends BasicController {
 		
 		Emailer mailer = new Emailer(ureq.getLocale());
 		try {
-			mailer.sendEmail(lstAddrTO, subject, body);
+			//fxdiff VCRP-16: intern mail system
+			mailer.sendEmail(null, lstAddrTO, subject, body);
 		} catch (AddressException e) {
 			Tracing.createLoggerFor(BulkDeleteController.class).error("Notificatoin mail for bulk deletion could not be sent");
 		} catch (MessagingException e) {

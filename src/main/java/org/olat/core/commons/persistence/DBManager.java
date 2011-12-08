@@ -28,6 +28,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.Type;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
@@ -272,6 +273,34 @@ class DBManager extends BasicManager {
 		}
 		return dbq;
 	}
+	
+	DBQuery createNamedQuery(final String queryName, String dbVendor, boolean vendorSpecific) {
+		if (queryName == null) {
+			throw new AssertException("queryName must not be NULL");
+		}
+		Query q= null;
+		DBQuery dbq = null;
+		if (vendorSpecific) {
+			String finalQueryName = vendorSpecific ? dbVendor + "_" + queryName : queryName;
+			q = this.getSession().getNamedQuery(finalQueryName);
+			if (q == null) { 
+				// try fallback with normal query
+				q = this.getSession().getNamedQuery(queryName);
+			}
+			if (q == null) {
+				String msg = "Can not create namedQuery::" + finalQueryName;
+				if (vendorSpecific) {
+					msg += " for dbvendor::" + dbVendor + " and non db specific::" + queryName;
+				}
+				msg += ", named query does not exist";
+				logError(msg, null);
+			}	else {
+
+				dbq = new DBQueryImpl(q);
+			}
+		}
+		return dbq;
+	}	
 	
 	/**
 	 * @param session
