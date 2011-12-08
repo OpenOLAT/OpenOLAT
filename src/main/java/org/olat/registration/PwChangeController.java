@@ -219,8 +219,8 @@ public class PwChangeController extends BasicController {
 							// nothing to do
 						}
 					};
-						
-					MailerResult result = MailerWithTemplate.getInstance().sendMail(identity, null, null, mailTempl, null);
+					//fxdiff VCRP-16: intern mail system
+					MailerResult result = MailerWithTemplate.getInstance().sendRealMail(identity, mailTempl);
 					if(result.getReturnCode() == 0) {
 						getWindowControl().setInfo(translate("email.sent"));
 						// prepare next step
