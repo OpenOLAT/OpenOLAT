@@ -42,7 +42,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
-import org.olat.home.GuestHomeSite;
+import org.olat.home.InviteeHomeMainController;
 
 /**
  * Description:<br>
@@ -63,7 +63,7 @@ public class NotificationSubscriptionAndNewsController extends BasicController i
 
 	protected NotificationSubscriptionAndNewsController(Identity subscriberIdentity, UserRequest ureq, WindowControl wControl,
 			Date newsSinceDate) {
-		super(ureq, wControl, Util.createPackageTranslator(GuestHomeSite.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale()));
 		this.subscriberIdentity = subscriberIdentity;
 		tabbedPane = new TabbedPane("tabbedPane", getLocale());
 		tabbedPane.addListener(this);

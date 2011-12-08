@@ -240,6 +240,15 @@ public class TableRenderer implements ComponentRenderer {
 			boolean isMark = selRowUnSelectable && (selRowId == currentPosInModel);
 
 			cssClass = defineCssClassDependingOnRow(startRowId, lastVisibleRowId, i);
+			// VCRP-16
+			TableDataModel model = table.getTableDataModel();
+			if (model instanceof TableDataModelWithMarkableRows) {
+				TableDataModelWithMarkableRows markableModel = (TableDataModelWithMarkableRows) model;
+				String rowCss = markableModel.getRowCssClass(i);
+				if (rowCss != null) {
+					cssClass += " " + rowCss;
+				}
+			}
 
 			target.append("<tr class=\"").append(cssClass).append(CLOSE_HTML_BRACE);
 			appendSingleDataRow(renderer, target, ubu, table, iframePostEnabled, cols, i, currentPosInModel, isMark);

@@ -265,6 +265,15 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 				secGroupPartipiciant = ((BusinessGroup) bGroup).getPartipiciantGroup();
 				BusinessGroupManagerImpl.getInstance().removeParticipantsAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), ((BusinessGroup) bGroup), flagsRightgroup);
 			}
+			//fxdiff VCRP-1,2: access control of resources
+			if(repositoryEntry.getParticipantGroup() != null) {
+				secGroupPartipiciant = repositoryEntry.getParticipantGroup();
+				BusinessGroupManagerImpl.getInstance().removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
+			}
+			if(repositoryEntry.getTutorGroup() != null) {
+				secGroupPartipiciant = repositoryEntry.getTutorGroup();
+				BusinessGroupManagerImpl.getInstance().removeAndFireEvent(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), secGroupPartipiciant);
+			}
 		}
 	}
   

@@ -37,6 +37,7 @@ import org.olat.commons.rss.RSSUtil;
 import org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
@@ -253,7 +254,18 @@ public class AuthHelper {
 				//already a normal olat user, cannot be invited
 				return LOGIN_DENIED;
 			} else {
-				return doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+				//fxdiff FXOLAT-151: add eventually the identity to the security group
+				if(!securityManager.isIdentityInSecurityGroup(identity, invitation.getSecurityGroup())) {
+					securityManager.addIdentityToSecurityGroup(identity, invitation.getSecurityGroup());
+					DBFactory.getInstance().commit();
+				}
+
+				int result = doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+				//fxdiff FXOLAT-151: double check: problem with the DB, invitee is not marked has such
+				if(ureq.getUserSession().getRoles().isInvitee()) {
+					return result;
+				}
+				return LOGIN_DENIED;
 			}
 		}
 		

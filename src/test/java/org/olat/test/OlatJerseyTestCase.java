@@ -285,7 +285,16 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 		return createPut(requestURI, accept, cookie);
 	}
 	
+	public PutMethod createPut(String requestStr, String accept, String langage, boolean cookie) {
+		URI requestURI = UriBuilder.fromUri(getContextURI()).path(requestStr).build();
+		return createPut(requestURI, accept, langage, cookie);
+	}
+	
 	public PutMethod createPut(URI requestURI, String accept, boolean cookie) {
+		return createPut(requestURI, accept, "en", cookie);
+	}
+	
+	public PutMethod createPut(URI requestURI, String accept, String langage, boolean cookie) {
 		PutMethod method = new PutMethod(requestURI.toString());
 		if(cookie) {
 			method.getParams().setCookiePolicy(CookiePolicy.RFC_2109);
@@ -293,7 +302,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 		if(StringHelper.containsNonWhitespace(accept)) {
 			method.addRequestHeader("Accept", accept);
 		}
-		method.addRequestHeader("Accept-Language", "en");
+		method.addRequestHeader("Accept-Language", langage);
 		return method;
 	}
 	

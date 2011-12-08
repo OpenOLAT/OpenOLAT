@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  
+ 	<bean id="databaseUpgrader" class="org.olat.upgrade.DatabaseUpgradeManager" init-method="init"
+ 		depends-on="org.olat.core.util.WebappHelper">
+ 		<property name="dbVendor" value="${db.vendor}"/>
+		<property name="upgradesDefinitions" ref="databaseUpgrades"/>
+		<property name="dataSource" ref="${db.vendor}DataSource"/>
+		<property name="autoUpgradeDatabase" value="${auto.upgrade.database}" />
+	</bean>
+
+	<bean id="databaseUpgrades" class="org.olat.upgrade.UpgradesDefinitions">
+		<property name="upgrades">
+			<list>
+				<bean id="database_upgrade_7_1_0" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_7.1.0" />
+					<property name="alterDbStatements" value="alter_7_0_x_to_7_1_0.sql" />
+				</bean>
+				<bean id="database_upgrade_7_1_1" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_7.1.1" />
+					<property name="alterDbStatements" value="alter_7_1_x_to_7_1_1.sql" />
+				</bean>
+				<bean id="database_upgrade_8_0" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_8.0.0" />
+					<property name="alterDbStatements" value="alter_7_1_x_to_8_0_0.sql" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+</beans>

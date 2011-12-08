@@ -87,14 +87,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Before public void setup() {
 		try {
 			// Setup for code-points
-
-			System.out.println("Tschagaaa, start RepositoryManagerTest!");
 			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
 		} catch (Exception e) {
 			log.error("Error while setting up activeMq or Codepointserver", e);
-		} catch(Error err) {
-			System.out.println("Tschagaaa, ERROR starting RepositoryManagerTest!");
-			throw err;
 		}
 	}
 	
@@ -116,9 +111,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void testRawRepositoryEntryCreate() {
 		try {
-
-			System.out.println("Tschagaaa, start testRawRepositoryEntryCreate!");
-			
 			DB db = DBFactory.getInstance();
 			OLATResourceManager rm = OLATResourceManager.getInstance();
 			// create course and persist as OLATResourceImpl
@@ -367,14 +359,16 @@ public class RepositoryManagerTest extends OlatTestCase {
 						if (i % 20 == 0 ) {
 							int ACCESS_VALUE = 4;
 							System.out.println("RepositoryManagerTest: call setAccess i=" + i);
-							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE);
+							//fxdiff VCRP-1,2: access control of resources
+							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE, false);
 							DBFactory.getInstance().closeSession();
 							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());
 						} else if (i % 10 == 0 ) {
 							int ACCESS_VALUE = 1;
 							System.out.println("RepositoryManagerTest: call setAccess i=" + i);
-							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE);
+							//fxdiff VCRP-1,2: access control of resources
+							RepositoryManager.getInstance().setAccess(repositoryEntryT1, ACCESS_VALUE, false);
 							DBFactory.getInstance().closeSession();
 							RepositoryEntry repositoryEntryT1Reloaded = RepositoryManager.getInstance().lookupRepositoryEntry(keyRepo);
 							assertEquals("Wrong access value",ACCESS_VALUE,repositoryEntryT1Reloaded.getAccess());

@@ -108,7 +108,8 @@ public class SharedFolderWebDAVProvider extends LogDelegator implements WebDAVPr
 			if (firstItem != null && firstItem.equals("*")) {
 				// fake role that represents normally logged in user
 				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
-				List<RepositoryEntry> allEntries = (List<RepositoryEntry>) repoManager.queryByTypeLimitAccess(SharedFolderFileResource.TYPE_NAME,
+				//fxdiff VCRP-1,2: access control of resources
+				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, SharedFolderFileResource.TYPE_NAME,
 						registeredUserRole);
 				for (RepositoryEntry entry : allEntries) {
 					addReadonlyFolder(rootContainer, entry, sfm, addedEntries);
@@ -120,7 +121,7 @@ public class SharedFolderWebDAVProvider extends LogDelegator implements WebDAVPr
 						Long repoKey = Long.parseLong(folder);
 						RepositoryEntry entry = repoManager.lookupRepositoryEntry(repoKey);
 						if (entry != null) {
-							if (entry.getAccess() >= RepositoryEntry.ACC_USERS) {
+							if (entry.getAccess() >= RepositoryEntry.ACC_USERS || (entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly())) {
 								// add folder (which is a repo entry) to root container if not
 								// present
 								addReadonlyFolder(rootContainer, entry, sfm, addedEntries);

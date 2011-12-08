@@ -23,6 +23,7 @@ package org.olat.repository;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -51,6 +52,9 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.GroupLoggingAction;
@@ -161,6 +165,30 @@ public class RepositoryManager extends BasicManager {
 		RepositoryEntryImageController.deleteImage(re);
 	}
 	
+	public void createTutorSecurityGroup(RepositoryEntry re) {
+		if(re.getTutorGroup() != null) return;
+		
+		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, re.getOlatResource());
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_COACH, re.getOlatResource());
+		// members of this group are always tutors also
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
+		re.setTutorGroup(tutorGroup);
+	}
+	
+	public void createParticipantSecurityGroup(RepositoryEntry re) {
+		if(re.getParticipantGroup() != null) return;
+		
+		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, re.getOlatResource());
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_PARTI, re.getOlatResource());
+		// members of this group are always participants also
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
+		re.setParticipantGroup(participantGroup);
+	}
+	
 	/**
 	 * 
 	 * @param addedEntry
@@ -176,6 +204,21 @@ public class RepositoryManager extends BasicManager {
 			BaseSecurityManager.getInstance().deleteSecurityGroup(ownerGroup);
 			OLATResourceManager.getInstance().deleteOLATResourceable(ownerGroup);
 		}
+		SecurityGroup participantGroup = entry.getParticipantGroup();
+		if (participantGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup participantGroup=" + participantGroup);
+			BaseSecurityManager.getInstance().deleteSecurityGroup(participantGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(participantGroup);
+		}
+		SecurityGroup tutorGroup = entry.getTutorGroup();
+		if (tutorGroup != null) {
+			// delete secGroup
+			logDebug("deleteRepositoryEntry deleteSecurityGroup tutorGroup=" + tutorGroup);
+			BaseSecurityManager.getInstance().deleteSecurityGroup(tutorGroup);
+			OLATResourceManager.getInstance().deleteOLATResourceable(tutorGroup);
+		}
+		
 		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
 		//instead of a controller.
 		RepositoryEntryImageController.deleteImage(entry);
@@ -215,6 +258,7 @@ public class RepositoryManager extends BasicManager {
 		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
 		Tracing.logDebug("deleteRepositoryEntry after reload entry=" + entry, this.getClass());
 		deleteRepositoryEntryAndBasesecurity(entry);
+		
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable aswell.
 		handler.cleanupOnDelete(entry.getOlatResource());
@@ -358,8 +402,13 @@ public class RepositoryManager extends BasicManager {
 			else return false;
 		}
 		// else allow if access granted for users
-		return re.getAccess() >= RepositoryEntry.ACC_USERS;
+		if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
+			return true;
+		} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
+			return isMember(identity, re);
+		}
 		
+		return false;
 	}
 
 	/**
@@ -388,8 +437,8 @@ public class RepositoryManager extends BasicManager {
 		}
 	}
 
-	public void setAccess(final RepositoryEntry re, int access ) {
-		SetAccessBackgroundTask task = new SetAccessBackgroundTask(re, access);
+	public void setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
+		SetAccessBackgroundTask task = new SetAccessBackgroundTask(re, access, membersOnly);
 		taskQueueManager.addTask(task);
 		task.waitForDone();
 	}
@@ -445,25 +494,34 @@ public class RepositoryManager extends BasicManager {
 
 	/**
 	 * Query by type, limit by ownership or role accessability.
+	 * @param identity Identity (optional)
 	 * @param restrictedType
 	 * @param roles
 	 * @return Results
 	 */
-	public List queryByTypeLimitAccess(String restrictedType, Roles roles) {
-		StringBuilder query = new StringBuilder(400);
-		query.append("select distinct v from" +
-			" org.olat.repository.RepositoryEntry v" +
-			" inner join fetch v.olatResource as res"+
-		  " where res.resName= :restrictedType and v.access >= ");
-
-		if (roles.isOLATAdmin()) query.append(RepositoryEntry.ACC_OWNERS); // treat admin special b/c admin is author as well
-		else {
-			if (roles.isAuthor()) query.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
-			else if (roles.isGuestOnly()) query.append(RepositoryEntry.ACC_USERS_GUESTS);
-			else query.append(RepositoryEntry.ACC_USERS);
+	//fxdiff VCRP-1,2: access control of resources
+	public List<RepositoryEntry> queryByTypeLimitAccess(Identity identity, String restrictedType, Roles roles) {
+		if(roles.isOLATAdmin()) {
+			identity = null;//not need for the query as administrator
 		}
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
+		
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
+		sb.append(" inner join fetch v.olatResource as res")
+			.append(" where res.resName=:restrictedType and ");
+		
+		boolean setIdentity = false;
+		if (roles.isOLATAdmin()) {
+			sb.append("v.access>=").append(RepositoryEntry.ACC_OWNERS); // treat admin special b/c admin is author as well
+		} else {
+			setIdentity = appendAccessSubSelects(sb, identity, roles);
+		}
+
+		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
 		dbquery.setString("restrictedType", restrictedType);
+		if(setIdentity) {
+			dbquery.setEntity("identity", identity);
+		}
 		dbquery.setCacheable(true);
 		return dbquery.list();
 	}
@@ -474,10 +532,12 @@ public class RepositoryManager extends BasicManager {
 	 * @param roles
 	 * @return Results
 	 */
-	public List queryByTypeLimitAccess(String restrictedType, UserRequest ureq) {
+	//fxdiff VCRP-1: access control
+	public List<RepositoryEntry> queryByTypeLimitAccess(String restrictedType, UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		String institution = "";
-		institution = ureq.getIdentity().getUser().getProperty("institutionalName", null);
+		String institution = ureq.getIdentity().getUser().getProperty("institutionalName", null);
+		
+		List<RepositoryEntry> results = new ArrayList<RepositoryEntry>();
 		if(!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager()) {
 			StringBuilder query = new StringBuilder(400);
 			query.append("select distinct v from org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res"
@@ -496,22 +556,27 @@ public class RepositoryManager extends BasicManager {
 			dbquery.setCacheable(true);
 			
 			long start = System.currentTimeMillis();
-			List result = dbquery.list();
+			List<RepositoryEntry> institutionalResults = dbquery.list();
 			long timeQuery1 = System.currentTimeMillis() - start;
-			Tracing.logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery1, this.getClass());
-			start = System.currentTimeMillis();
-			result.addAll(queryByTypeLimitAccess(restrictedType, roles));
-			long timeQuery2 = System.currentTimeMillis() - start;
-			Tracing.logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery2, this.getClass());
-			return result;
-			
-		} else {
-			long start = System.currentTimeMillis();
-			List result = queryByTypeLimitAccess(restrictedType, roles);
-			long timeQuery3 = System.currentTimeMillis() - start;
-			Tracing.logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery3, this.getClass());
-			return result;
+			logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery1);
+			results.addAll(institutionalResults);
 		}
+		
+		long start = System.currentTimeMillis();
+		List<RepositoryEntry> genericResults = queryByTypeLimitAccess(ureq.getIdentity(), restrictedType, roles);
+		long timeQuery3 = System.currentTimeMillis() - start;
+		logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery3);
+		
+		if(results.isEmpty()) {
+			results.addAll(genericResults);
+		} else {
+			for(RepositoryEntry genericResult:genericResults) {
+				if(!PersistenceHelper.listContainsObjectByKey(results, genericResult)) {
+					results.add(genericResult);
+				}
+			}
+		}
+		return results;
 	}
 
 	/**
@@ -667,13 +732,18 @@ public class RepositoryManager extends BasicManager {
 	 * @param limitAccess
 	 * @return Results
 	 */
-	public List queryByOwnerLimitAccess(Identity identity, int limitAccess) {
+	public List<RepositoryEntry> queryByOwnerLimitAccess(Identity identity, int limitAccess, Boolean membersOnly) {
 		String query = "select v from" +
 			" org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res," + 
 			" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" +
 			" where" +
 			" v.ownerGroup = sgmsi.securityGroup "+
-		  " and sgmsi.identity = :identity and v.access >= :limitAccess";
+		  " and sgmsi.identity = :identity and (v.access>=:limitAccess";
+		
+		if(limitAccess != RepositoryEntry.ACC_OWNERS && membersOnly != null && membersOnly.booleanValue()) {
+			query += " or (v.access=1 and v.membersOnly=true)";
+		}
+		query += ")";
 		
 		DBQuery dbquery = DBFactory.getInstance().createQuery(query);
 		dbquery.setEntity("identity", identity);
@@ -703,7 +773,8 @@ public class RepositoryManager extends BasicManager {
 	 * @param roles The calling user's roles
 	 * @return Results as List containing RepositoryEntries
 	 */
-	private List runGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List resourceTypes, Roles roles) {
+	private List<RepositoryEntry> runGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List resourceTypes, Identity identity, Roles roles) {
+		long start = System.currentTimeMillis();
 		StringBuilder query = new StringBuilder(400);
 		
 		boolean var_author = (author != null && author.length() != 0);
@@ -758,14 +829,12 @@ public class RepositoryManager extends BasicManager {
 			query.append("res.resName in (:resourcetypes)");
 			isFirstOfWhereClause = false;
 		}
-
+		//fxdiff VCRP-1,2: access control of resources
+		boolean setIdentity = false;
 		// finally limit on roles, if not olat admin
 		if (!roles.isOLATAdmin()) {
 			if (!isFirstOfWhereClause) query.append(" and ");
-			query.append("v.access >= ");
-			if (roles.isAuthor()) query.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
-			else if (roles.isGuestOnly()) query.append(RepositoryEntry.ACC_USERS_GUESTS);
-			else query.append(RepositoryEntry.ACC_USERS);
+			setIdentity = appendAccessSubSelects(query, identity, roles);
 			isFirstOfWhereClause = false;
 		}
 		
@@ -782,7 +851,59 @@ public class RepositoryManager extends BasicManager {
 		if (var_resourcetypes) {
 			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
 		}
-		return dbQuery.list();
+		if(setIdentity) {
+			dbQuery.setEntity("identity", identity);
+		}
+		
+		
+		List<RepositoryEntry> result = dbQuery.list();
+		long timeQuery1 = System.currentTimeMillis() - start;
+		logInfo("Repo-Perf: runGenericANDQueryWithRolesRestriction#1 takes " + timeQuery1);
+		return result;
+	}
+	//fxdiff VCRP-1,2: access control of resources
+	private boolean appendAccessSubSelects(StringBuilder sb, Identity identity, Roles roles) {
+		sb.append("(v.access >= ");
+		if (roles.isAuthor()) sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
+		else if (roles.isGuestOnly()) sb.append(RepositoryEntry.ACC_USERS_GUESTS);
+		else sb.append(RepositoryEntry.ACC_USERS);
+		
+		boolean setIdentity = false;
+		if(identity != null) {
+			setIdentity = true;
+			//sub select are very quick
+			sb.append(" or (")
+				.append("  v.access=1 and v.membersOnly=true and (")
+				.append("    v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
+				.append("    or")
+				.append("    v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
+				.append("    or")
+				.append("    v.participantGroup in (select partiSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" partiSgmsi where partiSgmsi.identity=:identity)")
+				.append(" ))");
+		}
+		sb.append(")");
+		return setIdentity;
+	}
+	
+	//fxdiff VCRP-1,2: access control
+	public boolean isMember(Identity identity, RepositoryEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+			.append(" where v=:repositoryEntry and ")
+			.append(" (")
+			.append("   v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
+			.append("   or")
+			.append("   v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
+			.append("   or")
+			.append("   v.participantGroup in (select partiSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" partiSgmsi where partiSgmsi.identity=:identity)")
+			.append(" )");
+
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setEntity("identity", identity);
+		query.setEntity("repositoryEntry", entry);
+		
+		Number counter = (Number)query.uniqueResult();
+		return counter.intValue() > 0;
 	}
 	
 	/**
@@ -800,7 +921,9 @@ public class RepositoryManager extends BasicManager {
 	 * @param institution null -> no restriction
 	 * @return Results as List containing RepositoryEntries
 	 */
-	public List genericANDQueryWithRolesRestriction(String displayName, String author, String desc, List resourceTypes, Roles roles, String institution) {
+	//fxdiff VCRP-1: access control
+	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(String displayName, String author, String desc, List resourceTypes, Identity identity, Roles roles, String institution) {
+		List<RepositoryEntry> results = new ArrayList<RepositoryEntry>();
 		if (!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager()) {
 			StringBuilder query = new StringBuilder(400);
 			if(author == null || author.length() == 0) author = "*";
@@ -868,25 +991,33 @@ public class RepositoryManager extends BasicManager {
 			if (var_resourcetypes) {
 				dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
 			}
-			List result = dbQuery.list();
-			result.addAll(runGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles));
-			return result;
-		} else {
-			return runGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles);
+			results.addAll(dbQuery.list());
 		}
+		
+		List<RepositoryEntry> genericResults = runGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, identity, roles);
+		if(results.isEmpty()) {
+			results.addAll(genericResults);
+		} else {
+			for(RepositoryEntry genericResult:genericResults) {
+				if(!PersistenceHelper.listContainsObjectByKey(results, genericResult)) {
+					results.add(genericResult);
+				}
+			}
+		}
+		return results;
 	}
 	
-	public int countGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Roles roles,
+	public int countGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles,
 			String institution, boolean orderBy) {
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles, institution, orderBy, true);
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, identity, roles, institution, orderBy, true);
 		Number count = (Number)dbQuery.uniqueResult();
 		return count.intValue();
 	}
 	
-	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Roles roles,
+	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles,
 			String institution, int firstResult, int maxResults, boolean orderBy) {
 		
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, roles, institution, orderBy, false);
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, identity, roles, institution, orderBy, false);
 		dbQuery.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
@@ -895,7 +1026,7 @@ public class RepositoryManager extends BasicManager {
 		return res;
 	}
 	
-	private DBQuery createGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Roles roles,
+	private DBQuery createGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles,
 			String institution, boolean orderBy, boolean count) {
 		
 		boolean institut = (!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager());
@@ -930,10 +1061,8 @@ public class RepositoryManager extends BasicManager {
 			     .append(" msuser.properties['institutionalName']=:institution)")
 			     .append("))");
 		} else {
-			query.append(" where v.access>=");
-			if (roles.isAuthor()) query.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
-			else if (roles.isGuestOnly()) query.append(RepositoryEntry.ACC_USERS_GUESTS);
-			else query.append(RepositoryEntry.ACC_USERS);
+			query.append(" where ");
+			appendAccessSubSelects(query, identity, roles);
 		}
 		
 		if (var_author) { // fuzzy author search
@@ -990,7 +1119,6 @@ public class RepositoryManager extends BasicManager {
 	public void addOwners(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
-		SecurityGroup group = re.getOwnerGroup();
 		for (Identity identity : addIdentities) {
 			if (!securityManager.isIdentityInSecurityGroup(identity, re.getOwnerGroup())) {
 				securityManager.addIdentityToSecurityGroup(identity, re.getOwnerGroup());
@@ -1003,8 +1131,8 @@ public class RepositoryManager extends BasicManager {
 				} finally {
 					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 				}
-				Tracing.logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
-						+ "' to securitygroup with key " + re.getOwnerGroup().getKey(), this.getClass());
+				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+						+ "' to securitygroup with key " + re.getOwnerGroup().getKey());
 			}//else silently ignore already owner identities
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);
@@ -1020,7 +1148,6 @@ public class RepositoryManager extends BasicManager {
 	public void removeOwners(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
     for (Identity identity : removeIdentities) {
     	securityManager.removeIdentityFromSecurityGroup(identity, re.getOwnerGroup());
-			String details = "Remove Owner from RepoEntry:"+re.getKey()+" USER:" + identity.getName();
 
 			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -1030,9 +1157,144 @@ public class RepositoryManager extends BasicManager {
 			} finally {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
-			Tracing.logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
-					+ "' from securitygroup with key " + re.getOwnerGroup().getKey(), this.getClass());
+			logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+					+ "' from securitygroup with key " + re.getOwnerGroup().getKey());
     }
+	}
+	
+	/**
+	 * add provided list of identities as tutor to the repo entry. silently ignore
+	 * if some identities were already tutor before.
+	 * @param ureqIdentity
+	 * @param addIdentities
+	 * @param re
+	 * @param userActivityLogger
+	 */
+	public void addTutors(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+		List<Identity> addIdentities = iae.getAddIdentities();
+		List<Identity> reallyAddedId = new ArrayList<Identity>();
+		for (Identity identity : addIdentities) {
+			if (!securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
+				securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
+				reallyAddedId.add(identity);
+				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+				try{
+					ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
+							LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+				} finally {
+					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+				}
+				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+						+ "' to securitygroup with key " + re.getTutorGroup().getKey());
+			}//else silently ignore already owner identities
+		}
+		iae.setIdentitiesAddedEvent(reallyAddedId);
+	}
+	
+	/**
+	 * remove list of identities as tutor of given repository entry.
+	 * @param ureqIdentity
+	 * @param removeIdentities
+	 * @param re
+	 * @param logger
+	 */
+	public void removeTutors(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
+		List<BusinessGroup> groups = getCourseGroups(re);
+		for (Identity identity : removeIdentities) {
+    	securityManager.removeIdentityFromSecurityGroup(identity, re.getTutorGroup());
+    	for(BusinessGroup group:groups) {
+    		if(securityManager.isIdentityInSecurityGroup(identity, group.getOwnerGroup())) {
+					securityManager.removeIdentityFromSecurityGroup(identity, group.getOwnerGroup());
+				}
+    	}
+    	
+			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+			try{
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+			} finally {
+				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+			logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+					+ "' from securitygroup with key " + re.getTutorGroup().getKey());
+    }
+	}
+	
+	/**
+	 * add provided list of identities as participant to the repo entry. silently ignore
+	 * if some identities were already participant before.
+	 * @param ureqIdentity
+	 * @param addIdentities
+	 * @param re
+	 * @param userActivityLogger
+	 */
+	public void addParticipants(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+		List<Identity> addIdentities = iae.getAddIdentities();
+		List<Identity> reallyAddedId = new ArrayList<Identity>();
+		for (Identity identity : addIdentities) {
+			if (!securityManager.isIdentityInSecurityGroup(identity, re.getParticipantGroup())) {
+				securityManager.addIdentityToSecurityGroup(identity, re.getParticipantGroup());
+				reallyAddedId.add(identity);
+				ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+				ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+				try{
+					ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(),
+							LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+				} finally {
+					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+				}
+				logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+						+ "' to securitygroup with key " + re.getParticipantGroup().getKey());
+			}//else silently ignore already owner identities
+		}
+		iae.setIdentitiesAddedEvent(reallyAddedId);
+	}
+	
+	/**
+	 * remove list of identities as participant of given repository entry.
+	 * @param ureqIdentity
+	 * @param removeIdentities
+	 * @param re
+	 * @param logger
+	 */
+	public void removeParticipants(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
+    List<BusinessGroup> groups = getCourseGroups(re);
+		for (Identity identity : removeIdentities) {
+    	securityManager.removeIdentityFromSecurityGroup(identity, re.getParticipantGroup());
+    	for(BusinessGroup group:groups) {
+    		if(securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
+					securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
+				}
+    	}
+
+			ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
+			ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
+			try{
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
+						LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry), LoggingResourceable.wrap(identity));
+			} finally {
+				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
+			}
+			logAudit("Idenitity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+					+ "' from securitygroup with key " + re.getParticipantGroup().getKey());
+    }
+	}
+	
+	/**
+	 * Load the business group associated to the repository entry
+	 * @param repoEntry
+	 * @return
+	 */
+	private List<BusinessGroup> getCourseGroups(RepositoryEntry repoEntry) {
+		if("CourseModule".equals(repoEntry.getOlatResource().getResourceableTypeName())) {
+			ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource());
+			CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
+			List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+			return groups;
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -1065,22 +1327,20 @@ public class RepositoryManager extends BasicManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
+	 //fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity) {
-		List<RepositoryEntry> allRepoEntries = new ArrayList<RepositoryEntry>();
-		List<BusinessGroup>groupList = BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
-		for (BusinessGroup group : groupList) {
-			BGContext bgContext = group.getGroupContext();
-			if (bgContext == null) continue;
-			List<RepositoryEntry> repoEntries = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(bgContext);
-			if (repoEntries == null || repoEntries.size() == 0) continue;
-			for (RepositoryEntry repositoryEntry : repoEntries) {
-				// only find resources that are published
-				if ( ! PersistenceHelper.listContainsObjectByKey(allRepoEntries, repositoryEntry) && repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS ) {
-					allRepoEntries.add(repositoryEntry);
-				}				
-			}
-		}
-		return allRepoEntries;
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join fetch v.olatResource as res where ")
+			.append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+			.append(" and ")
+			.append(" v.participantGroup in (select participantSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantSgmsi where participantSgmsi.identity=:identity)");
+
+		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
+		dbquery.setEntity("identity", identity);
+		dbquery.setCacheable(true);
+		List<RepositoryEntry> repoEntries = dbquery.list();	
+		return repoEntries;
 	}
 	
 	/**
@@ -1091,44 +1351,38 @@ public class RepositoryManager extends BasicManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
+	 //fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity) {
-		List<RepositoryEntry> allRepoEntries = new ArrayList<RepositoryEntry>();
-		// 1: search for all learning groups where user is coach
-		List<BusinessGroup>groupList = BusinessGroupManagerImpl.getInstance().findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
-		for (BusinessGroup group : groupList) {
-			BGContext bgContext = group.getGroupContext();
-			if (bgContext == null) continue;
-			List<RepositoryEntry> repoEntries = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(bgContext);
-			if (repoEntries.size() == 0) continue;
-			for (RepositoryEntry repositoryEntry : repoEntries) {
-				// only find resources that are published
-				if ( ! PersistenceHelper.listContainsObjectByKey(allRepoEntries, repositoryEntry) && repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS) {
-					allRepoEntries.add(repositoryEntry);
-				}				
-			}
-		}
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join fetch v.olatResource as res where ")
+			.append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+			.append(" and ")
+			.append(" (")
+			.append("  v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
+			.append("  or")
+			.append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
+			.append(" )");
+
+		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
+		dbquery.setEntity("identity", identity);
+		dbquery.setCacheable(true);
+		List<RepositoryEntry> repoEntries = dbquery.list();
+		List<RepositoryEntry> allRepoEntries = new ArrayList<RepositoryEntry>(repoEntries);
+		
+		
 		// 2: search for all learning groups where user is coach
-		List<BusinessGroup>rightGrougList = BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
+		List<BGContext> bgContexts = new ArrayList<BGContext>();
+		List<BusinessGroup> rightGrougList = BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
 		for (BusinessGroup group : rightGrougList) {
 			BGContext bgContext = group.getGroupContext();
-			if (bgContext == null) continue;
-			List<RepositoryEntry> repoEntries = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(bgContext);
-			if (repoEntries.size() == 0) continue;
-			for (RepositoryEntry repositoryEntry : repoEntries) {
-				// only find resources that are published
-				if ( ! PersistenceHelper.listContainsObjectByKey(allRepoEntries, repositoryEntry) && repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS) {
-					allRepoEntries.add(repositoryEntry);
-				}				
+			if (bgContext != null && !PersistenceHelper.listContainsObjectByKey(bgContexts, bgContext)) {
+				bgContexts.add(bgContext);
 			}
 		}
-		// 3) search for all published learning resources that user owns
-		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().queryByOwnerLimitAccess(identity, RepositoryEntry.ACC_USERS);
-		for (RepositoryEntry repositoryEntry : repoEntries) {
-			if ( ! PersistenceHelper.listContainsObjectByKey(allRepoEntries, repositoryEntry)) {
-				allRepoEntries.add(repositoryEntry);
-			}				
-		}
+		
+		List<RepositoryEntry> repoEntriesRightGroup = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(bgContexts, RepositoryEntry.ACC_USERS, false, false, false, identity);
+		allRepoEntries.addAll(repoEntriesRightGroup);
 		return allRepoEntries;
 	}
-	
 }

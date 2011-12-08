@@ -59,9 +59,15 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	public static final int ACC_USERS_GUESTS = 4; // no limits
 	
+	//fxdiff VCRP-1,2: access control of resources
+	public static final String MEMBERS_ONLY =  "membersonly";
+	
 	private String softkey; // mandatory
 	private OLATResource olatResource; // mandatory
 	private SecurityGroup ownerGroup; // mandatory
+	//fxdiff VCRP-1,2: access control of resources
+	private SecurityGroup tutorGroup;
+	private SecurityGroup participantGroup;
 	private String resourcename; // mandatory
 	private String displayname; // mandatory
 	private String description; // mandatory
@@ -71,6 +77,7 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	private boolean canReference;
 	private boolean canLaunch;
 	private boolean canDownload;
+	private boolean membersOnly;//fxdiff VCRP-1,2: access control of resources
 	private int statusCode;
 	private List<MetaDataElement> metaDataElements;
 	private long launchCounter;
@@ -216,6 +223,38 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	}
 	
 	/**
+	 * @return The group for tutors
+	 */
+	//fxdiff VCRP-1,2: access control of resources
+	public SecurityGroup getTutorGroup() {
+		return tutorGroup;
+	}
+
+	/**
+	 * Set the group for tutors
+	 * @param tutorGroup
+	 */
+	public void setTutorGroup(SecurityGroup tutorGroup) {
+		this.tutorGroup = tutorGroup;
+	}
+
+	/**
+	 * @return The group of participants
+	 */
+	//fxdiff VCRP-1,2: access control of resources
+	public SecurityGroup getParticipantGroup() {
+		return participantGroup;
+	}
+
+	/**
+	 * Set the group of participants
+	 * @param participantGroup
+	 */
+	public void setParticipantGroup(SecurityGroup participantGroup) {
+		this.participantGroup = participantGroup;
+	}
+
+	/**
 	 * @return Wether this repo entry can be copied.
 	 */
 	public boolean getCanCopy() {
@@ -248,6 +287,14 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	public int getAccess() {
 		return access;
+	}
+	
+	/**
+	 * Is the repository entry exclusive
+	 * @return
+	 */
+	public boolean isMembersOnly() {
+		return membersOnly;
 	}
 
 	/**
@@ -284,6 +331,14 @@ public class RepositoryEntry extends PersistentObject implements ModifiedInfo, O
 	 */
 	public void setAccess(int i) {
 		access = i;
+	}
+	
+	/**
+	 * Set if the repository entry is exclusive 
+	 * @param membersOnly
+	 */
+	public void setMembersOnly(boolean membersOnly) {
+		this.membersOnly = membersOnly;
 	}
 
 	/**

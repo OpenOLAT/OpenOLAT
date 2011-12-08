@@ -16,6 +16,7 @@
 <bean id="businessGroupManager" class="org.olat.group.BusinessGroupManagerImpl" depends-on="collaborationToolsFactory">
 <constructor-arg index="0" ref="baseSecurityManager" />
 <constructor-arg index="1" ref="userDeletionManager" />
+<property name="dbVendor" value="${db.vendor}" />
 </bean>
 
 </beans>

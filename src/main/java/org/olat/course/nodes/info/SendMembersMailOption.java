@@ -21,12 +21,13 @@
 package org.olat.course.nodes.info;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.info.ui.SendMailOption;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -69,7 +70,7 @@ public class SendMembersMailOption implements SendMailOption {
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		List<Identity> identities = new ArrayList<Identity>();
+		Set<Identity> identities = new HashSet<Identity>();
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		List<BusinessGroup> learningGroups = cgm.getAllLearningGroupsFromAllContexts();
 		for(BusinessGroup bg:learningGroups) {
@@ -78,14 +79,18 @@ public class SendMembersMailOption implements SendMailOption {
 			List<Identity> coaches = cgm.getCoachesFromLearningGroup(bg.getName());
 			identities.addAll(coaches);
 		}
-
+		//fxdiff VCRP-1,2: access control of resources
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
-		SecurityGroup sg = repositoryEntry.getOwnerGroup();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<Object[]> owners = securityManager.getIdentitiesAndDateOfSecurityGroup(sg);
-		for(Object[] owner:owners) {
-			identities.add((Identity)owner[0]);
+		if(repositoryEntry.getParticipantGroup() != null) {
+			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getParticipantGroup()));
 		}
-		return identities;
+		if(repositoryEntry.getTutorGroup() != null) {
+			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getTutorGroup()));
+		}
+		if(repositoryEntry.getOwnerGroup() != null) {
+			identities.addAll(securityManager.getIdentitiesOfSecurityGroup(repositoryEntry.getOwnerGroup()));
+		}
+		return new ArrayList<Identity>(identities);
 	}
 }

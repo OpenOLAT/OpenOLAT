@@ -50,6 +50,7 @@ import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.handlers.FileHandler;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 /**
@@ -84,7 +85,10 @@ public abstract class QTIHandler extends FileHandler implements RepositoryHandle
 			// use on column layout
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
 			layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
-			return layoutCtr;
+			
+			//fxdiff VCRP-1: access control of learn resources
+			RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+			return wrapper;
 	}
 
 	/**

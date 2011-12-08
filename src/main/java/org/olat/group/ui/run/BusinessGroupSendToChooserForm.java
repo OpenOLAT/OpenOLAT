@@ -88,7 +88,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	private boolean isAdmin;
 	
 	public final static String NLS_RADIO_ALL = "all";
-	private final static String NLS_RADIO_NOTHING = "nothing";
+	public final static String NLS_RADIO_NOTHING = "nothing";
 	public final static String NLS_RADIO_CHOOSE = "choose";
 
 	/**

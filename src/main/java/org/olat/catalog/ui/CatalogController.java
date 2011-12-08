@@ -88,6 +88,10 @@ import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.accesscontrol.model.OLATResourceAccess;
+import org.olat.resource.accesscontrol.model.PriceMethodBundle;
+import org.olat.resource.accesscontrol.ui.PriceFormat;
 
 /**
  * <pre>
@@ -197,6 +201,7 @@ public class CatalogController extends BasicController implements Activateable, 
 	private VelocityContainer myContent;
 
 	private CatalogManager cm;
+	private ACFrontendManager acFrontendManager;
 	private CatalogEntry currentCatalogEntry;
 	private CatalogEntry newLinkNotPersistedYet;
 	private int currentCatalogEntryLevel = -1;
@@ -248,6 +253,8 @@ public class CatalogController extends BasicController implements Activateable, 
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 		
 		cm = CatalogManager.getInstance();
+		//fxdiff VCRP-1,2: access control of resources
+		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
 		CatalogEntry rootce;
@@ -258,12 +265,9 @@ public class CatalogController extends BasicController implements Activateable, 
 		isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		isGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		revokeRightsAndSetDefaults();
 		// and also if user is localTreeAdmin
 		updateToolAccessRights(ureq, rootce, 0);
-		canAddLinks = isOLATAdmin || isAuthor;
-		canAdministrateCategory = isOLATAdmin;
-		canAddSubCategories = isOLATAdmin || isLocalTreeAdmin;
-		canRemoveAllLinks = isOLATAdmin || isLocalTreeAdmin;
 
 		cm = CatalogManager.getInstance();
 
@@ -915,7 +919,7 @@ public class CatalogController extends BasicController implements Activateable, 
 			 * add tools
 			 */
 			if(isOLATAdmin || isLocalTreeAdmin || isAuthor){
-					catalogToolC.addHeader(translate(NLS_TOOLS_ADD_HEADER));
+					if (canAddSubCategories || canAddLinks) catalogToolC.addHeader(translate(NLS_TOOLS_ADD_HEADER));
 					if (canAddSubCategories) catalogToolC.addLink(ACTION_ADD_CTLGCATEGORY, translate(NLS_TOOLS_ADD_CATALOG_CATEGORY));
 					if (canAddLinks) catalogToolC.addLink(ACTION_ADD_CTLGLINK, translate(NLS_TOOLS_ADD_CATALOG_LINK));
 					if (currentCatalogEntryLevel == 0 && isOLATAdmin && cm.getChildrenOf(currentCatalogEntry).isEmpty())
@@ -956,10 +960,83 @@ public class CatalogController extends BasicController implements Activateable, 
 		myContent.contextPut("canRemoveAllLinks", new Boolean(canRemoveAllLinks));
 		myContent.contextPut("currentCatalogEntry", currentCatalogEntry);
 		childCe = cm.getChildrenOf(ce);
+		// Sort to fix ordering by repo entry display name. For leafs the displayed
+		// name is not the catalog entry name but the repo entry display name. The
+		// SQL query orders by catalog entry name, thus the visual ordering is
+		// wrong.
+		// fxdiff: FXOLAT-100
+		Collections.sort(childCe, new Comparator<CatalogEntry>() {
+			@Override
+			public int compare(final CatalogEntry c1, final CatalogEntry c2) {
+				String c1Title, c2Title;
+				if (c1.getType() == CatalogEntry.TYPE_LEAF) {
+					final RepositoryEntry repoEntry = c1.getRepositoryEntry();
+					if (repoEntry != null) {
+						c1Title = repoEntry.getDisplayname();
+					} else {
+						c1Title = c1.getName();
+					}
+				} else {
+					c1Title = c1.getName();
+				}
+				if (c2.getType() == CatalogEntry.TYPE_LEAF) {
+					final RepositoryEntry repoEntry = c2.getRepositoryEntry();
+					if (repoEntry != null) {
+						c2Title = repoEntry.getDisplayname();
+					} else {
+						c2Title = c2.getName();
+					}
+				} else {
+					c2Title = c2.getName();
+				}
+				// Sort now based on users locale
+				final Collator myCollator = Collator.getInstance(getLocale());
+				return myCollator.compare(c1Title, c2Title);
+			}
+		});
+		
 		myContent.contextPut("children", childCe);
+		//fxdiff VCRP-1,2: access control of resources
+		List<Long> resourceKeys = new ArrayList<Long>();
+		for ( Object leaf : childCe ) {
+			CatalogEntry entry = (CatalogEntry)leaf;
+			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
+				resourceKeys.add(entry.getRepositoryEntry().getOlatResource().getKey());
+			}
+		}
+		List<OLATResourceAccess> resourcesWithOffer = acFrontendManager.getAccessMethodForResources(resourceKeys, true, new Date());
 		for ( Object leaf : childCe ) {
 			CatalogEntry entry = (CatalogEntry)leaf;
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
+			//fxdiff VCRP-1,2: access control of resources
+			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
+				List<PriceMethod> types = new ArrayList<PriceMethod>();
+				if (entry.getRepositoryEntry().isMembersOnly()) {
+					// members only always show lock icon
+					types.add(new PriceMethod("", "b_access_membersonly_icon"));
+				} else {
+					// collect access control method icons
+					OLATResource resource = entry.getRepositoryEntry().getOlatResource();
+					for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
+						if(resource.getKey().equals(resourceAccess.getResource().getKey())) {
+							for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
+								String type = bundle.getMethod().getMethodCssClass() + "_icon";
+								String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
+								types.add(new PriceMethod(price, type));
+							}
+						}
+					}
+				}
+				
+				//fxdiff VCRP-1,2: access control of resources
+				String acName = "ac_" + childCe.indexOf(leaf);
+				if(!types.isEmpty()) {
+					myContent.contextPut(acName, types);
+				} else {
+					myContent.contextRemove(acName);
+				}
+			}
+			
 			String name = "image" + childCe.indexOf(leaf);
 			ImageComponent ic = RepositoryEntryImageController.getImageComponentForRepositoryEntry(name, entry.getRepositoryEntry());
 			if(ic == null) {
@@ -1088,10 +1165,7 @@ public class CatalogController extends BasicController implements Activateable, 
 			// 3a) below branch that user has admin rights - revoke all rights
 			isLocalTreeAdminLevel = -1;
 			isLocalTreeAdmin = false;
-			canAddLinks = isOLATAdmin || isAuthor;
-			canAdministrateCategory = isOLATAdmin;
-			canAddSubCategories = isOLATAdmin;
-			canRemoveAllLinks = isOLATAdmin;
+			revokeRightsAndSetDefaults();
 			fireEvent(ureq, Event.CHANGED_EVENT);
 			
 		} else if (isLocalTreeAdminLevel == -1) {
@@ -1104,11 +1178,14 @@ public class CatalogController extends BasicController implements Activateable, 
 			if (isInGroup) {
 				isLocalTreeAdminLevel = pos;
 				isLocalTreeAdmin = true;
-				canAddLinks = isOLATAdmin || isAuthor;
+				canAddLinks = true;
 				canAdministrateCategory = true;
 				canAddSubCategories = true;
 				canRemoveAllLinks = true;
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				fireEvent(ureq, Event.CHANGED_EVENT);				
+			} else {
+				isLocalTreeAdmin = false;
+				revokeRightsAndSetDefaults();
 			}
 		}
 	}
@@ -1139,6 +1216,14 @@ public class CatalogController extends BasicController implements Activateable, 
 				break;
 			}
 		}
+	}
+	
+	// fxdiff: FXOLAT-71 do the right checks correctly
+	private void revokeRightsAndSetDefaults(){
+		canAddLinks = isOLATAdmin || isAuthor; // author is allowed to add!
+		canAdministrateCategory = isOLATAdmin;
+		canAddSubCategories = isOLATAdmin || isLocalTreeAdmin;
+		canRemoveAllLinks = isOLATAdmin || isLocalTreeAdmin;
 	}
 
 	/**
@@ -1193,5 +1278,22 @@ public class CatalogController extends BasicController implements Activateable, 
 		historyStack.clear();
 		jumpToNode(ureq, jumpToNode);
 	}
-
+	
+	public class PriceMethod {
+		private String price;
+		private String type;
+		
+		public PriceMethod(String price, String type) {
+			this.price = price;
+			this.type = type;
+		}
+		
+		public String getPrice() {
+			return price;
+		}
+		
+		public String getType() {
+			return type;
+		}
+	}
 }

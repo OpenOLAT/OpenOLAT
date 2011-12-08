@@ -22,6 +22,7 @@ package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.util.ArrayList;
@@ -125,19 +126,21 @@ public class CoursesWebService {
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
 			@Context Request request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
-		
+
+		//fxdiff VCRP-1,2: access control of resources
 		Roles roles = getRoles(httpRequest);
+		Identity identity = getIdentity(httpRequest);
 		List<String> courseType = Collections.singletonList(CourseModule.getCourseTypeName());
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = rm.countGenericANDQueryWithRolesRestriction(null, null, null, courseType, roles, null, true);
-			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(null, null, null, courseType, roles, null, start, limit, true);
+			int totalCount = rm.countGenericANDQueryWithRolesRestriction(null, null, null, courseType, identity, roles, null, true);
+			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(null, null, null, courseType, identity, roles, null, start, limit, true);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
 			voes.setCourses(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(null, null, null, courseType, roles, null, 0, -1, false);
+			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(null, null, null, courseType, identity, roles, null, 0, -1, false);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
@@ -305,6 +308,23 @@ public class CoursesWebService {
 
 		securityManager.addIdentityToSecurityGroup(identity, newGroup);
 		addedEntry.setOwnerGroup(newGroup);
+			
+		//fxdiff VCRP-1,2: access control of resources
+		// security group for tutors / coaches
+		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
+		// members of this group are always tutors also
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
+		addedEntry.setTutorGroup(tutorGroup);
+			
+		// security group for participants
+		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
+		// members of this group are always participants also
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
+		addedEntry.setParticipantGroup(participantGroup);
 		// Do set access for owner at the end, because unfinished course should be invisible
 		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 		RepositoryManager.getInstance().saveRepositoryEntry(addedEntry);

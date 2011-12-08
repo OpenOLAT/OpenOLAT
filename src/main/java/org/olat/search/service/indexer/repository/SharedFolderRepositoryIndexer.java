@@ -46,6 +46,8 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class SharedFolderRepositoryIndexer extends FolderIndexer implements Indexer {
 	private static final OLog log = Tracing.createLoggerFor(SharedFolderRepositoryIndexer.class);
+	// fxdiff: see LibraryManager
+	private static final String NO_FOLDER_INDEXING_LOCKFILE = ".noFolderIndexing";
 	
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -78,8 +80,10 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer implements Inde
 		resourceContext.setParentContextName(repositoryEntry.getDisplayname());
     
 		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(repositoryEntry.getOlatResource());
-		doIndexVFSContainer(resourceContext,sfContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
-
+		// fxdiff: only index if no lockfile found. see OLAT-5724
+		if (sfContainer.resolve(NO_FOLDER_INDEXING_LOCKFILE) == null){
+			doIndexVFSContainer(resourceContext,sfContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
+		}
 	}
 
 

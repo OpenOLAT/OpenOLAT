@@ -47,6 +47,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 
 
 /**
@@ -117,11 +118,11 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
-		Controller realController = null;
 		
 		// jump to either the forum or the folder if the business-launch-path says so.
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
+		MainLayoutController layoutCtr;
 		if ( ce != null ) { // a context path is left for me
 			Tracing.logDebug("businesscontrol (for further jumps) would be:"+bc, CPRunController.class);
 			OLATResourceable ores = ce.getOLATResourceable();
@@ -132,14 +133,16 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 			String path = typeName.substring("path=".length());
 			if  (path.length() > 0) {
 			  Tracing.logDebug("direct navigation to container-path=" + path, CPRunController.class);
-			 	return CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, true, false, path);
+			  layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, true, false, path);
 			} else {
-				return CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper);
+				layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper);
 			}
 		} else {
-			return CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper);
+			layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper);
 		}
-		
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		return wrapper;
 	}
 
 

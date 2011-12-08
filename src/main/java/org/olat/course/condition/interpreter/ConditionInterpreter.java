@@ -120,6 +120,7 @@ public class ConditionInterpreter {
 		env.addFunction(HasLanguageFunction.name, new HasLanguageFunction(userCourseEnv));
 		env.addFunction(InInstitutionFunction.name, new InInstitutionFunction(userCourseEnv));
 		env.addFunction(IsCourseCoachFunction.name, new IsCourseCoachFunction(userCourseEnv));
+		env.addFunction(IsCourseParticipantFunction.name, new IsCourseParticipantFunction(userCourseEnv));
 		env.addFunction(IsCourseAdministratorFunction.name, new IsCourseAdministratorFunction(userCourseEnv));
 
 		env.addFunction(GetInitialCourseLaunchDateFunction.name, new GetInitialCourseLaunchDateFunction(userCourseEnv));

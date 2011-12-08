@@ -65,6 +65,17 @@ public class Constants {
 	 * chars!
 	 */
 	public static final String GROUP_ANONYMOUS = "anonymous";
+	//fxdiff VCRP-1,2: access control of resources
+	/**
+	 * <code>GROUP_PARTICIPANTS</code> predefined groups length restricted to 16
+	 * chars!
+	 */
+	public static final String GROUP_PARTICIPANTS = "participants";
+	/**
+	 * <code>GROUP_OWNERS</code> predefined groups length restricted to 16
+	 * chars!
+	 */
+	public static final String GROUP_OWNERS = "owners";
 
 	/**
 	 * access a thing; means read, write, update, and delete
@@ -135,7 +146,17 @@ public class Constants {
 	 * resourceable TYPE for authors <code>ORESOURCE_AUTHOR</code>
 	 */
 	public static final OLATResourceable ORESOURCE_AUTHOR = OresHelper.lookupType(BaseSecurityModule.class, "RAuthor");
+	//fxdiff VCRP-1,2: access control of resources
+	/**
+	 * resourceable TYPE for tutors <code>ORESOURCE_TUTOR</code>
+	 */
+	public static final OLATResourceable ORESOURCE_TUTOR = OresHelper.lookupType(BaseSecurityModule.class, "RTutor");
 
+	/**
+	 * resourceable TYPE for participants <code>ORESOURCE_PARTICIPANT</code>
+	 */
+	public static final OLATResourceable ORESOURCE_PARTICIPANT = OresHelper.lookupType(BaseSecurityModule.class, "RParticipant");
+	
 	/**
 	 * resourceable TYPE for groupmanagers <code>ORESOURCE_GROUPMANAGER</code>
 	 */

@@ -75,6 +75,7 @@ import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.collections.CollectionConverter;
@@ -319,7 +320,9 @@ public class PortfolioHandler implements RepositoryHandler {
 		Controller epCtr = EPUIFactory.createPortfolioStructureMapController(ureq, wControl, map, secCallback);
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, epCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(epCtr);
-		return layoutCtr;
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		return wrapper;
 	}
 
 	/**

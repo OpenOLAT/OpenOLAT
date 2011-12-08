@@ -74,8 +74,6 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.DialogCourseNode";
 	
-	private ForumManager forumMgr;
-
 	private DialogElementsPropertyManager dialogElmsMgr;
 
 	private CourseIndexer courseNodeIndexer;
@@ -83,7 +81,6 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 
 	
 	public DialogCourseNodeIndexer() {
-		forumMgr = ForumManager.getInstance();
 		dialogElmsMgr = DialogElementsPropertyManager.getInstance();
 		courseNodeIndexer = new CourseIndexer();
 	}
@@ -103,7 +100,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 			DialogElement element = iter.next();
 			element.getAuthor();
 			element.getDate();
-		  Forum forum = forumMgr.loadForum(element.getForumKey());
+		  Forum forum = ForumManager.getInstance().loadForum(element.getForumKey());
 			// do IndexForum
 			doIndexAllMessages(courseNodeResourceContext, forum, indexWriter );
 			// do Index File
@@ -153,7 +150,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 
 	private void doIndexAllMessages(SearchResourceContext parentResourceContext, Forum forum, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		// loop over all messages of a forum
-		List<Message> messages = forumMgr.getMessagesByForum(forum);
+		List<Message> messages = ForumManager.getInstance().getMessagesByForum(forum);
 		for(Message message:messages){
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setBusinessControlFor(message);

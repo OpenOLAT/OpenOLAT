@@ -673,8 +673,8 @@ public class LearningGroupWebService {
 	 * @return value bigger or equal than 0
 	 */
 	private static final Integer normalize(Integer integer) {
-		if(integer == null) return new Integer(0);
-		if(integer.intValue() < 0) return new Integer(0);
+		if(integer == null) return null;
+		if(integer.intValue() <= 0) return null;
 		return integer;
 	}
 }

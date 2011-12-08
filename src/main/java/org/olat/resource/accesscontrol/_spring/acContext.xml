@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+
+	<!-- MAIL CONFIGURATION -->
+	<!-- ========================= -->
+	
+	<bean id="acModule" class="org.olat.resource.accesscontrol.AccessControlModule" depends-on="org.olat.core.util.WebappHelper">
+		<property name="persistedProperties">
+	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
+	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
+	    	<constructor-arg index="0" ref="coordinatorManager"/>
+	    	<constructor-arg index="1" ref="acModule" />
+	  	</bean>
+		</property>
+		<property name="methodHandlers">
+			<list>
+				<ref bean="freeAccessHandler"/>
+				<ref bean="tokenAccessHandler"/>
+			</list>
+		</property>
+		<property name="acFrontendManager" ref="acFrontendManager"/>
+	</bean>
+	
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="acModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
+			<value>
+				resource.accesscontrol.enabled=${resource.accesscontrol.enabled}
+				resource.accesscontrol.home.overview=${resource.accesscontrol.home.overview}
+				method.token.enabled=${method.token.enabled}
+				method.free.enabled=${method.free.enabled}
+			</value>
+		</property>
+	</bean>
+	
+	<!--  Extension for archiver -->
+	<bean class="org.olat.resource.accesscontrol.ui.OrdersActionExtension" init-method="initExtensionPoints">
+		<constructor-arg index="0" ref="acModule" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.resource.accesscontrol.ui.OrdersAdminController"/>
+			</bean>
+		</property>
+		
+		<property name="i18nActionKey" value="order.menu.title.alt"/>
+		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.course.archiver.ArchiverMainController</value>		
+			</list>
+		</property>
+		<property name="order" value="267" />
+	</bean>
+	
+	<bean id="acOfferManager" class="org.olat.resource.accesscontrol.manager.ACOfferManagerImpl">
+		<property name="dbInstance" ref="database"/>
+	</bean>
+	
+	<bean id="acFrontendManager" class="org.olat.resource.accesscontrol.manager.ACFrontendManager">
+		<property name="accessModule" ref="acModule" />
+		<property name="accessManager" ref="acOfferManager" />
+		<property name="securityManager" ref="baseSecurityManager"/>
+		<property name="methodManager" ref="acMethodManager"/>
+		<property name="orderManager" ref="acOrderManager"/>
+		<property name="transactionManager" ref="acTransactionManager"/>
+		<property name="repositoryManager" ref="repositoryManager"/>
+	</bean>
+	
+	<bean id="acMethodManager" class="org.olat.resource.accesscontrol.manager.ACMethodManagerImpl"
+		depends-on="acModule">
+		<constructor-arg index="0" ref="coordinatorManager" />
+		<constructor-arg index="1" ref="acModule" />
+		<property name="dbInstance" ref="database"/>
+	</bean>
+	
+	<bean id="acOrderManager" class="org.olat.resource.accesscontrol.manager.ACOrderManagerImpl">
+		<property name="dbInstance" ref="database"/>
+	</bean>
+	
+	<bean id="acTransactionManager" class="org.olat.resource.accesscontrol.manager.ACTransactionManagerImpl">
+		<property name="dbInstance" ref="database"/>
+	</bean>
+	
+	<bean id="freeAccessHandler" class="org.olat.resource.accesscontrol.method.FreeAccessHandler"/>
+	<bean id="tokenAccessHandler" class="org.olat.resource.accesscontrol.method.TokenAccessHandler"/>
+	
+	<bean id="resourceAccessDBMappings" class="org.olat.core.commons.persistence.AdditionalDBMappings">
+		<property name="xmlFiles">
+			<list>								
+				<value>org/olat/resource/accesscontrol/model/Offer.hbm.xml</value>
+				<value>org/olat/resource/accesscontrol/model/AccessMethod.hbm.xml</value>
+				<value>org/olat/resource/accesscontrol/model/AccessTransaction.hbm.xml</value>
+				<value>org/olat/resource/accesscontrol/model/OfferAccess.hbm.xml</value>
+				<value>org/olat/resource/accesscontrol/model/Order.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!--  Orders admin panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.resource.accesscontrol.ui.OrdersAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="booking" />
+		<property name="i18nActionKey" value="order.menu.title"/>
+		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="order" value="302" />
+	</bean>
+
+</beans>

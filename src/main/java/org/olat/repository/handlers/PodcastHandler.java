@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -43,6 +42,7 @@ import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
+import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -50,6 +50,7 @@ import org.olat.repository.controllers.AddFileResourceController;
 import org.olat.repository.controllers.IAddController;
 import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 /**
@@ -167,10 +168,15 @@ public class PodcastHandler implements RepositoryHandler {
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), repoEntry);	
 		FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
-		Controller podcastCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createMainController(res, ureq, wControl, callback);
+		FeedMainController podcastCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createMainController(res, ureq, wControl, callback);
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, podcastCtr.getInitialComponent(), null);
 		layoutCtr.addDisposableChildController(podcastCtr);
-		return layoutCtr;
+		//fxdiff BAKS-7 Resume function
+		layoutCtr.addActivateableDelegate(podcastCtr);
+		
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, layoutCtr);
+		return wrapper;
 	}
 
 	/**

@@ -693,7 +693,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		for (int i = 0; i < cnt; i++) {
 			Extension anExt = extm.getExtension(i);
 			// 1) general menu extensions
-			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(UserAdminMainController.class.getName() + EXTENSIONPOINT_MENU_MENUQUERIES);
+			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(UserAdminMainController.class.getName() + EXTENSIONPOINT_MENU_MENUQUERIES, ureq);
 			if (ae != null && anExt.isEnabled()) {
 				gtnChild = new GenericTreeNode();
 				String menuText = ae.getActionText(getLocale());

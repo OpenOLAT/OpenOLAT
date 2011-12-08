@@ -140,6 +140,7 @@ public class NotificationUIFactory {
 		if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
 			resName = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(pub.getResId(), true).getResourceableTypeName();
 		}
+
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
 		String title = NotificationsManager.getInstance().getNotificationsHandler(sub.getPublisher()).createTitleInfo(sub, ureq.getLocale());
 		// Launch in dtab
@@ -157,7 +158,12 @@ public class NotificationUIFactory {
 			boolean newFactory = false;
 			if (launchController == null) {
 				try {
-					String resourceUrl = "[" + resName + ":0][notifications]";
+					String resourceUrl;
+					if("Inbox".equals(resName)) {
+						resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][" + resName + ":0]";
+					} else {
+						resourceUrl = "[" + resName + ":0][notifications]";
+					}
 					BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, windowControl);
 					NewControllerFactory.getInstance().launch(ureq, bwControl);

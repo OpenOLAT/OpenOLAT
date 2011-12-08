@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.title.TitleInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -63,6 +64,8 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
+import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.dialog.DialogConfigForm;
@@ -73,6 +76,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.ForumUIFactory;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -110,6 +115,7 @@ public class DialogElementsController extends BasicController {
 	private UserCourseEnvironment userCourseEnv;
 	private TableGuiConfiguration tableConf;
 	private Link uploadButton;
+	private Link copyButton;
 	private Controller forumCtr;
 
 	public DialogElementsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv,
@@ -124,9 +130,20 @@ public class DialogElementsController extends BasicController {
 
 		content = createVelocityContainer("dialog");		
 		uploadButton = LinkFactory.createButton("dialog.upload.file", content, this);
-
+		
 		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+
+		// fxdiff VCRP-12: copy files from course folder
+		// add copy from course folder if user has course editor rights (course owner and users in a right group with the author right)
+		Identity identity = ureq.getIdentity();
+		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryEntry entry = rm.lookupRepositoryEntry(course, true);
+		if (isOlatAdmin || rm.isOwnerOfRepositoryEntry(identity, entry)
+				|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().hasRight(identity, CourseRights.RIGHT_COURSEEDITOR)) {
+			copyButton = LinkFactory.createButton("dialog.copy.file", content, this);
+		}
 		
 		forumCallback = new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
 		content.contextPut("security", forumCallback);

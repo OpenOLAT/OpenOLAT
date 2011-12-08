@@ -67,6 +67,7 @@ import org.olat.repository.controllers.WizardCloseCourseController;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 
@@ -133,7 +134,10 @@ public class CourseHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public MainLayoutController createLaunchController(OLATResourceable res, String initialViewIdentifier, UserRequest ureq, WindowControl wControl) {
-		return CourseFactory.createLaunchController(ureq, wControl, res, initialViewIdentifier);
+		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, res, initialViewIdentifier);
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, courseCtrl);
+		return wrapper;
 	}
 
 	/**

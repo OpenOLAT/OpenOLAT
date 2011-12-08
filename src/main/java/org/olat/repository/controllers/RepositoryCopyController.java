@@ -25,7 +25,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -195,6 +194,24 @@ public class RepositoryCopyController extends BasicController {
 		
 		securityManager.addIdentityToSecurityGroup(ureq.getIdentity(), newGroup);
 		preparedEntry.setOwnerGroup(newGroup);
+		
+		//fxdiff VCRP-1,2: access control of resources
+		// security group for tutors / coaches
+		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, preparedEntry.getOlatResource());
+		// members of this group are always tutors also
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
+		preparedEntry.setTutorGroup(tutorGroup);
+		
+		// security group for participants
+		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, preparedEntry.getOlatResource());
+		// members of this group are always participants also
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
+		preparedEntry.setParticipantGroup(participantGroup);
+		
 
 		RepositoryManager.getInstance().saveRepositoryEntry(preparedEntry);
 		// copy image if available
@@ -211,21 +228,19 @@ public class RepositoryCopyController extends BasicController {
 		// load newEntry again from DB because it could be changed (Exception object modified)
 		//o_clusterREVIEW
 		if (newEntry != null) {
-			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(newEntry.getKey());
-			if (entry != null) {
+			newEntry = RepositoryManager.getInstance().lookupRepositoryEntry(newEntry.getKey());
+			if (newEntry != null) {
 				try {
 					log.debug("Cleanup : started");
-					newEntry = (RepositoryEntry) DBFactory.getInstance().loadObject(newEntry,true);
-					SecurityGroup secGroup = newEntry.getOwnerGroup();
+					//fxdiff FXOLAT-202: use the same code as to delete repo entry
 					RepositoryHandler repositoryHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(newEntry);			
 					log.debug("Cleanup : repositoryHandler.cleanupOnDelete for olat-resource=" + newEntry.getOlatResource());
-					repositoryHandler.cleanupOnDelete(newEntry.getOlatResource());
+					
 					log.debug("Cleanup : deleteRepositoryEntry");
-					RepositoryManager.getInstance().deleteRepositoryEntry(newEntry);
-					if (secGroup != null) { // delete owner group
-						log.debug("Cleanup : deleteSecurityGroup secGroup=" + secGroup);
-						securityManager.deleteSecurityGroup(secGroup);
-					}
+					RepositoryManager.getInstance().deleteRepositoryEntryAndBasesecurity(newEntry);
+					
+					repositoryHandler.cleanupOnDelete(newEntry.getOlatResource());
+
 					newEntry = null;
 				} catch (DBRuntimeException ex) {
 					log.error("Can not cleanup properly ", ex);

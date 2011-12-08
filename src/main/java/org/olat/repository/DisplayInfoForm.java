@@ -84,16 +84,23 @@ public class DisplayInfoForm extends FormBasicController {
 					"" + RepositoryEntry.ACC_OWNERS,
 					"" + RepositoryEntry.ACC_OWNERS_AUTHORS,
 					"" + RepositoryEntry.ACC_USERS,
-					"" + RepositoryEntry.ACC_USERS_GUESTS
+					"" + RepositoryEntry.ACC_USERS_GUESTS,
+					RepositoryEntry.MEMBERS_ONLY//fxdiff VCRP-1,2: access control of resources
 		};
 		String[] values = new String[] {
 					translate("cif.access.owners"),
 					translate("cif.access.owners_authors"),
 					translate("cif.access.users"),
 					translate("cif.access.users_guests"),
+					translate("cif.access.membersonly")//fxdiff VCRP-1,2: access control of resources
 		};
 		access = uifactory.addRadiosVertical("cif_access", "cif.access", formLayout, keys, values);
-		access.select(""+entry.getAccess(), true);
+		//fxdiff VCRP-1,2: access control of resources
+		if(entry.isMembersOnly()) {
+			access.select(RepositoryEntry.MEMBERS_ONLY, true);
+		} else {
+			access.select(""+entry.getAccess(), true);
+		}
 
 		flc.setEnabled(false);
 	}

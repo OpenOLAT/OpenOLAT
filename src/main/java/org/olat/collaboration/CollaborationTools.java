@@ -228,7 +228,6 @@ public class CollaborationTools implements Serializable {
 			toolArr.add(TOOL_PORTFOLIO);
 		}	
 		TOOLS = ArrayHelper.toArray(toolArr);
-//		TOOLS = (String[]) toolArr.toArray();
 	}
 
 	/**

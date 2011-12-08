@@ -1,0 +1,40 @@
+#if ($confControllers.size() > 0)
+<table class="b_access_method">
+	<thead>
+			<tr>
+				<th>$r.translate("accesscontrol.table.method")</th>
+				<th></th>
+				<th>$r.translate("accesscontrol.table.from")</th>
+				<th>$r.translate("accesscontrol.table.to")</th>
+				<th></th>
+			</tr>	
+	</thead>
+	<tbody>
+		#foreach($confController in $confControllers)
+			#set($css = $confController.getLink().getMethod().getMethodCssClass())
+			<tr class="$css">
+				<td><span class="b_with_small_icon_left ${css}_icon">$confController.name</span></td>
+				<td><span class="b_access_infos">$confController.infos</span></td>
+				<td><div class="b_form_element">$r.render("from_$confController.link.key")</div></td>
+				<td><div class="b_form_element">$r.render("to_$confController.link.key")</div></td>
+				<td>$r.render("del_$confController.link.key")</td>
+			</tr>
+			<tr class="$css b_access_desc">
+				<td colspan="5">$confController.getLink().getOffer().getDescription()</td>
+			</tr>
+		#end
+	</tbody>
+</table>
+#else
+	#if ($emptyConfigGrantsFullAccess) 
+		<div class="b_warning">
+			$r.translate("accesscontrol.no.methods.full.access")		
+		</div>
+	#else 	
+		<div class="b_important">
+			$r.translate("accesscontrol.no.methods.no.access")
+		</div>
+	#end
+#end
+
+

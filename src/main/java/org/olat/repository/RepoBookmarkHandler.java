@@ -74,7 +74,7 @@ public class RepoBookmarkHandler implements BookmarkHandler {
 			DTab dt = dts.getDTab(ores);
 			if (dt == null) {
 				// does not yet exist -> create and add
-				dt = dts.createDTab(ores, bookmark.getTitle());
+				dt = dts.createDTab(ores, re, bookmark.getTitle());
 				if (dt == null) {
 					//ups? what happend here?
 					log.warn("Could not create dTab for bookmark with title::" + bookmark.getTitle() + " and ores::" + ores);

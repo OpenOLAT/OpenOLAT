@@ -1,0 +1,136 @@
+/**
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) frentix GmbH<br>
+ * http://www.frentix.com<br>
+ * <p>
+ */
+package org.olat.resource.accesscontrol.ui;
+
+import java.util.Date;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.olat.resource.accesscontrol.model.AccessMethod;
+import org.olat.resource.accesscontrol.model.AccessTransaction;
+import org.olat.resource.accesscontrol.model.Order;
+import org.olat.resource.accesscontrol.ui.OrderDetailController.OrderItemWrapper;
+
+/**
+ * 
+ * Description:<br>
+ * show the details of the OLAT transaction, plus look up a specific
+ * controller for the ugly details of a PSP transaction as Paypal
+ * 
+ * <P>
+ * Initial Date:  27 mai 2011 <br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public class TransactionDetailsController extends FormBasicController {
+	
+	private final Order order;
+	private final OrderItemWrapper wrapper;
+	private final AccessControlModule acModule;
+	
+	public TransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderItemWrapper wrapper) {
+		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
+		
+		this.order = order;
+		this.wrapper = wrapper;
+		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("transaction.details.title");
+
+		String page = velocity_root + "/transaction_details.html";
+		FormLayoutContainer detailsLayout = FormLayoutContainer.createCustomFormLayout("transaction-details-layout", getTranslator(), page);
+		formLayout.add(detailsLayout);
+		detailsLayout.setRootForm(mainForm);
+		
+		AccessTransaction transaction = wrapper.getTransaction();
+		DetailsForm detailsForm = new DetailsForm(ureq, getWindowControl(), transaction, mainForm);
+		detailsLayout.add("simple", detailsForm.getInitialFormItem());
+
+		AccessMethod method = transaction.getMethod();
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+		FormController controller = handler.createTransactionDetailsController(ureq, getWindowControl(), order, wrapper.getPart(), method, mainForm);
+		if(controller != null) {
+			uifactory.addSpacerElement("details-spacer", detailsLayout, false);
+			detailsLayout.add("custom", controller.getInitialFormItem());
+		}
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private class DetailsForm extends FormBasicController implements FormController {
+		
+		private final AccessTransaction transaction;
+	
+		public DetailsForm(UserRequest ureq, WindowControl wControl, AccessTransaction transaction, Form form) {
+			super(ureq, wControl, LAYOUT_DEFAULT, null, form);
+			
+			this.transaction = transaction;
+			
+			initForm(ureq);
+		}
+		
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			Date date = transaction.getCreationDate();
+			String dateStr = Formatter.getInstance(getLocale()).formatDateAndTime(date);
+			uifactory.addStaticTextElement("transaction.date", dateStr, formLayout);
+		}
+		
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		public FormItem getInitialFormItem() {
+			return flc;
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
+		}
+	}
+}

@@ -132,7 +132,7 @@ public abstract class AbstractBackgroundTask implements BackgroundTask {
             }
 		}
 		if (counter >= COUNTER_LIMIT) {
-			log.error("waitForDone: Could not finish BackgroundTask");
+			log.error("waitForDone: Could not finish BackgroundTask this=" + this);
 		}
     }
 

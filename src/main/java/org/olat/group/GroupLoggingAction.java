@@ -59,7 +59,9 @@ public class GroupLoggingAction extends BaseLoggingAction {
 		// this is the standalone group admin case
 		or().addMandatory(OlatResourceableType.businessGroup, StringResourceableType.targetIdentity).
 		// this is the repository detail -> benutzer verwalten case
-		or().addMandatory(OlatResourceableType.course, StringResourceableType.targetIdentity);
+		or().addMandatory(OlatResourceableType.course, StringResourceableType.targetIdentity).
+		// the user import case with adding to group in same step
+		or().addMandatory(OlatResourceableType.businessGroup).addOptional(OlatResourceableType.businessGroup).addOptional(StringResourceableType.targetIdentity);
 	
 	public static final ILoggingAction GROUP_OPEN = 
 		new GroupLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.open, ActionObject.group).setTypeList(
@@ -67,7 +69,8 @@ public class GroupLoggingAction extends BaseLoggingAction {
 	
 	public static final ILoggingAction GROUP_CLOSED = 
 		new GroupLoggingAction(ActionType.tracking, CrudAction.exit, ActionVerb.close, ActionObject.group).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.businessGroup).addOptional(OlatResourceableType.course));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.businessGroup).addOptional(OlatResourceableType.course).
+				or().addMandatory(OlatResourceableType.businessGroup).addOptional(StringResourceableType.targetIdentity, OlatResourceableType.sharedFolder, OlatResourceableType.genRepoEntry));
 	
 	/** logging action: group owner has been added to group * */
 	public static final ILoggingAction GROUP_OWNER_ADDED = 

@@ -21,8 +21,11 @@
 
 package org.olat.basesecurity;
 
+import org.olat.NewControllerFactory;
+import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.id.User;
 
 /**
  * Initial Date: May 4, 2004
@@ -84,8 +87,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
-		
+		// fxdiff: Add controller factory extension point to launch user admin site
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
+				new UserAdminContextEntryControllerCreator());	
 	}
 
 	@Override

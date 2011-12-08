@@ -40,7 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
-import org.olat.home.HomeMainController;
+import org.olat.home.InviteeHomeMainController;
 
 /**
  * Description:<br>
@@ -66,7 +66,7 @@ public class NotificationSubscriptionController extends BasicController {
 
 	protected NotificationSubscriptionController(Identity subscriberIdentity, UserRequest ureq, WindowControl wControl) {
 		// use home fallback for rss translations
-		super(ureq, wControl, Util.createPackageTranslator(HomeMainController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale()));
 		this.subscriberIdentity = subscriberIdentity;
 		// Build the table that contains all the subscriptions
 		TableGuiConfiguration tableGuiPrefs = new TableGuiConfiguration();

@@ -73,7 +73,8 @@ public class RepositoryIndexer implements Indexer {
   public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
   	Roles roles = new Roles(true, true, true, true, false, true, false);
   	int counter = 0;
-  	List repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(null,null,null,null,roles, null);
+  	//fxdiff VCRP-1,2: access control of resources
+  	List repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(null,null,null,null,null,roles, null);
   	if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("RepositoryIndexer repositoryList.size=" + repositoryList.size(), RepositoryIndexer.class);
   	// loop over all repository-entries
 		Iterator iter = repositoryList.iterator();

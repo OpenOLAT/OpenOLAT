@@ -91,6 +91,17 @@ public interface BaseSecurity {
 	 * @return list of Identities
 	 */
 	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup);
+	
+	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup, int firstResult, int maxResults);
+	/**
+	 * Return the primary key of
+	 * @param secGroups
+	 * @return
+	 */
+	public List<Identity> getIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups);
+
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups);
 
 	/**
 	 * @param secGroup
@@ -161,10 +172,6 @@ public interface BaseSecurity {
 	 * @return nr of members in the securitygroup
 	 */
 	public int countIdentitiesOfSecurityGroup(SecurityGroup secGroup);
-	
-	public int countAuthors();
-	
-	public int countDisabledUsers();
 
 	/**
 	 * @param username the username
@@ -205,6 +212,9 @@ public interface BaseSecurity {
 	 *         found
 	 */
 	public Authentication findAuthentication(Identity identity, String provider);
+
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public boolean hasAuthentication(Long identityKey, String provider);
 
 	/**
 	 * @param identity

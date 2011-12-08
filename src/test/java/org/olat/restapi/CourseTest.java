@@ -140,7 +140,8 @@ public class CourseTest extends OlatJerseyTestCase {
 		List<String> courseType = new ArrayList<String>();
 		courseType.add(CourseModule.getCourseTypeName());
 		Roles roles = new Roles(true, true, true, true, false, true, false);
-		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction("*", "*", "*", courseType, roles, "");
+		//fxdiff VCRP-1,2: access control of resources
+		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction("*", "*", "*", courseType, null, roles, "");
 		assertNotNull(repoEntries);
 		
 		for(RepositoryEntry entry:repoEntries) {

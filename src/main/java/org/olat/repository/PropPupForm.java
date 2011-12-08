@@ -75,7 +75,8 @@ public class PropPupForm extends FormBasicController {
 				"" + RepositoryEntry.ACC_OWNERS,
 				"" + RepositoryEntry.ACC_OWNERS_AUTHORS,
 				"" + RepositoryEntry.ACC_USERS,
-				"" + RepositoryEntry.ACC_USERS_GUESTS
+				"" + RepositoryEntry.ACC_USERS_GUESTS,
+				RepositoryEntry.MEMBERS_ONLY//fxdiff VCRP-1,2: access control of resources
 		};
 		
 		values = new String[] {
@@ -83,6 +84,7 @@ public class PropPupForm extends FormBasicController {
 				translate("cif.access.owners_authors"),
 				translate("cif.access.users"),
 				translate("cif.access.users_guests"),
+				translate("cif.access.membersonly"),//fxdiff VCRP-1,2: access control of resources
 		};
 	
 		initForm(ureq);
@@ -142,7 +144,16 @@ public class PropPupForm extends FormBasicController {
 	 * ACC_USERS, ACC_USERS_GUESTS)
 	 */
 	public int getAccess() {
-		return Integer.parseInt(access.getSelectedKey());
+		//fxdiff VCRP-1,2: access control of resources
+		String key = access.getSelectedKey();
+		if(RepositoryEntry.MEMBERS_ONLY.equals(key)) {
+			return RepositoryEntry.ACC_OWNERS;
+		}
+		return Integer.parseInt(key);
+	}
+	//fxdiff VCRP-1,2: access control of resources
+	public boolean isMembersOnly() {
+		return RepositoryEntry.MEMBERS_ONLY.equals(access.getSelectedKey());
 	}
 
 	@Override
@@ -173,7 +184,12 @@ public class PropPupForm extends FormBasicController {
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));
 			
 		access = uifactory.addRadiosVertical("cif_access", "cif.access", formLayout, keys, values);
-		access.select("" + entry.getAccess(), true);
+		//fxdiff VCRP-1,2: access control of resources
+		if(entry.isMembersOnly()) {
+			access.select(RepositoryEntry.MEMBERS_ONLY, true);
+		} else {
+			access.select("" + entry.getAccess(), true);
+		}
 	
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}

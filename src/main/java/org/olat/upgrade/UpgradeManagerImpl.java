@@ -50,8 +50,12 @@ public class UpgradeManagerImpl extends UpgradeManager {
 	/**
 	 * used by spring
 	 */
-	private UpgradeManagerImpl() {
+	public UpgradeManagerImpl() {
 		//
+	}
+	
+	public String getDbVendor() {
+		return dbVendor;
 	}
 	
 	/**
@@ -176,7 +180,7 @@ public class UpgradeManagerImpl extends UpgradeManager {
 	 * @param statements
 	 * @param alterDbStatements
 	 */
-	private void loadAndExecuteSqlStatements(Statement statement, String alterDbStatements, String dialect) {
+	protected void loadAndExecuteSqlStatements(Statement statement, String alterDbStatements, String dialect) {
 		try {
 			Resource setupDatabaseFile = new ClassPathResource("/database/"+dialect+"/"+alterDbStatements);
 			if (!setupDatabaseFile.exists()) {

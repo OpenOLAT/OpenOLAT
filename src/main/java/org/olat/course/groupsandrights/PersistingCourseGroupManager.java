@@ -47,6 +47,8 @@ import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightManagerImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -483,6 +485,15 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public boolean isIdentityCourseCoach(Identity identity) {
 		BaseSecurity secManager = BaseSecurityManager.getInstance();
+		
+	//fxdiff VCRP-1: access control of learn resource
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		if(re != null && re.getTutorGroup() != null) {
+			boolean isCoach = secManager.isIdentityInSecurityGroup(identity, re.getTutorGroup());
+			if (isCoach) // don't check any further
+				return true;
+		}
+		
 		Iterator iterator = learningGroupContexts.iterator();
 		while (iterator.hasNext()) {
 			BGContext bgContext = (BGContext) iterator.next();
@@ -490,6 +501,32 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 			if (isCoach) // don't check any further
 			return true;
 		}
+		return false;
+	}
+	
+	/**
+	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
+	 */
+	public boolean isIdentityCourseParticipant(Identity identity) {
+		BaseSecurity secManager = BaseSecurityManager.getInstance();
+		
+		//fxdiff VCRP-1: access control of learn resource
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		if(re != null && re.getParticipantGroup() != null) {
+			boolean isParticipant = secManager.isIdentityInSecurityGroup(identity, re.getParticipantGroup());
+			if (isParticipant) // don't check any further
+				return true;
+		}
+		
+		Iterator<BGContext> iterator = learningGroupContexts.iterator();
+		for( ; iterator.hasNext(); ) {
+			BGContext bgContext = iterator.next();
+			boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_PARTI, bgContext);
+			if (isParticipant) // don't check any further
+				return true;
+		}
+		
+		
 		return false;
 	}
 
@@ -776,6 +813,28 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 			retVal.addAll(secManager.getIdentitiesOfSecurityGroup(elm.getPartipiciantGroup()));
 		}
 		return retVal;
+	}
+	
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public List<Identity> getCoaches() {
+		BaseSecurity secManager = BaseSecurityManager.getInstance();
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		if(re != null && re.getTutorGroup() != null) {
+			return secManager.getIdentitiesOfSecurityGroup(re.getTutorGroup());
+		}
+		return Collections.emptyList();
+	}
+
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public List<Identity> getParticipants() {
+		BaseSecurity secManager = BaseSecurityManager.getInstance();
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
+		if(re != null && re.getParticipantGroup() != null) {
+			return secManager.getIdentitiesOfSecurityGroup(re.getParticipantGroup());
+		}
+		return Collections.emptyList();
 	}
 
 	/**

@@ -381,7 +381,8 @@ public class UserTest extends OlatTestCase {
 		assertEquals(0, result.size());
 		// find identity 2-3 via first, last and instuser id (non-deletable fields)
 		result = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, searchValue, false, null, null, null, null, null, null, null, null);
-		assertEquals(2, result.size());
+		//fxdiff
+		assertEquals(3, result.size());
 		
 		// check using other methods
 		Identity identity = um.findIdentityByEmail("instjudihui@id.uzh.ch");

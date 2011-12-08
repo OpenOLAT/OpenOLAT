@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
@@ -49,6 +47,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	
+	private static Identity admin;
+	
 	private static final String author = "RepositoryManagerQueryAuthor";
 	private static boolean initialized = false;
 	
@@ -61,6 +61,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		if(initialized) return;
 		
 		DB db = DBFactory.getInstance();
+		
+		admin = JunitTestHelper.createAndPersistIdentityAsAdmin("administrator");
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsAuthor(author + "1");
 		id1.getUser().setProperty(UserConstants.FIRSTNAME, author + "1");
@@ -130,7 +132,7 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 	public void testTwoShootQuery() {
 		List<String> types = Collections.singletonList(TEST_RES_NAME);
 		Roles role1 = new Roles(false, false, false, true, false, false, false);
-		List<RepositoryEntry> resultTwoShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role1, null);
+		List<RepositoryEntry> resultTwoShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role1, null);
 		assertNotNull(resultTwoShoot);
 		assertFalse(resultTwoShoot.isEmpty());
 	}
@@ -141,13 +143,13 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: author + institution manager
 		Roles role2 = new Roles(false, false, false, true, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role2, "Volks");
+		List<RepositoryEntry> resultTwoShootInstitut = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role2, "Volks");
 		Set<RepositoryEntry> resultTwoShootInstitutSet = new HashSet<RepositoryEntry>(resultTwoShootInstitut);
 		assertNotNull(resultTwoShootInstitut);
 		assertFalse(resultTwoShootInstitut.isEmpty());
 		assertEquals(resultTwoShootInstitutSet.size(), resultTwoShootInstitut.size());
 		
-		List<RepositoryEntry> resultOneShootInstitut = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role2, "Volks", 0, -1, true);
+		List<RepositoryEntry> resultOneShootInstitut = rm.genericANDQueryWithRolesRestriction(null, null, null, types, admin, role2, "Volks", 0, -1, true);
 		assertNotNull(resultOneShootInstitut);
 		assertFalse(resultOneShootInstitut.isEmpty());
 
@@ -160,11 +162,11 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: author + institution manager
 		Roles role2 = new Roles(false, false, false, true, false, false, false);
-		List<RepositoryEntry> resultTwoShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role2, null);
+		List<RepositoryEntry> resultTwoShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role2, null);
 		assertNotNull(resultTwoShoot);
 		assertFalse(resultTwoShoot.isEmpty());
 		
-		List<RepositoryEntry> resultOneShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role2, null, 0, -1, true);
+		List<RepositoryEntry> resultOneShoot = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role2, null, 0, -1, true);
 		assertNotNull(resultOneShoot);
 		assertFalse(resultOneShoot.isEmpty());
 
@@ -177,11 +179,11 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: institution manager
 		Roles role3 = new Roles(false, false, false, true, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut3 = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role3, "Volks");
+		List<RepositoryEntry> resultTwoShootInstitut3 = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role3, "Volks");
 		assertNotNull(resultTwoShootInstitut3);
 		assertFalse(resultTwoShootInstitut3.isEmpty());
 		
-		List<RepositoryEntry> resultOneShootInstitut3 = rm.genericANDQueryWithRolesRestriction(null, null, null, types, role3, "Volks", 0, -1, true);
+		List<RepositoryEntry> resultOneShootInstitut3 = rm.genericANDQueryWithRolesRestriction(null, null, null, types, null, role3, "Volks", 0, -1, true);
 		assertNotNull(resultOneShootInstitut3);
 		assertFalse(resultOneShootInstitut3.isEmpty());
 		//check
@@ -194,12 +196,12 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: institution manager search: authorname
 		Roles role4 = new Roles(false, false, false, false, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, role4, "Volks");
+		List<RepositoryEntry> resultTwoShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks");
 		assertNotNull(resultTwoShootInstitut4);
 		assertFalse(resultTwoShootInstitut4.isEmpty());
 		
 
-		List<RepositoryEntry> resultOneShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, role4, "Volks", 0, -1, true);
+		List<RepositoryEntry> resultOneShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks", 0, -1, true);
 		assertNotNull(resultOneShootInstitut4);
 		assertFalse(resultOneShootInstitut4.isEmpty());
 		//check
@@ -212,13 +214,13 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		
 		//roles: institution manager search: authorname
 		Roles role4 = new Roles(false, false, false, false, false, true, false);
-		List<RepositoryEntry> resultTwoShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, role4, "Volks");
+		List<RepositoryEntry> resultTwoShootInstitut4 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks");
 		assertNotNull(resultTwoShootInstitut4);
 		assertFalse(resultTwoShootInstitut4.isEmpty());
 		
 		//test paging
-		List<RepositoryEntry> resultOneShootInstitut6 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, role4, "Volks", 0, 50, true);
-		int resultOneShootInstitutTotal6 = rm.countGenericANDQueryWithRolesRestriction(null, "kan", null, types, role4, "Volks", true);
+		List<RepositoryEntry> resultOneShootInstitut6 = rm.genericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks", 0, 50, true);
+		int resultOneShootInstitutTotal6 = rm.countGenericANDQueryWithRolesRestriction(null, "kan", null, types, null, role4, "Volks", true);
 		assertNotNull(resultOneShootInstitut6);
 		assertEquals(50, resultOneShootInstitut6.size());
 		//check

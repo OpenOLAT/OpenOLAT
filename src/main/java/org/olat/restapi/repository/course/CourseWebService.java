@@ -57,11 +57,16 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.control.WindowBackOffice;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -190,7 +195,8 @@ public class CourseWebService {
 			 //only owners can the see course
 			 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
 			 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
-			 publishProcess.changeGeneralAccess(null, newAccess);
+			 //fxdiff VCRP-1,2: access control of resources
+			 publishProcess.changeGeneralAccess(null, newAccess, false);
 			 
 			 if (publishTreeModel.hasPublishableChanges()) {
 				 List<String>nodeToPublish = new ArrayList<String>();

@@ -46,14 +46,14 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.context.BGContextManagementController;
 import org.olat.group.ui.main.BGMainController;
-import org.olat.home.GuestHomeMainController;
-import org.olat.home.HomeMainController;
 import org.olat.home.InviteeHomeMainController;
+import org.olat.home.HomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.controllers.RepositoryMainController;
 import org.olat.test.GUIDemoMainController;
+
 
 /**
  *  Initial Date:  May 6, 2004
@@ -80,8 +80,7 @@ public class ControllerFactory {
 		if (olatResourceable == null) {
 			// special case after login: guest will get guesthome, other user the
 			// normal home
-			if (ureq.getUserSession().getRoles().isGuestOnly()) return new GuestHomeMainController(ureq, wControl);
-			return new HomeMainController(ureq, wControl);
+			if (ureq.getUserSession().getRoles().isGuestOnly()) return new HomeMainController(ureq, wControl);
 
 		} else if (OresHelper.isOfType(olatResourceable, BGMainController.class)) {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BuddyGroupMainController, but is in guest group " + roles);
@@ -159,7 +158,6 @@ public class ControllerFactory {
 		}
 		// --- home ---
 		else if (OresHelper.isOfType(olatResourceable, HomeMainController.class)) {
-			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a HomeMainController, but is in guest group " + roles);
 			return new HomeMainController(ureq, wControl);
 		} else if (OresHelper.isOfType(olatResourceable, SystemAdminMainController.class)) {
 			if (!roles.isOLATAdmin()) throw new OLATSecurityException("Tried to launch a SystemAdminMainController, but is not in admin group " + roles);
@@ -171,9 +169,6 @@ public class ControllerFactory {
 			if (!roles.isGroupManager()) throw new OLATSecurityException("Tried to launch a BGContextManagementController, but is not in group groupmanager "
 					+ roles);
 			return new BGContextManagementController(ureq, wControl);
-		} else if (OresHelper.isOfType(olatResourceable, GuestHomeMainController.class)) {
-			if (!roles.isGuestOnly() ) throw new OLATSecurityException("Tried to launch a GuestMainController, but is not in guest group " + roles);
-			return new GuestHomeMainController(ureq, wControl);
 		} else if (OresHelper.isOfType(olatResourceable, InviteeHomeMainController.class)) {
 			if (!roles.isInvitee()) throw new OLATSecurityException("Tried to launch a InviteeMainController, but is not an invitee " + roles);
 			return new InviteeHomeMainController(ureq, wControl);

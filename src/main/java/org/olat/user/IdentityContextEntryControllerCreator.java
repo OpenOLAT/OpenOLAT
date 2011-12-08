@@ -27,9 +27,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.ContextEntryControllerCreator2;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+
+import org.olat.home.HomeSite;
 
 /**
  * <h3>Description:</h3>
@@ -41,7 +43,7 @@ import org.olat.core.logging.Tracing;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class IdentityContextEntryControllerCreator implements ContextEntryControllerCreator {
+public class IdentityContextEntryControllerCreator implements ContextEntryControllerCreator2 {
 	private static final OLog log = Tracing.createLoggerFor(IdentityContextEntryControllerCreator.class);
 
 	/**
@@ -61,6 +63,16 @@ public class IdentityContextEntryControllerCreator implements ContextEntryContro
 	 */
 	public String getSiteClassName(ContextEntry ce) {
 		// opened as tab not site
+		return null;
+	}
+
+	@Override
+	//fxdiff BAKS-7 Resume function
+	public String getSiteClassName(UserRequest ureq, ContextEntry ce) {
+		Long resId = ce.getOLATResourceable().getResourceableId();
+		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
+			return HomeSite.class.getName();
+		}
 		return null;
 	}
 

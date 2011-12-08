@@ -21,6 +21,7 @@
 
 package org.olat.group.ui.main;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -35,31 +36,32 @@ import org.olat.group.BusinessGroup;
  * @author gnaegi
  */
 public class BusinessGroupTableModelWithType extends DefaultTableDataModel implements TableDataModel {
-	private static final int COLUMN_COUNT = 5;
+	private final int columnCount;
 	private Translator trans;
 
 	/**
 	 * @param owned list of business groups
 	 */
-	public BusinessGroupTableModelWithType(List owned, Translator trans) {
+	public BusinessGroupTableModelWithType(List<BGTableItem> owned, Translator trans, int columnCount) {
 		super(owned);
 		this.trans = trans;
+		//fxdiff VCRP-1,2: access control of resources
+		this.columnCount = columnCount;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 	 */
 	public int getColumnCount() {
-		return COLUMN_COUNT;
+		return columnCount;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		Object[] wrapped = (Object[]) objects.get(row);
-		;
-		BusinessGroup businessGroup = (BusinessGroup) wrapped[0];
+		BGTableItem wrapped = (BGTableItem)objects.get(row);
+		BusinessGroup businessGroup = wrapped.getBusinessGroup();
 		switch (col) {
 			case 0:
 				String name = businessGroup.getName();
@@ -73,18 +75,35 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 			case 2:
 				return trans.translate(businessGroup.getType());
 			case 3:
-				return wrapped[1];
+				return wrapped.getAllowLeave();
 			case 4:
-				return wrapped[2];
+				return wrapped.getAllowDelete();
+			case 5:
+				return wrapped.getResources();
+			//fxdiff VCRP-1,2: access control of resources
+			case 6:
+				return new Boolean(wrapped.isAccessControl());
+			case 7:
+				if(wrapped.isMember()) return trans.translate("select");
+				return trans.translate("table.access");
+			case 8:
+				return wrapped.getAccessTypes();
+				
 			default:
 				return "ERROR";
 		}
+	}
+	
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public Object createCopyWithEmptyList() {
+		return new BusinessGroupTableModelWithType(Collections.<BGTableItem>emptyList(), trans, columnCount);
 	}
 
 	/**
 	 * @param owned
 	 */
-	public void setEntries(List owned) {
+	public void setEntries(List<BGTableItem> owned) {
 		this.objects = owned;
 	}
 
@@ -93,9 +112,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 	 * @return the business group at the given row
 	 */
 	public BusinessGroup getBusinessGroupAt(int row) {
-		Object[] wrapped = (Object[]) objects.get(row);
-		;
-		return (BusinessGroup) wrapped[0];
+		BGTableItem wrapped = (BGTableItem)objects.get(row);
+		return wrapped.getBusinessGroup();
 	}
-
 }

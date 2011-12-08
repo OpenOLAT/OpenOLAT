@@ -131,6 +131,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private VelocityContainer vc_tab_bgCTools;
 	private VelocityContainer vc_tab_bgAreas;
 	private VelocityContainer vc_tab_bgRights;
+	//fxdiff VCRP-1,2: access control of resources
+	private int tabAccessIndex;
+	private BusinessGroupEditAccessController tabAccessCtrl;
 	private BGConfigFlags flags;
 	private DisplayMemberSwitchForm dmsForm;
 
@@ -196,6 +199,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			/*
 			 * add Tabbed Panes for configuration
 			 */
+			//fxdiff VCRP-1,2: access control of resources
+			int tabIndex = 0;
 			tabbedPane = new TabbedPane("bgTabbs", ureq.getLocale());
 			tabbedPane.addListener(this);
 			vc_tab_bgDetails = createTabDetails(ureq, currBusinessGroup);// modifies vc_tab_bgDetails
@@ -203,17 +208,30 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
 				vc_tab_bgCTools = createTabCollabTools(ureq, flags);
 				tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
+				tabIndex++;
 			}
 			if (flags.isEnabled(BGConfigFlags.AREAS)) {
 				vc_tab_bgAreas = createTabAreas();
 				tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
+				tabIndex++;
 			}
 			if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
 				vc_tab_bgRights = createTabRights();
 				tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
+				tabIndex++;
 			}
 			vc_tab_grpmanagement = createTabGroupManagement(ureq);
 			tabbedPane.addTab(translate("group.edit.tab.members"), vc_tab_grpmanagement);
+			//fxdiff VCRP-1,2: access control of resources
+			tabIndex++;
+			
+			if(BusinessGroup.TYPE_BUDDYGROUP.equals(currBusinessGroup.getType())) {
+				tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
+		  	listenTo(tabAccessCtrl);
+		  	tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
+		  	tabIndex++;
+		  	tabAccessIndex = tabIndex;
+			}
 
 			vc_edit = createVelocityContainer("edit");
 			vc_edit.put("tabbedpane", tabbedPane);
@@ -344,12 +362,15 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 				MailTemplate mailTemplate = identitiesMoveEvent.getMailTemplate();
 				if (mailTemplate != null) {
-					MailerResult mailerResult = mailer.sendMailAsSeparateMails(identitiesMoveEvent.getMovedIdentities(), null, null, mailTemplate, null);
-					MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
+					//fxdiff VCRP-16: intern mail system
+					//TODO SR MailContext context = new MailContextImpl(currBusinessGroup, null, getWindowControl().getBusinessControl().getAsString());
+				//TODO SR MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, identitiesMoveEvent.getMovedIdentities(), null, null, mailTemplate, null);
+				//TODO SR MailHelper.printErrorsAndWarnings(mailerResult, getWindowControl(), ureq.getLocale());
 				}
 				fireEvent(ureq, Event.CHANGED_EVENT );		
 			} 
-		} else if (source == this.modifyBusinessGroupController) {
+		//fxdiff VCRP-1,2: access control of resources
+		} else if (source == this.modifyBusinessGroupController || source == tabAccessCtrl) {
 			if (event == Event.DONE_EVENT) {
 				// update business group with the specified values
 				// values are taken from the modifyBusinessGroupForm
@@ -368,6 +389,11 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				}
 				// do logging
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
+				//fxdiff VCRP-1,2: access control of resources
+				if(source == tabAccessCtrl) {
+					tabbedPane.setSelectedPane(tabAccessIndex);
+				}
+				
 			} else if (event == Event.CANCELLED_EVENT) {
 				// reinit details form
 				// TODO:fj:b introduce reset() for a form
@@ -694,5 +720,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
 		}
 		tabbedPane.addTab(translate("group.edit.tab.members"), createTabGroupManagement(ureq));
+		if(tabAccessCtrl != null) {
+			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
+		}
 	}
 }

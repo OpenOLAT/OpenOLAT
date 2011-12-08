@@ -117,8 +117,11 @@ public class RepositoryEntriesResource {
 		try {
 			// list of courses open for everybody
 			Roles roles = getRoles(httpRequest);
+			Identity identity = getIdentity(httpRequest);
+			
 			List<String> types = new ArrayList<String>();
-			List<RepositoryEntry> coursRepos = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(null, null, null, types, roles, null, 0, -1, false);
+			//fxdiff VCRP-1,2: access control of resources
+			List<RepositoryEntry> coursRepos = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, 0, -1, false);
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("Course List\n");
@@ -159,18 +162,19 @@ public class RepositoryEntriesResource {
 		try {
 			// list of courses open for everybody
 			Roles roles = getRoles(httpRequest);
+			Identity identity = getIdentity(httpRequest);
 			RepositoryManager rm = RepositoryManager.getInstance();
 			
 			List<String> types = Collections.emptyList();
 			if(MediaTypeVariants.isPaged(httpRequest, request)) {
-				int totalCount = rm.countGenericANDQueryWithRolesRestriction(null, null, null, types, roles, null, true);
-				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(null, null, null, types, roles, null, start, limit, true);
+				int totalCount = rm.countGenericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, true);
+				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, start, limit, true);
 				RepositoryEntryVOes voes = new RepositoryEntryVOes();
 				voes.setRepositoryEntries(toArrayOfVOes(res));
 				voes.setTotalCount(totalCount);
 				return Response.ok(voes).build();
 			} else {
-				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(null, null, null, types, roles, null, 0, -1, false);
+				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, 0, -1, false);
 				RepositoryEntryVO[] voes = toArrayOfVOes(res);
 				return Response.ok(voes).build();
 			}
@@ -236,7 +240,8 @@ public class RepositoryEntriesResource {
 			} else {
 				List<String> types = new ArrayList<String>(1);
 				if(restrictedType) types.add(type);
-				List<RepositoryEntry> lstRepos = rm.genericANDQueryWithRolesRestriction(name, author, null, restrictedType ? types : null, roles, null, 0, -1, false);
+
+				List<RepositoryEntry> lstRepos = rm.genericANDQueryWithRolesRestriction(name, author, null, restrictedType ? types : null, identity, roles, null, 0, -1, false);
 				if(!lstRepos.isEmpty()) reposFound.addAll(lstRepos);
 			}
 			
@@ -341,6 +346,24 @@ public class RepositoryEntriesResource {
 
 			securityManager.addIdentityToSecurityGroup(identity, newGroup);
 			addedEntry.setOwnerGroup(newGroup);
+			
+			//fxdiff VCRP-1,2: access control of resources
+			// security group for tutors / coaches
+			SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
+			// member of this group may modify member's membership
+			securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
+			// members of this group are always tutors also
+			securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
+			addedEntry.setTutorGroup(tutorGroup);
+			
+			// security group for participants
+			SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+			// member of this group may modify member's membership
+			securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
+			// members of this group are always participants also
+			securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
+			addedEntry.setParticipantGroup(participantGroup);
+			
 			// Do set access for owner at the end, because unfinished course should be
 			// invisible
 			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);

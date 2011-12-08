@@ -30,6 +30,8 @@ package org.olat.basesecurity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface Invitation {
+	
+	public Long getKey();
 
 	public String getToken();
 	

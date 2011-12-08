@@ -141,6 +141,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return isCoach;
 	}
 
+	@Override
+	public boolean isIdentityCourseParticipant(Identity identity) {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseAdministrator(org.olat.core.id.Identity)
 	 */
@@ -308,6 +313,17 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	}
 
 	public List getParticipantsFromArea(String areaName) {
+		throw new AssertException("unsupported");
+	}
+	
+	//fxdiff VCRP-1,2: access control of resources
+	@Override
+	public List<Identity> getCoaches() {
+		throw new AssertException("unsupported");
+	}
+
+	@Override
+	public List<Identity> getParticipants() {
 		throw new AssertException("unsupported");
 	}
 

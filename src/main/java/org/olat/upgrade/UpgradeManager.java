@@ -34,15 +34,15 @@ import org.olat.core.util.xml.XStreamHelper;
 
 public abstract class UpgradeManager extends BasicManager implements Initializable, GenericEventListener {
 	
-	static final String INSTALLED_UPGRADES_XML = "installed_upgrades.xml";
+	protected String INSTALLED_UPGRADES_XML = "installed_upgrades.xml";
 	static final String SYSTEM_DIR = "system";
 	
 	List<OLATUpgrade> upgrades;
 	Map<String, UpgradeHistoryData> upgradesHistories;
-	private UpgradesDefinitions upgradesDefinitions;
+	protected UpgradesDefinitions upgradesDefinitions;
 	protected DataSource dataSource;
-	private boolean needsUpgrade = true;
-	private boolean autoUpgradeDatabase = true;
+	protected boolean needsUpgrade = true;
+	protected boolean autoUpgradeDatabase = true;
 	
 	/**
    * [used by spring]

@@ -52,8 +52,8 @@ public class AdminModule extends AbstractOLATModule {
 
 	/** Category for system properties **/
 	public static String SYSTEM_PROPERTY_CATEGORY = "_o3_";
-	private static final String PROPERTY_MAINTENANCE_MESSAGE    = "maintenanceMessageToken";
-	private static final String PROPERTY_SESSION_ADMINISTRATION = "sessionAdministrationToken";
+	public static final String PROPERTY_MAINTENANCE_MESSAGE    = "maintenanceMessageToken";
+	public static final String PROPERTY_SESSION_ADMINISTRATION = "sessionAdministrationToken";
 	private static final String CONFIG_ADMIN_MAX_SESSION = "maxNumberOfSessions";
 	private PropertyManager propertyManager;
 
@@ -106,7 +106,7 @@ public class AdminModule extends AbstractOLATModule {
 			Tracing.logAudit("Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr(), AdminModule.class);
 			return false;
 		}
-		// get token and compate
+		// get token and compare
 		PropertyManager pm = PropertyManager.getInstance();
 		Property p = pm.findProperty(null, null, null, AdminModule.SYSTEM_PROPERTY_CATEGORY, tokenPropertyName);
 		String token = (p == null ? "" : p.getStringValue());

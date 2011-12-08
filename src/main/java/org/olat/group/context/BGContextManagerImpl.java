@@ -22,6 +22,8 @@
 package org.olat.group.context;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +34,12 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
@@ -272,6 +276,21 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		return query.list();
 	}
 
+	@Override
+	//fxdiff VCRP-2: access control
+	public List<BusinessGroup> getBusinessGroupAsOwnerOfBGContext(Identity owner, BGContext bgContext) {
+		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bg from org.olat.group.BusinessGroupImpl bg")
+			.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl sgm")
+			.append(" where bg.groupContext=:context and bg.ownerGroup=sgm.securityGroup and sgm.identity=:id");
+
+		DBQuery query = db.createQuery(sb.toString());
+		query.setEntity("context", bgContext);
+		query.setEntity("id", owner);
+		return query.list();
+	}
+
 	/**
 	 * @see org.olat.group.context.BGContextManager#countBGOwnersOfBGContext(org.olat.group.context.BGContext)
 	 */
@@ -305,6 +324,21 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 				+ " where bg.groupContext = :context" + " and bg.partipiciantGroup = sgm.securityGroup" + " and sgm.identity = id";
 		DBQuery query = db.createQuery(q);
 		query.setEntity("context", bgContext);
+		return query.list();
+	}
+	
+	@Override
+	//fxdiff VCRP-2: access control
+	public List<BusinessGroup> getBusinessGroupAsParticipantOfBGContext(Identity participant, BGContext bgContext) {
+		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bg from org.olat.group.BusinessGroupImpl bg")
+			.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl sgm")
+			.append(" where bg.groupContext=:context and bg.partipiciantGroup=sgm.securityGroup and sgm.identity=:id");
+
+		DBQuery query = db.createQuery(sb.toString());
+		query.setEntity("context", bgContext);
+		query.setEntity("id", participant);
 		return query.list();
 	}
 
@@ -470,8 +504,8 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	/**
 	 * @see org.olat.group.context.BGContextManager#findRepositoryEntriesForBGContext(org.olat.group.context.BGContext)
 	 */
-	public List findRepositoryEntriesForBGContext(BGContext bgContext) {
-		List resources = findOLATResourcesForBGContext(bgContext);
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(BGContext bgContext) {
+		/*List resources = findOLATResourcesForBGContext(bgContext);
 		List entries = new ArrayList();
 		for (Iterator iter = resources.iterator(); iter.hasNext();) {
 			OLATResource resource = (OLATResource) iter.next();
@@ -482,8 +516,83 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 			} else {
 				entries.add(entry);
 			}
+		}*/
+		//fxdiff VCRP-1,2: access control of resources
+		return findRepositoryEntriesForBGContext(Collections.singletonList(bgContext));
+	}
+	
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts) {
+		if(bgContexts == null || bgContexts.isEmpty()) return Collections.emptyList();
+		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+			.append(" inner join fetch v.olatResource as ores ")
+			.append(" where ores in (")
+			.append("  select bgcr.resource from ").append(BGContext2Resource.class.getName()).append(" as bgcr where bgcr.groupContext in (:contexts)")
+			.append(" )");
+
+		DBQuery query = db.createQuery(sb.toString());
+		query.setParameterList("contexts", bgContexts);
+		return query.list();
+	}
+	
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int access, boolean asOwner, boolean asCoach,
+			boolean asParticipant, Identity identity) {
+		if(bgContexts == null || bgContexts.isEmpty()) return Collections.emptyList();
+		
+		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+			.append(" inner join fetch v.olatResource as ores ")
+			.append(" where ores in (")
+			.append("  select bgcr.resource from ").append(BGContext2Resource.class.getName()).append(" as bgcr where bgcr.groupContext in (:contexts)")
+			.append(" ) and ");
+		
+		boolean setIdentity = appendAccessSubSelects(sb, access, asOwner, asCoach, asParticipant, identity);
+
+		DBQuery query = db.createQuery(sb.toString());
+		query.setParameterList("contexts", bgContexts);
+		if(setIdentity) {
+			query.setEntity("identity", identity);
 		}
-		return entries;
+		
+		List<RepositoryEntry> results = query.list();
+		return results;
+	}
+	
+	private boolean appendAccessSubSelects(StringBuilder sb, int access, boolean asOwner, boolean asCoach, boolean asParticipant, Identity identity) {
+		sb.append("(v.access >= ");
+		if (access == RepositoryEntry.ACC_OWNERS) {
+			sb.append(access).append(")");
+			return false;
+		}
+		sb.append(access);
+		boolean setIdentity = false;
+		if(identity != null && (asOwner || asCoach || asParticipant)) {
+			setIdentity = true;
+			//sub select are very quick
+			sb.append(" or (")
+				.append("  v.access=1 and v.membersOnly=true and (");
+			
+			if(asOwner) {
+				sb.append(" v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)");
+			}
+			if(asCoach) {
+				if(asOwner) sb.append(" or ");
+				sb.append(" v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)");
+			}
+			if(asParticipant) {
+				if(asOwner || asCoach) sb.append(" or ");
+				sb.append(" v.participantGroup in (select partiSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" partiSgmsi where partiSgmsi.identity=:identity)");
+			}
+			sb.append(" ))");
+		}
+		sb.append(")");
+		return setIdentity;
 	}
 
 	/**

@@ -57,7 +57,6 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -83,6 +82,8 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.AssessableResultsVO;
 
@@ -143,8 +144,8 @@ public class CourseAssessmentWebService {
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-
-		List<Identity> courseUsers = loadUsers(course.getCourseEnvironment().getCourseGroupManager());
+		//fxdiff VCRP-1,2: access control of resources
+		List<Identity> courseUsers = loadUsers(course);
 		int i=0;
 		
 		Date lastModified = null;
@@ -247,8 +248,8 @@ public class CourseAssessmentWebService {
 		} else if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-
-		List<Identity> courseUsers = loadUsers(course.getCourseEnvironment().getCourseGroupManager());
+		//fxdiff VCRP-1,2: access control of resources
+		List<Identity> courseUsers = loadUsers(course);
 		int i=0;
 		Date lastModified = null;
 		AssessableResultsVO[] results = new AssessableResultsVO[courseUsers.size()];
@@ -576,11 +577,12 @@ public class CourseAssessmentWebService {
 		}
 		return null;
 	}
-	
-	private List<Identity> loadUsers(CourseGroupManager gm) {
+
+	//fxdiff VCRP-1,2: access control of resources
+	private List<Identity> loadUsers(ICourse course) {
 		List<Identity> identites = new ArrayList<Identity>();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<BusinessGroup> groups = gm.getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getAllLearningGroupsFromAllContexts();
 
 		Set<Long> check = new HashSet<Long>();
 		for(BusinessGroup group:groups) {
@@ -593,6 +595,18 @@ public class CourseAssessmentWebService {
 				}
 			}
 		}
+		//fxdiff VCRP-1,2: access control of resources
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
+		if(re != null && re.getParticipantGroup() != null) {
+			List<Identity> ids = securityManager.getIdentitiesOfSecurityGroup(re.getParticipantGroup());
+			for(Identity id:ids) {
+				if(!check.contains(id.getKey())) {
+					identites.add(id);
+					check.add(id.getKey());
+				}
+			}
+		}
+
 		return identites;
 	}
 }

@@ -46,7 +46,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.AsyncExportManager;
-import org.olat.home.HomeMainController;
+import org.olat.home.InviteeHomeMainController;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 
@@ -145,7 +145,7 @@ public class CourseLogsArchiveController extends BasicController {
 				bcrun.activate(ureq, relPath);
 			}
 			
-			String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
+			String personalFolder = Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
 			
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(

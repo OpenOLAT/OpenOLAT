@@ -215,6 +215,24 @@ public class ImportPortfolioReferencesController extends BasicController {
 		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
 		securityManager.addIdentityToSecurityGroup(owner, newGroup);
 		importedRepositoryEntry.setOwnerGroup(newGroup);
+		
+		//fxdiff VCRP-1,2: access control of resources
+		// security group for tutors / coaches
+		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, importedRepositoryEntry.getOlatResource());
+		// members of this group are always tutors also
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
+		importedRepositoryEntry.setTutorGroup(tutorGroup);
+		
+		// security group for participants
+		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, importedRepositoryEntry.getOlatResource());
+		// members of this group are always participants also
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
+		importedRepositoryEntry.setParticipantGroup(participantGroup);
+		
 		rm.saveRepositoryEntry(importedRepositoryEntry);
 
 		if (!keepSoftkey) {

@@ -135,7 +135,8 @@ public class RepositorySearchMultiSelectController extends RepositorySearchContr
 		RepositoryManager rm = RepositoryManager.getInstance();
 		Set s = searchForm.getRestrictedTypes();
 		List restrictedTypes = (s == null) ? null : new ArrayList(s);
-		List entries = rm.genericANDQueryWithRolesRestriction(null, null, null, null, ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty("institutionalName", null));
+		//fxdiff VCRP-1,2: access control of resources
+		List entries = rm.genericANDQueryWithRolesRestriction(null, null, null, null, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getIdentity().getUser().getProperty("institutionalName", null));
 		repoTableModel.setObjects(entries);
 		tableCtr.modelChanged();
 		displaySearchResults(ureq);

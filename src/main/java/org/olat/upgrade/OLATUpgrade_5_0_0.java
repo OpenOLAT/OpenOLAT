@@ -117,7 +117,8 @@ public class OLATUpgrade_5_0_0 extends OLATUpgrade {
 	
 				// get all repository entries
 				Roles roles = new Roles(true, true, true, true, false, true, false);
-				List inDatabase = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(null, null, null, null, roles, null);
+				//fxdiff VCRP-1,2: access control of resources
+				List inDatabase = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(null, null, null, null, null, roles, null);
 	
 				Set inDatabaseIDs = new HashSet(inDatabase.size());
 				for (Iterator iter = inDatabase.iterator(); iter.hasNext();) {

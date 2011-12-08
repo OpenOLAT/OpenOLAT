@@ -41,6 +41,7 @@ import org.olat.modules.scorm.ScormMainManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -111,8 +112,11 @@ public class SCORMCPHandler extends FileHandler implements RepositoryHandler {
 		if (re!=null) {
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 		}
+		//fxdiff FXOLAT-116: SCORM improvements
 		MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, wControl, true, null, cpRoot, res.getResourceableId().toString(), null, "browse", "no-credit", false, false);
-		return realController; 
+		//fxdiff VCRP-1: access control of learn resources
+		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, res, realController);
+		return wrapper; 
 	}
 
 	/**

@@ -129,6 +129,9 @@ public class CreateNewCourseController extends BasicController implements IAddCo
 		// -> All owners of repository entries are course admins
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		secMgr.createAndPersistPolicy(re.getOwnerGroup(), Constants.PERMISSION_ADMIN, re.getOlatResource());
+		//fxdiff VCRP-1,2: access control of resources
+		secMgr.createAndPersistPolicy(re.getParticipantGroup(), Constants.PERMISSION_PARTI, re.getOlatResource());
+		secMgr.createAndPersistPolicy(re.getTutorGroup(), Constants.PERMISSION_COACH, re.getOlatResource());
 		// set root node title
 				
 		course = CourseFactory.openCourseEditSession(re.getOlatResource().getResourceableId());

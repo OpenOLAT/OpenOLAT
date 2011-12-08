@@ -25,9 +25,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
@@ -91,8 +92,8 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 		assertTrue("pdf must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.pdf"))));
 		assertTrue("PDF must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.PDF"))));
 
-		assertTrue("DOC must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.DOC"))));
-		assertTrue("doc must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.doc"))));
+		assertTrue("DOC must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test2.DOC")));
+		assertTrue("doc must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test.doc")));
 
 		assertTrue("TXT must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.TXT"))));
 		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.txt"))));
@@ -102,6 +103,17 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.CSV"))));
 		assertTrue("XML must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.XML"))));
 		assertTrue("xml must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.xml"))));
+	}
+	
+	private VFSLeaf getVFSFile(String name) {
+		try {
+			URL url = FileDocumentFactoryTest.class.getResource(name);
+			File file = new File(url.toURI());
+			return new LocalFileImpl(file);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Test public void testCreateHtmlDocument() {

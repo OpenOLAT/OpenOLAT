@@ -35,10 +35,12 @@ public class SetAccessBackgroundTask extends AbstractBackgroundTask {
 	
 	private RepositoryEntry repositoryEntry;
 	private int access;
+	private boolean membersOnly;//fxdiff VCRP-1,2: access control of resources
 	
-	public SetAccessBackgroundTask(RepositoryEntry repositoryEntry, int access) {
+	public SetAccessBackgroundTask(RepositoryEntry repositoryEntry, int access, boolean membersOnly) {
 		this.repositoryEntry = repositoryEntry;
 		this.access = access;
+		this.membersOnly = membersOnly;
 	}
 	
 	public void executeTask() {
@@ -48,6 +50,7 @@ public class SetAccessBackgroundTask extends AbstractBackgroundTask {
 		if ( RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey()) != null ) {
 			RepositoryEntry reloadedRe = (RepositoryEntry) DBFactory.getInstance().loadObject(repositoryEntry, true);
 			reloadedRe.setAccess(access);
+			reloadedRe.setMembersOnly(membersOnly);//fxdiff VCRP-1,2: access control of resources
 			RepositoryManager.getInstance().updateRepositoryEntry(reloadedRe);
 			log.debug("SetAccessBackgroundTask DONE for repositoryEntry=" + repositoryEntry + "  this=" + this);
 		} else {

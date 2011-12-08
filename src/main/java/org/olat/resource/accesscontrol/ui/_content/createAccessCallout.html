@@ -1,0 +1,8 @@
+<div class="b_access_create">
+	<p>$r.translate("add.accesscontrol.intro")</p>
+	<ul>
+		#foreach($method in $methods)
+			<li>$r.render($method.componentName)</li>
+		#end
+	</ul>
+</div>

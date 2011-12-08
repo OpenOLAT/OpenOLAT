@@ -22,6 +22,7 @@
 package org.olat.group.ui;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
@@ -35,6 +36,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupFactory;
@@ -161,6 +164,13 @@ public class BusinessGroupFormController extends FormBasicController {
 		businessGroupDescription = uifactory.addRichTextElementForStringDataMinimalistic("create.form.title.description",
 				"create.form.title.description", "", 10, -1, false, formLayout, ureq.getUserSession(), getWindowControl());
 
+		if(businessGroup != null && !bulkMode) {
+			BusinessControlFactory bcf = BusinessControlFactory.getInstance();
+			List<ContextEntry> entries = bcf.createCEListFromString("[BusinessGroup:" + businessGroup.getKey() + "]");
+			String url = BusinessControlFactory.getInstance().getAsURIString(entries, true);
+			uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
+		}
+		
 		uifactory.addSpacerElement("myspacer", formLayout, true);
 
 		// Minimum members input

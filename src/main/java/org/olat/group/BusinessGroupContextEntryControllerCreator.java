@@ -20,6 +20,9 @@
  */
 package org.olat.group;
 
+import java.util.Date;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -27,6 +30,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.group.ui.BGControllerFactory;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 
 /**
  * <h3>Description:</h3>
@@ -54,7 +61,8 @@ public class BusinessGroupContextEntryControllerCreator implements ContextEntryC
 		Controller ctrl = null;
 		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		// check if allowed to start (must be member or admin)
-		if (isOlatAdmin || bman.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup)) {
+		//fxdiff VCRP-1,2: access control of resources
+		if (isOlatAdmin || bman.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
 			// only olatadmins or admins of this group can administer this group
 			ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup, isOlatAdmin, null);
 		}
@@ -85,7 +93,22 @@ public class BusinessGroupContextEntryControllerCreator implements ContextEntryC
 		Long gKey = ores.getResourceableId();
 		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
 		BusinessGroup bgroup = bman.loadBusinessGroup(gKey, false);
-		return bgroup != null;
+		if (bgroup != null){
+			return bman.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
+		}
+		return false;
+	}
+	
+	private boolean isAccessControlled(BusinessGroup bgroup) {
+		AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+		if(acModule.isEnabled()) {
+			ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+			OLATResource resource = OLATResourceManager.getInstance().findResourceable(bgroup);
+			if(acFrontendManager.isResourceAccessControled(resource, new Date())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

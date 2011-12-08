@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -40,6 +41,7 @@ import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
@@ -62,6 +64,7 @@ import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -92,8 +95,11 @@ import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepoJumpInHandlerFactory;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.UserDataDeletable;
+import org.olat.user.UserImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -113,6 +119,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	private BaseSecurity securityManager;
 	private List<DeletableGroupData> deleteListeners;
 	
+	private String dbVendor;
+	
 	/**
 	 * @return singleton instance
 	 */
@@ -128,6 +136,15 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		this.securityManager = securityManager;
 		deleteListeners = new ArrayList<DeletableGroupData>();
 		INSTANCE = this;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param dbVendor
+	 */
+	 //fxdiff VCRP-1,2: access control of resources
+  public void setDbVendor(String dbVendor) {
+		this.dbVendor = dbVendor;
 	}
 
   /** 
@@ -150,7 +167,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * @param groupContext
 	 * @return
 	 */
-	protected boolean checkIfOneOrMoreNameExistsInContext(Set names, BGContext groupContext){
+	protected boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BGContext groupContext){
 		return BusinessGroupFactory.checkIfOneOrMoreNameExistsInContext(names, groupContext);
 	}
 	
@@ -158,7 +175,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsOwnedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
 	 */
-	public List findBusinessGroupsOwnedBy(String type, Identity identityP, BGContext bgContext) {
+	public List<BusinessGroup> findBusinessGroupsOwnedBy(String type, Identity identityP, BGContext bgContext) {
 		// attach group context to session - maybe a proxy...
 		String query = "select bgi from " + " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi,"
 				+ " org.olat.group.BusinessGroupImpl as bgi" + " where bgi.ownerGroup = sgmi.securityGroup and sgmi.identity = :identId";
@@ -179,7 +196,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (bgContext != null) dbq.setEntity("context", bgContext);
 		if (type != null) dbq.setString("type", type);
 
-		List res = dbq.list();
+		List<BusinessGroup> res = dbq.list();
 		return res;
 	}
 
@@ -187,7 +204,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsAttendedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
 	 */
-	public List findBusinessGroupsAttendedBy(String type, Identity identityP, BGContext bgContext) {
+	public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identityP, BGContext bgContext) {
 		String query = "select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi "
 				+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi"
 				+ " where bgi.partipiciantGroup = sgmi.securityGroup";
@@ -201,7 +218,22 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (bgContext != null) dbq.setEntity("context", bgContext);
 		if (type != null) dbq.setString("type", type);
 
-		List res = dbq.list();
+		List<BusinessGroup> res = dbq.list();
+		return res;
+	}
+	
+	public List<BusinessGroup> findBusinessGroups(Collection<Long> keys) {
+		if(keys == null || keys.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
+			.append(" where bgi.key in (:keys)");
+
+		DB db = DBFactory.getInstance();
+		DBQuery dbq = db.createQuery(sb.toString());
+		dbq.setParameterList("keys", keys);
+
+		List<BusinessGroup> res = dbq.list();
 		return res;
 	}
 	
@@ -296,7 +328,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#getAllBusinessGroups()
 	 */
-	public List getAllBusinessGroups() {
+	public List<BusinessGroup> getAllBusinessGroups() {
 		DBQuery dbq = DBFactory.getInstance().createQuery("select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi ");
 		return dbq.list();
 	}
@@ -305,7 +337,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsAttendedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
 	 */
-	public List findBusinessGroupsWithWaitingListAttendedBy(String type, Identity identityP, BGContext bgContext) {
+	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(String type, Identity identityP, BGContext bgContext) {
 		String query = "select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi "
 				+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi"
 				+ " where bgi.waitingGroup = sgmi.securityGroup and sgmi.identity = :identId";
@@ -318,8 +350,100 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (bgContext != null) dbq.setEntity("context", bgContext);
 		if (type != null) dbq.setString("type", type);
 
-		List res = dbq.list();
+		List<BusinessGroup> res = dbq.list();
 		return res;
+	}
+	
+	/**
+	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsAttendedBy(java.lang.String,
+	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
+	 */
+	 //fxdiff VCRP-1,2: access control of resources
+	public List<BusinessGroup> findBusinessGroups(Collection<String> types, Identity identityP, Long id, String name, String description, String owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" as bgi");
+
+		boolean where = false;
+		//fuzzy search owner (like author in repository search)
+		if(StringHelper.containsNonWhitespace(owner)) {
+			//implicit joins
+			sb.append(", ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ")
+				.append(", ").append(IdentityImpl.class.getName()).append(" identity")
+				.append(", ").append(UserImpl.class.getName()).append(" user ");
+
+			where = true;
+			sb.append(" where bgi.ownerGroup = sgmi.securityGroup")
+				.append(" and sgmi.identity = identity ")
+				.append(" and identity.user = user and ");
+			
+			//query the name in login, firstName and lastName
+			sb.append("(");
+			searchLikeUserProperty(sb, "firstName", "owner").append(" or ");
+			searchLikeUserProperty(sb, "lastName", "owner").append(" or ");
+			searchLikeAttribute(sb, "identity", "name", "owner").append(")");
+		}
+
+		if(id != null) {
+			where = where(sb, where);
+			sb.append(" bgi.key=:id");
+		}
+		if(StringHelper.containsNonWhitespace(name)) {
+			where = where(sb, where);
+			searchLikeAttribute(sb, "bgi", "name", "name");
+		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			where = where(sb, where);
+			searchLikeAttribute(sb, "bgi", "description", "description");
+		}
+		if (types != null && !types.isEmpty()) {
+			where = where(sb, where);
+			sb.append("bgi.type in (:types)");
+		}
+
+		DB db = DBFactory.getInstance();
+		DBQuery query = db.createQuery(sb.toString());
+		if(id != null) {
+			query.setLong("id", id);
+		}
+		if(StringHelper.containsNonWhitespace(name)) {
+			query.setParameter("name", makeFuzzyQueryString(name));
+		}
+		if(StringHelper.containsNonWhitespace(description)) {
+			query.setParameter("description", makeFuzzyQueryString(description));
+		}
+		if(StringHelper.containsNonWhitespace(owner)) {
+			query.setParameter("owner", makeFuzzyQueryString(owner));
+		}
+		if (types != null && !types.isEmpty()) {
+			query.setParameterList("types", types);
+		}
+
+		List<BusinessGroup> res = query.list();
+		return res;
+	}
+	
+	private StringBuilder searchLikeUserProperty(StringBuilder sb, String key, String var) {
+		if(dbVendor.equals("mysql")) {
+			sb.append(" user.properties['").append(key).append("'] like :").append(var);
+		} else {
+			sb.append(" lower(user.properties['").append(key).append("']) like :").append(var);
+			if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+	 	 		sb.append(" escape '\\'");
+	 	 	}
+		}
+		return sb;
+	}
+	
+	private StringBuilder searchLikeAttribute(StringBuilder sb, String objName, String attribute, String var) {
+		if(dbVendor.equals("mysql")) {
+			sb.append(" ").append(objName).append(".").append(attribute).append(" like :").append(var);
+		} else {
+			sb.append(" lower(").append(objName).append(".").append(attribute).append(") like :").append(var);
+			if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+	 	 		sb.append(" escape '\\'");
+	 	 	}
+		}
+		return sb;
 	}
 	
 	private boolean where(StringBuilder sb, boolean where) {
@@ -329,6 +453,19 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			sb.append(" where ");
 		}
 		return true;
+	}
+	
+	private String makeFuzzyQueryString(String string) {
+		// By default only fuzzyfy at the end. Usually it makes no sense to do a
+		// fuzzy search with % at the beginning, but it makes the query very very
+		// slow since it can not use any index and must perform a fulltext search.
+		// User can always use * to make it a really fuzzy search query
+		string = string.replace('*', '%');
+		string = string + "%";
+		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
+		// To test for literal instances of '_', we have to escape it.
+		string = string.replace("_", "\\_");
+		return string.toLowerCase();
 	}
 	
 	/**
@@ -370,7 +507,9 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			businessGroupTodelete = loadBusinessGroup(businessGroupTodelete);
 			// 0) Loop over all deletableGroupData
 			for (DeletableGroupData deleteListener : deleteListeners) {
-				logDebug("deleteBusinessGroup: call deleteListener=" + deleteListener);
+				if(isLogDebugEnabled()) {
+					logDebug("deleteBusinessGroup: call deleteListener=" + deleteListener);
+				}
 				deleteListener.deleteGroupDataFor(businessGroupTodelete);
 			} 
 			ProjectBrokerManagerFactory.getProjectBrokerManager().deleteGroupDataFor(businessGroupTodelete);
@@ -380,6 +519,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			// 1.b)delete display member property
 			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(businessGroupTodelete);
 			bgpm.deleteDisplayMembers();
+			// 1.c)delete user in security groups
+			removeFromRepositoryEntrySecurityGroup(businessGroupTodelete);
 			// 2) Delete the group areas
 			if (BusinessGroup.TYPE_LEARNINGROUP.equals(type)) {
 				BGAreaManagerImpl.getInstance().deleteBGtoAreaRelations(businessGroupTodelete);
@@ -421,7 +562,40 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			}
 		}
 	}
-
+	
+	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {
+		BGContext context = group.getGroupContext();
+		if(context == null) return;//nothing to do
+		
+		BGContextManager contextManager = BGContextManagerImpl.getInstance();
+		List<Identity> coaches = group.getOwnerGroup() == null ? Collections.<Identity>emptyList() :
+			securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup());
+		List<Identity> participants = group.getPartipiciantGroup() == null ? Collections.<Identity>emptyList() :
+			securityManager.getIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
+		List<RepositoryEntry> entries = contextManager.findRepositoryEntriesForBGContext(context);
+		
+		for(Identity coach:coaches) {
+			List<BusinessGroup> businessGroups = contextManager.getBusinessGroupAsOwnerOfBGContext(coach, context) ;
+			if(context.isDefaultContext() && businessGroups.size() == 1) {
+				for(RepositoryEntry entry:entries) {
+					if(entry.getTutorGroup() != null && securityManager.isIdentityInSecurityGroup(coach, entry.getTutorGroup())) {
+						securityManager.removeIdentityFromSecurityGroup(coach, entry.getTutorGroup());
+					}
+				}
+			}
+		}
+		
+		for(Identity participant:participants) {
+			List<BusinessGroup> businessGroups = contextManager.getBusinessGroupAsParticipantOfBGContext(participant, context) ;
+			if(context.isDefaultContext() && businessGroups.size() == 1) {
+				for(RepositoryEntry entry:entries) {
+					if(entry.getParticipantGroup() != null && securityManager.isIdentityInSecurityGroup(participant, entry.getParticipantGroup())) {
+						securityManager.removeIdentityFromSecurityGroup(participant, entry.getParticipantGroup());
+					}
+				}
+			}
+		}
+	}
 	/**
 	 * @see org.olat.group.BusinessGroupManager#deleteBusinessGroupWithMail(org.olat.group.BusinessGroup,
 	 *      org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest,
@@ -433,20 +607,20 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		
 		// collect data for mail
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List users = new ArrayList();
+		List<Identity> users = new ArrayList<Identity>();
 		SecurityGroup ownerGroup = businessGroupTodelete.getOwnerGroup();
 		if (ownerGroup != null) {
-			List owner = secMgr.getIdentitiesOfSecurityGroup(ownerGroup);
+			List<Identity> owner = secMgr.getIdentitiesOfSecurityGroup(ownerGroup);
 			users.addAll(owner);
 		}
 		SecurityGroup partGroup = businessGroupTodelete.getPartipiciantGroup();
 		if (partGroup != null) {
-			List participants = secMgr.getIdentitiesOfSecurityGroup(partGroup);
+			List<Identity> participants = secMgr.getIdentitiesOfSecurityGroup(partGroup);
 			users.addAll(participants);
 		}
 		SecurityGroup watiGroup = businessGroupTodelete.getWaitingGroup();
 		if (watiGroup != null) {
-			List waiting = secMgr.getIdentitiesOfSecurityGroup(watiGroup);
+			List<Identity> waiting = secMgr.getIdentitiesOfSecurityGroup(watiGroup);
 			users.addAll(waiting);
 		}
 		// now delete the group first
@@ -455,8 +629,10 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 		MailTemplate mailTemplate = BGMailHelper.createDeleteGroupMailTemplate(businessGroupTodelete, ureq.getIdentity());
 		if (mailTemplate != null) {
-			MailerResult mailerResult = mailer.sendMailAsSeparateMails(users, null, null, mailTemplate, null);
-			MailHelper.printErrorsAndWarnings(mailerResult, wControl, ureq.getLocale());
+			//fxdiff VCRP-16: intern mail system
+		//TODO SR MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
+		//TODO SR MailerResult mailerResult = mailer.sendMailAsSeparateMails(context, users, null, null, mailTemplate, null);
+		//TODO SR MailHelper.printErrorsAndWarnings(mailerResult, wControl, ureq.getLocale());
 		}
 		
 	}
@@ -587,6 +763,21 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (strict) return (BusinessGroup) DBFactory.getInstance().loadObject(BusinessGroupImpl.class, groupKey);
 		return (BusinessGroup) DBFactory.getInstance().findObject(BusinessGroupImpl.class, groupKey);
 	}
+	
+	public BusinessGroup loadBusinessGroup(String groupKey, boolean strict) {
+		Long key = Long.parseLong(groupKey); 
+		return loadBusinessGroup(key, strict);
+	}
+	
+	/**
+	 * @see org.olat.group.BusinessGroupManager#loadBusinessGroup(java.lang.Long,
+	 *      boolean)
+	 */
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public BusinessGroup loadBusinessGroup(OLATResource resource, boolean strict) {
+		return loadBusinessGroup(resource.getResourceableId(), strict);
+	}
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#copyBusinessGroup(org.olat.group.BusinessGroup,
@@ -693,6 +884,20 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			boolean doOnlyPostAddingStuff) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		if (!doOnlyPostAddingStuff) {
+			//fxdiff VCRP-1,2: access control of resources
+			BGContext context = group.getGroupContext();
+			if(context != null) {
+				List<RepositoryEntry> res = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(context);
+				for(RepositoryEntry re:res) {
+					if(re.getParticipantGroup() == null) {
+						RepositoryManager.getInstance().createParticipantSecurityGroup(re);
+						RepositoryManager.getInstance().updateRepositoryEntry(re);
+					}
+					if(re.getParticipantGroup() != null && !securityManager.isIdentityInSecurityGroup(identity, re.getParticipantGroup())) {
+						securityManager.addIdentityToSecurityGroup(identity, re.getParticipantGroup());
+					}
+				}
+			}
 			securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
 		}
 		// add user to buddies rosters
@@ -700,7 +905,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
 		// do logging
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(identity));
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
 		// send notification mail in your controller!
 	}
 
@@ -714,6 +919,20 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	public void addOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
 			boolean doOnlyPostAddingStuff) {
 		if (!doOnlyPostAddingStuff) {
+			//fxdiff VCRP-1,2: access control of resources
+			BGContext context = group.getGroupContext();
+			if(context != null) {
+				List<RepositoryEntry> res = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(context);
+				for(RepositoryEntry re:res) {
+					if(re.getTutorGroup() == null) {
+						RepositoryManager.getInstance().createTutorSecurityGroup(re);
+						RepositoryManager.getInstance().updateRepositoryEntry(re);
+					}
+					if(re.getTutorGroup() != null && !securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
+						securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
+					}
+				}
+			}
 			securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
 		}
 		// add user to buddies rosters
@@ -721,8 +940,33 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		// notify currently active users of this business group
 		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
 		// do logging
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
+		// send notification mail in your controller!
+	}
+	
+	//fxdiff VCRP-1,2: access control of resources
+	public void addAndFireEvent(Identity ureqIdentity, Identity identity, SecurityGroup secGroup, boolean doOnlyPostAddingStuff) {
+		if (!doOnlyPostAddingStuff) {
+			securityManager.addIdentityToSecurityGroup(identity, secGroup);
+		}
+		// add user to buddies rosters
+		// notify currently active users of this business group
+		//TODO BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
+		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(identity));
 		// send notification mail in your controller!
+	}
+	
+	//fxdiff VCRP-1,2: access control of resources
+	public void removeAndFireEvent(Identity ureqIdentity, Identity identity, SecurityGroup secGroup, boolean doOnlyPostRemovingStuff) {
+		if(!doOnlyPostRemovingStuff) {
+			securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
+		}
+		// remove user from buddies rosters
+		//TODO removeFromRoster(identity, group, flags);
+		
+		//remove subsciptions if user gets removed
+		//TODO removeSubscriptions(identity, group);
 	}
 
 	/**
@@ -735,6 +979,20 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	public void removeOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags,
 			boolean doOnlyPostRemovingStuff) {
 		if (!doOnlyPostRemovingStuff) {
+			//fxdiff VCRP-2: access control
+			BGContext context = group.getGroupContext();
+			if(context != null) {
+				BGContextManager contextManager = BGContextManagerImpl.getInstance();
+				List<BusinessGroup> businessGroups = contextManager.getBusinessGroupAsOwnerOfBGContext(identity, context) ;
+				if(context.isDefaultContext() && businessGroups.size() == 1) {
+					List<RepositoryEntry> entries = contextManager.findRepositoryEntriesForBGContext(context);
+					for(RepositoryEntry entry:entries) {
+						if(entry.getTutorGroup() != null && securityManager.isIdentityInSecurityGroup(identity, entry.getTutorGroup())) {
+							securityManager.removeIdentityFromSecurityGroup(identity, entry.getTutorGroup());
+						}
+					}
+				}
+			}
 			securityManager.removeIdentityFromSecurityGroup(identity, group.getOwnerGroup());
 		}
 		// remove user from buddies rosters
@@ -766,6 +1024,20 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			final boolean doOnlyPostRemovingStuff) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		if (!doOnlyPostRemovingStuff) {
+			//fxdiff VCRP-2: access control
+			BGContext context = group.getGroupContext();
+			if(context != null) {
+				BGContextManager contextManager = BGContextManagerImpl.getInstance();
+				List<BusinessGroup> businessGroups = contextManager.getBusinessGroupAsParticipantOfBGContext(identity, context) ;
+				if(context.isDefaultContext() && businessGroups.size() == 1) {
+					List<RepositoryEntry> entries = contextManager.findRepositoryEntriesForBGContext(context);
+					for(RepositoryEntry entry:entries) {
+						if(entry.getParticipantGroup() != null && securityManager.isIdentityInSecurityGroup(identity, entry.getParticipantGroup())) {
+							securityManager.removeIdentityFromSecurityGroup(identity, entry.getParticipantGroup());
+						}
+					}
+				}
+			}
 			securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
 		}
 		// remove user from buddies rosters
@@ -905,6 +1177,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (calendarAccess != null) {
 			newGroup.calendarAccess = calendarAccess;
 		}
+
 		String info = ct.lookupNews();
 		if (info != null && !info.trim().equals("")) {
 			newGroup.info = info.trim();
@@ -1019,6 +1292,10 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 					Long calendarAccess = group.calendarAccess;
 					ct.saveCalendarAccess(calendarAccess);
 				}
+				//fxdiff VCRP-8: collaboration tools folder access control
+			//TODO SR if(group.folderAccess != null) {
+			//TODO SR 	  ct.saveFolderAccess(group.folderAccess);				  
+			//TODO SR 	}
 				if (group.info != null) {
 					ct.saveNews(group.info);
 				}
@@ -1094,6 +1371,29 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		  }
 		}
 		return pos;
+	}
+	
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup) {
+		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
+		for (Identity identity : addIdentities) {
+			if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
+				response.getIdentitiesWithoutPermission().add(identity);
+			}
+			// Check if identity is already in group. make a db query in case
+			// someone in another workflow already added this user to this group. if
+			// found, add user to model
+			else if (securityManager.isIdentityInSecurityGroup(identity, secGroup)) {
+				response.getIdentitiesAlreadyInGroup().add(identity);
+			} else {
+	      // identity has permission and is not already in group => add it
+				addAndFireEvent(ureqIdentity, identity, secGroup, false);
+				response.getAddedIdentities().add(identity);
+				logAudit("added identity '" + identity.getName() + "' to securitygroup with key " + secGroup.getKey());
+			}
+		}
+		return response;
 	}
 
 	/**
@@ -1178,6 +1478,15 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 					}
 				}});
 		return response;
+	}
+	
+	@Override
+	//fxdiff VCRP-1,2: access control of resources
+	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> identities, SecurityGroup secGroup) {
+		for (Identity identity : identities) {
+		  removeAndFireEvent(ureqIdentity, identity, secGroup, false);
+		  logAudit("removed identiy '" + identity.getName() + "' from securitygroup with key " + secGroup.getKey());
+		}
 	}
 
 	/**
@@ -1333,7 +1642,9 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 						MailTemplate mailTemplate = BGMailHelper.createWaitinglistTransferMailTemplate(group, ureqIdentity);
 						if (mailTemplate != null) {
 							MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-							MailerResult mailerResult = mailer.sendMail(firstWaitingListIdentity, null, null, mailTemplate, null);
+							//fxdiff VCRP-16: intern mail system
+						//TODO SR MailContext context = new MailContextImpl("[BusinessGroup:" + group.getKey() + "]");
+							//TODO SR MailerResult mailerResult = mailer.sendMail(context, firstWaitingListIdentity, null, null, mailTemplate, null);
 							// Does not report errors to current screen because this is the identity who triggered the transfer
 							Tracing.logWarn("Could not send WaitinglistTransferMail for identity=" + firstWaitingListIdentity.getName() , BusinessGroupManagerImpl.class);
 						}						
@@ -1354,22 +1665,22 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// remove as Participant 
-		List attendedGroups = findAllBusinessGroupsAttendedBy(identity);
-		for (Iterator iter = attendedGroups.iterator(); iter.hasNext();) {
-			securityManager.removeIdentityFromSecurityGroup(identity, ((BusinessGroup)iter.next()).getPartipiciantGroup());
+		List<BusinessGroup> attendedGroups = findAllBusinessGroupsAttendedBy(identity);
+		for (Iterator<BusinessGroup> iter = attendedGroups.iterator(); iter.hasNext();) {
+			securityManager.removeIdentityFromSecurityGroup(identity, iter.next().getPartipiciantGroup());
 		}
 		Tracing.logDebug("Remove partipiciant identity=" + identity + " from " + attendedGroups.size() + " groups", this.getClass());
 		// remove from waitinglist 
-		List waitingGroups = findBusinessGroupsWithWaitingListAttendedBy(identity);
-		for (Iterator iter = waitingGroups.iterator(); iter.hasNext();) {
-			securityManager.removeIdentityFromSecurityGroup(identity, ((BusinessGroup)iter.next()).getWaitingGroup());
+		List<BusinessGroup> waitingGroups = findBusinessGroupsWithWaitingListAttendedBy(identity);
+		for (Iterator<BusinessGroup> iter = waitingGroups.iterator(); iter.hasNext();) {
+			securityManager.removeIdentityFromSecurityGroup(identity, iter.next().getWaitingGroup());
 		}
 		Tracing.logDebug("Remove from waiting-list identity=" + identity + " in " + waitingGroups.size() + " groups", this.getClass());
 
 		// remove as owner
-		List ownerGroups = findAllBusinessGroupsOwnedBy(identity);
-		for (Iterator iter = ownerGroups.iterator(); iter.hasNext();) {
-			BusinessGroup businessGroup = (BusinessGroup) iter.next();
+		List<BusinessGroup> ownerGroups = findAllBusinessGroupsOwnedBy(identity);
+		for (Iterator<BusinessGroup> iter = ownerGroups.iterator(); iter.hasNext();) {
+			BusinessGroup businessGroup = iter.next();
 			securityManager.removeIdentityFromSecurityGroup(identity, businessGroup.getOwnerGroup());
 			if (businessGroup.getType().equals(BusinessGroup.TYPE_BUDDYGROUP) && securityManager.countIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup()) == 0 ) {
 				// Buddygroup has no owner anymore => add OLAT-Admin as owner
@@ -1381,15 +1692,15 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		Tracing.logDebug("All entries in groups deleted for identity=" + identity, this.getClass());
 	}
 
-	private List findAllBusinessGroupsOwnedBy(Identity identity) {
+	private List<BusinessGroup> findAllBusinessGroupsOwnedBy(Identity identity) {
 		return findBusinessGroupsOwnedBy(null, identity, null);
 	}
 
-	private List findAllBusinessGroupsAttendedBy(Identity identity) {
+	private List<BusinessGroup> findAllBusinessGroupsAttendedBy(Identity identity) {
 		return findBusinessGroupsAttendedBy(null, identity, null);
 	}
 	
-	private List findBusinessGroupsWithWaitingListAttendedBy(Identity identity) {
+	private List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity) {
 		return findBusinessGroupsWithWaitingListAttendedBy(null, identity, null);
 	}
 
@@ -1400,8 +1711,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	private void removeSubscriptions(Identity identity, BusinessGroup group) {
 		NotificationsManager notiMgr = NotificationsManager.getInstance();
 		List<Subscriber> l = notiMgr.getSubscribers(identity);
-		for (Iterator iterator = l.iterator(); iterator.hasNext();) {
-			Subscriber subscriber = (Subscriber) iterator.next();
+		for (Iterator<Subscriber> iterator = l.iterator(); iterator.hasNext();) {
+			Subscriber subscriber = iterator.next();
 			Long resId = subscriber.getPublisher().getResId();
 			Long groupKey = group.getKey();
 			if (resId != null && groupKey != null && resId.equals(groupKey)) {
@@ -1470,6 +1781,22 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			}
 		}
 		return deletableList;
+	}
+
+	@Override
+	public List<BusinessGroup> findBusinessGroup(String nameOrDesc, String type) {
+		String query = "select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi "
+		+ " where bgi.name like :search or bgi.description like :search";
+		if (type != null) query = query + " and bgi.type = :type";
+		
+		DB db = DBFactory.getInstance();
+		DBQuery dbq = db.createQuery(query);
+		if (type != null) dbq.setString("type", type);
+		
+		dbq.setString("search", nameOrDesc);
+		
+		List<BusinessGroup> res = dbq.list();
+		return res;
 	}
 
 }

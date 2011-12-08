@@ -147,11 +147,11 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
 		}
-		if (a instanceof String) {
+		if (a instanceof String && b instanceof String) {
 			return collator.compare(a, b);
-		} else if (a instanceof Comparable) {
+		} else if (a instanceof Comparable && b instanceof Comparable) {
 			return compareComparablesAndTimestamps(a, b);
-		} else if (a instanceof Boolean) {  // faster than string compare
+		} else if (a instanceof Boolean && b instanceof Boolean) { // faster than string compare
 			return compareBooleansHandlingNulls(a, b);
 		} else { // don't know how to compare, use the String value
 			return a.toString().compareTo(b.toString());

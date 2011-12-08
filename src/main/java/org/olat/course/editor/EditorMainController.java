@@ -102,6 +102,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.ui.context.BGContextEvent;
+import org.olat.repository.RepositoryEntry;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -572,11 +573,18 @@ public class EditorMainController extends MainLayoutBasicController implements G
 						if (runContext.containsKey("changedaccess")) {
 							// there were changes made to the general course access
 							String newAccessStr = (String) runContext.get("changedaccess");
-							int newAccess = Integer.valueOf(newAccessStr);
+							int newAccess;
+							//fxdiff VCRP-1,2: access control of resources
+							boolean membersOnly = RepositoryEntry.MEMBERS_ONLY.equals(newAccessStr);
+							if(membersOnly) {
+								newAccess = RepositoryEntry.ACC_OWNERS;
+							} else {
+								newAccess = Integer.valueOf(newAccessStr);
+							}
 							PublishProcess publishManager = (PublishProcess) runContext.get("publishProcess");
 							// fires an EntryChangedEvent for repository entry notifying
 							// about modification.
-							publishManager.changeGeneralAccess(ureq1, newAccess);
+							publishManager.changeGeneralAccess(ureq1, newAccess, membersOnly);
 							hasChanges = true;
 						}
 

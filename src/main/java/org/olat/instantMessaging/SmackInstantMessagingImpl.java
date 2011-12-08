@@ -330,7 +330,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		//pull as admin
 		Roles roles = new Roles(true, true, true, true, false, true, false);
-		List<RepositoryEntry> allCourses = rm.queryByTypeLimitAccess(CourseModule.getCourseTypeName(), roles);
+		List<RepositoryEntry> allCourses = rm.queryByTypeLimitAccess(null, CourseModule.getCourseTypeName(), roles);
 		int counter = 0;
 		for (Iterator<RepositoryEntry> iterator = allCourses.iterator(); iterator.hasNext();) {
 			RepositoryEntry entry = iterator.next();

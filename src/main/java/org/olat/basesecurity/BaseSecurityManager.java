@@ -22,6 +22,7 @@
 package org.olat.basesecurity;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
@@ -709,6 +711,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	@Override
 	public void deleteInvitation(Invitation invitation) {
+		//fxdiff: FXOLAT-251: nothing persisted, nothing to delete
+		if(invitation == null || invitation.getKey() == null) return;
 		DBFactory.getInstance().deleteObject(invitation);
 	}
 
@@ -821,7 +825,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#getIdentitiesOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
-	public List getIdentitiesOfSecurityGroup(SecurityGroup secGroup) {
+	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup) {
 		if (secGroup == null) {
 			throw new AssertException("getIdentitiesOfSecurityGroup: ERROR secGroup was null !!");
 		} 
@@ -829,18 +833,70 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (db == null) {
 			throw new AssertException("getIdentitiesOfSecurityGroup: ERROR db was null !!");
 		} 
-		List idents = DBFactory.getInstance().find(
-	            "select ii from"
-	            + " org.olat.basesecurity.IdentityImpl as ii inner join fetch ii.user as iuser, "
-	            + " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi "
-	            + " where sgmsi.securityGroup = ? and sgmsi.identity = ii",
-	            new Object[] { secGroup.getKey() },
-	            new Type[] { Hibernate.LONG });
 
-	            return idents;
-		
+		List<Identity> idents = getIdentitiesOfSecurityGroup(secGroup, 0, -1);
+		return idents;
 	}
 	
+	@Override
+	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup, int firstResult, int maxResults) {
+		if (secGroup == null) {
+			throw new AssertException("getIdentitiesOfSecurityGroup: ERROR secGroup was null !!");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sgmsi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+			.append(" where sgmsi.securityGroup=:secGroup");
+
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setEntity("secGroup", secGroup);
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		List<Identity> idents = query.list();
+		return idents;
+	}
+
+	/**
+	 * Return a list of unique identites which are in the list of security groups
+	 * @see org.olat.basesecurity.BaseSecurity#getIdentitiesOfSecurityGroups(java.util.List)
+	 */
+	@Override
+	public List<Identity> getIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups) {
+		if (secGroups == null || secGroups.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(sgmsi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+			.append(" where sgmsi.securityGroup in (:secGroups)");
+		
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setParameterList("secGroups", secGroups);
+		List<Identity> idents = query.list();
+		return idents;
+	}
+	
+	@Override
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups) {
+		if (secGroups == null || secGroups.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.basesecurity.IdentityShort(sgmsi.identity.key, sgmsi.identity.name) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+			.append(" where sgmsi.securityGroup in (:secGroups)");
+		
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setParameterList("secGroups", secGroups);
+		List<IdentityShort> idents = query.list();
+		return idents;
+	}
+
 	/**
 	 * @see org.olat.basesecurity.Manager#getIdentitiesAndDateOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
@@ -981,18 +1037,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return cntL;
 	}	
 	
-	
-	
-	@Override
-	public int countAuthors() {
-		return 0;
-	}
-
-	@Override
-	public int countDisabledUsers() {
-		return 0;
-	}
-
 	/**
 	 * @see org.olat.basesecurity.Manager#getAuthentications(org.olat.core.id.Identity)
 	 */
@@ -1028,6 +1072,20 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (results == null || results.size() == 0) return null;
 		if (results.size() > 1) throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
 		return (Authentication) results.get(0);
+	}
+	
+	@Override
+	//fxdiff: FXOLAT-219 decrease the load for synching groups
+	public boolean hasAuthentication(Long identityKey, String provider) {
+		if (identityKey == null || !StringHelper.containsNonWhitespace(provider)) return false;
+		
+		String queryStr = "select count(auth) from org.olat.basesecurity.AuthenticationImpl as auth where auth.identity.key=:key and auth.provider=:provider";
+		DBQuery query = DBFactory.getInstance().createQuery(queryStr);
+		query.setLong("key", identityKey);
+		query.setString("provider", provider);
+		
+		Number count = (Number)query.uniqueResult();
+		return count.intValue() > 0;
 	}
 
 	/**
@@ -1136,9 +1194,12 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 					login = makeFuzzyQueryString(login);
 					if (login.contains("_") && (dbVendor.equals("hsqldb") || dbVendor.equals("oracle"))) {
 						//hsqldb needs special ESCAPE sequence to search for escaped strings
-						sb.append(" ident.name like :login ESCAPE '\\'");
-					}else {
+						// fxdiff: 
+						sb.append(" lower(ident.name) like :login ESCAPE '\\'");
+					} else if (dbVendor.equals("mysql")) {
 						sb.append(" ident.name like :login");
+					} else {
+						sb.append(" lower(ident.name) like :login");
 					}
 				// if user fields follow a join element is needed
 				needsUserPropertiesJoin = true;
@@ -1168,7 +1229,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 					boolean needsOr = false;
 					for (String key : emailProperties.keySet()) {
 						if (needsOr) sb.append(" or ");
-						sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
+						//fxdiff
+						if(dbVendor.equals("mysql")) {
+							sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
+						} else {
+							sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
+							if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+					 	 		sb.append(" escape '\\'");
+					 	 	}
+						}
 						if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
 						}
@@ -1182,7 +1251,14 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 				// add other fields
 				for (String key : otherProperties.keySet()) {
 					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, userPropertiesAsIntersectionSearch);
-					sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
+					if(dbVendor.equals("mysql")) {
+						sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
+					} else {
+						sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
+						if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+				 	 		sb.append(" escape '\\'");
+				 	 	}
+					}
 					if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
 					}
@@ -1283,7 +1359,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		
 		// add user attributes
 		if (login != null) 
-			dbq.setString("login", login);
+			dbq.setString("login", login.toLowerCase());
 
 		//	 add user properties attributes
 		if (userproperties != null && !userproperties.isEmpty()) {
@@ -1395,8 +1471,13 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		// fuzzy search with % at the beginning, but it makes the query very very
 		// slow since it can not use any index and must perform a fulltext search.
 		// User can always use * to make it a really fuzzy search query
-		string = string.replace('*', '%');
-		string = string + "%";
+		// fxdiff FXOLAT-252: use "" to disable this feature and use exact match
+		if (string.length() > 1 && string.startsWith("\"") && string.endsWith("\"")) {			
+			string = string.substring(1, string.length()-1);
+		} else {
+			string = string + "%";
+			string = string.replace('*', '%');
+		}
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
 		string = string.replace("_", "\\_");

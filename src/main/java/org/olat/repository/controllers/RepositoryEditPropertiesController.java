@@ -73,6 +73,7 @@ import org.olat.modules.glossary.GlossaryRegisterSettingsController;
 import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -101,6 +102,8 @@ public class RepositoryEditPropertiesController extends BasicController {
 	private CourseEfficencyStatementController ceffC;
 	private CourseCalendarConfigController calCfgCtr;
 	private CourseConfigGlossaryController cglosCtr;
+	//fxdiff VCRP-1,2: access control of resources
+	private AccessConfigurationController acCtr;
 	private TabbedPane tabbedPane;
 	private RepositoryEntry repositoryEntry;
 	
@@ -157,6 +160,15 @@ public class RepositoryEditPropertiesController extends BasicController {
 		propPupForm = new PropPupForm(ureq, wControl, entry);
 		listenTo(propPupForm);
 		editproptabpubVC.put("proppupform", propPupForm.getInitialComponent());
+		
+		//fxdiff VCRP-1,2: access control of resources
+	  acCtr = new AccessConfigurationController(ureq, getWindowControl(), repositoryEntry.getOlatResource(), repositoryEntry.getDisplayname());
+	  int access = propPupForm.getAccess();
+	  if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
+	  	editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
+	  	editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+	  }	  
+		
 		tabbedPane.addListener(this);
 		try {
 		if (repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
@@ -264,7 +276,8 @@ public class RepositoryEditPropertiesController extends BasicController {
 			if(repositoryEntryChanged) {
 				if (DialogBoxUIFactory.isYesEvent(event)) {
 					RepositoryManager.getInstance().setProperties(repositoryEntry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canLaunch(), propPupForm.canDownload() );		
-					RepositoryManager.getInstance().setAccess(repositoryEntry, propPupForm.getAccess());
+					//fxdiff VCRP-1,2: access control of resources
+					RepositoryManager.getInstance().setAccess(repositoryEntry, propPupForm.getAccess(), propPupForm.isMembersOnly());
 					repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey());
 					repositoryEntryChanged = false;
 					
@@ -307,10 +320,10 @@ public class RepositoryEditPropertiesController extends BasicController {
 				}
 				
         		// CourseLayoutController 
-				if(!changedCourseConfig.getCssLayoutRef().equals(initialCourseConfig.getCssLayoutRef()) && clayoutC.getLoggingAction()!=null) {					
-					// log removing custom course layout
-					ThreadLocalUserActivityLogger.log(clayoutC.getLoggingAction(), getClass());					
-				}
+//				if(!changedCourseConfig.getCssLayoutRef().equals(initialCourseConfig.getCssLayoutRef()) && clayoutC.getLoggingAction()!=null) {					
+//					// log removing custom course layout
+//					ThreadLocalUserActivityLogger.log(clayoutC.getLoggingAction(), getClass());					
+//				}
         		// CourseSharedFolderController 
 				if(!changedCourseConfig.getSharedFolderSoftkey().equals(initialCourseConfig.getSharedFolderSoftkey()) && csfC.getLoggingAction()!=null) {
 					String logDetail = csfC.getSharedFolderRepositoryEntry()!=null ? csfC.getSharedFolderRepositoryEntry().getDisplayname() : null; 
@@ -396,18 +409,29 @@ public class RepositoryEditPropertiesController extends BasicController {
 			} else if (event == Event.DONE_EVENT) {
 				repositoryEntryChanged = true;				
 				// inform user about inconsistent configuration: doesn't make sense to set a repositoryEntry canReference=true if it is only accessible to owners
-				if (!repositoryEntry.getCanReference() && propPupForm.canReference() && propPupForm.getAccess() < RepositoryEntry.ACC_OWNERS_AUTHORS) {					
+				//fxdiff VCRP-1,2: access control of resources
+				if (!repositoryEntry.getCanReference() && propPupForm.canReference() && (propPupForm.getAccess() < RepositoryEntry.ACC_OWNERS_AUTHORS && !propPupForm.isMembersOnly())) {					
 					this.showError("warn.config.reference.no.access");
 				}	
 				//if not a course, update the repositoryEntry NOW!
 				if(!repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 					RepositoryManager.getInstance().setProperties(repositoryEntry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canLaunch(), propPupForm.canDownload() );		
-					RepositoryManager.getInstance().setAccess(repositoryEntry, propPupForm.getAccess());		
+					//fxdiff VCRP-1,2: access control of resources
+					RepositoryManager.getInstance().setAccess(repositoryEntry, propPupForm.getAccess(), propPupForm.isMembersOnly());		
 					// inform anybody interrested about this change
 					MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, EntryChangedEvent.MODIFIED);
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);			
 					fireEvent(ureq, Event.CHANGED_EVENT);
-				}				
+				}
+				
+				int access = propPupForm.getAccess();
+				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {
+			  	editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
+			  	editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(access == RepositoryEntry.ACC_USERS_GUESTS));
+				} else {
+			  	editproptabpubVC.remove(acCtr.getInitialComponent());
+				}
+				
 				return;
 			}
 		}

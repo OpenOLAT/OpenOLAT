@@ -21,10 +21,12 @@
 
 package org.olat.group.context;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
@@ -120,6 +122,10 @@ public interface BGContextManager {
 	 * @return A list of identities
 	 */
 	public abstract List getBGOwnersOfBGContext(BGContext bgContext);
+	
+	//fxdiff VCRP-2: access control
+	public List<BusinessGroup> getBusinessGroupAsOwnerOfBGContext(Identity owner, BGContext bgContext);
+
 
 	/**
 	 * Count the number of identities that are owner of any group in the given
@@ -138,6 +144,9 @@ public interface BGContextManager {
 	 * @return A list of identities
 	 */
 	public abstract List getBGParticipantsOfBGContext(BGContext bgContext);
+	
+	//fxdiff VCRP-2: access control
+	public List<BusinessGroup> getBusinessGroupAsParticipantOfBGContext(Identity participant, BGContext bgContext);
 
 	/**
 	 * Count the number of identities that are participants of any group in the
@@ -263,7 +272,12 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return List of repository entries
 	 */
-	public List findRepositoryEntriesForBGContext(BGContext bgContext);
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(BGContext bgContext);
+	//fxdiff VCRP-1,2: access control of resources
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContext);
+	//fxdiff VCRP-1,2: access control of resources
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int access, boolean asOwner, boolean asCoach,
+			boolean asParticipant,  Identity identity);
 
 	/**
 	 * Remove the given business group context from this OLATResource

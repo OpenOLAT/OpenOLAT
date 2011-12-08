@@ -381,7 +381,8 @@ public class RepositoryAddController extends BasicController {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(addCallback.getResourceable());
 		addedEntry.setOlatResource(ores);
 		
-		// create security group
+		// create security groups
+		//security group for owners / authors
 		SecurityGroup newGroup = securityManager.createAndPersistSecurityGroup();
 		// member of this group may modify member's membership
 		securityManager.createAndPersistPolicy(newGroup, Constants.PERMISSION_ACCESS, newGroup);
@@ -390,6 +391,23 @@ public class RepositoryAddController extends BasicController {
 		
 		securityManager.addIdentityToSecurityGroup(ureq.getIdentity(), newGroup);
 		addedEntry.setOwnerGroup(newGroup);
+		
+		//fxdiff VCRP-1,2: access control of resources
+		// security group for tutors / coaches
+		SecurityGroup tutorGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
+		// members of this group are always tutors also
+		securityManager.createAndPersistPolicy(tutorGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_TUTOR);
+		addedEntry.setTutorGroup(tutorGroup);
+		
+		// security group for participants
+		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_ACCESS, addedEntry.getOlatResource());
+		// members of this group are always participants also
+		securityManager.createAndPersistPolicy(participantGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_PARTICIPANT);
+		addedEntry.setParticipantGroup(participantGroup);
 		
 		rm.saveRepositoryEntry(addedEntry);
 
