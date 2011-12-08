@@ -359,6 +359,8 @@ function b_AddOnDomReplacementFinishedCallback(funct) {
 	b_onDomReplacementFinished_callbacks.push(funct);
 	B_AjaxLogger.logDebug("push to callback stack, func: " + funct, "functions.js ADD");
 }
+//fxdiff FXOLAT-310 
+var b_changedDomEl=new Array();
 
 //same as above, but with a filter to prevent adding a funct. more than once
 //funct then has to be an array("identifier", funct) 
@@ -382,6 +384,9 @@ function o_ainvoke(r) {
 	o_info.inainvoke = true;
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
+		//fxdiff FXOLAT-310 
+		b_changedDomEl = new Array();
+		
 		if (o_info.debug) { o_debug_trid++; }
 		var cs = r["cmds"];
 		for (var i=0; i<cmdcnt; i++) {
@@ -425,6 +430,8 @@ function o_ainvoke(r) {
 								// remove listeners !! ext overwrite or prototype replace does NOT remove listeners !!
 //								newc.descendants().each(function(el){if (el.stopObserving) el.stopObserving()});
 								Ext.DomHelper.overwrite(newc, hdrco, false);
+								b_changedDomEl.push('o_c'+ciid);
+								
 								newc = null;
 								
 								// exeucte inline scripts

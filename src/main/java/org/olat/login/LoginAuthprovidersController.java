@@ -257,7 +257,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	//fxdiff FXOLAT-113: business path in DMZ
 	protected void showAboutPage(UserRequest ureq) {
 	//fxdiff FXOLAT-139
-		VelocityContainer aboutVC = createVelocityContainer("aboutpro");
+		VelocityContainer aboutVC = createVelocityContainer("about");
 		// Add version info and licenses
 		aboutVC.contextPut("version", Settings.getFullVersionInfo());
 		aboutVC.contextPut("license", WebappHelper.getOlatLicense());

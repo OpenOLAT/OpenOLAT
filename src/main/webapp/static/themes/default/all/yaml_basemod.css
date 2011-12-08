@@ -47,8 +47,10 @@
 	
 	/* HEADER */
 	/* #b_header { color: #000; background: #1F457F; height: 3em; } */
-	#b_header { height: 3em; }
+	/* fxdiff: to allow uploading of header logo with unknown size */
+	#b_header { height:auto; min-height:3em; }
 	#b_logo { }
+	#b_right_logo {}
 
 	/* TOP NAV */
 	#b_topnav { color: #aaa; background: transparent; font-size: 90%; white-space: nowrap;}

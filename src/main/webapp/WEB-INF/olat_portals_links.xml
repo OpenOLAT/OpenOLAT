@@ -4,9 +4,9 @@
   <University name="*"><!-- all users -->
     <Link>
       <Title>Google</Title>
-      <URL>http://www.google.de</URL>
+      <URL>http://www.google.com</URL>
       <Target>blank</Target>
-      <Language>de</Language>
+      <Language>*</Language>
       <Description>Sehr gute Suchmaschine</Description>
     </Link>
     <Link>
@@ -17,31 +17,13 @@
       <Description>Very good search engine</Description>
     </Link>
   </University>
-  <University name="+"><!-- all registered users -->
-    <Link>
-      <Title>MELS</Title>
-      <URL>http://www.id.uzh.ch/org/mels.html</URL>
-      <Target>blank</Target>
-      <Language>*</Language>
-      <Description>Multimedia und E-Learning Services (MELS)</Description>
-    </Link>
-  </University>
   <University name="-"><!-- only guests -->
     <Link>
-      <Title>OLAT</Title>
-      <URL>http://www.olat.org</URL>
+      <Title>OpenOLAT</Title>
+      <URL>http://www.openolat.org</URL>
       <Target>blank</Target>
       <Language>de</Language>
-      <Description>Projektseite zu OLAT</Description>
-    </Link>
-  </University>
-  <University name="UZH"><!-- example for users with UZH as institution -->
-    <Link>
-      <Title>Universität Zürich</Title>
-      <URL>http://www.uzh.ch/</URL>
-      <Target>blank</Target>
-      <Language>*</Language>
-      <Description>Webseite der Universität Zürich</Description>
+      <Description>Projektseite zu OpenOLAT</Description>
     </Link>
   </University>
 </LinksPortlet>

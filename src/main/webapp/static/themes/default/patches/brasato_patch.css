@@ -58,7 +58,10 @@
    * Box Model Bug
    * Adjustment of width values for list elements of the menu in IE 5.x/Win.
    * Note: If IE6 is running in quirks mode, it also needs 100% values!
-   *
+   * Update (GW): Width needs to be set to auto, 100% won't work for the 
+   *	course node status icons in the editor (and SCORM). Height is required
+   *	for nice look with background colors.
+   * 
    * @bugfix
    * @affected   IE 5.x/Win (IE6 in Quirks-Mode)
    * @css-for    IE 5.x/Win, IE6
@@ -66,7 +69,8 @@
    */
 	div.b_tree li a,
 	div.b_tree li strong { 
-		width: 100%; w\idth: 90%; 
+		width: auto;
+		height: 100%;
 	}
 	
 	/* Nur für < IE7, sonst gibts im IE7 neue Positionierungsprobleme */

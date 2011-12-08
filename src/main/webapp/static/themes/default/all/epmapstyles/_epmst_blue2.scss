@@ -1,0 +1,38 @@
+@charset "UTF-8";
+
+@media all{
+
+$bg_gradient1 : #C4F6FF;
+$bg_gradient2 : #C4F6FF;
+
+$infotextcolor : #000;
+$bordercolor : #888;
+$titlecolor : #444;
+
+.epmst-blue2 {
+	@include epmst-font;
+}
+
+ul.b_eportfolio_maps {
+	li.epmst-blue2, li.template.epmst-blue2 { 
+		@include epmst-mapclosed($bg_gradient1,$bg_gradient2,$bordercolor) 
+	}
+	.b_map_info p { color: $infotextcolor; }
+	li.epmst-blue2 > h4 {
+		@include epmst-front-h4;
+		color: $titlecolor;
+	}
+	li.epmst-blue2 > div.b_map_descr {
+		@include epmst-front-p;
+	}
+}
+
+.b_eportfolio_map.epmst-blue2 {
+	@include epmst-actualpage($bg_gradient1,$bg_gradient2);
+}
+
+.epmst-blue2 { 
+	@include epmst-pagination($titlecolor);
+}
+	
+}

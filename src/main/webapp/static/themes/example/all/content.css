@@ -3,6 +3,8 @@
  * e-learning specific content styles since it is used in the tiny mce editor as the base
  * stylesheet
 /* 
+/* Important: Include default content.css for iframes! */
+@import url(../../default/all/content.css);
 
 /* no @all tag - confuses tinymce! */
 	/* FONT: */

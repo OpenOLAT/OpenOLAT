@@ -43,13 +43,11 @@
 					classpath:/org/olat/core/commons/modules/bc/_spring/folderModuleCorecontext.xml
 					classpath:/org/olat/core/commons/modules/glossary/_spring/glossaryCorecontext.xml
 					classpath:/org/olat/core/commons/contextHelp/_spring/contextHelpCorecontext.xml
-					classpath:/org/olat/core/commons/services/thumbnail/_spring/thumbnailserviceContext.xml
 					
 					classpath:/org/olat/core/logging/_spring/loggingCorecontext.xml
 					classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml
 					classpath:/org/olat/core/_spring/mainCorecontext.xml
 					classpath:/org/olat/core/dispatcher/jumpin/_spring/jumpinCorecontext.xml
-					classpath:/org/olat/core/commons/services/tagging/_spring/taggingContext.xml
 					classpath:/org/olat/core/commons/services/_spring/servicesCorecontext.xml
 					
 					classpath:/serviceconfig/org/olat/core/gui/components/form/flexible/impl/elements/richText/_spring/richTextCorecontext.xml
@@ -277,7 +275,13 @@
 		<servlet-name>RESTServletAdaptor</servlet-name>
 		<url-pattern>/restapi/*</url-pattern>
 	</servlet-mapping>
-		
+	
+	<!-- The mapping to the Login filter REST API -->
+	<filter-mapping>
+		<filter-name>RESTApiLoginFilter</filter-name>
+		<url-pattern>/restapi/*</url-pattern>
+	</filter-mapping>
+	
 	<!-- The mapping for the RSS servlet -->
 	<servlet-mapping>
 		<servlet-name>rss</servlet-name>

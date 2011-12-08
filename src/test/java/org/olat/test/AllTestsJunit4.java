@@ -121,6 +121,11 @@ import org.junit.runners.Suite;
 	org.olat.restapi.ContactsTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,
 	org.olat.group.GroupImportExportTest.class,
+	org.olat.resource.accesscontrol.ACFrontendManagerTest.class,
+	org.olat.resource.accesscontrol.ACMethodManagerTest.class,
+	org.olat.resource.accesscontrol.ACOfferManagerTest.class,
+	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
+	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	/**
 	 * 
 	 * Place tests which load their own Spring context

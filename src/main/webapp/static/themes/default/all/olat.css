@@ -34,6 +34,8 @@
 	#b_nav_main li.o_site_home:hover div { background-image: url(../images/brasato/home_over.png) }
 	#b_nav_main li.o_site_groups div { background-image: url(../images/brasato/group.png) }
 	#b_nav_main li.o_site_groups:hover div { background-image: url(../images/brasato/group_over.png) }
+	#b_nav_main li.b_resource_GroupInfoMainController div { background-image: url(../images/brasato/group.png) }
+	#b_nav_main li.b_resource_GroupInfoMainController:hover div { background-image: url(../images/brasato/group_over.png) }	
 	#b_nav_main li.o_site_groupsmanagement div { background-image: url(../images/olat/group_gear.png) }
 	#b_nav_main li.o_site_groupsmanagement:hover div { background-image: url(../images/olat/group_gear_over.png) }
 	#b_nav_main li.o_site_repository div { background-image: url(../images/olat/repository.png) }
@@ -44,6 +46,8 @@
 	#b_nav_main li.o_site_admin:hover div { background-image: url(../images/olat/admin_over.png) }
 	#b_nav_main li.o_site_guidemo div { background-image: url(../images/olat/lightbulb.png) }
 	#b_nav_main li.o_site_testing div { background-image: url(../images/brasato/bug.png) }
+	#b_nav_main li.site_demo_icon div { background-image: url(../images/olat/information.png) }
+	#b_nav_main li.site_demo_icon:hover div { background-image: url(../images/olat/information_over.png) }
 	
 	/* Specific changes for olat.org layout */
 	/*
@@ -264,6 +268,8 @@
 	#o_course_editor_ok { padding-left: 10px}  
 	#o_course_editor_errorbox ul, #o_course_editor_warningbox ul { padding: 0; margin: 0;}  
 	
+	.o_course_editor_publish {}
+	.o_course_editor_publish .o_course_editor_categories { padding-top: 10px; }
 	
 	span.o_passed { background: url(../images/olat/tick.png) no-repeat right 50%; padding: 0 25px 0 0; color: #009900 }
 	span.o_notpassed { background: url(../images/olat/cross.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000 }
@@ -342,6 +348,8 @@
 	a.o_ep_icon:hover { background-image: url(../images/brasato/eportfolio/ep_icon_over.png)!important}
 	.o_infomsg_icon { background-image: url(../images/olat/infomessage.png)!important}
 	a.o_infomsg_icon:hover { background-image: url(../images/olat/infomessage_over.png)!important}
+	.o_cmembers_icon { background-image: url(../images/brasato/user_all.png)!important}
+	a.o_cmembers_icon:hover { background-image: url(../images/brasato/user_all.png)!important}
 	body#b_body .o_CourseModule_icon_closed {background-image:url(../images/olat/course_closed.png);}
 	
 	/* menu tree positioning */
@@ -371,6 +379,23 @@
 	div.o_module_cp_wrapper div#o_local_fulltextsearch div.b_form_element_wrapper.b_form_horizontal { margin:0; }
 	div.o_module_tu_wrapper {}
 
+	div.o_module_cp_wrapper div.o_cp_navigation { float:right; display:inline;padding:3px 0 3px 3px; background: #ebebeb url(../images/brasato/resizer_bg.gif) repeat-x center; border: 1px solid #ddd; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; -webkit-box-shadow: 0 1px 2px lightGrey; -moz-box-shadow: 0 1px 2px lightGrey; -o-box-shadow: 0 1px 2px lightGrey; box-shadow: 0 1px 2px lightGrey;}
+	div.o_module_cp_wrapper div span a { margin: 0 2px; }
+	div.o_module_cp_wrapper div span.b_disabled { display:none; }
+	div.o_module_cp_wrapper div span a.o_cp_previous_icon { background-image: url(../images/brasato/move_left.png); text-decoration: none; }
+	div.o_module_cp_wrapper div span a.o_cp_previous_icon:hover { background-image: url(../images/brasato/move_left_over.png); }
+	div.o_module_cp_wrapper div span a.o_cp_previous_icon span {display:none; }
+	div.o_module_cp_wrapper div span a.o_cp_next_icon {	background-image: url(../images/brasato/move_right.png); }
+	div.o_module_cp_wrapper div span a.o_cp_next_icon:hover {	background-image: url(../images/brasato/move_right_over.png); }
+	div.o_module_cp_wrapper div span a.o_cp_next_icon span {display:none; }
+	div.o_module_cp_wrapper div span a.o_cp_print_icon {	background-image: url(../images/brasato/print.png); }
+	div.o_module_cp_wrapper div span a.o_cp_print_icon:hover {	background: transparent url(../images/brasato/print_over.png) top left no-repeat; }
+	div.o_module_cp_wrapper div span a.o_cp_print_icon span {display:none; }
+	div.o_module_cp_wrapper div.o_cp_navigation div, div.o_module_cp_wrapper div.o_cp_navigation form  { display:inline; }
+	div.o_module_cp_wrapper div.o_cp_navigation div.b_clearfix { display:inline; clear:none; }
+	div.o_module_cp_wrapper div.o_cp_navigation div.b_clearfix:after{display:inline;height:0;clear:none;visibility:hidden}
+	
+s
 	/* FORUM */
 	div.o_forum {}
 	div.o_forum div.o_forum_switch { border: 1px solid #8F99AD; padding: 3px; font-size: 95% }
@@ -592,6 +617,7 @@
 	/* LINK LIST */
 	div.o_ll_container ul li { list-style: none; margin: 1em; }
 	div.o_ll_container ul li div { font-style: italic;}
+	a.o_ll_browse span { display:block; width:20px; height:18px; background:url(../images/frentix/library.png) top left no-repeat; margin-left:1px;}
 	
 	/* The portal */ 	
 	/* calendar start portlet */	
@@ -681,7 +707,7 @@
 	/* visiting card: space for user icon */
 	div.o_visitingcard { margin: 1em;}
 	div.o_visitingcard div.o_visitingcard_content { position: relative; padding: 1em 0 0 120px; min-height: 200px;}
-	div.o_visitingcard div.o_visitingcard_image { position: absolute; left: 0px;}
+	div.o_visitingcard div.o_visitingcard_image { position: absolute; left: 0px; margin: 0; }
 	div.o_visitingcard table td {vertical-align:top; margin: 0; padding: 0.2em 1em 0.2em 0}
 	div.o_visitingcard div.o_visitingcard_about { margin-left: 0; margin-top: 2em; padding: 0; }
 	div.o_visitingcard label {  }
@@ -835,7 +861,23 @@
 	div.b_table_wrapper.o_catalog_categories_table table tbody tr:hover,
 	div.b_table_wrapper.o_catalog_categories_table table tbody tr:focus { background: #c4d0dc;}	
     
-    
+	/* Access control */
+	div.b_access_method_list div.fx_access_method_paypal legend { background-image: url(../images/frentix/ac/credit-cards.png); }
+	div.b_access_method_list div.fx_access_method_paypal div.b_form_element_wrapper:nth-last-of-type(3) label, 
+	table.b_access_method tr.fx_access_method_paypal .b_access_infos { background-image: url(../images/frentix/ac/currency.png); background-repeat: no-repeat; padding-left: 20px; }
+	
+	.b_order_status_new_icon { background-image: url(../images/brasato/ac/new_order.png); }
+	.b_order_status_prepayment_icon { background-image: url(../images/brasato/ac/prepayment.png); }
+	.b_order_status_payed_icon { background-image: url(../images/olat/tick.png); }
+	.b_order_status_canceled_icon { background-image: url(../images/brasato/ac/canceled.png); }
+	.b_order_status_error_icon { background-image: url(../images/olat/cross.png); }
+	.b_order_status_warning_icon { background-image: url(../images/brasato/warn.png); }
+	
+	.b_transaction_status_success_icon { background-image: url(../images/olat/tick.png); }
+	.b_transaction_status_waiting_icon { background-image: url(../images/brasato/warn.png); }
+	.b_transaction_status_error_icon { background-image: url(../images/olat/cross.png); }
+	.b_transaction_status_canceled_icon { background-image: url(../images/brasato/ac/canceled.png); }
+	.b_transaction_status_new_icon { background-image: url(../images/brasato/new.png); } 
     
     /* NOTES */
 	div.o_notes {}
@@ -900,5 +942,169 @@
     img.o_portrait_dummy_female_small   {background-image: url(../images/olat/user/dummy_female_small.png); width: 50px; height: 50px;}
     img.o_portrait_dummy_male_big       {background-image: url(../images/olat/user/dummy_male_big.png); width: 100px; height: 100px;}
     img.o_portrait_dummy_male_small     {background-image: url(../images/olat/user/dummy_male_small.png); width: 50px; height: 50px;}
+    
+    /* classes to use in course layout generator to have previews in dropdown elements */
+    .clgen_font_arial				{ font-family: arial,helvetica; }
+    .clgen_font_arial_black			{ font-family: arial black,avant garde; }
+    .clgen_font_comic				{ font-family: comic sans ms,sans-serif; }
+    .clgen_font_courier				{ font-family: courier new,courier; }
+    .clgen_font_georgia				{ font-family: georgia,serif; }
+    .clgen_font_impact				{ font-family: impact,chicago; }
+    .clgen_font_lucida 				{ font-family: lucida console,monaco,monospace; }
+    .clgen_font_palatino			{ font-family: palatino linotype,book antiqua,palatino,serif; }
+	.clgen_font_times				{ font-family: times new roman,times; } 
+	.clgen_font_verdana				{ font-family: verdana,geneva,sans-serif; }
+	.clgen_font_xxlarge 			{ font-size: 130%; }
+	.clgen_font_xxsmall 			{ font-size: 70%; }
+	option.Black { background-color: Black ; }
+	option.Navy { background-color: Navy ; }
+	option.DarkBlue { background-color: DarkBlue ; }
+	option.MediumBlue { background-color: MediumBlue ; }
+	option.Blue { background-color: Blue ; }
+	option.DarkGreen { background-color: DarkGreen ; }
+	option.Green { background-color: Green ; }
+	option.Teal { background-color: Teal ; }
+	option.DarkCyan { background-color: DarkCyan ; }
+	option.DeepSkyBlue { background-color: DeepSkyBlue ; }
+	option.DarkTurquoise { background-color: DarkTurquoise ; }
+	option.MediumSpringGreen { background-color: MediumSpringGreen ; }
+	option.Lime { background-color: Lime ; }
+	option.SpringGreen { background-color: SpringGreen ; }
+	option.Aqua { background-color: Aqua ; }
+	option.Cyan { background-color: Cyan ; }
+	option.MidnightBlue { background-color: MidnightBlue ; }
+	option.DodgerBlue { background-color: DodgerBlue ; }
+	option.LightSeaGreen { background-color: LightSeaGreen ; }
+	option.ForestGreen { background-color: ForestGreen ; }
+	option.SeaGreen { background-color: SeaGreen ; }
+	option.DarkSlateGray { background-color: DarkSlateGray ; }
+	option.DarkSlateGrey { background-color: DarkSlateGrey ; }
+	option.LimeGreen { background-color: LimeGreen ; }
+	option.MediumSeaGreen { background-color: MediumSeaGreen ; }
+	option.Turquoise { background-color: Turquoise ; }
+	option.RoyalBlue { background-color: RoyalBlue ; }
+	option.SteelBlue { background-color: SteelBlue ; }
+	option.DarkSlateBlue { background-color: DarkSlateBlue ; }
+	option.MediumTurquoise { background-color: MediumTurquoise ; }
+	option.Indigo  { background-color: Indigo  ; }
+	option.DarkOliveGreen { background-color: DarkOliveGreen ; }
+	option.CadetBlue { background-color: CadetBlue ; }
+	option.CornflowerBlue { background-color: CornflowerBlue ; }
+	option.MediumAquaMarine { background-color: MediumAquaMarine ; }
+	option.DimGray { background-color: DimGray ; }
+	option.DimGrey { background-color: DimGrey ; }
+	option.SlateBlue { background-color: SlateBlue ; }
+	option.OliveDrab { background-color: OliveDrab ; }
+	option.SlateGray { background-color: SlateGray ; }
+	option.SlateGrey { background-color: SlateGrey ; }
+	option.LightSlateGray { background-color: LightSlateGray ; }
+	option.LightSlateGrey { background-color: LightSlateGrey ; }
+	option.MediumSlateBlue { background-color: MediumSlateBlue ; }
+	option.LawnGreen { background-color: LawnGreen ; }
+	option.Chartreuse { background-color: Chartreuse ; }
+	option.Aquamarine { background-color: Aquamarine ; }
+	option.Maroon { background-color: Maroon ; }
+	option.Purple { background-color: Purple ; }
+	option.Olive { background-color: Olive ; }
+	option.Gray { background-color: Gray ; }
+	option.Grey { background-color: Grey ; }
+	option.SkyBlue { background-color: SkyBlue ; }
+	option.LightSkyBlue { background-color: LightSkyBlue ; }
+	option.BlueViolet { background-color: BlueViolet ; }
+	option.DarkRed { background-color: DarkRed ; }
+	option.DarkMagenta { background-color: DarkMagenta ; }
+	option.SaddleBrown { background-color: SaddleBrown ; }
+	option.DarkSeaGreen { background-color: DarkSeaGreen ; }
+	option.LightGreen { background-color: LightGreen ; }
+	option.MediumPurple { background-color: MediumPurple ; }
+	option.DarkViolet { background-color: DarkViolet ; }
+	option.PaleGreen { background-color: PaleGreen ; }
+	option.DarkOrchid { background-color: DarkOrchid ; }
+	option.YellowGreen { background-color: YellowGreen ; }
+	option.Sienna { background-color: Sienna ; }
+	option.Brown { background-color: Brown ; }
+	option.DarkGray { background-color: DarkGray ; }
+	option.DarkGrey { background-color: DarkGrey ; }
+	option.LightBlue { background-color: LightBlue ; }
+	option.GreenYellow { background-color: GreenYellow ; }
+	option.PaleTurquoise { background-color: PaleTurquoise ; }
+	option.LightSteelBlue { background-color: LightSteelBlue ; }
+	option.PowderBlue { background-color: PowderBlue ; }
+	option.FireBrick { background-color: FireBrick ; }
+	option.DarkGoldenRod { background-color: DarkGoldenRod ; }
+	option.MediumOrchid { background-color: MediumOrchid ; }
+	option.RosyBrown { background-color: RosyBrown ; }
+	option.DarkKhaki { background-color: DarkKhaki ; }
+	option.Silver { background-color: Silver ; }
+	option.MediumVioletRed { background-color: MediumVioletRed ; }
+	option.IndianRed  { background-color: IndianRed  ; }
+	option.Peru { background-color: Peru ; }
+	option.Chocolate { background-color: Chocolate ; }
+	option.Tan { background-color: Tan ; }
+	option.LightGray { background-color: LightGray ; }
+	option.LightGrey { background-color: LightGrey ; }
+	option.PaleVioletRed { background-color: PaleVioletRed ; }
+	option.Thistle { background-color: Thistle ; }
+	option.Orchid { background-color: Orchid ; }
+	option.GoldenRod { background-color: GoldenRod ; }
+	option.Crimson { background-color: Crimson ; }
+	option.Gainsboro { background-color: Gainsboro ; }
+	option.Plum { background-color: Plum ; }
+	option.BurlyWood { background-color: BurlyWood ; }
+	option.LightCyan { background-color: LightCyan ; }
+	option.Lavender { background-color: Lavender ; }
+	option.DarkSalmon { background-color: DarkSalmon ; }
+	option.Violet { background-color: Violet ; }
+	option.PaleGoldenRod { background-color: PaleGoldenRod ; }
+	option.LightCoral { background-color: LightCoral ; }
+	option.Khaki { background-color: Khaki ; }
+	option.AliceBlue { background-color: AliceBlue ; }
+	option.HoneyDew { background-color: HoneyDew ; }
+	option.Azure { background-color: Azure ; }
+	option.SandyBrown { background-color: SandyBrown ; }
+	option.Wheat { background-color: Wheat ; }
+	option.Beige { background-color: Beige ; }
+	option.WhiteSmoke { background-color: WhiteSmoke ; }
+	option.MintCream { background-color: MintCream ; }
+	option.GhostWhite { background-color: GhostWhite ; }
+	option.Salmon { background-color: Salmon ; }
+	option.AntiqueWhite { background-color: AntiqueWhite ; }
+	option.Linen { background-color: Linen ; }
+	option.LightGoldenRodYellow { background-color: LightGoldenRodYellow ; }
+	option.OldLace { background-color: OldLace ; }
+	option.Red { background-color: Red ; }
+	option.Fuchsia { background-color: Fuchsia ; }
+	option.Magenta { background-color: Magenta ; }
+	option.DeepPink { background-color: DeepPink ; }
+	option.OrangeRed { background-color: OrangeRed ; }
+	option.Tomato { background-color: Tomato ; }
+	option.HotPink { background-color: HotPink ; }
+	option.Coral { background-color: Coral ; }
+	option.Darkorange { background-color: Darkorange ; }
+	option.LightSalmon { background-color: LightSalmon ; }
+	option.Orange { background-color: Orange ; }
+	option.LightPink { background-color: LightPink ; }
+	option.Pink { background-color: Pink ; }
+	option.Gold { background-color: Gold ; }
+	option.PeachPuff { background-color: PeachPuff ; }
+	option.NavajoWhite { background-color: NavajoWhite ; }
+	option.Moccasin { background-color: Moccasin ; }
+	option.Bisque { background-color: Bisque ; }
+	option.MistyRose { background-color: MistyRose ; }
+	option.BlanchedAlmond { background-color: BlanchedAlmond ; }
+	option.PapayaWhip { background-color: PapayaWhip ; }
+	option.LavenderBlush { background-color: LavenderBlush ; }
+	option.SeaShell { background-color: SeaShell ; }
+	option.Cornsilk { background-color: Cornsilk ; }
+	option.LemonChiffon { background-color: LemonChiffon ; }
+	option.FloralWhite { background-color: FloralWhite ; }
+	option.Snow { background-color: Snow ; }
+	option.Yellow { background-color: Yellow ; }
+	option.LightYellow { background-color: LightYellow ; }
+	option.Ivory { background-color: Ivory ; }
+	option.White { background-color: White ; }
+	
+	
+	
 	
 }
