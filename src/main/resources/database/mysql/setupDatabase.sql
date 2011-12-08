@@ -958,7 +958,6 @@ alter table o_ep_collect_restriction ENGINE = InnoDB;
 alter table o_ep_struct_el ENGINE = InnoDB;
 alter table o_ep_struct_struct_link ENGINE = InnoDB;
 alter table o_ep_struct_artefact_link ENGINE = InnoDB;
-alter table o_co_db_entry ENGINE = InnoDB;
 alter table o_mail ENGINE = InnoDB;
 alter table o_mail_to_recipient ENGINE = InnoDB;
 alter table o_mail_recipient ENGINE = InnoDB;

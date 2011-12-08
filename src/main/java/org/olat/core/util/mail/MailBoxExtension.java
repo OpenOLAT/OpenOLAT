@@ -18,7 +18,7 @@
  * http://www.frentix.com<br>
  * <p>
  */
-package org.olat.user;
+package org.olat.core.util.mail;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,10 +43,10 @@ import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.ui.MailContextResolver;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.home.HomeSite;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-
-import org.olat.home.HomeSite;
+import org.olat.user.UserDataDeletable;
 
 /**
  * 
