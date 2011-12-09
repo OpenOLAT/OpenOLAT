@@ -191,6 +191,7 @@ create table if not exists o_user (
    notification_interval varchar(16),
    presencemessagespublic bit,
    informsessiontimeout bit not null,
+   receiverealmail varchar(16),
    primary key (user_id)
 );
 create table if not exists o_userproperty (

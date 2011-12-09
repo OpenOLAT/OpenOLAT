@@ -74,6 +74,11 @@
 		<property name="mailModule" ref="mailModule"/>
 	</bean>
 	
+		<!-- Inbox in users Home -->
+	<bean id="mailBoxExtension" class="org.olat.core.util.mail.MailBoxExtension">
+		<constructor-arg index="0" ref="userDeletionManager" />
+		<property name="mailManager" ref="mailManager" />
+	</bean>
 	
 	<!--  the email-parent-menu  -->
 	<bean class="org.olat.core.util.mail.ui.MailActionExtension" name="mailAEparent" init-method="initExtensionPoints">

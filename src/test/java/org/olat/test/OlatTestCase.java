@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.OLATLocalSessionFactoryBean;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.ContextConfiguration;
@@ -84,6 +85,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	private boolean hsqlDBConfigured = false;
 	private boolean postgresqlConfigured = false;
+	private static boolean started = false;;
 	
 	/**
 	 * If you like to disable a test method for some time just add the
@@ -101,6 +103,10 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	}
 	
 	@Before public void printBanner(){
+		if(started) return;
+		
+		FrameworkStartupEventChannel.fireEvent();
+		
 		OLATLocalSessionFactoryBean bean = (OLATLocalSessionFactoryBean)CoreSpringFactory.getBean(OLATLocalSessionFactoryBean.class);
 		Configuration configuration = bean.getConfiguration();
 		
@@ -117,6 +123,8 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		hsqlDBConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("hsqldb") > 0; 
 		postgresqlConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("postgres") > 0; 
 		
+		
+		
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		for (int i = 0; i < propsOfInterest.length; i++) {
 			System.out.println("++" + propsOfInterest[i] + " -> "+properties.getProperty(propsOfInterest[i]));
@@ -128,7 +136,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		System.out.println("+ OLAT configuration initialized, starting now with junit tests +");
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-		
+		started = true;
 	}
 	
 	@SuppressWarnings("unchecked")

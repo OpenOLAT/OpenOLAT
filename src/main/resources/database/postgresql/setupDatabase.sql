@@ -187,6 +187,7 @@ create table o_user (
    language varchar(30),
    fontsize varchar(10),
    notification_interval varchar(16),
+   receiverealmail varchar(16),
    presencemessagespublic bool,
    informsessiontimeout bool not null,
    primary key (user_id)
@@ -288,9 +289,12 @@ create table o_repositoryentry (
    resourcename varchar(100) not null,
    fk_olatresource int8 unique,
    fk_ownergroup int8 unique,
+   fk_tutorgroup int8,
+   fk_participantgroup int8,
    description text,
    initialauthor varchar(128) not null,
    accesscode int4 not null,
+   membersonly boolean default false,
    statuscode int4,
    canlaunch bool not null,
    candownload bool not null,
@@ -517,7 +521,7 @@ create table o_ep_artefact (
   collection_date timestamp,
   title varchar(512),
   description varchar(4000),
-  signature int8 default 0,
+  signature int4 default 0,
   businesspath varchar(2048),
   fulltextcontent text,
   reflexion text,
@@ -621,6 +625,151 @@ create table o_tag (
   fk_author_id int8 not null,
   primary key (tag_id)
 );
+
+create table o_mail (
+  mail_id int8 not null,
+  meta_mail_id varchar(64),
+  creationdate timestamp,
+	lastmodified timestamp,
+	resname varchar(50),
+  resid int8,
+  ressubpath varchar(2048),
+  businesspath varchar(2048),
+  subject varchar(512),
+  body text,
+  fk_from_id int8,
+  primary key (mail_id)
+);
+
+-- mail recipient
+create table o_mail_to_recipient (
+  pos int4 NOT NULL default 0,
+  fk_mail_id int8,
+  fk_recipient_id int8
+);
+
+create table o_mail_recipient (
+  recipient_id int8 NOT NULL,
+  recipientvisible boolean,
+  deleted boolean,
+  mailread boolean,
+  mailmarked boolean,
+  email varchar(255),
+  recipientgroup varchar(255),
+  creationdate timestamp,
+  fk_recipient_id int8,
+  primary key (recipient_id)
+);
+
+-- mail attachments
+create table o_mail_attachment (
+	attachment_id int8 NOT NULL,
+  creationdate timestamp,
+	datas bytea,
+	datas_size int8,
+	datas_name varchar(255),
+	mimetype varchar(255),
+  fk_att_mail_id int8,
+	primary key (attachment_id)
+);
+
+-- access control
+create table o_ac_offer (
+	offer_id int8 NOT NULL,
+  creationdate timestamp,
+	lastmodified timestamp,
+	is_valid boolean default true,
+	validfrom timestamp,
+	validto timestamp,
+  version int4 not null,
+  resourceid int8,
+  resourcetypename varchar(255),
+  resourcedisplayname varchar(255),
+  token varchar(255),
+	price_amount DECIMAL,
+	price_currency_code VARCHAR(3),
+	offer_desc VARCHAR(2000),
+  fk_resource_id int8,
+	primary key (offer_id)
+);
+create table o_ac_method (
+	method_id int8 NOT NULL,
+	access_method varchar(32),
+  version int4 not null,
+  creationdate timestamp,
+	lastmodified timestamp,
+	is_valid boolean default true,
+	is_enabled boolean default true,
+	validfrom timestamp,
+	validto timestamp,
+	primary key (method_id)
+);
+create table o_ac_offer_access (
+	offer_method_id int8 NOT NULL,
+  version int4 not null,
+  creationdate timestamp,
+	is_valid boolean default true,
+	validfrom timestamp,
+	validto timestamp,
+  fk_offer_id int8,
+  fk_method_id int8,
+	primary key (offer_method_id)
+);
+-- access cart
+create table o_ac_order (
+	order_id int8 NOT NULL,
+  version int4 not null,
+  creationdate timestamp,
+	lastmodified timestamp,
+	is_valid boolean default true,
+	total_lines_amount DECIMAL,
+	total_lines_currency_code VARCHAR(3),
+	total_amount DECIMAL,
+	total_currency_code VARCHAR(3),
+	discount_amount DECIMAL,
+	discount_currency_code VARCHAR(3),
+	order_status VARCHAR(32) default 'NEW',
+  fk_delivery_id int8,
+	primary key (order_id)
+);
+create table o_ac_order_part (
+	order_part_id int8 NOT NULL,
+  version int4 not null,
+  pos int4,
+  creationdate timestamp,
+  total_lines_amount DECIMAL,
+	total_lines_currency_code VARCHAR(3),
+	total_amount DECIMAL,
+	total_currency_code VARCHAR(3),
+  fk_order_id int8,
+	primary key (order_part_id)
+);
+create table o_ac_order_line (
+	order_item_id int8 NOT NULL,
+  version int4 not null,
+  pos int4,
+  creationdate timestamp,
+  unit_price_amount DECIMAL,
+	unit_price_currency_code VARCHAR(3),
+	total_amount DECIMAL,
+	total_currency_code VARCHAR(3),
+  fk_order_part_id int8,
+  fk_offer_id int8,
+	primary key (order_item_id)
+); 
+create table o_ac_transaction (
+	transaction_id int8 NOT NULL,
+  version int4 not null,
+  creationdate timestamp,
+  trx_status VARCHAR(32) default 'NEW',
+	amount_amount DECIMAL,
+	amount_currency_code VARCHAR(3),
+  fk_order_part_id int8,
+  fk_order_id int8,
+  fk_method_id int8,
+	primary key (transaction_id)
+);
+
 
 create table o_stat_lastupdated (
 
@@ -844,6 +993,9 @@ create index displayname_idx on o_repositoryentry (displayname);
 create index softkey_idx on o_repositoryentry (softkey);
 alter table o_repositoryentry add constraint FK2F9C439888C31018 foreign key (fk_olatresource) references o_olatresource;
 alter table o_repositoryentry add constraint FK2F9C4398A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup;
+create index repo_members_only_idx on o_repositoryentry (membersonly);
+alter table o_repositoryentry add constraint repo_tutor_sec_group_ctx foreign key (fk_tutorgroup) references o_bs_secgroup (id);
+alter table o_repositoryentry add constraint repo_parti_sec_group_ctx foreign key (fk_participantgroup) references o_bs_secgroup (id);
 alter table o_bookmark add constraint FK68C4E30663219E27 foreign key (owner_id) references o_bs_identity;
 alter table o_bs_membership add constraint FK7B6288B45259603C foreign key (identity_id) references o_bs_identity;
 alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgroup_id) references o_bs_secgroup;
@@ -887,6 +1039,23 @@ alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign k
 alter table o_bs_invitation add constraint FKF26C8375236F27X foreign key (fk_secgroup) references o_bs_secgroup (id);
 
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
+
+alter table o_mail_to_recipient add constraint FKF86663165A4FA5DE foreign key (fk_mail_id) references o_mail (mail_id);
+alter table o_mail_recipient add constraint FKF86663165A4FA5DG foreign key (fk_recipient_id) references o_bs_identity (id);
+alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
+alter table o_mail_to_recipient add constraint FKF86663165A4FA5DD foreign key (fk_recipient_id) references o_mail_recipient (recipient_id);
+alter table o_mail_attachment add constraint FKF86663165A4FA5DF foreign key (fk_att_mail_id) references o_mail (mail_id);
+
+create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
+alter table o_ac_offer_access add constraint off_to_meth_meth_ctx foreign key (fk_method_id) references o_ac_method (method_id);
+alter table o_ac_offer_access add constraint off_to_meth_off_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);
+create index ac_order_to_delivery_idx on o_ac_order (fk_delivery_id);
+alter table o_ac_order_part add constraint ord_part_ord_ctx foreign key (fk_order_id) references o_ac_order (order_id);
+alter table o_ac_order_line add constraint ord_item_ord_part_ctx foreign key (fk_order_part_id) references o_ac_order_part (order_part_id);
+alter table o_ac_order_line add constraint ord_item_offer_ctx foreign key (fk_offer_id) references o_ac_offer (offer_id);
+alter table o_ac_transaction add constraint trans_ord_ctx foreign key (fk_order_id) references o_ac_order (order_id);
+alter table o_ac_transaction add constraint trans_ord_part_ctx foreign key (fk_order_part_id) references o_ac_order_part (order_part_id);
+alter table o_ac_transaction add constraint trans_method_ctx foreign key (fk_method_id) references o_ac_method (method_id);
 
 
 insert into hibernate_unique_key values ( 0 );
