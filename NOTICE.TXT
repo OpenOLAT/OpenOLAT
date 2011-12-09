@@ -57,55 +57,145 @@ Contributors olat.org codebase 1999 - 2011: (in alphabetical order)
 OTHER LICENSES AFFECTED BY THIS DISTRIBUTION
 ======================================================================
 This product uses software based on the Apache Software License like
-* Tomcat
-* Velocity
-* Log4J
+* Tomcat (Apache Software License, Version 2.0) [http://tomcat.apache.org]
+* Velocity (Apache Software License, Version 2.0) [http://velocity.apache.org]
+* Log4J (Apache Software License, Version 2.0) [http://logging.apache.org/log4j]
+* cglib (Apache Software License, Version 2.0) [http://cglib.sourceforge.net]
+* CyberNeko HTML Parser (Apache 2 License) [http://nekohtml.sourceforge.net/index.html]
+* Quartz job scheduler from the OpenSymphony project (Apache 2 license) [http://www.opensymphony.com/quartz]
+* Spring framework (Apache License, Version 2.0) [http://www.springsource.org/]
+* Xerces (Apache Software License, Version 2.0) [http://xerces.apache.org/xerces-j]
+* SMACK client library from jivesoftware.org (Apache Software License, Version 2.0) [http://www.jivesoftware.org/smack]
+* Bouncycastle (Bouncy Castle Licence) [http://www.bouncycastle.org]
+* Jackson	(Apache Software License, Version 2.0) [http://jackson.codehaus.org]
+* Batik-css	(Apache Software License, Version 2.0) [http://xmlgraphics.apache.org/batik]
+* Apache Web Services™ Project (axiom, woden, neethi...)	(Apache Software License, Version 2.0) [http://ws.apache.org]
+* Axis2 (Apache Software License, Version 2.0) [http://axis.apache.org/axis]
+* Woodstox (LGPL 2.1 and Apache License 2.0) [http://woodstox.codehaus.org]
+* XMLBeans (Apache Software License, Version 2.0) [http://xmlbeans.apache.org]
+* ActiveMQ (Apache Software License, Version 2.0) [http://activemq.apache.org]
+* POI (Apache Software License, Version 2.0) [http://poi.apache.org]
+* Ehcache	(Apache Software License, Version 2.0) [http://www.ehcache.org]
+* JDOM (Apache like) Project [http://www.jdom.org/]
+* Apache Commons libraries (commons-codec, commons-collections, commons-fileupload, commons-httpclient, commons-io,
+  commons-lang,commons-logging,commons-net) (Apache Software License, Version 2.0) [http://commons.apache.org]
+* Lucene (Apache Software License, Version 2.0) [http://lucene.apache.org]
+* PDFbox (Apache Software License, Version 2.0) [http://pdfbox.apache.org]
+* JavaAssist (Apache Software License or LGPL, MPL) [http://www.jboss.org/javassist]
+* Testng (Apache License, Version 2.0) [http://testng.org]
+* Mockito (MIT License) [http://mockito.org]
+* SeleniumHQ (Apache License, Version 2.0) [http://seleniumhq.org]
+* OpenSAML (Apache License, Version 2.0) [https://wiki.shibboleth.net/confluence/display/OpenSAML/Home]
+* Jaxen (Apache style) [http://jaxen.codehaus.org]
+* Rome (Apache License, Version 2.0) [http://java.net/projects/rome]
+* Jakarta ORO (Apache License, Version 2.0) [http://jakarta.apache.org/oro/]
+* SakaiProject basic LTI (Educational Community License, version 2.0,
+  see src/main/webapp/WEB-INF/lib/licenses/ECL.license.txt) [http://sakaiproject.org/projects/lti-portlet]
+* Geronimo Specs (Apache Software License, Version 2.0) [http://geronimo.apache.org]
+* JCommander (Apache Software License, Version 2.0) [http://jcommander.org]
+* google-guice (Apache Software License, Version 2.0) [http://code.google.com/p/google-guice]
+* jsr107-cache (Apache Software License, Version 2.0) [http://sourceforge.net/projects/jsr107cache]
+* Apache Ant (Apache Software License, Version 2.0) [http://ant.apache.org]
+* SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
+* Prototype javascript framework (MIT License) [http://www.prototypejs.org]
+* Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
+* JSMATH latex rendering (Apache Software License, Version 2.0) [http://www.math.union.edu/~dpvc/jsMath]
+
 -----------------------------------------------------------------------
-JDOM Project [http://www.jdom.org/]
+This product uses software based on the BSD License
+* antisamy (BSD license.) [https://www.owasp.org/index.php/Category:OWASP_AntiSamy_Project]
+* HSQLDB (HSQLDB License, a BSD open source license) [http://hsqldb.org]
+* XStream (BSD style) [http://xstream.codehaus.org]
+* dom4j (BSD style license) [http://dom4j.sourceforge.net]
+* Mail	(CDDL-1.0, BSD, GPL-2.0, GNU-Classpath) [http://kenai.com/projects/javamail]
+* Antlr (BSD license) [http://www.antlr.org]
+* PostgreSQL JDBC Driver(BSD License) [http://jdbc.postgresql.org]
+
 -----------------------------------------------------------------------
-JAZZLIB ZIP library [http://jazzlib.sourceforge.net]
-It is under GPL with a special exception :
-"As a special exception, if you link this library with other files to
-produce an executable, this library does not by itself cause the
-resulting executable to be covered by the GNU General Public License.
-This exception does not however invalidate any other reasons why the
-executable file might be covered by the GNU General Public License."
+This product uses software based on the Common Public License Version
+* wsdl4j	(Common Public License Version 1.0) [http://sourceforge.net/projects/wsdl4j]
+* junit	(Common Public License Version 1.0) [http://junit.sourceforge.net]
+* java2html (GPL or CPL1.0) [http://www.java2html.de]
+
 -----------------------------------------------------------------------
-YAML layout framework [http://www.yaml.de]
+This product uses software based on the Lesser General Public License (LGPL)
+* JGraphT (GNU Lesser General Public License Version 2.1) [http://www.jgrapht.org]
+* Hibernate (GNU Lesser General Public License) [http://www.hibernate.org]
+* c3p0 (GNU Lesser General Public License) [http://sourceforge.net/projects/c3p0]
+* BeanShell (GNU LESSER GENERAL PUBLIC LICENSE) [http://www.beanshell.org]
+* Jmep (GNU Lesser Public License) [http://jmep.tigris.org]
+* gnu-regexp (GNU Lesser General Public License) [http://savannah.gnu.org/projects/gnu-regexp]
+* JAMWiki (GNU Lesser General Public License) [http://jamwiki.org/wiki/en]
+* XOM (GNU Lesser General Public License) [http://www.xom.nu]
+* DHTML calendar by dynarch.com (LGPL) [http://prdownloads.sourceforge.net/jscalendar]
+  Author: Mihai Bazon, <mishoo@infoiasi.ro> [http://dynarch.com/mishoo]
+* TinyMCE WYSIWYG HTML editor (LGPL) [http://tinymce.moxiecode.com]
+
+-----------------------------------------------------------------------
+This product uses software in the public domain
+* aopalliance	(Public Domain) [http://aopalliance.sourceforge.net]
+* backport-util-concurrent	(Public Domain) [http://backport-jsr166.sourceforge.net]
+* XML Pull (Public Domain) [http://www.xmlpull.org]
+
+-----------------------------------------------------------------------
+This product uses software based on the General Public License (GPL)
+* Connector/J	(GNU General Public License, Version 2) [http://www.mysql.com/downloads/connector/j/]
+* JAZZLIB ZIP library [http://jazzlib.sourceforge.net]
+  It is under GPL with a special exception :
+  "As a special exception, if you link this library with other files to
+  produce an executable, this library does not by itself cause the
+  resulting executable to be covered by the GNU General Public License.
+  This exception does not however invalidate any other reasons why the
+  executable file might be covered by the GNU General Public License."
+
+-----------------------------------------------------------------------
+This product uses software based on the CDDL
+* Jersey (CDDL 1.1 and GPL 2 with CPE) [http://jersey.java.net]
+* jsr311-api	(CDDL License) [http://jsr311.java.net]
+* Grizzly	(CDDL) [http://grizzly.java.net]
+
+-----------------------------------------------------------------------
+This product uses software based on specific License
+* ical4j (see src/main/webapp/WEB-INF/lib/licenses/ical4j.license.txt) [http://wiki.modularity.net.au/ical4j]
+* cos	(Jason Hunter License see src/main/webapp/WEB-INF/lib/licenses/cos.license.txt)
+* radeox (unkown) [unkown]
+* org.json (see src/main/webapp/WEB-INF/lib/licenses/json.license.txt) [http://json.org/java]
+* SAC (W3C Software License) [http://www.w3.org/TR/SAC]
+* SCORM API adaper by the ISN (International Relations and Security Network) at ETH Zurich [http://www.isn.ethz.ch/]
+  Author: Matthai Kurian <matthai.kurian@ethz.ch>
+  pfplms-scorm (see src/main/webapp/WEB-INF/lib/licenses/PfPLMS-API-adapter-core.license.txt)
+* xpp3 (see src/main/webapp/WEB-INF/lib/licenses/xpp3-license.txt) [http://www.extreme.indiana.edu/xgws/xsoap/xpp]
+* asm (see src/main/webapp/WEB-INF/lib/licenses/asm-license.txt) [http://asm.ow2.org]
+* JTA (see src/main/webapp/WEB-INF/lib/licenses/jta.licence.txt) [http://www.oracle.com/technetwork/java/javaee/jta]
+
+-----------------------------------------------------------------------
+YAML layout framework (Creative Commons Attribution 2.0 Lizenz,
+see http://creativecommons.org/licenses/by/2.0/de) [http://www.yaml.de]
 Please read the licensing terms of YAML if you plan to use OLAT in a commercial setup.
------------------------------------------------------------------------
-DHTML calendar by dynarch.com (LGPL) [http://prdownloads.sourceforge.net/jscalendar]
-Author: Mihai Bazon, <mishoo@infoiasi.ro> [http://dynarch.com/mishoo]
------------------------------------------------------------------------
-TinyMCE WYSIWYG HTML editor (LGPL) [http://tinymce.moxiecode.com]
------------------------------------------------------------------------
-SMACK client library from jivesoftware.org [http://www.jivesoftware.org/smack]
+
 -----------------------------------------------------------------------
 The OpenOLAT comic portlet uses comic strips produces by Alex Macartney
 Please not that these comics are not public domain and must not be used for any
 other purpose than beeing displayed in the OpenOLAT home portal
 [http://www.macartney.ch]
+
 -----------------------------------------------------------------------
-SCORM player project [http://www.reload.ac.uk/scormplayer.html]
------------------------------------------------------------------------
-SCORM API adaper by the ISN (International Relations and Security Network)
-at ETH Zurich [http://www.isn.ethz.ch/]
-Author: Matthai Kurian <matthai.kurian@ethz.ch>
------------------------------------------------------------------------
-JAMWIKI rendering engine [http://jamwiki.org]
------------------------------------------------------------------------
-JSMATH latex rendering [http://www.math.union.edu/~dpvc/jsMath]
------------------------------------------------------------------------
-Quartz job scheduler from the OpenSymphony project (Apache 2 license)
-[http://www.opensymphony.com/quartz]
------------------------------------------------------------------------
-Prototype javascript framework [http://www.prototypejs.org]
------------------------------------------------------------------------
-Script.aculo.us javascript framework [http://script.aculo.us]
------------------------------------------------------------------------
-EXTJS javascript framework [http://extjs.com]
------------------------------------------------------------------------
-OWASP antisamy XSS filter (new BSD license) [http://code.google.com/p/owaspantisamy]
------------------------------------------------------------------------
-CyberNeko HTML Parser (Apache 2 License) [http://nekohtml.sourceforge.net/index.html]
------------------------------------------------------------------------
+EXTJS javascript framework [http://www.sencha.com]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
