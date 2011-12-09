@@ -14,10 +14,15 @@
 * See the License for the specific language governing permissions and <br>
 * limitations under the License.
 * <p>
-* Copyright (c) 1999-2007 at Multimedia- & E-Learning Services (MELS),<br>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
 * <p>
-*/
+*/ 
 package org.olat.core.util.cache.n.impl.cluster;
 
 import java.util.regex.Pattern;

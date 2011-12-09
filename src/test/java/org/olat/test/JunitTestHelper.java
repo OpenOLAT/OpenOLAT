@@ -1,33 +1,31 @@
 /**
- * OLAT - Online Learning and Training<br>
- * http://www.olat.org
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License"); <br>
- * you may not use this file except in compliance with the License.<br>
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing,<br>
- * software distributed under the License is distributed on an "AS IS" BASIS,
- * <br>
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
- * See the License for the specific language governing permissions and <br>
- * limitations under the License.
- * <p>
- * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
- * University of Zurich, Switzerland.
- * <p>
- * Description:<br>
- * Helper methods to create identities that can be used in junit tests. Start
- * the test case with -Djunit.maildomain=mydomain.com to create identities with
- * mail accounts that go to your domain, otherwhise mytrashmail.com will be used
- * <P>
- * Initial Date: 21.11.2006 <br>
- * 
- * @author Florian Gnaegi, frentix GmbH<br>
- *         http://www.frentix.com
- */
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
+* <p>
+* Initial code contributed and copyrighted by<br>
+* frentix GmbH, http://www.frentix.com
+* <p>
+*/
 package org.olat.test;
 
 import java.util.List;
@@ -49,6 +47,17 @@ import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+/**
+ * Description:<br>
+ * Helper methods to create identities that can be used in junit tests. Start
+ * the test case with -Djunit.maildomain=mydomain.com to create identities with
+ * mail accounts that go to your domain, otherwhise mytrashmail.com will be used
+ * <P>
+ * Initial Date: 21.11.2006 <br>
+ * 
+ * @author Florian Gnaegi, frentix GmbH<br>
+ *         http://www.frentix.com
+ */
 public class JunitTestHelper {
 
 	static String maildomain = System.getProperty("junit.maildomain");

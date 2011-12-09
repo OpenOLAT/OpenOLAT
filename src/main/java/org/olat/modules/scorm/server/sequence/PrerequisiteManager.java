@@ -1,5 +1,3 @@
-package org.olat.modules.scorm.server.sequence;
-
 /**
  * RELOAD TOOLS Copyright (c) 2003 Oleg Liber, Bill Olivier, Phillip Beauvoir,
  * Paul Sharples Permission is hereby granted, free of charge, to any person
@@ -20,6 +18,8 @@ package org.olat.modules.scorm.server.sequence;
  * Road Bolton BL3 5AB UK e-mail: o.liber@bolton.ac.uk Technical Contact:
  * Phillip Beauvoir e-mail: p.beauvoir@bolton.ac.uk Web: http://www.reload.ac.uk
  */
+package org.olat.modules.scorm.server.sequence;
+
 
 import java.util.Enumeration;
 import java.util.Hashtable;

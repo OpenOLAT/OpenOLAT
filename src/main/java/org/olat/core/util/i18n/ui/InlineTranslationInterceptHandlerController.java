@@ -1,5 +1,3 @@
-package org.olat.core.util.i18n.ui;
-
 /**
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -19,6 +17,8 @@ package org.olat.core.util.i18n.ui;
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+package org.olat.core.util.i18n.ui;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;

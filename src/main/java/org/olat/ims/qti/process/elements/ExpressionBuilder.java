@@ -16,8 +16,12 @@
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
-* <p>
-*/ 
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 
 package org.olat.ims.qti.process.elements;
 
@@ -28,9 +32,13 @@ import org.dom4j.Element;
  */
 public interface ExpressionBuilder {
 	/**
-	 * 	 * @param selectionElement	 * @param expr	 * @param not_switch true if parent or ancestor was a not so that we need to "not" our result.
+	 * 
+	 * @param selectionElement
+	 * @param expr
+	 * @param not_switch true if parent or ancestor was a not so that we need to "not" our result.
 	 * reason: not (a and b) : xpath, which we use as search engine, doesn't have a not, so we transform it to
-	 * (not a) and (not b), where not a is know for all elements: or -> and, and -> or, not -> nothing, = -> != , > -> <= and so on	 */
+	 * (not a) and (not b), where not a is know for all elements: or -> and, and -> or, not -> nothing, = -> != , > -> <= and so on
+	 */
 	public void buildXPathExpression(Element selectionElement, StringBuilder expr, boolean not_switch, boolean use_switch);
 
 }

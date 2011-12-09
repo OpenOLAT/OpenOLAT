@@ -16,8 +16,12 @@
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
-* <p>
-*/ 
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 
 package org.olat.ims.qti.container;
 
@@ -41,7 +45,10 @@ public interface ItemInput {
 	/**
 	 * returns a List of Strings with the corresponding answers, e.g. for a multiple choice
 	 * with multiple response it could be mr01 = { "A", "C", "D"} if the user chose a,c, and d
-	 * from the five answers with values a,b,c,d,e,f	 * @param varName	 * @return List the List containing the String(s)	 */
+	 * from the five answers with values a,b,c,d,e,f
+	 * @param varName
+	 * @return List the List containing the String(s)
+	 */
 	public List getAsList(String varName);
 
 	/**

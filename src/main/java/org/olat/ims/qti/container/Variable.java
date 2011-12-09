@@ -16,8 +16,12 @@
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
-* <p>
-*/ 
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 
 package org.olat.ims.qti.container;
 
@@ -41,7 +45,8 @@ public abstract class Variable implements Serializable{
                    minvalue   CDATA  #IMPLIED
                    maxvalue   CDATA  #IMPLIED
                    members    CDATA  #IMPLIED
-                   cutvalue   CDATA  #IMPLIED >	 */
+                   cutvalue   CDATA  #IMPLIED >
+	 */
 	
 
 	private String varName;

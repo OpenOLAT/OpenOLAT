@@ -16,12 +16,17 @@
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
 * <p>
-* 
-* Technische Universitaet Chemnitz Lehrstuhl Technische Informatik
-* 
-* Author Marcel Karras (toka@freebits.de)
-* Author Norbert Englisch (norbert.englisch@informatik.tu-chemnitz.de)
+* Initial code contributed and copyrighted by<br>
+* Technische Universitaet Chemnitz Lehrstuhl Technische Informatik<br>
+* <br>
+* Author Marcel Karras (toka@freebits.de)<br>
+* Author Norbert Englisch (norbert.englisch@informatik.tu-chemnitz.de)<br>
 * Author Sebastian Fritzsche (seb.fritzsche@googlemail.com)
 */
 package de.tuchemnitz.wizard.helper.catalog;

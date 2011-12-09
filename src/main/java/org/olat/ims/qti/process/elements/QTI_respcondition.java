@@ -16,8 +16,12 @@
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
-* <p>
-*/ 
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 
 package org.olat.ims.qti.process.elements;
 
@@ -127,7 +131,8 @@ public class QTI_respcondition {
 								</material>
                   			</flow_mat>
                 		</response_label> 
-					  ...					
+					  ...
+					
 					 	<respcondition title="_olat_resp_feedback" continue="Yes">
 							<conditionvar>
 								<varequal respident="Frage6549" case="Yes">2</varequal>
@@ -138,7 +143,8 @@ public class QTI_respcondition {
 						In this case, it is possible (and wished) to trace the feedback back to the answer which triggered this feedback.
 						Such a respcondition is identified by the title which is exactly "_olat_resp_feedback".
 						
-											 */
+						
+					 */
 					Element el_chosenanswer = null;
 					if (respcondtitle != null && respcondtitle.equals("_olat_resp_feedback")) {
 						Element el_vareq = (Element) el_respcond.selectSingleNode(".//varequal");

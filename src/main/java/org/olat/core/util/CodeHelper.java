@@ -14,8 +14,13 @@
 * See the License for the specific language governing permissions and <br>
 * limitations under the License.
 * <p>
-* Copyright (c) 1999-2006 at Multimedia- & E-Learning Services (MELS),<br>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
 * <p>
 */ 
 
@@ -69,7 +74,9 @@ public class CodeHelper {
 	 * the sessions are persisted and the vm is restarted, then use @see getRAMUniqueID()
 	 * 
 	 * returns a unique id; even if the system is restarted.
-	 * 	 * @return long	 */
+	 * 
+	 * @return long
+	 */
 	public static long getForeverUniqueID() {
 		return timeuniqueId.incrementAndGet(); //o_clusterNOK synchronized check what of data generated with that long is persisted
 	}

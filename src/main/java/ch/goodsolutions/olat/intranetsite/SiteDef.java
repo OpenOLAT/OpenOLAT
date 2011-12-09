@@ -16,9 +16,16 @@
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.  
+* <p>
+* Initial code contributed and copyrighted by<br>
+* JGS goodsolutions GmbH, http://www.goodsolutions.ch
 * <p>
 */
-
 package ch.goodsolutions.olat.intranetsite;
 
 import org.olat.core.gui.UserRequest;

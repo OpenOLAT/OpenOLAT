@@ -1,5 +1,3 @@
-package org.olat.modules.scorm.server.sequence;
-
 /**
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
@@ -18,8 +16,12 @@ package org.olat.modules.scorm.server.sequence;
 * <p>
 * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
 * University of Zurich, Switzerland.
-* <p>
-*/ 
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 
 /**
  *  RELOAD TOOLS
@@ -65,6 +67,7 @@ package org.olat.modules.scorm.server.sequence;
  *  Web:      http://www.reload.ac.uk
  *
  */
+package org.olat.modules.scorm.server.sequence;
 
 
 import org.olat.core.util.FileUtils;

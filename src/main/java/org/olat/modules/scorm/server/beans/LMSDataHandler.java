@@ -1,5 +1,3 @@
-package org.olat.modules.scorm.server.beans;
-
 /**
  * RELOAD TOOLS Copyright (c) 2003 Oleg Liber, Bill Olivier, Phillip Beauvoir,
  * Paul Sharples Permission is hereby granted, free of charge, to any person
@@ -21,6 +19,9 @@ package org.olat.modules.scorm.server.beans;
  * Phillip Beauvoir e-mail: p.beauvoir@bolton.ac.uk Paul Sharples e-mail:
  * p.sharples@bolton.ac.uk Web: http://www.reload.ac.uk
  */
+package org.olat.modules.scorm.server.beans;
+
+
 import java.util.Iterator;
 import java.util.Map;
 

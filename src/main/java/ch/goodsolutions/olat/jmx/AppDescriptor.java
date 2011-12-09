@@ -1,15 +1,20 @@
 /**
- * OLAT - Online Learning and Training<br>
- * http://www.olat.org
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
  * <p>
- * This software is protected by the OLAT software license.<br>
- * Use is subject to license terms.<br>
- * See LICENSE.TXT in this distribution for details.
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
- * Copyright (c) 2005-2006 by JGS goodsolutions GmbH, Switzerland<br>
- * http://www.goodsolutions.ch
- *
- * All rights reserved.
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * JGS goodsolutions GmbH, http://www.goodsolutions.ch
  * <p>
  */
 package ch.goodsolutions.olat.jmx;
