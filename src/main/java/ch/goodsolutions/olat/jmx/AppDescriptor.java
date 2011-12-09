@@ -1,5 +1,3 @@
-package ch.goodsolutions.olat.jmx;
-
 /**
  * OLAT - Online Learning and Training<br>
  * http://www.olat.org
@@ -14,6 +12,8 @@ package ch.goodsolutions.olat.jmx;
  * All rights reserved.
  * <p>
  */
+package ch.goodsolutions.olat.jmx;
+
 public class AppDescriptor {
 
 	private String contextPath;

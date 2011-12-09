@@ -1,3 +1,17 @@
+/**
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * This software is protected by the OLAT software license.<br>
+ * Use is subject to license terms.<br>
+ * See LICENSE.TXT in this distribution for details.
+ * <p>
+ * Copyright (c) 2005-2006 by JGS goodsolutions GmbH, Switzerland<br>
+ * http://www.goodsolutions.ch
+ *
+ * All rights reserved.
+ * <p>
+ */
 package ch.goodsolutions.demo.poll;
 
 import org.olat.core.gui.UserRequest;
