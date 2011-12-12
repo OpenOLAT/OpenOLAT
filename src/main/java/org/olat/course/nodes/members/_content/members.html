@@ -1,0 +1,16 @@
+<div class="o_cmembers">
+	#if($hasOwners)
+		<h4>$r.translate("members.owners") #if($r.available("owners-email")) $r.render("owners-email") #end</h4>
+		$r.render("owners")
+	#end
+	#if($hasCoaches)
+		<h4>$r.translate("members.coaches") #if($hasCoaches) $r.render("coaches-email") #end</h4>
+		$r.render("coaches")
+	#end
+	<h4>$r.translate("members.participants") #if($hasParticipants && $r.available("participants-email")) $r.render("participants-email") #end</h4>
+	#if($hasParticipants)
+		$r.render("participants")
+	#else
+		$r.translate("members.noParticipants.message")
+	#end
+</div>

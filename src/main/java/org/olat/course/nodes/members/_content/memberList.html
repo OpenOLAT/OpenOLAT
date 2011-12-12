@@ -1,0 +1,13 @@
+#foreach($memberLink in $memberLinks)
+	<div class="o_cmember">
+		#if($memberLink.getUserObject().isPortraitAvailable())
+			<img class="o_cmember_portrait" src="$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg" width="50"/>
+		#else
+			<img class="o_cmember_portrait $memberLink.getUserObject().getPortraitCssClass()" src="$r.staticLink("images/transparent.gif")" alt="user portrait" width="50" height="50" />
+		#end
+		$r.render($memberLink.getComponent().getComponentName())
+		#if($r.available($memberLink.getUserObject().getEmailLink().getComponent().getComponentName()))
+			$r.render($memberLink.getUserObject().getEmailLink().getComponent().getComponentName())
+		#end
+	</div>
+#end

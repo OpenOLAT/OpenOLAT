@@ -614,6 +614,15 @@ s
 	.o_infomsg_icon { background-image: url(../images/olat/infomessage.png); }
 	.o_infomsg_create_button { position:absolute; top:0; right:250px; }
 	
+	/* MEMBERS BB */
+	div.o_cmembers {}
+	div.o_cmembers * { vertical-align:middle; }
+	div.o_cmembers div.o_cmember { float:left; width:30%; margin: 5px 5px 5px 0; padding:5px; background-color:#EBEBEB; border:1px solid #ddd; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; -webkit-box-shadow: 0 1px 2px #d3d3d3; -moz-box-shadow: 0 1px 2px #d3d3d3; -o-box-shadow: 0 1px 2px #d3d3d3; box-shadow: 0 1px 2px #d3d3d3; }
+	div.o_cmembers div.o_cmember img.o_cmember_portrait { margin-right:5px; border:1px solid #ddd; background-color:white; background-position:50% 50%; background-repeat:no-repeat; }
+	div.o_cmembers a.o_cmembers_mail { float:none; margin-left:5px; padding-left:20px; background-image:url(../images/olat/email.png); }
+	div.o_cmembers a.o_cmembers_mail span { display:none; }
+	div.o_cmembers h4 { padding: 7px 0 0 0; clear:both;}
+	
 	/* LINK LIST */
 	div.o_ll_container ul li { list-style: none; margin: 1em; }
 	div.o_ll_container ul li div { font-style: italic;}
