@@ -88,8 +88,8 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 })
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
-	private boolean hsqlDBConfigured = false;
-	private boolean postgresqlConfigured = false;
+	private static boolean hsqlDBConfigured = false;
+	private static boolean postgresqlConfigured = false;
 	private static boolean started = false;;
 	
 	/**
