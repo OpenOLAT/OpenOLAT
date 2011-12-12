@@ -25,23 +25,42 @@
 package org.olat.gui.control;
 
 import org.olat.core.commons.chiefcontrollers.LanguageChooserController;
+import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 
 public class OlatDmzTopNavController extends BasicController{
-
+	
+	private Link impressumLink;
 	private VelocityContainer topNavVC;
 	private LanguageChooserController languageChooserC;
-
+	
 	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false);
+	}
+
+	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum) {
 		super(ureq, wControl);
 
 		topNavVC = createVelocityContainer("dmztopnav");
+		
+		// impressum
+		if(impressum) {
+			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
+			impressumLink.setTooltip("topnav.impressum.alt", false);
+			impressumLink.setAjaxEnabled(false);
+			impressumLink.setTarget("_blank");
+		}
 
 		//choosing language 
 		languageChooserC = new LanguageChooserController(getWindowControl(), ureq);
@@ -54,14 +73,17 @@ public class OlatDmzTopNavController extends BasicController{
 
 		putInitialPanel(topNavVC);		
 	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		//
-	}
 	
 	public void event(UserRequest ureq, Component source, Event event) {
-		//no events yet
+		if (source == impressumLink) {
+			ControllerCreator impressumControllerCreator = new ControllerCreator() {
+				public Controller createController(UserRequest lureq, WindowControl lwControl) {
+					return new ImpressumDmzMainController(lureq, lwControl);
+				}
+			};
+			PopupBrowserWindow popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewUnauthenticatedPopupWindowFor(ureq, impressumControllerCreator);
+			popupBrowserWindow.open(ureq);
+		}
 	}
 
 	protected void doDispose() {

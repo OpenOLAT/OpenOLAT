@@ -53,6 +53,8 @@ import org.olat.gui.control.OlatGuestTopNavController;
  * @author patrickb
  */
 public class GuestBFWCParts implements BaseFullWebappControllerParts {
+	
+	private boolean showTopNav = true;
 
 	/**
 	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createFooterController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
@@ -86,7 +88,16 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createTopNavController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createTopNavController(UserRequest ureq, WindowControl wControl) {
-		return new OlatGuestTopNavController(ureq, wControl);
+		if (showTopNav) {
+			Controller topNavCtr = null;
+			if (CoreSpringFactory.containsBean("fullWebApp.GuestTopNavControllerCreator")) {
+				ControllerCreator headerControllerCreator = (ControllerCreator)  CoreSpringFactory.getBean("fullWebApp.GuestTopNavControllerCreator");
+				topNavCtr = headerControllerCreator.createController(ureq, wControl);
+			}
+			return topNavCtr;
+		} else {
+			return null;
+		}
 	}
 
 

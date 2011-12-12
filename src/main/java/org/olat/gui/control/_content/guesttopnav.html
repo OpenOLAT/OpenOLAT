@@ -1,4 +1,9 @@
-<ul>	
+<ul>
+#if($r.available("topnav.impressum"))
+	<li>
+		$r.render("topnav.impressum")
+	</li>
+#end
 	<li id="o_topnav_help">
 		$r.render("topnav.help")
 	</li>

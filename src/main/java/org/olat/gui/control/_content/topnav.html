@@ -1,4 +1,9 @@
 <ul>
+#if($r.available("topnav.impressum"))
+	<li>
+		$r.render("topnav.impressum")
+	</li>
+#end
 #if ($r.available("groupchatcontroller"))
 	<li id="o_topnav_imgroupclient">
 		$r.render("groupchatcontroller")

@@ -40,136 +40,7 @@
 	<bean id ="subshandlerbean" class = "org.olat.notifications.SubscriptionJumpInHandlerFactory" />
 	<bean id ="catahandlerbean" class = "org.olat.catalog.CatalogJumpInHandlerFactory" />
 	<bean id ="userhandlerbean" class = "org.olat.user.notification.UserJumpInHandlerFactory" />
-	
 
-	<!-- OLAT specific popup windows default layout, which is also applied to 
-	popupwindows opened within core controllers, e.g. html editor or thelike -->
-	<bean id="org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator" 
-		class="org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutCreator" >
-	</bean>
-
-
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** header part, e.g. for a logo       ***
-		******************************************
-	-->
-	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
-	</bean>
-	<!-- use the following header controller instead if you want a logo header header or configure you own
-	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.commons.fullWebApp.LogoWithLinkHeaderControllerCreator" scope="prototype">
-		<property name="linkURI" value="http://www.brasatoframework.org" />	
-		<property name="imgURI" value="http://www.brasatoframework.org/images/logo.png" />	
-		<property name="imgAltText" value="Brasato Open Source WebApp Framework" />					
-	</bean> 		
-	-->
-	<!-- in case a Guest uses OLAT, see GuestBFWCParts -->
-	<!-- <bean id="fullWebApp.GuestHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
-	</bean> -->
-	<!-- Header for DMZ, see DmzBFWCParts -->
-    <!-- <bean  id="fullWebApp.DMZHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
-	</bean> --> 
-
-	
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** right upper corner.                ***
-		******************************************
-	-->
-	<bean id="fullWebApp.DMZTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatDmzTopNavController"/>
-	</bean>
-	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatTopNavController"/>
-	</bean>
-	<!-- uncomment this and comment above line if automatic guest login should be enabled 
-	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatGuestTopNavController"/>
-	</bean>
-	 -->
-
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** right upper corner in pop ups      ***
-		******************************************
-	-->
-	<bean id="fullWebApp.MinimalTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatMinimalTopNavController"/>
-	</bean>
-
-
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** Footer.                            ***
-		******************************************
-	-->
-	<bean  id="fullWebApp.FooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
-	</bean>
-    <!-- uncomment this and comment above line if automatic guest login should be enabled:  
-	<bean  id="fullWebApp.FooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
-	</bean>
-    -->
-	<!-- in case a Guest uses OLAT, see GuestBFWCParts -->
-    <bean  id="fullWebApp.GuestFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
-	</bean>   	
-	<!-- Footer for DMZ, see DmzBFWCParts -->
-    <bean  id="fullWebApp.DMZFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.gui.control.OlatGuestFooterController"/>
-	</bean>   		
-
-		
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** header part, in context help       ***
-		******************************************
-	-->
-	<bean id="fullWebApp.ContextHelpHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
-	</bean>
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** right upper corner inin context help**
-		******************************************
-	-->
-	<bean id="fullWebApp.ContextHelpTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.core.commons.contextHelp.ContextHelpTopNavController" />
-	</bean>
-	<!--
-		******************************************
-		*** Configure the controller in the    ***
-		*** Footer in in context help.         ***
-		******************************************
-	-->
-	<bean id="fullWebApp.ContextHelpFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
-	</bean>
-
-
-	<!--
-		**************************************************************************
-		*** Configure the controller-workflow which should be presented		   ***
-		*** right after a user logged in.                                      ***
-		*** See comment in AfterLoginInterceptorController                     ***
-		**************************************************************************
-	-->
-	<bean id="fullWebApp.AfterLoginInterceptionControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.login.AfterLoginInterceptionController"/>
-	</bean>
-
-		
-	
       
     <!--
 		*****************************************
@@ -179,9 +50,7 @@
 	<bean id="persistentLockManager" class="org.olat.util.locks.DBPersistentLockManager"  >
 		<constructor-arg index="0" ref="userDeletionManager" />
 	</bean>  
-	
-          
-      
+
     <!--
 		*****************************************
 		*** Define the Notifications Manager  ***

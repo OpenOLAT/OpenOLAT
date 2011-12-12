@@ -27,12 +27,14 @@ package org.olat.gui.control;
 
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.search.ui.SearchController;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory.DisplayOption;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -42,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -60,20 +63,24 @@ import org.olat.instantMessaging.groupchat.GroupChatManagerController;
  * 
  * @author patrickb
  */
-public class OlatTopNavController extends BasicController /*TODO:PB:OLAT-4047 implements GenericEventListener*/ implements GenericEventListener{
+public class OlatTopNavController extends BasicController implements GenericEventListener {
+	
 	private static final String ACTION_LOGOUT = "logout";
 	private VelocityContainer topNavVC;
 	private Controller imController;
 	private GroupChatManagerController groupChatController;
 	private SearchController searchC;
-	private Link helpLink, loginLink;
-	//TODO:PB:OLAT-4047 private Link permLink;
-	//TODO:PB:OLAT-4047 private VelocityContainer permsharp;
+	private Link helpLink, loginLink, impressumLink;
+
 	
 	private EventBus singleUserEventCenter;
 	private OLATResourceable ass;
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false, true);
+	}
+	
+	public OlatTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum,	boolean search) {
 		super(ureq, wControl);
 		
 		topNavVC = createVelocityContainer("topnav");
@@ -97,21 +104,20 @@ public class OlatTopNavController extends BasicController /*TODO:PB:OLAT-4047 im
 			topNavVC.contextPut("isGuest", Boolean.TRUE);
 			loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
 			loginLink.setTooltip("topnav.login.alt", false);
-		} 
+		}
+		
+		if(impressum) {
+			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
+			impressumLink.setTooltip("topnav.impressum.alt", false);
+			impressumLink.setAjaxEnabled(false);
+			impressumLink.setTarget("_blank");
+		}
 		
 		SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 		searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
 		searchC.setResourceContextEnable(false);
 		topNavVC.put("search_input", searchC.getInitialComponent());
 		
-		//TODO:PB:OLAT-4047 permLink = LinkFactory.createLink("topnav.permlink", topNavVC, this);
-		//TODO:PB:OLAT-4047 permLink.setTarget("_permlink");
-		//TODO:PB:OLAT-4047 permsharp = createVelocityContainer("permsharp");
-		//TODO:PB:OLAT-4047 Panel p = new Panel("refreshpermlink");
-		//TODO:PB:OLAT-4047 p.setContent(permsharp);
-		//TODO:PB:OLAT-4047 topNavVC.put("refreshpermlink",p);
-		
-	  //TODO:PB:OLAT-4047 getWindowControl().getWindowBackOffice().addCycleListener(this);//receive events to adjust URL
 
 		if (ureq.getIdentity() != null) {
 			ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
@@ -120,17 +126,6 @@ public class OlatTopNavController extends BasicController /*TODO:PB:OLAT-4047 im
 		}
 		
 		putInitialPanel(topNavVC);
-	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == topNavVC) {
-			//System.out.println(event.getCommand());
-		}
 	}
 	
 	/**
@@ -153,20 +148,18 @@ public class OlatTopNavController extends BasicController /*TODO:PB:OLAT-4047 im
 				//
 			} else if (source == loginLink) {
 				DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
-			} /* //TODO:PB:OLAT-4047  else if (source == permLink){
-
-				WindowControl current = (WindowControl)getWindowControl().getWindowBackOffice().getWindow().getAttribute("BUSPATH");
-				String buspath = current != null ? JumpInManager.getRestJumpInUri(current.getBusinessControl()) : "NONE";
-				String postUrl = Settings.getServerContextPathURI()+"/url/"+buspath;
-				String deliciousPost = "http://del.icio.us/post?url="+postUrl;
-				ControllerCreator ctrl = BaseFullWebappPopupLayoutFactory.createRedirectingPopup(ureq, deliciousPost);
-				openInNewBrowserWindow(ureq, ctrl);
-				return;
-			}*/
-		if (source == topNavVC) {
+			} else if (source == topNavVC) {
 			if (command.equals(ACTION_LOGOUT)) {
 				AuthHelper.doLogout(ureq);
 			}
+		}	else if (source == impressumLink) {
+			ControllerCreator impressumControllerCreator = new ControllerCreator() {
+				public Controller createController(UserRequest lureq, WindowControl lwControl) {
+					return new ImpressumMainController(lureq, lwControl);
+				}
+			};
+			PopupBrowserWindow popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, impressumControllerCreator);
+			popupBrowserWindow.open(ureq);
 		}
 	}
 
@@ -199,19 +192,4 @@ public class OlatTopNavController extends BasicController /*TODO:PB:OLAT-4047 im
 			} 
 		}
 	}
-
-  /* TODO:PB:OLAT-4047 
-	public void event(Event event) {
-			if (event == Window.BEFORE_INLINE_RENDERING) {
-				// create jump in path from the active main content WindowControl
-				WindowControl tmp = (WindowControl)getWindowControl().getWindowBackOffice().getWindow().getAttribute("BUSPATH");
-				String buspath = tmp != null ? JumpInManager.getRestJumpInUri(tmp.getBusinessControl()) : "NONE";
-				buspath = "/url/"+buspath; 
-				String postUrl = Settings.getServerContextPathURI()+buspath;//TODO:PB:2009-06-02: move /url/ String to Spring config
-				//udpate URL for the addthis javascript box in the topnav velocity
-				permsharp.contextPut("myURL", postUrl);
-				permsharp.contextPut("buspath", buspath);
-			}
-		
-	}*/
 }

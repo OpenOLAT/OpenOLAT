@@ -26,8 +26,10 @@
 package org.olat.gui.control;
 
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.commons.controllers.impressum.ImpressumMainController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -52,11 +54,24 @@ public class OlatGuestTopNavController extends BasicController {
 	private VelocityContainer topNavVC;
 	private Link helpLink;
 	private Link loginLink;
+	private Link impressumLink;
 	
 
 	public OlatGuestTopNavController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false);
+	}
+
+	public OlatGuestTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum) {
 		super(ureq, wControl);
 		topNavVC = createVelocityContainer("guesttopnav");
+		
+		// impressum
+		if(impressum) {
+			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
+			impressumLink.setTooltip("topnav.impressum.alt", false);
+			impressumLink.setAjaxEnabled(false);
+			impressumLink.setTarget("_blank");
+		}
 		
 		// the help link
 		helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
@@ -77,7 +92,7 @@ public class OlatGuestTopNavController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == loginLink) {
 			AuthHelper.doLogout(ureq);
-		}else if (source == helpLink) {
+		} else if (source == helpLink) {
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
 					return CourseFactory.createHelpCourseLaunchController(lureq, lwControl);
@@ -89,6 +104,14 @@ public class OlatGuestTopNavController extends BasicController {
 			PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
 			pbw.open(ureq);
 			//
+		}	else if (source == impressumLink) {
+			ControllerCreator impressumControllerCreator = new ControllerCreator() {
+				public Controller createController(UserRequest lureq, WindowControl lwControl) {
+					return new ImpressumMainController(lureq, lwControl);
+				}
+			};
+			PopupBrowserWindow popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, impressumControllerCreator);
+			popupBrowserWindow.open(ureq);
 		}
 	}
 

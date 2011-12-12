@@ -1,4 +1,9 @@
 <ul>
+#if($r.available("topnav.impressum"))
+	<li>
+		$r.render("topnav.impressum")
+	</li>
+#end
 	<li id="o_topnav_langchooser">
 		$r.render("languageChooser")
 	</li>
