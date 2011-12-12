@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.commons.file.mail;
+package org.olat.core.util.mail.ui;
 
 import java.io.File;
 import java.text.DecimalFormat;
@@ -68,6 +68,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
@@ -103,7 +104,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private static final int MAX_RESULTS_USERS = 12;
 		
 	public SendDocumentsByEMailController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoFormController.class, ureq.getLocale(), Util.createPackageTranslator(SendDocumentsByEMailController.class, ureq.getLocale())));
+		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfoFormController.class, ureq.getLocale(), Util.createPackageTranslator(MailModule.class, ureq.getLocale())));
+		setBasePackage(MailModule.class);
 		
 		securityManager = BaseSecurityManager.getInstance();
 		allowAttachments = !FolderConfig.getSendDocumentLinkOnly();
@@ -133,7 +135,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		bodyElement = uifactory.addTextAreaElement("tbody", "send.mail.body", -1, 20, emailCols, false, "", formLayout);
 		
 		if(allowAttachments) {
-			String page = Util.getPackageVelocityRoot(SendDocumentsByEMailController.class) + "/attachments.html";
+			String page = Util.getPackageVelocityRoot(MailModule.class) + "/sendattachments.html";
 			attachmentsLayout = FormLayoutContainer.createCustomFormLayout("attachments", getTranslator(), page);
 			attachmentsLayout.setRootForm(mainForm);
 			attachmentsLayout.setLabel("send.mail.attachments", null);

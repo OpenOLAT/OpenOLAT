@@ -34,6 +34,10 @@
 		</property>
 	</bean>
 	
+	<bean id="sendDocumentByEMailControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
+		<property name="className" value="org.olat.core.util.mail.ui.SendDocumentsByEMailController"/>
+	</bean>
+	
 	<!-- Mail admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.mailcfg" init-method="initExtensionPoints">
 		<property name="actionController">	
