@@ -434,14 +434,17 @@ public class CatalogController extends BasicController implements Activateable, 
 				if (s.startsWith(CATENTRY_LEAF)) {
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
 					CatalogEntry showDetailForLink = (CatalogEntry) childCe.get(pos);
-					RepositoryEntry repoEnt = showDetailForLink.getRepositoryEntry();					
-					fireEvent(ureq, new EntryChangedEvent(repoEnt, EntryChangedEvent.MODIFIED));
-					//fxdiff BAKS-7 Resume function
-					OLATResourceable ceRes = OresHelper.createOLATResourceableInstance(CatalogEntry.class.getSimpleName(), showDetailForLink.getKey());
-					WindowControl bwControl = addToHistory(ureq, ceRes, null);
-					OLATResourceable ores = OresHelper.createOLATResourceableInstance("details", 0l);
-					addToHistory(ureq, ores, null, bwControl, true);
-					return;
+					RepositoryEntry repoEnt = showDetailForLink.getRepositoryEntry();
+					if(repoEnt == null) {//concurrent edition, reload the current listing
+						updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
+					} else {
+						fireEvent(ureq, new EntryChangedEvent(repoEnt, EntryChangedEvent.MODIFIED));
+						//fxdiff BAKS-7 Resume function
+						OLATResourceable ceRes = OresHelper.createOLATResourceableInstance(CatalogEntry.class.getSimpleName(), showDetailForLink.getKey());
+						WindowControl bwControl = addToHistory(ureq, ceRes, null);
+						OLATResourceable ores = OresHelper.createOLATResourceableInstance("details", 0l);
+						addToHistory(ureq, ores, null, bwControl, true);
+					}
 				}
 			}
 		}
