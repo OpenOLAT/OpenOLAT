@@ -42,6 +42,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -66,13 +67,14 @@ public class CmdServeResource implements FolderCommand {
 		// extract file
 		String path = ureq.getModuleURI();
 		MediaResource mr = null;
-		VFSLeaf vfsfile = (VFSLeaf)folderComponent.getRootContainer().resolve(path);
-		
-		
-		
-		if (vfsfile == null) {
+		VFSItem vfsitem = folderComponent.getRootContainer().resolve(path);
+
+		if (vfsitem == null) {
+			mr = new NotFoundMediaResource(path);
+		} else if(!(vfsitem instanceof VFSLeaf)) {
 			mr = new NotFoundMediaResource(path);
 		} else {
+			VFSLeaf vfsfile = (VFSLeaf)vfsitem;
 			if (path.toLowerCase().endsWith(".html") || path.toLowerCase().endsWith(".htm")) {
 				// setCurrentURI(path);
 				// set the http content-type and the encoding
