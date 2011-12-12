@@ -89,8 +89,8 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	private RepositoryManager repositoryManager;
 	private BaseSecurity securityManager;
 
-	//private static final String REGISTRATION_SERVER = "http://www.openolat.org/registration/restapi/registration/openolat";
-	private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
+	private static final String REGISTRATION_SERVER = "http://registration.openolat.org/registration/restapi/registration/openolat";
+	//private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
 	
 	/**
 	 * [used by spring]
