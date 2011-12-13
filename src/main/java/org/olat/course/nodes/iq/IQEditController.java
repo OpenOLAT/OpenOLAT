@@ -141,6 +141,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_SUMMARY = "summary";
 	/** configuration key: max attempts*/
 	public static final String CONFIG_KEY_ATTEMPTS = "attempts";
+	/** configuration key: max attempts*/
+	public static final String CONFIG_KEY_BLOCK_AFTER_SUCCESS = "blockAfterSuccess";
 	/** configuration key: minimal score*/
 	public static final String CONFIG_KEY_MINSCORE = "minscore";
 	/** configuration key: maximal score*/
@@ -540,6 +542,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				// Only tests have a limitation on number of attempts
 				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 					moduleConfiguration.set(CONFIG_KEY_ATTEMPTS, modConfigForm.getAttempts());
+					moduleConfiguration.set(CONFIG_KEY_BLOCK_AFTER_SUCCESS, new Boolean(modConfigForm.isBlockAfterSuccess()));
 				}				
 				
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);

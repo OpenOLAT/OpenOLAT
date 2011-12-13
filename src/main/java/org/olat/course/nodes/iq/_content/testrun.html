@@ -87,7 +87,7 @@
 #end ##END of if showResultsOnHomePage ...
 
 
-	#if ($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts))
+	#if (($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
 		<div class="o_course_run_statusinfo">$r.translate("attempts.nomoreattempts")</div>		
 		#if ($hasDisc)
 		<div class="o_course_run_disclaimer">

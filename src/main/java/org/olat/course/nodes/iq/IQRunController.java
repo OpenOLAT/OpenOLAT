@@ -522,6 +522,17 @@ public class IQRunController extends BasicController implements GenericEventList
 		AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable
 		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
 		
+		//block if test passed (and config set to check it)
+		Boolean blockAfterSuccess = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+    Boolean blocked = Boolean.FALSE;
+    if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
+    	Boolean passed = scoreEval.getPassed();
+    	if(passed != null && passed.booleanValue()) {
+    		blocked = Boolean.TRUE;
+    	}
+    }
+    myContent.contextPut("blockAfterSuccess", blocked );
+		
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 		myContent.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));

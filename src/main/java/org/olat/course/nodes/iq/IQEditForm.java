@@ -64,6 +64,7 @@ class IQEditForm extends FormBasicController {
 	private SelectionElement enableSuspend;
 	private SingleSelection summary;
 	private SelectionElement limitAttempts;
+	private SelectionElement blockAfterSuccess;
 	private IntegerElement attempts;
 	private SingleSelection menuRenderOptions;
 	private SelectionElement scoreInfo;
@@ -166,6 +167,11 @@ class IQEditForm extends FormBasicController {
 		attempts.setMinValueCheck(1, null);
 		attempts.setMaxValueCheck(20, null);
 		
+		//add it
+		blockAfterSuccess = uifactory.addCheckboxesVertical("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		Boolean block = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+		blockAfterSuccess.select("xx", block == null ? false : block.booleanValue() );
+		
 		uifactory.addSpacerElement("s1", formLayout, true);
 		
 		// Only assessments have a limitation on number of attempts
@@ -176,6 +182,8 @@ class IQEditForm extends FormBasicController {
 			limitAttempts.select("xx", false);
 			limitAttempts.setVisible(false);
 			attempts.setVisible(false);
+			blockAfterSuccess.select("xx", false);
+			blockAfterSuccess.setVisible(false);
 		}
 		
 		Boolean CdisplayMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
@@ -459,6 +467,10 @@ class IQEditForm extends FormBasicController {
 	Integer getAttempts() { 
 		Integer a =  attempts.getIntValue();
 		return a == 0 ? null : attempts.getIntValue();
+	}
+	
+	boolean isBlockAfterSuccess() {
+		return blockAfterSuccess.isSelected(0);
 	}
 	
 	/**
