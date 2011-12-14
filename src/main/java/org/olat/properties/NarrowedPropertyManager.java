@@ -147,6 +147,20 @@ public class NarrowedPropertyManager {
 	}
 	
 	/**
+	 * Find method for a batch of people
+	 * 
+	 * @param identity
+	 * @param grp
+	 * @param category
+	 * @param name
+	 * @return The property or null if no property found
+	 * @throws AssertException if more than one property matches.
+	 */
+	public List<Property> findProperties(List<Identity> identities, String category, String name) {
+		return pm.findProperties(identities, resourceable, category, name);
+	}
+	
+	/**
 	 * deletes all properties of this resourceable
 	 *
 	 */

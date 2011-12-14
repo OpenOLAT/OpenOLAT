@@ -52,10 +52,11 @@ public class ExportUtil {
 	 * @param exportDirectory
 	 */
 
-	public static void writeContentToFile(String fileName, String content, File exportDirectory, String enc) {
+	public static File writeContentToFile(String fileName, String content, File exportDirectory, String enc) {
 		File f = new File(exportDirectory, fileName);
 		if (f.exists()) { throw new AssertException("File " + fileName + " already exists!"); }
 		FileUtils.save(f, content, enc);
+		return f;
 	}
 
 	/**

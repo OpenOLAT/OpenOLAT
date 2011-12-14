@@ -25,6 +25,8 @@
 
 package org.olat.course.assessment;
 
+import java.util.Date;
+
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.GenericEventListener;
@@ -169,6 +171,14 @@ public interface AssessmentManager {
 	 * @return null if none found
 	 */
 	public Long getAssessmentID(CourseNode courseNode, Identity identity);
+	
+	/**
+	 * 
+	 * @param courseNode
+	 * @param identity
+	 * @return
+	 */
+	public Date getScoreLastModifiedDate(CourseNode courseNode, Identity identity);
 	
 	/**
 	 * Save the users achieved ScoreEvaluation for this node. If there is already a score property available, it will be

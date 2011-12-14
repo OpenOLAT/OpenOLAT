@@ -25,6 +25,8 @@
 
 package org.olat.course.assessment;
 
+import java.util.Date;
+
 import org.olat.core.id.Identity;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -37,9 +39,11 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * variables that should be displayed in the user list table.
  */
 public class AssessedIdentityWrapper {
-    private UserCourseEnvironment userCourseEnvironment;
-    private Integer nodeAttempts;
-    private String detailsListView;
+    private final UserCourseEnvironment userCourseEnvironment;
+    private final Integer nodeAttempts;
+    private final String detailsListView;
+    private final Date initialLaunchDate;
+    private final Date lastModified;
 
     /**
      * Constructor for this identity wrapper object. Wraps an identity with 
@@ -48,11 +52,14 @@ public class AssessedIdentityWrapper {
      * @param nodeAttempts the users node attempts for the current node
      * @param detailsListView the users details for this node
      */
-    public AssessedIdentityWrapper(UserCourseEnvironment userCourseEnvironment, Integer nodeAttempts, String detailsListView) {
+    public AssessedIdentityWrapper(UserCourseEnvironment userCourseEnvironment, Integer nodeAttempts, String detailsListView,
+    		Date initialLaunchDate, Date lastModified) {
         super();
         this.userCourseEnvironment = userCourseEnvironment;
         this.nodeAttempts = nodeAttempts;
         this.detailsListView = detailsListView;
+        this.initialLaunchDate = initialLaunchDate;
+        this.lastModified = lastModified;
     }
 
     /**
@@ -83,4 +90,12 @@ public class AssessedIdentityWrapper {
     public Integer getNodeAttempts() {
         return nodeAttempts;
     }
+    
+    public Date getInitialLaunchDate() {
+    	return initialLaunchDate;
+    }
+
+		public Date getLastModified() {
+			return lastModified;
+		}
 }

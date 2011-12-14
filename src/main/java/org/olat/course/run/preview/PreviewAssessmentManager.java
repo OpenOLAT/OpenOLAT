@@ -25,6 +25,7 @@
 
 package org.olat.course.run.preview;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import org.olat.core.id.Identity;
@@ -183,6 +184,11 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 */
 	public Long getAssessmentID(CourseNode courseNode, Identity identity) {
 		return (Long)nodeAssessmentID.get(courseNode.getIdent());
+	}
+
+	@Override
+	public Date getScoreLastModifiedDate(CourseNode courseNode, Identity identity) {
+		return null;
 	}
 
 	/**

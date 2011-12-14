@@ -37,8 +37,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Util;
@@ -56,14 +59,12 @@ public class ScoreAccountingArchiveController extends DefaultController {
 	private static final String PACKAGE = Util.getPackageName(ScoreAccountingArchiveController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PACKAGE);
 
-	private static final String CMD_START = "cmd.start";
-
 	private OLATResourceable ores;
 	private Panel myPanel;
 	private VelocityContainer myContent;
 	private VelocityContainer vcFeedback;
 	private Translator t;
-	private Link startButton;
+	private Link startButton, downloadButton;
 
 	/**
 	 * Constructor for the score accounting archive controller
@@ -93,7 +94,7 @@ public class ScoreAccountingArchiveController extends DefaultController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startButton) {
 			ICourse course = CourseFactory.loadCourse(ores);
-			List users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
+			List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 			List nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 			
 			String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, ureq.getLocale());
@@ -107,11 +108,19 @@ public class ScoreAccountingArchiveController extends DefaultController {
 			UserManager um = UserManager.getInstance();
 			String charset = um.getUserCharset(ureq.getIdentity());
 			
-			ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
+			File downloadFile = ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
 
 			vcFeedback = new VelocityContainer("feedback", VELOCITY_ROOT + "/feedback.html", t, this);
 			vcFeedback.contextPut("body", vcFeedback.getTranslator().translate("course.res.feedback", new String[] { fileName }));
+			downloadButton = LinkFactory.createButtonSmall("cmd.download", vcFeedback, this);
+			downloadButton.setUserObject(downloadFile);
 			myPanel.setContent(vcFeedback);
+		} else if(source == downloadButton) {
+			File file = (File)downloadButton.getUserObject();
+			if(file != null) {
+				MediaResource resource = new FileMediaResource(file);
+				ureq.getDispatchResult().setResultingMediaResource(resource);
+			}
 		}
 	}
 

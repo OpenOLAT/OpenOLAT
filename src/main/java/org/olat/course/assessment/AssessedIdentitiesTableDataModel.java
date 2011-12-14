@@ -68,6 +68,8 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 	private static final String COL_MAXSCORE = "maxScore";
 	private static final String COL_PASSED = "passed";
 	private static final String COL_STATUS = "status";
+	private static final String COL_INITIAL_LAUNCH = "initialLaunch";
+	private static final String COL_LAST_SCORE_DATE = "lastScoreDate";
 
 	private List<String> colMapping;	
 	private List<String> userPropertyNameList;
@@ -127,6 +129,8 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 			if (courseNode.hasPassedConfigured()) {
 				colMapping.add(colCount++, COL_PASSED);			
 			}
+			colMapping.add(colCount++, COL_INITIAL_LAUNCH);		
+			colMapping.add(colCount++, COL_LAST_SCORE_DATE);		
 		}
 	}
 
@@ -187,10 +191,14 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 			return "";
   	}	else if (colName.equals(COL_STATUS)) {
 			return getStatusFor(courseNode, wrappedIdentity);
-		}else if (colName.equals(COL_PASSED)) {
+		} else if (colName.equals(COL_PASSED)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
 			if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
 			return scoreEval.getPassed();
+		} else if (colName.equals(COL_INITIAL_LAUNCH)) {
+			return wrappedIdentity.getInitialLaunchDate();
+		} else if (colName.equals(COL_LAST_SCORE_DATE)) {
+			return wrappedIdentity.getLastModified();
 		} else return "error";
 	}
 
@@ -262,6 +270,8 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 				userListCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", colCount++, translator.translate("passed.true"), 
 						translator.translate("passed.false")));
 			}
+			userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.initialLaunchDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+			userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastScoreDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 		}
 	}
 

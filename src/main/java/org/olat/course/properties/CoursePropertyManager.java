@@ -103,6 +103,17 @@ public interface CoursePropertyManager extends IdentityAnonymizerCallback {
 	 */
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name);
 	
+
+	/**
+	 * Find a specific course node property (exact match. I.e. null values are taken into account)
+	 * @param node
+	 * @param identity
+	 * @param grp
+	 * @param name
+	 * @return matching course node property
+	 */
+	public List<Property> findCourseNodeProperties(CourseNode node, List<Identity> identities, String name);
+	
 	/**
 	 * Delete all node properties for a given course node and a category.
 	 * @param courseNode The course node. Must not be null.

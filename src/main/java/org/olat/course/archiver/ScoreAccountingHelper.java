@@ -26,18 +26,21 @@
 package org.olat.course.archiver;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -49,11 +52,13 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -64,8 +69,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * Comment: Provides functionality to get a course results overview.
  */
 public class ScoreAccountingHelper {
-    private static final String PACKAGE = Util.getPackageName(ScoreAccountingArchiveController.class);
-    
+ 
 	/**
 	 * The results from assessable nodes are written to one row per user into an excel-sheet. An
      * assessable node will only appear if it is producing at least one of the
@@ -77,9 +81,9 @@ public class ScoreAccountingHelper {
 	 * @param locale
 	 * @return String
 	 */
-	public static String createCourseResultsOverviewTable(List identities, List myNodes, ICourse course, Locale locale) {
-	    Translator t = new PackageTranslator(PACKAGE, locale);
-	    StringBuilder tableHeader1 = new StringBuilder();
+	public static String createCourseResultsOverviewTable(List<Identity> identities, List<AssessableCourseNode> myNodes, ICourse course, Locale locale) {
+	  Translator t = Util.createPackageTranslator(ScoreAccountingArchiveController.class, locale);
+	  StringBuilder tableHeader1 = new StringBuilder();
 		StringBuilder tableHeader2 = new StringBuilder();
 		StringBuilder tableContent = new StringBuilder();
 		StringBuilder table = new StringBuilder();
@@ -92,6 +96,8 @@ public class ScoreAccountingHelper {
 		String co = t.translate("column.header.comment");
 		String cco = t.translate("column.header.coachcomment");
 		String at = t.translate("column.header.attempts");
+		String il = t.translate("column.header.initialLaunchDate");
+		String slm = t.translate("column.header.scoreLastModified");
 		String na = t.translate("column.field.notavailable");
 		String mi = t.translate("column.field.missing");
 		String yes = t.translate("column.field.yes");
@@ -108,6 +114,10 @@ public class ScoreAccountingHelper {
 		// get user property handlers for this export, translate using the fallback
 		// translator configured in the property handler
 		
+			//Initial launch date
+		tableHeader1.append(il).append("\t");
+		tableHeader2.append("\t");
+		
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(
 				ScoreAccountingHelper.class.getCanonicalName(), true);
 		t = UserManager.getInstance().getPropertyHandlerTranslator(t);
@@ -115,22 +125,44 @@ public class ScoreAccountingHelper {
 			tableHeader1.append(t.translate(propertyHandler.i18nColumnDescriptorLabelKey()));
 			tableHeader1.append("\t");			
 			tableHeader2.append("\t");
-		}				
+		}
 
 		// preload user properties cache
-		course.getCourseEnvironment().getAssessmentManager().preloadCache();
+		CourseEnvironment courseEnvironment = course.getCourseEnvironment();
+		AssessmentManager assessmentManager = courseEnvironment.getAssessmentManager();
+		assessmentManager.preloadCache();
 		
 		boolean firstIteration = true;
 		int rowNumber = 1;
-		Iterator iterIdentities = identities.iterator();
-		while (iterIdentities.hasNext()) {
-			Identity identity = (Identity) iterIdentities.next();
+
+		CourseNode node = courseEnvironment.getRunStructure().getRootNode();
+		CoursePropertyManager pm = courseEnvironment.getCoursePropertyManager();
+		List<Property> firstTime = pm.findCourseNodeProperties(node, identities, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
+		Map<Identity,Date> firstTimes = new HashMap<Identity,Date>((identities.size() * 2) + 1);
+		Calendar cal = Calendar.getInstance();
+		for(Property property:firstTime) {
+			if (StringHelper.containsNonWhitespace(property.getStringValue())) {
+				cal.setTimeInMillis(Long.parseLong(property.getStringValue()));
+				firstTimes.put(property.getIdentity(), cal.getTime());
+			}
+		}
+		
+		Formatter formatter = Formatter.getInstance(locale);
+
+		for (Identity identity:identities) {
 			String uname = identity.getName();
 
 			tableContent.append(rowNumber);
 			tableContent.append("\t");
 			tableContent.append(uname);
 			tableContent.append("\t");
+
+			String initialLaunchDate = "";
+			if(firstTimes.containsKey(identity)) {
+				initialLaunchDate = formatter.formatDateAndTime(firstTimes.get(identity));
+			}
+			tableContent.append(initialLaunchDate).append("\t");
+
 			// add dynamic user properties
 			for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
 				String value = propertyHandler.getUserProperty(identity.getUser(), t.getLocale());
@@ -145,9 +177,7 @@ public class ScoreAccountingHelper {
 			uce.getScoreAccounting().evaluateAll();
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
-			Iterator iterNodes = myNodes.iterator();
-			while (iterNodes.hasNext()) {
-				AssessableCourseNode acnode = (AssessableCourseNode) iterNodes.next();
+			for (AssessableCourseNode acnode:myNodes) {
 				boolean scoreOk = acnode.hasScoreConfigured();
 				boolean passedOk = acnode.hasPassedConfigured();
 				boolean attemptsOk = acnode.hasAttemptsConfigured();
@@ -217,6 +247,20 @@ public class ScoreAccountingHelper {
 						tableContent.append("\t");
 					}
 
+					if (firstIteration) {
+						//last Modified
+						tableHeader2.append(slm);
+						tableHeader2.append("\t");
+					}
+
+					String scoreLastModified = "";
+					Date lastModified = am.getScoreLastModifiedDate(acnode, identity);
+					if(lastModified != null) {
+						scoreLastModified = formatter.formatDateAndTime(lastModified);
+					}
+					tableContent.append(scoreLastModified);
+					tableContent.append("\t");
+
 					if (commentOk) {
 					    // Comments for user
 						String comment = am.getNodeComment(acnode, identity);
@@ -282,9 +326,7 @@ public class ScoreAccountingHelper {
 		//fxdiff VCRP-4: assessment overview with max score
 		StringBuilder tableFooter = new StringBuilder();
 		tableFooter.append("\t\n").append("\t\n").append(t.translate("legend")).append("\t\n").append("\t\n");
-		Iterator iterNodes = myNodes.iterator();
-		while (iterNodes.hasNext()) {
-			AssessableCourseNode acnode = (AssessableCourseNode) iterNodes.next();
+		for (AssessableCourseNode acnode:myNodes) {
 			if (!acnode.hasScoreConfigured()) {
 				// only show min/max/cut legend when score configured
 				continue;
@@ -371,11 +413,10 @@ public class ScoreAccountingHelper {
 	 * @param courseEnv
 	 * @return The list of assessable nodes from this course
 	 */
-	public static List loadAssessableNodes(CourseEnvironment courseEnv) {
+	public static List<AssessableCourseNode> loadAssessableNodes(CourseEnvironment courseEnv) {
 		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
-		List nodeList = new ArrayList();
+		List<AssessableCourseNode> nodeList = new ArrayList<AssessableCourseNode>();
 		collectAssessableCourseNodes(rootNode, nodeList);
-
 		return nodeList;
 	}
 
@@ -385,9 +426,9 @@ public class ScoreAccountingHelper {
 	 * @param node
 	 * @param nodeList
 	 */
-	private static void collectAssessableCourseNodes(CourseNode node, List nodeList) {
+	private static void collectAssessableCourseNodes(CourseNode node, List<AssessableCourseNode> nodeList) {
 		if (node instanceof AssessableCourseNode) {
-			nodeList.add(node);
+			nodeList.add((AssessableCourseNode)node);
 		}
 		int count = node.getChildCount();
 		for (int i = 0; i < count; i++) {

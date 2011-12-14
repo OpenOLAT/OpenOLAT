@@ -26,6 +26,7 @@
 package org.olat.properties;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -498,6 +500,42 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		}
 		return (Property)props.get(0);
 	}
+	
+	public List<Property> findProperties(List<Identity> identities, OLATResourceable resourceable, String category, String name) {
+		if(identities == null || identities.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder query = new StringBuilder();
+		query.append("select p from ").append(Property.class.getName()).append(" as p")
+			.append(" where p.identity in (:identities)");
+		if (resourceable != null) {
+			query.append(" and p.resourceTypeName=:resourceTypeName and p.resourceTypeId=:resourceableId");
+		}
+		if (category != null) {
+			query.append(" and p.category=:category");
+		}
+		if (name != null) {
+			query.append(" and p.name=:name");
+		}
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		if (resourceable != null) {
+			dbQuery.setString("resourceTypeName", resourceable.getResourceableTypeName());
+			dbQuery.setLong("resourceableId", resourceable.getResourceableId());
+		}
+		if (category != null) {
+			dbQuery.setString("category", category);
+		}
+		if (name != null) {
+			dbQuery.setString("name", name);
+		}
+		dbQuery.setParameterList("identities", identities);
+		
+		List<Property> props = dbQuery.list();
+		return props;
+	}
+	
 	
 	/**
 	 * @return a list of all available resource type names

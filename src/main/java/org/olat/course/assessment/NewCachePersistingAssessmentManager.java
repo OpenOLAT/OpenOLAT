@@ -26,8 +26,9 @@
 package org.olat.course.assessment;
 
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -107,6 +108,8 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * (otherwise we cannot know whether a null value means expiration of cache or no-such-property-yet-for-user)
 	 */
 	private static final String FULLUSERSET = "FULLUSERSET";
+	private static final String LAST_MODIFIED = "LAST_MODIFIED";
+	
 	
 	// Float and Integer are immutable objects, we can reuse them.
 	private static final Float FLOAT_ZERO = new Float(0);
@@ -148,7 +151,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 * are loaded.
 	 * @return
 	 */
-	private List loadPropertiesFor(Identity identity) {
+	private List<Property> loadPropertiesFor(Identity identity) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		StringBuilder sb = new StringBuilder();
 		sb.append("from org.olat.properties.Property as p");
@@ -171,7 +174,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		if (identity != null) {
 			query.setEntity("id", identity);
 		}
-		List properties = query.list();
+		List<Property> properties = query.list();
 		return properties;		
 	}
 	
@@ -211,9 +214,8 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
 				m = new HashMap<String, Serializable>();
 				// load data
-				List properties = loadPropertiesFor(identity);
-				for (Iterator iter = properties.iterator(); iter.hasNext();) {
-					Property property = (Property) iter.next();
+				List<Property> properties = loadPropertiesFor(identity);
+				for (Property property:properties) {
 					addPropertyToCache(m, property);
 				}
 				// we use a putSilent here (no invalidation notifications to other cluster nodes), since
@@ -288,10 +290,17 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 			throw new AssertionError("property in list that is not of type attempts, score, passed or ASSESSMENT_ID, COMMENT and COACH_COMMENT :: " + propertyName);
 		}
 		
+		Date lastModified = property.getLastModified();
 		// put in cache, maybe overriding old values		
 		String cacheKey = getPropertyCacheKey(property);		
 		synchronized(acache) {//cluster_ok acache is an element from the cacher
 			acache.put(cacheKey, value);
+			
+			String lmCacheKey = getLastModifiedCacheKey(property);
+			Long currentLastModifiedDate = (Long)acache.get(lmCacheKey);
+			if(currentLastModifiedDate == null || currentLastModifiedDate.longValue() < lastModified.getTime()) {
+				acache.put(lmCacheKey, new Long(lastModified.getTime()));
+			}
 		}
 	}
 	
@@ -689,6 +698,13 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		return cacheKey;
 	}
 	
+	private String getLastModifiedCacheKey(Property property) {;
+		String propertyCategory = property.getCategory();
+		String nodeIdent = propertyCategory.substring(propertyCategory.indexOf("::") + 2);
+		String cacheKey = getCacheKey(nodeIdent, LAST_MODIFIED);
+		return cacheKey;
+	}
+	
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#registerForAssessmentChangeEvents(org.olat.core.util.event.GenericEventListener,
 	 *      org.olat.core.id.Identity)
@@ -759,6 +775,25 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		}				
 	}
 	
+	@Override
+	public Date getScoreLastModifiedDate(CourseNode courseNode, Identity identity) {
+		if (courseNode == null) {
+			return null; // return default value
+		}
+		
+		String cacheKey = getCacheKey(courseNode, LAST_MODIFIED);
+		Map<String, Serializable> m = getOrLoadScorePassedAttemptsMap(identity, false);		
+		synchronized(m) {//o_clusterOK by:fj is per vm only
+			Long lastModified = (Long) m.get(cacheKey);
+			if(lastModified != null) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTimeInMillis(lastModified.longValue());
+				return cal.getTime();
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * 
 	 * @see org.olat.course.assessment.AssessmentManager#saveScoreEvaluation(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, org.olat.course.run.scoring.ScoreEvaluation)

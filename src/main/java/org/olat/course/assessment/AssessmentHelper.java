@@ -28,6 +28,7 @@ package org.olat.course.assessment;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +37,9 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
@@ -47,12 +50,14 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.properties.Property;
 
 /**
  * Description:<br>
@@ -62,6 +67,8 @@ import org.olat.modules.ModuleConfiguration;
  * @author gnaegi
  */
 public class AssessmentHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentHelper.class);
 
 	/**
 	 * String to symbolize 'not available' or 'not assigned' in assessments
@@ -87,25 +94,25 @@ public class AssessmentHelper {
 	 *          attempts must be fetched
 	 * @return a wrapped identity
 	 */
-	public static AssessedIdentityWrapper wrapIdentity(Identity identity, Map<Long,UserCourseEnvironment> localUserCourseEnvironmentCache, ICourse course,
-			AssessableCourseNode courseNode) {
+	public static AssessedIdentityWrapper wrapIdentity(Identity identity, Map<Long,UserCourseEnvironment> localUserCourseEnvironmentCache,
+			Map<Long, Date> initialLaunchDates, ICourse course, AssessableCourseNode courseNode) {
 		// Try to get user course environment from local hash map cache. If not
 		// successful
 		// create the environment and add it to the map for later performance
 		// optimization
-		//synchronized (localUserCourseEnvironmentCache) { //o_clusterOK by:ld - no need to synchronized - only local variables
 			UserCourseEnvironment uce = localUserCourseEnvironmentCache.get(identity.getKey());
 			if (uce == null) {
 				uce = createAndInitUserCourseEnvironment(identity, course);
 				// add to cache for later usage
 				localUserCourseEnvironmentCache.put(identity.getKey(), uce);
-				if (Tracing.isDebugEnabled(AssessmentHelper.class)){
-					Tracing.logDebug("localUserCourseEnvironmentCache hit failed, adding course environment for user::"
-						+ identity.getName(), AssessmentHelper.class);
+				if (log.isDebug()){
+					log.debug("localUserCourseEnvironmentCache hit failed, adding course environment for user::"
+						+ identity.getName());
 				}
 			}
-			return wrapIdentity(uce, courseNode);
-		//}
+			
+			Date initialLaunchDate = initialLaunchDates.get(identity.getKey());
+			return wrapIdentity(uce, initialLaunchDate, courseNode);
 	}
 
 	/**
@@ -118,7 +125,7 @@ public class AssessmentHelper {
 	 *          attempts must be fetched
 	 * @return a wrapped identity
 	 */
-	public static AssessedIdentityWrapper wrapIdentity(UserCourseEnvironment uce, AssessableCourseNode courseNode) {
+	public static AssessedIdentityWrapper wrapIdentity(UserCourseEnvironment uce, Date initialLaunchDate, AssessableCourseNode courseNode) {
 		// Fetch attempts and details for this node if available
 		Integer attempts = null;
 		String details = null;
@@ -131,8 +138,26 @@ public class AssessmentHelper {
 				if (details == null) details = DETAILS_NA_VALUE;
 			}
 		}
-		AssessedIdentityWrapper aiw = new AssessedIdentityWrapper(uce, attempts, details);
+
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		Date lastModified = uce.getCourseEnvironment().getAssessmentManager().getScoreLastModifiedDate(courseNode, identity);
+		AssessedIdentityWrapper aiw = new AssessedIdentityWrapper(uce, attempts, details, initialLaunchDate, lastModified);
 		return aiw;
+	}
+	
+	public static Date getInitialLaunchDate(UserCourseEnvironment uce) {
+		CourseNode node = uce.getCourseEnvironment().getRunStructure().getRootNode();
+		CoursePropertyManager pm = uce.getCourseEnvironment().getCoursePropertyManager();
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		Property firstTime = pm.findCourseNodeProperty(node, identity, null, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
+		
+		Date initialLaunchDate = null;
+		if (firstTime != null && StringHelper.containsNonWhitespace(firstTime.getStringValue())) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(Long.parseLong(firstTime.getStringValue()));
+			initialLaunchDate = cal.getTime();
+		}
+		return initialLaunchDate;
 	}
 
 	/**

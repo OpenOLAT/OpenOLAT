@@ -25,6 +25,8 @@
 
 package org.olat.course.assessment;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -156,7 +158,8 @@ public class IdentityAssessmentEditController extends BasicController {
 	private void doEditNodeAssessment(UserRequest ureq, AssessableCourseNode courseNode){
 		if (mayEdit) {
 			ICourse course = CourseFactory.loadCourse(ores);
-			AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedUserCourseEnvironment, courseNode);
+			Date initialLaunchDate = AssessmentHelper.getInitialLaunchDate(assessedUserCourseEnvironment);
+			AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedUserCourseEnvironment, initialLaunchDate, courseNode);
 			assessmentEditCtr = new AssessmentEditController(ureq, getWindowControl(), course, courseNode, assessedIdentityWrapper);			
 			listenTo(assessmentEditCtr);
 			main.setContent(assessmentEditCtr.getInitialComponent());

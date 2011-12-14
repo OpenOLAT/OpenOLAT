@@ -142,6 +142,12 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 		return pm.findProperty(identity, grp, myCategory, name);
 	}
 
+	@Override
+	public List<Property> findCourseNodeProperties(CourseNode node, List<Identity> identities, String name) {
+		String myCategory = buildCourseNodePropertyCategory(node);
+		return pm.findProperties(identities, myCategory, name);
+	}
+
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#deleteNodeProperties(org.olat.course.nodes.CourseNode,
 	 *      java.lang.String)

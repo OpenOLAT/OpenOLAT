@@ -26,6 +26,7 @@
 package org.olat.course.run.preview;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +133,11 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		List propertyList = (List)properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? "" : identity.getName()), grp, name));
 		if (propertyList == null) return null;
 		return (Property)propertyList.get(0);
+	}
+
+	@Override
+	public List<Property> findCourseNodeProperties(CourseNode node, List<Identity> identities, String name) {
+		return Collections.emptyList();
 	}
 
 	/**

@@ -26,6 +26,8 @@
 package org.olat.course.assessment;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,6 +80,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -92,10 +95,12 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.context.BGContextTableModel;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -146,7 +151,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	
 	// Hash map to keep references to already created user course environments
 	// Serves as a local cache to reduce database access - not shared by multiple threads
-	Map<Long, UserCourseEnvironment> localUserCourseEnvironmentCache; // package visibility for avoiding synthetic accessor method
+	final Map<Long, UserCourseEnvironment> localUserCourseEnvironmentCache; // package visibility for avoiding synthetic accessor method
+	final Map<Long, Date> initialLaunchDates;
 	// List of groups to which the user has access rights in this course
 	private List<BusinessGroup> coachedGroups;
 	//Is tutor from the security group of repository entry
@@ -188,7 +194,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		this.ores = ores;
 		this.callback = assessmentCallback;
-		this.localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>();
+		localUserCourseEnvironmentCache = new HashMap<Long, UserCourseEnvironment>();
+		initialLaunchDates = new HashMap<Long,Date>();
 		
     //use the PropertyHandlerTranslator	as tableCtr translator
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
@@ -290,7 +297,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			}
 			
 			// select user
-			this.assessedIdentityWrapper = AssessmentHelper.wrapIdentity(focusOnIdentity, this.localUserCourseEnvironmentCache, course, null);
+			assessedIdentityWrapper = AssessmentHelper.wrapIdentity(focusOnIdentity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);
 			
 			UserCourseEnvironment chooseUserCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();		
 			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, chooseUserCourseEnv, course, true);
@@ -419,8 +426,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 						// in user MODE_USERFOCUS, a simple identity table is used, no wrapped identites
 						UserTableDataModel userListModel = (UserTableDataModel) userListCtr.getTableDataModel();
 						Identity assessedIdentity = userListModel.getIdentityAt(rowid);
-						this.assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedIdentity, 
-								this.localUserCourseEnvironmentCache, course, null);
+						assessedIdentityWrapper = AssessmentHelper.wrapIdentity(assessedIdentity, 
+								localUserCourseEnvironmentCache, initialLaunchDates, course, null);
 					} else {
 						// all other cases where user can be choosen the assessed identity wrapper is used
 						AssessedIdentitiesTableDataModel userListModel = (AssessedIdentitiesTableDataModel) userListCtr.getTableDataModel();
@@ -480,7 +487,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 						ICourse course = CourseFactory.loadCourse(ores);
 						aiwList.remove(this.assessedIdentityWrapper);
 						this.assessedIdentityWrapper = AssessmentHelper.wrapIdentity(this.assessedIdentityWrapper.getIdentity(),
-						this.localUserCourseEnvironmentCache, course, currentCourseNode);
+						this.localUserCourseEnvironmentCache, initialLaunchDates, course, currentCourseNode);
 						aiwList.add(this.assessedIdentityWrapper);
 						userListCtr.modelChanged();
 					}
@@ -563,7 +570,14 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					// 2.2) update wrapper object
 					if (wrappedIdFromModel != null) {
 						wrappers.remove(wrappedIdFromModel);
-						wrappedIdFromModel = AssessmentHelper.wrapIdentity(wrappedIdFromModel.getUserCourseEnvironment(), currentCourseNode);
+						
+						Date initialLaunchDate;
+						if(initialLaunchDates.containsKey(identityKeyFromEvent)) {
+							initialLaunchDate = initialLaunchDates.get(identityKeyFromEvent);
+						} else {
+							initialLaunchDate = AssessmentHelper.getInitialLaunchDate(wrappedIdFromModel.getUserCourseEnvironment());
+						}
+						wrappedIdFromModel = AssessmentHelper.wrapIdentity(wrappedIdFromModel.getUserCourseEnvironment(), initialLaunchDate, currentCourseNode);
 						wrappers.add(wrappedIdFromModel);
 						userListCtr.modelChanged();								
 					}
@@ -750,7 +764,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			Identity identity = identities.get(i);
 			// if course node is null the wrapper will only contain the identity and no score information
 			AssessedIdentityWrapper aiw = AssessmentHelper.wrapIdentity(identity,
-			this.localUserCourseEnvironmentCache, course, courseNode);
+					localUserCourseEnvironmentCache, initialLaunchDates, course, courseNode);
 			wrappedIdentities.add(aiw);
 		}
 		// Add the wrapped identities to the table data model
@@ -1161,9 +1175,20 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			// 2) preload controller local user environment cache
 			start = System.currentTimeMillis();
 			List<Identity> identities = getAllIdentitisFromGroupmanagement();
-			for (Iterator<Identity> iter = identities.iterator(); iter.hasNext();) {
-				Identity identity = iter.next();
-				AssessmentHelper.wrapIdentity(identity, localUserCourseEnvironmentCache, course, null);
+			
+			CourseNode node = course.getCourseEnvironment().getRunStructure().getRootNode();
+			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
+			List<Property> firstTime = pm.findCourseNodeProperties(node, identities, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
+			Calendar cal = Calendar.getInstance();
+			for(Property property:firstTime) {
+				if (StringHelper.containsNonWhitespace(property.getStringValue()) && property.getIdentity() != null) {
+					cal.setTimeInMillis(Long.parseLong(property.getStringValue()));
+					initialLaunchDates.put(property.getIdentity().getKey(), cal.getTime());
+				}
+			}
+			
+			for (Identity identity : identities) {
+				AssessmentHelper.wrapIdentity(identity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);
 				if (Thread.interrupted()) break;
 			}
 			if (logDebug) {
