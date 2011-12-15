@@ -71,7 +71,6 @@ import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.SelfAssessableCourseNode;
-import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTIChangeLogMessage;
@@ -408,7 +407,7 @@ public class IQRunController extends BasicController implements GenericEventList
 					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
 					displayContainerController.setDisposedMessageController(disposedRestartController);
 					
-					final Boolean fullWindow = (Boolean)modConfig.get(ScormEditController.CONFIG_FULLWINDOW);
+					final Boolean fullWindow = (Boolean)modConfig.get(IQEditController.CONFIG_FULLWINDOW);
 					if(fullWindow != null && fullWindow.booleanValue()) {
 						displayContainerController.setAsFullscreen(ureq);
 					}
@@ -495,7 +494,7 @@ public class IQRunController extends BasicController implements GenericEventList
 					} else {
 						getWindowControl().pop();
 					}
-					OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", 0l);
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
 					addToHistory(urequest, ores, null);
 				}
 				// Don't save results in case of self-test
@@ -510,7 +509,7 @@ public class IQRunController extends BasicController implements GenericEventList
 				} else {
 					getWindowControl().pop();
 				}	
-				OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", 0l);
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
 				addToHistory(urequest, ores, null);
 				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) && !assessmentStopped ) {
 					assessmentStopped = true;					
