@@ -24,10 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -77,6 +80,8 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	private Panel panel1, panel2, panel3;
 	private Activateable activateableDelegate;	//fxdiff BAKS-7 Resume function
 	private Activateable2 activateableDelegate2;	//fxdiff BAKS-7 Resume function
+	private boolean fullScreen = false;
+	private BaseChiefController thebaseChief;
 
 	/**
 	 * Constructor for creating a 3 col based menu on the main area. This
@@ -129,6 +134,41 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		setCol3(col3);
 
 		putInitialPanel(layoutMainVC);
+	}
+	
+	public void setAsFullscreen(UserRequest ureq) {
+		ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
+		if (cc instanceof BaseChiefController) {
+			thebaseChief = (BaseChiefController) cc;
+			thebaseChief.addBodyCssClass("b_full_screen");
+		} else {
+			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", Boolean.TRUE);
+		}
+		fullScreen = true;
+	}
+	
+	public void activate() {
+		if(fullScreen)
+			getWindowControl().pushAsModalDialog(layoutMainVC);
+		else
+			getWindowControl().pushToMainArea(layoutMainVC);
+	}
+	
+	public void deactivate(UserRequest ureq) {
+		getWindowControl().pop();
+		// fxdiff FXOLAT-116: SCORM improvements
+		if (fullScreen) {
+			if(thebaseChief != null) {
+				thebaseChief.removeBodyCssClass("b_full_screen");
+			} else {
+				ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
+				if (cc instanceof BaseChiefController) {
+					thebaseChief = (BaseChiefController) cc;
+					thebaseChief.removeBodyCssClass("b_full_screen");
+				}
+			}
+			
+		}
 	}
 
 	/**
@@ -219,6 +259,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		columns = null;
 		mainCssClasses = null;
 		layoutMainVC = null;
+		thebaseChief = null;
 	}
 
 	@Override

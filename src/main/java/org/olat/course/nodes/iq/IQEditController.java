@@ -155,6 +155,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
 	/** configuration key: enable 'show score infos' on start page */
 	public static final String CONFIG_KEY_ENABLESCOREINFO = "enableScoreInfo";
+	/** Test in full window mode*/
+	public final static String CONFIG_FULLWINDOW = "fullwindow";
 	
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";
@@ -511,6 +513,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				
 				
 				moduleConfiguration.set(CONFIG_KEY_DISPLAYMENU, new Boolean(modConfigForm.isDisplayMenu()));
+				moduleConfiguration.set(CONFIG_FULLWINDOW, new Boolean(modConfigForm.isFullWindow()));
 				
 				if (modConfigForm.isDisplayMenu()) {
 					moduleConfiguration.set(CONFIG_KEY_RENDERMENUOPTION, modConfigForm.isMenuRenderSectionsOnly());

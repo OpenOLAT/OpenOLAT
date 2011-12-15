@@ -26,7 +26,6 @@
 package org.olat.course.nodes.iq;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -49,7 +48,6 @@ import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
@@ -73,6 +71,7 @@ import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.SelfAssessableCourseNode;
+import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTIChangeLogMessage;
@@ -103,6 +102,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	private IQSecurityCallback secCallback;
 	private ModuleConfiguration modConfig;
 	
+	private LayoutMain3ColsController displayContainerController;
 	private IQDisplayController displayController;
 	private CourseNode courseNode;
 	private String type;
@@ -395,9 +395,10 @@ public class IQRunController extends BasicController implements GenericEventList
 				if (displayController.isReady()) {
 					// in case displayController was unable to initialize, a message was set by displayController
 					// this is the case if no more attempts or security check was unsuccessfull
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, displayController.getInitialComponent(), null);
-					listenTo(layoutCtr); // autodispose
-	
+					displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, displayController.getInitialComponent(), null);
+					listenTo(displayContainerController); // autodispose
+
+					
 					//need to wrap a course restart controller again, because IQDisplay
 					//runs on top of GUIStack
 					ICourse course = CourseFactory.loadCourse(callingResId);
@@ -405,9 +406,14 @@ public class IQRunController extends BasicController implements GenericEventList
 					Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 					Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry.getResourceableId());
 					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
-					layoutCtr.setDisposedMessageController(disposedRestartController);
+					displayContainerController.setDisposedMessageController(disposedRestartController);
 					
-					getWindowControl().pushToMainArea(layoutCtr.getInitialComponent());
+					final Boolean fullWindow = (Boolean)modConfig.get(ScormEditController.CONFIG_FULLWINDOW);
+					if(fullWindow != null && fullWindow.booleanValue()) {
+						displayContainerController.setAsFullscreen(ureq);
+					}
+					displayContainerController.activate();
+					
 					if (modConfig.get(IQEditController.CONFIG_KEY_TYPE).equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 						assessmentStopped = false;		
 						singleUserEventCenter.registerFor(this, getIdentity(), assessmentInstanceOres);
@@ -483,7 +489,14 @@ public class IQRunController extends BasicController implements GenericEventList
 					// manager since this one uses caching
 					am.incrementNodeAttempts(courseNode, urequest.getIdentity(), userCourseEnv);
 					exposeUserQuestionnaireDataToVC();
-					getWindowControl().pop();
+					
+					if(displayContainerController != null) {
+						displayContainerController.deactivate(urequest);
+					} else {
+						getWindowControl().pop();
+					}
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", 0l);
+					addToHistory(urequest, ores, null);
 				}
 				// Don't save results in case of self-test
 				// but do safe attempts !
@@ -492,7 +505,13 @@ public class IQRunController extends BasicController implements GenericEventList
 				}
 			}
 			else if (event.equals(Event.DONE_EVENT)) {
-				getWindowControl().pop();		
+				if(displayContainerController != null) {
+					displayContainerController.deactivate(urequest);
+				} else {
+					getWindowControl().pop();
+				}	
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", 0l);
+				addToHistory(urequest, ores, null);
 				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) && !assessmentStopped ) {
 					assessmentStopped = true;					
 					AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
@@ -641,7 +660,10 @@ public class IQRunController extends BasicController implements GenericEventList
 		
 		ContextEntry ce = entries.remove(0);
 		if("test".equals(ce.getOLATResourceable().getResourceableTypeName())) {
-			event(ureq, startButton, Event.CHANGED_EVENT);
+			Long resourceId = ce.getOLATResourceable().getResourceableId();
+			if(resourceId != null && resourceId.longValue() >= 0) {
+				event(ureq, startButton, Event.CHANGED_EVENT);
+			}
 		}
 	}
 }

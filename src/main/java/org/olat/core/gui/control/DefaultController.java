@@ -140,7 +140,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 */
 	public WindowControl getWindowControlForDebug() {
 		return getWindowControl();
-	}	
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.Controller#addControllerListener(org.olat.core.gui.control.ControllerEventListener)

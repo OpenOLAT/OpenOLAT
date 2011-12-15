@@ -30,6 +30,7 @@ package org.olat.core.commons.chiefcontrollers;
 
 import org.olat.core.commons.chiefcontrollers.controller.simple.SimpleBaseController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ChiefControllerCreator;
 import org.olat.core.gui.control.Controller;
@@ -71,6 +72,12 @@ public class BaseChiefControllerCreator implements ChiefControllerCreator {
 		
 		Controller c = contentControllerCreator.createController(ureq, bwControl);
 		sbasec.setContentController(c);
+
+		Boolean fullScreen = (Boolean)Windows.getWindows(ureq).getAttribute("FULL_SCREEN");
+		if(fullScreen != null && fullScreen.booleanValue()) {
+			bcc.addBodyCssClass("b_full_screen");
+			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", null);
+		}
 		
 		bcc.setContentController(true, sbasec);
 		return bcc;
