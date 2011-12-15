@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.RosterGroup;
 import org.jivesoftware.smack.packet.Message;
@@ -100,10 +101,15 @@ public class ClientHelper extends LogDelegator {
 	 * @return a list of distinct usernames of the roster
 	 */
 	public List<String> getDistinctRoster() {
+		ArrayList<String> emptyList =  new ArrayList<String>(0);
+		
 		if (imc.isConnected()) {
-			return createLinkList(imc.getRoster().getEntries().iterator(), null);
+			//fx FXOLAT-382  , NPE -> check for nullRoster
+			Roster roster = imc.getRoster();
+			if(roster == null) return emptyList;
+			return createLinkList(roster.getEntries().iterator(), null);
 		}
-		return new ArrayList<String>(0);
+		return emptyList;
 	}
 
 	/**
