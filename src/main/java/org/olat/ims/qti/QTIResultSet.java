@@ -44,7 +44,9 @@ public class QTIResultSet extends PersistentObject {
 	private Identity identity;
 	private int qtiType;
 	private long assessmentID;
-	private boolean isPassed;
+	//<OLATCE-1014> allow null for "not set"
+	private Boolean isPassed;
+	//</OLATCE-1014>
 	private float score;
 	private Long duration;
 	private Date lastModified;
@@ -87,7 +89,7 @@ public class QTIResultSet extends PersistentObject {
 	/**
 	 * @return
 	 */
-	public boolean getIsPassed() {
+	public Boolean getIsPassed() {
 		return isPassed;
 	}
 
@@ -143,8 +145,10 @@ public class QTIResultSet extends PersistentObject {
 	/**
 	 * @param b
 	 */
-	public void setIsPassed(boolean b) {
+	public void setIsPassed(Boolean b) {
+		//<OLATCE-1014> allow NULL value as "not set"
 		isPassed = b;
+		//</OLATCE-1014>
 	}
 
 	/**

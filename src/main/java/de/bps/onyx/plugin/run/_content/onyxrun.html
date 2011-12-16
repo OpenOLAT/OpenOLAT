@@ -4,6 +4,11 @@
 
 #if( $viewmode == 0 || $viewmode == -1 ) 
 	<p>
+
+##<OLATCE-1281>
+#if($showResultsOnHomePage)
+	#if($showResultsVisible)
+##</OLATCE-1281>
 	<div class="o_course_run_scoreinfo">
 	<p>
 	<table>
@@ -52,6 +57,9 @@
 				$score
 			</td>
 		</tr>
+		##<OLATCE-1014> hide status - line if there is no passed value set
+		#if($passed != "")
+		##</OLATCE-1014>
 		<tr>
 			<td>$r.translate("assessment.state"): </td>
 			<td>
@@ -62,6 +70,9 @@
 			#end
 			</td>
 		</tr>
+		##<OLATCE-1014>
+		#end
+		##</OLATCE-1014>
 		#else
 		<tr>
 			<td>
@@ -91,6 +102,12 @@
 	</table>
 	</p>
 	</div>
+##<OLATCE-1281> else-block of showResultsVisible
+	#else
+		$visibilityPeriod
+	#end
+	#end
+##<OLATCE-1281> end of $showResultsOnHomePage
 	</p>
 	#if($viewmode == -1) 
 		<b> $r.translate("onyx.onlyonetime") </b>

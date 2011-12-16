@@ -271,6 +271,10 @@
 	.o_course_editor_publish {}
 	.o_course_editor_publish .o_course_editor_categories { padding-top: 10px; }
 	
+	/* <OLATCE-99> */
+	iframe.onyx_iframe { height:920px; width: 100%; border:none; }
+	/* </OLATCE-99> */
+	
 	span.o_passed { background: url(../images/olat/tick.png) no-repeat right 50%; padding: 0 25px 0 0; color: #009900 }
 	span.o_notpassed { background: url(../images/olat/cross.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000 }
 	

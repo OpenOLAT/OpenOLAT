@@ -29,7 +29,17 @@ package de.bps.webservices.clients.onyxreporter;
  */
 public class OnyxReporterException extends Exception {
 
-	public OnyxReporterException(String msg) {
+	/**
+	 * 			//<ONYX-705>
+	 */
+	private static final long serialVersionUID = -3120820706663500150L;
+
+	OnyxReporterException(String msg) {
 		super(msg);
 	}
+	//<ONYX-705>
+	OnyxReporterException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
+	//</ONYX-705>
 }

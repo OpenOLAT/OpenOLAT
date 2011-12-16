@@ -151,7 +151,9 @@ public class IQControllerCreatorOnyx extends IQControllerCreatorOlat {
 		boolean qti2 = config.get(IQEditController.CONFIG_KEY_TYPE_QTI)!=null && config.get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2);
 
 		if (qti2) {
-			controller = new OnyxRunController(ureq, wControl, courseNode.getReferencedRepositoryEntry().getOlatResource());
+			// <OLATCE-1054>
+			controller = new OnyxRunController(ureq, wControl, courseNode.getReferencedRepositoryEntry().getOlatResource(), true);
+			// </OLATCE-1054>
 		} else {
 			controller = super.createIQTestPreviewController(ureq, wControl, userCourseEnv, ne, courseNode);
 		}

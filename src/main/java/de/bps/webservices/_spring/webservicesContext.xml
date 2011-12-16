@@ -10,19 +10,10 @@
 
 <context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
 
-	<bean id="webservicesModule" class="de.bps.webservices.WebServiceModule" init-method="init">
-		<property name="services">
-			<map>
-				<entry key="OnyxReporterWebserviceClient">
-					<list>
-						<!-- webservice id -->
-						<value>"201"</value>
-						<!-- webservice adress -->
-						<value>${onyx.reporter.webservice}</value>
-					</list>
-				</entry>
-			</map>
-		</property>
+	<!-- <ONYX-705> -->
+	<bean id="OnyxReporterWebserviceClient" class="de.bps.webservices.clients.onyxreporter.OnyxReporterTarget">
+		<constructor-arg name="target" value="${onyx.reporter.webservice}" />
 	</bean>
+	<!-- </ONYX-705> -->
 	
 </beans>

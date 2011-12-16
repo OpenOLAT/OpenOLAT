@@ -28,7 +28,6 @@
 */
 package de.bps.ims.qti;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +47,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti.QTIResultManager;
@@ -60,9 +62,10 @@ import org.olat.ims.qti.render.LocalizedXSLTransformer;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.OnyxResultManager;
+import de.bps.onyx.plugin.course.nodes.iq.IQEditController;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManager;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManagerFactory;
 
 /**
  * Initial Date:  12.01.2005
@@ -83,7 +86,9 @@ public class QTIResultDetailsController extends BasicController {
 	private TableController tableCtr;
 	
 	private CloseableModalController cmc;
-	
+	//<ONYX-705>
+	private final static OLog log = Tracing.createLoggerFor(QTIResultDetailsController.class);
+	//</ONYX-705>
 	/**
 	 * @param courseResourceableId
 	 * @param nodeIdent
@@ -182,21 +187,28 @@ public class QTIResultDetailsController extends BasicController {
 	 * @param ureq The UserRequest for getting the identity and role of the current user.
 	 */
 	private boolean showOnyxReporter(UserRequest ureq, long assassmentId) {
-
-			OnyxReporterWebserviceManager onyxReporter = OnyxReporterWebserviceManagerFactory.getInstance().fabricate("OnyxReporterWebserviceClient");
+			//<ONYX-705>
+			OnyxReporterConnector onyxReporter = null;
+			
+			try{
+				onyxReporter = new OnyxReporterConnector();
+			} catch (OnyxReporterException e) {
+				log.error(e.getMessage(), e);
+			}
+			//</ONYX-705>
 			if (onyxReporter != null) {
 				//make a list of this one student because onyxReporter needs a list
 				List<Identity> identityList = new ArrayList<Identity>();
 				identityList.add(identity);
 				
 				CourseNode cn = CourseFactory.loadCourse(courseResourceableId).getEditorTreeModel().getCourseNode(this.nodeIdent);
-				onyxReporter.setAssassmentId(assassmentId);
 				String iframeSrc = "";
 				try {
-					iframeSrc = onyxReporter.startReporter(ureq, identityList, (AssessableCourseNode) cn, true);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-					return false;
+					//<OLATCE-1124>
+					//<ONYX-705>
+					iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identityList, (AssessableCourseNode) cn, assassmentId, true, false);
+					//</ONYX-705>
+					//</OLATCE-1124>
 				} catch (OnyxReporterException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
