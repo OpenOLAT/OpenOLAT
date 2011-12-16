@@ -290,7 +290,7 @@ public class ForumWebService {
 	public Response replyToPostPost(@PathParam("messageKey") Long messageKey, @FormParam("title") String title,
 			@FormParam("body") String body, @FormParam("authorKey") Long authorKey,
 			@Context HttpServletRequest httpRequest) {
-		return replyToPost(messageKey, title, body, authorKey, httpRequest);
+		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest);
 	}
 	
 	/**
@@ -314,8 +314,54 @@ public class ForumWebService {
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
 			@Context HttpServletRequest httpRequest) {
+		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest);
+	}
+	
+	/**
+	 * Creates a new reply in the forum of the course node
+	 * @response.representation.200.qname {http://www.example.com}messageVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The root message of the thread
+   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_MESSAGEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The author or message not found
+	 * @param messageKey The id of the reply message
+	 * @param reply The reply object
+	 * @param httpRequest The HTTP request
+	 * @return The new message
+	 */
+	@PUT
+	@Path("posts/{messageKey}")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response replyToPost(@PathParam("messageKey") Long messageKey, ReplyVO reply,
+			@Context HttpServletRequest httpRequest) {
+		return replyToPost(messageKey, reply, null, httpRequest);
+	}
+		
+	private Response replyToPost(Long messageKey, ReplyVO reply, Long authorKey, HttpServletRequest httpRequest) {
+		Identity identity = getIdentity(httpRequest);
+		if(identity == null) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		Identity author;
+		if(isAdmin(httpRequest)) {
+			if(authorKey == null) {
+				author = identity;
+			} else {
+				author = getMessageAuthor(authorKey, httpRequest);
+			}
+		} else {
+			if(authorKey == null) {
+				author = identity;
+			} else if(authorKey.equals(identity.getKey())) {
+				author = identity;
+			} else {
+				return Response.serverError().status(Status.UNAUTHORIZED).build();
+			}
+		}
 
-		Identity author = this.getMessageAuthor(authorKey, httpRequest);
 		// load message
 		Message mess = fom.loadMessage(messageKey);
 		if(mess == null) {
@@ -327,13 +373,20 @@ public class ForumWebService {
 
 		// creating the thread (a message without a parent message)
 		Message newMessage = fom.createMessage();
-		newMessage.setTitle(title);
-		newMessage.setBody(body);
+		newMessage.setTitle(reply.getTitle());
+		newMessage.setBody(reply.getBody());
 		fom.replyToMessage(newMessage, author, mess);
+		if(reply.getAttachments() != null) {
+			for(File64VO attachment:reply.getAttachments()) {
+				byte[] fileAsBytes = Base64.decodeBase64(attachment.getFile());
+				InputStream in = new ByteArrayInputStream(fileAsBytes);
+				attachToPost(newMessage, attachment.getFilename(), in, httpRequest);
+			}
+		}
+
 		MessageVO vo = new MessageVO(newMessage);
 		return Response.ok(vo).build();
 	}
-	
 
 	/**
 	 * Retrieves the attachments of the message

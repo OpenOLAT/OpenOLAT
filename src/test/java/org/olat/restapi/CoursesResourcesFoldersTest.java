@@ -81,7 +81,7 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	private void copyFileInResourceFolder(VFSContainer container, String filename, String prefix) {
-		InputStream pageStream = RepositoryEntriesTest.class.getResourceAsStream(filename);
+		InputStream pageStream = CoursesElementsTest.class.getResourceAsStream(filename);
 		VFSLeaf item = container.createChildLeaf(prefix + filename);
 		OutputStream outStream = item.getOutputStream(false);
 		FileUtils.copy(pageStream, outStream);

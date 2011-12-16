@@ -95,7 +95,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").build();
 		
 		//create single page
-		URL fileUrl = RepositoryEntriesTest.class.getResource("singlepage.html");
+		URL fileUrl = CoursesElementsTest.class.getResource("singlepage.html");
 		assertNotNull(fileUrl);
 		File file = new File(fileUrl.toURI());
 		

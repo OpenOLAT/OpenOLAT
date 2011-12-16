@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href=“http://www.openolat.org“>
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,56 +14,69 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * 2011 by frentix GmbH, http://www.frentix.com
  * <p>
- */
-
-package org.olat.restapi.support.vo;
+**/
+package org.olat.modules.fo.restapi;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.restapi.support.vo.File64VO;
 
 /**
  * 
  * Description:<br>
- * Use the upload or download files encoded with Base64
  * 
  * <P>
- * Initial Date:  6 déc. 2011 <br>
+ * Initial Date:  16 déc. 2011 <br>
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "fileUpload")
-public class File64VO {
+@XmlRootElement(name = "replyVO")
+public class ReplyVO {
 	
-	private String file;
-	private String filename;
+	private String title;
+	private String body;
 	
-	public File64VO() {
-		//make JAXB happy
+	@XmlElementWrapper(name="attachments", nillable=true, required=false)
+	@XmlElement(name="attachment")
+	private File64VO[] attachments;
+	
+	public ReplyVO() {
+		//
 	}
 	
-	public File64VO(String filename, String file) {
-		this.filename = filename;
-		this.file = file;
+	public ReplyVO(String title, String body) {
+		this.title = title;
+		this.body = body;
 	}
 
-	public String getFile() {
-		return file;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setFile(String file) {
-		this.file = file;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
-	public String getFilename() {
-		return filename;
+	public String getBody() {
+		return body;
 	}
 
-	public void setFilename(String filename) {
-		this.filename = filename;
+	public void setBody(String body) {
+		this.body = body;
+	}
+
+	public File64VO[] getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(File64VO[] attachments) {
+		this.attachments = attachments;
 	}
 }

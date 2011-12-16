@@ -166,7 +166,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		}
 		VFSItem portrait = id3PublicFolder.resolve("portrait.jpg");
 		if(portrait == null) {
-			URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+			URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
 			File ioPortrait = new File(portraitUrl.toURI());
 			FileUtils.copyFileToDirectory(ioPortrait, ((LocalImpl)id3PublicFolder).getBasefile(), false);
 		}
@@ -869,7 +869,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testPortrait() throws IOException, URISyntaxException {
-		URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		

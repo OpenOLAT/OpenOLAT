@@ -122,7 +122,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		
 		//create single page
-		URL pageUrl = RepositoryEntriesTest.class.getResource("singlepage.html");
+		URL pageUrl = CoursesElementsTest.class.getResource("singlepage.html");
 		assertNotNull(pageUrl);
 		File page = new File(pageUrl.toURI());
 		
@@ -526,7 +526,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertEquals(enNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create a test node
-		URL cpUrl = RepositoryEntriesTest.class.getResource("qti-demo.zip");
+		URL cpUrl = CoursesElementsTest.class.getResource("qti-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
@@ -604,7 +604,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertTrue(testConfig.getSummeryPresentation().equals(AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED));
 		
 		//create a survey node
-		URL newSurveyUrl = RepositoryEntriesTest.class.getResource("questionnaire-demo.zip");
+		URL newSurveyUrl = CoursesElementsTest.class.getResource("questionnaire-demo.zip");
 		assertNotNull(newSurveyUrl);
 		File surveyFile = new File(newSurveyUrl.toURI());
 

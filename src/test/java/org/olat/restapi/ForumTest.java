@@ -71,6 +71,7 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.modules.fo.restapi.MessageVOes;
+import org.olat.modules.fo.restapi.ReplyVO;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
@@ -274,7 +275,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(message);
 		
 		//attachment
-		URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		
@@ -323,7 +324,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(message);
 		
 		//attachment
-		InputStream  portraitStream = RepositoryEntriesTest.class.getResourceAsStream("portrait.jpg");
+		InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
 		assertNotNull(portraitStream);
 		//upload portrait
 		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
@@ -353,6 +354,62 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(image);
 	}
 	
+	@Test
+	public void testReplyWithTwoAttachments() throws IOException, URISyntaxException {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+
+		ReplyVO vo = new ReplyVO();
+		vo.setTitle("Reply with attachment");
+		vo.setBody("Reply with attachment body");
+		
+		File64VO[] files = new File64VO[2];
+		//upload portrait
+		InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
+		assertNotNull(portraitStream);
+		byte[] portraitBytes = IOUtils.toByteArray(portraitStream);
+		byte[] portrait64 = Base64.encodeBase64(portraitBytes, true);
+		files[0] = new File64VO("portrait64.jpg", new String(portrait64));
+		//upload single page
+		InputStream  indexStream = ForumTest.class.getResourceAsStream("singlepage.html");
+		assertNotNull(indexStream);
+		byte[] indexBytes = IOUtils.toByteArray(indexStream);
+		byte[] index64 = Base64.encodeBase64(indexBytes, true);
+		files[1] = new File64VO("singlepage64.html", new String(index64));
+		vo.setAttachments(files);
+
+		String stringuifiedAuth = stringuified(vo);
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
+		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
+    method.setRequestEntity(entity);
+		method.addRequestHeader("Accept-Language", "en");
+		
+		int code = c.executeMethod(method);
+		assertEquals(200, code);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVO message = parse(body, MessageVO.class);
+		assertNotNull(message);
+		method.releaseConnection();
+		
+		//check if the file exists
+		ForumManager fm = ForumManager.getInstance();
+		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSItem uploadedFile = container.resolve("portrait64.jpg");
+		assertNotNull(uploadedFile);
+		assertTrue(uploadedFile instanceof VFSLeaf);
+		
+		//check if the image is still an image
+		VFSLeaf uploadedImage = (VFSLeaf)uploadedFile;
+		InputStream uploadedStream = uploadedImage.getInputStream();
+		BufferedImage image = ImageIO.read(uploadedStream);
+		FileUtils.closeSafely(uploadedStream);
+		assertNotNull(image);
+		
+		//check if the single page exists
+		VFSItem uploadedPage = container.resolve("singlepage64.html");
+		assertNotNull(uploadedPage);
+		assertTrue(uploadedPage instanceof VFSLeaf);
+	}
 	
 	@Test
 	public void testUploadAttachmentWithFile64VO() throws IOException, URISyntaxException {
@@ -370,7 +427,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(message);
 		
 		//attachment
-		InputStream  portraitStream = RepositoryEntriesTest.class.getResourceAsStream("portrait.jpg");
+		InputStream  portraitStream = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
 		assertNotNull(portraitStream);
 		//upload portrait
 		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
@@ -424,7 +481,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(message);
 		
 		//attachment
-		URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		
