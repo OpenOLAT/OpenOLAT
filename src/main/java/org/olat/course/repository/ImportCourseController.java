@@ -46,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFileTypeFilter;
@@ -412,7 +413,7 @@ public class ImportCourseController extends BasicController implements IAddContr
 	 * @return File
 	 */
 	public static File getExportDataDir(ICourse theCourse) {
-		OlatRootFolderImpl vfsExportDir = (OlatRootFolderImpl)theCourse.getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
+		LocalImpl vfsExportDir = (LocalImpl)theCourse.getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
 		if (vfsExportDir == null)
 			vfsExportDir = (OlatRootFolderImpl)theCourse.getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
 		return vfsExportDir.getBasefile();

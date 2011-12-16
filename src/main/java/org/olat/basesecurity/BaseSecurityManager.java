@@ -1027,6 +1027,21 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return null;
 	}
 
+	@Override
+	public IdentityShort loadIdentityShortByKey(Long identityKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select new org.olat.basesecurity.IdentityShort(identity.key, identity.name) from ").append(IdentityImpl.class.getName()).append(" as identity ")
+			.append(" where identity.key=:identityKey");
+		
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setLong("identityKey", identityKey);
+		List<IdentityShort> idents = query.list();
+		if(idents.isEmpty()) {
+			return null;
+		}
+		return idents.get(0);
+	}
+
 	/**
 	 * 
 	 * @see org.olat.basesecurity.Manager#countUniqueUserLoginsSince(java.util.Date)

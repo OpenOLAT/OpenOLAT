@@ -156,6 +156,8 @@ public interface BaseSecurity {
 	 */
 	public Identity loadIdentityByKey(Long identityKey);
 	
+	public IdentityShort loadIdentityShortByKey(Long identityKey);
+	
 	/**
 	 * find an identity by the key or return null if no identity found
 	 * 

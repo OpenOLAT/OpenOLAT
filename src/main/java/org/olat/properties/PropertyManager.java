@@ -41,6 +41,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.user.UserDataDeletable;
 
@@ -501,6 +502,14 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		return (Property)props.get(0);
 	}
 	
+	/**
+	 * 
+	 * @param identities
+	 * @param resourceable
+	 * @param category
+	 * @param name
+	 * @return
+	 */
 	public List<Property> findProperties(List<Identity> identities, OLATResourceable resourceable, String category, String name) {
 		if(identities == null || identities.isEmpty()) {
 			return Collections.emptyList();
@@ -532,6 +541,43 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		}
 		dbQuery.setParameterList("identities", identities);
 		
+		List<Property> props = dbQuery.list();
+		return props;
+	}
+	
+	/**
+	 * 
+	 * @param resourceables
+	 * @param category
+	 * @param name
+	 * @return
+	 */
+	public List<Property> findProperties(String resourceableTypeName, List<Long> resourceableIds, String category, String name) {
+		if(resourceableIds == null || resourceableIds.isEmpty() || !StringHelper.containsNonWhitespace(resourceableTypeName)) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder query = new StringBuilder();
+		query.append("select p from ").append(Property.class.getName()).append(" as p")
+			.append(" where p.resourceTypeName=:resourceTypeName and p.resourceTypeId in (:resourceableIds)");
+
+		if (category != null) {
+			query.append(" and p.category=:category");
+		}
+		if (name != null) {
+			query.append(" and p.name=:name");
+		}
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setString("resourceTypeName", resourceableTypeName);
+		dbQuery.setParameterList("resourceableIds", resourceableIds);
+		if (category != null) {
+			dbQuery.setString("category", category);
+		}
+		if (name != null) {
+			dbQuery.setString("name", name);
+		}
+
 		List<Property> props = dbQuery.list();
 		return props;
 	}

@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,6 +69,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -121,10 +121,10 @@ public class RepositoryEntriesResource {
 			// list of courses open for everybody
 			Roles roles = getRoles(httpRequest);
 			Identity identity = getIdentity(httpRequest);
-			
-			List<String> types = new ArrayList<String>();
+
 			//fxdiff VCRP-1,2: access control of resources
-			List<RepositoryEntry> coursRepos = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, 0, -1, false);
+			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
+			List<RepositoryEntry> coursRepos = RepositoryManager.getInstance().genericANDQueryWithRolesRestriction(params, 0, -1, false);
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("Course List\n");
@@ -167,17 +167,16 @@ public class RepositoryEntriesResource {
 			Roles roles = getRoles(httpRequest);
 			Identity identity = getIdentity(httpRequest);
 			RepositoryManager rm = RepositoryManager.getInstance();
-			
-			List<String> types = Collections.emptyList();
+			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
 			if(MediaTypeVariants.isPaged(httpRequest, request)) {
-				int totalCount = rm.countGenericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, true);
-				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, start, limit, true);
+				int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
+				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
 				RepositoryEntryVOes voes = new RepositoryEntryVOes();
 				voes.setRepositoryEntries(toArrayOfVOes(res));
 				voes.setTotalCount(totalCount);
 				return Response.ok(voes).build();
 			} else {
-				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(null, null, null, types, identity, roles, null, 0, -1, false);
+				List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				RepositoryEntryVO[] voes = toArrayOfVOes(res);
 				return Response.ok(voes).build();
 			}
@@ -244,7 +243,8 @@ public class RepositoryEntriesResource {
 				List<String> types = new ArrayList<String>(1);
 				if(restrictedType) types.add(type);
 
-				List<RepositoryEntry> lstRepos = rm.genericANDQueryWithRolesRestriction(name, author, null, restrictedType ? types : null, identity, roles, null, 0, -1, false);
+				SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(name, author, null, restrictedType ? types : null, identity, roles, null);
+				List<RepositoryEntry> lstRepos = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 				if(!lstRepos.isEmpty()) reposFound.addAll(lstRepos);
 			}
 			

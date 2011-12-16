@@ -888,6 +888,24 @@ public class RepositoryManager extends BasicManager {
 		sb.append(")");
 		return setIdentity;
 	}
+
+	private boolean appendMemberAccessSubSelects(StringBuilder sb, Identity identity) {
+		sb.append("(")
+		  .append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" and ")
+		  .append(" ( ")
+		  .append("  v.participantGroup in (select participantSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantSgmsi where participantSgmsi.identity=:identity)")
+		  .append("  or")
+		  .append("  v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
+		  .append(" )")
+		  .append(")")
+		  //learning resource as owner
+		  .append(" or (")
+		  .append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
+		  .append(" )");
+		return true;
+	}
+	
 	
 	//fxdiff VCRP-1,2: access control
 	public boolean isMember(Identity identity, RepositoryEntry entry) {
@@ -1011,17 +1029,15 @@ public class RepositoryManager extends BasicManager {
 		return results;
 	}
 	
-	public int countGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles,
-			String institution, boolean orderBy) {
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, identity, roles, institution, orderBy, true);
+	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy) {
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, true);
 		Number count = (Number)dbQuery.uniqueResult();
 		return count.intValue();
 	}
 	
-	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles,
-			String institution, int firstResult, int maxResults, boolean orderBy) {
+	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, int firstResult, int maxResults, boolean orderBy) {
 		
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(displayName, author, desc, resourceTypes, identity, roles, institution, orderBy, false);
+		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, false);
 		dbQuery.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
@@ -1030,8 +1046,14 @@ public class RepositoryManager extends BasicManager {
 		return res;
 	}
 	
-	private DBQuery createGenericANDQueryWithRolesRestriction(String displayName, String author, String desc, List<String> resourceTypes, Identity identity, Roles roles,
-			String institution, boolean orderBy, boolean count) {
+	private DBQuery createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, boolean count) {
+		String displayName = params.getAuthor();
+		String author = params.getAuthor();
+		String desc = params.getDesc();
+		final List<String> resourceTypes = params.getResourceTypes();
+		final Identity identity = params.getIdentity();
+		final Roles roles = params.getRoles();
+		final String institution = params.getInstitution();
 		
 		boolean institut = (!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager());
 		boolean var_author = StringHelper.containsNonWhitespace(author);
@@ -1047,6 +1069,8 @@ public class RepositoryManager extends BasicManager {
 			query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
 			query.append(" inner join fetch v.olatResource as res");
 		}
+		
+		boolean setIdentity = false;
 
 		//access rules
 		if(roles.isOLATAdmin()) {
@@ -1064,9 +1088,12 @@ public class RepositoryManager extends BasicManager {
 			     .append(" where ms.identity = msid and msid.user = msuser and ")
 			     .append(" msuser.properties['institutionalName']=:institution)")
 			     .append("))");
+		} else if (params.isOnlyExplicitMember()) {
+			query.append(" where ");
+			setIdentity = appendMemberAccessSubSelects(query, identity);
 		} else {
 			query.append(" where ");
-			appendAccessSubSelects(query, identity, roles);
+			setIdentity = appendAccessSubSelects(query, identity, roles);
 		}
 		
 		if (var_author) { // fuzzy author search
@@ -1108,6 +1135,10 @@ public class RepositoryManager extends BasicManager {
 		}
 		if (var_resourcetypes) {
 			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+		}
+
+		if(setIdentity) {
+			dbQuery.setEntity("identity", identity);
 		}
 		return dbQuery;
 	}
@@ -1324,7 +1355,38 @@ public class RepositoryManager extends BasicManager {
 		}
 		return isInstitutionalResourceManager && sameInstitutional;
 	}
+	
+	/**
+	 * Gets all learning resources where the user is in a learning group.
+	 * @param identity
+	 * @return list of RepositoryEntries
+	 */
+	 //fxdiff VCRP-1,2: access control of resources
+	public List<RepositoryEntry> getLearningResources(Identity identity) {
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join fetch v.olatResource as res where ")
+			//learning resource as participant/tutor
+			.append("(")
+			.append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+			.append(" and ")
+			.append(" ( ")
+			.append("  v.participantGroup in (select participantSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantSgmsi where participantSgmsi.identity=:identity)")
+			.append("  or")
+			.append("  v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
+			.append(" )")
+			.append(")")
+			//learning resource as owner
+			.append(" or (")
+			.append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
+			.append(" )");
 
+		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
+		dbquery.setEntity("identity", identity);
+		dbquery.setCacheable(true);
+		List<RepositoryEntry> repoEntries = dbquery.list();	
+		return repoEntries;
+	}
 	
 	/**
 	 * Gets all learning resources where the user is in a learning group as participant.

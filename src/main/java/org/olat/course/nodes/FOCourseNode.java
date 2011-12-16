@@ -65,6 +65,7 @@ import org.olat.course.nodes.fo.FOPeekviewController;
 import org.olat.course.nodes.fo.FOPreviewController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -126,7 +127,7 @@ public class FOCourseNode extends GenericCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		
-		Forum theForum = loadOrCreateForum(userCourseEnv);
+		Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
 		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		// Add message id to business path if nodemcd is available
@@ -155,10 +156,10 @@ public class FOCourseNode extends GenericCourseNode {
 	 * @param userCourseEnv
 	 * @return the loaded forum
 	 */
-	private Forum loadOrCreateForum(final UserCourseEnvironment userCourseEnv) {
+	public Forum loadOrCreateForum(final CourseEnvironment courseEnv) {
 		updateModuleConfigDefaults(false);				
 		final ForumManager fom = ForumManager.getInstance();
-		final CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		final CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
 		final CourseNode thisCourseNode = this;
 		Forum theForum = null;
 		
@@ -170,7 +171,7 @@ public class FOCourseNode extends GenericCourseNode {
 		  Long forumKey = forumKeyProp.getLongValue();
 		  theForum = fom.loadForum(forumKey);
 		  if (theForum == null) { throw new OLATRuntimeException(FOCourseNode.class, "Tried to load forum with key " + forumKey.longValue() + " in course "
-				+ userCourseEnv.getCourseEnvironment().getCourseResourceableId() + " for node " + thisCourseNode.getIdent()
+				+ courseEnv.getCourseResourceableId() + " for node " + thisCourseNode.getIdent()
 				+ " as defined in course node property but forum manager could not load forum.", null); }
 		} else {
       //creates resourceable from FOCourseNode.class and the current node id as key
@@ -197,7 +198,7 @@ public class FOCourseNode extends GenericCourseNode {
 					forumKey = forumKeyProperty.getLongValue();
 					forum = fom.loadForum(forumKey);
 					if (forum == null) { throw new OLATRuntimeException(FOCourseNode.class, "Tried to load forum with key " + forumKey.longValue() + " in course "
-							+ userCourseEnv.getCourseEnvironment().getCourseResourceableId() + " for node " + thisCourseNode.getIdent()
+							+ courseEnv.getCourseResourceableId() + " for node " + thisCourseNode.getIdent()
 							+ " as defined in course node property but forum manager could not load forum.", null); }
 					}
 			  //System.out.println("Forum already exists");
@@ -245,7 +246,7 @@ public class FOCourseNode extends GenericCourseNode {
 			NodeEvaluation ne) {
 		if (ne.isAtLeastOneAccessible()) {
 			// Create a forum peekview controller that shows the latest two messages		
-			Forum theForum = loadOrCreateForum(userCourseEnv);
+			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
 			Controller peekViewController = new FOPeekviewController(ureq, wControl, theForum, ne.getCourseNode().getIdent(), 2);
 			return peekViewController;			
 		} else {

@@ -61,6 +61,8 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -70,23 +72,45 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.LocalImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.BCCourseNode;
+import org.olat.course.nodes.FOCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
+import org.olat.modules.fo.Forum;
+import org.olat.modules.fo.ForumManager;
+import org.olat.modules.fo.Message;
 import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
+import org.olat.modules.fo.restapi.MessageVOes;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.ErrorVO;
+import org.olat.restapi.support.vo.FileVO;
+import org.olat.restapi.support.vo.FolderVO;
+import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.restapi.support.vo.GroupInfoVOes;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.GroupVOes;
@@ -108,25 +132,45 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	private OLog log = Tracing.createLoggerFor(UserMgmtTest.class);
 	
-	private Identity owner1, id1, id2;
-	private BusinessGroup g1, g2, g3, g4;
+	private static Identity owner1, id1, id2, id3;
+	private static BusinessGroup g1, g2, g3, g4;
+	
+	private static ICourse demoCourse;
+	private static FOCourseNode demoForumNode;
+	private static BCCourseNode demoBCCourseNode;
+	
+	private static boolean setuped = false;
 	
 	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+		if(setuped) return;
+		
 		//create identities
-		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-zero");
-		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
-		id2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-two");
+		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-zero");
+		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one");
+		id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-two");
 		DBFactory.getInstance().intermediateCommit();
 		id2.getUser().setProperty("telMobile", "39847592");
 		id2.getUser().setProperty("gender", "female");
 		id2.getUser().setProperty("birthDay", "20091212");
 		DBFactory.getInstance().updateObject(id2.getUser());
 		DBFactory.getInstance().intermediateCommit();
-
 		
+		id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-three");
+		OlatRootFolderImpl id3HomeFolder = new OlatRootFolderImpl(FolderConfig.getUserHome(id3.getName()), null);
+		VFSContainer id3PublicFolder = (VFSContainer)id3HomeFolder.resolve("public");
+		if(id3PublicFolder == null) {
+			id3PublicFolder = id3HomeFolder.createChildContainer("public");
+		}
+		VFSItem portrait = id3PublicFolder.resolve("portrait.jpg");
+		if(portrait == null) {
+			URL portraitUrl = RepositoryEntriesTest.class.getResource("portrait.jpg");
+			File ioPortrait = new File(portraitUrl.toURI());
+			FileUtils.copyFileToDirectory(ioPortrait, ((LocalImpl)id3PublicFolder).getBasefile(), false);
+		}
+
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
@@ -143,8 +187,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // 1) context one: learning groups
     BGContext c1 = cm.createAndAddBGContextToResource("c1name-learn", course, BusinessGroup.TYPE_LEARNINGROUP, owner1, true);
     // create groups without waiting list
-    g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
-    g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
+    g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "user-rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
+    g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "user-rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
     // members g1
     secm.addIdentityToSecurityGroup(id1, g1.getOwnerGroup());
     secm.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
@@ -155,17 +199,81 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // 2) context two: right groups
     BGContext c2 = cm.createAndAddBGContextToResource("c2name-area", course, BusinessGroup.TYPE_RIGHTGROUP, owner1, true);
     // groups
-    g3 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "rest-g3", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
-    g4 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "rest-g4", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
+    g3 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "user-rest-g3", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
+    g4 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "user-rest-g4", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
 		DBFactory.getInstance().closeSession();
 		
 		//add some collaboration tools
-		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
-		myCTSMngr.setToolEnabled(CollaborationTools.KEY_FORUM, true);
-		DBFactory.getInstance().closeSession();
+		CollaborationTools g1CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
+		g1CTSMngr.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
+		Forum g1Forum = g1CTSMngr.getForum();//create the forum
+		Message m1 = ForumManager.getInstance().createMessage();
+		m1.setTitle("Thread-1");
+		m1.setBody("Body of Thread-1");
+		ForumManager.getInstance().addTopMessage(id1, g1Forum, m1);
+		
+		DBFactory.getInstance().commitAndCloseSession();
+		
+		//add some folder tool
+		CollaborationTools g2CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
+		g2CTSMngr.setToolEnabled(CollaborationTools.TOOL_FOLDER, true);
+		OlatRootFolderImpl g2Folder = new OlatRootFolderImpl(g2CTSMngr.getFolderRelPath(), null);
+		g2Folder.getBasefile().mkdirs();
+		VFSItem groupPortrait = g2Folder.resolve("portrait.jpg");
+		if(groupPortrait == null) {
+			URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
+			File ioPortrait = new File(portraitUrl.toURI());
+			FileUtils.copyFileToDirectory(ioPortrait, g2Folder.getBasefile(), false);
+		}
+		
+		DBFactory.getInstance().commitAndCloseSession();
+		
+		//prepare some courses
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse();
+		if(entry.getParticipantGroup() == null) {
+			assertTrue(false);
+		} else if (!secm.isIdentityInSecurityGroup(id1, entry.getParticipantGroup())){
+	    secm.addIdentityToSecurityGroup(id1, entry.getParticipantGroup());
+		}
+		
+		demoCourse = CourseFactory.loadCourse(entry.getOlatResource());
+		TreeVisitor visitor = new TreeVisitor(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof FOCourseNode) {
+					if(demoForumNode == null) {
+						demoForumNode = (FOCourseNode)node;
+						Forum courseForum = demoForumNode.loadOrCreateForum(demoCourse.getCourseEnvironment());
+						Message m1 = ForumManager.getInstance().createMessage();
+						m1.setTitle("Thread-1");
+						m1.setBody("Body of Thread-1");
+						ForumManager.getInstance().addTopMessage(id1, courseForum, m1);
+					}	
+				} else if (node instanceof BCCourseNode) {
+					if(demoBCCourseNode == null) {
+						demoBCCourseNode = (BCCourseNode)node;
+						OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(demoBCCourseNode, demoCourse.getCourseEnvironment());
+						VFSItem example = container.resolve("singlepage.html");
+						if(example == null) {
+							try {
+								InputStream htmlUrl = UserMgmtTest.class.getResourceAsStream("singlepage.html");
+								VFSLeaf htmlLeaf = container.createChildLeaf("singlepage.html");
+								IOUtils.copy(htmlUrl, htmlLeaf.getOutputStream(false));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		}, demoCourse.getRunStructure().getRootNode(), false);
+		visitor.visitAll();
+
+		DBFactory.getInstance().commitAndCloseSession();
+		setuped = true;
 	}
 	
   @After
@@ -470,6 +578,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserForums() throws IOException {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserForums");
+		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -488,16 +599,214 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		for(ForumVO forum:forums.getForums()) {
 			Long groupKey = forum.getGroupKey();
-			BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
-			assertNotNull(bg);
-			CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
-			assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FORUM));
-			
-			assertNotNull(forum.getForumKey());
-			assertEquals(bg.getName(), forum.getName());
-			assertEquals(bg.getKey(), forum.getGroupKey());
-			assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+			if(groupKey != null) {
+				BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+				assertNotNull(bg);
+				CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+				assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FORUM));
+				
+				assertNotNull(forum.getForumKey());
+				assertEquals(bg.getName(), forum.getName());
+				assertEquals(bg.getKey(), forum.getGroupKey());
+				assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+			} else {
+				assertNotNull(forum.getCourseKey());
+			}
 		}
+	}
+	
+	@Test
+	public void testUserGroupForum() throws IOException {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserGroupForum");
+		
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
+				.path("group").path(g1.getKey().toString())
+				.path("threads").queryParam("start", "0").queryParam("limit", "25").build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVOes threads = parse(body, MessageVOes.class);
+		
+		assertNotNull(threads);
+		assertNotNull(threads.getMessages());
+		assertTrue(threads.getMessages().length > 0);
+	}
+	
+	@Test
+	public void testUserCourseForum() throws IOException {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserCourseForum");
+		
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
+				.path("course").path(demoCourse.getResourceableId().toString()).path(demoForumNode.getIdent())
+				.path("threads").queryParam("start", "0").queryParam("limit", 25).build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		MessageVOes threads = parse(body, MessageVOes.class);
+		
+		assertNotNull(threads);
+		assertNotNull(threads.getMessages());
+		assertTrue(threads.getMessages().length > 0);
+	}
+	
+	@Test
+	public void testUserFolders() throws IOException {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserFolders");
+		
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		FolderVOes folders = parse(body, FolderVOes.class);
+		
+		assertNotNull(folders);
+		assertNotNull(folders.getFolders());
+		assertTrue(folders.getFolders().length > 0);
+
+		boolean matchG2 = false;
+		
+    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		for(FolderVO folder:folders.getFolders()) {
+			Long groupKey = folder.getGroupKey();
+			if(groupKey != null) {
+				BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+				assertNotNull(bg);
+				CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+				assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FOLDER));
+				
+				assertEquals(bg.getName(), folder.getName());
+				assertEquals(bg.getKey(), folder.getGroupKey());
+				assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+				if(g2.getKey().equals(groupKey)) {
+					matchG2 = true;
+				}
+			} else {
+				assertNotNull(folder.getCourseKey());
+			}
+		}
+		
+		//id1 is participant of g2. Make sure it found the folder
+		assertTrue(matchG2);
+	}
+	
+	@Test
+	public void testUserGroupFolder() throws IOException {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserGroupFolder");
+		
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
+				.path("group").path(g2.getKey().toString()).build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		List<FileVO> folders = parseFileArray(body);
+
+		assertNotNull(folders);
+		assertFalse(folders.isEmpty());
+		assertEquals(1, folders.size()); //private and public
+		
+		FileVO portrait = folders.get(0);
+		assertEquals("portrait.jpg", portrait.getTitle());
+	}
+	
+	@Test
+	public void testUserBCCourseNodeFolder() throws IOException {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserBCCourseNodeFolder");
+		
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
+				.path("course").path(demoCourse.getResourceableId().toString()).path(demoBCCourseNode.getIdent()).build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		List<FileVO> folders = parseFileArray(body);
+
+		assertNotNull(folders);
+		assertFalse(folders.isEmpty());
+		assertEquals(1, folders.size()); //private and public
+		
+		FileVO singlePage = folders.get(0);
+		assertEquals("singlepage.html", singlePage.getTitle());
+	}
+	
+	@Test
+	public void testUserPersonalFolder() throws Exception {
+		System.out.println("************************************************************************");
+		System.out.println("* testUserPersonalFolder");
+		
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").path("personal").build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		List<FileVO> files = parseFileArray(body);
+		
+		assertNotNull(files);
+		assertFalse(files.isEmpty());
+		assertEquals(2, files.size()); //private and public
+	}
+	
+	@Test
+	public void testOtherUserPersonalFolder() throws Exception {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("folders").path("personal").build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		List<FileVO> files = parseFileArray(body);
+		
+		assertNotNull(files);
+		assertTrue(files.isEmpty());
+		assertEquals(0, files.size()); //private and public
+	}
+	
+	@Test
+	public void testOtherUserPersonalFolderOfId3() throws Exception {
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		
+		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id3.getKey().toString()).path("folders").path("personal").build();
+
+		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		int code = c.executeMethod(method);
+		assertEquals(code, 200);
+		InputStream body = method.getResponseBodyAsStream();
+		List<FileVO> files = parseFileArray(body);
+		
+		assertNotNull(files);
+		assertFalse(files.isEmpty());
+		assertEquals(1, files.size()); //private and public
+		
+		FileVO portrait = files.get(0);
+		assertEquals("portrait.jpg", portrait.getTitle());
 	}
 	
 	@Test
@@ -564,7 +873,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		
-		HttpClient c = loginWithCookie("rest-one", "A6B7C8");
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		//upload portrait
 		String request = "/users/" + id1.getKey() + "/portrait";

@@ -97,7 +97,6 @@ public class UserInfoMainController extends MainLayoutBasicController {
 
 	private Identity chosenIdentity;
 	private String firstLastName;
-	private Controller weblogController;
 	private Controller portfolioController;
 
 	/**

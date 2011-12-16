@@ -29,6 +29,7 @@
 				<value>org.olat.user.restapi.ContactsWebService</value>
 				<value>org.olat.user.restapi.UserAuthenticationWebService</value>
 				<value>org.olat.restapi.group.LearningGroupWebService</value>
+				<value>org.olat.restapi.user.UserFoldersWebService</value>
 				<value>org.olat.restapi.repository.RepositoryEntriesResource</value>
 				<value>org.olat.restapi.repository.course.CourseWebService</value>
 				<value>org.olat.restapi.repository.course.CoursesWebService</value>

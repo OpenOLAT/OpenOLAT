@@ -50,6 +50,11 @@ public class Examples {
 	public static final CourseNodeVOes SAMPLE_COURSENODEVOes = new CourseNodeVOes();
 
 	public static final CourseConfigVO SAMPLE_COURSECONFIGVO = new CourseConfigVO();
+	
+	public static final FileVO SAMPLE_FILE = new FileVO();
+	
+	public static final FolderVO SAMPLE_FOLDERVO = new FolderVO();
+	public static final FolderVOes SAMPLE_FOLDERVOes = new FolderVOes();
   
   static {
   	SAMPLE_GROUPVO.setKey(123467l);
@@ -106,5 +111,18 @@ public class Examples {
   	SAMPLE_COURSENODEVOes.getNodes().add(SAMPLE_COURSENODEVO);
   	
   	SAMPLE_COURSECONFIGVO.setSharedFolderSoftKey("head_1_olat_43985684395");
+  	
+  	SAMPLE_FILE.setHref("href");
+  	SAMPLE_FILE.setRel("rel");
+  	SAMPLE_FILE.setSize(8200l);
+  	SAMPLE_FILE.setTitle("portrait.jpg");
+
+  	SAMPLE_FOLDERVO.setCourseKey(375397l);
+  	SAMPLE_FOLDERVO.setCourseNodeId("438950850389");
+  	SAMPLE_FOLDERVO.setName("Course folder");
+  	SAMPLE_FOLDERVO.setSubscribed(true);
+  	
+  	SAMPLE_FOLDERVOes.setFolders(new FolderVO[]{SAMPLE_FOLDERVO});
+  	SAMPLE_FOLDERVOes.setTotalCount(1);
   }
 }

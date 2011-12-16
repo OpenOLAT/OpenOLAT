@@ -397,6 +397,16 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 		}
 	}
 	
+	protected List<LinkVO> parseLinkArray(InputStream body) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(body, new TypeReference<List<LinkVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	protected List<FileVO> parseFileArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 

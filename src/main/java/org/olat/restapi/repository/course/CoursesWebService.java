@@ -19,13 +19,12 @@
  */
 package org.olat.restapi.repository.course;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
-import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,6 +65,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.controllers.RepositoryEntryImageController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -129,17 +129,17 @@ public class CoursesWebService {
 		//fxdiff VCRP-1,2: access control of resources
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
-		List<String> courseType = Collections.singletonList(CourseModule.getCourseTypeName());
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = rm.countGenericANDQueryWithRolesRestriction(null, null, null, courseType, identity, roles, null, true);
-			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(null, null, null, courseType, identity, roles, null, start, limit, true);
+			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
+			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			CourseVOes voes = new CourseVOes();
 			voes.setCourses(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(null, null, null, courseType, identity, roles, null, 0, -1, false);
+			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}

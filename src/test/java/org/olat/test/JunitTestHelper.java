@@ -145,15 +145,20 @@ public class JunitTestHelper {
 		if (l.size() > 0) {
 			re = RepositoryManager.getInstance().lookupRepositoryEntry(l.get(0).getLongValue());
 			if (re != null) {
-				return re;
+				//try to load it
+				try {
+					CourseFactory.loadCourse(re.getOlatResource());
+					return re;
+				} catch(Exception ex) {
+					propertyManager.deleteProperties(null, null, null, "_o3_", "deployedCourses");
+					RepositoryManager.getInstance().deleteRepositoryEntry(re);
+				}
 			}
 		}
+		
 		createAndPersistIdentityAsAdmin("administrator");
-		DeployableCourseExport export = (DeployableCourseExport) 
-				new ClassPathXmlApplicationContext("/org/olat/test/_spring/demoCourseExport.xml").getBean("demoCourse");
 		
-		
-		
+		DeployableCourseExport export = (DeployableCourseExport)new ClassPathXmlApplicationContext("/org/olat/test/_spring/demoCourseExport.xml").getBean("demoCourse");
 		if (!export.getDeployableCourseZipFile().exists()) {
 			//do not throw exception as users may upload bad file
 			System.out.println("Cannot deploy course from file: " + export.getIdentifier());
