@@ -240,7 +240,7 @@ public class UserFoldersWebService {
 			List<Subscriber> subs = man.getSubscribers(retrievedUser, notiTypes);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
-				Long forumKey = Long.parseLong(sub.getPublisher().getData());
+				Long forumKey = sub.getPublisher().getKey();
 				if("BusinessGroup".equals(resName)) {
 					Long groupKey = sub.getPublisher().getResId();
 					groupNotified.put(groupKey, forumKey);
