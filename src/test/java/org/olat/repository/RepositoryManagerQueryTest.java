@@ -107,8 +107,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 
 		db.commitAndCloseSession();
 
-		// generate 500 repo entries
-		int numbRes = 40;
+		// generate some repo entries
+		int numbRes = 500;
 		for (int i = 0; i < numbRes; i++) {
 			// create course and persist as OLATResourceImpl
 			RepositoryEntry re = createCourseRepositoryEntry(db, i);				
@@ -145,6 +145,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		}
 
 		db.commitAndCloseSession();
+		
+		initialized = true;
 	}
 	
 	@Test

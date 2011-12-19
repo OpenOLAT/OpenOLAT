@@ -1047,7 +1047,7 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	private DBQuery createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, boolean count) {
-		String displayName = params.getAuthor();
+		String displayName = params.getDisplayName();
 		String author = params.getAuthor();
 		String desc = params.getDesc();
 		final List<String> resourceTypes = params.getResourceTypes();
