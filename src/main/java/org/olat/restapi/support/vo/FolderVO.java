@@ -39,6 +39,8 @@ public class FolderVO {
 	
 	@XmlAttribute(name="name", required=false)
 	private String name;
+	@XmlAttribute(name="detailsName", required=false)
+	private String detailsName;
 	@XmlAttribute(name="groupKey", required=false)
 	private Long groupKey;
 	@XmlAttribute(name="courseKey", required=false)
@@ -48,9 +50,6 @@ public class FolderVO {
 	@XmlAttribute(name="subscribed", required=false)
 	private boolean subscribed;
 	
-	
-	
-	
 	public String getName() {
 		return name;
 	}
@@ -59,6 +58,14 @@ public class FolderVO {
 		this.name = name;
 	}
 	
+	public String getDetailsName() {
+		return detailsName;
+	}
+
+	public void setDetailsName(String detailsName) {
+		this.detailsName = detailsName;
+	}
+
 	public Long getGroupKey() {
 		return groupKey;
 	}

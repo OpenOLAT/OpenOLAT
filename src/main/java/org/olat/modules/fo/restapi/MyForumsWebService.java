@@ -262,7 +262,8 @@ public class MyForumsWebService {
 								Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
 								
 								ForumVO forumVo = new ForumVO(forum);
-								forumVo.setName(forumNode.getShortTitle());
+								forumVo.setName(course.getCourseTitle());
+								forumVo.setDetailsName(forumNode.getShortTitle());
 								forumVo.setSubscribed(courseNotified.containsKey(entry.getKey()));
 								forumVo.setForumKey(courseNotified.get(entry.getKey()));
 								forumVo.setCourseKey(course.getResourceableId());

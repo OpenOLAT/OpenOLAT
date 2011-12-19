@@ -41,6 +41,8 @@ public class ForumVO {
 
 	@XmlAttribute(name="name", required=false)
 	private String name;
+	@XmlAttribute(name="detailsName", required=false)
+	private String detailsName;
 	@XmlAttribute(name="forumKey", required=false)
 	private Long forumKey;
 	@XmlAttribute(name="groupKey", required=false)
@@ -66,6 +68,14 @@ public class ForumVO {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getDetailsName() {
+		return detailsName;
+	}
+
+	public void setDetailsName(String detailsName) {
+		this.detailsName = detailsName;
 	}
 
 	public Long getForumKey() {

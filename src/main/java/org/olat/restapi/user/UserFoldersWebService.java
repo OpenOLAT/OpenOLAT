@@ -293,7 +293,8 @@ public class UserFoldersWebService {
 							if(mayAccessWholeTreeUp) {
 
 								FolderVO folderVo = new FolderVO();
-								folderVo.setName(bcNode.getShortTitle());
+								folderVo.setName(course.getCourseTitle());
+								folderVo.setDetailsName(bcNode.getShortTitle());
 								folderVo.setSubscribed(courseNotified.containsKey(bcNode.getIdent()));
 								folderVo.setCourseKey(course.getResourceableId());
 								folderVo.setCourseNodeId(bcNode.getIdent());
