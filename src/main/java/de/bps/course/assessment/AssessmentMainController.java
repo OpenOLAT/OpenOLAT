@@ -25,7 +25,7 @@
 */
 package de.bps.course.assessment;
 
-import java.rmi.RemoteException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -105,6 +105,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -118,8 +119,7 @@ import org.olat.user.UserManager;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManager;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManagerFactory;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 
 /**
  * Initial Date:  Jun 18, 2004
@@ -146,6 +146,10 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	
 	private static final String CMD_SHOW_ONYXREPORT = "cmd.show.onyxreport";
 	public static final String KEY_IS_ONYX = "isOnyx";
+	//<OLATCE-1124>
+	private static final String CMD_SHOW_ONYXREPORT_SURVEY = "cmd.show.onyxreport_survey";
+	protected static final String KEY_IS_ONYX_SURVEY = "isOnyxSurvey";
+	//</OLATCE-1124>
 	
 
 	private static final int MODE_USERFOCUS		= 0;
@@ -210,7 +214,10 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	
 	private Link showOnyxReporterButton;
 	private LayoutMain3ColsController columLayoutCtr;
-	
+	//<OLATCE-1124>
+	private OnyxReporterConnector connector;
+	private List<Identity> allUsersList;
+	//</OLATCE-1124>
 
 	/**
 	 * Constructor for the assessment tool controller.
@@ -244,7 +251,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 
 		Identity focusOnIdentity = null;
 		ICourse course = CourseFactory.loadCourse(ores);
-		boolean hasAssessableNodes = course.hasAssessableNodes();
+		//<OLATCE-1124>
+		boolean hasAssessableNodes = course.hasAssessableNodes() || checkForQTI21SurveyInTree(course.getRunStructure().getRootNode());
+		//</OLATCE-1124>
 		if (hasAssessableNodes) {
 			BusinessControl bc = getWindowControl().getBusinessControl();
 			ContextEntry ceIdentity = bc.popLauncherContextEntry();
@@ -348,6 +357,32 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		course.getCourseEnvironment().getAssessmentManager().registerForAssessmentChangeEvents(this, ureq.getIdentity());
 	}
 
+	//<OLATCE-1124>
+	private boolean checkForQTI21Survey(CourseNode node){
+		boolean isSurvey = false;
+		if(node instanceof IQSURVCourseNode){
+			RepositoryEntry entry = node.getReferencedRepositoryEntry();
+			if (entry != null && OnyxModule.isOnyxTest(entry.getOlatResource())) {
+				isSurvey = true;
+			}
+		}
+		return isSurvey;
+	}
+
+	private boolean checkForQTI21SurveyInTree(CourseNode node){
+		boolean isSurvey = checkForQTI21Survey(node);
+		if(!isSurvey){
+			int count = node.getChildCount();
+			for (int i = 0; i < count; i++) {
+				CourseNode cn = (CourseNode) node.getChildAt(i);
+				isSurvey = checkForQTI21SurveyInTree(cn);
+				if(isSurvey)break;
+			}
+		}
+		return isSurvey;
+	}
+	//</OLATCE-1124>
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
@@ -399,7 +434,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		} else if (source == showOnyxReporterButton) {
 			this.identitiesList = getGroupIdentitiesFromGroupmanagement(this.currentGroup);
 			this.onyxReporterBackLocation = "userChoose";
-			if (!showOnyxReporter(ureq)) {
+			//<OLATCE-1124>
+			if (!showOnyxReporter(ureq, currentCourseNode, false)) {
+			//</OLATCE-1124>
 				getWindowControl().setError(translate("onyxreporter.error"));
 			}
 		} else if (source == backLinkOR) {
@@ -417,19 +454,38 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 * This methods calls the OnyxReporter and shows it in an iframe.
 	 * @param ureq The UserRequest for getting the identity and role of the current user.
 	 */
-	private boolean showOnyxReporter(UserRequest ureq) {
-		if (OnyxModule.isOnyxTest(currentCourseNode.getReferencedRepositoryEntry().getOlatResource())) {
-			OnyxReporterWebserviceManager onyxReporter = OnyxReporterWebserviceManagerFactory.getInstance().fabricate("OnyxReporterWebserviceClient");
+	//<OLATCE-1124>
+	private boolean showOnyxReporter(UserRequest ureq, CourseNode node, boolean forSurvey) {
+		if (OnyxModule.isOnyxTest(node.getReferencedRepositoryEntry().getOlatResource())) {
+	//</OLATCE-1124>
+			//<ONYX-705>
+			OnyxReporterConnector onyxReporter = null;
+			
+			try{
+				onyxReporter = new OnyxReporterConnector();
+			} catch (OnyxReporterException e){
+				log.error("unable to connect to onyxreporter!", e);
+			}
+			//</ONYX-705>
 			if (onyxReporter != null) {
 				if (this.identitiesList == null) {
 					this.identitiesList = getAllIdentitisFromGroupmanagement();
 				}
 				String iframeSrc = "";
 				try {
-					iframeSrc = onyxReporter.startReporter(ureq, this.identitiesList, currentCourseNode, false);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-					return false;
+					//<OLATCE-1124>
+					if(forSurvey){
+						ICourse course = CourseFactory.loadCourse(ores);
+						if(node instanceof IQSURVCourseNode){
+							iframeSrc = onyxReporter.startReporterGUIForSurvey(ureq.getIdentity(), node, course.getCourseBaseContainer()
+								.getBasefile() + File.separator + node.getIdent() + File.separator);
+						} else {
+							iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), this.identitiesList, node, null, false, true);	
+						}
+					} else {
+						iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), this.identitiesList, node, null, false, false);
+					}
+					//</OLATCE-1124>
 				} catch (OnyxReporterException orE) {
 					if (orE.getMessage().equals("noresults")) {
 						onyxReporterVC.contextPut("iframeOK", Boolean.FALSE);
@@ -563,7 +619,17 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					CourseNode node = course.getRunStructure().getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
 					this.currentCourseNode = (AssessableCourseNode) node;
 					this.onyxReporterBackLocation = "nodeListCtr";
-					if (!showOnyxReporter(ureq)) {
+					//<OLATCE-1124>
+					if (!showOnyxReporter(ureq, node, false)) {
+						getWindowControl().setError(translate("onyxreporter.error"));
+					}
+				} else if (actionid.equals(CMD_SHOW_ONYXREPORT_SURVEY)) {
+					int rowid = te.getRowId();
+					Map<String,Object> nodeData = (Map<String,Object>) nodeTableModel.getObject(rowid);
+					CourseNode node = course.getRunStructure().getNode((String) nodeData.get(AssessmentHelper.KEY_IDENTIFYER));
+					this.onyxReporterBackLocation = "nodeListCtr";
+					if (!showOnyxReporter(ureq, node, true)) {
+					//<OLATCE-1124>
 						getWindowControl().setError(translate("onyxreporter.error"));
 					}
 				}
@@ -712,30 +778,34 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 * @return List of all course participants
 	 */
 	List<Identity> getAllIdentitisFromGroupmanagement() {
-		List<Identity> allUsersList = new ArrayList<Identity>();
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		Iterator<BusinessGroup> iter = this.coachedGroups.iterator();
-		while (iter.hasNext()) {
-			BusinessGroup group = iter.next();
-			SecurityGroup secGroup = group.getPartipiciantGroup();
-			List<Identity> identities = secMgr.getIdentitiesOfSecurityGroup(secGroup);
-			for (Iterator<Identity> identitiyIter = identities.iterator(); identitiyIter.hasNext();) {
-				Identity identity = identitiyIter.next();
-				if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
-					// only add if not already in list
-					allUsersList.add(identity);
+		//<OLATCE-1124>
+		if(allUsersList == null){
+			allUsersList = new ArrayList<Identity>();
+			BaseSecurity secMgr = BaseSecurityManager.getInstance();
+			Iterator<BusinessGroup> iter = this.coachedGroups.iterator();
+			while (iter.hasNext()) {
+				BusinessGroup group = iter.next();
+				SecurityGroup secGroup = group.getPartipiciantGroup();
+				List<Identity> identities = secMgr.getIdentitiesOfSecurityGroup(secGroup);
+				for (Iterator<Identity> identitiyIter = identities.iterator(); identitiyIter.hasNext();) {
+					Identity identity = identitiyIter.next();
+					if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
+						// only add if not already in list
+						allUsersList.add(identity);
+					}
+				}
+			}
+			//fxdiff VCRP-1,2: access control of resources
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
+			if(re.getParticipantGroup() != null) {
+				for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
+					if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
+						allUsersList.add(identity);
+					}
 				}
 			}
 		}
-		//fxdiff VCRP-1,2: access control of resources
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-		if(re.getParticipantGroup() != null) {
-			for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
-				if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
-					allUsersList.add(identity);
-				}
-			}
-		}
+		//</OLATCE-1124>
 		return allUsersList;
 	}
 
@@ -921,7 +991,10 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		
 		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.overallselect", 2,
 				CMD_SHOW_ONYXREPORT, ureq.getLocale()));
-		
+		//<OLATCE-1124>
+		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.surveyselect", 3,
+				CMD_SHOW_ONYXREPORT_SURVEY, ureq.getLocale()));
+		//</OLATCE-1124>
 
 		// get list of course node data and populate table data model
 		CourseNode rootNode = course.getRunStructure().getRootNode();
@@ -969,7 +1042,9 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		}
 
 		boolean hasDisplayableValuesConfigured = false;
-		if (childrenData.size() > 0 || courseNode instanceof AssessableCourseNode) {
+		//<OLATCE-1124>
+		if (childrenData.size() > 0 || courseNode instanceof AssessableCourseNode || courseNode instanceof IQSURVCourseNode) {
+		//</OLATCE-1124>
 			// Store node data in hash map. This hash map serves as data model for
 			// the user assessment overview table. Leave user data empty since not used in
 			// this table. (use only node data)
@@ -980,21 +1055,37 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			nodeData.put(AssessmentHelper.KEY_TYPE, courseNode.getType());
 			nodeData.put(AssessmentHelper.KEY_TITLE_SHORT, courseNode.getShortTitle());
 			
-			if (courseNode.getReferencedRepositoryEntry() != null) {
-				if (OnyxModule.isOnyxTest(courseNode.getReferencedRepositoryEntry().getOlatResource())) {
-					nodeData.put(KEY_IS_ONYX, Boolean.TRUE);
-					if (getAllIdentitisFromGroupmanagement().size() <= 0) {
-						nodeData.put(KEY_IS_ONYX, Boolean.FALSE);
-					}
-				} else {
-					nodeData.put(KEY_IS_ONYX, Boolean.FALSE);
-				}
-			}
 			
 			nodeData.put(AssessmentHelper.KEY_TITLE_LONG, courseNode.getLongTitle());
 			nodeData.put(AssessmentHelper.KEY_IDENTIFYER, courseNode.getIdent());
 
 			if (courseNode instanceof AssessableCourseNode) {
+				//<OLATCE-1124>
+				if (courseNode.getReferencedRepositoryEntry() != null) {
+					if (OnyxModule.isOnyxTest(courseNode.getReferencedRepositoryEntry().getOlatResource())) {
+						nodeData.put(KEY_IS_ONYX, Boolean.FALSE);
+
+						List<Identity> identities = getAllIdentitisFromGroupmanagement();
+						if (identities.size() > 0) {
+							try{
+								if(connector == null){
+									connector = new OnyxReporterConnector();									
+								}
+							} catch (OnyxReporterException ore){
+								getWindowControl().setWarning("reporter.unavailable");
+							}
+							
+							if(connector != null){
+								boolean hasResults = connector.hasAnyResults(false, identities , null , courseNode);
+								if(hasResults){
+									nodeData.put(KEY_IS_ONYX, Boolean.TRUE);
+									nodeData.put(KEY_IS_ONYX_SURVEY, Boolean.TRUE);
+								}
+							}
+						}
+					}
+				}
+				//</OLATCE-1124>
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 				if ( assessableCourseNode.hasDetails()
 					|| assessableCourseNode.hasAttemptsConfigured()
@@ -1017,6 +1108,30 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					// (e.g. a st node with no defined rule
 					nodeData.put(AssessmentHelper.KEY_SELECTABLE, Boolean.FALSE);
 				}
+			//<OLATCE-1124>
+			} else if (checkForQTI21Survey(courseNode)){
+				nodeData.put(KEY_IS_ONYX_SURVEY, Boolean.FALSE);
+				List<Identity> identities = getAllIdentitisFromGroupmanagement();
+				if (identities.size() > 0) {
+					try{
+						if(connector == null){
+							connector = new OnyxReporterConnector();									
+						}
+					} catch (OnyxReporterException ore){
+						getWindowControl().setWarning("reporter.unavailable");
+					}
+					
+					if(connector != null){
+						ICourse course = CourseFactory.loadCourse(ores);
+						
+						boolean hasResults = connector.hasAnyResults(true, null , course.getCourseBaseContainer().getBasefile() + File.separator + courseNode.getIdent() + File.separator , courseNode);
+						if(hasResults){
+							nodeData.put(KEY_IS_ONYX_SURVEY, Boolean.TRUE);
+						}
+					}
+				}
+				hasDisplayableValuesConfigured = true;
+			//</OLATCE-1124>
 			} else {
 				// Not assessable nodes are not selectable. (e.g. a node that
 				// has an assessable child node but is itself not assessable)

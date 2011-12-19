@@ -26,10 +26,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
@@ -44,28 +47,33 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import de.bps.onyx.plugin.course.nodes.iq.IQEditController;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.QTIResultSet;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
 
-import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManager;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManagerFactory;
 import de.bps.onyx.plugin.OnyxModule;
+import de.bps.onyx.plugin.OnyxModule.PlayerTemplate;
 import de.bps.onyx.plugin.OnyxResultManager;
+import de.bps.onyx.plugin.course.nodes.iq.IQEditController;
 import de.bps.onyx.plugin.wsclient.OnyxPluginServices;
 import de.bps.onyx.plugin.wsclient.PluginService;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 
 /**
  * @author Ingmar Kroll
@@ -82,7 +90,11 @@ public class OnyxRunController extends BasicController {
 	private IFrameDisplayController iFrameCtr;
 	private String CP;
 	private String uniqueId;
-	private OnyxModalController onyxPluginController;
+	// <OLATCE-99>
+	private CloseableModalController onyxPluginController;
+	// </OLATCE-99>
+	private boolean isAjaxEnabled;
+	WindowManager wManager;
 
 	private final static int NOENTRYVIEW = -1;
 	private final static int DISCVIEW = 0;
@@ -91,9 +103,20 @@ public class OnyxRunController extends BasicController {
 
 	private Link showOnyxReporterButton;
 
-	public OnyxRunController(UserRequest ureq, WindowControl wControl, OLATResourceable fileResource) {
+	//<ONYX-705>
+	private final static OLog log = Tracing.createLoggerFor(OnyxRunController.class);
+	//</ONYX-705>
+	
+	//<OLATCE-1124>
+	private boolean isCourseCoach = false;
+	//</OLATCE-1124>
+
+	// <OLATCE-1054>
+	// add boolean activateModalController
+	public OnyxRunController(UserRequest ureq, WindowControl wControl, OLATResourceable fileResource, boolean activateModalController) {
 		super(ureq, wControl);
-		VelocityContainer vc = showOnyxTestInModalController(ureq, fileResource);
+		VelocityContainer vc = showOnyxTestInModalController(ureq, fileResource, activateModalController);
+		// </OLATCE-1054>
 		putInitialPanel(vc);
 	}
 	
@@ -116,7 +139,9 @@ public class OnyxRunController extends BasicController {
 		this.courseNodeSurvey = courseNode;
 		this.CP = getCP(courseNode.getReferencedRepositoryEntry().getOlatResource());
 		putInitialPanel(myContent);
-		Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(false);
+		//<OLATCE-1124>
+		this.isCourseCoach = userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity()) || userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseCoach(ureq.getIdentity());
+		//</OLATCE-1124>
 		showView(ureq, SURVEYVIEW);
 	}
 
@@ -139,8 +164,20 @@ public class OnyxRunController extends BasicController {
 		this.courseNodeSelf = courseNode;
 		this.CP = getCP(courseNode.getReferencedRepositoryEntry().getOlatResource());
 		putInitialPanel(myContent);
-		Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(false);
-		showView(ureq, DISCVIEW);
+		// <OLATBPS-363>
+		int confValue = 0;
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_ATTEMPTS) != null) {
+			confValue = Integer.valueOf(moduleConfiguration.get(IQEditController.CONFIG_KEY_ATTEMPTS).toString()).intValue();
+		}
+		if (confValue == 0 || am.getNodeAttempts(courseNode, ureq.getIdentity()).intValue() < confValue) {
+			// running allowed
+			showView(ureq, DISCVIEW);
+		} else {
+			// only one time allowed
+			showView(ureq, NOENTRYVIEW);
+		}
+		// </OLATBPS-363>
 	}
 
 	/**
@@ -162,11 +199,10 @@ public class OnyxRunController extends BasicController {
 		this.courseNodeTest= courseNode;
 		this.CP=getCP(courseNode.getReferencedRepositoryEntry().getOlatResource());
 		putInitialPanel(myContent);
-		Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(false);
-		int confValue = 1;
-		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_ATTEMPTS) == null) {
-			confValue = 0;
-		} else {
+		int confValue = 0;
+		// <OLATBPS-363>
+		if (moduleConfiguration.get(IQEditController.CONFIG_KEY_ATTEMPTS) != null) {
+		// </OLATBPS-363>
 			confValue = Integer.valueOf(moduleConfiguration.get(IQEditController.CONFIG_KEY_ATTEMPTS).toString()).intValue();
 		}
 		if (confValue == 0 || courseNode.getUserAttempts(userCourseEnv).intValue() < confValue) {
@@ -180,22 +216,56 @@ public class OnyxRunController extends BasicController {
 
 	private void showView(UserRequest ureq, int viewmode) {
 		myContent.contextPut("viewmode", new Integer(viewmode));
-		int c = 1; //per default
-
-		try {
-			c = Integer.valueOf(modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS).toString()).intValue();
-		} catch (Exception e) {
-			// nothing to do
+		// <OLATBPS-363>
+		int confValue = 0; //per default
+		if (modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS) != null) {
+			confValue = Integer.valueOf(modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS).toString()).intValue();
 		}
-
-		if (c != 0) {
-			myContent.contextPut("attemptsConfig", String.valueOf(c));
+		if (confValue != 0) {
+			myContent.contextPut("attemptsConfig", String.valueOf(confValue));
 		}
+		// </OLATBPS-363>
 
 		if (viewmode != SURVEYVIEW) {
 			ScoreEvaluation se = null;
+			
+			//<OLATCE-1232>
+			boolean isVisibilityPeriod = AssessmentHelper.isResultVisible(modConfig);
+			
+			if(!isVisibilityPeriod){
+			  Date startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			  Date endDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			  String visibilityStartDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(startDate);
+			  String visibilityEndDate = "-";
+			  if(endDate!=null) {
+			    visibilityEndDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(endDate);
+			  }
+			  String visibilityPeriod = getTranslator().translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate});
+				myContent.contextPut("visibilityPeriod",visibilityPeriod);
+				myContent.contextPut("showResultsVisible",Boolean.FALSE);
+			} else {
+				myContent.contextPut("showResultsVisible",Boolean.TRUE);
+			}
+			//</OLATCE-1232>
+				
 			if (courseNodeTest != null) {
-				myContent.contextPut("attempts", courseNodeTest.getUserAttempts(userCourseEnv));
+				// <OLATCE-498>
+				Integer attempts = courseNodeTest.getUserAttempts(userCourseEnv);
+				myContent.contextPut("attempts", attempts);
+				Boolean hasResults = false;
+				if (attempts > 0) {
+					//<ONYX-705>
+					try{
+						OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+						String assessmentType = courseNodeTest.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString();
+						hasResults = onyxReporter.hasResultXml(ureq.getIdentity().getName(), assessmentType, "" + courseNodeTest.getIdent());
+					} catch (OnyxReporterException e) {
+						log.error(e.getMessage(), e);
+					}
+					//</ONYX-705>
+				}
+				myContent.contextPut("hasResults", hasResults.booleanValue());
+				// </OLATCE-498>
 				myContent.contextPut("comment", courseNodeTest.getUserUserComment(userCourseEnv));
 
 				if (courseNodeTest.getUserAttempts(userCourseEnv) > 0) {
@@ -203,6 +273,26 @@ public class OnyxRunController extends BasicController {
 				}
 			} else if (courseNodeSelf != null) {
 				myContent.contextPut("self", Boolean.TRUE);
+				// <OLATBPS-363>
+				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+				// <OLATCE-498>
+				Integer attempts = am.getNodeAttempts(courseNodeSelf, ureq.getIdentity());
+				myContent.contextPut("attempts", attempts);
+				Boolean hasResults = false;
+				if (attempts > 0) {
+					try{
+						OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+						String assessmentType = courseNodeSelf.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE).toString();
+						// <OLATCE-643>
+						hasResults = onyxReporter.hasResultXml(ureq.getIdentity().getName(), assessmentType, "" + courseNodeSelf.getIdent());
+						// </OLATCE-643>
+					} catch (OnyxReporterException e) {
+						log.error(e.getMessage(), e);
+					}
+				}
+				myContent.contextPut("hasResults", hasResults.booleanValue());
+				// </OLATCE-498>
+				// <OLATBPS-363>
 				se = courseNodeSelf.getUserScoreEvaluation(userCourseEnv);
 			}
 			boolean hasResult = se != null && se.getScore() != null;
@@ -257,9 +347,11 @@ public class OnyxRunController extends BasicController {
 				myContent.contextPut("attempts", courseNodeSurvey.getUserAttempts(userCourseEnv));
 				startButton = LinkFactory.createButton("startapplet", myContent, this);
 
-				boolean isAuthor = ureq.getUserSession().getRoles().isAuthor() ||
-					ureq.getUserSession().getRoles().isOLATAdmin();
-				if (isAuthor) {
+				//<OLATCE-1124>
+				// <OLATBPS-96>
+				if (isCourseCoach && existsResultsForSurvey()) {
+				// </OLATBPS-96>
+				//</OLATCE-1124>
 					myContent.contextPut("showReporter", Boolean.TRUE);
 					showOnyxReporterButton = LinkFactory.createCustomLink("cmd.showOnyxReporter", "cmd.showOnyxReporter", "onyxreporter.button.survey",  Link.BUTTON_SMALL, myContent, this);
 				}
@@ -298,6 +390,32 @@ public class OnyxRunController extends BasicController {
 		}
 	}
 
+	// <OLATBPS-451>
+	/**
+	 * This method looks for the latest qtiResultSet in the DB which belongs to this course node and user
+	 * and updates the UserScoreEvaluation.
+	 */
+	private void updateUserScoreEvaluationFromQtiResult(Long courseResourceableId, AssessableCourseNode courseNode) {
+		QTIResultManager qrm = QTIResultManager.getInstance();
+		List<QTIResultSet> resultSets = qrm.getResultSets(courseResourceableId, courseNode.getIdent(), courseNode.getReferencedRepositoryEntry().getKey(), userCourseEnv.getIdentityEnvironment().getIdentity());
+		QTIResultSet latestResultSet = null;
+		for (QTIResultSet resultSet : resultSets) {
+			if (latestResultSet == null) {
+				latestResultSet = resultSet;
+				continue;
+			}
+			// if a best score is given select the latest resultset with the best score
+			if (resultSet.getLastModified().after(latestResultSet.getLastModified())) {
+				latestResultSet = resultSet;
+			}
+		}
+		if (latestResultSet != null) {
+			ScoreEvaluation sc = new ScoreEvaluation(latestResultSet.getScore(), latestResultSet.getIsPassed(), latestResultSet.getAssessmentID());
+			courseNode.updateUserScoreEvaluation(sc, userCourseEnv, userCourseEnv.getIdentityEnvironment().getIdentity(), false);
+		}
+	}
+	// </OLATBPS-451>
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,
@@ -308,12 +426,16 @@ public class OnyxRunController extends BasicController {
 			if  (courseNodeSurvey != null) {
 				showView(ureq, SURVEYVIEW);
 			} else if (courseNodeTest != null) {
-				int confValue = 1;
-				try {
-					confValue = Integer.valueOf(modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS).toString()).intValue();
-				} catch (NullPointerException e) {
-					Tracing.createLoggerFor(this.getClass()).error("Onyx-Test Anzahl Ausfuehrungen nicht in Konfig", e);
+				
+				// <OLATBPS-451>
+				updateUserScoreEvaluationFromQtiResult(userCourseEnv.getCourseEnvironment().getCourseResourceableId(), courseNodeTest);
+				// </OLATBPS-451>
+				// <OLATBPS-363>
+				int confValue = 0;
+				if (modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS) != null) {
+						confValue = Integer.valueOf(modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS).toString()).intValue();
 				}
+				// </OLATBPS-363>
 				int userAttempts = 0;
 				userAttempts = courseNodeTest.getUserAttempts(userCourseEnv).intValue();
 				if (confValue == 0 || userAttempts < confValue) {
@@ -329,6 +451,7 @@ public class OnyxRunController extends BasicController {
 			//tell the RunMainController that it has to be updated
 			userCourseEnv.getScoreAccounting().evaluateAll();
 			fireEvent(ureq, Event.DONE_EVENT);
+			Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(isAjaxEnabled);
 		}
 	}
 
@@ -339,37 +462,9 @@ public class OnyxRunController extends BasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startButton) {
-			//increase attempts when starting the test -> attempts do not depend on test
-			//running correct
-			onyxPlugin = createVelocityContainer("onyxstart");
-			String onyxBackLabel = "onyx.back";
-			if (courseNodeTest != null) {
-				onyxPlugin.contextPut("isSurvey", Boolean.FALSE);
-			} else if (courseNodeSurvey != null) {
-				onyxPlugin.contextPut("isSurvey", Boolean.TRUE);
-				onyxBackLabel = "onyx.survey.back";
-			}
-			try {
-				connectToOnyxWS(ureq);
-				String urlonyxplugin = OnyxModule.getUserViewLocation() + "?id=" + this.uniqueId;
-				onyxPlugin.contextPut("urlonyxplugin", urlonyxplugin);
-				onyxPluginController = new OnyxModalController(getWindowControl(), "close", onyxPlugin, false);
-				onyxBack = LinkFactory.createCustomLink("onyx.back", "onyx.back", onyxBackLabel, Link.BUTTON_SMALL, onyxPlugin, onyxPluginController);
-				onyxPluginController.setBackButton(onyxBack);
-				listenTo(onyxPluginController);
-				onyxPluginController.activate();
-				//now increase attampts; if an exception occurred before, this will be not reached
-				if (courseNodeTest != null) {
-					courseNodeTest.incrementUserAttempts(userCourseEnv);
-				} else if (courseNodeSurvey != null) {
-					courseNodeSurvey.incrementUserAttempts(userCourseEnv);
-				} else if(courseNodeSelf != null){
-					courseNodeSelf.incrementUserAttempts(userCourseEnv);
- 				}
-			} catch(Exception e) {
-				getWindowControl().setError(translate("error.connectonyxws"));
-				Tracing.createLoggerFor(this.getClass()).warn("could not connect to OnyxPlugin webservice", e);
-			}
+			// <OLATCE-654>
+			startOnyx(ureq);
+			// </OLATCE-654>
 			return;
 		} else if (source == showOnyxReporterButton) {
 			onyxReporterVC = createVelocityContainer("onyxreporter");
@@ -389,6 +484,47 @@ public class OnyxRunController extends BasicController {
 		showView(ureq, ENDVIEW);
 	}
 
+	// <OLATCE-654>
+	public void startOnyx(UserRequest ureq){
+		//increase attempts when starting the test -> attempts do not depend on test
+		//running correct
+		// <OLATCE-445>
+		isAjaxEnabled = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
+		Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(false);
+		// </OLATCE-445>
+		onyxPlugin = createVelocityContainer("onyxstart");
+		String onyxBackLabel = "onyx.back";
+		if (courseNodeTest != null) {
+			onyxPlugin.contextPut("isSurvey", Boolean.FALSE);
+		} else if (courseNodeSurvey != null) {
+			onyxPlugin.contextPut("isSurvey", Boolean.TRUE);
+			onyxBackLabel = "onyx.survey.back";
+		}
+		try {
+			connectToOnyxWS(ureq);
+			String urlonyxplugin = OnyxModule.getUserViewLocation() + "?id=" + this.uniqueId;
+			onyxPlugin.contextPut("urlonyxplugin", urlonyxplugin);
+			// <OLATCE-99>
+			onyxPluginController = new CloseableModalController(getWindowControl(), "close", onyxPlugin, true);
+			onyxPlugin.contextPut("showHint", Boolean.TRUE);
+			// </OLATCE-99>
+			onyxBack = LinkFactory.createCustomLink("onyx.back", "onyx.back", onyxBackLabel, Link.BUTTON_SMALL, onyxPlugin, onyxPluginController);
+			listenTo(onyxPluginController);
+			onyxPluginController.activate();
+			//now increase attampts; if an exception occurred before, this will be not reached
+			if (courseNodeTest != null) {
+				courseNodeTest.incrementUserAttempts(userCourseEnv);
+			} else if (courseNodeSurvey != null) {
+				courseNodeSurvey.incrementUserAttempts(userCourseEnv);
+			} else if(courseNodeSelf != null){
+				courseNodeSelf.incrementUserAttempts(userCourseEnv);
+				}
+		} catch(Exception e) {
+			getWindowControl().setError(translate("error.connectonyxws"));
+			Tracing.createLoggerFor(this.getClass()).warn("could not connect to OnyxPlugin webservice", e);
+		}
+	}
+	// </OLATCE-654>
 	/**
 	 * This methods calls the OnyxReporter and shows it in an iframe.
 	 * @param ureq The UserRequest for getting the identity and role of the current user.
@@ -397,7 +533,14 @@ public class OnyxRunController extends BasicController {
 	 * 					2 ERROR
 	 */
 	private int showOnyxReporter(UserRequest ureq) {
-			OnyxReporterWebserviceManager onyxReporter = OnyxReporterWebserviceManagerFactory.getInstance().fabricate("OnyxReporterWebserviceClient");
+		//<ONYX-705>
+		OnyxReporterConnector onyxReporter = null;
+			try{
+				onyxReporter = new OnyxReporterConnector();
+			} catch (OnyxReporterException e) {
+				log.error(e.getMessage(), e);
+			}
+		//</ONYX-705>			
 			if (onyxReporter != null) {
 				List<Identity> identity = new ArrayList<Identity>();
 				String iframeSrc = "";
@@ -405,12 +548,25 @@ public class OnyxRunController extends BasicController {
 					if (courseNodeTest != null) {
 						identity.add(userCourseEnv.getIdentityEnvironment().getIdentity());
 						long assasmentId = courseNodeTest.getUserScoreEvaluation(userCourseEnv).getAssessmentID();
-						onyxReporter.setAssassmentId(assasmentId);
-						iframeSrc = onyxReporter.startReporter(ureq, identity, courseNodeTest, true);
+						//<OLATCE-1124>
+						//<ONYX-705>
+						iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identity, courseNodeTest, assasmentId, true, false);
+						//</ONYX-705>
+						//</OLATCE-1124>
+					//<OLATCE-1048>
+					} else if (courseNodeSelf != null){
+						identity.add(userCourseEnv.getIdentityEnvironment().getIdentity());
+						long assasmentId = courseNodeSelf.getUserScoreEvaluation(userCourseEnv).getAssessmentID();
+						//<OLATCE-1124>
+						iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identity, courseNodeSelf, assasmentId, true, false);
+						//</OLATCE-1124>
+					//</OLATCE-1048>
 					} else {
-						String path = userCourseEnv.getCourseEnvironment().getCourseBaseContainer()
-								.getBasefile() + File.separator + courseNodeSurvey.getIdent() + File.separator;
-						iframeSrc = onyxReporter.startReporterForSurvey(ureq, courseNodeSurvey, path);
+						//<ONYX-705>
+						// <OLATBPS-96>
+						iframeSrc = onyxReporter.startReporterGUIForSurvey(ureq.getIdentity(), courseNodeSurvey, getSurveyResultPath());
+						// </OLATBPS-96>
+						//</ONYX-705>
 					}
 				} catch (OnyxReporterException oE) {
 					if (oE.getMessage().equals("noresults")) {
@@ -428,13 +584,39 @@ public class OnyxRunController extends BasicController {
 				return 2;
 			}
 	}
+	
+	// <OLATBPS-96>
+	/**
+	 * This method checks if the directory where the results are stored for this survey exists.
+	 * @return
+	 */
+	private boolean existsResultsForSurvey() {
+		File surveyDir = new File(getSurveyResultPath());
+		if (surveyDir.exists()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * This method generates the path to the results directory for a survey
+	 * @return A String representing the path
+	 */
+	private String getSurveyResultPath() {
+		return userCourseEnv.getCourseEnvironment().getCourseBaseContainer()
+			.getBasefile() + File.separator + courseNodeSurvey.getIdent() + File.separator;
+	}
+	// </OLATBPS-96>
 
 	/**
 	 * Static metohd to start the an onyx test as learningressource or bookmark.
 	 * @param ureq
 	 * @param repositoryEntry
 	 */
-	public VelocityContainer showOnyxTestInModalController(UserRequest ureq, OLATResourceable fileResource) {
+	// <OLATCE-1054>
+	public VelocityContainer showOnyxTestInModalController(UserRequest ureq, OLATResourceable fileResource, boolean activateModalController) {
+	// </OLATCE-1054>
 		OnyxPluginServices onyxplugin = null;
 		try {
 			onyxplugin = new PluginService().getOnyxPluginServicesPort(); 
@@ -470,24 +652,35 @@ public class OnyxRunController extends BasicController {
 		onyxPlugin.contextPut("isSurvey", Boolean.FALSE);
 		onyxPlugin.contextPut("urlonyxplugin", urlonyxplugin);
 		onyxPlugin.contextPut("nohint", Boolean.TRUE);
-		onyxPluginController = new OnyxModalController(getWindowControl(), "close", onyxPlugin, false);
+		// <OLATCE-99>
+		onyxPluginController = new CloseableModalController(getWindowControl(), "close", onyxPlugin, true);
+		// </OLATCE-99>
 		onyxBack = LinkFactory.createCustomLink("onyx.back", "onyx.back", "onyx.back", Link.BUTTON_SMALL, onyxPlugin, onyxPluginController);
 		onyxBack.setVisible(false);
-		onyxPluginController.setBackButton(onyxBack);
+		// <OLATBPS-102>
+		// <OLATCE-1054>
+		if (activateModalController) {
+			onyxPluginController.activate();
+		}
+		// </OLATCE-1054>
+		// </OLATBPS-102>
 		return onyxPlugin;
 	}
 
 	private void connectToOnyxWS(UserRequest ureq) {
 		OnyxPluginServices onyxplugin = new PluginService().getOnyxPluginServicesPort(); 
 		CourseNode courseNode = null;
-		boolean allowShowSolution = false;
+		//<OLATCE-982>
+		Boolean allowShowSolution = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
+		// set allowShowSolution either to the configured value (!= null) or to defaultvalue false if test or survey, if selftest then the default is true 
+		allowShowSolution = allowShowSolution!=null ? allowShowSolution : courseNodeSelf != null;
+		//</OLATCE-982>
 		if (courseNodeTest != null) {
 			courseNode = courseNodeTest;
 		} else if  (courseNodeSurvey != null) {
 			courseNode = courseNodeSurvey;
 		} else if  (courseNodeSelf != null) {
 			courseNode = courseNodeSelf;
-			allowShowSolution = true;
 		}
 		this.uniqueId = OnyxResultManager.getUniqueId(ureq.getIdentity(), courseNode, this.userCourseEnv);
 	  String instructions = new String();
@@ -506,12 +699,29 @@ public class OnyxRunController extends BasicController {
 			Tracing.createLoggerFor(this.getClass()).error("could not read disclaimer");
 		}
 		String language = ureq.getLocale().toString().toLowerCase();
-		String tempalteId = "onyxdefault";
-
-		String tempalteId_config=(String) modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE);
-		if(tempalteId_config!=null&&tempalteId_config.length()>0){
-			tempalteId=tempalteId_config;
+		// <OLATCE-499>
+		String templateId = "onyxdefault";
+		String tempalteId_config = (String) modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE);
+		if(tempalteId_config != null && tempalteId_config.length() > 0) {
+			templateId = tempalteId_config;
+			boolean isTemplateValid = false;
+			for (PlayerTemplate template : OnyxModule.PLAYERTEMPLATES) {
+				if (template.id.equals(templateId)) {
+					isTemplateValid = true;
+					break;
+				}
+			}
+			if (!isTemplateValid) {
+				templateId = OnyxModule.PLAYERTEMPLATES.get(0).id;
+			}
 		}
+		// </OLATCE-499>
+		// <ONYX-673>
+		if (courseNodeSurvey != null) {
+			// if this is a survey
+			templateId += "_survey";
+		}
+		// </ONYX-673>
 
 		try {
 
@@ -521,7 +731,9 @@ public class OnyxRunController extends BasicController {
 				System.out.println("CP : "+CP);
 				java.io.FileInputStream inp = new java.io.FileInputStream(cpFile);
 				inp.read(byteArray);
-				onyxplugin.run(this.uniqueId, byteArray, language, instructions, tempalteId, OnyxModule.getConfigName(), allowShowSolution);
+				// <OLATCE-499>
+				onyxplugin.run(this.uniqueId, byteArray, language, instructions, templateId, OnyxModule.getConfigName(), allowShowSolution);
+				// </OLATCE-499>
 			} catch (FileNotFoundException e) {
 				Tracing.createLoggerFor(this.getClass()).error("Cannot find CP of Onyx Test with assassmentId: " + uniqueId, e);
 			} catch (IOException e) {
@@ -555,44 +767,6 @@ public class OnyxRunController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		if (onyxPluginController != null && onyxPluginController.isOpen()) {
-			onyxPluginController.close();
-		}
 	}
-
-	private class OnyxModalController extends CloseableModalController {
-		public OnyxModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
-			super(wControl, closeButtonText, modalContent, showCloseIcon);
-		}
-
-		private Link backButton;
-		private boolean open = false;
-
-		public void activate() {
-			super.activate();
-			open = true;
-		}
-
-		public boolean isOpen() {
-			return open;
-		}
-
-		public void setBackButton(Link button) {
-			backButton = button;
-		}
-
-		public void close() {
-			open = false;
-			getWindowControl().pop();
-		}
-
-		public void event(UserRequest ureq, Component source, Event event) {
-			if (source == backButton) {
-				close();
-				fireEvent(ureq, CLOSE_MODAL_EVENT);
-			}
-		}
-	}
-
 }
 

@@ -44,7 +44,10 @@ import org.olat.core.util.vfs.filters.VFSItemFileTypeFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AddingResourceException;
 import org.olat.fileresource.types.FileResource;
+import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.repository.RepositoryEntry;
+
+import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * <!--**************-->
@@ -201,7 +204,13 @@ public class AddFileResourceController extends BasicController implements IAddCo
 					return;
 				}
 				try {				
-					newFileResource = frm.addFileResource(f, fName);
+				// <OLATCE-72>
+					if (limitTypes != null && limitTypes.size() > 0 && limitTypes.get(0).equals(SurveyFileResource.TYPE_NAME) && OnyxModule.isOnyxTest(f)) {
+						newFileResource = frm.addFileResource(f, fName, new SurveyFileResource());
+					}else{
+						newFileResource = frm.addFileResource(f, fName);
+					}
+				// </OLATCE-72>
 				} catch (AddingResourceException e) {
 					showError(e.getErrorKey());
 					addCallback.failed(urequest);

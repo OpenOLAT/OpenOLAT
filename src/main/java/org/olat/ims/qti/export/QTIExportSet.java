@@ -64,7 +64,10 @@ public class QTIExportSet {
 	}
 	
 	public boolean getIsPassed(){
-		return qtir.getResultSet().getIsPassed();
+		//<OLATCE-982>
+		Boolean passed = qtir.getResultSet().getIsPassed();
+		return passed!=null?passed:false;
+		//</OLATCE-982>
 	}
 	
 	public String getIp(){

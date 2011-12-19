@@ -12,6 +12,10 @@
 
 <bean id="onyxModule" class="de.bps.onyx.plugin.OnyxModule">
 	<property name="onyxPluginWSLocation" value="${onyx.plugin.wslocation}" />
+	<!-- <OLATCE-713> -->
+	<property name="onyxUserViewLocation" value="${onyx.plugin.userviewlocation}" />
+	<property name="onyxReporterUserViewLocation" value="${onyx.reporter.userviewlocation}" />
+	<!-- </OLATCE-713> -->
 	<property name="configName" value="${onyx.plugin.configname}" />
 	
 	<property name="persistedProperties">

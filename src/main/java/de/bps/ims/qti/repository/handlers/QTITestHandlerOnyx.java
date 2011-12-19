@@ -132,7 +132,9 @@ public class QTITestHandlerOnyx extends QTITestHandler {
 		if (OnyxModule.isOnyxTest(res)) {
 			Resolver resolver = new ImsRepositoryResolver(res);
 			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
-			Controller runController = new OnyxRunController(ureq, wControl, res);
+			// <OLATCE-1054>
+			Controller runController = new OnyxRunController(ureq, wControl, res, false);
+			// </OLATCE-1054>
 //				IQManager.getInstance().createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
 			// use on column layout
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);

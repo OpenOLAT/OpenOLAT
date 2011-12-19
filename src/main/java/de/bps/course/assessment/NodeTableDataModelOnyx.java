@@ -63,7 +63,9 @@ public class NodeTableDataModelOnyx extends DefaultTableDataModel {
     		// node, select
       	
     		//return 2;
-    		return 3;
+    	//<OLATCE-1124>
+    		return 4;
+    	//</OLATCE-1124>
       	
     }
 
@@ -80,7 +82,9 @@ public class NodeTableDataModelOnyx extends DefaultTableDataModel {
 				case 1:
 					// selection command
 					Boolean courseNodeEditable = (Boolean) nodeData.get(AssessmentHelper.KEY_SELECTABLE);
-					if (courseNodeEditable.booleanValue()) return trans.translate("table.action.selectparticipant");
+					//<OLATCE-1124>
+					if (courseNodeEditable != null && courseNodeEditable.booleanValue()) return trans.translate("table.action.selectparticipant");
+					//</OLATCE-1124>
 					else return null;
 				case 2:
 					//show OnyxReport
@@ -89,8 +93,16 @@ public class NodeTableDataModelOnyx extends DefaultTableDataModel {
 						return trans.translate("table.action.showOnyxReporter");
 					} else {
 						return "";
-					}					
-								
+					}
+				//<OLATCE-1124>
+				case 3://show OnyxReporter --> statistical overview
+					Boolean courseNodeIsOnyxSurvey = (Boolean) nodeData.get(AssessmentMainController.KEY_IS_ONYX_SURVEY);
+					if (courseNodeIsOnyxSurvey != null && courseNodeIsOnyxSurvey.booleanValue()) {
+						return trans.translate("table.action.showOnyxReporter");
+					} else {
+						return "";
+					}
+				//</OLATCE-1124>
 				default:
 					return "error";
 			}

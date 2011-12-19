@@ -24,10 +24,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.ZipUtil;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
@@ -43,7 +45,11 @@ public class OnyxModule extends AbstractOLATModule {
 	/* holds the local config name which is sent to the remote onyxplugin -> onyxplugin must have 
 	 * a config corresponding to this name */
 	private static String configName;
-
+	// <OLATCE-713>
+	private static String onyxUserViewLocation;
+	private static String onyxReporterUserViewLocation;
+	// </OLATCE-713>
+	
 	/**
 	 * @return Returns the configName.
 	 */
@@ -69,7 +75,9 @@ public class OnyxModule extends AbstractOLATModule {
 	 * @return Returns the userViewLocation.
 	 */
 	public static String getUserViewLocation() {
-		return onyxPluginWSLocation + "/onyxrun";
+		// <OLATCE-713>
+		return onyxUserViewLocation;
+		// </OLATCE-713>
 	}
 
 	/**
@@ -142,6 +150,17 @@ public class OnyxModule extends AbstractOLATModule {
 }
 
 public static boolean isOnyxTest(File zipfile){
+	// <OLTACE-72>
+	File unzippedDir = null;
+	if (zipfile.getName().toLowerCase().endsWith(".zip")) {
+		unzippedDir = new File(zipfile.getAbsolutePath().substring(0, zipfile.getAbsolutePath().length() - 4) + "__unzipped");
+		if (!unzippedDir.exists()) {
+			unzippedDir.mkdir();
+		}
+		ZipUtil.unzip(zipfile, unzippedDir);
+		zipfile = unzippedDir;
+	}
+	// </OLTACE-72>
 	BufferedReader br = null;
 	try {
 			File mani = new File(zipfile.getAbsolutePath()+"/imsmanifest.xml");
@@ -152,6 +171,11 @@ public static boolean isOnyxTest(File zipfile){
 						l.indexOf("imsqti_test_xmlv2p1") != -1 ||
 						l.indexOf("imsqti_assessment_xmlv2p1") != -1) {
 					br.close();
+					// <OLTACE-72>
+					if (unzippedDir != null) {
+						unzippedDir.delete();
+					}
+					// </OLTACE-72>
 					return true;
 					}
 			}
@@ -163,9 +187,33 @@ public static boolean isOnyxTest(File zipfile){
 				// TODO Auto-generated catch block
 			}
 		}
-
+		// <OLTACE-72>
+		if (unzippedDir != null) {
+			unzippedDir.delete();
+		}
+		// </OLTACE-72>
 		return false;
 
 	}
+
+	// <OLATCE-713>
+	public static String getOnyxUserViewLocation() {
+		return onyxUserViewLocation;
+	}
+	
+	public void setOnyxUserViewLocation(String onyxUserViewLocation) {
+		OnyxModule.onyxUserViewLocation = onyxUserViewLocation;
+	}
+
+	public static String getOnyxReporterUserViewLocation() {
+		return onyxReporterUserViewLocation;
+	}
+
+	public void setOnyxReporterUserViewLocation(
+			String onyxReporterUserViewLocation) {
+		OnyxModule.onyxReporterUserViewLocation = onyxReporterUserViewLocation;
+	}
+	
+	// </OLATCE-713>
 }
 

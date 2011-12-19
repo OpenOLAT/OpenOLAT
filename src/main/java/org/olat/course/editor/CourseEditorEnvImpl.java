@@ -149,6 +149,17 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		boolean retVal = cen != null && !cen.isDeleted();
 		return retVal;
 	}
+	
+	// <OLATCE-91>
+	/**
+	 * @see org.olat.course.editor.CourseEditorEnv#getNode(java.lang.String)
+	 */
+	@Override
+	public CourseNode getNode(String nodeId) {
+		CourseNode cen = cetm.getCourseNode(nodeId);
+		return cen;
+	}
+	// </OLATCE-91>
 
 	/**
 	 * @see org.olat.course.editor.CourseEditorEnv#existsGroup(java.lang.String)

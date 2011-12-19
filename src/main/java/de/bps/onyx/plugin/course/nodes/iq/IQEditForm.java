@@ -29,6 +29,7 @@
 package de.bps.onyx.plugin.course.nodes.iq;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.olat.core.gui.UserRequest;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -45,13 +47,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.OnyxModule.PlayerTemplate;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 
 /**
  * Test configuration form.
@@ -63,6 +69,10 @@ import de.bps.onyx.plugin.OnyxModule.PlayerTemplate;
  */
 public class IQEditForm extends FormBasicController {
 
+	//<OLATCE-982>
+	private static final String ALLOW = "allow";
+	private MultipleSelectionElement allowShowSolutionBox;
+	//</OLATCE-982>
 	private SelectionElement enableMenu;
 	private SelectionElement displayMenu;
 	private SelectionElement displayScoreProgress;
@@ -95,16 +105,27 @@ public class IQEditForm extends FormBasicController {
 	
 
 	private boolean isAssessment, isSelfTest, isSurvey;
+	//<OLATCE-1012>
+	private RepositoryEntry repoEntry;
+	private final static OLog log = Tracing.createLoggerFor(IQEditForm.class);
+	//</OLATCE-1012>
 
 	/**
 	 * Constructor for the qti configuration form
 	 * @param ureq
 	 * @param wControl
 	 * @param modConfig
+	 * @param repoEntry Used to check if this is a onyx-test and if this onyx-test has the outcome-variable PASS defined
 	 */
-	public IQEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
+	// <OLATCE-654>
+//	public IQEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
+	public IQEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,RepositoryEntry repoEntry) {
+	// </OLATCE-654>
 		super (ureq, wControl);
-		
+
+		//<OLATCE-1012>		
+		this.repoEntry = repoEntry;
+		//</OLATCE-1012>
 		Translator translator = Util.createPackageTranslator(org.olat.course.nodes.iq.IQEditController.class, getTranslator().getLocale(), getTranslator());
 		setTranslator(translator);
 		
@@ -205,6 +226,20 @@ public class IQEditForm extends FormBasicController {
 
 		
 		if (isOnyx) {
+			//<OLATCE-982>
+			Boolean confAllowShowSolution = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
+			String[] allowShowSolution=new String[]{ALLOW};
+			String[] valuesShowSolution = new String[]{""};
+			//Surveys do not have a solution
+			if(!isSurvey){
+				allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, null, 1);
+				if(confAllowShowSolution!=null){
+					allowShowSolutionBox.select(ALLOW, confAllowShowSolution);
+				} else if (isSelfTest){
+					allowShowSolutionBox.select(ALLOW, true);
+				}
+			}
+			//</OLATCE-982>
 			//select onyx template
 			String[] values = new String[OnyxModule.PLAYERTEMPLATES.size()];
 			String[] keys = new String[OnyxModule.PLAYERTEMPLATES.size()];
@@ -218,7 +253,20 @@ public class IQEditForm extends FormBasicController {
 			template = uifactory.addDropdownSingleselect("qti.form.onyx.template", formLayout, keys, values, null);
 			try {
 				if (modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE) != null) {
-					template.select(modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE).toString(), true);
+					// <OLATCE-499>
+					String templateId = modConfig.get(IQEditController.CONFIG_KEY_TEMPLATE).toString();
+					boolean isTemplateValid = false;
+					for (PlayerTemplate template : OnyxModule.PLAYERTEMPLATES) {
+						if (template.id.equals(templateId)) {
+							isTemplateValid = true;
+							break;
+						}
+					}
+					if (!isTemplateValid) {
+						templateId = OnyxModule.PLAYERTEMPLATES.get(0).id;
+					}
+					template.select(templateId, true);
+					// </OLATCE-499>
 				}
 			} catch (RuntimeException e) {
 				Tracing.logWarn("Template not found", e, this.getClass());
@@ -233,6 +281,19 @@ public class IQEditForm extends FormBasicController {
 				else {
 					cutValue.setValue("");
 				}
+				//<OLATCE-1012>				
+				if(isOnyx){
+					try {
+						OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+						Map<String, String> outcomes = onyxReporter.getPossibleOutcomeVariables(repoEntry);
+						if(outcomes.containsKey("PASS")){
+							uifactory.addStaticTextElement("qti.form.onyx.cutvalue.passed.overwrite", null, translate("qti.form.onyx.cutvalue.passed.overwrite"), formLayout);
+						}
+					} catch (OnyxReporterException e) {
+						log.warn("Unable to get outcome variables for the test!", e);
+					}
+				}
+				//</OLATCE-1012>
 			}
 
 		} else {
@@ -319,10 +380,6 @@ public class IQEditForm extends FormBasicController {
 
 		uifactory.addSpacerElement("s2", formLayout, true);
 		
-		//end of "!isOnyx"
-		}
-		
-
 		//Show score infos on start page
 		Boolean bEnableScoreInfos = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 	  boolean enableScoreInfos = (bEnableScoreInfos != null) ? bEnableScoreInfos.booleanValue() : true;
@@ -335,6 +392,10 @@ public class IQEditForm extends FormBasicController {
 			// isSurvey
 			scoreInfo.setVisible(false);
 		}
+		// <OLATCE-380>
+		//end of "!isOnyx"
+		}
+		// </OLATCE-380>
 
 
 		//migration: check if old tests have no summary
@@ -384,12 +445,16 @@ public class IQEditForm extends FormBasicController {
 		}
 
 
-		Boolean showResultOnFinish = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
-		boolean confEnableShowResultOnFinish = (showResultOnFinish != null) ? showResultOnFinish.booleanValue() : true;
-		confEnableShowResultOnFinish = !noSummary && confEnableShowResultOnFinish;
-		showResultsAfterFinishTest = uifactory.addCheckboxesVertical("qti_enableResultsOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		showResultsAfterFinishTest.select("xx", confEnableShowResultOnFinish);
-		showResultsAfterFinishTest.addActionListener(this, FormEvent.ONCLICK);
+		// <OLATCE-380>
+		if (!isOnyx) {
+			Boolean showResultOnFinish = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+			boolean confEnableShowResultOnFinish = (showResultOnFinish != null) ? showResultOnFinish.booleanValue() : true;
+			confEnableShowResultOnFinish = !noSummary && confEnableShowResultOnFinish;
+			showResultsAfterFinishTest = uifactory.addCheckboxesVertical("qti_enableResultsOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+			showResultsAfterFinishTest.select("xx", confEnableShowResultOnFinish);
+			showResultsAfterFinishTest.addActionListener(this, FormEvent.ONCLICK);
+		}
+		// </OLATCE-380>
 
 		String[] summaryKeys = new String[] {
 				AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT,
@@ -576,6 +641,16 @@ public class IQEditForm extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-
+	
+	//<OLATCE-982>
+	public boolean allowShowSolution(){
+		boolean allow = false;
+		if(allowShowSolutionBox != null){
+			allow = allowShowSolutionBox.isAtLeastSelected(1);			
+		}
+		return allow;
+	}
+	//</OLATCE-982>
+	
 }
 

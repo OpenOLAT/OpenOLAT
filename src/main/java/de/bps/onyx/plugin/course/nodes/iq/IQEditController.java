@@ -76,7 +76,6 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -101,8 +100,8 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 
 import de.bps.onyx.plugin.OnyxModule;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManager;
-import de.bps.webservices.clients.onyxreporter.OnyxReporterWebserviceManagerFactory;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
+import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 
 /**
  * Description:<BR/>
@@ -161,7 +160,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
 	/** configuration key: enable 'show score infos' on start page */
 	public static final String CONFIG_KEY_ENABLESCOREINFO = "enableScoreInfo";
-
+	//<OLATCE-982>
+	public static final String CONFIG_KEY_ALLOW_SHOW_SOLUTION = "showSolution";
+	//</OLATCE-982>
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";
 	public static final String CONFIG_KEY_RESULTS_END_DATE = "resultsEndDate";
@@ -344,14 +345,16 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				myContent.contextPut("showOutcomes", new Boolean(true));
 				Map<String, String> outcomes = new HashMap<String, String>();
 				try {
-					OnyxReporterWebserviceManager onyxReporter = OnyxReporterWebserviceManagerFactory.getInstance().fabricate("OnyxReporterWebserviceClient");
-					if (onyxReporter != null) {
-						outcomes = onyxReporter.getOutcomes((AssessableCourseNode) courseNode);
-					} else {
-						throw new UnsupportedOperationException("could not connect to onyx reporter");
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
+				//<ONYX-705>	
+					OnyxReporterConnector onyxReporter = new OnyxReporterConnector();
+					// <OLATBPS-363>
+					outcomes = onyxReporter.getPossibleOutcomeVariables(courseNode);
+					// </OLATBPS-363>
+				} catch (OnyxReporterException e) {
+					//<OLATCE-935>
+					getWindowControl().setWarning(translate("reporter.unavailable"));
+					//</OLATCE-935>
+					//</ONYX-705>
 				}
 				myContent.contextPut("outcomes", outcomes);
 			} else {
@@ -368,7 +371,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 		
 		//construct the config form after check for onyx
-		modConfigForm = new IQEditForm(ureq, wControl, moduleConfiguration);
+		//<OLATCE-1012>
+		//modConfigForm = new IQEditForm(ureq, wControl, moduleConfiguration);
+		modConfigForm = new IQEditForm(ureq, wControl, moduleConfiguration, re);
+		//</OLATCE-1012>
 		modConfigForm.addControllerListener(this);
 		myContent.put("iqeditform",modConfigForm.getInitialComponent());
 		
@@ -578,6 +584,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 					moduleConfiguration.set(CONFIG_KEY_RESULTS_START_DATE, modConfigForm.getShowResultsStartDate());
 					moduleConfiguration.set(CONFIG_KEY_RESULTS_END_DATE, modConfigForm.getShowResultsEndDate());
 					moduleConfiguration.set(CONFIG_KEY_RESULT_ON_HOME_PAGE, modConfigForm.isShowResultsOnHomePage());
+					//<OLATCE-982>
+					moduleConfiguration.set(CONFIG_KEY_ALLOW_SHOW_SOLUTION, modConfigForm.allowShowSolution());
+					//</OLATCE-982>
 				} else {
 				
 
@@ -627,7 +636,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				if (this.type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
 					moduleConfiguration.set(CONFIG_KEY_IS_SURVEY, Boolean.TRUE);
 				}
-				modConfigForm = new IQEditForm(urequest, getWindowControl(), moduleConfiguration);
+				// <OLATCE-1012>
+				modConfigForm = new IQEditForm(urequest, getWindowControl(), moduleConfiguration, re);
+				// </OLATCE-1012>
 				modConfigForm.addControllerListener(this);
 				if (!this.type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY) && OnyxModule.isOnyxTest(re.getOlatResource())) {
 					if (moduleConfiguration.get(CONFIG_KEY_ATTEMPTS) == null) {
@@ -708,6 +719,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				if (isOnyx) {
 					myContent.contextPut("onyxDisplayName",re.getDisplayname());
 					moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI2);
+					// <OLATCE-473>
+					moduleConfiguration.set(CONFIG_KEY_CUTVALUE, null);
+					myContent.contextRemove(CONFIG_KEY_CUTVALUE);
+					// </OLATCE-473>
 				}else{
 					moduleConfiguration.set(CONFIG_KEY_TYPE_QTI, CONFIG_VALUE_QTI1);
 					// If of type test, get min, max, cut - put in module config and push

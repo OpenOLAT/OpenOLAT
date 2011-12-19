@@ -32,4 +32,16 @@
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
 	Effect.ScrollTo('b_top');
+	var bodyHeight = document.getElementById('b_body').parentNode.offsetHeight;
+	var windowHeight = window.innerHeight;
+	var finalHeight = Math.min(bodyHeight, windowHeight)-20;
+	var wrapper = document.getElementById("$r.getId("b_closablewapper_")");
+	if(wrapper.className.indexOf('onyx_overlay')>-1){
+		wrapper.style.height=finalHeight+'px';
+		iframe = wrapper.getElementsByTagName('iframe')[0];
+		if(iframe!= undefined){
+			finalHeight = finalHeight-28;
+			iframe.style.height=finalHeight+'px';
+		}
+	}
 </script>
