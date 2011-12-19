@@ -342,16 +342,21 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				Step current = steps.peek();
 				// TODO:pb detach previous from "submit" cycle
 				nextStep = current.nextStep();
-				nextChildCreator = new ControllerCreator() {
-					private final UserRequest ureqForAfterDispatch = ureq;
-
-					@SuppressWarnings("unused")
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						// lureq unused as the remembered ureqForAfterDispatch is
-						// taken
-						return nextStep.getStepController(ureqForAfterDispatch, lwControl, stepsContext, mainForm);
-					}
-				};
+				if(nextStep == Step.NOSTEP) {
+					//next but no more step -> finish
+					finishWizard(ureq);
+				} else {
+					nextChildCreator = new ControllerCreator() {
+						private final UserRequest ureqForAfterDispatch = ureq;
+	
+						@SuppressWarnings("unused")
+						public Controller createController(UserRequest lureq, WindowControl lwControl) {
+							// lureq unused as the remembered ureqForAfterDispatch is
+							// taken
+							return nextStep.getStepController(ureqForAfterDispatch, lwControl, stepsContext, mainForm);
+						}
+					};
+				}
 				// creation of controller and setting the controller is deferred to
 				// the afterDispatch Cycle
 				//
@@ -409,7 +414,11 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				// during dispatching and controller creation was deferred to
 				// the end of
 				// dispatch cycle.
-				addNextStep((StepFormController) nextChildCreator.createController(null, getWindowControl()), nextStep);
+				if(nextStep == Step.NOSTEP) {
+					nextButton.setEnabled(false);
+				} else {
+					addNextStep((StepFormController) nextChildCreator.createController(null, getWindowControl()), nextStep);
+				}
 			} else if (lastEvent == StepsEvent.ACTIVATE_PREVIOUS) {
 				stepPages.pop();
 				steps.pop();
