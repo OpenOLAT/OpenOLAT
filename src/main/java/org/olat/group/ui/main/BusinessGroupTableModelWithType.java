@@ -83,7 +83,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 			case 4:
 				return wrapped.getAllowDelete();
 			case 5:
-				return wrapped.getResources();
+				return wrapped;
 			//fxdiff VCRP-1,2: access control of resources
 			case 6:
 				return new Boolean(wrapped.isAccessControl());

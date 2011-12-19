@@ -98,6 +98,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.GroupLoggingAction;
+import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.delete.TabbedPaneController;
@@ -250,10 +251,18 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 				activateContent(ureq, userObject);
 			}
 		} else if (source instanceof Link && source.getComponentName().startsWith("repo_entry_")) {
-			Long repoEntryKey = (Long)((Link)source).getUserObject();
-			BusinessControl bc = BusinessControlFactory.getInstance().createFromString("[RepositoryEntry:" + repoEntryKey + "]");
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
-			NewControllerFactory.getInstance().launch(ureq, bwControl);
+			Object uobj = ((Link)source).getUserObject();
+			if (uobj instanceof Long) {
+				Long repoEntryKey = (Long)((Link)source).getUserObject();
+				BusinessControl bc = BusinessControlFactory.getInstance().createFromString("[RepositoryEntry:" + repoEntryKey + "]");
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				NewControllerFactory.getInstance().launch(ureq, bwControl);
+			} else if(uobj instanceof BusinessGroup) {
+				BusinessGroup bg = (BusinessGroup)uobj;
+				BusinessControl bc = BusinessControlFactory.getInstance().createFromString("[BusinessGroup:" + bg.getKey() + "][toolresources:0]");
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+				NewControllerFactory.getInstance().launch(ureq, bwControl);
+			}
 		//fxdiff VCRP-1,2: access control of resources
 		} else if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -915,7 +924,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		BGTableItem tableItem = new BGTableItem(group, member, allowLeave, allowDelete, accessControl, access);
 		
 		if(group.getGroupContext() != null) {
-			List<RepositoryEntry> resources = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
+			List<BGContext> contexts = Collections.singletonList(group.getGroupContext());
+			List<RepositoryEntry> resources = contextManager.findRepositoryEntriesForBGContext(contexts, 0, 3);
 			tableItem.setResources(resources);
 		}
 		

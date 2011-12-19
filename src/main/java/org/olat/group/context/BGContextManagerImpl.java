@@ -522,12 +522,12 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 			}
 		}*/
 		//fxdiff VCRP-1,2: access control of resources
-		return findRepositoryEntriesForBGContext(Collections.singletonList(bgContext));
+		return findRepositoryEntriesForBGContext(Collections.singletonList(bgContext), 0, -1);
 	}
 	
 	@Override
 	//fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts) {
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults) {
 		if(bgContexts == null || bgContexts.isEmpty()) return Collections.emptyList();
 		DB db = DBFactory.getInstance();
 		StringBuilder sb = new StringBuilder();
@@ -538,6 +538,10 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 			.append(" )");
 
 		DBQuery query = db.createQuery(sb.toString());
+		query.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
 		query.setParameterList("contexts", bgContexts);
 		return query.list();
 	}

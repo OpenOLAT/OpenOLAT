@@ -277,8 +277,31 @@ public interface BGContextManager {
 	 * @return List of repository entries
 	 */
 	public List<RepositoryEntry> findRepositoryEntriesForBGContext(BGContext bgContext);
+	
+	/**
+	 * Find all repository entries of the OLAT resources that have a relation to
+	 * this group context. (see findOlatResourcesForBGContext)
+	 * 
+	 * @param bgContext
+	 * @param firstResult mandatory
+	 * @param maxResults set to -1 if you want all entries
+	 * @return
+	 */
 	//fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContext);
+	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContext, int firstResult, int maxResults);
+	
+	/**
+	 * Find all repository entries of the OLAT resources that have a relation to
+	 * this group context. (see findOlatResourcesForBGContext)
+	 * 
+	 * @param bgContexts
+	 * @param access
+	 * @param asOwner
+	 * @param asCoach
+	 * @param asParticipant
+	 * @param identity
+	 * @return
+	 */
 	//fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int access, boolean asOwner, boolean asCoach,
 			boolean asParticipant,  Identity identity);

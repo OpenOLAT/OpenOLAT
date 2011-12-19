@@ -57,14 +57,26 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof List) {
-			List<RepositoryEntry> resources = (List<RepositoryEntry>)val;
+		if(val instanceof BGTableItem) {
+			BGTableItem item = (BGTableItem)val;
+			List<RepositoryEntry> resources = item.getResources();
+			
+			int count = 0;
 			for(RepositoryEntry resource:resources) {
 				if(renderer == null) {//fxdiff: FXOLAT-267 for XSL export
 					if(sb.length() > 0) {
 						sb.append(", ");
 					}
 					sb.append(resource.getDisplayname());
+				} else if(count >= 2) {
+					Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
+					link.setCustomDisplayText("...");
+					link.setUserObject(item.getBusinessGroup());
+					
+					URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
+					RenderResult renderResult = new RenderResult();
+					link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
+					break;
 				} else {
 					Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
 					link.setCustomDisplayText(resource.getDisplayname());
@@ -73,6 +85,7 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 					URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
 					RenderResult renderResult = new RenderResult();
 					link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
+					count++;
 				}
 			}
 		}
