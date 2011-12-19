@@ -11,6 +11,7 @@
 <context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
 <!-- SSL/TLS communication properties -->
 <bean id="sslConfigurationModule" class="de.bps.security.SSLConfigurationModule" init-method="init">
+		<property name="enableSsl" value="${onyx.ssl}" />
 		<property name="keyStoreFile" value="${onyx.keystore.file}" />
 		<property name="keyStorePass" value="${onyx.keystore.pass}" />
 		<property name="keyStoreType" value="${onyx.keystore.type}" />

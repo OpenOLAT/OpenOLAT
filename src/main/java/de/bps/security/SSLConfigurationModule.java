@@ -27,9 +27,12 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 public class SSLConfigurationModule {
+	
+	private static final OLog log = Tracing.createLoggerFor(SSLConfigurationModule.class);
 
 	private static String keyStoreFile;
 	private static String keyStorePass;
@@ -37,6 +40,16 @@ public class SSLConfigurationModule {
 	private static String trustStoreFile;
 	private static String trustStorePass;
 	private static String trustStoreType;
+	private boolean enableSsl;
+
+
+	public boolean isEnableSsl() {
+		return enableSsl;
+	}
+
+	public void setEnableSsl(boolean enableSsl) {
+		this.enableSsl = enableSsl;
+	}
 
 	/**
 	 * @param keyStoreFile The keyStoreFile to set.
@@ -113,10 +126,13 @@ public class SSLConfigurationModule {
 	 * @see org.olat.core.configuration.Initializable#init()
 	 */
 	public void init() {
-		System.setProperty("javax.net.ssl.trustStore", SSLConfigurationModule.getTrustStoreFile());
-		System.setProperty("javax.net.ssl.trustStorePassword", SSLConfigurationModule.getTrustStorePass());
-		System.setProperty("javax.net.ssl.keyStore", SSLConfigurationModule.getKeyStoreFile());
-		System.setProperty("javax.net.ssl.keyStorePassword", SSLConfigurationModule.getKeyStorePass());
+		if(isEnableSsl()) {
+			System.setProperty("javax.net.ssl.trustStore", SSLConfigurationModule.getTrustStoreFile());
+			System.setProperty("javax.net.ssl.trustStorePassword", SSLConfigurationModule.getTrustStorePass());
+			System.setProperty("javax.net.ssl.keyStore", SSLConfigurationModule.getKeyStoreFile());
+			System.setProperty("javax.net.ssl.keyStorePassword", SSLConfigurationModule.getKeyStorePass());
+			log.info("Overwrite the standard javax.net.ssl settings with custom ones!");
+		}
 	}
 
 	public static KeyManager[] getKeyManagers() {
@@ -128,8 +144,7 @@ public class SSLConfigurationModule {
 			keyManagerFactory.init(keyStore, keyStorePass.toCharArray());
 			return keyManagerFactory.getKeyManagers();
 		} catch (Exception e) {
-			Tracing.createLoggerFor(SSLConfigurationModule.class).error("Error while initializing the keystore", e);
-			e.printStackTrace();
+			log.error("Error while initializing the keystore", e);
 			return null;
 		}
 	}
@@ -143,7 +158,7 @@ public class SSLConfigurationModule {
 			trustManagerFactory.init(trustStore);
 			return trustManagerFactory.getTrustManagers();
 		} catch (Exception e) {
-			Tracing.createLoggerFor(SSLConfigurationModule.class).error("Error while initializing the truststore", e);
+			log.error("Error while initializing the truststore", e);
 			return null;
 		}
 	}
