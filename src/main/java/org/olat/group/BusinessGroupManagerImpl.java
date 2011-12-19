@@ -271,13 +271,13 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		query.append(org.olat.group.BusinessGroupImpl.class.getName()).append(" as bgi ");
 		//inner joins if needed
 		if(ownedById) {
-			query.append("inner join bgi.ownerGroup ownerGroup ");
+			query.append("left join bgi.ownerGroup ownerGroup ");
 		}
 		if(attendedById) {
-			query.append("inner join bgi.partipiciantGroup participantGroup ");
+			query.append("left join bgi.partipiciantGroup participantGroup ");
 		}
 		if(bgContext != null) {
-			query.append("inner join bgi.groupContext context ");
+			query.append("left join bgi.groupContext context ");
 		}
 		
 		boolean where = false;

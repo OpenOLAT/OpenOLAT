@@ -240,13 +240,12 @@ public class UserFoldersWebService {
 			List<Subscriber> subs = man.getSubscribers(retrievedUser, notiTypes);
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
-				Long forumKey = sub.getPublisher().getKey();
 				if("BusinessGroup".equals(resName)) {
 					Long groupKey = sub.getPublisher().getResId();
-					groupNotified.put(groupKey, forumKey);
+					groupNotified.put(groupKey, sub.getPublisher().getResId());
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
-					courseNotified.put(courseKey, forumKey);
+					courseNotified.put(courseKey, sub.getPublisher().getResId());
 				}
 			}
 		}
@@ -295,7 +294,7 @@ public class UserFoldersWebService {
 
 								FolderVO folderVo = new FolderVO();
 								folderVo.setName(bcNode.getShortTitle());
-								folderVo.setSubscribed(courseNotified.containsKey(entry.getKey()));
+								folderVo.setSubscribed(courseNotified.containsKey(bcNode.getIdent()));
 								folderVo.setCourseKey(course.getResourceableId());
 								folderVo.setCourseNodeId(bcNode.getIdent());
 								folderVOs.add(folderVo);

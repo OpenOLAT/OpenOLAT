@@ -149,7 +149,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//create identities
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-zero");
-		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one");
+		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one-" + UUID.randomUUID().toString().replace("-", ""));
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-two");
 		DBFactory.getInstance().intermediateCommit();
 		id2.getUser().setProperty("telMobile", "39847592");
@@ -397,7 +397,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetUserNotAdmin() throws IOException {
-		HttpClient c = loginWithCookie("rest-one", "A6B7C8");
+		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		HttpMethod method = createGet("/users/" + id2.getKey(), MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -578,9 +578,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserForums() throws IOException {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserForums");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -617,9 +614,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserGroupForum() throws IOException {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserGroupForum");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -639,9 +633,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserCourseForum() throws IOException {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserCourseForum");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
@@ -661,9 +652,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserFolders() throws IOException {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserFolders");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").build();
@@ -706,9 +694,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserGroupFolder() throws IOException {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserGroupFolder");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
@@ -730,9 +715,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserBCCourseNodeFolder() throws IOException {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserBCCourseNodeFolder");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
@@ -754,9 +736,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserPersonalFolder() throws Exception {
-		System.out.println("************************************************************************");
-		System.out.println("* testUserPersonalFolder");
-		
 		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").path("personal").build();
@@ -822,7 +801,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		String body = method.getResponseBodyAsString();
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
-		assertTrue(groups.size() >= 4);
+		assertEquals(2, groups.size());//g1 and g2 as g3 and g4 are right groups which are not returned
 	}
 	
 	@Test
@@ -843,7 +822,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
-		assertTrue(groups.getTotalCount() >= 4);
+		assertEquals(2, groups.getTotalCount());//g1 and g2 as g3 and g4 are right groups which are not returned
 	}
 	
 	@Test
@@ -864,7 +843,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
-		assertTrue(groups.getTotalCount() >= 4);
+		assertEquals(2, groups.getTotalCount());//g1 and g2 as g3 and g4 are right groups which are not returned
 	}
 	
 	@Test
