@@ -580,6 +580,10 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		if(cType == null) {
 			return DEFAULT_CONTENT_TYPE;
 		}
+		if(cType.contains("text/xhtml")) {
+			//text/xhtml is not accepted as html mime type by most of the browsers
+			return DEFAULT_CONTENT_TYPE;
+		}
 		return cType;
 	}
 	
