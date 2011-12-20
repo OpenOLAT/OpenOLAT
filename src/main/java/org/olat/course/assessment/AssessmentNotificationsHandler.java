@@ -64,9 +64,11 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.scorm.assessment.ScormAssessmentManager;
 import org.olat.notifications.NotificationsUpgradeHelper;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryManager;
@@ -355,6 +357,15 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 										score = scoreProperty.getFloatValue().toString();
 										break;
 									}
+								}
+								
+								if(test instanceof ScormCourseNode) {
+									ScormCourseNode scormTest = (ScormCourseNode)test;
+									//check if completed or passed
+									String status = ScormAssessmentManager.getInstance().getLastLessonStatus(assessedIdentity.getName(), course.getCourseEnvironment(), scormTest);
+									if(!"passed".equals(status) && !"completed".equals(status)) {
+										continue;
+									}	
 								}
 								
 								String desc;

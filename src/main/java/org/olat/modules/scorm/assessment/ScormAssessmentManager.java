@@ -22,6 +22,7 @@ package org.olat.modules.scorm.assessment;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -148,6 +149,16 @@ public class ScormAssessmentManager extends BasicManager {
 	}
 	// </OLATCE-289>
 	
+	public String getLastLessonStatus(String username, CourseEnvironment courseEnv, ScormCourseNode node) {
+		List<CmiData> scoDatas = visitScoDatas(username, courseEnv, node);
+		for(CmiData scoData:scoDatas) {
+			if("cmi.core.lesson_status".equals(scoData.getKey())) {
+				return scoData.getValue();
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Return all the datas in the sco datamodels of a SCORM course
 	 * @param username
@@ -157,40 +168,20 @@ public class ScormAssessmentManager extends BasicManager {
 	 */
 	public List<CmiData> visitScoDatas(String username, CourseEnvironment courseEnv, ScormCourseNode node) {
 		VFSContainer scoContainer = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
-		if(scoContainer == null)
+		if(scoContainer == null) {
 			return Collections.emptyList();
-		
-		List<CmiData> datas = collectData(scoContainer);
-		Collections.sort(datas, new CmiDataComparator());
-		return datas;
-	}
-	
-	private List<CmiData> collectData(VFSContainer scoFolder) {
-		List<CmiData> datas = new ArrayList<CmiData>();
-		
-		List<VFSItem> contents = scoFolder.getItems(new XMLFilter());
-		for(VFSItem file:contents) {
-			ScoDocument document = new ScoDocument(null);
-			try {
-				if(file instanceof LocalFileImpl) {
-					document.loadDocument(((LocalFileImpl)file).getBasefile());
-				}
-				else {
-					logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + file.getClass().getName(), null);
-					continue;
-				}
-				
-				String fileName = file.getName();
-				String itemId = fileName.substring(0, fileName.length() - 4);
-				String[][] scoModel = document.getScoModel();
-				for(String[] line:scoModel) {
-					datas.add(new CmiData(itemId, line[0], line[1]));
-				}
-			} catch (Exception e) {
-				logger.error("Cannot load a SCO Datamodel", e);
-			}
 		}
 		
+		List<VFSItem> contents = scoContainer.getItems(new XMLFilter());
+		if(contents.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		if(contents.size() > 1) {
+				Collections.sort(contents, new FileDateComparator());
+		}
+		VFSItem file = contents.get(0);
+		List<CmiData> datas = collectData(file);
 		return datas;
 	}
 	
@@ -202,6 +193,24 @@ public class ScormAssessmentManager extends BasicManager {
 				return true;
 			}
 			return false;
+		}
+	}
+	
+	public class FileDateComparator implements Comparator<VFSItem> {
+
+		@Override
+		public int compare(VFSItem f1, VFSItem f2) {
+			if(f1 == null) return -1;
+			if(f2 == null) return 1;
+			long l1 = f1.getLastModified();
+			long l2 = f2.getLastModified();
+			if(l1 < l2) {
+				return 1;
+			}
+			if (l1 == l2) {
+				return 0;
+			}
+			return -1;
 		}
 	}
 }
