@@ -42,8 +42,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockEntry;
+import org.olat.core.util.coordinate.LockRemovedEvent;
+import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  *  Controller to manage non persisitent locks. Allow to release certain lock manually.
@@ -59,8 +63,6 @@ public class LockController extends BasicController {
 	private TableController tableCtr;
 	private LockTableModel locksTableModel;
 	private DialogBoxController dialogController;
-	
-	LockEntry lockToRelease;
 
 	/**
 	 * Controls locks in admin view.
@@ -110,17 +112,19 @@ public class LockController extends BasicController {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
-				lockToRelease = (LockEntry) locksTableModel.getObject(te.getRowId());
+				LockEntry lockToRelease = (LockEntry) locksTableModel.getObject(te.getRowId());
 				dialogController = activateYesNoDialog(ureq, null, translate("lock.release.sure"), dialogController);
-				
+				dialogController.setUserObject(lockToRelease);
 			}
 		} else if (source == dialogController) {
-			if (DialogBoxUIFactory.isYesEvent(event)) { 
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				LockEntry lockToRelease = (LockEntry)dialogController.getUserObject();
+				MultiUserEvent mue = new LockRemovedEvent(lockToRelease);
+				OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(mue, lockEntryOres);
 				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLockEntry(lockToRelease);
 				lockToRelease = null;
 				resetTableModel();
-			} else {
-				lockToRelease = null;
 			}
 		}
 

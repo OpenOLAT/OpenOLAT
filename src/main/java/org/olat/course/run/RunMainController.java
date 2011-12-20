@@ -693,6 +693,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// special check for editor
 				if (isInEditor) {
 					isInEditor = false; // for clarity
+					removeAsListenerAndDispose(currentToolCtr);
 					currentToolCtr = null;
 					if (needsRebuildAfterPublish) {
 						needsRebuildAfterPublish = false;

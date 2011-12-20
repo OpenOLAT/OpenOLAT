@@ -53,4 +53,9 @@ public interface LockResult {
 	 * @return the time (as in System.currentTimeMilis()) when the lock was acquired.
 	 */
 	public long getLockAquiredTime();
+	
+	/**
+	 * @return The lock entry if any
+	 */
+	public LockEntry getLockEntry();
 }

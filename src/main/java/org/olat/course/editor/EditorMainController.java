@@ -47,6 +47,7 @@ import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -81,10 +82,13 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockEntry;
+import org.olat.core.util.coordinate.LockRemovedEvent;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.NamedContainerImpl;
@@ -104,6 +108,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.ui.context.BGContextEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -226,6 +231,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		// try to acquire edit lock for this course.			
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+		OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), lockEntryOres);
 
 		try {			
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
@@ -233,6 +240,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		if (lockEntry.isSuccess()) {			
 			ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 			main = createVelocityContainer("index");
+			
+			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
+			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
+			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
+			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, repo.getResourceableId());
+			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
+					courseCloser.getInitialComponent(), "disposed course" + course.getResourceableId());
+			setDisposedMsgController(disposedRestartController);
 			
 			undelButton = LinkFactory.createButton("undeletenode.button", main, this);
 			keepClosedErrorButton = LinkFactory.createCustomLink("keepClosedErrorButton", CMD_KEEPCLOSED_ERROR, "keep.closed", Link.BUTTON_SMALL, main, this);
@@ -994,6 +1009,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	protected void doDispose() {
 		ICourse course = CourseFactory.loadCourse(ores.getResourceableId());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, course);
+		OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, lockEntryOres);
+
 		// those controllers are disposed by BasicController:
 		nodeEditCntrllr = null;
 		publishStepsController = null;
@@ -1027,15 +1045,20 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 */
 	public void event(Event event) {
 	  try {
-		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
-			OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
-			// make sure it is our course (actually not needed till now, since we
-			// registered only to one event, but good style.
-			if (ojde.targetEquals(ores, true)) {
-				// true = throw an exception if the target does not match ores
-				dispose();
+			if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
+				OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
+				// make sure it is our course (actually not needed till now, since we
+				// registered only to one event, but good style.
+				if (ojde.targetEquals(ores, true)) {
+					// true = throw an exception if the target does not match ores
+					dispose();
+				}
+			} else if (event instanceof LockRemovedEvent) {
+				LockRemovedEvent lockEvent = (LockRemovedEvent)event;
+				if(lockEntry != null && lockEntry.getLockEntry() != null && lockEntry.getLockEntry().equals(lockEvent.getLockEntry())) {
+					this.dispose();
+				}
 			}
-		}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(Event)]", e);			
 			this.dispose();
