@@ -291,7 +291,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testGetUsers() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		HttpMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -308,7 +308,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFindUsersByLogin() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GetMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
 		method.setQueryString(new NameValuePair[]{
@@ -337,7 +337,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFindUsersByProperty() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GetMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
 		method.setQueryString(new NameValuePair[]{
@@ -358,7 +358,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFindAdminByAuth() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GetMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
 		method.setQueryString(new NameValuePair[]{
@@ -379,7 +379,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		HttpMethod method = createGet("/users/" + id1.getKey(), MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -419,7 +419,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 */
 	@Test	
 	public void testGetRawJsonUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		HttpMethod method = createGet("/users/" + id1.getKey(), MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -436,7 +436,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 */
 	@Test	
 	public void testGetRawXmlUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");	
+		HttpClient c = loginWithCookie("administrator", "openolat");	
 		HttpMethod method = createGet("/users/" + id1.getKey(), MediaType.APPLICATION_XML, true);
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
@@ -448,7 +448,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -490,7 +490,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testCreateUser2() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -529,7 +529,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateUserWithValidationError() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		UserVO vo = new UserVO();
 		vo.setLogin("rest-809");
@@ -562,7 +562,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//delete an authentication token
 		String request = "/users/" + id2.getKey();
@@ -790,7 +790,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//retrieve all groups
 		String request = "/users/" + id1.getKey() + "/groups";
@@ -806,7 +806,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserGroupWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
@@ -827,7 +827,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserGroupInfosWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups").path("infos")

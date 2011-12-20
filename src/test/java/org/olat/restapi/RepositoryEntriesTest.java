@@ -86,7 +86,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testGetEntries() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GetMethod method = createGet("repo/entries", MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -100,7 +100,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetEntriesWithPaging() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.queryParam("start", "0").queryParam("limit", "25").build();
 		
@@ -121,7 +121,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	public void testGetEntry() throws HttpException, IOException {
 		RepositoryEntry re = createRepository("Test GET repo entry");
 		
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GetMethod method = createGet("repo/entries/" + re.getKey(), MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -139,7 +139,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
 		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		Part[] parts = { 
@@ -173,7 +173,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
 		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		Part[] parts = { 
@@ -208,7 +208,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
 		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		Part[] parts = { 
@@ -243,7 +243,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
 		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		Part[] parts = { 
@@ -278,7 +278,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
 		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
 		Part[] parts = { 

@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -47,6 +48,9 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -157,23 +161,25 @@ public class CatalogTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetRoots() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+	public void testGetRoots() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String body = EntityUtils.toString(response.getEntity());
 		List<CatalogEntryVO> vos = parseEntryArray(body);
 		assertNotNull(vos);
 		assertEquals(1, vos.size());//Root-1
+		
+		conn.shutdown();
 	}
 	
 	@Test
 	public void testGetRootsWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
@@ -190,7 +196,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetChild() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -206,7 +212,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetChildren() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children").build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -221,7 +227,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetChildrenWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children")
 				.queryParam("start", "0").queryParam("limit", "2").build();
@@ -240,7 +246,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testPutCategoryJson() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		CatalogEntryVO subEntry = new CatalogEntryVO();
 		subEntry.setName("Sub-entry-1");
@@ -276,7 +282,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testPutCategoryQuery() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
 		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
@@ -310,7 +316,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	public void testPutCatalogEntryJson() throws IOException {
 		RepositoryEntry re = createRepository("put-cat-entry-json", 6458438l);
 		
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		CatalogEntryVO subEntry = new CatalogEntryVO();
 		subEntry.setName("Sub-entry-1");
@@ -351,7 +357,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	public void testPutCatalogEntryQuery() throws IOException {
 		RepositoryEntry re = createRepository("put-cat-entry-query", 6458439l);
 		
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
 		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
@@ -386,7 +392,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUpdateCatalogEntryJson() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		CatalogEntryVO entry = new CatalogEntryVO();
 		entry.setName("Entry-1-b");
@@ -415,7 +421,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUpdateAndMoveCatalogEntryJson() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		CatalogEntryVO entry = new CatalogEntryVO();
 		entry.setName("Entry-2-moved-down");
@@ -447,7 +453,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUpdateCatalogEntryQuery() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
 		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
@@ -472,7 +478,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUpdateCatalogEntryForm() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
 		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
@@ -497,7 +503,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testMoveCatalogEntryForm() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entryToMove1.getKey().toString()).build();
 		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
@@ -522,7 +528,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteCatalogEntry() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
 		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);
@@ -540,7 +546,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetOwners() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).path("owners").build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -561,7 +567,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetOwner() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//admin is owner
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
@@ -586,7 +592,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testAddOwner() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getKey().toString()).build();
@@ -610,7 +616,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testRemoveOwner() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getUser().getKey().toString()).build();
@@ -636,13 +642,12 @@ public class CatalogTest extends OlatJerseyTestCase {
 	public void testBasicSecurityPutCall() throws IOException {
 		HttpClient c = loginWithCookie("rest-catalog-two", "A6B7C8");
 
-		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
+		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
+				.queryParam("name", "Not-sub-entry-3")
+				.queryParam("description", "Not-sub-entry-description-3")
+				.queryParam("type", String.valueOf(CatalogEntry.TYPE_NODE))
+				.build();
 		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[] {
-				new NameValuePair("name", "Not-sub-entry-3"),
-				new NameValuePair("description", "Not-sub-entry-description-3"),
-				new NameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE))
-		});
 
 		int code = c.executeMethod(method);
 		assertEquals(401, code);

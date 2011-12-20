@@ -124,7 +124,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetThreads() throws IOException  {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("threads").build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -139,7 +139,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetThreadsWithPaging() throws IOException  {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("threads")
 				.queryParam("start", "0").queryParam("limit", "2").build();
@@ -156,7 +156,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetThread() throws IOException  {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -171,7 +171,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetThreadWithPaging() throws IOException  {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 				.queryParam("start", "0").queryParam("limit", "2").build();
@@ -188,7 +188,7 @@ public class ForumTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testNewThread() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("threads").queryParam("authorKey", id1.getKey())
 			.queryParam("title", "New thread")
@@ -217,7 +217,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testNewMessage() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
 			.queryParam("authorKey", id1.getKey())
@@ -248,7 +248,7 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetAttachment() throws IOException, URISyntaxException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);

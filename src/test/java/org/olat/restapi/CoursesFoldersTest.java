@@ -90,7 +90,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUploadFile() throws IOException, URISyntaxException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").build();
 		
@@ -117,7 +117,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateFolder() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder").build();
 		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
@@ -132,7 +132,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateFolders() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("NewFolder1").path("NewFolder2").build();
 		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
@@ -159,7 +159,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 			folder.createChildContainer("FolderToDelete");
 		}
 		
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("FolderToDelete").build();
 		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);

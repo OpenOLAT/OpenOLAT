@@ -155,7 +155,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseGroups() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		String request = "/repo/courses/" + course.getResourceableId() + "/groups";
 		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
@@ -172,7 +172,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		String request = "/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey();
 		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -186,7 +186,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testPutCourseGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GroupVO vo = new GroupVO();
 		vo.setName("hello");
@@ -220,7 +220,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUpdateCourseGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GroupVO vo = new GroupVO();
 		vo.setKey(g1.getKey());
@@ -249,7 +249,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteCourseGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		String request = "/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey();
 		DeleteMethod method = createDelete(request, MediaType.APPLICATION_JSON, true);

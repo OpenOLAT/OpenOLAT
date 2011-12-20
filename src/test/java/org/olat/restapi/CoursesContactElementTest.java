@@ -86,7 +86,7 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testBareBoneConfig() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course1).path("contact")
@@ -111,7 +111,7 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFullConfig() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course1).path("contact")

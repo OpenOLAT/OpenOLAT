@@ -86,7 +86,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourses() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		HttpMethod method = createGet("/repo/courses", MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -113,7 +113,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCoursesWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.queryParam("start", "0").queryParam("limit", "1").build();
@@ -130,7 +130,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateEmptyCourse() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 			.queryParam("shortTitle", "course3").queryParam("title", "course3 long name").build();

@@ -97,7 +97,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourse() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		GetMethod method = createGet("/repo/courses/" + course1.getResourceableId(), MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
@@ -110,7 +110,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseRunStructure() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		GetMethod method = createGet("/repo/courses/" + course1.getResourceableId() + "/runstructure", MediaType.APPLICATION_XML, true);
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
@@ -122,7 +122,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseEditorTreeModel() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		GetMethod method = createGet("/repo/courses/" + course1.getResourceableId() + "/editortreemodel", MediaType.APPLICATION_XML, true);
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
@@ -137,7 +137,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		ICourse course = CoursesWebService.createEmptyCourse(admin, "courseToDel", "course to delete", null);
 		DBFactory.getInstance().intermediateCommit();
 		
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		DeleteMethod method = createDelete("/repo/courses/" + course.getResourceableId(), MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
@@ -156,7 +156,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testAddAuthor() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		String uri = "/repo/courses/" + course1.getResourceableId() + "/authors/" + auth0.getKey();
 		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -202,7 +202,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 		
 		//get them
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		String uri = "/repo/courses/" + course1.getResourceableId() + "/authors";
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -239,7 +239,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		//end setup
 		
 		//test
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		String uri = "/repo/courses/" + course1.getResourceableId() + "/authors/" + auth1.getKey();
 		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);

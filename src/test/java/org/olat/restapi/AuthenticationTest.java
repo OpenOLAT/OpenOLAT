@@ -29,9 +29,11 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -43,6 +45,9 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.olat.core.util.StringHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -66,7 +71,7 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testSessionCookieLogin() throws HttpException, IOException {
-		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "olat").build();
+		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "openolat").build();
 		GetMethod method = createGet(uri, MediaType.TEXT_PLAIN, true);
 		HttpClient c = getHttpClient();
 		int code = c.executeMethod(method);
@@ -77,6 +82,23 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 		Cookie[] cookies = c.getState().getCookies();
 		assertNotNull(cookies);
 		assertTrue(cookies.length > 0);
+  }
+	
+	@Test
+	public void testSessionCookieLoginHttpClient4() throws HttpException, IOException {
+		URI uri = UriBuilder.fromUri(getContextURI()).path("auth").path("administrator").queryParam("password", "openolat").build();
+		RestConnection conn = new RestConnection();
+
+		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String hello = EntityUtils.toString(response.getEntity());
+		assertTrue(hello.startsWith("<hello"));
+		assertTrue(hello.endsWith("Hello administrator</hello>"));
+		List<org.apache.http.cookie.Cookie> cookies = conn.getCookieStore().getCookies();
+
+		assertNotNull(cookies);
+		assertFalse(cookies.isEmpty());
   }
 	
 	@Test
@@ -101,7 +123,7 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 	public void testBasicAuthentication() throws HttpException, IOException {
 		//path is protected
 		GetMethod method1 = createGet("/users/version", MediaType.TEXT_PLAIN, false);
-		method1.setRequestHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:olat"));
+		method1.setRequestHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:openolat"));
 		int code1 = getHttpClient().executeMethod(method1);
 		method1.releaseConnection();
 		assertEquals(code1, 200);
@@ -112,7 +134,7 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 	@Test
 	public void testWebStandardAuthentication() throws HttpException, IOException {
 		HttpClient c = getHttpClient();
-		Credentials creds = new UsernamePasswordCredentials("administrator", "olat");
+		Credentials creds = new UsernamePasswordCredentials("administrator", "openolat");
 		c.getState().setCredentials(AuthScope.ANY, creds);
     
 		GetMethod method = createGet("/users/version", MediaType.TEXT_PLAIN, false);

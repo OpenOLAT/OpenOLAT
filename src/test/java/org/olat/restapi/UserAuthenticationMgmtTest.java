@@ -63,7 +63,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetAuthentications() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		GetMethod method = createGet("/users/administrator/auth", MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -89,7 +89,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		}
 		DBFactory.getInstance().commitAndCloseSession();
 		
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 
 		AuthenticationVO vo = new AuthenticationVO();
 		vo.setAuthUsername("administrator");
@@ -124,7 +124,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteAuthentications() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//create an authentication token
 		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();

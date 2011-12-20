@@ -91,7 +91,7 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetFiles() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -105,7 +105,7 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetFilesDeeper() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir").build();
 		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
 		int code = c.executeMethod(method);
@@ -120,7 +120,7 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetFileDeep() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir")
 			.path("3_singlepage.html").build();
 		GetMethod method = createGet(uri, "*/*", true);

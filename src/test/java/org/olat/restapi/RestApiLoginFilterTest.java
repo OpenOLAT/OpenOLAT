@@ -67,7 +67,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testCookieAuthentication() throws HttpException, IOException {
-		HttpClient c = getAuthenticatedCookieBasedClient("administrator", "olat");
+		HttpClient c = getAuthenticatedCookieBasedClient("administrator", "openolat");
 		Cookie[] cookies = c.getState().getCookies();
 		assertNotNull(cookies);
 		assertTrue(cookies.length > 0);
@@ -80,7 +80,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testTokenAuthentication() throws HttpException, IOException {
-		String securityToken = getAuthenticatedTokenBasedClient("administrator", "olat");
+		String securityToken = getAuthenticatedTokenBasedClient("administrator", "openolat");
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 	}
 	
@@ -92,7 +92,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testFollowTokenBasedDiscussion() throws HttpException, IOException {
-		String securityToken = getAuthenticatedTokenBasedClient("administrator", "olat");
+		String securityToken = getAuthenticatedTokenBasedClient("administrator", "openolat");
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		
 		//path is protected
@@ -136,7 +136,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	public void testBasicAuthentication() throws HttpException, IOException {
 		//path is protected
 		GetMethod method1 = createGet("/users/version", MediaType.TEXT_PLAIN, false);
-		method1.setRequestHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:olat"));
+		method1.setRequestHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:openolat"));
 		int code1 = getHttpClient().executeMethod(method1);
 		method1.releaseConnection();
 		assertEquals(code1, 200);
@@ -147,7 +147,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	@Test
 	public void testWebStandardAuthentication() throws HttpException, IOException {
 		HttpClient c = getHttpClient();
-		Credentials creds = new UsernamePasswordCredentials("administrator", "olat");
+		Credentials creds = new UsernamePasswordCredentials("administrator", "openolat");
 		c.getState().setCredentials(AuthScope.ANY, creds);
     
 		GetMethod method = createGet("/users/version", MediaType.TEXT_PLAIN, false);

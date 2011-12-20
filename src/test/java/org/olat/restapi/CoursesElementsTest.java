@@ -86,7 +86,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testCreateCoursePost() throws IOException, URISyntaxException{
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		
 		//create an empty course
@@ -282,7 +282,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateCoursePut() throws IOException, URISyntaxException{
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		
 		//create an empty course
@@ -776,7 +776,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	@Test
 	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePost() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course4").queryParam("title", "course4 long name").build();
@@ -828,7 +828,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	@Test
 	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePostWithFile() throws IOException, URISyntaxException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course5").queryParam("title", "course5 long name").build();

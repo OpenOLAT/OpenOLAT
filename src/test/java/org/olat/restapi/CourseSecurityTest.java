@@ -98,7 +98,7 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testAdminCanEditCourse() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "olat");
+		HttpClient c = loginWithCookie("administrator", "openolat");
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure").build();
