@@ -52,6 +52,7 @@ import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
+import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.tree.GenericTreeModel;
@@ -65,6 +66,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
@@ -76,6 +78,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -84,6 +87,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -115,7 +119,7 @@ import org.olat.user.UserManager;
  * It provides a menu that allows three different access paths to the same data: user centric, group 
  * centric or course node centric.
  */
-public class AssessmentMainController extends MainLayoutBasicController implements Activateable, GenericEventListener {
+public class AssessmentMainController extends MainLayoutBasicController implements Activateable, Activateable2, GenericEventListener {
 	OLog log = Tracing.createLoggerFor(AssessmentMainController.class);
 
 	private static final String CMD_INDEX 			= "cmd.index";
@@ -1217,6 +1221,56 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		if (viewIdentifier != null && viewIdentifier.equals("node-choose")) {
       // jump to state node-choose
 			doNodeChoose(ureq);
+		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry firstEntry = entries.get(0);
+		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
+		Long resId = firstEntry.getOLATResourceable().getResourceableId();
+		if("Identity".equals(type)) {
+			
+			TreeNode userNode = TreeHelper.findNodeByUserObject(CMD_USERFOCUS, menuTree.getTreeModel().getRootNode());
+			if(userNode != null) {
+
+				ICourse course = CourseFactory.loadCourse(ores);
+				if(entries.size() > 1) {
+					ContextEntry secondEntry = entries.get(1);
+					String secondType = secondEntry.getOLATResourceable().getResourceableTypeName();
+					Long secondResId = secondEntry.getOLATResourceable().getResourceableId();
+					if("CourseNode".equals(secondType)) {
+						CourseNode node = course.getRunStructure().getNode(secondResId.toString());
+						currentCourseNode = (AssessableCourseNode) node;
+					}
+				} else {
+					currentCourseNode = null;
+				}
+				
+				mode = MODE_USERFOCUS;
+				identitiesList = getAllIdentitisFromGroupmanagement();
+				doUserChooseWithData(ureq, identitiesList, null, currentCourseNode);
+				menuTree.setSelectedNode(userNode);
+
+				assessedIdentityWrapper = null;	
+				TableDataModel userListModel = userListCtr.getTableDataModel();
+				for(int i=userListModel.getRowCount(); i-->0; ) {
+					Object id = userListModel.getObject(i);
+					if(id instanceof AssessedIdentityWrapper && ((AssessedIdentityWrapper)id).getIdentity().getKey().equals(resId)) {
+						assessedIdentityWrapper = (AssessedIdentityWrapper)id;
+						break;
+					}
+				}
+				
+				if(assessedIdentityWrapper != null) {
+					removeAsListenerAndDispose(assessmentEditController);
+					assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), course, currentCourseNode, assessedIdentityWrapper);
+					listenTo(assessmentEditController);
+					main.setContent(assessmentEditController.getInitialComponent());
+				}
+			}
 		}
 	}
 }

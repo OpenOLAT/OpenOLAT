@@ -973,7 +973,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} 
 	}
 
-	private void launchAssessmentTool(UserRequest ureq, String viewIdentifier) {
+	private Activateable launchAssessmentTool(UserRequest ureq, String viewIdentifier) {
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
 
@@ -983,6 +983,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
 			all.setContent(currentToolCtr.getInitialComponent());
+			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
@@ -992,6 +993,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
 			all.setContent(currentToolCtr.getInitialComponent());
+			return assessmentToolCtr;
 		} else throw new OLATSecurityException("clicked assessment tool in course::" + course.getResourceableId()
 				+ ", but no right to launch it. Username::" + ureq.getIdentity().getName());
 	}
@@ -1438,7 +1440,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if(entries == null || entries.isEmpty()) return;
 		
 		ContextEntry firstEntry = entries.get(0);
-		if("CourseNode".equals(firstEntry.getOLATResourceable().getResourceableTypeName())) {
+		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
+		if("CourseNode".equals(type)) {
 			CourseNode cn = course.getRunStructure().getNode(firstEntry.getOLATResourceable().getResourceableId().toString());
 			
 			// FIXME:fj:b is this needed in some cases?: currentCourseNode = cn;
@@ -1455,6 +1458,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				entries = entries.subList(1, entries.size());
 			}
 			updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
+		} else if ("assessmentTool".equals(type)) {
+			//check the security before, the link is perhaps in the wrong hands
+			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
+				try {
+					Activateable assessmentCtrl = launchAssessmentTool(ureq, null);
+					if(assessmentCtrl instanceof Activateable2) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						((Activateable2)assessmentCtrl).activate(ureq, subEntries, firstEntry.getTransientState());
+					}
+				} catch (OLATSecurityException e) {
+					//the wrong link to the wrong person
+				}
+			}
 		}
 	}
 
