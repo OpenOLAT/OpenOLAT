@@ -50,6 +50,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.olat.core.util.StringHelper;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.OlatJerseyTestCase;
 
 import com.oreilly.servlet.Base64Encoder;
@@ -99,6 +100,7 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 
 		assertNotNull(cookies);
 		assertFalse(cookies.isEmpty());
+		assertNotNull(response.getFirstHeader(RestSecurityHelper.SEC_TOKEN));
   }
 	
 	@Test
