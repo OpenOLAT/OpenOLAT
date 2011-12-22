@@ -4,22 +4,35 @@
 # when you start OLAT with an empty olat.local.properties file it will start with an embedded hsqldb and 
 # the userdata dir will be java.io.tmpdir. 
 #
+# To start, copy this file to olat.local.properties and modify it to fit your needs. Please have a look
+# at the file src/main/resources/serviceconfig/olat.properties to the the full list of configuration 
+# options. 
+#
 ##########
 
 tomcat.id=2
 node.id=2
 generate.index.at.startup=false
-build.identifier=opol71-devLocal
+build.identifier=openolat8-devLocal
 
 guidemo.enabled=true
 
 # runtime application data directory 
-userdata.dir=/home/roman/olatdata/opol_71
+userdata.dir=/home/roman/olatdata/openolat
 # name of the repository root
 folder.root=${userdata.dir}/bcroot
 # temporary workspace for the running application
 temp.dir=${userdata.dir}/tmp
 
+########################################################################
+# Web application container (e.g., Tomcat) settings
+########################################################################
+
+# hosted application fully qualified domain name (e.g., DNS CNAME)
+# omit references to protocol/scheme (e.g., HTTP(S))
+server.domainname=localhost
+# the port on which the container is listening
+server.port=8080
 
 ########################################################################
 # SMTP (mail) settings
@@ -27,15 +40,16 @@ temp.dir=${userdata.dir}/tmp
 
 # mail support can be disabled by leaving the following entry blank or
 # setting it to the keyword 'disabled' (without quotes!)
-smtp.host=speedy.frentix.com
+smtp.host=localhost
 # if required by your local SMTP you may need to provide credentials
 smtp.user=
 smtp.pwd=
-fromemail=admin@frentix.com
-# set this email to a webmaster or admin mail address in your domain
-adminemail=roman.haag@frentix.com
-# set this email to a support mail address in your domain
-supportemail=roman.haag@frentix.com
+# system mails will be sent from this address (from local domain with valid reverse dns):
+fromemail=no-reply@your.domain
+# set this email to a mail address in your domain (used as reply-to address)
+adminemail=webmaster@your.domain
+# set this email to a mail address in your domain (for RS-reports)
+supportemail=${adminemail}
 
 ########################################################################
 # OLAT identity settings
@@ -45,7 +59,7 @@ supportemail=roman.haag@frentix.com
 # ID should be no longer than 10 characters!  This needs to be unique
 # amongst nodes within a cluster, if you are not clustering then you
 # can leave this value as is.
-instance.id=rholat
+instance.id=myopenolat
 
 ########################################################################
 # Database settings
@@ -58,11 +72,11 @@ db.hibernate.ddl.auto=validate
 auto.upgrade.database=false
 
 # the name of the application database
-db.name=opol71
+db.name=openolat
 # the name of the OLAT database user
-db.user=opol71
+db.user=openolat
 # the password of the OLAT database user
-db.pass=opol71
+db.pass=openolat
 # JDBC options (e.g., to set character channel behaviour etc.)
 db.jdbc.options=useUnicode=true&amp;characterEncoding=UTF-8
 
