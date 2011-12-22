@@ -16,13 +16,21 @@ Copyright openolat.org codebase 2011 - 2012:
 OpenOLAT is © by frentix GmbH [http://www.frentix.com], Zurich, Switzerland on behalf of of the
 OpenOLAT open source community [http://www.openolat.org].
 
+OpenOLAT logo and icons
+-----------------------------------------------------------------------
+The OpenOLAT logo and icons if not covered by another licenses mentioned below are released under 
+the Creative Commons Attribution-NoDerivs 2.5 license. 
+German license text  [http://creativecommons.org/licenses/by-nd/2.5/ch/]
+English license text [http://creativecommons.org/licenses/by-nd/2.5/]
+
+
 Contributors openolat.org codebase 2011 - 2012: (in alphabetical order) 
 -----------------------------------------------------------------------
 - frentix GmbH, Switzerland [http://www.frentix.com]
   Michael Enz, Christian Franck, Florian Gnägi, Roman Haag, Stefan Köber, Joël Krähemann, 
   Stéphane Rossé, Kirsten Scherer, Sergio Trentini 
 - BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
-  Stefan Köber, Sven Morgener
+  Armin Blawitzki, Stefan Köber, Sven Morgener
 
 
 Copyright olat.org codebase 1999 - 2011: (in alphabetical order)

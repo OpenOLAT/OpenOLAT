@@ -41,6 +41,9 @@ Preconditions:
   6.4 Double click the newly created server and increase the timeout to something like 180s
   6.5 Open the launch configuration of the server, select the tab Arguments and add these arguments to the VM arguments:
       -XX:MaxPermSize=128m -Xms128m -Xmx384m -Djava.awt.headless=true
+  6.6 Open the generated server.xml file and manually set the following parameters: 
+      In the "Context" element set parameter reloadable="false" 
+      In all "Connector" elements set paramter URIEncoding="UTF-8"
 
 7. In Eclipse: start the server
 

@@ -184,11 +184,11 @@ class ExampleCustomFlexiCellRenderer extends CustomFlexiCellRenderer {
 		if (cellValue instanceof Boolean) {
 			if ( ((Boolean)cellValue).booleanValue() ) {
 				target.append("<img src=\"");
-				Renderer.renderStaticURI(target, "images/olat/olatlogo16x16.png");
+				Renderer.renderStaticURI(target, "images/openolat/openolat_logo_16.png");
 				target.append("\" alt=\"An image within a table...\" />");				
 			} else {
 				target.append("<img src=\"");
-				Renderer.renderStaticURI(target, "images/olat/bug.png");
+				Renderer.renderStaticURI(target, "images/openolat/bug.png");
 				target.append("\" alt=\"An image within a table...\" />");				
 			}
 		}

@@ -97,7 +97,7 @@ class ImageCellRenderer implements CustomCellRenderer {
 
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		sb.append("<img src=\"");
-		Renderer.renderStaticURI(sb, "images/olat/olatlogo16x16.png");
+		Renderer.renderStaticURI(sb, "images/openolat/openolat_logo_16.png");
 		sb.append("\" alt=\"An image within a table...\" />");
 	}
 	

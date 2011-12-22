@@ -84,8 +84,8 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 
 		// create and add an image to the feed
 		SyndImage image = new SyndImageImpl();
-		image.setUrl(Settings.createServerURI() + StaticMediaDispatcher.createStaticURIFor("images/olat/olatlogo32x32.png"));
-		image.setTitle("OLAT - Online Learning And Training");
+		image.setUrl(Settings.createServerURI() + StaticMediaDispatcher.createStaticURIFor("images/openolat/openolat_logo_32.png"));
+		image.setTitle("OpenOLAT - infinite learning");
 		image.setLink(getLink());
 		setImage(image);
 
