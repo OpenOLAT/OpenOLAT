@@ -47,7 +47,7 @@ Preconditions:
 
 
 *******************************
-Troubleshotting
+Troubleshooting
 *******************************
 
 A. OutOfMemoryException: in Eclipse: setup VM arguments by clicking on Run > Run Configurations > Arguments > VM Arguments and pasting:
