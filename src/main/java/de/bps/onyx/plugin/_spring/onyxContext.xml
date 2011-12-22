@@ -46,6 +46,7 @@
 <bean id="updateQtiResultsTriggerOnyx" class="org.springframework.scheduling.quartz.CronTriggerBean">
     <property name="jobDetail" ref="updateOnyxResults.${onyx.update.results.job}" />
     <property name="cronExpression" value="0 0 2 * * ?"/><!-- 2am, daily -->
+    <property name="startDelay" value="90000" />
 </bean>
 
 <bean id="updateOnyxResults.enabled" class="org.springframework.scheduling.quartz.JobDetailBean">

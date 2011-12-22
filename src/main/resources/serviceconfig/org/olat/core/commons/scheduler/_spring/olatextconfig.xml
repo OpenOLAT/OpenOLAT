@@ -45,6 +45,7 @@ How to add a new job:
             <ref bean="invitationCleanupTrigger" />
             <ref bean="epDeadlineTrigger" />
             <ref bean="instantMessagingSyncTrigger"/>
+            <ref bean="updateQtiResultsTriggerOnyx"/>
         </list>
     </property>
 </bean>
