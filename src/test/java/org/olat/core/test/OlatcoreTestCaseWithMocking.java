@@ -26,6 +26,7 @@
 package org.olat.core.test;
 
 import org.junit.runner.RunWith;
+import org.olat.test.MockServletContextWebContextLoader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

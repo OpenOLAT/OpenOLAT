@@ -25,13 +25,14 @@
 */
 package org.olat.core.commons.scheduler;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Test;
-import org.olat.core.test.MockServletContextWebContextLoader;
+import org.olat.test.MockServletContextWebContextLoader;
 import org.springframework.scheduling.quartz.JobDetailBean;
 import org.springframework.scheduling.quartz.SimpleTriggerBean;
 import org.springframework.test.context.ContextConfiguration;
