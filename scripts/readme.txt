@@ -1,0 +1,1 @@
+This directory contains scripts useful for deploying, managing or running openolat.
