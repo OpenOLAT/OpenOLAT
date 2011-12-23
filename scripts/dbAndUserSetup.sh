@@ -1,7 +1,7 @@
 #!/bin/bash
 #############################################################################
 # Initial database setup script: will generate db user and an olat database #
-# 11. July 2004 Florian Gnägi                                               #
+# 11. July 2004 Florian Gnaegi                                              #
 #############################################################################
 
 echo "This script will create a database user and a database for OLAT on your MySQL server. Do you want to continue? (y|n)"
