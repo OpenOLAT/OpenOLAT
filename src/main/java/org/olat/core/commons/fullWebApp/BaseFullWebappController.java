@@ -834,7 +834,12 @@ public class BaseFullWebappController extends BasicController implements Generic
 	public void addDTab(DTab dt) {
 		// FIXME:fj:restrict to say 7 elements
 		DTab old = getDTab(dt.getOLATResourceable());
-		if (old != null) throw new AssertException("dtabs already contained: " + old);
+		if (old != null) {
+			//do make a red screen for that
+			//throw new AssertException("dtabs already contained: " + old);
+			getWindowControl().getWindowBackOffice().getWindow().setAttribute("BUSPATH", dt.getWindowControl());
+			return;
+		}
 		// add to tabs list
 		synchronized (dtabs) {
 			// make dtabs and dtabsControllers access synchronized
