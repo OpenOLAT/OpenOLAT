@@ -1,0 +1,213 @@
+/*
+*  =================================================
+*  
+*   MODAL WINDOWs, DIALOGS, WIZARD Rules for the OpenOLAT theme
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Dez. 2011
+*
+*	also read themes.README!
+*
+*
+*  =================================================
+*/
+.b_layeredPanel {
+}
+
+/** adjust modal-size according to b_layer **/ 
+div.b_layer_1 div.b_modal_area {width: 82%; margin: 9%;}
+div.b_layer_2 div.b_modal_area {width: 76%; margin: 12%;}
+div.b_layer_3 div.b_modal_area {width: 70%; margin: 15%;}
+div.b_layer_5 div.b_modal_area {width: 64%; margin: 18%;}
+
+div.b_modal_area {
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:80%;
+	margin: 10%;
+	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+}
+/* MODAL OVERLAY: transparent background that covers the whole content */
+div.b_modal_overlay { 
+	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;
+}	
+/* modal overlay color */
+div.b_modal_overlay, div.ext-el-mask { background: #fff; -moz-opacity: 0.75; opacity:0.75; filter: alpha(opacity=75);} 
+
+
+.b_floatscrollbox {
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
+
+div.b_window {
+	text-align: left;
+	border: 1px solid rgba(0,0,0,0.2);
+	background:#fff;
+	.b_window_header_wrapper {
+		padding:2px 8px 0px 8px;
+	}
+	div.b_window_header {
+		position: relative;
+		border-bottom:1px solid #eee;
+	}
+	div.b_window_header_title { 
+		min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px;
+		 
+		a.b_link_close { top:4px; right: 4px; position:absolute;  min-height:16px; min-width:16px;background:transparent url('images/close.png') no-repeat center center; display:inline-block;}
+		a.b_link_close:hover { top:4px; right: 4px; }
+		strong { font-weight: bold; }	
+	}
+	
+	div.b_window_content_wrapper {  clear:both; width:auto; padding: 0 4px 0 4px; }
+	div.b_window_content { padding: 1em; }
+	div.b_window_content_inner { min-height: 200px; position: relative; }	
+	div.b_window_footer_wrapper { height: 4px;   }
+}
+
+
+
+
+/* modal callout windows. Patch min length issue in Ext QuickTip */
+div.b_callout_content { max-width: 60em; overflow: hidden;}
+div.x-tip-tc, div.x-tip-bc { background-repeat: repeat ! important;}
+div.x-tip-body p{margin-bottom:0px;}
+div.x-tip-mc {background: #e9f2ff ! important;}
+/* ajax busy icon*/
+body.b_ajax_busy { cursor: wait; }
+div.b_ajax_busy {background: url(../images/brasato/ajax-loader.gif) no-repeat; position: absolute; left:50% ; top: 10px; width:28px; height: 28px; z-index:5001;}
+	
+	
+/* DIALOG */
+div.b_window.b_dialogbox { 
+	
+}
+
+div.b_msg_dialog { 
+	padding: 10px 10px 10px 50px; 
+	min-height: 32px; 
+	background: url(../images/brasato/icon_question.png) no-repeat 10px 10px;
+	.b_msg_title { font-weight: bold; }
+	.b_msg_content { }
+}
+
+/* sticky info (admins can create stick-messages that will show for all users) */
+#b_msg_sticky { 
+	clear:both; padding: 10px 10px 10px 50px; min-height: 32px; background: #ebcccc url(images/icon_warning_32.png) no-repeat 10px 10px; border-bottom: 1px #ccc dotted;  border-top: 1px #ccc dotted;
+}
+
+/* info message ( slide-in, top) */
+div.b_msg-div { 
+	left: 35%; position:absolute; top:10px; width:30%; z-index:20000;
+	border: 1px solid #ccc;
+	background: #FAFAFA;
+	@include o-border-radius(4px);
+	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	._msg_info_content {
+	
+	}
+	.b_msg_info_winicon {
+		background: transparent url(images/icon_info_32.png) no-repeat 10px center;
+	}
+}
+
+div.b_msg_info_content { padding: 10px 10px 10px 50px; }
+
+/* warn message (ext-dialog) */
+div.b_msg_warn_winicon { background: url(images/icon_warning_32.png) no-repeat }
+
+/* error message (ext-dialog) */
+div.b_msg_error_winicon { background: url(images/icon_error_32.png) no-repeat }
+
+/* "info"-page */
+#b_msg_info { 
+	padding: 10px 10px 10px 50px; 
+	min-height: 32px; background: url(images/icon_info_32.png) no-repeat 10px 10px;
+	.b_msg_title { font-weight: bold; }
+}
+
+/* "info-message" on login screen */
+.o_infomessage_wrapper {
+	border: 1px solid #ccc;
+	background:#FAFAFA;
+	.o_infomessage{
+		padding: 10px 10px 10px 50px;
+		text-align: left;
+		background: url(images/icon_warning_32.png) no-repeat 10px 10px;
+		.o_infomessage_inner {
+		
+		}
+	}
+}
+
+/* OPEN / CLOSE BOX TOGGLER */
+a.b_togglebox_closed {background: url(images/toggle-small-expand.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
+a.b_togglebox_opened {background: url(images/toggle-small.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
+div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAAA; background: #fff; }
+	
+
+/** ----------------- WIZARD ----------------- **/
+	div.b_wizard {
+		div.b_wizard_header_wrapper { background:#fff; }
+		div.b_wizard_header {background:#fff; position: relative; }
+	 	div.b_wizard_header_title {
+	 		background: #fff; min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px; color: #4F576A;
+	 		a.b_link_close { top:4px; right: 4px; background: url(../images/brasato/close.png); background-repeat: no-repeat; } 
+	 		a.b_link_close:hover { top:4px; right: 4px; background: url(../images/brasato/close_over.png); background-repeat: no-repeat; }
+	 		strong { font-weight: bold; }	
+	 	}
+	 	
+	 	div.b_wizard_steps_wrapper {clear:both; width:auto; padding: 0 4px 0 4px; background: #fff;}
+	 	div.b_wizard_steps_content { background: #fff  }
+	 	
+	 	div.b_wizard_steps_list {
+	 		width: 20em; 
+	 		padding: 0; 
+	 		color: #4F576A;
+	 		
+	 		ol { list-style-type: decimal; z-index: 14; font-size: 95%; padding: 1em 5px 5px;}
+	 		li { line-height: 1.5em; white-space: normal;}
+	 		li.b_wizard_steps_current { font-weight: bold; }	
+	 		li a { color: #4F576A;}	
+	 		li a:hover { color: #4F576A; background: transparent; text-decoration: underline}
+	 		li .b_disabled { color: #4F576A; border: 0; background: transparent; padding:0; margin:0; white-space: normal; font-style: italic;}
+	 		li.b_wizard_steps_current .b_disabled { font-style: normal; }		
+	 	}
+	 	
+	 	div.b_wizard_steps_current { } 
+	 	div.b_wizard_steps_current_inner { border-bottom: 1px solid #fff;  padding: 1em;  }		
+	 	div.b_wizard_steps_current_content {min-height: 300px; position: relative; }		
+	 	
+	 	div.b_wizard_footer_wrapper { background:#fff;}
+	 	div.b_wizard_footer div.b_button_group { text-align: left; padding: 0.5em 1em 0.5em 20em; margin: 0; }	
+	 }
+
+	span.b_wizard_button_prev:before, a.b_wizard_button_prev span:before { content: "< ";}
+	span.b_wizard_button_next:after, a.b_wizard_button_next span:after { content: " >";}
+	a.b_wizard_button_finish, span.b_wizard_button_finish {margin-left: 3em;}
+	a.b_wizard_button_cancel, span.b_wizard_button_cancel { margin-left: 3em; }
+	.b_wizard_table_changedcell { font-style: italic; font-weight: bold; background: url(../images/brasato/new.png) no-repeat; padding-left: 18px;}
+	
+	/* OLD WIZARD */
+	div.b_legacy_wizard { }
+	div.b_legacy_wizard_steps { float: right; display:inline; }
+	/* the following classes are used together with b_legacy_wizard_step_icon */
+	.b_legacy_wizard_step_a1 {	background-image: url(../images/brasato/wizard/1a.png); }
+	.b_legacy_wizard_step_a2 {	background-image: url(../images/brasato/wizard/2a.png);}
+	.b_legacy_wizard_step_a3 {	background-image: url(../images/brasato/wizard/3a.png);}
+	.b_legacy_wizard_step_a4 {	background-image: url(../images/brasato/wizard/4a.png);}
+	.b_legacy_wizard_step_a5 {	background-image: url(../images/brasato/wizard/5a.png);}
+	.b_legacy_wizard_step_a6 {	background-image: url(../images/brasato/wizard/6a.png);}
+	.b_legacy_wizard_step_a7 {	background-image: url(../images/brasato/wizard/7a.png);}
+	.b_legacy_wizard_step_a8 {	background-image: url(../images/brasato/wizard/8a.png);}
+	.b_legacy_wizard_step_a9 {	background-image: url(../images/brasato/wizard/9a.png);}
+	.b_legacy_wizard_step_p1 {	background-image: url(../images/brasato/wizard/1p.png);}
+	.b_legacy_wizard_step_p2 {	background-image: url(../images/brasato/wizard/2p.png);}
+	.b_legacy_wizard_step_p3 {	background-image: url(../images/brasato/wizard/3p.png);}
+	.b_legacy_wizard_step_p4 {	background-image: url(../images/brasato/wizard/4p.png);}
+	.b_legacy_wizard_step_p5 {	background-image: url(../images/brasato/wizard/5p.png);}
+	.b_legacy_wizard_step_p6 {	background-image: url(../images/brasato/wizard/6p.png);}
+	.b_legacy_wizard_step_p7 {	background-image: url(../images/brasato/wizard/7p.png);}
+	.b_legacy_wizard_step_p8 {	background-image: url(../images/brasato/wizard/8p.png);}
+	.b_legacy_wizard_step_p9 {	background-image: url(../images/brasato/wizard/9p.png);}

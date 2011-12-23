@@ -236,6 +236,7 @@ public class DevelopmentController extends BasicController {
 			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
 			chosenMode = debugLink;
+			updateUI();
 		} else if (source == showComponentTree) {
 			if (treeShown) {
 				// hide component tree
@@ -289,12 +290,12 @@ public class DevelopmentController extends BasicController {
 	private void updateUI() {
 		// update mode.
 		for (Link li : modes) {
-			li.setCustomEnabledLinkCSS("o_main_button");
+			li.setCustomEnabledLinkCSS("b_button b_small");
 			li.setEnabled(true);
 		}
 		//(chosenMode.setCustomEnabledLinkCSS("o_main_button_sel");
 		chosenMode.setEnabled(false);
-		chosenMode.setCustomDisabledLinkCSS("o_dbg_button_sel");
+		chosenMode.setCustomDisabledLinkCSS("b_button b_small");
 		myContent.contextPut("compdump", "");
 		
 	}

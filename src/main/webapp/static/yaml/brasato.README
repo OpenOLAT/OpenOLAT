@@ -29,3 +29,5 @@ Adjustments made for the Brasato framework
 In Brasato, all YAML CSS classes and ID selectors have a "b_" prefix. 
 Instead of #page we use #b_page. This makes sure that we have no 
 conflicts with classes that are defined somewhere else. 
+
+note:  if updating yaml, use brasatoAddPrefix.sh to add "b_" prefixes to the yaml files

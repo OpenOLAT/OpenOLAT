@@ -67,10 +67,16 @@
 	$r.render("main")
 ## END MAIN
 
+<a id="b_toplink" href="#b_top" onclick="{Effect.ScrollTo('b_top'); return false;}" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
+</div>
+## ---- END #b_page
+</div>
+## ---- END #b_page_wrapper
+
+
 ## ----- START #b_footer ----------
 <div id="b_footer" class="b_clearfix">
 	<div class="b_floatbox">
-		<a id="b_toplink" href="#b_top" onclick="{Effect.ScrollTo('b_top'); return false;}" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
 	#if($r.available("footerComponent"))
 		$r.render("footerComponent")
 	#end
@@ -79,15 +85,7 @@
 ## ---- END #b_footer ---
 
 </div>
-## ---- END #b_page
-
-## special classes for border styling, see YAML book chapter 4.5.7 for more information
-<div id="b_border-bottom">
-	<div id="b_edge-lb"></div>
-	<div id="b_edge-rb"></div>
-</div>
-</div></div>
-## ---- END #b_page_wrapper and #b_page_margins
+## ---- END  #b_page_margins
 
 ## ---- START #b_messages
 ## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 

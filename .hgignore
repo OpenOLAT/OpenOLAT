@@ -64,3 +64,6 @@ syntax: regexp
 ^\.externalToolBuilders$
 syntax: regexp
 ^olat\.local\.properties$
+syntax: regexp
+\.sass-cache$
+

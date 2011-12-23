@@ -145,7 +145,7 @@ $r.render("pollperiodPanel")
 
 #if ($showJSON)
 ## COMMENTED out for browser-history reasons
-JSON <iframe src="javascript:false;document.write('');" style="height:300px; width:90%" name="$iframeName" ></iframe>
+JSON <iframe src="javascript:false;document.write('');"  name="$iframeName" class="o_debug_json" ></iframe>
 #else
 ## for safari: we cannot use display:none which would be the obvious choice here
 <div id="oaawrp" style="visibility:hidden;width:0px;height:0px">

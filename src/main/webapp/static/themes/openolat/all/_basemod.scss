@@ -1,0 +1,489 @@
+/*
+*  =================================================
+*  
+*   basemod rules for OpenOLAT 8
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*	also read themes.README!
+*
+*   (as of yaml compliance, contains css rules for
+*   positioning and sizing elements) 
+*   
+*   this file is included in layout.scss
+*   it is not compiled to a separate css-file...  
+*
+*  =================================================
+*/
+@media all {
+
+/** ----------------- MAIN LAYOUT ----------------- **/
+/** 
+   * (en) Forcing vertical scrollbars in IE8, Firefox, Webkit & Opera 
+   * (de) Erzwingen vertikaler Scrollbalken in IE8, Firefox, Webkit & Opera 
+   *
+   * @workaround
+   * @affected IE8, FF, Webkit, Opera
+   * @css-for all
+   * @valid CSS3
+   */
+body { 
+	overflow-y:scroll; 
+	background:#ECECEC url('images/sky.png') repeat-x left 88px;
+}
+#b_page_margins {
+	min-width:740px;
+	max-width:1324px;
+	margin:0 auto;
+	width:100%;
+	height:100%;
+}
+#b_page_wrapper {
+	
+
+//	@include o-border-radius(6px);
+	border-bottom: 1px solid lightGrey;
+}
+#b_main {
+	background:#fff;
+	clear:both;
+	@include o-box-shadow(0,0,14px,#D3D3D3);
+}
+#b_page{
+
+	// the "to-top"-link
+	a#b_toplink {
+		position: absolute;
+		bottom: 1em;
+		right: 1em;
+		background: transparent url(images/arrow_up.png) 0 50% no-repeat;
+		padding-left: 14px;
+		z-index: 5;
+	}
+}
+
+#b_header, #b_page,#b_col1_content, #b_col2_content, #b_col3_content,#b_col3_content_inner {
+	position: relative;
+}
+#b_col1 {
+	//prevent menu-tree from overlapping into content-area
+	overflow: hidden;
+}
+#b_col1_content {padding:1em 10px 1em 0px;}
+
+#b_col3 {
+	border-left: 1px #DDD dotted;
+	border-right: 1px #DDD dotted;
+}
+#b_col3_content {
+	min-height: 450px;
+	padding: 20px 20px 30px 20px;
+}
+
+#b_col2_content {
+	overflow:hidden;
+	padding:1em 0;
+}
+
+// hide right margin+border if no right-column (col2)
+.b_hidecol2 #b_col3 {
+	margin-right: 0 ! important;
+	border-right: 0;
+}
+// hide left margin+border if no left-column (col1)
+.b_hidecol1 #b_col3 {
+	margin-left: 0 ! important;
+	border-left: 0;
+}
+
+
+.b_c15r,.b_c20r,.b_c80r,.b_c85r{float:right;margin-left:-5px;}
+.b_c15l,.b_c15r{width:15%}
+.b_c20l,.b_c20r{width:20%}
+.b_c80l,.b_c80r{width:80%}
+.b_c85l,.b_c85r{width:85%}
+.b_subcolumns_oldgecko,.b_c20l,.b_c15l,.b_c80l,.b_c85l{float:left}
+
+
+
+
+/** ----------------- HEADER AND TOP NAVIGATION ----------------- **/
+#b_header {
+	height: auto;
+	min-height:30px;
+	position:relative;
+	//background:transparent url('images/openolat_logo_header.png') no-repeat 20px 20px;
+	
+	/* the top-navigation */
+	#b_topnav {
+		position:absolute;
+		right:0px;
+		top:0px;
+		padding:4px 15px 0px 0px;
+		ul {margin:0;}
+		#o_topnav_search input {
+			line-height: 1.3em;
+			margin: 0;
+			width: 10em;
+		}
+		#o_topnav_printview a {
+			background: url(images/printer.png) no-repeat top right;
+			padding: 2px 20px 2px 0;
+			margin: 0;
+		}
+		#o_topnav_logout a {
+			background: url('images/control/control-power.png') no-repeat top right;
+			padding: 2px 20px 2px 0;
+			margin: 0;
+			font-weight: bold;
+		}
+
+		li {
+			float:left;
+			list-style: none;
+			div.b_form_element_wrapper.b_form_horizontal {margin:0;}
+		}
+	}
+}
+
+
+/** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
+#b_nav_main {
+	float: left;
+	ul {
+		padding-left:40px;
+		margin:0;
+		//@include o-box-shadow(0,0,14px,#D3D3D3);
+		
+		li { 
+			float:left;
+			position:relative;
+			list-style: none;
+			margin:0px;
+			padding: 4px 3px 4px 12px;
+			margin-right:2px;
+			a {
+				/* "bloat" the links (better for touch) */
+				padding: 4px 12px 4px 3px; 
+			}
+			a:hover { text-decoration: none; }
+			
+			@include o-border-radius-all(6px,6px,0,0);
+			background: #fff;
+			background: rgba(255,255,255,0.5);
+			
+			//active
+			&.b_nav_active,&:hover {
+				a.b_nav_tab_close { background-image: url(images/cross_small_trimmed_blue.png); }
+				@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
+				background:#fff;
+			}
+			&.b_nav_active a {
+			}
+			
+			/* -- SITES ( home, users, groups, etc. ) -- */
+			&.b_nav_site { 
+				//border-right:1px solid #ccc;
+				
+				/** sites icons **/
+				> div {
+					padding-left: 16px;
+					background-repeat: no-repeat;
+					background-position: 0% 50%;		
+					background-image: url('images/application.png');		
+				}
+				
+				&.o_site_home > div { background-image: url('images/home.png'); }
+				&.o_site_admin > div { background-image: url('images/wrench-screwdriver.png'); }
+				&.o_site_useradmin > div { background-image: url('images/user_conf.png'); }
+				&.o_site_groupsmanagement > div { background-image: url('images/users_conf.png'); }
+				&.o_site_repository > div { background-image: url('images/books-stack.png'); }
+				&.o_site_groups > div { background-image: url('images/users.png'); }
+				&.site_demo_icon > div { background-image: url('images/information-white.png');  }
+				&.f_site_library > div { background-image: url('images/library.png'); }
+				&.o_site_guidemo div { background-image: url('images/light-bulb.png') }
+				
+				&.b_resource_GroupInfoMainController div { background-image: url(images/users.png) }
+	
+			}
+			
+			/* -- TABS ( courses, wiki, etc.) -- */
+			&.b_nav_tab {
+				margin-right:4px;
+				a.b_nav_tab_close { 
+					position: absolute; top: 3px; right: 4px;	width: 13px; height: 13px; line-height: 0;	padding: 0; margin: 0; 
+					background: transparent url(images/cross_small_trimmed_grey.png) no-repeat right top;
+				}
+			}
+			
+			/* -- THE SPACER -- */
+			&#b_nav_spacer {
+				background:none;
+				border:none;
+				width:20px;
+				height:1px;
+			}
+			
+		}//end li
+	}//end ul
+}
+	
+	
+
+/** ----------------- SUB NAVIGATION (TREE) ----------------- **/
+
+/* note:  the markup will be the one from OLATpro, has to be merged yet */
+div.b_tree {
+	font-size: 100%;
+	padding: 0;
+	
+	ul { 
+		position: relative;
+		padding: 0;
+		margin: 0 0 0 1em;
+		list-style: none; 
+		white-space: nowrap;
+		
+		li {
+			position:relative;
+			background:transparent;
+			margin-left:0;
+			padding-left:0;
+			
+			// a tree element with icon
+			a.b_tree_icon {padding-left: 20px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}	
+			
+			a {
+				color:$basegray;
+			}
+			a.b_tree_l1 {
+				padding-left:16px;
+			}
+			
+			.b_tree_oc_l1 {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				z-index: 9;
+			}
+
+			/* selected, hovered, active <a> tag */
+			a:focus, a:hover { color: $basecolor; background-color: white; text-decoration:underline; }	
+			a.b_tree_selected,a:active { color: $basecolor; background-color: white; text-decoration:none; }	
+			li a.b_tree_selected_parents,a.b_tree_l0,strong { color: $basecolor; font-weight: bold; }
+			
+			
+			/*  icon positioning */
+			.b_tree_oc_l1  { position:absolute; top:0px; left:1px; z-index:9; }
+			.b_tree_oc_l2  { position:absolute; top:0px; left:11px; z-index:9; }
+			.b_tree_oc_l3  { position:absolute; top:0px; left:21px; z-index:9; }
+			.b_tree_oc_l4  { position:absolute; top:0px; left:31px; z-index:9; }
+			.b_tree_oc_l5  { position:absolute; top:0px; left:41px; z-index:9; }
+			.b_tree_oc_l6  { position:absolute; top:0px; left:51px; z-index:9; }
+			.b_tree_oc_l7  { position:absolute; top:0px; left:61px; z-index:9; }
+			.b_tree_oc_l8  { position:absolute; top:0px; left:71px; z-index:9; }
+			.b_tree_oc_l9  { position:absolute; top:0px; left:81px; z-index:9; }
+			.b_tree_oc_l10 { position:absolute; top:0px; left:91px; z-index:9; }
+			.b_tree_oc_l11 { position:absolute; top:0px; left:101px; z-index:9; }	
+			
+			
+			a.b_tree_l0  { padding-left: 5px; }
+			a.b_tree_l1  { padding-left: 15px; }
+			a.b_tree_l2  { padding-left: 25px; }
+			a.b_tree_l3  { padding-left: 35px; }
+			a.b_tree_l4  { padding-left: 45px; }
+			a.b_tree_l5  { padding-left: 55px; }
+			a.b_tree_l6  { padding-left: 65px; }
+			a.b_tree_l7  { padding-left: 75px; }
+			a.b_tree_l8  { padding-left: 85px; }
+			a.b_tree_l9  { padding-left: 95px; }
+			a.b_tree_l10 { padding-left: 105px; }
+			a.b_tree_l11 { padding-left: 115px; }
+			
+			
+			/*   decorators in tree (e.g. course-editor ) */
+			span.b_tree_icon_decorator {
+				width: 12px;
+				height: 12px;
+				float: right;
+				display: inline;
+				position: static;
+				background-repeat:no-repeat;
+			}
+			
+		} // end li
+		
+		
+		/* link to select the item with icon */
+		&.b_tree_l0  a.b_tree_icon { padding-left:20px;  background-position:2px 50%; }
+		&.b_tree_l1  a.b_tree_icon { padding-left:30px;  background-position:12px 50%; }
+		&.b_tree_l2  a.b_tree_icon { padding-left:40px;  background-position:22px 50%; }
+		&.b_tree_l3  a.b_tree_icon { padding-left:50px;  background-position:32px 50%; }
+		&.b_tree_l4  a.b_tree_icon { padding-left:60px;  background-position:42px 50%; }
+		&.b_tree_l5  a.b_tree_icon { padding-left:70px;  background-position:52px 50%; }
+		&.b_tree_l6  a.b_tree_icon { padding-left:80px; background-position:62px 50%; }
+		&.b_tree_l7  a.b_tree_icon { padding-left:90px; background-position:72px 50%; }
+		&.b_tree_l8  a.b_tree_icon { padding-left:100px; background-position:82px 50%; }
+		&.b_tree_l9  a.b_tree_icon { padding-left:110px; background-position:92px 50%; }
+		&.b_tree_l10 a.b_tree_icon { padding-left:120px; background-position:102px 50%; }
+		&.b_tree_l11 a.b_tree_icon { padding-left:130px; background-position:112px 50%; }
+	
+	}// end ul
+	
+	
+	/* the open/close node icons */
+	a.b_tree_level_close span { background: url('images/toggle-small.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_open span { background: url('images/toggle-small-expand.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
+	
+}// end b_tree
+
+
+// TODO : strentini, what's this ?
+/* SELECTION TREE */ 
+div.b_selectiontree div.b_selectiontree_item:hover { background-color: #DDE9F6;}
+	
+
+/** ----------------- FOOTER ----------------- **/
+
+#b_footer {
+	color: #9D9D9D;
+	padding:8px 20px;
+	margin-top:12px;
+	.b_floatbox {
+		padding-top:8px;
+		border-top:1px solid #ddd;
+	}
+}
+
+
+/** ------------------ COURSE EDITOR --------------- **/
+#o_course_editor_errorbox {
+	font-size: 90%;
+	padding: 3px 2px 2px 25px;
+	margin: 0 0 1em 0;
+}
+div.o_courseeditor_legend { 
+	margin-top: 3em;
+	strong { font-weight: bold; }
+	div { top: 0; left: 0; padding-left: 12px; background-repeat: no-repeat; background-position: 0 50%; }
+}
+	
+
+
+
+/* --------------- MENU TOOLBAR & BREADCRUMBS ------------ **/
+	
+#b_main.b_menu_toolbar #b_col1_content { padding-top: 0; padding-right: 0; }
+#b_main.b_menu_toolbar #b_col3_content { padding:0; }
+div.b_menu_toolbar { 
+	@include o-gradient2(#f9f9f9,#d0d0d0);
+	border-bottom: 1px solid #7D7D7D; 
+	padding: 5px 5px 2px 0;
+}
+	
+/* breadcrumbs */
+div.b_breadcumb {}
+div.b_breadcumb_path { 
+	padding: 0; margin: 0; float:left; display: inline; background: url(../images/brasato/bread-crumb-bg.png) repeat top;
+	ul { 
+		padding: 0; margin: 0; list-style: none; float:left;  display: inline; background: url(../images/brasato/bread-crumb-last.png) no-repeat top right;
+		li { padding: 0 0 0 10px; margin: 0; list-style: none; float:left;  display: inline; background: url(../images/brasato/bread-crumb-separator.png) no-repeat top left;}
+		li.b_first { background: url(../images/brasato/bread-crumb-home.png) no-repeat top left; padding-left: 25px;}
+		li a { color: #464444; }
+		li span.b_disabled { color: #000; padding: 0 10px 0 0; margin: 0;}
+	}
+}
+div.b_breadcumb_content { clear: both;  margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;}
+	
+	
+	
+
+/** ------------------ CATALOG ------------------------ **/
+
+div.o_catalog {
+	 div.o_catalog_title {
+		display: none; //hide title
+	 }
+	div.o_catalog_nav {
+		font-size: 95%;
+		padding: 1px 0 1px 20px;
+		border-bottom: 1px solid #EEE;
+		background: url(images/folder_open.png) 0 50% no-repeat;
+	}
+	div.o_catalog_links {
+		margin-top: 1em;
+		padding-top: 1em;
+		border-top: 1px solid #EEE;
+	}
+}
+ 
+
+/* FLOTING STYLES */
+	.b_float_left { float: left; display:inline; margin-right: 1em; margin-bottom: 0.15em;  }
+	.b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
+	.b_center { text-align:center; margin: 0.5em auto }
+	/* CLEAR container: additonal to b_floatbox */
+	.b_floatscrollbox { overflow-x: auto; overflow-y: hidden;}
+	.b_overflowscrollbox { overflow: auto;}
+
+
+div.o_home_rsslink {
+	clear: both;
+	float: right;
+	display: inline;
+	margin: 10px 0;
+}
+#o_macartney_open {
+	width: 20px;
+	bottom: 0;
+	left: 0;
+	height: 16px;
+	background: white url(images/magnifier-zoom.png) no-repeat 4px 0;
+}
+#o_macartney_large {
+	position: fixed;
+	top: 10%;
+	left: 10%;
+	width: 80%;
+	z-index: 10;
+	border: 1px solid black;
+	background: white;
+	padding: 5px;
+}
+#o_macartney_large img { width: 100%; }
+#o_macartney_close {position: absolute; width: 16px; top: 0; right: 0; height: 16px; border-left: 1px solid #000; border-bottom: 1px solid #000; background: #fff url(images/close.png)}
+	
+	
+	
+/** -------------------- DEVELOPMENT TOOL / DEBUG ---------------- **/
+	a.b_dev { position: absolute; left: 0; top: 0; z-index:4000; background: red url('images/bug.png') no-repeat; width: 16px; height: 16px; border: 1px solid #000;}
+	#b_devcon_main { background-color: #ccddff; position:absolute; z-index:4000; top:10px; left: 5%; width:90%; text-align: left; border: 1px solid #000}
+	#b_devcon_handle { cursor:move; background: blue url(../images/brasato/bug.png) no-repeat 4px 50%; line-height: 2em; padding-left: 24px; color:white; }
+	a#b_devcon_handle_collapse {cursor:pointer; background: url(../images/brasato/collapse.gif) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+	a#b_devcon_handle_expand {cursor:pointer; background: url(../images/brasato/expand.gif) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+	a.b_devcon_handle_close {cursor:pointer; background: url(../images/brasato/close.gif) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+	#b_devcon_content {
+		font-size: 90%;  padding: 5px; border-top: 0px solid #000; background:transparent;;
+		ul { float: left; margin: 0; padding: 0; list-style: none; white-space: nowrap;}
+		li { margin: 0; padding: 0 10px 0 0; float: left}
+		fieldset {border-top: 1px solid #ccc; margin: 0; padding: 8px; }
+	}
+	#b_devcon_mode { width: 1em; height: 1em; float: left; border:1px solid #000; margin-right: 5px;} /* bgcolor defined programatically */
+	#b_js_log textarea#o_debug_cons { width: 99%; height: 15em; font-family: monospace; font-size: 110%; margin: 5px 0 5px 0;}
+	#b_devcon_compdump {}
+	iframe.o_debug_json {
+		position: fixed;
+		width: 90%;
+		margin-left: 5%;
+		bottom: 4px;
+		height: 300px;
+		background: white;
+		border:2px solid #ccd8e7;
+		z-index:90000; //above all ^^
+	}
+	
+
+	
+}

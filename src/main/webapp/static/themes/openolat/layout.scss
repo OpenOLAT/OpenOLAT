@@ -1,0 +1,35 @@
+@charset "UTF-8";
+/* use the grey ext theme */
+/*@import url(../../js/ext/resources/css/xtheme-gray.css);*/
+
+@import "_license.scss";
+
+@import url(../../yaml/core/slim_base.css);
+
+/* --------------- */
+@import "all/_mixins.scss";
+@import "all/_definitions.scss";
+
+
+/* --------------- */
+@import "all/_basemod.scss";
+@import "all/_dd.scss";
+@import "all/_dialogs.scss";
+@import "all/_portlets_boxes.scss";
+@import "all/_tabpane.scss";
+@import "all/_icons.scss";
+@import "all/_content.scss";
+
+/* ------- print -------- */
+@import "print/_basemod.scss";
+@import "print/_content.scss";
+
+/* ------- mobile -------- */
+@import "mobile/_basemod.scss";
+
+
+/* -------- modules -------- */
+@import "all/modules/_briefcase.scss";
+@import "all/modules/_wiki.scss";
+@import "all/modules/_eportfolio.scss";
+@import "all/modules/_imscp.scss";

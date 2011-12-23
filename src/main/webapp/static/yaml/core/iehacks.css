@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /**
  * "Yet Another Multicolumn Layout" - (X)HTML/CSS Framework
  *
@@ -8,43 +7,43 @@
  * Don't make any changes in this file!
  * Your changes should be added to a separate patch-file.
  *
- * @copyright       Copyright 2005-2007, Dirk Jesse
+ * @copyright       Copyright 2005-2011, Dirk Jesse
  * @license         CC-A 2.0 (http://creativecommons.org/licenses/by/2.0/),
  *                  YAML-C (http://www.yaml.de/en/license/license-conditions.html)
  * @link            http://www.yaml.de
  * @package         yaml
- * @version         3.0.4
+ * @version         3.3.1
+ * @revision        $Revision: 501 $
+ * @lastmodified    $Date: 2011-06-18 17:27:44 +0200 (Sa, 18 Jun 2011) $
  * @appdef yaml
  */
 
 @media all
 {
-  /*------------------------------------------------------------------------------------------------------*/
-
   /**
-   * (en) Debugging: When you see a green background, IE is getting this stylesheet
-   * (de) Fehlersuche: Hintergrund leuchtet grün, wenn das Stylesheet korrekt geladen wurde
+   * (en) Debugging:When you see a green background, IE is getting this stylesheet
+   * (de) Fehlersuche:Hintergrund leuchtet grün, wenn das Stylesheet korrekt geladen wurde
    *
    * @debug
    * @app-yaml-default disabled
    */
 
-  /* body { background: #0f0; background-image: none; }  */
+  /* body { background:#0f0; background-image:none; }  */
 
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
-   * (en) Forcing vertical scrollbars is not needed in IE (only for Firefox/Netscape/Safari)
-   * (de) Erzwingen vertikaler Scrollbalken im IE nicht benötigt (nur im Firefox/Netscape/Safari)
+   * (en) No need to force scrollbars in older IE's - it even makes problems in IE6 when set
+   * (de) Scrollbar-Fix wird in alten IE's nicht benötigt, zudem verursacht der Fix Probleme im IE6
    *
    * @workaround
-   * @affected   IE 5.x/Win, IE6, IE7
-   * @css-for    IE 5.x/Win, IE6, IE7
-   * @valid      yes
+   * @affected   IE6, IE7
+   * @css-for    IE6, IE7
+   * @valid      no
    */
 
-  html { height: auto; margin-bottom:0; }
-
+  body { o\verflow:visible; }
+  
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
@@ -57,14 +56,20 @@
    * @valid      no
    */
 
-  * html textarea { overflow:scroll; overflow-x: hidden; }
-  * html input { overflow: hidden; }
-  
+  * html iframe,
+  * html frame { overflow:auto; }
+  * html input,
+  * html frameset { overflow:hidden; }
+  * html textarea { overflow:scroll; overflow-x:hidden; }
+
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
-   * (en) Stability fixes with 'position:relative' 
+   * (en) Stability fixes with 'position:relative'
    * (de) Stabilitätsverbesserungen durch 'position:relative'
+   *
+   * Essential for correct scaling in IE7 (body). IE5 must get static positioned body instead.
+   * Helpful to fix several possible problems in older IE versions (#b_main).
    *
    * @bugfix
    * @affected   IE 5.x/Win, IE6, IE7
@@ -72,42 +77,24 @@
    * @valid      yes
    */
 
-  body { position:relative }  /* Essential in IE7 for correct layout scaling ... */
-  * html body { position:static }  /* ... but not for IE5.x and IE6 */
-  #b_main { position: relative } /* helpful for several problems in older IE versions*/
+  body, #b_main { position:relative; }
+  * html body { position:static; }
 
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
-   * (en) Clearfix Method for containing floats in IE
+   * (en) Clearfix adjustents for containing floats in IE
    * (de) Clearfix-Anpassung für diverse IE-Versionen
    *
    * @workaround
-   * @see        http://www.456bereastreet.com/archive/200603/new_clearing_method_needed_for_ie7/#comment28
+   * @see        http://perishablepress.com/press/2009/12/06/new-clearfix-hack/
    * @affected   IE 5.x/Win, IE6, IE7
    * @css-for    IE 5.x/Win, IE6, IE7
    * @valid      yes
    */
 
-
-  .b_clearfix { display: inline-block }  /* ... especial for IE7 */
-  .b_clearfix { display: block }      /* ... für IE5,IE6,IE7 */
-  * html .b_clearfix { height: 1% }   /* ... für IE5 + IE6/Win | hasLayout aktivieren */
-
-  /*------------------------------------------------------------------------------------------------------*/
-
-  /**
-   * (en) Adjustment of .b_floatbox class for IE
-   * (de) Anpassung der .b_floatbox-Klasse für IE
-   *
-   * @workaround
-   * @affected   IE 5.x/Win, IE6
-   * @css-for    IE 5.x/Win, IE6
-   * @valid      yes
-   */
-
-  * html .b_floatbox { width:100% }
-
+  .b_clearfix { height:1%; }  /* hasLayout aktivieren */
+ 
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
@@ -119,18 +106,18 @@
    * @css-for    IE 5.x/Win, IE6
    * @valid      yes
    */
-  
+
   .b_slidebox {
-    margin-right: -1000px;
     position:relative;
-    height: 1%
+    margin-right:-1000px;
+    height:1%;
   }
 
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
-   * (en): Bugfix for partially displayed column separators
-   * (de): Bugfix für unvollständige Darstellung der Spalteninhalte / Spaltentrenner
+   * (en):Bugfix for partially displayed column separators
+   * (de):Bugfix für unvollständige Darstellung der Spalteninhalte / Spaltentrenner
    *
    * @bugfix
    * @affected   IE 5.x/Win, IE6
@@ -138,9 +125,9 @@
    * @valid      yes
    */
 
-  * html #b_col1 { position:relative } /* Nur für < IE7, sonst gibts im IE7 neue Positionierungsprobleme */
-  * html #b_col2 { position:relative } /* Nur für < IE7, sonst gibts im IE7 neue Positionierungsprobleme */
-  * html #b_col3 { position:relative }
+  * html #b_col1,
+  * html #b_col2,
+  * html #b_col3 { position:relative; }
 
   /*------------------------------------------------------------------------------------------------------*/
 
@@ -153,12 +140,14 @@
    * @css-for    IE 5.x/Win, IE6, IE7
    * @valid      no
    */
-   
-  body { height: 1% }
-  #b_page_margins, #b_page, #b_header, #b_nav, #b_main, #b_footer { zoom:1 }             /* IE6 & IE7    */
-  #b_page_margins, #b_page { height: 1% }                                        /* IE 5.x       */
-  * html #b_header, * html #b_nav, * html #b_main, * html #b_footer { width: 100% }  /* IE 5.x & IE6 */
-  * html #b_header, * html #b_nav, * html #b_main, * html #b_footer { wid\th: auto } /* IE 6         */
+
+  body { height:1%; }
+  .page_margins, .page, #b_header, #b_nav, #b_main, #b_footer { zoom:1; }  /* IE6 & IE7    */
+  * html .page_margins, * html .page { height:1%; hei\ght:auto; }  /* IE 5.x & IE6 | IE6 only */
+  * html #b_header, * html #b_nav, * html #b_main, * html #b_footer { width:100%; wid\th:auto; }  /* IE 5.x & IE6 | IE6 only */
+
+  /* trigger hasLayout to force containing content */
+  .b_subc, .b_subcl, .b_subcr { height:1%; }
 
   /*------------------------------------------------------------------------------------------------------*/
 
@@ -171,9 +160,8 @@
    * @css-for    IE 5.x/Win, IE6
    * @valid      yes
    */
-  * html ul { position: relative }
-  * html ol { position: relative }
-  * html dl { position: relative }
+
+  * html ul, * html ol, * html dl { position:relative; }
 
   /*------------------------------------------------------------------------------------------------------*/
 
@@ -185,8 +173,19 @@
    * @css-for    IE 5.x/Win, IE6, IE7
    * @valid      yes
    */
+
   body ol li { display:list-item; }
-  
+
+  /**
+   * Form related bugfixes
+   *
+   * @bugfix
+   * @affected   IE 5.x/Win, IE6, IE7
+   * @css-for    IE 5.x/Win, IE6, IE7
+   * @valid      no
+   */
+  fieldset, legend { position:relative; }
+
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
@@ -197,7 +196,7 @@
    *
    * (de) Workaround für 'kollabierenden Margin an #b_col3' bei Verwendung der CSS-Eigenschaft clear
    *      Der linke Margin von #b_col3 kollabiert bei der Verwendung von clear:both im 1-3-2 (oder 2-3-1) Layout
-   *      wenn gleichzeitig die rechte Spalte die kürzeste und die rechte die Längste ist. Im IE6 und IE7 lässt
+   *      wenn gleichzeitig die linke Spalte die kürzeste und die rechte die längste ist. Im IE6 und IE7 lässt
    *      sich der Bug durch eine speziell für YAML entwickelten Workaround umgehen.
    *
    * @workaround
@@ -206,7 +205,7 @@
    * @valid      no
    */
 
-  #b_ie_clearing {
+  html #b_ie_clearing {
     /* (en) Only a small help for debugging */
     /* (de) Nur eine kleine Hilfe zur Fehlersuche */
     position:static;
@@ -221,23 +220,22 @@
 
     /* (en) forcing clearing-like behavior with a simple oversized container in IE6 & IE7*/
     /* (de) IE-Clearing mit 100%-DIV für IE6 bzw. übergroßem Container im IE7 */
-    width: 100%;
+    width:100%;
     font-size:0px;
-    margin: -2px 0 -1em 1px;
+    margin:-2px 0 -1em 1px;
   }
 
-  * html #b_ie_clearing { margin: -2px 0 -1em 0}
-  #b_col3_content {margin-bottom:-2px }
+  * html #b_ie_clearing { margin:-2px 0 -1em 0; }
+  #b_col3_content { margin-bottom:-2px; }
 
   /* (en) avoid horizontal scrollbars in IE7 in borderless layouts because of negative margins */
   /* (de) Vermeidung horizontaler Scrollbalken bei randabfallenden Layouts im IE7 */
-  html {margin-right: 1px}
-  * html {margin-right: 0}
+  html { margin-right:1px; }
+  * html { margin-right:0; }
 
-
-  /* (en) Bugfix: Essential for IE7 */
-  /* (de) Bugfix: Notwendig im IE7 */
-  #b_col3 { position:relative }
+  /* (en) Bugfix:Essential for IE7 */
+  /* (de) Bugfix:Notwendig im IE7 */
+  #b_col3 { position:relative; }
 
   /*------------------------------------------------------------------------------------------------------*/
 
@@ -251,44 +249,59 @@
    * @valid      yes
    */
 
-  * html body a, * html body a:hover { background-color: transparent; }
+  * html body a, * html body a:hover { background-color:transparent; }
 
-  /*------------------------------------------------------------------------------------------------------*/
-
-  /**
-   * (en) IE-Adjustments for subtemplates
-   * (de) IE-Anpassung für Subtemplates
-   *
-   * Doubled Float-Margin Fix
-   *
-   * @bugfix
-   * @affected   IE 5.x/Win, IE6
-   * @css-for    IE 5.x/Win, IE6
-   * @valid      yes
-   */
-
-  * html .b_c50l, * html .b_c25l, * html .b_c33l, * html .b_c38l, * html .b_c66l, * html .b_c75l, * html .b_c62l,
-  * html .b_c50r, * html .b_c25r, * html .b_c33r, * html .b_c38r, * html .b_c66r, * html .b_c75r, * html .b_c62r {
-    display:inline;
-  }
 }
 
-@media screen
+@media screen, projection
 {
-  /*------------------------------------------------------------------------------------------------------*/
-
   /**
+   * (en) IE-Adjustments for content columns and subtemplates
+   * (de) IE-Anpassung für Spaltencontainer und Subtemplates
+   *
    * Doubled Float-Margin Bug
    * @see        http://positioniseverything.net/explorer/doubled-margin.html
    *
    * @bugfix
    * @affected   IE 5.x/Win, IE6
-   * @css-for    IE 5.x/Win, IE6
+   * @css-for    IE 5.x/Win, IE6, IE7
    * @valid      yes
    */
-  * html #b_col1 { display: inline }
-  * html #b_col2 { display: inline }
-  
+  #b_col1,  #b_col2 { display:inline; }
+
+  .c20l, .b_c25l, .b_c33l, .b_c38l, .c40l, .b_c50l, .c60l, .b_c62l, .b_c66l, .b_c75l, .c80l,
+  .c20r, .b_c25r, .b_c33r, .b_c38r, .c40r, .b_c50r, .c60r, .b_c66r, .b_c62r, .b_c75r, .c80r { display:inline; }
+
+  /* Fix for:"Linking to anchors in elements within the containing block" Problem in IE5.x & IE 6.0 */
+  * html .equalize, * html .equalize .b_subcolumns { overflow:visible; display:block; }
+  .equalize, .equalize .b_subcolumns { overflow:hidden; display:block; }
+
+  /* transform CSS tables back into floats */
+  .equalize .c20l,.equalize .c40l,.equalize .c60l,.equalize .c80l,
+  .equalize .b_c25l,.equalize .b_c33l,.equalize .b_c38l,.equalize .b_c50l,
+  .equalize .b_c62l,.equalize .b_c66l,.equalize .b_c75l {
+    float:left; display:inline;
+    padding-bottom:32767px;
+    margin-bottom:-32767px;
+  }
+  .equalize .c20r,.equalize .c40r,.equalize .c60r,.equalize .c80r,
+  .equalize .b_c25r,.equalize .b_c33r,.equalize .b_c38r,.equalize .b_c50r,
+  .equalize .b_c62r,.equalize .b_c66r,.equalize .b_c75r {
+    float:right; margin-left:-5px; display:inline;
+    padding-bottom:32767px;
+    margin-bottom:-32767px;
+  }
+
+  .no-ie-padding .c20l,.no-ie-padding .c40l,.no-ie-padding .c60l,.no-ie-padding .c80l,
+  .no-ie-padding .c20r,.no-ie-padding .c40r,.no-ie-padding .c60r,.no-ie-padding .c80r,
+  .no-ie-padding .b_c25l,.no-ie-padding .b_c33l,.no-ie-padding .b_c38l,.no-ie-padding .b_c50l,
+  .no-ie-padding .b_c62l,.no-ie-padding .b_c66l,.no-ie-padding .b_c75l,
+  .no-ie-padding .b_c25r,.no-ie-padding .b_c33r,.no-ie-padding .b_c38r,.no-ie-padding .b_c50r,
+  .no-ie-padding .b_c62r,.no-ie-padding .b_c66r,.no-ie-padding .b_c75r {
+    padding-bottom:0;
+    margin-bottom:0;
+  }
+
   /*------------------------------------------------------------------------------------------------------*/
 
   /**
@@ -301,13 +314,14 @@
    * @valid      yes
    */
 
-  * html #b_col1_content { word-wrap: break-word; }
-  * html #b_col2_content { word-wrap: break-word; }
-  * html #b_col3_content { word-wrap: break-word; }
+  * html #b_col1_content,
+  * html #b_col2_content,
+  * html #b_col3_content { word-wrap:break-word; }
 
-  * html .b_subcolumns .b_subc,
-  * html .b_subcolumns .b_subcl,
-  * html .b_subcolumns .b_subcr { word-wrap: break-word; overflow:hidden; }
+  /* avoid growing widths */
+  * html .b_subc,
+  * html .b_subcl,
+  * html .b_subcr { word-wrap:break-word; o\verflow:hidden; }
 }
 
 @media print
@@ -322,5 +336,8 @@
    * @valid      yes
    */
 
-  #b_col3 { height: 1% }
+  .b_subc,
+  .b_subcl,
+  .b_subcr,
+  .col3 { height:1%; }
 }

@@ -1,0 +1,51 @@
+/* BRIEFCASE */
+	div.b_briefcase { }
+	div.b_briefcase div.b_briefcase_foldercomp { margin-top: 0.5em; border-top: 1px solid #bbb;}
+	div.b_briefcase_foldercomp div.b_briefcase_createactions { margin: 0.5em 0; }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul { list-style: none; margin: 0; padding: 0; white-space: nowrap; font-size: 95%; }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul li { float: right; display: inline; margin: 0 0 0 1em; padding: 0 0 0 3px; position: relative; }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul li a { background-position: 0 50%; background-repeat: no-repeat; padding: 2px 0 2px 20px;}
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_upload { background-image: url(images/docs/document_upload.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_newfolder { background-image: url(images/folder_new.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_newfile { background-image: url(images/docs/document_add.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_createactions ul a.b_briefcase_deletedfiles { background-image: url(images/docs/document_remove.png); }
+	div.b_briefcase_foldercomp div.b_briefcase_breadcrumb { clear:both; padding: 1px 0 1px 20px; margin: 0.5em 0 0 0; border-bottom: 1px solid #bbb; background: url(images/folder_open.png) no-repeat 0 50%; }
+	div.b_briefcase_foldercomp div.b_briefcase_empty {clear: both; margin-top: 0.5em; font-style: italic;} 
+	div.b_briefcase_foldercomp table.b_briefcase_filetable { clear: both; border-collapse:collapse; margin-bottom: 0.5em; border-bottom: 1px solid #4F576A; background: #fff; width: 99.9%; } /* 99.9% width fix for FF border overflow issue*/
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead { color:#000; background: #E0E2E8; border-bottom: 1px solid #8F99AD;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead a, div.b_briefcase_foldercomp table.b_briefcase_filetable thead span { color: #4F576A; font-weight: bold;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead a:hover,
+	div.b_briefcase_foldercomp table.b_briefcase_filetable thead a:focus { color: #000000; text-decoration:none; background-color: transparent; }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr.b_table_odd { background: #F3F4F5; }	
+	div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr:hover, div.b_briefcase_foldercomp table.b_briefcase_filetable tbody tr:focus { background: #E0E2E8;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable th, div.b_briefcase_foldercomp table.b_briefcase_filetable td  { white-space: nowrap; text-align: right; padding-right: 1em;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable th.b_last_child, div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_last_child  { padding-right: 0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable th.b_first_child, div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_first_child  { width: 60%; text-align: left; }	
+	div.b_briefcase_foldercomp table.b_briefcase_filetable td input.b_checkbox { margin: 0 4px 0 0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable td a:hover, div.b_briefcase_foldercomp table.b_briefcase_filetable td a:focus { background-color: transparent;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable td.b_last_child  { padding-left: 0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable table.b_briefcase_actions { border: 0; padding: 0; margin:0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable table.b_briefcase_actions td { border: 0; padding: 0 0 0 3px; margin:0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable table.b_briefcase_actions tr { border: 0; padding: 0; margin:0;}
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon {background-image: url(images/docs/document--pencil.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon {background-image: url(images/docs/document_metadata_edit.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_edit_meta_dis_icon {background-image: url(images/docs/document_metadata_edit.png); opacity:0.2; }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon {background-image: url(../images/brasato/versions.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon {background-image: url(../images/brasato/versions_dis.png); opacity:0.2; }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon {background-image: url(../images/brasato/locked.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_noicon { }	
+	div.b_briefcase_preview { background-color:white; width:200px; height:200px; border:1px solid #8EAACE; margin-top: 2px; }
+	
+	div.b_briefcase div.b_briefcase_searchcomp { float:left; display:inline; margin:0.5em 0; width:14em; }
+	div.b_briefcase div.b_briefcase_searchcomp input { width:10em; }
+	div.b_briefcase div.b_briefcase_searchcomp div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+	
+	div.b_briefcase div.b_briefcase_commandbuttons { margin: 1em 0; }
+	div.b_briefcase div.b_briefcase_webdav {margin: 0.5em 0;}
+	div.b_briefcase div.b_briefcase_quota { clear: both; margin-top: 1em; padding-top: 1em;border-top: 1px solid #000;}
+	div.b_briefcase_meta { size: 0.8em; }
+	div.b_briefcase_meta p { font-style: italic; margin: 0; padding-top: 2px;}
+	
+	div.b_send_documents ol.textbox-outer { margin-left:0; border:1px solid #ACAAAA; background:#F6F6F6; line-height:1.3em; }
+	div.b_send_documents ol li { margin-left:0; }
+	div.b_send_documents textarea { overflow:auto; resize:none; }

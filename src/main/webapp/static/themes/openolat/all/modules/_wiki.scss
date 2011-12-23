@@ -1,0 +1,98 @@
+@charset "UTF-8";
+
+/*
+*  =================================================
+*  
+*   wiki styles for OpenOLAT 8
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*
+*  =================================================
+*/
+@media all {
+
+	/* wrapper container for the wiki tabbed pane */
+	div.o_wiki_wrapper { 
+		clear: both;
+		 
+		/* wiki edit helper buttons */
+		div.o_wikimod_btn { 
+			a {
+				margin-bottom: 9px;
+				background-repeat: no-repeat;
+				background-position:center center;
+				width:20px;
+				height:19px; 
+				float:left;
+				display: inline;
+				padding-left:2px; 
+				border: 1px solid #ccc;
+				background-color:#eee;
+				@include o-border-radius(4px);
+				margin-right:2px;
+			}
+			a:hover {
+				border:1px solid $basecolor; 
+			}
+			position: relative;
+		 }
+		div.o_wikimod_btn div.b_contexthelp_wrapper a.b_contexthelp {position: absolute; top: 0; right: 0;}
+		a.o_wikimod_btn_bold { background-image: url(images/wiki/edit-bold.png) }
+		a.o_wikimod_btn_italic { background-image: url(images/wiki/edit-italic.png) }
+		a.o_wikimod_btn_link { background: url(images/wiki/chain.png) }
+		a.o_wikimod_btn_extlink { background: url(images/wiki/chain--arrow.png) }
+		a.o_wikimod_btn_headline { background: url(images/wiki/edit-heading.png) }
+		a.o_wikimod_btn_image { background: url(images/wiki/image-medium.png) }
+		a.o_wikimod_btn_media { background: url(../images/olat/wiki/btn_media.png) }
+		a.o_wikimod_btn_math { background: url(../images/olat/wiki/btn_math.png) }
+		a.o_wikimod_btn_nowiki { background: url(../images/olat/wiki/btn_nowiki.png) }
+		a.o_wikimod_btn_hr { background: url(../images/olat/wiki/btn_hr.png) }
+		a.o_wikimod_btn_list { background: url(images/wiki/edit-list.png) }
+		a.o_wikimod_btn_numlist { background: url(images/wiki/edit-list-order.png) }
+	
+	 }
+	 
+	/* portfolio */
+	div.o_wiki_wrapper .b_eportfolio_add, div.o_wiki_wrapper .b_eportfolio_add_again { position:absolute; top:28px; right:3px; z-index:99; }
+	/* override default styles to have smaller title and header on wiki pages */
+	div.o_wiki_wrapper h1 	{ font-size: 1.0em;}
+	div.o_wiki_wrapper h2 	{ font-size: 1.0em;}
+	div.o_wiki_wrapper h3 	{ font-size: 1.0em;}
+	
+	/* wiki chooser for file and links */
+	div.o_wikimod_linkchooser { clear: both; float: left; display: inline; }
+	div.o_wikimod_filechooser {margin: 0 2em; float: left; display: inline;}
+	/* wiki left side navigation */
+	div.o_wikimod_nav { font-size: 90%; padding-top: 1.5em; }
+	div.o_wikimod_nav legend { font-size: 95%;}
+	div.o_wikimod_nav fieldset { padding: 0.5em; }
+	div.o_wikimod_nav input { width: 99%;}
+	div.o_wikimod_nav ul { margin: 0; padding: 0}
+	div.o_wikimod_nav div.b_button_group { margin:0.5em 0; text-align: left;}	
+	div.o_wikimod_nav div.b_form div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+	div.o_wikimod_nav .b_form_element_wrapper .b_form_element { padding:0; }
+	div.o_wikimod_nav div.b_form_element_wrapper div.b_form_element.b_form_horizontal .b_button { padding:0.5em 0; }
+	/* wiki edit form */
+	div.o_wikimod_editform_wrapper { clear: both; padding: 0.5em 0 0 0;}
+	div.o_wikimod_editform_wrapper div.b_form div.b_form_element_wrapper div.b_form_element_label { display: none;}
+	div.o_wikimod_editform_wrapper div.b_form div.b_form_element_wrapper div.b_form_element { clear: both; margin-left: 0; padding: 0 5px 0 0 }
+	div.o_wikimod_editform_wrapper div.b_form div.b_button_group { margin-left: 0; text-align: center;}
+	/* wiki run view of article */
+	div.o_wikimod-article-box { }	
+	h1.o_wikimod_heading, h3.o_wikimod_heading  { margin: 0 0 1em 0; padding: .5em 0 .17em 0; border-bottom: 1px solid #BFBFBF; }
+	#o_wikimod_uploader { margin: 1em 0 0 0;}	
+	.o_wikimod_version { border:1px solid #BFBFBF; padding:4px; margin-top:5px; }
+	.o_wikimod_diff { border:1px solid #BFBFBF; padding:4px; margin:0px;}
+	.o_wikimod_warn {color:#DF9719;}
+	.o_wiki_error {background-color: #DF9719;}
+	.o_wikimod_ins { background-color:#A4DCA4; }
+	.o_wikimod_old { background-color:#FFCCCC; }
+	.o_wikimod_new { background-color:#A4DCA4; }
+	.o_wikimod_del { background-color:#FFCCCC; }
+	.wiki-image { float:right; padding:10px; clear:right; }
+	.wiki-file-deleted { text-decoration:line-through; }
+	
+	
+}	

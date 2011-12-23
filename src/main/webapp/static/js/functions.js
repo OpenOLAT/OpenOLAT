@@ -889,10 +889,9 @@ function showInfoBox(title, format){
 	// Factory method to create message box
 	function createBox(t, s){
 	        return ['<div class="b_msg-div msg">',
-	                '<div class="x-box-tl"><div class="x-box-tr"><div class="x-box-tc"></div></div></div>',
-	                '<div class="x-box-ml"><div class="x-box-mr"><div class="x-box-mc"><div class="b_msg_info_content b_msg_info_winicon"><h3>', t, '</h3>', s, '<br/><br/></div></div></div></div>',
-	                '<div class="x-box-bl"><div class="x-box-br"><div class="x-box-bc"></div></div></div>',
-	                '</div>'].join('');
+	                '<div class="b_msg_info_content b_msg_info_winicon"><h3>', t, '</h3>', s, '<br/><br/>',
+	                '</div>'
+	                ].join('');
 	}
     var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
     var msgCt = Ext.get('b_page').insertHtml('beforeBegin', createBox(title, s), true);

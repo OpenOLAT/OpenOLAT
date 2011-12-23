@@ -75,7 +75,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 			sb.append("<li class=\"");
 			// first / last tab
 			if (i == 0 ) sb.append(" b_first");
-			if (i == cnt ) sb.append(" b_last");
+			if (i == (cnt-1) ) sb.append(" b_last");
 			// tab counter
 			sb.append(" b_item_").append(i + 1);
 			

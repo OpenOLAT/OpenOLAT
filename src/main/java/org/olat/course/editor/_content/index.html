@@ -4,7 +4,7 @@
 #set ($fixit = $r.translate("fix.it"))
 
 #if($hasErrors.booleanValue())
-	<div id="o_course_editor_errorbox" class="b_clearfix">
+	<div id="o_course_editor_errorbox" class="b_warning b_border_box b_clearfix">
 		<div class="b_float_right">
 		#if($errorIsOpen.booleanValue())
 			$r.render("keepClosedErrorButton")

@@ -1,0 +1,63 @@
+@charset "UTF-8";
+
+@media all
+{
+  /**
+   * Adding layouting elements that are not part of YAML but use the same terminology
+   *------------------------------------------------------------------------------------------------------*/
+	* html body a, * html body a:hover {background-color: transparent ! important}
+	* html .b_c15l,* html .b_c15r,* html .b_c85l,* html .b_c85r,* html .b_c20l,* html .b_c20r,* html .b_c80l,* html .b_c80r {display:inline}
+	#b_page_wrapper {zoom:1, height:1%}
+	
+  	textarea, pre, tt, code { font-size: 90%; }
+
+	 /* wrong alignment of top nav background images */
+	#b_topnav li a span {padding: 0 0; }
+	
+	/* no page shadow effect, uses alpha transparency png not available in IE6 */
+	* html #b_page_margins { background: none; padding-left: 0; }	
+	* html #b_page_wrapper { background: none; padding-right: 0; }	
+	
+	/* Doubled Float-Margin Fix */
+	* html #b_nav_main,
+	* html #b_nav_main li,
+	* html #b_nav_main li#b_nav_spacer 
+	{ display: inline; }
+
+
+	#b_nav_main li 
+	{
+		position: relative; /* IE needs this */
+	}	 
+	
+	/**
+	 * @bugfix
+	 * @affected   IE5.x, IE6
+	 * @css-for    all browsers
+	 * @valid      yes
+	 */
+	#b_nav_main a,
+	#b_nav_main strong { 
+		width: auto; /* only IE 5.x */
+		width/**/:/**/ .1em; /* only IE 6.0 */		
+		min-width: 1em; /* IE 7 bugfix: force hasLayout=true */
+	}
+}
+
+
+@media screen
+{
+  /**
+   * YAML layouting elements
+   */ 
+   
+  /*-----------------------------------------------------------------------------------------------------*/
+	
+	/* Nur für < IE7, sonst gibts im IE7 neue Positionierungsprobleme */
+	* html #b_nav_main li.b_nav_site div,
+	* html #b_nav_main li.b_nav_tab div {
+		/* IE fix to set hasLayout=true. Required to display the background images at all */
+		width: 1px;
+	}			
+	
+}

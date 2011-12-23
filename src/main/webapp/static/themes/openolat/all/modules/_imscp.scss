@@ -1,0 +1,42 @@
+/* ims cp */
+
+div.o_module_cp_wrapper{
+
+	a.b_content_download {background: url('images/drive-download.png') no-repeat top left; padding-left: 20px; margin: 3px; display:block; min-height: 16px;}
+	div#o_local_fulltextsearch { position:absolute; top:0; right:0; z-index:10; }
+	div#o_local_fulltextsearch div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+
+	div.o_cp_navigation { 
+		float:right; display:inline;padding:3px 0 3px 3px; background: #ebebeb ; border: 1px solid #ddd;
+		white-space:nowrap;
+		@include o-border-radius(3px);
+		@include o-box-shadow(0, 1px, 2px, lightGrey);
+	}
+	
+	div span a { margin: 0 2px; }
+	div span.b_disabled { display:none; }
+	div span a.o_cp_previous_icon { background-image: url('images/arrow_left_big.png'); text-decoration: none; }
+	div span a.o_cp_previous_icon span {display:none; }
+	div span a.o_cp_next_icon {	background-image: url('images/arrow_right_big.png'); }
+	div span a.o_cp_next_icon span {display:none; }
+	div span a.o_cp_print_icon {	background-image: url('images/printer.png'); }
+	div span a.o_cp_print_icon span {display:none; }
+	div.o_cp_navigation div, div.o_cp_navigation form  { display:inline; }
+	div.o_cp_navigation div.b_clearfix { display:inline; clear:none; }
+	div.o_cp_navigation div.b_clearfix:after{display:inline;height:0;clear:none;visibility:hidden}
+}
+
+div.o_module_tu_wrapper {}
+
+
+
+/* IMS CP Editor */
+#o_cpeditor_menu div.o_cpeditor_menu_tree { padding: 10px 0 0 0;}
+#b_col1 div.b_menu_toolbar a, #b_col3 div.b_menu_toolbar a {width: 16px; height: 16px; margin: 3px; float: right; display: inline; background-repeat: no-repeat;}
+a.o_cpeditor_import { background-image: url('images/docs/document_upload.png'); }
+a.o_cpeditor_new { background-image: url('images/docs/document_add.png');  }
+a.o_cpeditor_copy { background-image: url('images/docs/document_copy.png'); }
+a.o_cpeditor_delete { background-image: url('images/docs/document_remove.png'); }
+a.o_cpeditor_edit { background-image: url(images/docs/document_metadata_edit.png);}
+a.o_cpeditor_preview { background-image: url(images/docs/document_preview.png); }
+#o_cpeditor_content div.o_cpeditor_message { padding: 20px;}	

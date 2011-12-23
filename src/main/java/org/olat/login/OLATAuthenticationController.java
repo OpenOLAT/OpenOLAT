@@ -97,17 +97,17 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		if(UserModule.isPwdchangeallowed(ureq.getIdentity())) {
 			pwLink = LinkFactory.createLink("menu.pw", loginComp, this);
-			pwLink.setCustomEnabledLinkCSS("o_login_pwd");
+			pwLink.setCustomEnabledLinkCSS("o_login_pwd b_with_small_icon_left");
 		}
 		
 		if (RegistrationModule.isSelfRegistrationEnabled()) {
 			registerLink = LinkFactory.createLink("menu.register", loginComp, this);
-			registerLink.setCustomEnabledLinkCSS("o_login_register");
+			registerLink.setCustomEnabledLinkCSS("o_login_register b_with_small_icon_left");
 		}
 		
 		if (LoginModule.isGuestLoginLinksEnabled()) {
 			anoLink = LinkFactory.createLink("menu.guest", loginComp, this);
-			anoLink.setCustomEnabledLinkCSS("o_login_guests");
+			anoLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
 		}
 		
 		
