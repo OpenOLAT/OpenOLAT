@@ -75,13 +75,19 @@ public class LogFileParser extends LogDelegator {
 	 * @param date the date of the log to retrieve, or null when no date suffix should be appended (= take today's log)
 	 * @return the VFSLeaf of the Logfile given the Date, or null if no such file could be found
 	 */
-	public VFSLeaf getLogfilePath(Date date) {
+	public static VFSLeaf getLogfilePath(Date date) {
+		String tmpFileName = logfilepathBase;
 		if (date != null) {
 			SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd");
 			String suffix = sdb.format(date);
-			filename += "."+suffix;
+			String today = sdb.format(new Date());
+			if(suffix.equals(today))
+				tmpFileName = logfilepathBase;
+			else
+				tmpFileName = logfilepathBase + "."+suffix;
 		}
-		File logf = new File(filename);
+		
+		File logf = new File(tmpFileName);
 		if (!logf.exists()) return null;
 		return new LocalFileImpl(logf);
 	}
