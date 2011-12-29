@@ -1,7 +1,8 @@
 Setting up latest OpenOLAT version on Eclipse
 -------------------------------------------------------------------------
 
-o As the latest development is often ahead of the current documentation you will always find an up to date install guide here.
+o As the latest development is often ahead of the current documentation you will always find an up to date 
+  install guide here.
 o There a two different arts to install a development environment for OpenOLAT. Choose the one you prefer.
 
 
@@ -15,7 +16,8 @@ Preconditions:
 	o MySQL 5.1 or greater or PostreSQL 8.4
 
 1. In Eclipse: create a Mercurial repository location (http://hg.openolat.org/openolat) and clone the repo.
-	  1.1 Do not add a password and make sure you uncheck the init Mercurial repo checkbox at the end. Right click to clone repo into your workspace.
+  1.1 Do not add a password and make sure you uncheck the init Mercurial repo checkbox at the end. Right 
+	  click to clone repo into your workspace.
 
 2. In Terminal: create eclipse project settings and create .classpath file by running
    mvn eclipse:clean eclipse:eclipse
@@ -23,16 +25,26 @@ Preconditions:
 3. In Eclipse: refresh the project
 
 4. Create an olat.local.properties file somewhere 
-  4.1 Right click on olat.local.properties in our eclipse project (src/main/java) and link it to your own olat.local.properties. You can customized
-      your configuration whit this file. You can find an example in root of your eclipse project: olat.local.properties.sample
+  4.1 Copy the olat.local.properties.sample to olat.local.properties in the project root folder
+  4.2 Adjust the file to match your setup. See the comments in the file header for more configuration options.
+  4.3 Right click on the file src/main/java/olat.local.properties in our eclipse project to open the file 
+      properties and link it to your own olat.local.properties you created in step 4.1. 
+  4.4 Right now the same has to be done for the src/test/java/olat.local.properties: link it to a properties
+      file, otherwise the project will not build. Use an empty properties file if you don't want to run the 
+      tests. 
       
-5. In MySQL create a user 'olat' and a database 'olat'
-	CREATE DATABASE IF NOT EXISTS olat;
-	GRANT ALL PRIVILEGES ON olat.* TO 'olat' IDENTIFIED BY 'olat';
-	UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
+5. Prepare database permissions and initialize the database
+  5.1.a. In MySQL create a user 'openolat' and a database 'openolat'
+	CREATE DATABASE IF NOT EXISTS openolat;
+	GRANT ALL PRIVILEGES ON openolat.* TO 'openolat' IDENTIFIED BY 'openolat';
+	UPDATE mysql.user SET HOST='localhost' WHERE USER='openolat' AND HOST='%';
 	FLUSH PRIVILEGES;
-	
-	mysql -u olat -p olattest < src/main/resources/database/mysql/setupDatabase.sql
+  5.1.b. Alternatively you can use a helper script to create the MySQL database user and the empty database:
+	scripts/dbAndUserSetup.sh
+  5.2 Write the OpenOLAT database schema to the OpenOLAT database
+	mysql -u openolat -p openolat < src/main/resources/database/mysql/setupDatabase.sql
+  5.3 Optional: if you want to run the jUnit tests, make sure you also create and initialize the test database
+      that you configured in src/test/java/olat.local.properties
 
 6. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
   6.1 The Run on Server wizard will pop up and check: manually define a new server
@@ -53,25 +65,30 @@ Preconditions:
 Troubleshooting
 *******************************
 
-A. OutOfMemoryException: in Eclipse: setup VM arguments by clicking on Run > Run Configurations > Arguments > VM Arguments and pasting:
+A. OutOfMemoryException: in Eclipse: setup VM arguments by clicking on 
+   Run > Run Configurations > Arguments > VM Arguments and pasting:
    -Xmx384m -Xms128m -XX:MaxPermSize=128m -Djava.awt.headless=true
 
-B. (optional) Create an empty olat.local.properties and save it to /yourTomcatDir/lib (OLAT searches for this file on the classpath and /tomcat/lib is part of it). 
-   But OLAT should start with just the default config!
+B. (optional) Create an empty olat.local.properties and save it to /yourTomcatDir/lib (OLAT searches for 
+   this file on the classpath and /tomcat/lib is part of it). But OLAT should start with just the default config!
 
-D. Usually you will get a timeout exception when you start a new OLAT. After double clicking on the server entry you can increase the timeout for the startup.
+D. Usually you will get a timeout exception when you start a new OLAT. After double clicking on the server entry 
+   you can increase the timeout for the startup.
 
-E. If your tomcat starts very quickly but you cannot access OLAT it might be that tomcat did not find the OLAT context.
-   Right click the server entry and click publish to inform eclipse about a new or updated context.
+E. If your tomcat starts very quickly but you cannot access OLAT it might be that tomcat did not find the OLAT 
+   context. Right click the server entry and click publish to inform eclipse about a new or updated context.
 
-F. If you run into problems with classes or resources not found e.g. "ClassNotFoundException" right click your server config and run the "Clean..." Task to republish 
-   all resources. Problems comes mostly when switching from eclipse to console and back with command like mvn clean, or eclipse clean and such. You will always get a clean and working environment when you do the following: Eclipse clean, create eclipse settings with launch, Server publish resources and restart OLAT.
+F. If you run into problems with classes or resources not found e.g. "ClassNotFoundException" right click your 
+   server config and run the "Clean..." Task to republish all resources. Problems comes mostly when switching 
+   from eclipse to console and back with command like mvn clean, or eclipse clean and such. You will always get 
+   a clean and working environment when you do the following: Eclipse clean, create eclipse settings with launch, 
+   Server publish resources and restart OLAT.
 
 
 Background (optional for further interest)
 ------------------------------------------------------------------
 
-o There is only one spring context for the whole OpenOLAT which you can access via CoreSpringFactory. The context is configured with
-  the files serviceconfig/olat.properies and can be overwritten with olat.local.properties. 
+o There is only one spring context for the whole OpenOLAT which you can access via CoreSpringFactory. The context 
+  is configured with the files serviceconfig/olat.properies and can be overwritten with olat.local.properties. 
   changes in olat.local.properties are reflected upon each restart of Tomcat.
 
