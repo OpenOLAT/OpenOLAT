@@ -22,42 +22,48 @@ Preconditions:
    mvn eclipse:clean eclipse:eclipse
 
 3. In Eclipse: refresh the project. 
-  3.1 Make sure the project compiled without errors. Warnings are ok. 
-  3.2 If the project did not compile you have to fix the problems before you proceed. E.g. disable XML/XSLT validating.
-      Run 'mvn eclipse:clean eclipse:eclipse' again, refresh and then clean the project to recompile.
 
 4. Create an olat.local.properties file somewhere 
   4.1 Copy the olat.local.properties.sample to olat.local.properties in the project root folder
   4.2 Adjust the file to match your setup. See the comments in the file header for more configuration options.
   4.3 Right click on the file src/main/java/olat.local.properties in our eclipse project to open the file 
       properties and link it to your own olat.local.properties you created in step 4.1. 
+  
+5. In Eclipse: refresh the project again. 
+  5.1 Make sure the project compiled without errors. Warnings are ok. 
+  5.2 If the project did not compile you have to fix the problems before you proceed. See Troubleshooting below.
       
-5. Prepare database permissions and initialize the database
-  5.1.a. In MySQL create a user 'openolat' and a database 'openolat'
+6. Prepare database permissions and initialize the database
+  6.1.a. In MySQL create a user 'openolat' and a database 'openolat'
 	CREATE DATABASE IF NOT EXISTS openolat;
 	GRANT ALL PRIVILEGES ON openolat.* TO 'openolat' IDENTIFIED BY 'openolat';
 	UPDATE mysql.user SET HOST='localhost' WHERE USER='openolat' AND HOST='%';
 	FLUSH PRIVILEGES;
-  5.1.b. Alternatively you can use a helper script to create the MySQL database user and the empty database:
+  6.1.b. Alternatively you can use a helper script to create the MySQL database user and the empty database:
 	scripts/dbAndUserSetup.sh
-  5.1.c. Postgres users please check their Postregs manual how to create a user and database 
-  5.2 Write the OpenOLAT database schema to the OpenOLAT database. Example for MySQL:
+  6.1.c. Postgres users please check their Postregs manual how to create a user and database 
+  6.2 Write the OpenOLAT database schema to the OpenOLAT database. Example for MySQL:
 	mysql -u openolat -p openolat < src/main/resources/database/mysql/setupDatabase.sql
-  5.3 Optional: if you want to run the jUnit tests, make sure you also create and initialize the test database
+  6.3 Optional: if you want to run the jUnit tests, make sure you also create and initialize the test database
       that you configured in src/test/profile/mysql/olat.eclipse.properties
 
-6. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
-  6.1 The Run on Server wizard will pop up and check: manually define a new server
-  6.2 look for Apache->Tomcat v6.0 or v7.0 Server
-  6.3 Add openolat as web application in the step "Add and remove" and click finish
-  6.4 Double click the newly created server and increase the timeout to something like 180s
-  6.5 Open the launch configuration of the server, select the tab Arguments and add these arguments to the VM arguments:
+7. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
+  7.1 The Run on Server wizard will pop up and check: manually define a new server
+  7.2 look for Apache->Tomcat v6.0 or v7.0 Server
+  7.3 Add openolat as web application in the step "Add and remove" and click finish
+  7.4 Double click the newly created server and increase the timeout to something like 180s
+  7.5 Open the launch configuration of the server, select the tab Arguments and add these arguments to the VM arguments:
       -XX:MaxPermSize=128m -Xms128m -Xmx384m -Djava.awt.headless=true
-  6.6 Open the generated server.xml file and manually set the following parameters: 
+  7.6 Open the generated server.xml file and manually set the following parameters: 
       In the "Context" element set parameter reloadable="false" 
       In all "Connector" elements set paramter URIEncoding="UTF-8"
 
-7. In Eclipse: start the server
+8. In Eclipse: start the server
+
+9. In your browser open URL http://localhost:8080/olat
+   You can log in with user "administrator" and password "openolat"
+   
+10. Have fun, give feedback and contribute!
 
 
 
@@ -85,8 +91,9 @@ F. If you run into problems with classes or resources not found e.g. "ClassNotFo
    Server publish resources and restart OLAT.
    
 G. In some eclipse setups you will get compile errors because of XML/XSLT validation errors. In this case disable all 
-   validators in the project properties (Right click on project -> "Properties" -> "Validators". After this step restart 
-   eclipse and execute 'mvn eclipse:clean eclipse:eclipse' again, refresh and then clean the project to recompile.
+   validators in the project properties (Right click on project -> "Properties" -> "Validators") and set all levels
+   for XSLT to "ignore". After this step restart eclipse and execute 'mvn eclipse:clean eclipse:eclipse' again, 
+   refresh and then clean the project to recompile.
 
 
 Background (optional for further interest)
