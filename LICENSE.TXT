@@ -188,7 +188,7 @@ on OLAT, please see http://www.olat.org.
 Additional license statement for the openolat.org code base:
 
 This software consists of contributions made by many members of the
-OpenOLAT open source community. OpenOLAT is founded by frentix GmbH and 
+OpenOLAT open source community. OpenOLAT is initiated by frentix GmbH and 
 is initially based on the OLAT 7.1 release. For more information on 
 OpenOLAT, please see http://www.openolat.org
 

@@ -11,10 +11,19 @@ along with this release. You may also obtain a copy of the License at
 http://www.apache.org/licenses/LICENSE-2.0
 
 
-Copyright openolat.org codebase 2011 - 2012:
+Copyright openolat.org codebase since 2011:
 ======================================================================
-OpenOLAT is © by frentix GmbH [http://www.frentix.com], Zurich, Switzerland on behalf of of the
-OpenOLAT open source community [http://www.openolat.org].
+OpenOLAT is initiated by frentix GmbH [http://www.frentix.com], Zurich, Switzerland and contains code 
+contributed by other OpenOLAT open source community members [http://www.openolat.org]. All contributed code
+is copyrighted by their respective party and released under the Apache 2.0 License. 
+
+Contributors and copy right holders of openolat.org codebase since 2011:
+-----------------------------------------------------------------------
+- frentix GmbH, Switzerland [http://www.frentix.com]
+  Michael Enz, Christian Franck, Florian Gnägi, Roman Haag, Stefan Köber, Joël Krähemann, 
+  Stéphane Rossé, Kirsten Scherer, Sergio Trentini 
+- BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
+  Armin Blawitzki, Stefan Köber, Sven Morgener
 
 OpenOLAT logo and icons
 -----------------------------------------------------------------------
@@ -24,16 +33,7 @@ German license text  [http://creativecommons.org/licenses/by-nd/2.5/ch/]
 English license text [http://creativecommons.org/licenses/by-nd/2.5/]
 
 
-Contributors openolat.org codebase 2011 - 2012: (in alphabetical order) 
------------------------------------------------------------------------
-- frentix GmbH, Switzerland [http://www.frentix.com]
-  Michael Enz, Christian Franck, Florian Gnägi, Roman Haag, Stefan Köber, Joël Krähemann, 
-  Stéphane Rossé, Kirsten Scherer, Sergio Trentini 
-- BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
-  Armin Blawitzki, Stefan Köber, Sven Morgener
-
-
-Copyright olat.org codebase 1999 - 2011: (in alphabetical order)
+Copyright olat.org codebase 1999 - 2011:
 ======================================================================
 Björn Adelberg, Sandra Arnold, Sandra Bischof, Armin Blawitzki, Hanspeter Brun, Patrick Brunner, 
 Gabriel Bucher, Lavinia Dumitrescu, Lars Eberle, Stefan Egli, Claudia Ehrle, Joël Fisler, Florian Gnägi, 
