@@ -69,9 +69,6 @@ supportemail=${adminemail}
 # amongst nodes within a cluster, if you are not clustering then you
 # can leave this value as is.
 instance.id=myopenolat
-# some cluster settings
-tomcat.id=2
-node.id=2
 
 ########################################################################
 # Misc / Developer settings
