@@ -41,7 +41,7 @@ Preconditions:
 	FLUSH PRIVILEGES;
   6.1.b. Alternatively you can use a helper script to create the MySQL database user and the empty database:
 	scripts/dbAndUserSetup.sh
-  6.1.c. Postgres users please check their Postregs manual how to create a user and database 
+  6.1.c. PostgreSQL users please check their PostgreSQL manual how to create a user and database 
   6.2 Write the OpenOLAT database schema to the OpenOLAT database. Example for MySQL:
 	mysql -u openolat -p openolat < src/main/resources/database/mysql/setupDatabase.sql
   6.3 Optional: if you want to run the jUnit tests, make sure you also create and initialize the test database
