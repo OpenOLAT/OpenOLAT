@@ -57,6 +57,18 @@ public class BackgroundTaskQueueManager  extends BasicManager {
 		taskExecutor.start();
 	}
 	
+	/**
+	 * [used by spring]
+	 */
+	public void destroy() {
+		taskExecutor.stopExecutor();
+		addTask(new BackgroundTask() {
+			@Override
+			public void execute() { /* */ }
+			@Override
+			public void setMaxRetry(int maxRetry) { /* */ }
+		});
+	}
 
 	public Queue<BackgroundTask> getQueue() {
 		return backgroundTaskQueue;

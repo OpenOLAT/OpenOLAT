@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
-  http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
-<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 <bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
 
@@ -32,7 +27,7 @@
 </bean>
 
 <!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->
-<bean id="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" class="org.olat.repository.async.BackgroundTaskQueueManager">
+<bean id="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" class="org.olat.repository.async.BackgroundTaskQueueManager" destroy-method="destroy">
 	<!-- Number of retries when a task failed e.g. incrementLaunchCounter try 20 times to increment when a exception occurs -->
 	<property name="maxRetry" value="20"/>
 </bean>	

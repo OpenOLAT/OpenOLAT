@@ -38,16 +38,20 @@ import org.olat.core.logging.Tracing;
  */
 public class TaskExecutorThread extends Thread {
 	private static OLog log = Tracing.createLoggerFor(TaskExecutorThread.class);
-	Queue<BackgroundTask> taskQueue;
+	private Queue<BackgroundTask> taskQueue;
+	private volatile boolean running = true;
 
 	public TaskExecutorThread(Queue<BackgroundTask> taskQueue) {
 		super("TaskExecutorThread");
 		this.taskQueue = taskQueue;
 	}
 	
+	public void stopExecutor() {
+		running = false;
+	}
+	
 	public void run() {
 		log.info("TaskExecutorThread started");
-		boolean running = true;
 		while(running) {
 			synchronized(taskQueue) {
 				if (taskQueue.size() == 0) {
