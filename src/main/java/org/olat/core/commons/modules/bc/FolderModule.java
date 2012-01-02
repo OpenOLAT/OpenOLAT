@@ -60,7 +60,8 @@ public class FolderModule extends AbstractOLATModule {
 	@Override
 	protected void initDefaultProperties() {
 		// Set folder root
-		String homesRoot = getStringConfigParameter(CONFIG_ROOT, System.getProperty("java.io.tmpdir")+"/olatdata/bcroot", false);
+		File defaultHome = new File(System.getProperty("java.io.tmpdir"), "olatdata/bcroot");
+		String homesRoot = getStringConfigParameter(CONFIG_ROOT, defaultHome.getAbsolutePath() , false);
 		if (Settings.isJUnitTest()) {
 			// use dummy directory for junit testcases to not conflict with actual data
 			// on current server. someone may start junit test and not realize that this

@@ -46,6 +46,11 @@ public class NotVersioned implements Versions {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public String getAuthor() {
+		return "";
+	}
+
 	public String getCreator() {
 		return "";
 	}

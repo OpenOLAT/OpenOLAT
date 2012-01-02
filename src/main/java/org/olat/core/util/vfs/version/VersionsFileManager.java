@@ -75,6 +75,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	private static XStream mystream;
 	
 
+	private File rootFolder;
 	private File rootVersionFolder;
 	private VFSContainer rootVersionsContainer;
 
@@ -547,7 +548,10 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 
 	public String getCanonicalRoot() {
-		return FolderConfig.getCanonicalRoot();
+		if(rootFolder == null) {
+			rootFolder = new File(FolderConfig.getCanonicalRoot());
+		}
+		return rootFolder.getAbsolutePath();
 	}
 	
 	public File getRootVersionsFile() {

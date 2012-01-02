@@ -45,6 +45,11 @@ public interface Versions {
 	 * @return the current version number
 	 */
 	public String getRevisionNr();
+	
+	/**
+	 * @return the current author of the file
+	 */
+	public String getAuthor();
 
 	/**
 	 * @return creator of the file

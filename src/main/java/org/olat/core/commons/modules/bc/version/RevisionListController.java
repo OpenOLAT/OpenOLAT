@@ -29,8 +29,6 @@ import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
@@ -90,6 +88,19 @@ public class RevisionListController extends BasicController {
 
 	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile, String title, String description) {
 		super(ureq, wControl);
+		
+		//reload the file with all possible precautions
+		VFSLeaf versionedLeaf = null;
+		if(versionedFile instanceof VFSLeaf) {
+			versionedLeaf = (VFSLeaf)versionedFile;
+		}
+		if(versionedLeaf != null && versionedLeaf.getParentContainer() != null) {
+			//reload the file
+			versionedLeaf = (VFSLeaf)versionedLeaf.getParentContainer().resolve(((VFSLeaf) versionedFile).getName());
+			if(versionedLeaf instanceof Versionable) {
+				versionedFile = (Versionable)versionedLeaf;
+			}
+		}
 		this.versionedFile = versionedFile;
 
 		TableGuiConfiguration summaryTableConfig = new TableGuiConfiguration();
@@ -127,8 +138,9 @@ public class RevisionListController extends BasicController {
 		revisionListTableCtr.addMultiSelectAction("cancel", CMD_CANCEL);
 		revisionListTableCtr.setMultiSelect(true);
 		
-		List<VFSRevision> revisions = new ArrayList<VFSRevision>(versionedFile.getVersions().getRevisions());
-		revisions.add(new CurrentRevision((VFSLeaf)versionedFile));
+		Versions versions = versionedFile.getVersions();
+		List<VFSRevision> revisions = new ArrayList<VFSRevision>(versions.getRevisions());
+		revisions.add(new CurrentRevision(versionedLeaf, versions));
 
 		revisionListTableCtr.setTableDataModel(new RevisionListDataModel(revisions, ureq.getLocale()));
 		listenTo(revisionListTableCtr);
@@ -284,21 +296,18 @@ public class RevisionListController extends BasicController {
 	
 	public class CurrentRevision implements VFSRevision {
 		private final VFSLeaf versionFile;
+		private final Versions versions;
 		
-		public CurrentRevision(VFSLeaf versionFile) {
+		public CurrentRevision(VFSLeaf versionFile, Versions versions) {
 			this.versionFile = versionFile;
+			this.versions = versions;
 		}
 
 		public String getAuthor() {
-			if(versionFile instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)versionFile).getMetaInfo();
-				return info.getAuthor();
-			}
-			return "-";
+			return versions.getAuthor();
 		}
 
 		public String getComment() {
-			Versions versions = ((Versionable)versionFile).getVersions();
 			String comment = versions.getComment();
 			if (StringHelper.containsNonWhitespace(comment)) {
 				return comment;
@@ -321,7 +330,7 @@ public class RevisionListController extends BasicController {
 		}
 
 		public String getRevisionNr() {
-			return ((Versionable)versionFile).getVersions().getRevisionNr();
+			return versions.getRevisionNr();
 		}
 
 		public long getSize() {

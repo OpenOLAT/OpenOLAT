@@ -131,6 +131,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACOfferManagerTest.class,
 	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
+	org.olat.core.util.vfs.VersionManagerTest.class,
 	/**
 	 * 
 	 * Place tests which load their own Spring context

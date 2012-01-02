@@ -113,6 +113,7 @@ public class VersionsFileImpl implements Versions {
 		this.versioned = versioned;
 	}
 
+	@Override
 	public String getAuthor() {
 		return author;
 	}
