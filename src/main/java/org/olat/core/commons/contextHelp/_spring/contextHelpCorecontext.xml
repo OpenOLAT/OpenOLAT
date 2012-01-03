@@ -8,7 +8,6 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
   
-<context:property-placeholder location="classpath:serviceconfig/olat.properties, classpath:olat.local.properties" />
 <context:annotation-config />
 
 <bean id="contextHelpManager" class="org.olat.core.commons.contextHelp.ContextHelpManager" >

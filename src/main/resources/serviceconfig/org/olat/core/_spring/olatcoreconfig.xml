@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
-  http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<!--
 		****************************************************
@@ -14,15 +11,6 @@
 		****************************************************
 		
 	-->
-	<!-- spring replaces vars with values from olat.properties -->
-	<bean class="org.olat.core.configuration.OLATPropertyPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<value>classpath:serviceconfig/olat.properties</value>
-				<value>classpath:olat.local.properties</value>
-			</list>
-		</property>
-	</bean>
 
 <bean id="org.olat.commons.coordinate.cluster.ClusterConfig" class="org.olat.core.util.cache.n.impl.cluster.ClusterConfig">
 		<!-- nodeId must be a cluster-wide unique integer between 1 and 63 -->
