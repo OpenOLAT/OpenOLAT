@@ -25,7 +25,6 @@
 
 package org.olat.modules.iq;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -116,23 +115,8 @@ public class IQComponentRenderer implements ComponentRenderer {
 						displayFeedback(sb, el_solution, ai, translator.getLocale());
 					}
 					// item fb?
-					if (info.isFeedback()) {
-						if (info.getCurrentOutput().hasItem_Responses()) {
-							int fbcount = info.getCurrentOutput().getFeedbackCount();
-							int i=0;
-							while (i < fbcount) {
-								Element el_anschosen = info.getCurrentOutput().getItemAnswerChosen(i);
-								if (el_anschosen != null) {
-									sb.append("<br /><br /><i>");
-									displayFeedback(sb, new Material(el_anschosen), ai, translator.getLocale());
-									sb.append("</i>");
-								}
-								Element el_resp= info.getCurrentOutput().getItemFeedback(i);
-								displayFeedback(sb, new ItemFeedback(el_resp), ai, translator.getLocale());
-								i++;
-							}
-						}
-					}
+					renderFeedback(info, sb, ai, translator);
+					
 					if(!comp.getMenuDisplayConf().isEnabledMenu() && comp.getMenuDisplayConf().isItemPageSequence() && !info.isRenderItems()) {
 						//if item was submitted and sequence is pageSequence and menu not enabled and isRenderItems returns false show section info
 					  SectionContext sc = ai.getAssessmentContext().getCurrentSectionContext();
@@ -146,7 +130,11 @@ public class IQComponentRenderer implements ComponentRenderer {
 					if (info.isFeedback()) {
 						Output outp = info.getCurrentOutput();
 						GenericQTIElement el_feedback = outp.getEl_response();
-						if (el_feedback != null) displayFeedback(sb, el_feedback, ai, translator.getLocale());
+						if (el_feedback != null) {
+							displayFeedback(sb, el_feedback, ai, translator.getLocale());
+						} else {
+							renderFeedback(info, sb, ai, translator);
+						}
 					}
 					if(!comp.getMenuDisplayConf().isEnabledMenu() && !comp.getMenuDisplayConf().isItemPageSequence()) {
 					  SectionContext sc = ai.getAssessmentContext().getCurrentSectionContext();
@@ -275,10 +263,43 @@ public class IQComponentRenderer implements ComponentRenderer {
 			if (info.isFeedback()) {
 				Output outp = info.getCurrentOutput();
 				GenericQTIElement el_feedback = outp.getEl_response();
-				if (el_feedback != null) displayFeedback(sb, el_feedback, ai, null);
+				if (el_feedback != null) {
+					displayFeedback(sb, el_feedback, ai, null);
+				} else {
+					renderFeedback(info, sb, ai, translator);
+					
+					//add the next button
+					sb.append("<a class=\"b_button\" onclick=\"return o2cl()\" href=\"");
+					ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "sitsec" });
+					String title = translator.translate("next"); 
+					sb.append("\" title=\"" + StringEscapeUtils.escapeHtml(title) + "\">");
+					sb.append("<span>").append(title).append("</title>");
+					sb.append("</a>");
+				}
 			}
 		}
 		return sb;
+	}
+	
+	protected void renderFeedback(Info info, StringOutput sb, AssessmentInstance ai, Translator translator) {
+		if (info.isFeedback()) {
+			if (info.getCurrentOutput().hasItem_Responses()) {
+				int fbcount = info.getCurrentOutput().getFeedbackCount();
+				int i=0;
+				while (i < fbcount) {
+					Element el_anschosen = info.getCurrentOutput().getItemAnswerChosen(i);
+					if (el_anschosen != null) {
+						sb.append("<br /><br /><i>");
+						displayFeedback(sb, new Material(el_anschosen), ai, translator.getLocale());
+						sb.append("</i>");
+					}
+					Element el_resp= info.getCurrentOutput().getItemFeedback(i);
+					displayFeedback(sb, new ItemFeedback(el_resp), ai, translator.getLocale());
+					i++;
+				}
+			}
+		}
+		
 	}
 
 	protected static String getFormattedLimit(long millis) {

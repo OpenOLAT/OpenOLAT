@@ -187,6 +187,12 @@ function confirmSuspend() {
 					
 				</div>
 			</div>
+			#elseif($qtistatus.isClosed())
+			<div class="b_subcr">			
+				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
+						$r.render("qticomp", "qtiform")
+				</div>
+			</div>
 			#end
 		</div>
 	</div>

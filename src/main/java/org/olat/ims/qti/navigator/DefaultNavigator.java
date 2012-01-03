@@ -142,14 +142,26 @@ public class DefaultNavigator implements Serializable {
 	 * @see org.olat.qti.process.Navigator#submitAssessment()
 	 */
 	public void submitAssessment() {
+		Output pendingOutput = null;
+		boolean pendingFeedback = getInfo().isFeedback();
+		if(pendingFeedback && getAssessmentInstance().getAssessmentContext().getCurrentSectionContext() != null) {
+			ItemContext itc = getAssessmentInstance().getAssessmentContext().getCurrentSectionContext().getCurrentItemContext();
+			pendingOutput = itc.getOutput();
+		}
+
 		getAssessmentInstance().close();
 		AssessmentContext ac = getAssessmentContext();
+		
+		info.clear();
 		if (ac.isFeedbackavailable()) {
 			Output outp = ac.getOutput();
 			getInfo().setCurrentOutput(outp);
 			getInfo().setFeedback(true);
+		} else if (pendingFeedback) {
+			getInfo().setCurrentOutput(pendingOutput);
+			getInfo().setFeedback(true);
 		}
-		info.clear();
+		//info.clear();
 		info.setMessage(QTIConstants.MESSAGE_ASSESSMENT_SUBMITTED);
 		info.setStatus(QTIConstants.ASSESSMENT_FINISHED);
 		info.setRenderItems(false);

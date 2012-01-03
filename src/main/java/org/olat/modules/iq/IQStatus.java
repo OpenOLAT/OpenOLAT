@@ -237,6 +237,10 @@ public class IQStatus {
 	 */
 	public boolean isOpen() { return isOpen; }
 	/**
+	 * @return true if assessment instance is not closed
+	 */
+	public boolean isClosed() { return !isOpen; }
+	/**
 	 * @return true if of type survey (questionnaire)
 	 */
 	public boolean isSurvey() { return isSurvey; }

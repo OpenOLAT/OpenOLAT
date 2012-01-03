@@ -82,9 +82,6 @@ public class IQDisplayController extends DefaultController implements Activateab
 
 	private static Logger log = Logger.getLogger(IQDisplayController.class.getName());
 
-	// used for logging
-	private static final String IMSQTI = "IMSQTI";
-
 	private VelocityContainer myContent;
 
 	private Translator translator;
@@ -403,7 +400,22 @@ public class IQDisplayController extends DefaultController implements Activateab
 					navig.submitItems(iInp);
 				}
 				if (ai.isClosed()) { // do all the finishing stuff
-					event(ureq, source, new Event(QTIConstants.QTI_WF_SUBMIT));
+					if(navig.getInfo().isFeedback()) {
+						//render the feedback
+					} else {
+						event(ureq, source, new Event(QTIConstants.QTI_WF_SUBMIT));
+						return;
+					}
+				}
+			} else if (wfCommand.equals("sitsec")) { // submit
+				if (ai.isClosed()) { // do all the finishing stuff
+					if (!qtistatus.isSurvey()) {
+						// for test and self-assessment, generate detailed results
+						generateDetailsResults(ureq, ai);
+					} else {
+						// Send also finished event in case of survey
+						fireEvent(ureq, new IQSubmittedEvent());
+					}
 					return;
 				}
 			} else if (wfCommand.equals("sflash")) { // submit flash answer
@@ -439,44 +451,7 @@ public class IQDisplayController extends DefaultController implements Activateab
 			} else if (wfCommand.equals(QTIConstants.QTI_WF_SUBMIT)) { // submit
 																																	// Assessment
 				navig.submitAssessment();
-				// Persist data in all cases: test, selftest, surveys except previews
-				// In case of survey, data will be anonymized when reading from the
-				// table (using the archiver)
-				if (!qtistatus.isPreview()) {
-					iqm.persistResults(ai, callingResId, callingResDetail, ureq);
-					getWindowControl().setInfo(translator.translate("status.results.saved"));
-				} else {
-					getWindowControl().setInfo(translator.translate("status.results.notsaved"));
-				}
-
-				if (!qtistatus.isSurvey()) { // for test and self-assessment, generate
-																			// detailed results
-					Document docResReporting = iqm.getResultsReporting(ai, ureq);
-					if (!iqsec.isPreview()) {
-						FilePersister.createResultsReporting(docResReporting, ureq.getIdentity(), ai.getFormattedType(), ai.getAssessID());
-						// Send score and passed to parent controller. Maybe it is necessary
-						// to save some data there
-						// Do this now and not later, maybe user will never click on
-						// 'close'...
-						AssessmentContext ac = ai.getAssessmentContext();
-						fireEvent(ureq, new IQSubmittedEvent(ac.getScore(), ac.isPassed(), ai.getAssessID()));
-					}
-					
-					Boolean showResultsOnFinishObj = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
-					boolean showResultsOnFinish = showResultsOnFinishObj==null || showResultsOnFinishObj!=null && showResultsOnFinishObj.booleanValue();
-					if (ai.getSummaryType() == AssessmentInstance.SUMMARY_NONE || !showResultsOnFinish) { 
-						// do not display results reporting
-						myContent.contextPut("displayreporting", Boolean.FALSE);
-					} else { // display results reporting
-						String resReporting = iqm.transformResultsReporting(docResReporting, ureq.getLocale(), ai.getSummaryType() );
-						myContent.contextPut("resreporting", resReporting);
-						myContent.contextPut("displayreporting", Boolean.TRUE);
-					} 
-					myContent.setPage(VELOCITY_ROOT + "/result.html");
-				} else {
-					// Send also finished event in case of survey
-					fireEvent(ureq, new IQSubmittedEvent());
-				}
+				postSubmitAssessment(ureq, ai);
 			} else if (wfCommand.equals(QTIConstants.QTI_WF_CANCEL)) { // cancel
 																																	// assessment
 				navig.cancelAssessment();
@@ -502,6 +477,55 @@ public class IQDisplayController extends DefaultController implements Activateab
 			fireEvent(ureq, Event.DONE_EVENT);
 			return;
 		}
+	}
+	
+	/**
+	 * Persist data in all cases: test, selftest, surveys except previews
+	 * In case of survey, data will be anonymized when reading from the
+	 * table (using the archiver)
+	 */
+	protected void postSubmitAssessment(UserRequest ureq, AssessmentInstance ai) {
+		if (!qtistatus.isPreview()) {
+			iqm.persistResults(ai, callingResId, callingResDetail, ureq);
+			getWindowControl().setInfo(translator.translate("status.results.saved"));
+		} else {
+			getWindowControl().setInfo(translator.translate("status.results.notsaved"));
+		}
+
+		if (!qtistatus.isSurvey()) {
+			// for test and self-assessment, generate detailed results
+			generateDetailsResults(ureq, ai);
+		} else {
+			// Send also finished event in case of survey
+			fireEvent(ureq, new IQSubmittedEvent());
+		}
+	}
+	
+	protected void generateDetailsResults(UserRequest ureq, AssessmentInstance ai) {
+		Document docResReporting = iqm.getResultsReporting(ai, ureq);
+		if (!iqsec.isPreview()) {
+			FilePersister.createResultsReporting(docResReporting, ureq.getIdentity(), ai.getFormattedType(), ai.getAssessID());
+			// Send score and passed to parent controller. Maybe it is necessary
+			// to save some data there
+			// Do this now and not later, maybe user will never click on
+			// 'close'...
+			AssessmentContext ac = ai.getAssessmentContext();
+			fireEvent(ureq, new IQSubmittedEvent(ac.getScore(), ac.isPassed(), ai.getAssessID()));
+		}
+		
+		Boolean showResultsOnFinishObj = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+		boolean showResultsOnFinish = showResultsOnFinishObj==null || showResultsOnFinishObj!=null && showResultsOnFinishObj.booleanValue();
+		if (ai.getSummaryType() == AssessmentInstance.SUMMARY_NONE || !showResultsOnFinish) { 
+			// do not display results reporting
+			myContent.contextPut("displayreporting", Boolean.FALSE);
+		} else { // display results reporting
+			String resReporting = iqm.transformResultsReporting(docResReporting, ureq.getLocale(), ai.getSummaryType() );
+			myContent.contextPut("resreporting", resReporting);
+			myContent.contextPut("displayreporting", Boolean.TRUE);
+		} 
+		myContent.setPage(VELOCITY_ROOT + "/result.html");
+		
+		
 	}
 
 	/**
