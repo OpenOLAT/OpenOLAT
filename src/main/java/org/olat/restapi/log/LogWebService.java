@@ -50,7 +50,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial Date:  23.12.2011 <br>
  * @author strentini, sergio.trentini@frentix.com, www.frentix.com
  */
-@Path("log")
+@Path("system/log")
 public class LogWebService {
 
 	private static final String VERSION = "1.0";
