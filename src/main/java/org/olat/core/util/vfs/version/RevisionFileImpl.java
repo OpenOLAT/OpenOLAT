@@ -40,6 +40,7 @@ public class RevisionFileImpl implements VFSRevision {
 	private String author;
 	private String comment;
 	private String name;
+	private String uuid;
 	private long lastModified;
 
 	private VFSLeaf file;
@@ -52,6 +53,18 @@ public class RevisionFileImpl implements VFSRevision {
 	 */
 	public RevisionFileImpl() {
 	//
+	}
+	
+	/**
+	 * UUID of the revision
+	 * @return
+	 */
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	/**

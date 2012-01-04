@@ -26,6 +26,7 @@ import org.olat.core.util.vfs.version.VFSRevision;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.core.util.vfs.version.VersionsFileManager;
+import org.olat.core.util.vfs.version.VersionsManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -170,6 +171,149 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSRevision revision2 = revisions.get(2);
 		assertEquals(id1.getName(), revision2.getAuthor());
 		//current
+		assertEquals(id2.getName(), versions.getAuthor());
+	}
+	
+	@Test
+	public void testMove() throws IOException {
+		//create a file
+		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test2", null);
+		String filename = getRandomName();
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		OutputStream out = file.getOutputStream(false);
+		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
+		int byteCopied = IOUtils.copy(in, out);
+		IOUtils.closeQuietly(in);
+		assertFalse(byteCopied == 0);
+		assertTrue(file instanceof Versionable);
+		assertTrue(file instanceof MetaTagged);
+		
+		//set the author
+		MetaTagged metaTagged = (MetaTagged)file;
+		MetaInfo metaInfo = metaTagged.getMetaInfo();
+		metaInfo.setAuthor(id1.getName());
+		metaInfo.setCreator(id1.getName());
+		metaInfo.write();
+		
+		//save a first version -> id2
+		Versionable versionedFile1 = (Versionable)file;
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		versionedFile1.getVersions().addVersion(id2, "Version 1", in1);
+		IOUtils.closeQuietly(in1);
+		
+		//save a second version -> id1
+		Versionable versionedFile2 = (Versionable)file;
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		versionedFile2.getVersions().addVersion(id1, "Version 2", in2);
+		IOUtils.closeQuietly(in2);
+		
+		//move the file
+		VFSLeaf retrievedLeaf = (VFSLeaf)rootTest.resolve(filename);
+		String copyFilename = getRandomName();
+		VFSLeaf copyFile = rootTest.createChildLeaf(copyFilename);
+		OutputStream copyOutput = copyFile.getOutputStream(false);
+		InputStream copyInput = retrievedLeaf.getInputStream();
+		IOUtils.copy(copyInput, copyOutput);
+		IOUtils.closeQuietly(copyOutput);
+		IOUtils.closeQuietly(copyInput);
+		//move the revisions
+		VersionsManager.getInstance().move(retrievedLeaf, copyFile, id2);
+		
+		//check if the revisions are moved
+		VFSLeaf retirevedCopyFile = (VFSLeaf)rootTest.resolve(copyFilename);
+		assertTrue(retirevedCopyFile instanceof Versionable);
+		Versions versions = VersionsFileManager.getInstance().createVersionsFor(retirevedCopyFile);	
+		List<VFSRevision> revisions = versions.getRevisions();
+		assertNotNull(revisions);
+		assertEquals(2, revisions.size());
+		
+		VFSRevision revision0 = revisions.get(0);
+		//we don't set an author for the original file
+		assertEquals(id1.getName(), revision0.getAuthor());
+		VFSRevision revision1 = revisions.get(1);
+		assertEquals(id2.getName(), revision1.getAuthor());
+		//current
+		assertEquals(id1.getName(), versions.getCreator());
+		assertEquals(id2.getName(), versions.getAuthor());
+	}
+	
+	/**
+	 * Create a file with 2 revision, move it to another name, move it to the primitive name:
+	 * File A, change file A, change file A, move to file B, move to file A
+	 * @throws IOException
+	 */
+	@Test
+	public void testCircleMove() throws IOException {
+		//create a file A
+		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test2", null);
+		String filename = getRandomName();
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		OutputStream out = file.getOutputStream(false);
+		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
+		int byteCopied = IOUtils.copy(in, out);
+		IOUtils.closeQuietly(in);
+		assertFalse(byteCopied == 0);
+		assertTrue(file instanceof Versionable);
+		assertTrue(file instanceof MetaTagged);
+		
+		//set the author
+		MetaTagged metaTagged = (MetaTagged)file;
+		MetaInfo metaInfo = metaTagged.getMetaInfo();
+		metaInfo.setAuthor(id1.getName());
+		metaInfo.setCreator(id1.getName());
+		metaInfo.write();
+		
+		//save a first version of file A -> id2
+		Versionable versionedFile1 = (Versionable)file;
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		versionedFile1.getVersions().addVersion(id2, "Version 1", in1);
+		IOUtils.closeQuietly(in1);
+		
+		//save a second version of file A -> id1
+		Versionable versionedFile2 = (Versionable)file;
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		versionedFile2.getVersions().addVersion(id1, "Version 2", in2);
+		IOUtils.closeQuietly(in2);
+		
+		//move the file A -> file B
+		VFSLeaf retrievedLeaf = (VFSLeaf)rootTest.resolve(filename);
+		String copyFilename = getRandomName();
+		VFSLeaf copyFile = rootTest.createChildLeaf(copyFilename);
+		OutputStream copyOutput = copyFile.getOutputStream(false);
+		InputStream copyInput = retrievedLeaf.getInputStream();
+		IOUtils.copy(copyInput, copyOutput);
+		IOUtils.closeQuietly(copyOutput);
+		IOUtils.closeQuietly(copyInput);
+		//move the revisions
+		VersionsManager.getInstance().move(retrievedLeaf, copyFile, id2);
+		
+		//move the file B -> file A
+		VFSLeaf retrievedCopyLeaf = (VFSLeaf)rootTest.resolve(copyFilename);
+		VFSLeaf originalFile = (VFSLeaf)rootTest.resolve(filename);
+		OutputStream originalOutput = originalFile.getOutputStream(false);
+		InputStream retrievedCopyInput = retrievedCopyLeaf.getInputStream();
+		IOUtils.copy(retrievedCopyInput, originalOutput);
+		IOUtils.closeQuietly(originalOutput);
+		IOUtils.closeQuietly(retrievedCopyInput);
+		//move the revisions
+		VersionsManager.getInstance().move(retrievedCopyLeaf, originalFile, id2);
+		
+		
+		//check if the revisions are moved
+		VFSLeaf retirevedOriginalFile = (VFSLeaf)rootTest.resolve(filename);
+		assertTrue(retirevedOriginalFile instanceof Versionable);
+		Versions versions = VersionsFileManager.getInstance().createVersionsFor(retirevedOriginalFile);	
+		List<VFSRevision> revisions = versions.getRevisions();
+		assertNotNull(revisions);
+		assertEquals(2, revisions.size());
+		
+		VFSRevision revision0 = revisions.get(0);
+		//we don't set an author for the original file
+		assertEquals(id1.getName(), revision0.getAuthor());
+		VFSRevision revision1 = revisions.get(1);
+		assertEquals(id2.getName(), revision1.getAuthor());
+		//current
+		assertEquals(id1.getName(), versions.getCreator());
 		assertEquals(id2.getName(), versions.getAuthor());
 	}
 	

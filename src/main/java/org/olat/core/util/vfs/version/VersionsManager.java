@@ -53,6 +53,15 @@ public abstract class VersionsManager extends BasicManager {
 	 * @return
 	 */
 	public abstract Versions createVersionsFor(VFSLeaf leaf);
+	
+	/**
+	 * Get or create the versions datas of this file
+	 * 
+	 * @param a file
+	 * @param force the creation of the file
+	 * @return
+	 */
+	public abstract Versions createVersionsFor(VFSLeaf leaf, boolean force);
 
 	/**
 	 * Return the list of deleted files in this container.
@@ -92,6 +101,15 @@ public abstract class VersionsManager extends BasicManager {
 	 * @return
 	 */
 	public abstract boolean move(Versionable currentVersion, VFSContainer container);
+	
+	/**
+	 * Move a versioned file to an other (WebDAV only!!!)
+	 * 
+	 * @param currentVersion
+	 * @param oldVersion
+	 * @return
+	 */
+	public abstract boolean move(VFSLeaf currentFile, VFSLeaf targetFile, Identity author);
 
 	/**
 	 * Restore a versioned file to the selected revision. The current version is

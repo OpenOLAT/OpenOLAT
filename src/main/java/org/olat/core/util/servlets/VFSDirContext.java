@@ -39,11 +39,17 @@ import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
+import javax.naming.directory.AttributeModificationException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.InvalidAttributesException;
+import javax.naming.directory.InvalidSearchControlsException;
+import javax.naming.directory.InvalidSearchFilterException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -581,8 +587,8 @@ public class VFSDirContext extends BaseDirContext {
 			VFSResource vfsResource = (VFSResource)obj;
 			if(vfsResource.vfsItem instanceof Versionable
 					&& ((Versionable)vfsResource.vfsItem).getVersions().isVersioned()) {
-				Versionable currentVersion = (Versionable)vfsResource.vfsItem;
-				VersionsManager.getInstance().move(currentVersion, childLeaf.getParentContainer());
+				VFSLeaf currentVersion = (VFSLeaf)vfsResource.vfsItem;
+				VersionsManager.getInstance().move(currentVersion, childLeaf, identity);
 			}
 		}
 	}
@@ -610,11 +616,16 @@ public class VFSDirContext extends BaseDirContext {
 		// Check obj type
 
 		VFSItem vfsItem = resolveFile(name);
-		if (vfsItem == null || (!(vfsItem instanceof VFSLeaf))) throw new NamingException(smgr.getString("resources.bindFailed", name));
+		if (vfsItem == null || (!(vfsItem instanceof VFSLeaf))) {
+			throw new NamingException(smgr.getString("resources.bindFailed", name));
+		}
 		VFSLeaf file = (VFSLeaf)vfsItem;
-		
 		if(file instanceof Versionable && ((Versionable)file).getVersions().isVersioned()) {
-			VersionsManager.getInstance().addToRevisions((Versionable)file, identity, "");
+			if(file.getSize() == 0) {
+				VersionsManager.getInstance().createVersionsFor(file, true);
+			} else {
+				VersionsManager.getInstance().addToRevisions((Versionable)file, identity, "");
+			}
 		}
 		
 		copyVFS(file, name, obj, attrs);

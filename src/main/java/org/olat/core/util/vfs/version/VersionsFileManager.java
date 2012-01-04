@@ -38,6 +38,7 @@ import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
@@ -88,6 +89,11 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 
 	@Override
 	public Versions createVersionsFor(VFSLeaf leaf) {
+		return createVersionsFor(leaf, false);
+	}
+	
+	@Override
+	public Versions createVersionsFor(VFSLeaf leaf, boolean force) {
 		if (!(leaf instanceof Versionable)) {
 			return NOT_VERSIONED;
 		} else if (isVersionFile(leaf)) {
@@ -162,6 +168,84 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			if (VFSManager.copyContent(newFile, currentFile, closeInputStream)) { return true; }
 		} else {
 			log.error("Cannot create a version of this file: " + currentVersion);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean move(VFSLeaf currentFile, VFSLeaf targetFile, Identity author) {
+		VFSLeaf fCurrentVersions = getCanonicalVersionXmlFile(currentFile, true);
+		Versions currentVersions = readVersions(currentFile, fCurrentVersions);
+		
+		boolean brandNewVersionFile = false;
+		VFSLeaf fTargetVersions = getCanonicalVersionXmlFile(targetFile, false);
+		if(fTargetVersions == null) {
+			brandNewVersionFile = true;
+			fTargetVersions = getCanonicalVersionXmlFile(targetFile, true);
+		}
+ 
+		Versions targetVersions = readVersions(targetFile, fTargetVersions);
+		if(!(currentVersions instanceof VersionsFileImpl) || !(targetVersions instanceof  VersionsFileImpl)) {
+			return false;
+		}
+		
+		VersionsFileImpl targetVersionsImpl = (VersionsFileImpl)targetVersions;
+		if(author != null) {
+			targetVersionsImpl.setAuthor(author.getName());
+		}
+		if(brandNewVersionFile) {
+			targetVersionsImpl.setCreator(currentVersions.getCreator());
+			targetVersionsImpl.setComment(currentVersions.getComment());
+		}
+
+		boolean allOk = true;
+		for(VFSRevision revision:currentVersions.getRevisions()) {
+			allOk &= copyRevision(revision, fTargetVersions, targetVersionsImpl);
+		}
+
+		targetVersionsImpl.setRevisionNr(getNextRevisionNr(targetVersionsImpl));
+		XStreamHelper.writeObject(mystream, fTargetVersions, targetVersionsImpl);
+
+		return allOk;
+	}
+	
+	private boolean copyRevision(VFSRevision revision, VFSLeaf fNewVersions, VersionsFileImpl targetVersions) {
+		if(!(revision instanceof RevisionFileImpl)) {
+			logWarn("Copy only copy persisted revisions", null);
+		}
+		
+		RevisionFileImpl revisionImpl = (RevisionFileImpl)revision;
+		String revUuid = revisionImpl.getUuid();
+		for(VFSRevision rev:targetVersions.getRevisions()) {
+			if(rev instanceof RevisionFileImpl) {
+				RevisionFileImpl fRev = (RevisionFileImpl)rev;
+				if(StringHelper.containsNonWhitespace(fRev.getUuid()) && fRev.getUuid().equals(revUuid)) {
+					return true;
+				}
+			}
+		}
+
+		String uuid = UUID.randomUUID().toString().replace("-", "") + "_" + revision.getName();
+		
+		RevisionFileImpl newRevision = new RevisionFileImpl();
+		newRevision.setName(revision.getName());
+		newRevision.setFilename(uuid);
+		newRevision.setRevisionNr(getNextRevisionNr(targetVersions));
+		newRevision.setComment(revision.getComment());
+		newRevision.setAuthor(revision.getAuthor());
+		newRevision.setLastModified(revision.getLastModified());
+		newRevision.setUuid(revUuid);
+
+		//copy -> the files revision
+		InputStream revisionIn = revision.getInputStream();
+
+		VFSLeaf target = fNewVersions.getParentContainer().createChildLeaf(uuid);
+		if (VFSManager.copyContent(revisionIn, target)) {
+			targetVersions.setComment(revision.getComment());
+			targetVersions.getRevisions().add(newRevision);
+			targetVersions.setRevisionNr(getNextRevisionNr(targetVersions));
+			targetVersions.setAuthor(revision.getAuthor());
+			return true;
 		}
 		return false;
 	}
@@ -299,12 +383,33 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			return true;
 		} else if (item instanceof VFSLeaf && item instanceof Versionable) {
 			VFSLeaf leaf = (VFSLeaf)item;
-			if (force) {
+			if (force || isTemporaryFile(leaf)) {
 				cleanUp(leaf);
 			} else {
 				addToRevisions((Versionable)leaf, null, null);
 			}
 		}
+		return false;
+	}
+	
+	/**
+	 * Some temporary files of specific editors need to be force deleted
+	 * with all versions. Word can reuse older names.
+	 * @param leaf
+	 * @return
+	 */
+	private boolean isTemporaryFile(VFSLeaf leaf) {
+		String name = leaf.getName();
+		//temporary files of Word 2010: ~WRD0002.tmp
+		if((name.startsWith("~WRD") || name.startsWith("~WRL")) && name.endsWith(".tmp")) {
+			return true;
+		}
+		//temporary files of PowerPoint 2010: ppt5101.tmp 
+		if(name.startsWith("ppt") && name.endsWith(".tmp")) {
+			return true;
+		}
+		//OpenOffice Text: .~lock.Versions_21.odt#
+		
 		return false;
 	}
 	
@@ -400,6 +505,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		}
 
 		RevisionFileImpl newRevision = new RevisionFileImpl();
+		newRevision.setUuid(UUID.randomUUID().toString());
 		newRevision.setName(name);
 		newRevision.setFilename(uuid);
 		newRevision.setRevisionNr(versionNr);
