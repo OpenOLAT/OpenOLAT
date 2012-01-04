@@ -2,6 +2,7 @@
 /* use the grey ext theme */
 /*@import url(../../js/ext/resources/css/xtheme-gray.css);*/
 
+
 @import "_license.scss";
 
 @import url(../../yaml/core/slim_base.css);
@@ -14,9 +15,6 @@
 /* --------------- */
 @import "all/_basemod.scss";
 @import "all/_dd.scss";
-@import "all/_dialogs.scss";
-@import "all/_portlets_boxes.scss";
-@import "all/_tabpane.scss";
 @import "all/_icons.scss";
 @import "all/_content.scss";
 
@@ -29,7 +27,17 @@
 
 
 /* -------- modules -------- */
+@import "all/modules/_dialogs.scss";
+@import "all/modules/_portlets_boxes.scss";
+@import "all/modules/_tabpane.scss";
+@import "all/modules/_formsandbuttons.scss";
+@import "all/modules/_tables.scss";
+@import "all/modules/_develdebug.scss";
 @import "all/modules/_briefcase.scss";
 @import "all/modules/_wiki.scss";
+@import "all/modules/_forum.scss";
 @import "all/modules/_eportfolio.scss";
 @import "all/modules/_imscp.scss";
+@import "all/modules/_qti.scss";
+@import "all/modules/_translationtool.scss";
+@import "all/modules/_course.scss";

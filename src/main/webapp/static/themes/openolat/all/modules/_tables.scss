@@ -1,0 +1,66 @@
+/** ----------------- TABLES ----------------- **/
+
+
+/*  normal default table (inherited from YAML) */
+table { 
+	border-collapse:collapse; 
+	margin-bottom:0.5em; 
+	border-top: 0px solid white; 
+	border-bottom: 0px solid white; 
+	
+	caption { font-variant:small-caps; }
+	&.b_full { width: 99.5%; }
+	&.fixed { table-layout:fixed; }
+	
+	 th,td { padding:0.3em; }
+	 thead th { color:inherit; border-bottom:1px solid #ccc; }
+	 
+	 tbody{
+	 	/* olat odd rows */
+		tr.b_table_odd td {  background: #eee; }
+	 }
+}
+	
+	
+/* tables from OpenOLAT tablecontroller are wrapped in b_table_wrapper */
+div.b_table_wrapper { 
+	table {
+		width: 99.5%;
+		margin-left: 1px;
+		
+		tbody{
+			tr:hover td { background: $basecolor_ultra_light; ; }
+		}
+	}
+	
+	/* table add-ons */
+	div.b_table_filter { 
+		float: left; display: inline; font-size: 95%; margin:7px 10px 2px 0;
+		label { font-style: italic; margin:5px 0 2px 0; }
+		select { border: 1px solid #ACAAAA	; }
+		option { }
+	}
+	div.b_clearfix div.b_floatbox { margin:5px 0 0 0; }
+	div.b_table_count { font-size: 95%; float: left; line-height: 16px; vertical-align: bottom; margin: 3px; font-size: 95%;}
+	a.b_table_prefs, a.b_table_download {float: right; display: block; background-repeat: no-repeat; background-position: top left; width: 16px; height: 16px; margin: 3px;}
+	a.b_table_prefs {background-image: url(images/table_gear.png);}
+	a.b_table_download {background-image: url(images/table_download.png);}
+	div.b_table_buttons { text-align: center; margin: 1.5em 0 1em 0; }	/* bottom-margin to fix IE6 overflow issue */
+}
+	
+/* table paging */
+div.b_table_page { 
+	font-size: 95%; text-align: center;
+	a { margin: 0 ; padding: 2px;}
+	a.b_table_page_active { font-weight: bold; color: #000;}
+	a.b_table_backward {background: url(images/arrow_left.png) no-repeat center left; padding-left: 16px;}
+	a.b_table_forward {background: url(images/arrow_right.png) no-repeat center right; padding-right: 16px;}
+	a.b_table_first_page {background: url(images/home.png) no-repeat center left; padding-left: 18px;}
+}
+div.b_table_page_all { 
+	font-size: 95%; text-align: center;
+}
+
+
+	
+	

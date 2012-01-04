@@ -28,6 +28,9 @@ package org.olat.test.guidemo;
 import org.olat.admin.user.UserSearchController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -117,6 +120,10 @@ public class GuiDemoLinksController extends BasicController {
 		Controller sourceView = new SourceViewController(ureq, wControl, this.getClass(), mainVC);
 		mainVC.put("sourceview", sourceView.getInitialComponent());
 		
+		
+		// form buttons
+		mainVC.put("formbuttonctr",new FormButtonsDemoController(ureq, wControl).getInitialComponent());
+		
 		p = putInitialPanel(mainVC);		
 	}
 
@@ -159,6 +166,43 @@ public class GuiDemoLinksController extends BasicController {
 
 	protected void doDispose() {
 		//
+	}
+	
+	/**
+	 * displays a demo-form with buttons (toggle)
+	 * 
+	 * @author strentini
+	 *
+	 */
+	class FormButtonsDemoController extends FormBasicController {
+
+		public FormButtonsDemoController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+			initForm(ureq);
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			uifactory.addToggleButton("toggle1", "Toggle 1", formLayout, null, null);			
+			FormToggle fi1 =	uifactory.addToggleButton("toggle_slide1", "&nbsp;", formLayout, "b_toggle_slide b_small b_on", "b_toggle_slide b_small");
+			FormToggle fi2 = uifactory.addToggleButton("toggle_slide2", "&nbsp;", formLayout, "b_toggle_slide b_on", "b_toggle_slide");
+			fi1.setEnabled(true);
+			fi2.setEnabled(true);
+			fi1.toggleOff();
+			fi2.toggleOff();
+		
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			// do nothing
+		}
+
+		@Override
+		protected void doDispose() {
+			// do nothing
+		}
+		
 	}
 
 }

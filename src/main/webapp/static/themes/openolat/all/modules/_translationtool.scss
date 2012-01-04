@@ -1,0 +1,36 @@
+
+/* TRANSLATION TOOL */
+	div.b_translation_start div.b_translation_start_body, div.b_translation_edit div.b_translation_edit_body {margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA; }
+	div.b_translation_list div.b_translation_list_package {margin-bottom: 0.5em; padding: 1em 0 0.5em 0; border-bottom: 1px solid #ACAAAA; }
+	div.b_translation_list div.b_translation_list_package div.b_translation_package_icon {margin-bottom: 0.5em; border-bottom: 1px solid #ACAAAA; }
+	div.b_translation_edit div.b_button_group {text-align: center; margin: 1em 0 0 0;}
+	div.b_translation_edit div.b_translation_edit_head div.b_progress div.b_progress_bar { float: left; display: inline; }
+	div.b_translation_edit div.b_translation_edit_head div.b_progress div.b_progress_label { float: left; display: inline; padding: 0 0 0 1em; font-size: 90%; font-style: italic;}
+	div.b_translation_edit div.b_translation_edit_body textarea {width: 99% }
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_reference {} 
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_annotation {margin-top: 1em;} 
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_compare {margin-top: 1em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;} 
+	div.b_translation_edit div.b_translation_edit_body div.b_translation_edit_target {margin-top: 1em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;} 
+	div.b_translation_edit div.b_form_element textarea.b_form_element_disabled { color: #000; background: #EEEEEE; border: 1px solid #CDCBCB;}
+	div.b_translation_edit div.b_translation_edit_annotation h5 {font-weight: normal; font-size: 100%; font-style: italic;}
+	div.b_translation_edit div.b_translation_edit_annotation textarea {font-style: italic;}
+	div.b_translation_edit div.b_translation_refKey { background-image: url(images/magnifier-zoom.png); vertical-align: middle; background-color: #eee; border:1px solid #ACAAAA; margin-right: 1%; }
+	div.b_translation_edit div.b_translation_refKey  code { line-height: 1em; vertical-align: middle;}
+	div.b_translation_edit div.b_translation_refKey  span { line-height: 1em; font-style: italic;}
+	div.b_translation_config span.b_translation_status, ul.b_translation_status span.b_translation_status { position: absolute; right:1em; }
+	ul.b_translation_status { column-count:2; -moz-column-count:2; list-style: none;}
+	ul.b_translation_status li { position: relative;}	
+
+	.b_translation_package_icon { background-image: url(images/folder_open.png)  ! important; }
+	.b_translation_item_icon { background-image: url(images/docs/document-node.png)  ! important; }
+	.b_translation_search_icon { background-image: url(images/magnifier-zoom.png)  ! important; }
+	/* inline translation tool */	
+	span.b_translation_i18nitem { position: relative ! important; }
+	span.b_translation_i18nitem a.b_translation_i18nitem_launcher { position: absolute ! important; z-index: 100 ! important; width: 16px ! important; height: 16px ! important; top: 0 ! important; left: 5px ! important; 
+		background: #eee url(images/docs/document_metadata_edit.png) no-repeat ! important; border: 1px solid #6E6E6E ! important;
+		@include o-border-radius(3px);
+		padding: 0 ! important;
+	}
+	
+	/* lang selector: make sure you match the country flag, not always the same as the lang code */
+	option.b_translation_overlay { }

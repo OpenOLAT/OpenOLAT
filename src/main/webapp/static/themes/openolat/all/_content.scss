@@ -17,8 +17,10 @@
 *  =================================================
 */
 
+
 * {
 	font-family: Century Gothic, Apple Gothic, sans-serif;
+	//font-family: Geneva, Lucida Sans, Lucida Grande, Lucida Sans Unicode, Verdana, sans-serif;
 }
 
 textarea, pre, tt, code { font-size: 90%; color:inherit; line-height:inherit;margin:inherit;}
@@ -52,166 +54,27 @@ a:hover {
 a.b_link_extern { background: transparent url('images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
 .b_link_mailto { background: transparent url('images/mail_small.png') no-repeat left center; padding-left:18px;}
 
-  hr {
-    color:#fff;
-    background:transparent;
-    margin:0 0 0.5em 0;
-    padding:0 0 0.5em 0;
-    border:0;
-    border-bottom:1px #eee solid;
-  }
+hr {
+  color:#fff;
+  background:transparent;
+  margin:0 0 0.5em 0;
+  padding:0 0 0.5em 0;
+  border:0;
+  border-bottom:1px #eee solid;
+}
+
+
+p { margin: 0 0 1em 0; }
 	
-/** ----------------- BUTTONS  ----------------- **/
-
-.b_button {
-	@include btt-outer;
-	&,span {@include btt-inner;}
-	
-	/* focused buttons */
-	&:focus,&:hover {
-		text-decoration: none;
-		border:1px solid #C6C6C6;
-		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
-	}
-	&:focus {
-		border-color:$basecolor;
-	}
-	&:active {
-		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
-	}
-}
-/* dirty button (form with unsaved values ) */
-.b_button_dirty {
-	@include o-gradient2( #ffffff,#FFF7E0);
-	border-color: #ff9900;
-	
-	&:focus,&:hover {
-		text-decoration: none;
-		border:1px solid #ffc20e;
-		@include o-gradient2( #ffffff,#FFF7E0);
-	}
-}
-
-
-/* disabled buttons */
-.b_disabled.b_button {
-	@include btt-outer;
-	&,span {@include btt-inner;}
-	border: 1px solid #ACAAAA;
-	background:#fff;
-	&:focus, &:hover {
-		@include o-box-shadow(0, 0, 0, transparent);
-	}
-		
-}
-
-
-/* multiple buttons groups below a form */
-div.b_button_group { text-align: center; margin: 2em 0 1em 0;}
-div.b_button_group div { display: inline;}
-
-
-.b_xsmall, sup, sub {
-	font-size: 80%;
-}
-.b_small, small {
-	font-size: 90%;
-}
-
-/* TOGGLE Buttons */
-a.b_toggle { 
-	white-space: nowrap; margin: 0 0.5em 0.2em 0; cursor: default; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 10px; -moz-border-radius: 10px;  border-radius: 10px; display: inline-block; line-height: 1.5em; text-align: center; background: url(../images/brasato/toggle_off.png) top left repeat-x; 
-	span { padding: 0 0.8em; }
-	&:hover { background: #ddd; text-decoration: none; } 
-	&.b_on:hover { background: #747474; }
-	&.b_on,&:active,&.b_on:active{ color: white; border: none; padding: 1px; -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); -moz-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-	&:focus,&.b_on:focus{ text-decoration: none; }
-	&:active,&.b_on:active{ background: url(../images/brasato/toggle_active.png) top left repeat-x; } 
-	&.b_on { background: url(../images/brasato/toggle_on.png) top left repeat-x; }
-	
-}
-span.b_toggle.b_disabled { white-space: nowrap; margin: 0 0.5em 0.2em 0; padding: 0 0.8em; color: #667; border: 1px solid #DDD; -webkit-border-radius: 10px; -moz-border-radius: 10px;  border-radius: 10px; display: inline-block; line-height: 1.5em; text-align: center; background: url(../images/brasato/toggle_dis.png) top left repeat-x; }
-/* TOGGLE SLIDERS */
-a.b_toggle_slide {
-	background: url(../images/brasato/handle.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.2em 0.2em 0.2em; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 4px; -moz-border-radius: 4px;  border-radius:4px; display: inline-block; text-align: center; vertical-align: middle; position: relative;
-	span { position: absolute; top: -25px; left:0;} 
-	&:hover,&:focus,&:active,
-	&.b_on:hover,&.b_on:focus,&.b_on:active{ border: 1px solid #868686; text-decoration: none; } 	
-	&.b_on { background-position: -16px 0px; }
-	&.b_disabled { background: url(../images/brasato/handle_dis.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 4px; -moz-border-radius: 4px;  border-radius:4px; display: inline-block; text-align: center; vertical-align: middle;}
-	
-	/* TOGGLE SLIDERS SMALL */
-	&.b_small { background: url(../images/brasato/handle_small.png) -41px 0px no-repeat; height: 16px; width: 55px; -webkit-border-radius: 2px; -moz-border-radius: 2px;  border-radius:2px; }
-	& span { position: absolute; top: -16px; } 
-	&.b_small.b_on { background-position: -9px 0px; }
-}
-span.b_toggle_slide.b_disabled { background: url(../images/brasato/handle_small_dis.png) -41px 0px no-repeat; height: 16px; width: 55px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 3px; -moz-border-radius: 3px;  border-radius:3px; display: inline-block; text-align: center; vertical-align: middle;}
-span.b_toggle_slide_legend {font-size: 90%; }
-
-/* BACK BUTTON  / LINK **/
-.b_link_back {
-	> span {padding: 0px 8px 0px 25px; background: transparent url('images/arrow_left_big.png') no-repeat 4px center;}
-	@include btt-outer;	
-	/* focused buttons */
-	&:focus,&:hover {
-		text-decoration: none;
-		border:1px solid #C6C6C6;
-		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
-	}
-	&:focus {
-		border-color:$basecolor;
-	}
-	&:active {
-		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
-	}
-}
-
-
-/** ----------------- TABLES ----------------- **/
-
-	table { 
-		border-collapse:collapse; 
-		margin-bottom:0.5em; 
-		border-top: 0px solid white; 
-		border-bottom: 0px solid white; 
-		
-		caption { font-variant:small-caps; }
-		&.b_full { width: 99.5%; }
-		&.fixed { table-layout:fixed; }
-		
-		 th,td { padding:0.3em; }
-		 thead th { color:inherit; border-bottom:1px solid #ccc; }
-		 
-		 tbody{
-		 	/* olat odd rows */
-			tr.b_table_odd td {  background: #eee; }
-		 }
-	}
-	
-	/* tables from olat tablecontroller are wrapped in b_table_wrapper */
-	div.b_table_wrapper table {
-		width: 99.5%;
-		margin-left: 1px;
-		
-		tbody{
-			tr:hover td { background: $basecolor_ultra_light; ; }
-		}
-	}
-  
-
-
-
 
 
 /** ----------------- CONTENT CLASSES ----------------- **/
 
 /* content boxes */
-.b_info { background: #E9EAEF url(images/information-white.png) no-repeat 5px 5px; padding: 5px 5px 5px 30px; border:1px solid #C5C4C4; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
-.b_note {background: #E2E2E2; padding: 1em; border: 2px #B5B5B5 solid; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
-.b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
-.b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
+.b_info { background: #E9EAEF url(images/information-white.png) no-repeat 5px 5px; padding: 5px 5px 5px 30px; border:1px solid #C5C4C4; @include o-border-radius(4px);}
+.b_note {background: #E2E2E2; padding: 1em; border: 2px #B5B5B5 solid; @include o-border-radius(4px);}
+.b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; @include o-border-radius(4px);}
+.b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; @include o-border-radius(4px);}
 div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
 .b_border_box { border: 1px solid #ACAAAA; padding: 1em;}
 /* font  */
@@ -230,9 +93,18 @@ div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
 .b_quote_wrapper { position: relative; margin: 20px; }
 .b_quote_author { background: url(../images/olat/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
 blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464; }
-
+.b_border_box { border: 1px solid #ccc; padding: 1em; }
+.b_warning { padding: 1em; border: 2px #ffc659 solid; @include o-border-radius(4px); @include o-gradient2(#ffe49c,#fff4da); }
+.b_dimmed { -moz-opacity: 0.4; opacity:0.4; filter: alpha(opacity=40);}
+.o_ochre { color: #c8a959; }
 	
-	
+/* FLOTING STYLES */
+.b_float_left { float: left; display:inline; margin-right: 1em; margin-bottom: 0.15em;  }
+.b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
+.b_center { text-align:center; margin: 0.5em auto }
+/* CLEAR container: additonal to b_floatbox */
+.b_floatscrollbox { overflow-x: auto; overflow-y: hidden;}
+.b_overflowscrollbox { overflow: auto;}
 	
 	
 /* =============================================================================== **/
@@ -245,226 +117,63 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 	#b_contexthelp {}
 	#b_contexthelp_content { padding: 0;}
 	#b_ch_topnav_search div.b_form_element_wrapper.b_form_horizontal { margin:2px 0 0 0; }
-	#b_contexthelp_rating{ text-align: center; margin-top: 20px; padding: 10px; border-top: 1px #ACAAAA solid;  }
-	#b_contexthelp_rating h4{ font-size: 90%; margin: 0; font-style: italic; }
-	#b_contexthelp_rating table { display: inline-block; }
-	#b_contexthelp_rating table td { width: 50%; }
+	#b_contexthelp_rating { 
+		text-align: center; margin-top: 20px; padding: 10px; border-top: 1px #ACAAAA solid; 
+		 h4{ font-size: 90%; margin: 0; font-style: italic; }
+		 table {
+			 display: inline-block; 
+			 td { width: 50%; }
+		 }
+	}
 	.b_contexthelp_icon {background-image: url(images/help.png); }
 	
 	
 	
-	/** ----------------- FORMS + LOGIN  ----------------- **/
-	div.o_login div.o_login_form fieldset legend {
-		display: none;
-	}
-	div.b_form div.b_form_desc {
-		padding-bottom: 1em;
-		font-style: italic;
-	}
-	
-	/* FORM: old school form and flexi form! */
-	/* general form elements */
-	input, select, textarea { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0;}
-	textarea { font-family: inherit; width: 100%; } /* FF changes font to monospace otherwhise */
-	input:focus, select:focus, textarea:focus { background: #fff; border: 1px solid #504D4E; }
-	input.b_checkbox, input.b_radio { height: 1em; width: 1em; border: 0; margin: 0 2px 0 0;}
-	label.b_checkbox_label, label.b_radio_label { padding-left: 0.5em; }
-	.b_inline_editable { padding: 1px 20px 1px 0; vertical-align: middle; min-height: 16px; }
-	.b_inline_editable:hover { background-position: 100% 50%; background-repeat: no-repeat; background-image: url(../images/brasato/page_edit_tiny.png);}
-	
-	span.b_inline_editable:hover {cursor:text !important;}
-	
-	fieldset {
-			padding:1em;
-			padding-top: 1.5em;
-			border:none;
-			border-top:1px solid $basecolor_light;
-			legend { 
-				padding : 0 5px;
-				font-size:120%;
-				font-weight:bold; 
-			}
-		}
-		
-
-	div.b_form { 
-		div.b_form_desc { padding-bottom: 1em; font-style: italic;}
-		div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../images/brasato/icon_error.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid #990000; color: #990000; font-style: italic;}
-		div.b_form_spacer { margin: 10px 0; }
-		
-		hr {
-			&.b_form_spacer { margin: 10px 0; border-bottom: 1px solid #eee; padding: 0;}
-			&.b_form_spacer.b_form_horizontal { display: inline-block; width: 2em;}
-			&.b_form_spacer.b_form_spacer_noline { margin: 10px 0; border-bottom: 0; padding: 0;}
-		}
-		
-		/* form element wrapper: label and element */
-		div.b_form_element_wrapper { 
-			vertical-align: middle;
-			margin: 0.5em 0;
-			&.b_form_horizontal { vertical-align: middle; margin: 0.5em 1em 0.5em 0; float: left; display: inline;}
-			&.b_form_vertical { vertical-align: middle; margin: 0.5em 0; float: none; display: block;}
-			
-			div.b_form_element_label{ width: 20%; float: left; display: inline; } 
-			div.b_form_element_label label {  float: left; display: inline; line-height: 1.3em;}
-			div.b_form_element_label span.b_form_mandatory { background: url(images/star-small.png) no-repeat; padding-left: 16px; height: 16px;}
-			div.b_form_element_label.b_form_horizontal { width: auto; float: left; display: inline;} 
-		 	div.b_form_element_label.b_form_vertical { width: auto; float: none; display: block; } 
-		 	
-		 	div.b_form_element { margin-left: 25%; padding: 0 2px 0 12px; } /* keep 2px space for 100% + border of textarea */
-		 	div.b_form_element.b_form_horizontal { margin-left: 0; padding-left: 0; float: left; display: inline; }
-		 	div.b_form_element.b_form_horizontal .b_button { float: left; display: inline;}
-		 	div.b_form_element.b_form_vertical { margin-left: 0; margin-top: 0.5em; padding-left: 0; float: none; display: block; clear: both;}
-		 	
-		 	/** errors  **/
-		 	&.b_form_error {
-		 		input,select {border: 1px solid #990000; background: #ebcccc;}
-		 	}
-		 	div.b_form_error_msg { clear: both; color: #990000; font-style: italic; display: block;}	
-		 	
-		 	div.b_form_element_wrapper {
-				margin: 0;
-			}
-
-		 }
-	
-		/* form button groups */
-		div.b_button_group { margin-left: 0%; padding-left: 0px; text-align: left; } /* make buttons aligned left within element */
-		&.b_form_vertical div.b_button_group{ text-align: left; }
-		
-		
-		div.b_form_element div.b_form_example{ display: inline; font-size: 80%; color: #504D4E;}
-		
-		div.b_form_element {
-			.b_form_disabled { color: #504D4E; }
-			.b_form_element_disabled { color: #9E9C9C; background: #EEEEEE; border: 1px solid #CDCBCB;}
-			/* date and generic chooser icon*/
-			span.b_form_datechooser { background: url(../images/brasato/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px;}
-			span.b_form_datechooser:hover { background-image: url(../images/brasato/calendar_over.png)}
-			a.b_form_groupchooser { background: url(../images/brasato/group.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}
-			a.b_form_groupchooser:hover { background-image: url(../images/brasato/group_over.png) }
-			a.b_form_genericchooser { background: url(../images/brasato/group.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}	
-			a.b_form_genericchooser:hover { background-image: url(../images/brasato/group_over.png) }		
-		    a.b_form_wikitext { background-repeat: no-repeat; padding-left: 12px; line-height: 1.5em; font-style: italic;}
-			a.b_form_wikitext, .b_wiki_icon { background-image: url(../images/brasato/wiki_format.png);}
-			a.b_form_wikitext:hover { background-image: url(../images/brasato/wiki_format_over.png) }
-		}
-	
-	}// end div.b_form
-	
-	div.b_button_group {
-		div.b_form_element_wrapper { vertical-align: middle; margin: 0.5em 0; float: none; display: block;}
-		div.b_form_element_wrapper div.b_form_element_label{ width: auto; float: none; display: block; } 
-		div.b_form_element_wrapper div.b_form_element { margin-left: 0; }
-	}
-	
-	.b_subcolumns {
-		display: table;
-		width: 100%;
-		table-layout: fixed;
-	}
-	.b_c25l, .b_c25r {
-		input{max-width:93%;}
-	}
-
-	div.calendar { z-index:10000 !important; }
-	
-	
-	/* form element switches: checkbox left, lable right: override styles from above */
-	div.b_form div.b_form_element_wrapper.b_form_element_switch div.b_form_element { margin: 0; float: left;}
-	div.b_form div.b_form_element_wrapper.b_form_element_switch div.b_form_element_label {float: none; width: auto; display: block; padding-left: 2.5em;}
-	div.b_form div.b_form_element_wrapper.b_form_element_switch div.b_form_element_label label { float: none; }
-	div.b_form_subform { padding-left: 2.5em; }
-	/* selection lists */
-	div.b_form_selection_vertical div.b_form_selection_element{ vertical-align: middle; line-height: 1.3em; position: relative;}
-	div.b_form_selection_vertical div.b_form_selection_element input{ vertical-align: middle; line-height: 1.3em;}
-	div.b_form_selection_horizontal div.b_form_selection_element{ float: left; display: inline; padding-right: 1em;	}
-	div.b_form_selection_horizontal div.b_form_selection_element input { vertical-align: middle;}
-	/* toggle on / off */
-	div.b_form div.b_form_element div.b_form_togglecheck { font-size: 95%; display: block; vertical-align: middle; line-height: 16px; margin-top: 0.5em;}
-	div.b_form div.b_form_element div.b_form_togglecheck input { height: 1em; width: 1em; }
-	/* link list */
-	div.o_form_wrapper fieldset {min-width:60em;}
-	div.form_shift_left {position:inherit; left: -20%;}
-	
-	/* FORM RICHTEXT ELEMENT */
-	div.mceExternalToolbar {background: #F0F0EE ! important; overflow: auto;} 
-	
-	/* CHOICE */
-	table.b_choice { 
-	
-		padding: 0; margin: 0;
-		td { 
-			padding: 0.1em; margin: 0;
-			&.b_choice_checkrow	{}
-			&.b_choice_textrow {}
-			&.b_togglecheck { 
-				padding-top: 1em;
-				div.b_togglecheck { display: inline; border-top: 1px solid #eee; }
-				input { margin: 0 7px 0 2px;}
-			}
-		}
-		
-	}
-	
-	
-    /* FILE CHOOSER : real file chooser is transparent on layer 2 to hide ugliy browser button, below the visible fake file chooser on layer 1 */
-    div.b_fileinput { 
-    	position: relative;
-    	div.b_fileinput_fakechooser { 
-    		position: absolute; top: 0px; left: 0px; z-index: 1; display: inline; white-space: nowrap;
-    		a { margin-left: 5px; } 
-    	}
-    	span.b_fileinput_maxsize { padding: 1px 0 1px 1em; font-style: italic; min-height: 16px; vertical-align: middle;} /* same as mall icon left */
-    	&:hover a { background-image: url(../images/brasato/hard_disk_over.png); text-decoration: underline;}
-    	input.b_fileinput_realchooser { position: relative; top: 0; left: 0; z-index: 2; -moz-opacity:0; opacity: 0; filter: alpha(opacity=0);}
-    	div.b_button_group { text-align: left; padding-left: 0; margin-left: 0;}
-    }
-	.b_fileinput_icon { background-image: url(../images/brasato/hard_disk.png); }
-	
-	
-	/* PROGRESSBAR */
-	div.b_progress {}
-	div.b_progress div.b_progress_bar { height: 12px; border: 1px solid #bfbfbf; background: #B0C4DE; }
-	div.b_progress div.b_progress_bar div { height: 12px; background: url(../images/brasato/scale.gif);}
-	div.b_progress div.b_progress_label {}
 	
 	/* USER COMMENTS */
-	div.b_ratings_and_comments { margin: 4em 0 1.5em 0; padding-bottom: 0.5em; border-bottom: 1px solid #eee; font-size: 0.9em; position: relative; }
+	div.b_ratings_and_comments { 
+		margin: 4em 0 1.5em 0; padding-bottom: 0.5em; border-bottom: 1px solid #eee; font-size: 0.9em; position: relative; 
+		div.b_rating_wrapper { position: absolute; right: 0; bottom: 0; width: 150px; height: 4em; }
+		div.b_rating { background: none; border: none;  padding: 0; margin: 0; position: absolute; left: 0; bottom: 2px; width: 100%}
+		div.b_rating_personal { background: #fff; z-index: 5; }
+	}
+	
 	div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments { background: url(images/comment.png) 3px 50% no-repeat; padding: 3px 0 1px 23px; vertical-align: middle; min-height: 18px;}
-	div.b_ratings_and_comments div.b_rating_wrapper { position: absolute; right: 0; bottom: 0; width: 150px; height: 4em; }
-	div.b_ratings_and_comments div.b_rating { background: none; border: none;  padding: 0; margin: 0; position: absolute; left: 0; bottom: 2px; width: 100%}
-	div.b_ratings_and_comments div.b_rating_personal { background: #fff; z-index: 5; }
-	div.b_comments { font-size: 0.9em;}
-	div.b_comments div.b_comment_wrapper { border:1px solid #eee; padding: 10px 10px 5px 10px; margin-bottom: 2em; background: #fbfbfb; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
-	div.b_comments div.b_comment_wrapper div.b_avatar img { border: 1px solid #aaa; }
-	div.b_comments div.b_comment_wrapper h5 { font-size: 1em; background: url(../images/brasato/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
-	div.b_comments div.b_comment_wrapper span.b_date { color: #aaaaaa; font-weight: normal; display: block; margin-top: 5px;}
-	div.b_comments blockquote.b_comment { padding: 3px 0 0 0px; margin: 0;}
-	div.b_comments div.b_form { padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; background: #fbfbfb url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; -moz-border-radius: 4px; -webkit-border-radius: 4px;}
-	div.b_comments div.b_form h5 { font-size: 1em; margin-bottom: 0.5em;}
-	div.b_comments div.b_form div.b_button_group { text-align: center; }
-	div.b_comment_wrapper div.b_comment_wrapper { margin-left: 7px; background: #fff;}
-	div.b_comment_wrapper div.b_comment_wrapper div.b_comment_wrapper { background: #fbfbfb;}
-	div.b_comment_wrapper div.b_comment_wrapper div.b_comment_wrapper div.b_comment_wrapper { background: #fff;}
+
+	div.b_comments { 
+		font-size: 0.9em;
+		
+		div.b_comment_wrapper { 
+			border:1px solid #eee; padding: 10px 10px 5px 10px; margin-bottom: 2em; background: #fbfbfb;
+			@include o-border-radius(4px);
+			div.b_avatar img { border: 1px solid #aaa; }
+			h5 { font-size: 1em; background: url(images/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
+			span.b_date { color: #aaaaaa; font-weight: normal; display: block; margin-top: 5px;}
+			
+			// wrapper in wrapper in wrapper in ....
+			div.b_comment_wrapper { margin-left: 7px; background: #fff; div.b_comment_wrapper { background: #fbfbfb; div.b_comment_wrapper { background: #fff;} } }
+		}
+		blockquote.b_comment { padding: 3px 0 0 0px; margin: 0;}
+		div.b_form { 
+			padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; background: #fbfbfb url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left;@include o-border-radius(4px); 
+			h5 { font-size: 1em; margin-bottom: 0.5em;}
+			div.b_button_group { text-align: center; }
+		}		
+	}
+	
 	.b_comment_icon {background-image: url(images/comment.png);}
 	#b_comment_form_link {font-size: 0.9em; position: relative; top: -15px; left: 23px;}
 	
 	/* DATE COMPONENT */
-	div.b_datecomp {width: 2.5em; height: 3em; position: relative; margin-right: 5px;  font-weight: normal; color: white; text-align: center; vertical-align: middle; border: 1px solid #000; font-size: 85%}
-	div.b_datecomp div {width: 100%;  position: absolute; left: 0;}
-	div.b_datecomp div.b_year {height: 1em; top: -1.5em; font-size: 80%; font-weight: normal; color: #000; }
-	div.b_datecomp div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
-	div.b_datecomp div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
+	div.b_datecomp { 
+		width: 2.5em; height: 3em; position: relative; margin-right: 5px;  font-weight: normal; color: white; text-align: center; vertical-align: middle; border: 1px solid #000; font-size: 85%;
+		div {width: 100%;  position: absolute; left: 0;}
+		div.b_year {height: 1em; top: -1.5em; font-size: 80%; font-weight: normal; color: #000; }
+		div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
+		div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
+	}
 	
-	/* MARK */
-	div.b_mark { width:20px; height:20px; }
-	div.b_mark div.b_form div.b_form_element_wrapper { margin:0; }
-	div.b_mark div.b_form_element_wrapper div.b_form_element { margin:0; padding:0; }
-	a.b_mark_set span, a.b_mark_not_set span { display:block; width:19px; height:19px; }
-	a.b_mark_set { background: url(../images/brasato/flag.png) center right no-repeat; display:block; width:20px; height:20px; }
-	a.b_mark_set:hover, a.b_mark_not_set:hover { background: url(../images/brasato/flag_over.png) center right no-repeat; display:block; width:20px; height:20px; }
-	a.b_mark_not_set { background: url(../images/brasato/flag_dis.png) center right no-repeat; display:block; width:20px; height:20px; }
+	
 	
 	/* RATING */
 	div.b_rating {
@@ -495,21 +204,6 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 	div.b_form_auto_completer_item.b_error_icon { color: #990000; font-style: italic;}
 		
 
-/** -------------------- JUST STYLES --------------------- **/
-/**  you can add these classes to elements to decorate them these classes **/
-.b_border_box {
-	border: 1px solid #ccc;
-	padding: 1em;
-}
 
-.b_warning {
-	padding: 1em;
-	border: 2px #ffc659 solid;
-	@include o-border-radius(4px);
-	@include o-gradient2(#ffe49c,#fff4da);
-}
-
-.b_dimmed { -moz-opacity: 0.4; opacity:0.4; filter: alpha(opacity=40);}
-.o_ochre { color: #c8a959; }
 
 

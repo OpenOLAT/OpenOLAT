@@ -1,0 +1,26 @@
+/** -------------------- DEVELOPMENT TOOL / DEBUG ---------------- **/
+a.b_dev { position: absolute; left: 0; top: 0; z-index:4000; background: red url('images/bug.png') no-repeat; width: 16px; height: 16px; border: 1px solid #000;}
+#b_devcon_main { background-color: #ccddff; position:absolute; z-index:4000; top:10px; left: 5%; width:90%; text-align: left; border: 1px solid #000}
+#b_devcon_handle { cursor:move; background: blue url(images/bug.png) no-repeat 4px 50%; line-height: 2em; padding-left: 24px; color:white; }
+a#b_devcon_handle_collapse {cursor:pointer; background: url($ico_minus) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+a#b_devcon_handle_expand {cursor:pointer; background: url($ico_plus) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+a.b_devcon_handle_close {cursor:pointer; background: url(images/close.png) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+#b_devcon_content {
+	font-size: 90%;  padding: 5px; border-top: 0px solid #000; background:transparent;;
+	ul { float: left; margin: 0; padding: 0; list-style: none; white-space: nowrap;}
+	li { margin: 0; padding: 0 10px 0 0; float: left}
+	fieldset {border-top: 1px solid #ccc; margin: 0; padding: 8px; }
+}
+#b_devcon_mode { width: 1em; height: 1em; float: left; border:1px solid #000; margin-right: 5px;} /* bgcolor defined programatically */
+#b_js_log textarea#o_debug_cons { width: 99%; height: 15em; font-family: monospace; font-size: 110%; margin: 5px 0 5px 0;}
+#b_devcon_compdump {}
+iframe.o_debug_json {
+	position: fixed;
+	width: 90%;
+	margin-left: 5%;
+	bottom: 4px;
+	height: 300px;
+	background: white;
+	border:2px solid #ccd8e7;
+	z-index:90000; //above all ^^
+}

@@ -1,0 +1,67 @@
+/* FORUM */
+
+div.o_forum {
+	div.o_forum_switch { border: 1px solid #8F99AD; padding: 3px; font-size: 95% }
+	div.o_forum_message { 
+		margin: 1em 0 1em 0;
+		padding: 0.5em;
+		border: 1px solid $basegray_light;
+		@include o-border-radius(4px); 
+		background: $basegray_ultra_light;
+	}
+	div.o_forum_message_header_wrapper { 
+		min-height: 24px;
+		div.o_forum_message_header { min-height: 24px;}
+	}
+	
+	div.o_forum_message_title { 
+		vertical-align: middle; padding: 2px 5px 2px 5px;   min-height: 24px;
+		strong { font-weight: bold;}
+	}
+	div.o_forum_message_new div.o_forum_message_title strong {background: url(images/new-text.png) no-repeat top right; padding-right: 20px;}
+	
+	div.o_forum_message_content_wrapper { 
+		div.o_forum_message_content { }
+	}
+	
+	div.o_forum_message_creator { 
+		width: 100px; padding: 0.5em 0px 0px 0px; font-size: 95%; color: #4F576A;
+		strong { font-weight: normal; }
+		img { border: 1px solid #4F576A; }
+	}
+	div.o_forum_message_body { padding: 0.5em; margin-left:100px; background:#fff; margin-right:3px; } 
+	div.o_forum_message_attachments { 
+		margin: 2em 0 0.5em 0; border-top: 1px solid $basegray; font-size: 95%;
+		strong { display: block; margin: 0.5em 0; font-weight: normal; font-style: italic; }
+		ul { list-style: none; margin: 0; padding: 0;}
+		li { margin: 0; padding: 0; }
+		a { background-repeat: no-repeat; background-position: 0 50%; padding-left: 20px; padding-top:2px ;padding-bottom:2px;}
+	}
+	
+	div.o_forum_message_modified { clear: both; border-top: 1px solid #506D90; padding: 0.5em 0 0 0; font-size: 95%; font-style: italic; text-align: center; color: #98221F}
+	div.o_forum_message_footer_wrapper { }
+	div.o_forum_message_actions { text-align: center; padding: 0.2em 1em; padding-top:0.8em;}
+
+
+}
+	
+span.o_forum_thread_sticky { font-weight: bold; }
+span.o_forum_status_thread_icon {background-image: url(images/forum/forum.png)}
+span.o_forum_status_sticky_closed_icon {background-image: url(images/forum/sticky-note-pin_locked.png)}
+span.o_forum_status_sticky_icon {background-image: url(images/forum/sticky-note-pin.png)}
+span.o_forum_status_closed_icon {background-image: url(images/forum/forum_locked.png)}
+
+div.o_forum_peekview { 
+	margin: 1em 0 1em 0;
+	h5 { font-size: 1em; position: relative; left: -20px;}
+	div.o_forum_peekview_message { padding-left: 20px; padding-bottom: 15px; }
+	div.b_quote_wrapper { display: none;}
+}
+.o_forum_message_icon {background-image: url(images/forum/balloon-white-left.png); }
+
+div.o_forum_toolbar { float:left; display:inline; width:75%; }
+div#o_forum_fulltextsearch { 
+	float:right; display:inline; 
+	input { width:10em; }
+	div.b_form_element_wrapper.b_form_horizontal { margin:0; }
+}

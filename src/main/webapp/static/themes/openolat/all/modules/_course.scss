@@ -1,0 +1,19 @@
+/* SELECTION TREE  (when you insert a BuildingBlock into a course) */
+div.b_selectiontree { 
+	font-size: 95%; 
+	div.b_selectiontree_item { 
+		clear: both; position: relative; top: 0; left: 0; vertical-align:middle; height: 16px; width: auto;
+		div { width: 16px;	height: 16px; float: left; display: inline;	background-repeat: no-repeat; }    
+		div.b_selectiontree_content { float: left; display: inline; margin-left: 0.5em; width: auto; white-space: nowrap; }     
+	}
+	div.b_selectiontree_content { 
+		width: auto;
+		div { width: auto;}
+		input { width: 1em; height: 1em; padding: 0; margin: 0 0.5em; vertical-align: middle;}
+		input.b_radio { margin: 0;}
+	}
+	.b_selectiontree_line {background-image: url(images/tree/dots.gif); }
+   	.b_selectiontree_space {background-image: url(images/tree/dots_spacer.gif); }
+   	.b_selectiontree_junction {background-image: url(images/tree/dots_nt.gif); }
+   	.b_selectiontree_end {background-image: url(images/tree/dots_nl.gif); }
+}

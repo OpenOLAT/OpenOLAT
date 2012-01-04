@@ -38,6 +38,7 @@
 			}
 			position: relative;
 		 }
+		 
 		div.o_wikimod_btn div.b_contexthelp_wrapper a.b_contexthelp {position: absolute; top: 0; right: 0;}
 		a.o_wikimod_btn_bold { background-image: url(images/wiki/edit-bold.png) }
 		a.o_wikimod_btn_italic { background-image: url(images/wiki/edit-italic.png) }
@@ -45,10 +46,10 @@
 		a.o_wikimod_btn_extlink { background: url(images/wiki/chain--arrow.png) }
 		a.o_wikimod_btn_headline { background: url(images/wiki/edit-heading.png) }
 		a.o_wikimod_btn_image { background: url(images/wiki/image-medium.png) }
-		a.o_wikimod_btn_media { background: url(../images/olat/wiki/btn_media.png) }
-		a.o_wikimod_btn_math { background: url(../images/olat/wiki/btn_math.png) }
-		a.o_wikimod_btn_nowiki { background: url(../images/olat/wiki/btn_nowiki.png) }
-		a.o_wikimod_btn_hr { background: url(../images/olat/wiki/btn_hr.png) }
+		a.o_wikimod_btn_media { background: url(images/music-beam.png) }
+		a.o_wikimod_btn_math { background: url(images/wiki/edit-math.png) }
+		a.o_wikimod_btn_nowiki { background: url(images/wiki/edit-nowiki.png) }
+		a.o_wikimod_btn_hr { background: url(images/wiki/edit-hr.png) }
 		a.o_wikimod_btn_list { background: url(images/wiki/edit-list.png) }
 		a.o_wikimod_btn_numlist { background: url(images/wiki/edit-list-order.png) }
 	

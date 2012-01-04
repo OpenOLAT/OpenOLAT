@@ -150,6 +150,7 @@ public class TableController extends BasicController {
 	private TableGuiConfiguration tableConfig;
 
 	private List filters;
+	private String filterTitle;
 	private ShortName activeFilter;
 
 	private boolean tablePrefsInitialized = false;
@@ -203,8 +204,9 @@ public class TableController extends BasicController {
 		this(tableConfig, ureq, wControl, tableTrans);
 
 		// push filter to velocity page
+		this.filterTitle = filterTitle;
 		setFilters(filters, activeFilter);
-		this.contentVc.contextPut("filterTitle", filterTitle);
+		
 		if (noFilterOption != null) {
 			this.contentVc.contextPut("noFilterOption", noFilterOption);
 			this.contentVc.contextPut(VC_VAR_USE_NO_FILTER_OPTION, Boolean.TRUE);
@@ -504,6 +506,7 @@ public class TableController extends BasicController {
 		this.filters = filters;
 		this.contentVc.contextPut("hasFilters", filters == null ? Boolean.FALSE : Boolean.TRUE);
 		this.contentVc.contextPut("filters", filters);
+		this.contentVc.contextPut("filterTitle", filterTitle == null ? "" : filterTitle);
 		setActiveFilter(activeFilter);
 	}
 

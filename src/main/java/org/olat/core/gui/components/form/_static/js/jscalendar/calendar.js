@@ -1744,6 +1744,9 @@ Date.prototype.print = function (str) {
 		return str.replace(re, function (par) { return s[par] || par; });
 
 	var a = str.match(re);
+	
+	if(!a) return str; // strentini, will prevent js errors when moving mouse over calendar-popup and given string (str) is something like "select date", which does occur! ;)
+	
 	for (var i = 0; i < a.length; i++) {
 		var tmp = s[a[i]];
 		if (tmp) {

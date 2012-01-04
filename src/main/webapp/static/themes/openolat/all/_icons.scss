@@ -71,6 +71,11 @@ option.b_with_small_icon_left {
 .o_login_guests {background-image: url(images/user_silhouette.png);}
 .o_login_pwd {background-image: url(images/user_excl.png);}
 .o_login_register {background-image: url(images/user_register.png);}
+.o_news_icon { background-image: url(../images/olat/information.png); }
+.o_course_icon { background-image: url(images/le_resources/book-open-text-image.png); }
+.o_chat_icon { background-image: url(../images/olat/chat_icon.png); }
+.o_admin_icon { background-image: url(images/wrench-screwdriver.png); }
+.o_calendar_icon { background-image: url(images/calendar.png); }
 
 
 /** ------- FLAGS ------ **/
@@ -97,7 +102,6 @@ option.b_with_small_icon_left {
 .b_flag_ar {background-image: url(images/flags/eg.png)} 	
 .b_flag_rm {background-image: url(images/flags/rm.png)} 	
 .b_flag_af {background-image: url(images/flags/za.png)} 	
-.b_flag_iw {background-image: url(images/flags/iw.png)} 	
 .b_flag_vi {background-image: url(images/flags/vn.png)} 
 .b_flag_mn {background-image: url(images/flags/mn.png)} 
 .b_flag_iw {background-image: url(images/flags/il.png)} 
@@ -117,7 +121,7 @@ option.b_with_small_icon_left {
 
 /** ------- FILE TYPES ------- **/
 	/* first the default that is used as base class. will be overriden by following classes */
-.b_filetype_file { 	background-image: url(images/docs/document_plain.png) ! important; }
+.b_filetype_file ,.b_filetype_ico { 	background-image: url(images/docs/document_plain.png) ! important; }
 
 /* filesystem icons, mark important to override ext definitions */
 .b_filetype_avi_icon { background-image: url(images/docs/document-film.png) ! important; }
@@ -127,33 +131,34 @@ option.b_with_small_icon_left {
 .b_filetype_doc, .b_filetype_docx { background-image: url(images/docs/document-word.png) ! important; }
 .b_filetype_dvi { background-image: url(images/docs/document-film.png) ! important; }
 .b_filetype_exe { background-image: url(images/docs/document-binary.png) ! important; }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_filetype_folder_open { background-image: url(../images/brasato/folder_open.png)  ! important; }	
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_filetype_folder_open { background-image: url(images/folder_open.png)  ! important; }	
 .b_filetype_folder { background-image: url(images/folder.png)  ! important; }
 .b_filetype_gif { background-image: url(images/docs/document-image.png) ! important; }
 .b_filetype_gz { background-image: url(images/docs/document-zipper.png) ! important; }
 .b_filetype_htm, .b_filetype_html { background-image: url(images/docs/document_tags.png) ! important; }
 .b_filetype_jpeg, .b_filetype_jpg { background-image: url(images/docs/document-image.png) ! important; }
+.b_filetype_js { background-image: url(images/docs/document_tags.png) ! important; }
 .b_filetype_log { background-image: url(images/docs/document_plain.png) ! important; }
 .b_filetype_midi { background-image: url(images/docs/document-music.png) ! important; }
 .b_filetype_mov { background-image: url(images/docs/document-film.png) ! important; }
 .b_filetype_mp3,.b_filetype_m3u { background-image: url(images/docs/document-music.png) ! important; }
 .b_filetype_mpeg,.b_filetype_mpg { background-image: url(images/docs/document-film.png) ! important; }
-.b_filetype_odp { background-image: url(../images/brasato/opendoc_pres.png) ! important; }
-.b_filetype_ods { background-image: url(../images/brasato/opendoc_sheet.png) ! important; }
-.b_filetype_odt { background-image: url(../images/brasato/opendoc_text.png) ! important; }
-.b_filetype_odg { background-image: url(../images/brasato/opendoc_graphic.png) ! important; }
-.b_filetype_odf { background-image: url(../images/brasato/opendoc_math.png) ! important; }
+.b_filetype_odp { background-image: url(images/docs/document-powerpoint.png) ! important; }
+.b_filetype_ods { background-image: url(images/docs/document-excel.png) ! important; }
+.b_filetype_odt { background-image: url(images/docs/document-text.png) ! important; }
+.b_filetype_odg { background-image: url(images/docs/document-image.png) ! important; }
+.b_filetype_odf { background-image: url(images/docs/document_plain.png) ! important; }
 .b_filetype_pdf { background-image: url(images/docs/document-pdf.png) ! important; }
 .b_filetype_png { background-image: url(images/docs/document-image.png) ! important; }
 .b_filetype_ppt { background-image: url(images/docs/document-powerpoint.png) ! important; }
 .b_filetype_pptx { background-image: url(images/docs/document-powerpoint.png) ! important; }
 .b_filetype_ps { background-image: url(images/docs/document-pdf.png) ! important; }
 .b_filetype_qt,.b_filetype_ra,.b_filetype_ram { background-image: url(images/docs/document-film.png) ! important; }
-.b_filetype_readme { background-image: url(images/docs/document_plain.png) ! important; }
+.b_filetype_readme, .b_filetype_README { background-image: url(images/docs/document-text.png) ! important; }
 .b_filetype_rtf { background-image: url(images/docs/document-word.png) ! important; }
 .b_filetype_tar,.b_filetype_tgz { background-image: url(images/docs/document-zipper.png) ! important; }
 .b_filetype_tiff { background-image: url(images/docs/document-image.png) ! important; }
-.b_filetype_txt { background-image: url(images/docs/document_plain.png) ! important; }
+.b_filetype_txt { background-image: url(images/docs/document-text.png) ! important; }
 .b_filetype_wav { background-image: url(images/docs/document-music.png) ! important; }
 .b_filetype_xls, .b_filetype_xlsx { background-image: url(images/docs/document-excel.png) ! important; }
 .b_filetype_xml{ background-image: url(images/docs/document_tags.png) ! important; }
@@ -161,38 +166,36 @@ div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_fil
 .b_filetype_zip { background-image: url(images/docs/document-zipper.png) ! important; }
 
 
-/* tab icons in nav */
+/* tab icons in nav  and in LE-resources table*/
 
-#b_nav_main {
 
-	// the default 
-	li.b_nav_site div, li.b_nav_tab div { background: url(images/application.png) no-repeat left 50%; padding-left: 18px;	}			
-	
-	// the others		
-	li.b_resource_BusinessGroup div, .o_BusinessGroup_icon  { background-image: url(images/users.png) }
-	li.b_resource_CourseModule div, .o_CourseModule_icon  { background-image: url(images/le_resources/book-open-text-image.png) }
-	li.b_resource_HOMEPAGECONFIG div, .o_HOMEPAGECONFIG_icon,  li.b_resource_Identity div { background-image: url(../images/olat/vcard.png) }
-	li.b_resource_FileResource-SHAREDFOLDER div, .o_FileResource-SHAREDFOLDER_icon  { background-image: url(images/folder_shared.png) }
-	li.b_resource_FileResource-WIKI div, .o_FileResource-WIKI_icon  { background-image: url(images/le_resources/wiki.png) }
-	li.b_resource_FileResource-PODCAST div, .o_FileResource-PODCAST_icon  { background-image: url(images/le_resources/podcast.png) }
-	li.b_resource_FileResource-BLOG div, .o_FileResource-BLOG_icon  { background-image: url(images/le_resources/blog.png) }
-	li.b_resource_FileResource-MOVIE div, .o_FileResource-MOVIE_icon  { background-image: url(images/docs/document-film.png) }
-	li.b_resource_FileResource-PDF div, .o_FileResource-PDF_icon  { background-image: url(images/docs/document-pdf.png) }
-	li.b_resource_FileResource-PPT div, .o_FileResource-PPT_icon  { background-image: url(images/docs/document-powerpoint.png) }
-	li.b_resource_FileResource-DOC div, .o_FileResource-DOC_icon  { background-image: url(images/docs/document-word.png) }
-	li.b_resource_FileResource-IMSCP div, .o_FileResource-IMSCP_icon  { background-image: url(images/le_resources/book-open-text-image-red.png) }
-	li.b_resource_FileResource-SCORMCP div, .o_FileResource-SCORMCP_icon  { background-image: url(images/le_resources/book-open-text-image-s.png) }
-	li.b_resource_FileResource-FILE div, .o_FileResource-FILE_icon  { background-image: url(images/docs/document_plain.png) }
-	li.b_resource_FileResource-IMAGE div, .o_FileResource-IMAGE_icon  { background-image: url(images/docs/document-image.png) }
-	li.b_resource_FileResource-SOUND div, .o_FileResource-SOUND_icon  { background-image: url(images/docs/document-music.png) }
-	li.b_resource_FileResource-XLS div, .o_FileResource-XLS_icon  { background-image: url(images/docs/document-excel.png) }
-	li.b_resource_FileResource-ANIM div, .o_FileResource-ANIM_icon  { background-image: url(images/docs/document-image.png) }
-	li.b_resource_FileResource-SURVEY div, .o_FileResource-SURVEY_icon  { background-image: url(images/le_resources/survey.png) }
-	li.b_resource_FileResource-TEST div, .o_FileResource-TEST_icon  { background-image: url(images/le_resources/test.png) }	
-	li.b_resource_FileResource-GLOSSARY div, .o_FileResource-GLOSSARY_icon  { background-image: url(images/le_resources/glossary.png) }
-	li.b_resource_org-olat-search-ui-SearchController div, .o_org-olat-search-ui-SearchController_icon  { background-image: url(../images/brasato/search.png) }		
-	li.b_resource_EPStructuredMapTemplate div { background-image: url(images/le_resources/portfolio.png) }
-}
+// the default 
+li.b_nav_site div, li.b_nav_tab div { background: url(images/application.png) no-repeat left 50%; padding-left: 18px;	}			
+
+// the others		
+li.b_resource_BusinessGroup div, .o_BusinessGroup_icon  { background-image: url(images/users.png) }
+li.b_resource_CourseModule div, .o_CourseModule_icon  { background-image: url(images/le_resources/book-open-text-image.png) }
+li.b_resource_HOMEPAGECONFIG div, .o_HOMEPAGECONFIG_icon,  li.b_resource_Identity div { background-image: url(../images/olat/vcard.png) }
+li.b_resource_FileResource-SHAREDFOLDER div, .o_FileResource-SHAREDFOLDER_icon  { background-image: url(images/folder_shared.png) }
+li.b_resource_FileResource-WIKI div, .o_FileResource-WIKI_icon  { background-image: url(images/le_resources/wiki.png) }
+li.b_resource_FileResource-PODCAST div, .o_FileResource-PODCAST_icon  { background-image: url(images/le_resources/media-player-cast.png) }
+li.b_resource_FileResource-BLOG div, .o_FileResource-BLOG_icon  { background-image: url(images/le_resources/blog.png) }
+li.b_resource_FileResource-MOVIE div, .o_FileResource-MOVIE_icon  { background-image: url(images/docs/document-film.png) }
+li.b_resource_FileResource-PDF div, .o_FileResource-PDF_icon  { background-image: url(images/docs/document-pdf.png) }
+li.b_resource_FileResource-PPT div, .o_FileResource-PPT_icon  { background-image: url(images/docs/document-powerpoint.png) }
+li.b_resource_FileResource-DOC div, .o_FileResource-DOC_icon  { background-image: url(images/docs/document-word.png) }
+li.b_resource_FileResource-IMSCP div, .o_FileResource-IMSCP_icon  { background-image: url(images/le_resources/book-open-text-image-red.png) }
+li.b_resource_FileResource-SCORMCP div, .o_FileResource-SCORMCP_icon  { background-image: url(images/le_resources/book-open-text-image-s.png) }
+li.b_resource_FileResource-FILE div, .o_FileResource-FILE_icon  { background-image: url(images/docs/document_plain.png) }
+li.b_resource_FileResource-IMAGE div, .o_FileResource-IMAGE_icon  { background-image: url(images/docs/document-image.png) }
+li.b_resource_FileResource-SOUND div, .o_FileResource-SOUND_icon  { background-image: url(images/docs/document-music.png) }
+li.b_resource_FileResource-XLS div, .o_FileResource-XLS_icon  { background-image: url(images/docs/document-excel.png) }
+li.b_resource_FileResource-ANIM div, .o_FileResource-ANIM_icon  { background-image: url(images/docs/document-image.png) }
+li.b_resource_FileResource-SURVEY div, .o_FileResource-SURVEY_icon  { background-image: url(images/le_resources/survey.png) }
+li.b_resource_FileResource-TEST div, .o_FileResource-TEST_icon  { background-image: url(images/le_resources/test.png) }	
+li.b_resource_FileResource-GLOSSARY div, .o_FileResource-GLOSSARY_icon  { background-image: url(images/le_resources/glossary.png) }
+li.b_resource_org-olat-search-ui-SearchController div, .o_org-olat-search-ui-SearchController_icon  { background-image: url(images/magnifier-zoom.png) }		
+li.b_resource_EPStructuredMapTemplate div { background-image: url(images/le_resources/portfolio.png) }
 	
 	
 /* ------ TOOLBOX ICONS -------- */
@@ -235,7 +238,7 @@ li a.b_toolbox_copy, .b_copy_icon { background-image: url(images/docs/document-c
 .o_cp_item { background-image: url(images/docs/document-text.png)!important}
 .o_dialog_icon { background-image: url(images/docs/document_discuss.png)!important} 
 .o_en_icon { background-image: url(images/enrol.png)!important}
-.o_fo_icon { background-image: url(images/forum.png)!important}
+.o_fo_icon { background-image: url(images/forum/forum.png)!important}
 .o_iqself_icon { background-image: url(images/le_resources/selftest.png)!important}
 .o_iqsurv_icon { background-image: url(images/le_resources/survey.png)!important}
 .o_iqtest_icon { background-image: url(images/le_resources/test.png)!important}
@@ -263,5 +266,5 @@ li a.b_toolbox_copy, .b_copy_icon { background-image: url(images/docs/document-c
 .o_ep_icon, .o_EPStructuredMapTemplate_icon { background-image: url(images/le_resources/portfolio.png)!important}
 .o_infomsg_icon { background-image: url(images/information-button.png)!important}
 .o_cmembers_icon { background-image: url(images/users.png)!important}
-body#b_body .o_CourseModule_icon_closed {background-image:url(../images/olat/course_closed.png);}
+body#b_body .o_CourseModule_icon_closed {background-image:url(images/le_resources/book-open-text-image_locked.png);}
 	
