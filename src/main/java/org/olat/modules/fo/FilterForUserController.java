@@ -28,8 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.mark.MarkResourceStat;
+import org.olat.core.commons.services.mark.MarkingService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -56,10 +60,12 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.notifications.SubscriptionContext;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.user.DisplayPortraitController;
@@ -100,11 +106,14 @@ public class FilterForUserController extends BasicController {
 	private final DateFormat dateFormat;
 	private final Panel searchPanel;
 	
+	private final OLATResourceable forumOres;
+	
 	public FilterForUserController(UserRequest ureq, WindowControl wControl, Forum forum) {
 		super(ureq, wControl);
 		this.forum = forum;
 		
 		msgs = ForumManager.getInstance().getMessagesByForum(forum);
+		forumOres = OresHelper.createOLATResourceableInstance(Forum.class,forum.getKey());
 		
 		mainVC = createVelocityContainer("filter_for_user");
 		
@@ -326,6 +335,23 @@ public class FilterForUserController extends BasicController {
 
 		// add all messages that are needed
 		currentMessagesMap = new ArrayList<Map<String, Object>>(threadMsgs.size());
+		
+		// load marks
+		MarkingService markingService = (MarkingService)CoreSpringFactory.getBean(MarkingService.class);
+		List<String> markResSubPath = new ArrayList<String>();
+		for(Message threadMsg:threadMsgs) {
+			markResSubPath.add(threadMsg.getKey().toString());
+		}
+		List<Mark> markList =  markingService.getMarkManager().getMarks(forumOres, ureq.getIdentity(), markResSubPath);
+		Map<String,Mark> marks = new HashMap<String,Mark>(markList.size() * 2 + 1);
+		for(Mark mark:markList) {
+			marks.put(mark.getResSubPath(), mark);
+		}
+		List<MarkResourceStat> statList =  markingService.getMarkManager().getStats(forumOres, markResSubPath, null);
+		Map<String,MarkResourceStat> stats = new HashMap<String,MarkResourceStat>(statList.size() * 2 + 1);
+		for(MarkResourceStat stat:statList) {
+			stats.put(stat.getSubPath(), stat);
+		}
 			
 		// all messages in flat view
 		List<Message> orderedMessages = new ArrayList<Message>();
@@ -336,7 +362,7 @@ public class FilterForUserController extends BasicController {
 		
 		int msgNum = 0;
 		for(Message msg:orderedMessages) {
-			addMessageToCurrentMessagesAndVC(ureq, msg, vcThreadView, currentMessagesMap, msgNum++);
+			addMessageToCurrentMessagesAndVC(ureq, msg, vcThreadView, currentMessagesMap, msgNum++, marks, stats);
 		}
 
 		vcThreadView.contextPut("messages", currentMessagesMap);
@@ -346,7 +372,7 @@ public class FilterForUserController extends BasicController {
 	}
 	
 	//TODO this method is very similar to the same in ForumController
-	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, Message m, VelocityContainer vcContainer, List<Map<String, Object>> allList, int msgCount) {
+	private void addMessageToCurrentMessagesAndVC(UserRequest ureq, Message m, VelocityContainer vcContainer, List<Map<String, Object>> allList, int msgCount, Map<String,Mark> marks, Map<String,MarkResourceStat> stats) {
 		// all values belonging to a message are stored in this map
 		// these values can be accessed in velocity. make sure you clean up
 		// everything
@@ -374,6 +400,17 @@ public class FilterForUserController extends BasicController {
 		map.put("lastname", Formatter.truncate(creator.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),18));
 
 //		map.put("username", Formatter.truncate(creator.getName(),18));
+		
+		String subPath = m.getKey().toString();
+		Mark currentMark = marks.get(subPath);
+		MarkResourceStat stat = stats.get(subPath);
+		MarkingService markingService = (MarkingService)CoreSpringFactory.getBean(MarkingService.class);
+		
+		String businessPath = currentMark == null ?
+				getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
+				: currentMark.getBusinessPath();
+		Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, subPath, businessPath);
+		vcThreadView.put("mark_"+msgCount, markCtrl.getInitialComponent());
 		
 		map.put("modified", dateFormat.format(m.getLastModified()));
 		// message attachments

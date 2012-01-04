@@ -53,7 +53,7 @@
 			<div class="o_forum_message_header b_clearfix">
 				<div class="o_forum_message_title">
 					#if($r.available($message.get("ePFAddComponentName")))<div class="b_float_right">$r.render($message.get("ePFAddComponentName"))</div>#end
-					<div class="b_float_right b_mark">$r.render("mark_${count}")</div>
+					#if($r.available("mark_${count}"))<div class="b_float_right b_mark">$r.render("mark_${count}")</div>#end
 					<div class="b_float_right b_small" #if($message.get("newMessage")) title="$r.translateInAttribute("message.unread")" #end>
 						$r.translate("msg.creationdate") $message.get("date")
 					</div>
