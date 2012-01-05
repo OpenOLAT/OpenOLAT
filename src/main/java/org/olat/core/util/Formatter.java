@@ -41,12 +41,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.logging.LogDelegator;
-import org.radeox.api.engine.RenderEngine;
-import org.radeox.api.engine.context.InitialRenderContext;
-import org.radeox.api.engine.context.RenderContext;
-import org.radeox.engine.BaseRenderEngine;
-import org.radeox.engine.context.BaseInitialRenderContext;
-import org.radeox.engine.context.BaseRenderContext;
 
 /**
  * enclosing_type Description: <br>
@@ -57,19 +51,8 @@ import org.radeox.engine.context.BaseRenderContext;
 public class Formatter extends LogDelegator {
 
 	private Locale locale;
-	private static RenderEngine engineWithContext;
-	private static BaseRenderContext baseRenderContext;
 	
-	static {
-		InitialRenderContext initialContext = new BaseInitialRenderContext();
-		Locale loc = new Locale("olat", "olat");
-		initialContext.set(RenderContext.INPUT_LOCALE, loc);
-		initialContext.set(RenderContext.OUTPUT_LOCALE, loc);
-		initialContext.set(RenderContext.INPUT_BUNDLE_NAME, "radeox_markup_olat"); 
-		initialContext.set(RenderContext.OUTPUT_BUNDLE_NAME, "radeox_markup_olat"); 
-		engineWithContext = new BaseRenderEngine(initialContext);
-		baseRenderContext = new BaseRenderContext();
-	}
+	
 
 	/**
 	 * Constructor for Formatter.
@@ -510,64 +493,7 @@ public class Formatter extends LogDelegator {
 	}
 
 	
-	/**
-	 * renders wiki markup like _italic_ to XHTML see also www.radeox.org
-	 * @Deprecated The wiki markup area is no longer supported. In the legacy form
-	 *             infrastructure it's still there, but it won't be available in the
-	 *             new flexi forms. In flexi forms use the RichTextElement instead.
-	 * 
-	 * tested during migration and expanded to prevent radeox failures
-	 * 
-	 * @param originalText
-	 * @return result (rendered originalText) or null if originalText was null
-	 */
-	@Deprecated
-	public static String formatWikiMarkup(String oldValue) {
-		if (oldValue != null) {
-			String newValue = "";
-			// oldValue = oldValue.replaceAll("<>", "&lt;&gt;");
-			// oldValue = oldValue.replaceAll(Pattern.quote("[]"),
-			// "&#91;&#93;");
-
-			// prevent error with {$} interpreted as regexp
-			String marker1 = "piYie6Eigh0phafeiTuk4dahwahvoh7eedoegee2egh8xuj9phah8eop8iuk";
-			oldValue = oldValue.replaceAll(Pattern.quote("{$}"), marker1);
-
-			// \{code} will result in an error => convert
-			String marker2 = "RohbaeW7xahbohk8iewoo7thocaemaech2pahS8oe1UVohkohJiugaagaeco";
-			oldValue = oldValue.replaceAll(Pattern.quote("\\{code}"), marker2);
-
-			// radeox gets an error, if {code} is not a closed tag. prevent at
-			// least the case with one single statement.
-			int nrOfCodeStatements = countOccurrences(oldValue, "{code}");
-			String marker3 = "shagheiph6enieNo0theph9aique0EihoChae6ve2edie4Pohwaok8thaoda";
-			if (nrOfCodeStatements == 1) {
-				oldValue = oldValue.replaceAll(Pattern.quote("{code}"), marker3);
-			}
-			if (nrOfCodeStatements % 2 != 0 && nrOfCodeStatements != 1) {
-				Formatter fInst = Formatter.getInstance(new Locale("olat"));
-				fInst.log("There will be a Warning/NPE from Radeox soon, as there are not enough {code} statements in a text.");
-				fInst.log("Old value of text will be kept! " + oldValue);
-			}
-
-			//added for compatibility with wikimedia syntax used in the new wiki component. org.olat.core.gui.components.wiki.WikiMarkupComponent
-			//filters " ''' " for bold and " ''''' " for bold/italic
-			oldValue = oldValue.replaceAll("(^|>|[\\p{Punct}\\p{Space}]+)'{3}(.*?)'{3}([\\p{Punct}\\p{Space}]+|<|$)", "$1*$2*$3");
-			oldValue = oldValue.replaceAll("(^|>|[\\p{Punct}\\p{Space}]+)'{5}(.*?)'{5}([\\p{Punct}\\p{Space}]+|<|$)", "$1_*$2*_$3");
-			
-			// try-catch not usable, as Radeox doesn't throw an exception,
-			// it just prints warnings and returns unconverted value!
-			newValue = engineWithContext.render(oldValue, baseRenderContext);
-			
-			// convert back
-			newValue = newValue.replaceAll(marker1, Matcher.quoteReplacement("{$}"));
-			newValue = newValue.replaceAll(marker2, Matcher.quoteReplacement("\\{code}"));
-			newValue = newValue.replaceAll(marker3, Matcher.quoteReplacement("{code}"));
-
-			return newValue;
-		} else
-			return null;
-	}
+	
 			
   private static int countOccurrences(String arg1, String arg2) {
     int count = 0;

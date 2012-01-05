@@ -581,20 +581,6 @@ public class VelocityRenderDecorator {
 		return f.formatDateAndTime(date);
 	}
 
-	/**
-	 * Interpret this string using the radeox wiki markup language
-	 * 
-	 * @Deprecated The wiki markup area is no longer supported. In the legacy form
-	 *             infrastructure it's still there, but it won't be available in the
-	 *             new flexi forms. In flexi forms use the RichTextElement instead.
-	 * 
-	 * @param wikiMarkupString The original string written in radeox markup
-	 * @return String HTML formatted text
-	 */
-	@Deprecated
-	public String formatWikiMarkup(String wikiMarkupString) {
-		return Formatter.formatWikiMarkup(wikiMarkupString);
-	}
 
 	/**
 	 * Wrapp given html code with a wrapper an add code to transform latex

@@ -32,8 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.formelements.CheckBoxElement;
-import org.olat.core.gui.translator.Translator;
 /**
  * 
  * Description:<br>

@@ -543,7 +543,8 @@ public class OLATUpgrade_6_2_0 extends OLATUpgrade {
 		if (log.isDebug()) log.audit("Old String before migration:", oldValue);
 		String newValue = "";
 
-		newValue = Formatter.formatWikiMarkup(oldValue);
+		//newValue = Formatter.formatWikiMarkup(oldValue);
+		log.warn("no wikiMarkupUpdate is done, OpenOLAT 8 does not support the legacy wiki markup forms!");
 		
 		if (log.isDebug()) log.audit("New String after migration:", newValue);
 		return newValue;

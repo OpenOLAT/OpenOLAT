@@ -60,142 +60,17 @@ public class CourseUpgrade extends LogDelegator {
 		int migrateTargetVersion = 2;
 		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
 		if (!editorTreeModel.isVersionUpToDate() && editorTreeModel.getVersion() != migrateTargetVersion){
-			upgradeEditorTreeModel(ccourse);
-			editorTreeModel.setVersion(migrateTargetVersion);
-			ccourse.setEditorTreeModel(editorTreeModel);
-			ccourse.saveEditorTreeModel();
+			logError("as of OpenOLAT 8, old courses with verison 1 are no longer supported. No migration done! Upgrade to 7.0 first!", null);
 		}		
 		Structure runStructure = course.getRunStructure();
 		if (!runStructure.isVersionUpToDate() && runStructure.getVersion() != migrateTargetVersion){
-			upgradeRunStructure(ccourse);						
-			ccourse.getRunStructure().setVersion(migrateTargetVersion);
-			ccourse.setRunStructure(runStructure);
-			ccourse.saveRunStructure();
+			logError("as of OpenOLAT 8, old courses with verison 1 are no longer supported. No migration done! Upgrade to 7.0 first!", null);
 		}
 	}
 
 	
-	private void upgradeRunStructure(ICourse course) {
-		Structure cR = course.getRunStructure();
-		CourseNode rsRootNode = cR.getRootNode();
-		final Set<String> allSubTreeids = new HashSet<String>();
-		TreeVisitor tv = new TreeVisitor(new Visitor() {
-			public void visit(INode node) {
-				allSubTreeids.add(node.getIdent());
-			}
-		}, rsRootNode, true);
-		tv.visitAll();
-		Structure runStructure = course.getRunStructure();
-
-		int nodeCounter = 0;
-		for (Iterator<String> iterator2 = allSubTreeids.iterator(); iterator2.hasNext();) {
-			String nodeId = iterator2.next();
-			CourseNode rsn = runStructure.getNode(nodeId);
-
-			// migrate if this node is a Task
-			if (rsn.getType().equals(TACourseNode.CONF_TASK_TYPE)) {
-				migrateSingleTask(rsn);
-			}
-			// migrate no access text for every node:
-			migrateSingleAccessDeniedExplanation(rsn);
-
-			// migrate assessment nodes
-			if (rsn.getType().equals(MS_TYPE)) {
-				migrateSingleAssessment(rsn);
-			}
-
-			// migrate course node description
-			migrateSingleNodeDesc(rsn);
-
-			nodeCounter++;
-		}
-
-
-		logAudit("**** Lazy migration finished for runStructure of course " + course.getResourceableId() + " with a total of " + nodeCounter
-				+ " course node descriptions. ****", null);
-
-	}
 	
-	private void upgradeEditorTreeModel(ICourse course) {
-		// EDITOR: get all course nodes
-		CourseEditorTreeModel cT = course.getEditorTreeModel();
-		TreeNode rootNode = cT.getRootNode();
-		final Set<String> allSubTreeids = new HashSet<String>();
-		TreeVisitor tv = new TreeVisitor(new Visitor() {
-			public void visit(INode node) {
-				allSubTreeids.add(node.getIdent());
-			}
-		}, rootNode, true);
-		tv.visitAll();
-
-		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
-		// EDITOR: loop all course nodes
-		int nodeCounter = 0;
-		for (Iterator<String> iterator2 = allSubTreeids.iterator(); iterator2.hasNext();) {
-			String nodeId = iterator2.next();
-			CourseNode cetn = editorTreeModel.getCourseNode(nodeId);
-			// migrate if this node is a Task
-			if (cetn.getType().equals(TACourseNode.CONF_TASK_TYPE)) {
-				migrateSingleTask(cetn);
-			}
-			// migrate no access text for every node:
-			migrateSingleAccessDeniedExplanation(cetn);
-
-			// migrate assessment nodes
-			if (cetn.getType().equals(MS_TYPE)) {
-				migrateSingleAssessment(cetn);
-			}
-
-			// migrate course node description
-			migrateSingleNodeDesc(cetn);
-
-			nodeCounter++;
-
-		} //for
-		
-		logAudit("**** Lazy migration finished for editorTreeModel of course " + course.getResourceableId() + " with a total of " + nodeCounter
-				+ " course node descriptions. ****", null);
-	}
 	
-
-	private void migrateSingleTask(CourseNode node) {
-		ModuleConfiguration taskConf = node.getModuleConfiguration();
-		String[] allKeys = new String[] { TACourseNode.CONF_TASK_TEXT, MSCourseNode.CONFIG_KEY_INFOTEXT_USER,
-				MSCourseNode.CONFIG_KEY_INFOTEXT_COACH };
-		for (int i = 0; i < allKeys.length; i++) {
-			String thisKey = allKeys[i];
-			String oldDesc = (String) taskConf.get(thisKey);
-			if (StringHelper.containsNonWhitespace(oldDesc)) {
-				String newDesc = Formatter.formatWikiMarkup(oldDesc);
-				taskConf.set(thisKey, newDesc);
-			}
-		}
-	}
-
-	private void migrateSingleAccessDeniedExplanation(CourseNode node) {
-		String oldDesc = node.getNoAccessExplanation();
-		if (StringHelper.containsNonWhitespace(oldDesc)) {
-			String newDesc = Formatter.formatWikiMarkup(oldDesc);
-			node.setNoAccessExplanation(newDesc);
-		}
-	}
-
-	private void migrateSingleAssessment(CourseNode node) {
-		ModuleConfiguration modConfig = node.getModuleConfiguration();
-		String infoUser = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-		String newInfoUser = Formatter.formatWikiMarkup(infoUser);
-		modConfig.set(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, newInfoUser);
-		String infoCoach = (String) modConfig.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
-		String newInfoCoach = Formatter.formatWikiMarkup(infoCoach);
-		modConfig.set(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH, newInfoCoach);
-	}
-
 	
-	private void migrateSingleNodeDesc(CourseNode node){
-		String oldDesc = node.getLearningObjectives();
-		if (StringHelper.containsNonWhitespace(oldDesc)) {
-			String newDesc = Formatter.formatWikiMarkup(oldDesc);
-			node.setLearningObjectives(newDesc);
-		}
-	}
+	
 }
