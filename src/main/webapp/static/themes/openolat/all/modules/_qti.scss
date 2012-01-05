@@ -3,8 +3,8 @@
 	#o_qti_run div.b_button_group { text-align: left;}
 	#o_qti_run_title { text-align: right;}
 	#o_qti_run_title strong { float: left; display: inline;}
-	#o_qti_run.o_qti_survey #o_qti_run_title strong { background: url(images/le_resources/survey.png) no-repeat left 50%; padding-left: 20px;}
-	#o_qti_run.o_qti_test #o_qti_run_title strong { background: url(images/le_resources/test.png) no-repeat left 50%; padding-left: 20px; padding-top:2px; padding-bottom:2px;}
+	#o_qti_run.o_qti_survey #o_qti_run_title strong { background: url(../openolat/images/le_resources/survey.png) no-repeat left 50%; padding-left: 20px;}
+	#o_qti_run.o_qti_test #o_qti_run_title strong { background: url(../openolat/images/le_resources/test.png) no-repeat left 50%; padding-left: 20px; padding-top:2px; padding-bottom:2px;}
 	#o_qti_scoreinfo{float: left; display: inline; padding: .3em; border: 1px solid silver; margin-right: 1em;}
 	#o_qti_run_score { clear: both; margin: 1em 0; padding: 0 0 1.5em 0; font-size: 90%;}
 	#o_qti_run_scoreinfo {float: left; display: inline;} 
@@ -21,12 +21,12 @@
 	#o_qti_run_menu_inner li div.o_qti_menu_item, #o_qti_run_menu li div.o_qti_menu_section {float: left; display: inline; margin-right: 10px;}		
 	#o_qti_run_content_inner { }
 	#o_qti_results td { padding: 0; }  /* fixes problem with truncated testresults, see OLAT-3416 */	
-	#b_main.o_editor_qti_correct {background-image: url(images/qti/correct_bg.png); background-position: top left; }
+	#b_main.o_editor_qti_correct {background-image: url(../openolat/images/qti/correct_bg.png); background-position: top left; }
 	#b_main.o_editor_qti {background-image: url(../images/olat/editor/edit_bg.png); background-position: top left; }
 	#o_qti_hints, #o_qti_solutions { margin: 1em 0;}
 	#o_qti_hints a { background: url(../images/olat/lightbulb.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
 	#o_qti_hints a:focus, #o_qti_hints a:hover{ background-image: url(../images/olat/lightbulb_hover.png); }	
-	#o_qti_solutions a { background: url(images/magnifier-zoom.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
+	#o_qti_solutions a { background: url(../openolat/images/magnifier-zoom.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
 	.qti_response_level_feedback_label { margin-top: 1em; font-style:italic }
 	.qti_edit_layout { position:relative; padding-right:30px; margin-bottom:0.6em; }
 	.qti_edit_layout .edit_link { position:absolute; top:10px; right:0px; }
@@ -66,7 +66,7 @@
     .o_qti_menu_item:hover {border: 1px solid silver;}
     .o_qti_menu_item_closed {padding:.3em; border: 1px solid transparent;}
 
-	.o_qti_menu_item_attempts_marked, .o_qti_menu_item_attempts {color: silver; padding: .2em .4em; border: 1px solid transparent; background: url(images/flag.png) center right no-repeat;  display:block; width:20px; height:12px; }
+	.o_qti_menu_item_attempts_marked, .o_qti_menu_item_attempts {color: silver; padding: .2em .4em; border: 1px solid transparent; background: url(../openolat/images/flag.png) center right no-repeat;  display:block; width:20px; height:12px; }
     .o_qti_menu_item_attempts { opacity:0.4;filter:alpha(opacity=40); }
     .o_qti_menu_item_attempts:hover, .o_qti_menu_item_attempts_marked:hover {color: silver; border: 1px solid silver; cursor:pointer; }
 	
@@ -75,21 +75,21 @@
 	.o_qti_item_note_box {border: 1px dashed silver; padding:.1em;margin:0;padding-left:.5em;}
 	div.o_qti_item_note_box_title{color: silver;}
 	
-	div.o_qti_item_itemfeedback, div.o_qti_item_assessfeedback, div.o_qti_item_o_qti_item_sectionfeedback{margin: 1em 0; background: url(images/lightning.png) no-repeat left 50%; padding-left: 20px;}
+	div.o_qti_item_itemfeedback, div.o_qti_item_assessfeedback, div.o_qti_item_o_qti_item_sectionfeedback{margin: 1em 0; background: url(../openolat/images/lightning.png) no-repeat left 50%; padding-left: 20px;}
 	div.o_qti_item_objectives {margin: 1em 0; background: url(../images/brasato/information.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
 	/* qti menu items */
-	.o_qti_timelimit_icon {background-image: url(images/qti/time.png); }
-	.o_qti_attemptslimit_icon {background-image: url(images/qti/tries.png); }
-	.o_qti_closed_icon {background-image: url(images/qti/closed.png); }
-	.o_mi_qtialientitem { background-image: url(images/docs/document_plain.png); }
-	.o_mi_qtisc { background-image: url(images/qti/scItem.png); }
-	.o_mi_qtimc { background-image: url(images/qti/mcItem.png); }
-	.o_mi_qtikprim {background-image: url(images/qti/kprimItem.png); }
-	.o_mi_qtifib { background-image: url(images/qti/fibItem.png); }
-	.o_mi_qtiessay {background-image: url(images/qti/essayItem.png); }
-	.o_mi_qtisection { background-image: url(images/qti/section.png); }
-	.o_mi_iqtest { background-image: url(images/le_resources/test.png); }
-	.o_mi_iqsurv { background-image: url(images/le_resources/survey.png); }
+	.o_qti_timelimit_icon {background-image: url(../openolat/images/qti/time.png); }
+	.o_qti_attemptslimit_icon {background-image: url(../openolat/images/qti/tries.png); }
+	.o_qti_closed_icon {background-image: url(../openolat/images/qti/closed.png); }
+	.o_mi_qtialientitem { background-image: url(../openolat/images/docs/document_plain.png); }
+	.o_mi_qtisc { background-image: url(../openolat/images/qti/scItem.png); }
+	.o_mi_qtimc { background-image: url(../openolat/images/qti/mcItem.png); }
+	.o_mi_qtikprim {background-image: url(../openolat/images/qti/kprimItem.png); }
+	.o_mi_qtifib { background-image: url(../openolat/images/qti/fibItem.png); }
+	.o_mi_qtiessay {background-image: url(../openolat/images/qti/essayItem.png); }
+	.o_mi_qtisection { background-image: url(../openolat/images/qti/section.png); }
+	.o_mi_iqtest { background-image: url(../openolat/images/le_resources/test.png); }
+	.o_mi_iqsurv { background-image: url(../openolat/images/le_resources/survey.png); }
 	
 	
 	

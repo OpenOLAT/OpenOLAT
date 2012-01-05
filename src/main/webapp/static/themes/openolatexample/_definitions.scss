@@ -1,7 +1,7 @@
 /*
 *  =================================================
 *   
-*   CONTAINS SOME SASS VARIABLES
+*   CONTAINS SOME SASS VARIABLES FOR the EXAMPLE THEME
 *   you can change these and compile the theme :)
 *
 *   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
@@ -15,21 +15,21 @@
 
 
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
-$basecolor: #025D8C;
-$basecolor_light : #94bed3;
-$basecolor_ultra_light : #f3feff;
+$basecolor: red;
+$basecolor_light : lighten($basecolor, 20%);
+$basecolor_ultra_light : lighten($basecolor, 40%);
 
 /* then we need a base-gray and some variations */
 $basegray: #555;
 $basegray_light: #777;
 $basegray_ultra_light: #eee;
 
-
+/* here you can define the two small icons used in trees:  + and - */ 
 $ico_plus : '../openolat/images/toggle-small-expand.png' ;
 $ico_minus : '../openolat/images/toggle-small.png' ;
 
 
+/* defines the body-background */
 @mixin bodybg(){
-	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 88px;
+	@include o-gradient4(yellow,red,blue,green);
 }
-

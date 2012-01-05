@@ -58,37 +58,37 @@ div.b_button_group div { display: inline;}
 
 /* TOGGLE Buttons */
 a.b_toggle { 
-	white-space: nowrap; margin: 0 0.5em 0.2em 0; cursor: default; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 10px; -moz-border-radius: 10px;  border-radius: 10px; display: inline-block; line-height: 1.5em; text-align: center; background: url(images/toggle_off.png) top left repeat-x; 
+	white-space: nowrap; margin: 0 0.5em 0.2em 0; cursor: default; color: #2C2B2B;  border: 1px solid #aaa; -webkit-border-radius: 10px; -moz-border-radius: 10px;  border-radius: 10px; display: inline-block; line-height: 1.5em; text-align: center; background: url(../openolat/images/toggle_off.png) top left repeat-x; 
 	span { padding: 0 0.8em; }
 	&:hover { background: #ddd; text-decoration: none; } 
 	&.b_on:hover { background: #747474; }
 	&.b_on,&:active,&.b_on:active { color: white; border: none; padding: 1px; @include o-box-shadow-inset(1px,1px,2px,rgba(0,0,0,0.5)); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 	&:focus,&.b_on:focus{ text-decoration: none; }
-	&:active,&.b_on:active{ background: url(images/toggle_active.png) top left repeat-x; } 
-	&.b_on { background: url(images/toggle_on.png) top left repeat-x; }
+	&:active,&.b_on:active{ background: url(../openolat/images/toggle_active.png) top left repeat-x; } 
+	&.b_on { background: url(../openolat/images/toggle_on.png) top left repeat-x; }
 	
 }
-span.b_toggle.b_disabled { white-space: nowrap; margin: 0 0.5em 0.2em 0; padding: 0 0.8em; color: #667; border: 1px solid #DDD; @include o-border-radius(10px); display: inline-block; line-height: 1.5em; text-align: center; background: url(images/toggle_dis.png) top left repeat-x; }
+span.b_toggle.b_disabled { white-space: nowrap; margin: 0 0.5em 0.2em 0; padding: 0 0.8em; color: #667; border: 1px solid #DDD; @include o-border-radius(10px); display: inline-block; line-height: 1.5em; text-align: center; background: url(../openolat/images/toggle_dis.png) top left repeat-x; }
 /* TOGGLE SLIDERS */
 a.b_toggle_slide {
-	background: url(images/handle.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.2em 0.2em 0.2em; color: #2C2B2B;  border: 1px solid #aaa; @include o-border-radius(4px); display: inline-block; text-align: center; vertical-align: middle; position: relative;
+	background: url(../openolat/images/handle.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.2em 0.2em 0.2em; color: #2C2B2B;  border: 1px solid #aaa; @include o-border-radius(4px); display: inline-block; text-align: center; vertical-align: middle; position: relative;
 	span { position: absolute; top: -25px; left:0;} 
 	&:hover,&:focus,&:active,
 	&.b_on:hover,&.b_on:focus,&.b_on:active{ border: 1px solid #868686; text-decoration: none; } 	
 	&.b_on { background-position: -16px 0px; }
-	&.b_disabled { background: url(images/handle_dis.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; @include o-border-radius(4px); display: inline-block; text-align: center; vertical-align: middle;}
+	&.b_disabled { background: url(../openolat/images/handle_dis.png) -63px 0px no-repeat; height: 25px; width: 85px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; @include o-border-radius(4px); display: inline-block; text-align: center; vertical-align: middle;}
 	
 	/* TOGGLE SLIDERS SMALL */
-	&.b_small { background: url(images/handle_small.png) -41px 0px no-repeat; height: 16px; width: 55px;@include o-border-radius(2px);}
+	&.b_small { background: url(../openolat/images/handle_small.png) -41px 0px no-repeat; height: 16px; width: 55px;@include o-border-radius(2px);}
 	& span { position: absolute; top: -16px; } 
 	&.b_small.b_on { background-position: -9px 0px; }
 }
-span.b_toggle_slide.b_disabled { background: url(images/handle_small_dis.png) -41px 0px no-repeat; height: 16px; width: 55px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; @include o-border-radius(3px); display: inline-block; text-align: center; vertical-align: middle;}
+span.b_toggle_slide.b_disabled { background: url(../openolat/images/handle_small_dis.png) -41px 0px no-repeat; height: 16px; width: 55px; white-space: nowrap; margin: 0 0.5em 0.2em 0; color: #2C2B2B;  border: 1px solid #aaa; @include o-border-radius(3px); display: inline-block; text-align: center; vertical-align: middle;}
 span.b_toggle_slide_legend {font-size: 90%; }
 
 /* BACK BUTTON  / LINK **/
 .b_link_back {
-	> span {padding: 0px 8px 0px 25px; background: transparent url('images/arrow_left_big.png') no-repeat 4px center;}
+	> span {padding: 0px 8px 0px 25px; background: transparent url('../openolat/images/arrow_left_big.png') no-repeat 4px center;}
 	@include btt-outer;	
 	/* focused buttons */
 	&:focus,&:hover {
@@ -168,7 +168,7 @@ div.b_form {
 		div.b_form_element_label{
 			 width: 20%; float: left; display: inline;
 			 label {  float: left; display: inline; line-height: 1.3em;}
-			 span.b_form_mandatory { background: url(images/star-small.png) no-repeat; padding-left: 16px; height: 16px;}
+			 span.b_form_mandatory { background: url(../openolat/images/star-small.png) no-repeat; padding-left: 16px; height: 16px;}
 			&.b_form_horizontal { width: auto; float: left; display: inline;} 
 		 	&.b_form_vertical { width: auto; float: none; display: block; } 
 		} 
@@ -204,11 +204,11 @@ div.b_form {
 		.b_form_disabled { color: #504D4E; }
 		.b_form_element_disabled { color: #9E9C9C; background: #EEEEEE; border: 1px solid #CDCBCB;}
 		/* date and generic chooser icon*/
-		span.b_form_datechooser { background: url(images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px; padding-top:2px;}
-		a.b_form_groupchooser { background: url(images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}
-		a.b_form_genericchooser { background: url(images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}	
+		span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px; padding-top:2px;}
+		a.b_form_groupchooser { background: url(../openolat/images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}
+		a.b_form_genericchooser { background: url(../openolat/images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}	
 	    a.b_form_wikitext { background-repeat: no-repeat; padding-left: 12px; line-height: 1.5em; font-style: italic;}
-		a.b_form_wikitext, .b_wiki_icon { background-image: url(images/wiki/wiki_small_9px.png);}
+		a.b_form_wikitext, .b_wiki_icon { background-image: url(../openolat/images/wiki/wiki_small_9px.png);}
 	}
 
 }// end div.b_form
@@ -278,7 +278,7 @@ div.b_fileinput {
 	input.b_fileinput_realchooser { position: relative; top: 0; left: 0; z-index: 2; -moz-opacity:0; opacity: 0; filter: alpha(opacity=0);}
 	div.b_button_group { text-align: left; padding-left: 0; margin-left: 0;}
 }
-.b_fileinput_icon { background-image: url(images/drive.png); }
+.b_fileinput_icon { background-image: url(../openolat/images/drive.png); }
 
 
 /* PROGRESSBAR */
@@ -298,8 +298,8 @@ div.b_mark {
 		margin:0;
 		div.b_form_element { margin:0; padding:0; } 
 	}
-	a.b_mark_set { background: url(images/flag.png) center right no-repeat; display:block; width:20px; height:20px; }
-	a.b_mark_not_set { background: url(images/flag.png) center right no-repeat; display:block; width:20px; height:20px; opacity:0.4;filter:alpha(opacity=40);}
+	a.b_mark_set { background: url(../openolat/images/flag.png) center right no-repeat; display:block; width:20px; height:20px; }
+	a.b_mark_not_set { background: url(../openolat/images/flag.png) center right no-repeat; display:block; width:20px; height:20px; opacity:0.4;filter:alpha(opacity=40);}
 	a.b_mark_set span, a.b_mark_not_set span { display:block; width:19px; height:19px; }
 }
 	

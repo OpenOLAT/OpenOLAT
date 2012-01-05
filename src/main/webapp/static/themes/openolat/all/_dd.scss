@@ -17,7 +17,7 @@
 .b_dd_proxy { opacity: 0.4; -moz-opacity: 0.4; filter: alpha(opacity=40); }
 .b_dd_item.b_dd_over { background-color: #ffff60; }
 .b_dd_sibling { height:3px; width:100%; }
-.b_dd_sibling.b_dd_over { background:transparent url(images/arrow_dd.png) top left no-repeat; }
+.b_dd_sibling.b_dd_over { background:transparent url(../openolat/images/arrow_dd.png) top left no-repeat; }
 
 div.b_dd_ct {
 	div.b_dd_sibling_l1 { margin-left:0 !important; }

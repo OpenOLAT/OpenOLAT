@@ -55,7 +55,7 @@ div.b_window {
 	div.b_window_header_title { 
 		min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px;
 		 
-		a.b_link_close { top:4px; right: 4px; position:absolute;  min-height:16px; min-width:16px;background:transparent url('images/close.png') no-repeat center center; display:inline-block;}
+		a.b_link_close { top:4px; right: 4px; position:absolute;  min-height:16px; min-width:16px;background:transparent url('../openolat/images/close.png') no-repeat center center; display:inline-block;}
 		a.b_link_close:hover { top:4px; right: 4px; }
 		strong { font-weight: bold; }	
 	}
@@ -76,7 +76,7 @@ div.x-tip-body p{margin-bottom:0px;}
 div.x-tip-mc {background: #e9f2ff ! important;}
 /* ajax busy icon*/
 body.b_ajax_busy { cursor: wait; }
-div.b_ajax_busy {background: url(images/ajax-loader.gif) no-repeat; position: absolute; left:50% ; top: 10px; width:28px; height: 28px; z-index:5001;}
+div.b_ajax_busy {background: url(../openolat/images/ajax-loader.gif) no-repeat; position: absolute; left:50% ; top: 10px; width:28px; height: 28px; z-index:5001;}
 	
 	
 /* DIALOG */
@@ -87,14 +87,14 @@ div.b_window.b_dialogbox {
 div.b_msg_dialog { 
 	padding: 10px 10px 10px 50px; 
 	min-height: 32px; 
-	background: url(images/icon_question_32.png) no-repeat 10px 10px;
+	background: url(../openolat/images/icon_question_32.png) no-repeat 10px 10px;
 	.b_msg_title { font-weight: bold; }
 	.b_msg_content { }
 }
 
 /* sticky info (admins can create stick-messages that will show for all users) */
 #b_msg_sticky { 
-	clear:both; padding: 10px 10px 10px 50px; min-height: 32px; background: #ebcccc url(images/icon_warning_32.png) no-repeat 10px 10px; border-bottom: 1px #ccc dotted;  border-top: 1px #ccc dotted;
+	clear:both; padding: 10px 10px 10px 50px; min-height: 32px; background: #ebcccc url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; border-bottom: 1px #ccc dotted;  border-top: 1px #ccc dotted;
 }
 
 /* info message ( slide-in, top) */
@@ -108,22 +108,22 @@ div.b_msg-div {
 	
 	}
 	.b_msg_info_winicon {
-		background: transparent url(images/icon_info_32.png) no-repeat 10px center;
+		background: transparent url(../openolat/images/icon_info_32.png) no-repeat 10px center;
 	}
 }
 
 div.b_msg_info_content { padding: 10px 10px 10px 50px; }
 
 /* warn message (ext-dialog) */
-div.b_msg_warn_winicon { background: url(images/icon_warning_32.png) no-repeat }
+div.b_msg_warn_winicon { background: url(../openolat/images/icon_warning_32.png) no-repeat }
 
 /* error message (ext-dialog) */
-div.b_msg_error_winicon { background: url(images/icon_error_32.png) no-repeat }
+div.b_msg_error_winicon { background: url(../openolat/images/icon_error_32.png) no-repeat }
 
 /* "info"-page */
 #b_msg_info { 
 	padding: 10px 10px 10px 50px; 
-	min-height: 32px; background: url(images/icon_info_32.png) no-repeat 10px 10px;
+	min-height: 32px; background: url(../openolat/images/icon_info_32.png) no-repeat 10px 10px;
 	.b_msg_title { font-weight: bold; }
 }
 
@@ -134,7 +134,7 @@ div.b_msg_error_winicon { background: url(images/icon_error_32.png) no-repeat }
 	.o_infomessage{
 		padding: 10px 10px 10px 50px;
 		text-align: left;
-		background: url(images/icon_warning_32.png) no-repeat 10px 10px;
+		background: url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px;
 		.o_infomessage_inner {
 		
 		}
@@ -142,8 +142,8 @@ div.b_msg_error_winicon { background: url(images/icon_error_32.png) no-repeat }
 }
 
 /* OPEN / CLOSE BOX TOGGLER */
-a.b_togglebox_closed {background: url(images/toggle-small-expand.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
-a.b_togglebox_opened {background: url(images/toggle-small.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
+a.b_togglebox_closed {background: url(../openolat/images/toggle-small-expand.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
+a.b_togglebox_opened {background: url(../openolat/images/toggle-small.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
 div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAAA; background: #fff; }
 	
 
@@ -153,7 +153,7 @@ div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAA
 		div.b_wizard_header {background:#fff; position: relative; }
 	 	div.b_wizard_header_title {
 	 		background: #fff; min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px; color: #4F576A;
-	 		a.b_link_close { top:4px; right: 4px; background: url(images/close.png); background-repeat: no-repeat; } 
+	 		a.b_link_close { top:4px; right: 4px; background: url(../openolat/images/close.png); background-repeat: no-repeat; } 
 	 		strong { font-weight: bold; }	
 	 	}
 	 	
@@ -186,27 +186,27 @@ div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAA
 	span.b_wizard_button_next:after, a.b_wizard_button_next span:after { content: " >";}
 	a.b_wizard_button_finish, span.b_wizard_button_finish {margin-left: 3em;}
 	a.b_wizard_button_cancel, span.b_wizard_button_cancel { margin-left: 3em; }
-	.b_wizard_table_changedcell { font-style: italic; font-weight: bold; background: url(images/new-text.png) no-repeat; padding-left: 18px;}
+	.b_wizard_table_changedcell { font-style: italic; font-weight: bold; background: url(../openolat/images/new-text.png) no-repeat; padding-left: 18px;}
 	
 	/* OLD WIZARD */
 	div.b_legacy_wizard { }
 	div.b_legacy_wizard_steps { float: right; display:inline; }
 	/* the following classes are used together with b_legacy_wizard_step_icon */
-	.b_legacy_wizard_step_a1 {	background-image: url(images/wizard/1a.png); }
-	.b_legacy_wizard_step_a2 {	background-image: url(images/wizard/2a.png);}
-	.b_legacy_wizard_step_a3 {	background-image: url(images/wizard/3a.png);}
-	.b_legacy_wizard_step_a4 {	background-image: url(images/wizard/4a.png);}
-	.b_legacy_wizard_step_a5 {	background-image: url(images/wizard/5a.png);}
-	.b_legacy_wizard_step_a6 {	background-image: url(images/wizard/6a.png);}
-	.b_legacy_wizard_step_a7 {	background-image: url(images/wizard/7a.png);}
-	.b_legacy_wizard_step_a8 {	background-image: url(images/wizard/8a.png);}
-	.b_legacy_wizard_step_a9 {	background-image: url(images/wizard/9a.png);}
-	.b_legacy_wizard_step_p1 {	background-image: url(images/wizard/1p.png);}
-	.b_legacy_wizard_step_p2 {	background-image: url(images/wizard/2p.png);}
-	.b_legacy_wizard_step_p3 {	background-image: url(images/wizard/3p.png);}
-	.b_legacy_wizard_step_p4 {	background-image: url(images/wizard/4p.png);}
-	.b_legacy_wizard_step_p5 {	background-image: url(images/wizard/5p.png);}
-	.b_legacy_wizard_step_p6 {	background-image: url(images/wizard/6p.png);}
-	.b_legacy_wizard_step_p7 {	background-image: url(images/wizard/7p.png);}
-	.b_legacy_wizard_step_p8 {	background-image: url(images/wizard/8p.png);}
-	.b_legacy_wizard_step_p9 {	background-image: url(images/wizard/9p.png);}
+	.b_legacy_wizard_step_a1 {	background-image: url(../openolat/images/wizard/1a.png); }
+	.b_legacy_wizard_step_a2 {	background-image: url(../openolat/images/wizard/2a.png);}
+	.b_legacy_wizard_step_a3 {	background-image: url(../openolat/images/wizard/3a.png);}
+	.b_legacy_wizard_step_a4 {	background-image: url(../openolat/images/wizard/4a.png);}
+	.b_legacy_wizard_step_a5 {	background-image: url(../openolat/images/wizard/5a.png);}
+	.b_legacy_wizard_step_a6 {	background-image: url(../openolat/images/wizard/6a.png);}
+	.b_legacy_wizard_step_a7 {	background-image: url(../openolat/images/wizard/7a.png);}
+	.b_legacy_wizard_step_a8 {	background-image: url(../openolat/images/wizard/8a.png);}
+	.b_legacy_wizard_step_a9 {	background-image: url(../openolat/images/wizard/9a.png);}
+	.b_legacy_wizard_step_p1 {	background-image: url(../openolat/images/wizard/1p.png);}
+	.b_legacy_wizard_step_p2 {	background-image: url(../openolat/images/wizard/2p.png);}
+	.b_legacy_wizard_step_p3 {	background-image: url(../openolat/images/wizard/3p.png);}
+	.b_legacy_wizard_step_p4 {	background-image: url(../openolat/images/wizard/4p.png);}
+	.b_legacy_wizard_step_p5 {	background-image: url(../openolat/images/wizard/5p.png);}
+	.b_legacy_wizard_step_p6 {	background-image: url(../openolat/images/wizard/6p.png);}
+	.b_legacy_wizard_step_p7 {	background-image: url(../openolat/images/wizard/7p.png);}
+	.b_legacy_wizard_step_p8 {	background-image: url(../openolat/images/wizard/8p.png);}
+	.b_legacy_wizard_step_p9 {	background-image: url(../openolat/images/wizard/9p.png);}

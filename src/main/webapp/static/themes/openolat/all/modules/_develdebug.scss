@@ -1,10 +1,10 @@
 /** -------------------- DEVELOPMENT TOOL / DEBUG ---------------- **/
-a.b_dev { position: absolute; left: 0; top: 0; z-index:4000; background: red url('images/bug.png') no-repeat; width: 16px; height: 16px; border: 1px solid #000;}
+a.b_dev { position: absolute; left: 0; top: 0; z-index:4000; background: red url('../openolat/images/bug.png') no-repeat; width: 16px; height: 16px; border: 1px solid #000;}
 #b_devcon_main { background-color: #ccddff; position:absolute; z-index:4000; top:10px; left: 5%; width:90%; text-align: left; border: 1px solid #000}
-#b_devcon_handle { cursor:move; background: blue url(images/bug.png) no-repeat 4px 50%; line-height: 2em; padding-left: 24px; color:white; }
+#b_devcon_handle { cursor:move; background: blue url(../openolat/images/bug.png) no-repeat 4px 50%; line-height: 2em; padding-left: 24px; color:white; }
 a#b_devcon_handle_collapse {cursor:pointer; background: url($ico_minus) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
 a#b_devcon_handle_expand {cursor:pointer; background: url($ico_plus) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
-a.b_devcon_handle_close {cursor:pointer; background: url(images/close.png) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
+a.b_devcon_handle_close {cursor:pointer; background: url(../openolat/images/close.png) no-repeat; width: 15px; height: 15px; float: right; margin: 3px;}
 #b_devcon_content {
 	font-size: 90%;  padding: 5px; border-top: 0px solid #000; background:transparent;;
 	ul { float: left; margin: 0; padding: 0; list-style: none; white-space: nowrap;}

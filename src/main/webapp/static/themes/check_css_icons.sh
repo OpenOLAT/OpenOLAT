@@ -20,6 +20,16 @@ THEMEDIR=`pwd`
 for THEMERAW in $(find . -type d -maxdepth 1 -mindepth 1 \! -name "CVS"); do
 	# remove ./ from THEMERAW, store as theme
 	THEME=${THEMERAW:2}
+	
+	# do not check .sass-cache
+	THEME_SUB=${THEME:0:11}
+	
+	if [ $THEME_SUB == ".sass-cache" ]
+		then
+			echo "skipping .sass-cache"
+			continue
+	fi
+	
 	cd $THEMEDIR/$THEME
 	
 	# we'll check only the compiled stylesheet file
