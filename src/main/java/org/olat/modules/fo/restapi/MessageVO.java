@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.modules.fo.Message;
+import org.olat.restapi.support.vo.FileVO;
 
 /**
  * Description:<br>
@@ -52,6 +53,8 @@ public class MessageVO {
 	
 	private String title;
 	private String body;
+	
+	private FileVO[] attachments;
 	
 	public MessageVO() {
 		//make JAXB happy
@@ -168,6 +171,14 @@ public class MessageVO {
 		this.body = body;
 	}
 	
+	public FileVO[] getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(FileVO[] attachments) {
+		this.attachments = attachments;
+	}
+
 	public String toString() {
 		return "messageVO[key=" + key + ":title=" + title +"]";
 	}

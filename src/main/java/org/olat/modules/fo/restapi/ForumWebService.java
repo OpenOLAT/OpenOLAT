@@ -135,6 +135,7 @@ public class ForumWebService {
 	 * @param orderBy (value name,creationDate)
 	 * @param asc (value true/false)
 	 * @param httpRequest The HTTP request
+	 * @param uriInfo The URI informations
 	 * @param request The REST request
 	 * @return The list of threads
 	 */
@@ -143,7 +144,8 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreads(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,  @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context Request request) {
+			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+			@Context Request request) {
 		if(forum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -152,14 +154,14 @@ public class ForumWebService {
 			int totalCount = fom.countThreadsByForumID(forum.getKey());
 			Message.OrderBy order = toEnum(orderBy);
 			List<Message> threads = fom.getThreadsByForumID(forum.getKey(), start, limit, order, asc);
-			MessageVO[] vos = toArrayOfVO(threads);
+			MessageVO[] vos = toArrayOfVO(threads, uriInfo);
 			MessageVOes voes = new MessageVOes();
 			voes.setMessages(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
 			List<Message> threads = fom.getThreadsByForumID(forum.getKey(), 0, -1, null, true);
-			MessageVO[] voes = toArrayOfVO(threads);
+			MessageVO[] voes = toArrayOfVO(threads, uriInfo);
 			return Response.ok(voes).build();
 		}
 	}
@@ -237,6 +239,7 @@ public class ForumWebService {
 	 * @param orderBy (value name, creationDate)
 	 * @param asc (value true/false)
 	 * @param httpRequest The HTTP request
+	 * @param uriInfo The URI informations
 	 * @param request The REST request
 	 * @return The messages of the thread
 	 */
@@ -244,7 +247,8 @@ public class ForumWebService {
 	@Path("posts/{threadKey}")
 	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context Request request) {
+			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+			@Context Request request) {
 		
 		if(forum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -255,14 +259,14 @@ public class ForumWebService {
 			int totalCount = fom.countThread(threadKey);
 			Message.OrderBy order = toEnum(orderBy);
 			List<Message> threads = fom.getThread(threadKey, start, limit, order, asc);
-			MessageVO[] vos = toArrayOfVO(threads);
+			MessageVO[] vos = toArrayOfVO(threads, uriInfo);
 			MessageVOes voes = new MessageVOes();
 			voes.setMessages(vos);
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
 			List<Message> messages = fom.getThread(threadKey);
-			MessageVO[] messageArr = toArrayOfVO(messages);
+			MessageVO[] messageArr = toArrayOfVO(messages, uriInfo);
 			return Response.ok(messageArr).build();
 		}
 	}
@@ -281,6 +285,7 @@ public class ForumWebService {
 	 * @param body The body for the first post in the thread
 	 * @param authorKey The author key
 	 * @param httpRequest The HTTP request
+	 * @param uriInfo The URI informations
 	 * @return The new message
 	 */
 	@POST
@@ -289,8 +294,8 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostPost(@PathParam("messageKey") Long messageKey, @FormParam("title") String title,
 			@FormParam("body") String body, @FormParam("authorKey") Long authorKey,
-			@Context HttpServletRequest httpRequest) {
-		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest);
+			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);
 	}
 	
 	/**
@@ -306,6 +311,7 @@ public class ForumWebService {
 	 * @param body The body for the first post in the thread
 	 * @param authorKey The author user key (optional)
 	 * @param httpRequest The HTTP request
+	 * @param uriInfo The URI informations
 	 * @return The new Message
 	 */
 	@PUT
@@ -313,8 +319,8 @@ public class ForumWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
-			@Context HttpServletRequest httpRequest) {
-		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest);
+			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);
 	}
 	
 	/**
@@ -335,11 +341,11 @@ public class ForumWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, ReplyVO reply,
-			@Context HttpServletRequest httpRequest) {
-		return replyToPost(messageKey, reply, null, httpRequest);
+			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
+		return replyToPost(messageKey, reply, null, httpRequest, uriInfo);
 	}
 		
-	private Response replyToPost(Long messageKey, ReplyVO reply, Long authorKey, HttpServletRequest httpRequest) {
+	private Response replyToPost(Long messageKey, ReplyVO reply, Long authorKey, HttpServletRequest httpRequest, UriInfo uriInfo) {
 		Identity identity = getIdentity(httpRequest);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -385,6 +391,7 @@ public class ForumWebService {
 		}
 
 		MessageVO vo = new MessageVO(newMessage);
+		vo.setAttachments(getAttachments(newMessage, uriInfo));
 		return Response.ok(vo).build();
 	}
 
@@ -410,21 +417,8 @@ public class ForumWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
-		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
-
-		List<FileVO> attachments = new ArrayList<FileVO>();
-		for(VFSItem item: container.getItems(new SystemItemFilter())) {
-			String uri = uriInfo.getAbsolutePathBuilder().path(format(item.getName())).build().toString();
-			if(item instanceof VFSLeaf) {
-				attachments.add(new FileVO("self", uri, item.getName(), ((VFSLeaf)item).getSize()));
-			} else {
-				attachments.add(new FileVO("self", uri, item.getName()));
-			}
-		}
-		
-		FileVO[] attachmentArr = new FileVO[attachments.size()];
-		attachmentArr = attachments.toArray(attachmentArr);
-		return Response.ok(attachmentArr).build();
+		FileVO[] attachments = getAttachments(mess, uriInfo);
+		return Response.ok(attachments).build();
 	}
 	
 	/**
@@ -581,11 +575,30 @@ public class ForumWebService {
 		return segment;
 	}
 	
-	private MessageVO[] toArrayOfVO(List<Message> threads) {
+	private FileVO[] getAttachments(Message mess, UriInfo uriInfo) {
+		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
+		List<FileVO> attachments = new ArrayList<FileVO>();
+		for(VFSItem item: container.getItems(new SystemItemFilter())) {
+			String uri = uriInfo.getAbsolutePathBuilder().path(format(item.getName())).build().toString();
+			if(item instanceof VFSLeaf) {
+				attachments.add(new FileVO("self", uri, item.getName(), ((VFSLeaf)item).getSize()));
+			} else {
+				attachments.add(new FileVO("self", uri, item.getName()));
+			}
+		}
+		
+		FileVO[] attachmentArr = new FileVO[attachments.size()];
+		attachmentArr = attachments.toArray(attachmentArr);
+		return attachmentArr;
+	}
+	
+	private MessageVO[] toArrayOfVO(List<Message> threads, UriInfo uriInfo) {
 		MessageVO[] threadArr = new MessageVO[threads.size()];
 		int i=0;
 		for(Message thread:threads) {
-			threadArr[i++] = new MessageVO(thread);
+			MessageVO msg = new MessageVO(thread);
+			msg.setAttachments(getAttachments(thread, uriInfo));
+			threadArr[i++] = msg;
 		}
 		return threadArr;
 	}

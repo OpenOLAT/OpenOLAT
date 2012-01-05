@@ -390,6 +390,8 @@ public class ForumTest extends OlatJerseyTestCase {
 		MessageVO message = parse(body, MessageVO.class);
 		assertNotNull(message);
 		method.releaseConnection();
+		assertNotNull(message.getAttachments());
+		assertEquals(2, message.getAttachments().length);
 		
 		//check if the file exists
 		ForumManager fm = ForumManager.getInstance();
