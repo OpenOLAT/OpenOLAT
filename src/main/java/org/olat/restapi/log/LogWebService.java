@@ -104,7 +104,6 @@ public class LogWebService {
 	}
 	
 	@GET
-	@Path("")
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getCurrentLogFile( @Context HttpServletRequest request) {
 		return getLogFileByDate(null, request);

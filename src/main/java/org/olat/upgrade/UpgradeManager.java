@@ -34,6 +34,7 @@ import javax.sql.DataSource;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.StartupException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.WebappHelper;
@@ -109,6 +110,16 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 		// load history of previous upgrades using xstream
 		initUpgradesHistories();
 		if (needsUpgrade) {
+			boolean sevenOrNewer = false;
+			for(OLATUpgrade upgrade:upgradesDefinitions.getUpgrades()) {
+				if(upgrade.getVersion().startsWith("OLAT_7") || upgrade.getVersion().startsWith("OLAT_8")) {
+					sevenOrNewer = true;
+				}
+			}
+			if(!sevenOrNewer) {
+				throw new AssertException("Upgrade first your installtion to OLAT 7.0 and after go with OpenOLAT");
+			}
+			
 			if (autoUpgradeDatabase) {
 				runAlterDbStatements();
 			} else {
@@ -168,7 +179,7 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 		File upgradesDir = new File(WebappHelper.getUserDataRoot(), SYSTEM_DIR);
 		File upgradesHistoriesFile = new File(upgradesDir, INSTALLED_UPGRADES_XML);
 		if (upgradesHistoriesFile.exists()) {
-			this.upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesHistoriesFile);
+			this.upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.createXStreamInstance().fromXML(upgradesHistoriesFile);
 		} else {
 			if (this.upgradesHistories == null) {
 				this.upgradesHistories = new HashMap<String, UpgradeHistoryData>();
@@ -186,7 +197,7 @@ public abstract class UpgradeManager extends BasicManager implements Initializab
 		for (OLATUpgrade upgrade: upgrades) {
 			UpgradeHistoryData uhd = new UpgradeHistoryData();
 			uhd.setInstallationComplete(true);
-			uhd.setBooleanDataValue(upgrade.TASK_DP_UPGRADE, true);
+			uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
 			setUpgradesHistory(uhd, upgrade.getVersion());
 		}
 		

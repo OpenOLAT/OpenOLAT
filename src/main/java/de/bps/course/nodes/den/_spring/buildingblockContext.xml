@@ -13,9 +13,5 @@
 
 	<bean id="de.bps.course.nodes.den.DENCourseNodeNotificationHandler" 
 	      class="de.bps.course.nodes.den.DENCourseNodeNotificationHandler" />
-
-	<!-- only for 6.2 to 6.3 notification-upgrade (needed by OLATUpgrade_6_3_0) -->
-	<bean id="de.bps.course.nodes.den.DENCourseNodeNotificationsUpgrade" 
-	      class="de.bps.course.nodes.den.DENCourseNodeNotificationsUpgrade" />
 	
 </beans>

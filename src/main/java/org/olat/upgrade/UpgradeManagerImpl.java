@@ -137,9 +137,8 @@ public class UpgradeManagerImpl extends UpgradeManager {
 			statement  = dataSource.getConnection().createStatement();
 			
 			Iterator<OLATUpgrade> iter = upgrades.iterator();
-			OLATUpgrade upgrade = null;
 			while (iter.hasNext()) {
-				upgrade = iter.next();
+				OLATUpgrade upgrade = iter.next();
 				String alterDbStatementsFilename = upgrade.getAlterDbStatements();
 				if (alterDbStatementsFilename != null) {
 					UpgradeHistoryData uhd = getUpgradesHistory(upgrade.getVersion());
@@ -148,9 +147,9 @@ public class UpgradeManagerImpl extends UpgradeManager {
 						uhd = new UpgradeHistoryData();
 					} 
 						
-					if (!uhd.getBooleanDataValue(upgrade.TASK_DP_UPGRADE)) {
+					if (!uhd.getBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE)) {
 						loadAndExecuteSqlStatements(statement, alterDbStatementsFilename, dialect);
-						uhd.setBooleanDataValue(upgrade.TASK_DP_UPGRADE, true);
+						uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
 						setUpgradesHistory(uhd, upgrade.getVersion());
 						logAudit("Successfully executed alter DB statements for Version::" + upgrade.getVersion());
 					}

@@ -35,7 +35,7 @@ import org.olat.core.gui.control.Event;
  * @author Felix Jost
  */
 
-public abstract class Form  {
+public final class Form  {
 
 	/**
 	 * Comment for <code>CANCEL_IDENTIFICATION</code>

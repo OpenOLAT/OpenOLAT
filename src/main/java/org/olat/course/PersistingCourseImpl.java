@@ -127,14 +127,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		courseEnvironment = new CourseEnvironmentImpl(this);		
 	}
 	
-	/**
-	 * do upgrades if needed
-	 */
-	private void checkForVersionUpdateAndUpdate() {
-		CourseUpgrade cu = new CourseUpgrade();
-		cu.migrateCourse(this);
-	}
-	
 
 	/**
 	 * @see org.olat.course.ICourse#getRunStructure()
@@ -405,8 +397,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		
 		obj = readObject(EDITORTREEMODEL_XML);
 		if (!(obj instanceof CourseEditorTreeModel)) throw new AssertException("Error reading course editor tree model.");
-		editorTreeModel = (CourseEditorTreeModel) obj;
-		checkForVersionUpdateAndUpdate();	
+		editorTreeModel = (CourseEditorTreeModel) obj;	
 	}
 
 	/**

@@ -256,7 +256,7 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 			recurseIntoTemplateAndCheck(temps, new ArrayList<PortfolioStructure>(),portfolioStructure);
 		}
 		// get unique root-templates 
-		HashSet h = new HashSet(temps);
+		HashSet<PortfolioStructure> h = new HashSet<PortfolioStructure>(temps);
 		temps.clear();
 		temps.addAll(h);
 		return temps;

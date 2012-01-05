@@ -35,8 +35,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
@@ -51,8 +49,6 @@ import org.olat.core.logging.LogDelegator;
 public class Formatter extends LogDelegator {
 
 	private Locale locale;
-	
-	
 
 	/**
 	 * Constructor for Formatter.
@@ -490,23 +486,6 @@ public class Formatter extends LogDelegator {
 			}
 		}
 		return sb;
-	}
-
-	
-	
-			
-  private static int countOccurrences(String arg1, String arg2) {
-    int count = 0;
-    int index = 0;
-    while ((index = arg1.indexOf(arg2, index)) != -1) {
-         ++index;
-         ++count;
-    }
-    return count;
-		}
-	
- private void log(String msg){
-	 logWarn(msg, null);
 	}
 
 	/**

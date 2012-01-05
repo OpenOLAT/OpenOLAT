@@ -14,16 +14,6 @@
 	
 	<!-- classes implementing the SiteDefinition interface -->
 
-	<!-- 
-		Optional intranet site: uncomment this if you want a specific course to be 
-		your intranet course. The Intranet tab will give you a static access to this
-		special course directly from the topnavigation. Make sure that a course with
-		the given softref ID exists in the system!
-	-->
-	<!--<bean id="ch.goodsolutions.olat.intranetsite" class="ch.goodsolutions.olat.intranetsite.SiteDef" scope="prototype">
-		<property name="repositorySoftKey" value="idpcms72042813088313" />
-	</bean>-->
-	
 	<!-- Disable site by adding '<property name="enabled" value="false"/>' -->
 	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef" scope="prototype" >
 	   <property name="order" value="1" />

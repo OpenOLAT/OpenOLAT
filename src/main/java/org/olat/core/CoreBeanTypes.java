@@ -26,13 +26,12 @@
 
 package org.olat.core;
 
+import org.olat.core.commons.persistence.AdditionalDBMappings;
 import org.olat.core.extensions.Extension;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.notifications.NotificationsHandler;
-import org.olat.core.util.notifications.NotificationsUpgrade;
-import org.olat.core.commons.persistence.AdditionalDBMappings;
 
 
 	/**
@@ -45,7 +44,6 @@ public enum CoreBeanTypes implements BeanType {
 	basicManager(BasicManager.class),
 	portlet(Portlet.class),
 	notificationsHandler(NotificationsHandler.class),
-	notificationsUpgrade(NotificationsUpgrade.class),
 	additionalDBMappings(AdditionalDBMappings.class);
 
 	

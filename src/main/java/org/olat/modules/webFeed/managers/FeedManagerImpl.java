@@ -309,7 +309,6 @@ public abstract class FeedManagerImpl extends FeedManager {
 			if (whenTheFeedWasLastModified == null || entry.getLastModified().after(whenTheFeedWasLastModified)) {
 				// entry is newer then feed, update feed
 				feed.setTitle(entry.getDisplayname());
-				// Formatter.formatWikiMarkup(entry.getDescription())
 				feed.setDescription(entry.getDescription());
 				feed.setAuthor(entry.getInitialAuthor());
 				// Update the image

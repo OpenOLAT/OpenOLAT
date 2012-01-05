@@ -28,35 +28,6 @@
 			<list>
 				<!-- add upgrade bean here, if you need to run DB upgrades add the property "alterDbStatements" with the 
 				filename from the /database/[dialect]/ directory -->
-				<bean id="upgrade_4_0_0" class="org.olat.upgrade.OLATUpgrade_4_0_0"  />
-				<bean id="upgrade_4_1_0" class="org.olat.upgrade.OLATUpgrade_4_1_0"  />
-				<bean id="upgrade_4_1_1" class="org.olat.upgrade.OLATUpgrade_4_1_1"  />
-				<bean id="upgrade_5_0_0" class="org.olat.upgrade.OLATUpgrade_5_0_0"  />
-				<bean id="upgrade_5_1_0" class="org.olat.upgrade.OLATUpgrade_5_1_0"  />
-				<bean id="upgrade_5_1_1" class="org.olat.upgrade.OLATUpgrade_5_1_1"  />
-				<bean id="upgrade_5_2_0" class="org.olat.upgrade.OLATUpgrade_5_2_0"  />
-				<bean id="upgrade_6_0_0" class="org.olat.upgrade.OLATUpgrade_6_0_0"  />
-				<bean id="upgrade_6_1_0" class="org.olat.upgrade.OLATUpgrade_6_1_0" >
-					<property name="alterDbStatements" value="alter_6_0_x_to_6_1_0.sql"/>
-				</bean>
-				<bean id="upgrade_6_1_1" class="org.olat.upgrade.OLATUpgrade_6_1_1" >
-					<constructor-arg ref="userFileDeletionManager" />
-				</bean>
-				<bean id="upgrade_6_2_0" class="org.olat.upgrade.OLATUpgrade_6_2_0" >
-					<property name="alterDbStatements" value="alter_6_1_1_to_6_2_0.sql"/>
-				</bean>
-				<bean id="upgrade_6_3_0" class="org.olat.upgrade.OLATUpgrade_6_3_0" >
-					<constructor-arg index="0" ref="deletionModule" />
-					<constructor-arg index="1" ref="courseModule" />
-					<constructor-arg index="2" value="${node.id}" />
-					<property name="alterDbStatements" value="alter_6_2_x_to_6_3_0.sql"/>
-				</bean>
-				<bean id="upgrade_6_3_3" class="org.olat.upgrade.OLATUpgrade_6_3_3">
-					<property name="migrateOlatAuthToWebDAVAuth" value="true"/>
-				</bean>
-				<bean id="upgrade_7_0_0" class="org.olat.upgrade.OLATUpgrade_7_0_0" >
-					<property name="alterDbStatements" value="alter_6_3_x_to_7_0_0.sql"/>
-				</bean>
 				<bean id="upgrade_7_0_1" class="org.olat.upgrade.OLATUpgrade_7_0_1"/>			
 				<bean id="upgrade_7_1_0" class="org.olat.upgrade.OLATUpgrade_7_1_0">
 					<property name="portletRepositoryStudentEnabled" value="${portlet.repository.student.enabled}"/>
@@ -69,15 +40,5 @@
 			</list>
 		</property>
 	</bean>
-	
-	<!-- Needed by upgrade_6_3_0 -->
-	<bean id="org.olat.modules.fo.ForumNotificationsUpgrade" class="org.olat.modules.fo.ForumNotificationsUpgrade" />
-	<bean id="org.olat.course.assessment.AssessmentNotificationsUpgrade" class="org.olat.course.assessment.AssessmentNotificationsUpgrade" />
-	<bean id="org.olat.core.commons.modules.bc.FolderNotificationsUpgrade" class="org.olat.notifications.bc.FolderNotificationsUpgrade" />
-	<bean id="org.olat.modules.dialog.FileUploadNotificationsUpgrade" class="org.olat.modules.dialog.FileUploadNotificationsUpgrade" />
-	<bean id="org.olat.course.nodes.ta.DropboxFileUploadNotificationsUpgrade" class="org.olat.course.nodes.ta.DropboxFileUploadNotificationsUpgrade" />
-	<bean id="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationsUpgrade" class="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationsUpgrade" />
-	<bean id="org.olat.commons.calendar.CalendarNotificationsUpgrade" class="org.olat.commons.calendar.CalendarNotificationsUpgrade" />
-	<bean id="org.olat.user.notification.NewUsersNotificationsUpgrade" class="org.olat.user.notification.NewUsersNotificationsUpgrade" />
 	
 </beans>
