@@ -21,7 +21,6 @@ package org.olat.restapi.security;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -227,10 +226,6 @@ public class RestApiLoginFilter implements Filter {
 		
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 		chain.doFilter(request, response);
-		if(ureq.getIdentity() == null) {
-			//login is not successful
-			response.sendError(401);
-		}
 	}
 	
 	private void followWithoutAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
