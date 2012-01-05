@@ -275,7 +275,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 					if (availableLanguages.contains(languageCode)) {
 						String path = "";
 						if (transToolApplicationOptLanguagesSrcDir != null) path = transToolApplicationOptLanguagesSrcDir.getAbsolutePath();
-						logWarn("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path , null);
+						logDebug("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path , null);
 						continue;
 					}
 					logDebug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath(), null);
@@ -289,7 +289,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		if (isTransToolEnabled()) {
 			for (String languageCode : i18nMgr.searchForAvailableLanguages(transToolApplicationOptLanguagesSrcDir)) {
 				if (availableLanguages.contains(languageCode)) {
-					logWarn("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+					logDebug("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
 					continue;
 				}
 				logDebug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
@@ -302,7 +302,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
 		for (String languageCode : i18nMgr.searchForAvailableLanguages(libDir)) {
 			if (availableLanguages.contains(languageCode)) {
-				logWarn("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
+				logDebug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
 				continue;
 			}
 			logDebug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath(), null);

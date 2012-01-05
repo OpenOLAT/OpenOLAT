@@ -266,7 +266,9 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 			}
 		}
 		// 3) Not even a value found in the fallback, use 0
-		logWarn("No value found for int property::" + propertyName + ", using value=0 instead", null);
+		if(isLogDebugEnabled()) {
+			logDebug("No value found for int property::" + propertyName + ", using value=0 instead", null);
+		}
 		return 0;
 	}
 
@@ -291,7 +293,9 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		}
 		// 3) Not even a value found in the fallback, return empty string
 		stringValue = (allowEmptyString ? "" : null);
-		logWarn("No value found for string property::" + propertyName + ", using value=\"\" instead", null);
+		if(isLogDebugEnabled()) {
+			logDebug("No value found for string property::" + propertyName + ", using value=\"\" instead");
+		}
 		return stringValue;
 	}
 
@@ -311,7 +315,9 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		if ((stringValue != null) && stringValue.trim().equalsIgnoreCase("TRUE")) { return true; }
 		if ((stringValue != null) && stringValue.trim().equalsIgnoreCase("FALSE")) { return false; }
 		// 3) Not even a value found in the fallback, return false
-		logWarn("No value found for boolean property::" + propertyName + ", using value=false instead", null);
+		if(isLogDebugEnabled()) {
+			logWarn("No value found for boolean property::" + propertyName + ", using value=false instead", null);
+		}
 		return false;
 	}
 
