@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -50,8 +51,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.formelements.SpacerElement;
-import org.olat.core.gui.formelements.VisibilityDependsOnSelectionRule;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 
@@ -121,8 +120,8 @@ public class KalendarEntryForm extends FormBasicController {
 			calendarValues[i] = cw.getKalendarConfig().getDisplayName();
 		}
 			
-		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
-		VisibilityDependsOnSelectionRule rule;
+//		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
+//		VisibilityDependsOnSelectionRule rule;
 		keysRecurrence = new String[] {
 				RECURRENCE_NONE,
 				KalendarEvent.DAILY,

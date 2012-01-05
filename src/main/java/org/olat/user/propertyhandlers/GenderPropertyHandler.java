@@ -26,8 +26,6 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.core.gui.formelements.FormElement;
-import org.olat.core.gui.formelements.StaticSingleSelectionElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.core.util.Util;
@@ -83,26 +81,11 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormElement(org.olat.core.id.User, org.olat.core.gui.formelements.FormElement)
-	 */
-	public void updateUserFromFormElement(User user, FormElement ui) {
-		String internalValue = getStringValue(ui);
-		setInternalValue(user, internalValue);
-	}
-
-	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
 	 */
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);
-	}
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FormElement)
-	 */
-	public String getStringValue(FormElement ui) {
-		return ((StaticSingleSelectionElement) ui).getSelectedKey();
 	}
 
 	/**
@@ -122,22 +105,6 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 
 		// use default: use key as value
 		return displayValue;
-	}
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
-	 */
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		UserManager um = UserManager.getInstance();
-		StaticSingleSelectionElement ui = new StaticSingleSelectionElement(i18nFormElementLabelKey(), keys, getTranslatedValues(locale));
-		updateFormElementFromUser(ui, user);		
-		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
-			ui.setReadOnly(true);
-		}
-		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
-			ui.setMandatory(true);
-		}
-		return ui;
 	}
 
 
@@ -169,29 +136,6 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	public String getInternalValue(User user) {
 		String value = super.getInternalValue(user);
 		return (value == null ? "-" : value); // default		
-	}
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateFormElementFromUser(org.olat.core.gui.formelements.FormElement, org.olat.core.id.User)
-	 */
-	public void updateFormElementFromUser(FormElement ui, User user) {
-		String key = getInternalValue(user);
-		((StaticSingleSelectionElement) ui).select(key, true);
-	}
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement)
-	 */
-	public boolean isValid(FormElement ui, Map formContext) {
-		if (ui.isMandatory()) {
-			StaticSingleSelectionElement sse = (StaticSingleSelectionElement) ui;
-			// when mandatory, the - must not be selected
-			if (sse.getSelectedKey().equals("-")) {
-				sse.setErrorKey("gender.error");
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	/**

@@ -33,8 +33,6 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
-import org.olat.core.gui.formelements.FormElement;
-import org.olat.core.gui.formelements.TextElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
@@ -121,34 +119,6 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		return tElem;
 	}
 	
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement)
-	 */
-	@Override
-	public boolean isValid(FormElement ui, Map formContext) {
-		// check parent rules first: check if mandatory and empty
-		if ( ! super.isValid(ui,formContext)) return false;
-		TextElement uiEmail = (TextElement) ui;
-		String value = uiEmail.getValue();
-		if (StringHelper.containsNonWhitespace(value)) {	
-			// check mail address syntax
-			if ( ! MailHelper.isValidEmailAddress(value)) {
-				uiEmail.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
-				return false;
-			}
-			// Email is syntactically correct. 
-			// Check whether it's available.
-			if (!uiEmail.isEmpty()) {
-				if (!isAddressAvailable(value, (String)formContext.get("username"))) {
-					uiEmail.setErrorKey(i18nFormElementLabelKey() + ".error.exists");
-				  return false;
-				}
-			}
-		}
-		// everthing ok
-		return true;
-	}
 	
 	/* (non-Javadoc)
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)

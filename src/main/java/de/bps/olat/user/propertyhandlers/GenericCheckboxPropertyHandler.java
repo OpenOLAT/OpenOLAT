@@ -27,8 +27,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.formelements.CheckBoxElement;
-import org.olat.core.gui.formelements.FormElement;
 import org.olat.core.id.User;
 import org.olat.user.AbstractUserPropertyHandler;
 import org.olat.user.UserManager;
@@ -62,39 +60,6 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
 		return sElem;
 	}
 
-/**
- * 
- * @see org.olat.user.propertyhandlers.UserPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
- */
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		CheckBoxElement ui = null;
-		UserManager um = UserManager.getInstance();
-		
-		String value = getInternalValue(user);
-		boolean isEnabled = value != null && value.equals("true") ? Boolean.TRUE : Boolean.FALSE;
-		ui = new CheckBoxElement(i18nFormElementLabelKey(), isEnabled);
-		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
-			ui.setReadOnly(true);
-		}
-		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
-			ui.setMandatory(true);
-		}
-		return ui;
-	}
-
-/**
- * 
- * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FormElement)
- */
-	public String getStringValue(FormElement ui) {
-		String value = "";
-		if (((CheckBoxElement) ui).isChecked())
-			value = "true";
-		else
-			value = "false";
-		
-		return value;
-	}
 
 /**
  * 
@@ -118,13 +83,6 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
 		return displayValue;
 	}
 
-/**
- * 
- * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement, java.util.Map)
- */
-	public boolean isValid(FormElement ui, Map formContext) {
-		return true;
-	}
 	
 /**
  * 
@@ -140,23 +98,6 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
  */
 	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
 		return true;
-	}
-
-/**
- * 
- * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateFormElementFromUser(org.olat.core.gui.formelements.FormElement, org.olat.core.id.User)
- */
-	public void updateFormElementFromUser(FormElement ui, User user) {
-		((CheckBoxElement) ui).setName(getInternalValue(user));
-	}
-
-/**
- * 
- * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormElement(org.olat.core.id.User, org.olat.core.gui.formelements.FormElement)
- */
-	public void updateUserFromFormElement(User user, FormElement ui) {
-		String internalValue = getStringValue(ui);
-		setInternalValue(user, internalValue);
 	}
 
 /**

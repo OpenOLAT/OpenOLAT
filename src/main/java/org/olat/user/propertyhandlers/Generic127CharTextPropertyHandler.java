@@ -26,8 +26,6 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.core.gui.formelements.FormElement;
-import org.olat.core.gui.formelements.TextElement;
 import org.olat.core.id.User;
 import org.olat.user.AbstractUserPropertyHandler;
 import org.olat.user.UserManager;
@@ -47,13 +45,6 @@ import org.olat.user.UserManager;
  */
 public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandler {
 	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormElement(org.olat.core.id.User, org.olat.core.gui.formelements.FormElement)
-	 */
-	public void updateUserFromFormElement(User user, FormElement ui) {
-		String internalValue = getStringValue(ui);
-		setInternalValue(user, internalValue);
-	}
 
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
@@ -63,16 +54,8 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 		setInternalValue(user, internalValue);
 	}
 
-
 	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FormElement)
-	 */	
-	public String getStringValue(FormElement ui) {
-		return ((TextElement) ui).getValue();
-	}
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FormElement)
+	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FORMELEMENTOLD)
 	 */
 	public String getStringValue(FormItem formItem) {
 		return ((org.olat.core.gui.components.form.flexible.elements.TextElement) formItem).getValue();
@@ -84,23 +67,6 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 	public String getStringValue(String displayValue, Locale locale) {
 		// default implementation is to use same as displayValue
 		return displayValue;
-	}
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
-	 */
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		// default is no element
-		TextElement ui = null;
-		UserManager um = UserManager.getInstance();
-		ui = new TextElement(i18nFormElementLabelKey(), getInternalValue(user), 127);
-		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
-			ui.setReadOnly(true);
-		}
-		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
-			ui.setMandatory(true);
-		}
-		return ui;
 	}
 	
 	/**
@@ -120,25 +86,6 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 			tElem.setMandatory(true);
 		}
 		return tElem;
-	}
-	
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateFormElementFromUser(org.olat.core.gui.formelements.FormElement, org.olat.core.id.User)
-	 */
-	public void updateFormElementFromUser(FormElement ui, User user) {
-		((TextElement) ui).setValue(getInternalValue(user));
-	}
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement)
-	 */
-	public boolean isValid(FormElement ui, Map formContext) {
-		TextElement uiText = (TextElement) ui;
-		if (ui.isMandatory()) {
-			return uiText.notEmpty(i18nFormElementLabelKey()+ ".error.empty");			
-		}
-		return true;
 	}
 	
 	/**
