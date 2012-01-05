@@ -60,6 +60,9 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 		if(val instanceof BGTableItem) {
 			BGTableItem item = (BGTableItem)val;
 			List<RepositoryEntry> resources = item.getResources();
+			if(resources == null || resources.isEmpty()) {
+				return;
+			}
 			
 			int count = 0;
 			for(RepositoryEntry resource:resources) {
