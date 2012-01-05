@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +52,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
@@ -579,7 +581,12 @@ public class ForumWebService {
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
 		List<FileVO> attachments = new ArrayList<FileVO>();
 		for(VFSItem item: container.getItems(new SystemItemFilter())) {
-			String uri = uriInfo.getAbsolutePathBuilder().path(format(item.getName())).build().toString();
+			UriBuilder attachmentUri = uriInfo.getBaseUriBuilder().path("repo")
+					.path("forums").path(mess.getForum().getKey().toString())
+					.path("posts").path(mess.getKey().toString())
+					.path("attachments").path(format(item.getName()));
+
+			String uri = attachmentUri.build().toString();
 			if(item instanceof VFSLeaf) {
 				attachments.add(new FileVO("self", uri, item.getName(), ((VFSLeaf)item).getSize()));
 			} else {

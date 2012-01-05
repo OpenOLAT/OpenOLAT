@@ -393,6 +393,17 @@ public class ForumTest extends OlatJerseyTestCase {
 		assertNotNull(message.getAttachments());
 		assertEquals(2, message.getAttachments().length);
 		
+		for(FileVO attachment:message.getAttachments()) {
+			String title = attachment.getTitle();
+			assertNotNull(title);
+			String href = attachment.getHref();
+			URI attachmentUri = new URI(href);
+			GetMethod getAttachment = createGet(attachmentUri, "*/*", true);
+			int attachmentCode = c.executeMethod(getAttachment);
+			assertEquals(200, attachmentCode);
+		}
+		
+		
 		//check if the file exists
 		ForumManager fm = ForumManager.getInstance();
 		VFSContainer container = fm.getMessageContainer(message.getForumKey(), message.getKey());
