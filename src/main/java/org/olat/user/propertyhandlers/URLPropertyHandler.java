@@ -27,8 +27,6 @@ import java.util.Map;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.formelements.FormElement;
-import org.olat.core.gui.formelements.TextElement;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
@@ -61,18 +59,6 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
-	 */
-	@Override
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		TextElement ui = (TextElement) super.getFormElement(locale, user, usageIdentifyer, isAdministrativeUser);
-		if ( ! UserManager.getInstance().isUserViewReadOnly(usageIdentifyer, this) || isAdministrativeUser) {
-			ui.setExample("http://www.olat.org");
-		}
-		return ui;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
 	 */
@@ -84,30 +70,6 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 			textElement.setExampleKey("form.example.url", null);
 		}
 		return textElement;
-	}
-	
-	
-
-	/**
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement)
-	 */
-	@Override
-	public boolean isValid(FormElement ui, Map formContext) {
-		// check parent rules first: check if mandatory and empty
-		if ( ! super.isValid(ui, formContext)) return false;
-		TextElement uiURL = (TextElement) ui;
-		String value = uiURL.getValue();
-		if (StringHelper.containsNonWhitespace(value)) {			
-			// check url address syntax
-			try {
-				new URL(value);
-			} catch (MalformedURLException e) {
-				uiURL.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
-				return false;
-			}
-		}
-		// everthing ok
-		return true;			
 	}
 
 	@Override

@@ -18,6 +18,7 @@
 */
 @media all {
 
+	html{ min-height:100%;}
 /** ----------------- MAIN LAYOUT ----------------- **/
 /** 
    * (en) Forcing vertical scrollbars in IE8, Firefox, Webkit & Opera 
@@ -29,8 +30,9 @@
    * @valid CSS3
    */
 body { 
+	min-height:100%;
 	overflow-y:scroll; 
-	background:#ECECEC url('images/sky.png') repeat-x left 88px;
+	@include bodybg;	
 }
 #b_page_margins {
 	min-width:740px;
@@ -57,7 +59,7 @@ body {
 		position: absolute;
 		bottom: 1em;
 		right: 1em;
-		background: transparent url(images/arrow_up.png) 0 50% no-repeat;
+		background: transparent url(../openolat/images/arrow_up.png) 0 50% no-repeat;
 		padding-left: 14px;
 		z-index: 5;
 	}
@@ -116,7 +118,7 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 	height: auto;
 	min-height:30px;
 	position:relative;
-	//background:transparent url('images/openolat_logo_header.png') no-repeat 20px 20px;
+	//background:transparent url('../openolat/images/openolat_logo_header.png') no-repeat 20px 20px;
 	
 	/* the top-navigation */
 	#b_topnav {
@@ -131,12 +133,12 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 			width: 10em;
 		}
 		#o_topnav_printview a {
-			background: url(images/printer.png) no-repeat top right;
+			background: url(../openolat/images/printer.png) no-repeat top right;
 			padding: 2px 20px 2px 0;
 			margin: 0;
 		}
 		#o_topnav_logout a {
-			background: url('images/control/control-power.png') no-repeat top right;
+			background: url('../openolat/images/control/control-power.png') no-repeat top right;
 			padding: 2px 20px 2px 0;
 			margin: 0;
 			font-weight: bold;
@@ -182,7 +184,7 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 	
 				//active sites
 				&.b_nav_active,&:hover {
-					a.b_nav_tab_close { background-image: url(images/cross_small_trimmed_blue.png); }
+					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
 					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
 					background:#fff;
 				}
@@ -194,20 +196,20 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 					padding-left: 16px;
 					background-repeat: no-repeat;
 					background-position: 0% 50%;		
-					background-image: url('images/application.png');		
+					background-image: url('../openolat/images/application.png');		
 				}
 				
-				&.o_site_home > div { background-image: url('images/home.png'); }
-				&.o_site_admin > div { background-image: url('images/wrench-screwdriver.png'); }
-				&.o_site_useradmin > div { background-image: url('images/user_conf.png'); }
-				&.o_site_groupsmanagement > div { background-image: url('images/users_conf.png'); }
-				&.o_site_repository > div { background-image: url('images/books-stack.png'); }
-				&.o_site_groups > div { background-image: url('images/users.png'); }
-				&.site_demo_icon > div { background-image: url('images/information-white.png');  }
-				&.f_site_library > div { background-image: url('images/library.png'); }
-				&.o_site_guidemo div { background-image: url('images/light-bulb.png') }
+				&.o_site_home > div { background-image: url('../openolat/images/home.png'); }
+				&.o_site_admin > div { background-image: url('../openolat/images/wrench-screwdriver.png'); }
+				&.o_site_useradmin > div { background-image: url('../openolat/images/user_conf.png'); }
+				&.o_site_groupsmanagement > div { background-image: url('../openolat/images/users_conf.png'); }
+				&.o_site_repository > div { background-image: url('../openolat/images/books-stack.png'); }
+				&.o_site_groups > div { background-image: url('../openolat/images/users.png'); }
+				&.site_demo_icon > div { background-image: url('../openolat/images/information-white.png');  }
+				&.f_site_library > div { background-image: url('../openolat/images/library.png'); }
+				&.o_site_guidemo div { background-image: url('../openolat/images/light-bulb.png') }
 				
-				&.b_resource_GroupInfoMainController div { background-image: url(images/users.png) }
+				&.b_resource_GroupInfoMainController div { background-image: url(../openolat/images/users.png) }
 	
 			}
 			
@@ -216,12 +218,12 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 				margin-right:4px;
 				a.b_nav_tab_close { 
 					position: absolute; top: 3px; right: 4px;	width: 13px; height: 13px; line-height: 0;	padding: 0; margin: 0; 
-					background: transparent url(images/cross_small_trimmed_grey.png) no-repeat right top;
+					background: transparent url(../openolat/images/cross_small_trimmed_grey.png) no-repeat right top;
 				}
 				
 				//active tabs
 				&.b_nav_active,&:hover {
-					a.b_nav_tab_close { background-image: url(images/cross_small_trimmed_blue.png); }
+					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
 					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
 					background:#fff;
 				}
@@ -345,8 +347,8 @@ div.b_tree {
 	
 	
 	/* the open/close node icons */
-	a.b_tree_level_close span { background: url('images/toggle-small.png') no-repeat 0% 50%; padding-right:8px;}
-	a.b_tree_level_open span { background: url('images/toggle-small-expand.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_close span { background: url('../openolat/images/toggle-small.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_open span { background: url('../openolat/images/toggle-small-expand.png') no-repeat 0% 50%; padding-right:8px;}
 	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
 	
 }// end b_tree
@@ -365,7 +367,7 @@ div.b_tree {
 	
 	#b_footer_user { 
 		float: left; line-height: 16px;
-	 	a.b_ajax {background: url(images/ajax.png) no-repeat; width: 20px; height: 16px; display: block; float: left; }
+	 	a.b_ajax {background: url(../openolat/images/ajax.png) no-repeat; width: 20px; height: 16px; display: block; float: left; }
 	}
 	#b_footer_version {float: right; display: block;}
 	#b_footer_powered { text-align: center; width: auto; background: none;  a { display: inline; } }
@@ -404,8 +406,8 @@ div.b_breadcumb_path {
 	padding: 0; margin: 0; float:left; display: inline;
 	ul { 
 		padding: 0; margin: 0; list-style: none; float:left;  display: inline; 
-		li { padding: 0 7px 0 14px; margin: 0; list-style: none; float:left;  display: inline; background: url(images/breadcrumb-separator.png) no-repeat left center;}
-		li.b_first { background: url(images/home.png) no-repeat top left; padding-left: 25px;}
+		li { padding: 0 7px 0 14px; margin: 0; list-style: none; float:left;  display: inline; background: url(../openolat/images/breadcrumb-separator.png) no-repeat left center;}
+		li.b_first { background: url(../openolat/images/home.png) no-repeat top left; padding-left: 25px;}
 		li a { color: #464444; }
 		li span.b_disabled { color: #000; padding: 0 10px 0 0; margin: 0;}
 	}
@@ -416,9 +418,9 @@ div.b_breadcumb_content { clear: both;  margin-top: 0.5em; padding-top: 0.5em; b
 div.b_noti { 
 		border: 1px solid #E9EAEF; padding: 3px 23px 3px 3px; float: right; display: inline; position: relative; right: 0; font-size: 95%;
 		a.b_contexthelp { position: absolute; top: 2px; right: 2px; }
-		a.b_noti_unsubscribe_link { background: url(images/mail--minus.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
-		a.b_noti_subscribe_link { background: url(images/mail--plus.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
-		a.b_noti_markedread_link { background: url(images/tick.png)  no-repeat left 50%; padding: 1px 0 1px 20px;}	
+		a.b_noti_unsubscribe_link { background: url(../openolat/images/mail--minus.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
+		a.b_noti_subscribe_link { background: url(../openolat/images/mail--plus.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
+		a.b_noti_markedread_link { background: url(../openolat/images/tick.png)  no-repeat left 50%; padding: 1px 0 1px 20px;}	
 }
 
 	
@@ -454,7 +456,7 @@ div.o_catalog {
 		font-size: 95%;
 		padding: 1px 0 1px 20px;
 		border-bottom: 1px solid #EEE;
-		background: url(images/folder_open.png) 0 50% no-repeat;
+		background: url(../openolat/images/folder_open.png) 0 50% no-repeat;
 	}
 	div.o_catalog_links {
 		margin-top: 1em;
@@ -468,8 +470,8 @@ div.o_catalog {
 	
 /** -------------- TAGGING ---------------- **/
 /* tagging */
-	.b_tag_list { background: url(images/tag-label-yellow.png) 0px 3px no-repeat !important; }
-	.b_tag_icon { background-image: url(images/tag-label-yellow.png); }
+	.b_tag_list { background: url(../openolat/images/tag-label-yellow.png) 0px 3px no-repeat !important; }
+	.b_tag_icon { background-image: url(../openolat/images/tag-label-yellow.png); }
 	
 	
 	div.b_tags {
@@ -503,14 +505,14 @@ div.o_catalog {
 		a.bit-input input.smallinput { width: 20px; }
 		a.bit-hover { background: #BBCEF1; border: 1px solid #6D95E0; }
 		a.bit-box-focus { background: #598BEC; color: #fff; }
-		a.bit-box a.closebutton { position: absolute; right: 0; top: 5px	; display: block; width: 7px; height: 7px; font-size: 1px; background: url('images/tag_x.gif'); }
+		a.bit-box a.closebutton { position: absolute; right: 0; top: 5px	; display: block; width: 7px; height: 7px; font-size: 1px; background: url('../openolat/images/tag_x.gif'); }
 		a.bit-box a.closebutton:hover { background-position: 7px; }
 		a.bit-box a.closebutton:active { outline: none }
 		a.bit-box-focus a.closebutton,  a.bit-box-focus a.closebutton:hover { background-position: bottom; }
 	}
 	
 	.b_wizard {
-		.textbox-outer { background: url(images/tag-label-yellow.png) top left no-repeat;
+		.textbox-outer { background: url(../openolat/images/tag-label-yellow.png) top left no-repeat;
 		li {margin-left:18px;} }
 		div.holder a.bit-input input { background: #f8f8f8; padding: 0.4em; }
 	}
@@ -548,9 +550,9 @@ div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url($ico_plu
 div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url($ico_plus);background-position: 50% 50%;}
 div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url($ico_plus);background-position: 50% 50%;}
 div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url($ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(images/folder.png); }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(images/folder_open.png); }
-div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(images/docs/document_plain.png); }
+div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../openolat/images/folder.png); }
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../openolat/images/folder_open.png); }
+div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../openolat/images/docs/document_plain.png); }
 div.b_ext_elem .x-tree-selected a.x-tree-node-anchor { border: 1px dotted #444; text-decoration: none; }
 div.b_ext_elem .x-tree-node .x-tree-selected { background-color:#FFC266; }
 	

@@ -35,7 +35,7 @@ div.o_home_rsslink {
 	bottom: 0;
 	left: 0;
 	height: 16px;
-	background: white url(images/magnifier-zoom.png) no-repeat 4px 0;
+	background: white url(../openolat/images/magnifier-zoom.png) no-repeat 4px 0;
 }
 #o_macartney_large {
 	position: fixed;
@@ -48,7 +48,7 @@ div.o_home_rsslink {
 	padding: 5px;
 }
 #o_macartney_large img { width: 100%; }
-#o_macartney_close {position: absolute; width: 16px; top: 0; right: 0; height: 16px; border-left: 1px solid #000; border-bottom: 1px solid #000; background: #fff url(images/close.png)}
+#o_macartney_close {position: absolute; width: 16px; top: 0; right: 0; height: 16px; border-left: 1px solid #000; border-bottom: 1px solid #000; background: #fff url(../openolat/images/close.png)}
 
 
 /** ----------------- PORTLETS & BOXES ----------------- **/
@@ -110,20 +110,20 @@ div.o_home_rsslink {
 		
 		
 		/* the toolbox buttons */
-		a.b_portlet_edit_left { background-image: url(images/arrow_left_big.png);}
-		a.b_portlet_edit_right { background-image: url(images/arrow_right_big.png);}
-		a.b_portlet_edit_down { background-image: url(images/arrow_down_big.png); }
-		a.b_portlet_edit_up { background-image: url(images/arrow_up_big.png); }
-		a.b_portlet_edit_delete { background-image: url(images/cross-script.png); }
-		a.b_portlet_edit_sort_auto { background-image: url(images/table_sort.png); }
-		a.b_portlet_edit_sort_manual { background-image: url(images/table_gear.png); }
+		a.b_portlet_edit_left { background-image: url(../openolat/images/arrow_left_big.png);}
+		a.b_portlet_edit_right { background-image: url(../openolat/images/arrow_right_big.png);}
+		a.b_portlet_edit_down { background-image: url(../openolat/images/arrow_down_big.png); }
+		a.b_portlet_edit_up { background-image: url(../openolat/images/arrow_up_big.png); }
+		a.b_portlet_edit_delete { background-image: url(../openolat/images/cross-script.png); }
+		a.b_portlet_edit_sort_auto { background-image: url(../openolat/images/table_sort.png); }
+		a.b_portlet_edit_sort_manual { background-image: url(../openolat/images/table_gear.png); }
 		
-		span.b_portlet_edit_left_disabled { background-image: url(images/arrow_left_big.png); opacity:0.2;}
-		span.b_portlet_edit_right_disabled { background-image: url(images/arrow_right_big.png); opacity:0.2;}
-		span.b_portlet_edit_down_disabled { background-image: url(images/arrow_down_big.png); opacity:0.2;}
-		span.b_portlet_edit_up_disabled { background-image: url(images/arrow_up_big.png); opacity:0.2;}	
-		span.b_portlet_edit_sort_auto_disabled { background-image: url(images/table_sort.png); opacity:0.2;}
-		span.b_portlet_edit_sort_manual_disabled { background-image: url(images/table_gear.png); opacity:0.2;}
+		span.b_portlet_edit_left_disabled { background-image: url(../openolat/images/arrow_left_big.png); opacity:0.2;}
+		span.b_portlet_edit_right_disabled { background-image: url(../openolat/images/arrow_right_big.png); opacity:0.2;}
+		span.b_portlet_edit_down_disabled { background-image: url(../openolat/images/arrow_down_big.png); opacity:0.2;}
+		span.b_portlet_edit_up_disabled { background-image: url(../openolat/images/arrow_up_big.png); opacity:0.2;}	
+		span.b_portlet_edit_sort_auto_disabled { background-image: url(../openolat/images/table_sort.png); opacity:0.2;}
+		span.b_portlet_edit_sort_manual_disabled { background-image: url(../openolat/images/table_gear.png); opacity:0.2;}
 	
 	}
 

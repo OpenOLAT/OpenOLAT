@@ -18,7 +18,7 @@ div.o_forum {
 		vertical-align: middle; padding: 2px 5px 2px 5px;   min-height: 24px;
 		strong { font-weight: bold;}
 	}
-	div.o_forum_message_new div.o_forum_message_title strong {background: url(images/new-text.png) no-repeat top right; padding-right: 20px;}
+	div.o_forum_message_new div.o_forum_message_title strong {background: url(../openolat/images/new-text.png) no-repeat top right; padding-right: 20px;}
 	
 	div.o_forum_message_content_wrapper { 
 		div.o_forum_message_content { }
@@ -46,10 +46,10 @@ div.o_forum {
 }
 	
 span.o_forum_thread_sticky { font-weight: bold; }
-span.o_forum_status_thread_icon {background-image: url(images/forum/forum.png)}
-span.o_forum_status_sticky_closed_icon {background-image: url(images/forum/sticky-note-pin_locked.png)}
-span.o_forum_status_sticky_icon {background-image: url(images/forum/sticky-note-pin.png)}
-span.o_forum_status_closed_icon {background-image: url(images/forum/forum_locked.png)}
+span.o_forum_status_thread_icon {background-image: url(../openolat/images/forum/forum.png)}
+span.o_forum_status_sticky_closed_icon {background-image: url(../openolat/images/forum/sticky-note-pin_locked.png)}
+span.o_forum_status_sticky_icon {background-image: url(../openolat/images/forum/sticky-note-pin.png)}
+span.o_forum_status_closed_icon {background-image: url(../openolat/images/forum/forum_locked.png)}
 
 div.o_forum_peekview { 
 	margin: 1em 0 1em 0;
@@ -57,7 +57,7 @@ div.o_forum_peekview {
 	div.o_forum_peekview_message { padding-left: 20px; padding-bottom: 15px; }
 	div.b_quote_wrapper { display: none;}
 }
-.o_forum_message_icon {background-image: url(images/forum/balloon-white-left.png); }
+.o_forum_message_icon {background-image: url(../openolat/images/forum/balloon-white-left.png); }
 
 div.o_forum_toolbar { float:left; display:inline; width:75%; }
 div#o_forum_fulltextsearch { 

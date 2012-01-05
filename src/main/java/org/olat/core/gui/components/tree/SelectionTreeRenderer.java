@@ -26,11 +26,11 @@
 
 package org.olat.core.gui.components.tree;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.Form;
-import org.olat.core.gui.components.form.FormRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -39,7 +39,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.tree.TreeHelper;
-import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * enclosing_type Description: <br>
@@ -120,7 +119,7 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 		if (iframePostEnabled) {
 			ubu.appendTarget(target);
 		}
-		target.append(" id=\"").append(FormRenderer.JSFORMID).append(tree.hashCode()).append("\"");
+		target.append(" id=\"").append(Form.JSFORMID).append(tree.hashCode()).append("\"");
 		target.append(">");
 		// append root node
 		renderRootNode(root, target);
@@ -128,10 +127,10 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 		if (root.getChildCount() != 0) {
 			renderChildNodes(root, "", tree.hashCode(), tree.isMultiselect(), tree.getGreyOutNonSelectableEntries(), tree.isShowAltTextAsHoverOnTitle(), target, tree);
 			if (tree.isMultiselect() && atLeastOneIsAccessible) {
-				target.append("<div class=\"b_togglecheck\"><a href=\"javascript:checkall(true);setFormDirty('").append(FormRenderer.JSFORMID).append(tree.hashCode()).append("');\">");
+				target.append("<div class=\"b_togglecheck\"><a href=\"javascript:checkall(true);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("');\">");
 				target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
 				target.append(translator.translate("checkall"));
-				target.append("</a>&nbsp;<a href=\"javascript:checkall(false);setFormDirty('").append(FormRenderer.JSFORMID).append(tree.hashCode()).append("\');\">");
+				target.append("</a>&nbsp;<a href=\"javascript:checkall(false);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("\');\">");
 				target.append("<input type=\"checkbox\" disabled=\"disabled\" />");
 				target.append(translator.translate("uncheckall"));
 				target.append("</a></div>");
@@ -223,8 +222,8 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 				} else {
 					sb.append(child.getIdent());
 				}
-				sb.append("\" onchange=\"return setFormDirty('").append(FormRenderer.JSFORMID).append(treeID).append("')\" ");
-				sb.append(" onclick=\"return setFormDirty('").append(FormRenderer.JSFORMID).append(treeID).append("')\" />");
+				sb.append("\" onchange=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" ");
+				sb.append(" onclick=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" />");
 			}
 			// node title (using css if available)
 			String cssClass = child.getCssClass();

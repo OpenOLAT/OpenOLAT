@@ -4,4 +4,4 @@
 # can be included into eclipse-project-build (project-properties --> "Builders")
 #
 
-sass --update .
+sass --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile .

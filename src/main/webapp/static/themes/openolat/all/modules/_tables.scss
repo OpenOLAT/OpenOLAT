@@ -43,8 +43,8 @@ div.b_table_wrapper {
 	div.b_clearfix div.b_floatbox { margin:5px 0 0 0; }
 	div.b_table_count { font-size: 95%; float: left; line-height: 16px; vertical-align: bottom; margin: 3px; font-size: 95%;}
 	a.b_table_prefs, a.b_table_download {float: right; display: block; background-repeat: no-repeat; background-position: top left; width: 16px; height: 16px; margin: 3px;}
-	a.b_table_prefs {background-image: url(images/table_gear.png);}
-	a.b_table_download {background-image: url(images/table_download.png);}
+	a.b_table_prefs {background-image: url(../openolat/images/table_gear.png);}
+	a.b_table_download {background-image: url(../openolat/images/table_download.png);}
 	div.b_table_buttons { text-align: center; margin: 1.5em 0 1em 0; }	/* bottom-margin to fix IE6 overflow issue */
 }
 	
@@ -53,9 +53,9 @@ div.b_table_page {
 	font-size: 95%; text-align: center;
 	a { margin: 0 ; padding: 2px;}
 	a.b_table_page_active { font-weight: bold; color: #000;}
-	a.b_table_backward {background: url(images/arrow_left.png) no-repeat center left; padding-left: 16px;}
-	a.b_table_forward {background: url(images/arrow_right.png) no-repeat center right; padding-right: 16px;}
-	a.b_table_first_page {background: url(images/home.png) no-repeat center left; padding-left: 18px;}
+	a.b_table_backward {background: url(../openolat/images/arrow_left.png) no-repeat center left; padding-left: 16px;}
+	a.b_table_forward {background: url(../openolat/images/arrow_right.png) no-repeat center right; padding-right: 16px;}
+	a.b_table_first_page {background: url(../openolat/images/home.png) no-repeat center left; padding-left: 18px;}
 }
 div.b_table_page_all { 
 	font-size: 95%; text-align: center;

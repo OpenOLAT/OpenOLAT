@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.formelements.FormElement;
 import org.olat.core.id.User;
 
 /**
@@ -99,24 +98,6 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 * Form handling
 	 */
 
-	/**
-	 * Create a (non-flexi) form element for this UserPropertyHandler. The
-	 * usageIdentifyer indicates in which form the element is to be used.
-	 * 
-	 * @param locale The current users locale
-	 * @param user The user containing data to be prefilled or NULL if it should
-	 *          be left empty
-	 * @param usageIdentifyer The identifyer of the form where this form element
-	 *          is used
-	 * @param isAdministrativeUser true: Form element will be set to
-	 *          administrative mode. false: the element is set to user mode. In
-	 *          some cases the field is then read-only
-	 * @return The form element or NULL if in this context the element is not
-	 *         displayed
-	 * @deprecated Use FlexiForms instead of the old forms.
-	 */
-	@Deprecated
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser);
 
 	/**
 	 * Adds a flexi-form Item for this UserPropertyHandler. The usageIdentifyer
@@ -136,29 +117,6 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,
 			FormItemContainer formItemContainer);
 
-	/**
-	 * Put the current value from this UserPropertyHandler into the given form
-	 * element
-	 * 
-	 * @param ui The form element previously created with the getFormElement
-	 *          method
-	 * @param user The user that contains the data
-	 * @deprecated Use FlexiForms instead of the old forms.
-	 */
-	@Deprecated
-	public void updateFormElementFromUser(FormElement ui, User user);
-
-	/**
-	 * Reads the value of the given form element and updates the user
-	 * 
-	 * @param user The user to be updated
-	 * @param ui The form element previously created with the getFormElement
-	 *          method
-	 * @return The value or NULL
-	 * @deprecated Use FlexiForms instead of the old forms.
-	 */
-	@Deprecated
-	public void updateUserFromFormElement(User user, FormElement ui);
 
 	/**
 	 * Reads the value of the given form item and updates the user
@@ -180,20 +138,6 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 */
 	public String i18nFormElementGroupKey();
 
-	/**
-	 * Check if this form is valid
-	 * 
-	 * @param ui The form element previously created with the getFormElement
-	 *          method
-	 * @param formContext Map containing some variables used in this form context,
-	 *          e.g. for cross form value checks. NULL to not use any form context
-	 *          variables
-	 * @return true: the entered value is ok; false: the entered value is not
-	 *         accepted (Validation error)
-	 * @deprecated Use FlexiForms instead of the old forms.
-	 */
-	@Deprecated
-	public boolean isValid(FormElement ui, Map formContext);
 
 	/**
 	 * Checks if a form item for a property has a valid value and sets the
@@ -227,17 +171,6 @@ public interface UserPropertyHandler extends ItemValidatorProvider {
 	 */
 	public boolean isValidValue(String value, ValidationError validationError, Locale locale);
 
-	/**
-	 * Get the value from this form element formatted as string. The returned
-	 * value is formatted in a way it can be stored in the database, thus it might
-	 * not be the right value to display to a user.
-	 * 
-	 * @param ui
-	 * @return
-	 * @deprecated Use FlexiForms instead of the old forms.
-	 */
-	@Deprecated
-	public String getStringValue(FormElement ui);
 
 	/**
 	 * Get the value from this form item formatted as string. The returned value

@@ -33,8 +33,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.formelements.DateElement;
-import org.olat.core.gui.formelements.FormElement;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -75,14 +73,6 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 	}
 
 	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormElement(org.olat.core.id.User, org.olat.core.gui.formelements.FormElement)
-	 */
-	public void updateUserFromFormElement(User user, FormElement ui) {
-		String internalValue = getStringValue(ui);
-		setInternalValue(user, internalValue);
-	}
-	
-	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
 	 */
 	public void updateUserFromFormItem(User user, FormItem formItem) {
@@ -90,13 +80,6 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		setInternalValue(user, internalValue);
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FormElement)
-	 */
-	public String getStringValue(FormElement ui) {
-		Date date = ((DateElement) ui).getDate();
-		return encode(date);
-	}	
 
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.components.form.flexible.FormItem)
@@ -123,25 +106,6 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
-	 */
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		// default is no element
-		UserManager um = UserManager.getInstance();
-		DateElement ui = null;
-		ui = new DateElement(i18nFormElementLabelKey(), locale);
-		updateFormElementFromUser(ui, user);
-		if ( ! um.isUserViewReadOnly(usageIdentifyer, this) || isAdministrativeUser) {
-			ui.setExample(Formatter.getInstance(locale).formatDate(new Date()));
-		} else {
-			ui.setReadOnly(true);
-		}
-		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
-			ui.setMandatory(true);
-		}
-		return ui;
-	}
 	
 	/**
 	 *  
@@ -163,29 +127,7 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		return dateElem;
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateFormElementFromUser(org.olat.core.gui.formelements.FormElement, org.olat.core.id.User)
-	 */
-	public void updateFormElementFromUser(FormElement ui, User user) {
-		Date date = decode(getInternalValue(user));
-		((DateElement) ui).setDate(date);
-	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement)
-	 */
-	public boolean isValid(FormElement ui, Map formContext) {
-		
-		DateElement uiDate = (DateElement) ui;
-		
-		if (uiDate.getValue().length() == 0) {
-			if (!ui.isMandatory()) return true;
-			ui.setErrorKey(i18nFormElementLabelKey()+ ".error.empty");			
-			return false;
-		}
-		
-		return uiDate.validDate(i18nFormElementLabelKey()+ ".error");			
-	}
 	
 	/**
 	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)

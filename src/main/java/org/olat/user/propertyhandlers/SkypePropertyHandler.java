@@ -24,8 +24,6 @@ import java.util.Locale;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.formelements.FormElement;
-import org.olat.core.gui.formelements.TextElement;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
@@ -62,20 +60,6 @@ public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
-	 */
-	@Override
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		TextElement ui = (TextElement) super.getFormElement(locale, user, usageIdentifyer, isAdministrativeUser);
-		// skype names are max 32 chars long
-		ui.setMaxLength(32);
-		if ( ! UserManager.getInstance().isUserViewReadOnly(usageIdentifyer, this) || isAdministrativeUser) {
-			ui.setExample("myskypename");
-		}
-		return ui;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
 	 */

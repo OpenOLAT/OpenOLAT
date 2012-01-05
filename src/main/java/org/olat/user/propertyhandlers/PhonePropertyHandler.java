@@ -26,8 +26,6 @@ import java.util.regex.Pattern;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.formelements.FormElement;
-import org.olat.core.gui.formelements.TextElement;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 
@@ -43,16 +41,6 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 	
 	// Regexp to define valid phone numbers
 	private static final Pattern VALID_PHONE_PATTERN_IP = Pattern.compile( "[0-9/\\-+' ]+" );
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#getFormElement(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean)
-	 */
-	@Override
-	public FormElement getFormElement(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser) {
-		TextElement ui = (TextElement) super.getFormElement(locale, user, usageIdentifyer, isAdministrativeUser);
-		ui.setExample("+41 12 345 67 89");
-		return ui;
-	}
 	
 	/* (non-Javadoc)
 	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
@@ -81,27 +69,6 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 			return sb.toString();
 		}
 		return null;
-	}
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.formelements.FormElement)
-	 */
-	@Override
-	public boolean isValid(FormElement ui, Map formContext) {
-		// check parent rules first: check if mandatory and empty
-		if ( ! super.isValid(ui, formContext)) return false;
-		
-		TextElement uiPhone = (TextElement) ui;
-		String value = uiPhone.getValue();
-		if (StringHelper.containsNonWhitespace(value)) {			
-			// check phone address syntax
-			if ( ! VALID_PHONE_PATTERN_IP.matcher(value).matches()) {
-				ui.setErrorKey(i18nFormElementLabelKey()+ ".error.valid");
-				return false;
-			}
-		}
-		// everthing ok
-		return true;			
 	}
 	
 	/* (non-Javadoc)
