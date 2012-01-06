@@ -145,7 +145,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		// installation registers at the same time
 		int min = RandomUtils.nextInt(59);
 		int hour = RandomUtils.nextInt(23);
-		int day = RandomUtils.nextInt(6);
+		int day = RandomUtils.nextInt(6) + 1;
 		String cronExpression = "0 " + min + " " + hour + " ? * "+ day;
 		return cronExpression;
 	}
