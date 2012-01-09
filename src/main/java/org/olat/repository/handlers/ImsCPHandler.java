@@ -29,6 +29,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -41,6 +43,10 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.nodes.cp.CPRunController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
@@ -157,10 +163,17 @@ public class ImsCPHandler extends FileHandler implements RepositoryHandler {
 	 */
 	public Controller createEditorController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		// only unzips, if not already unzipped
-		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
-		LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
-		return new CPEditMainController(ureq, wControl, vfsWrapper, res);
+		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(res);
 
+		Quota quota = QuotaManager.getInstance().getCustomQuota(cpRoot.getRelPath());
+		if (quota == null) {
+			Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
+			quota = QuotaManager.getInstance().createQuota(cpRoot.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+		}
+		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
+		cpRoot.setLocalSecurityCallback(secCallback);
+
+		return new CPEditMainController(ureq, wControl, cpRoot, res);
 	}
 
 	/**

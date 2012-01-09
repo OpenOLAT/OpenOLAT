@@ -29,6 +29,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 
 /**
@@ -84,6 +85,10 @@ public class Feed implements OLATResourceable, Serializable {
 		this.type = resource.getResourceableTypeName();
 		// new model constructor, set to current version
 		this.modelVersion = CURRENT_MODEL_VERSION;
+	}
+	
+	public OLATResourceable getResource() {
+		return OresHelper.createOLATResourceableInstanceWithoutCheck(type, id);
 	}
 
 	/**

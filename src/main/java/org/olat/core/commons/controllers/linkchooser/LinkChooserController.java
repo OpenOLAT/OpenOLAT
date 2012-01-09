@@ -127,6 +127,10 @@ public class LinkChooserController extends BasicController {
 			mainPanel.setContent(closeVC);
 			
 		} else if (event == Event.CANCELLED_EVENT) {
+			removeAsListenerAndDispose(fileLinkChooserController);
+			removeAsListenerAndDispose(courseLinkChooserController);
+			removeAsListenerAndDispose(customMediaChooserCtr);
+			
 			// Close the window, no URL selected
 			closeVC = createVelocityContainer("close");
 			closeVC.contextPut("imagepath", "");

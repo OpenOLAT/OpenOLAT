@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -52,6 +54,8 @@ import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -784,7 +788,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 	 * @param ores
 	 * @return The resource (root) container of the feed
 	 */
-	private VFSContainer getResourceContainer(OLATResourceable ores) {
+	public OlatRootFolderImpl getResourceContainer(OLATResourceable ores) {
 		return fileResourceManager.getFileResourceRootImpl(ores);
 	}
 
@@ -1218,6 +1222,19 @@ public abstract class FeedManagerImpl extends FeedManager {
 		OLATResourceable itemResource = OresHelper.createOLATResourceableType(key);
 		LockResult lockResult = coordinator.getLocker().acquireLock(itemResource, identity, key);
 		return lockResult;
+	}
+	
+	@Override
+	public Quota getQuota(OLATResourceable feed) {
+		OlatRootFolderImpl container = getResourceContainer(feed);
+
+		Quota quota = QuotaManager.getInstance().getCustomQuota(container.getRelPath());
+		if (quota == null) {
+			Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS);
+			quota = QuotaManager.getInstance().createQuota(container.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+		}
+		
+		return quota;	
 	}
 
 	/**

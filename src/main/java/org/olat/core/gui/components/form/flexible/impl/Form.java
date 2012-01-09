@@ -33,8 +33,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -59,7 +59,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.component.FormComponentTraverser;
 import org.olat.core.util.component.FormComponentVisitor;
 

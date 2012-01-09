@@ -258,6 +258,9 @@ public class FeedMainController extends BasicController implements Activateable,
 				}
 				// release the lock
 				feedManager.releaseLock(lock);
+
+				removeAsListenerAndDispose(feedFormCtr);
+				feedFormCtr = null;
 			}
 		} else if (source == itemsCtr && event.equals(ItemsController.HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT)) {
 			oldFeedUrl = feed.getExternalFeedUrl();			

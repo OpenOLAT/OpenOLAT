@@ -142,8 +142,15 @@ public class FileLinkChooserController extends BasicController {
 				}
 			}
 		}
-		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq,
-				(int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, mimeTypes, true);
+		
+		int remainingSpace = Quota.UNLIMITED;
+		long uploadLimit = FolderConfig.getLimitULKB();
+		if( fileUploadBase.getLocalSecurityCallback() != null && fileUploadBase.getLocalSecurityCallback().getQuota() != null) {
+			remainingSpace = fileUploadBase.getLocalSecurityCallback().getQuota().getRemainingSpace().intValue();
+			uploadLimit = fileUploadBase.getLocalSecurityCallback().getQuota().getUlLimitKB();
+		}
+		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, (int)uploadLimit, remainingSpace, mimeTypes, true);
+		
 		listenTo(uploadCtr);
 		// set specific upload path
 		uploadCtr.setUploadRelPath(uploadRelPath);
@@ -160,55 +167,6 @@ public class FileLinkChooserController extends BasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
-	}
-
-	private String getPathRelativeToFilename(String selectedPath) {
-		// VFSLeaf chosen = (VFSLeaf) rootDir.resolve(selectedPath);
-		// compute rel path to base dir of the current file
-		// String relPath = VFSManager.calculateRelativePath(fileName,
-		// selectedPath);
-		// selpath = /a/irwas/subsub/nochsub/note.html 5
-		// filenam = /a/irwas/index.html 3
-		// --> subsub/nochsub/note.gif
-
-		// or /a/irwas/bla/index.html
-		// to /a/other/b/gugus.gif
-		// --> ../../ other/b/gugus.gif
-
-		// or /a/other/b/main.html
-		// to /a/irwas/bla/goto.html
-		// --> ../../ other/b/gugus.gif
-
-		String target = selectedPath;
-		String base = fileName; // assume "/" is here
-		if (!(fileName.indexOf("/") == 0)) {
-			base = "/" + fileName;
-		}
-
-		String[] baseA = base.split("/");
-		String[] targetA = target.split("/");
-		int sp = 1;
-		for (; sp < Math.min(baseA.length, targetA.length); sp++) {
-			if (!baseA[sp].equals(targetA[sp])) {
-				break;
-			}
-		}
-		// special case: self-reference
-		if (target.equals(base)) {
-			sp = 1;
-		}
-		StringBuilder buffer = new StringBuilder();
-		for (int i = sp; i < baseA.length - 1; i++) {
-			buffer.append("../");
-		}
-		for (int i = sp; i < targetA.length; i++) {
-			buffer.append(targetA[i] + "/");
-		}
-		buffer.deleteCharAt(buffer.length() - 1);
-		String path = buffer.toString();
-
-		String trimmed = path; // selectedPath.substring(1);
-		return trimmed;
 	}
 
 	/**

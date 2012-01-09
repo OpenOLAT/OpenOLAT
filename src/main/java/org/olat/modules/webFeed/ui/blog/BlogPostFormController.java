@@ -41,7 +41,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
@@ -57,7 +59,8 @@ import org.olat.modules.webFeed.models.Item;
 public class BlogPostFormController extends FormBasicController {
 
 	private Item post;
-	private Feed blog;
+	private VFSContainer baseDir;
+	
 	private TextElement title;
 	private RichTextElement description, content;
 	private DateChooser publishDateChooser;
@@ -75,7 +78,11 @@ public class BlogPostFormController extends FormBasicController {
 		super(ureq, control);
 		this.post = post;
 		this.currentlyDraft = post.isDraft();
-		this.blog = blog;
+		this.baseDir = FeedManager.getInstance().getItemContainer(post, blog);
+		if(baseDir.getLocalSecurityCallback() == null) {
+			Quota quota = FeedManager.getInstance().getQuota(blog.getResource());
+			baseDir.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
+		}
 		setTranslator(translator);
 		initForm(ureq);
 	}
@@ -174,7 +181,6 @@ public class BlogPostFormController extends FormBasicController {
 		title.setMandatory(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
-		VFSContainer baseDir = FeedManager.getInstance().getItemContainer(post, blog);
 		// Description
 		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", post.getDescription(), 8, -1, false,
 				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());

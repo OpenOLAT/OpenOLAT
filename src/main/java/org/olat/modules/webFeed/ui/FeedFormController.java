@@ -42,8 +42,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.managers.ValidatedURL;
@@ -63,6 +66,8 @@ import org.olat.modules.webFeed.models.Feed;
  */
 class FeedFormController extends FormBasicController {
 	private Feed feed;
+	private Quota feedQuota;
+	
 	private TextElement title;
 	private FileElement file;
 	private RichTextElement description;
@@ -84,6 +89,7 @@ class FeedFormController extends FormBasicController {
 	public FeedFormController(UserRequest ureq, WindowControl wControl, Feed feed, FeedUIFactory uiFactory) {
 		super(ureq, wControl);
 		this.feed = feed;
+		this.feedQuota = FeedManager.getInstance().getQuota(feed.getResource());
 		setTranslator(uiFactory.getTranslator());
 		initForm(ureq);
 	}
@@ -133,7 +139,7 @@ class FeedFormController extends FormBasicController {
 					file.clearError();
 					MediaResource newResource = new VFSMediaResource(new LocalFileImpl(newFile));
 					setImage(newResource);
-				}
+				}	
 			}
 		} else if (source == deleteImageLink && event.wasTriggerdBy(FormEvent.ONCLICK)) {
 			unsetImage();
@@ -150,6 +156,18 @@ class FeedFormController extends FormBasicController {
 			description.setErrorKey("input.toolong", new String[]{"4000"});
 			allOk = false;
 		}
+		
+		if (file.isUploadSuccess()) {
+			File newFile = file.getUploadFile();
+			Long remainingQuotaKb = feedQuota.getRemainingSpace();
+			if (remainingQuotaKb != -1 && newFile.length() / 1024 > remainingQuotaKb) {
+				unsetImage();
+				String supportAddr = WebappHelper.getMailConfig("mailSupport");
+				Long uploadLimitKB = feedQuota.getUlLimitKB();
+				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));				
+			}
+		}
+
 		return allOk && validateExternalFeedUrl() && super.validateFormLogic(ureq);
 	}
 	
@@ -273,6 +291,10 @@ class FeedFormController extends FormBasicController {
 		mimeTypes.add("image/png");
 		mimeTypes.add("image/gif");
 		file.limitToMimeType(mimeTypes, "feed.form.file.type.error.images", null);
+		
+		int maxFileSizeKB = feedQuota.getUlLimitKB().intValue();
+		String supportAddr = WebappHelper.getMailConfig("mailSupport");
+		file.setMaxUploadSizeKB(maxFileSizeKB, "ULLimitExceeded", new String[]{ new Long(maxFileSizeKB / 1024).toString(), supportAddr });
 
 		// if external feed, display feed-url text-element:
 		if(feed.isExternal()){

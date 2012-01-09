@@ -28,11 +28,10 @@ package org.olat.repository.controllers;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -56,8 +55,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.NamedContainerImpl;
-import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -71,7 +69,11 @@ import org.olat.course.config.ui.CourseEfficencyStatementController;
 import org.olat.course.config.ui.CourseSharedFolderController;
 import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
 import org.olat.course.run.RunMainController;
+import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.GlossaryResource;
+import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryManager;
@@ -92,7 +94,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class RepositoryEditPropertiesController extends BasicController {
 	
-	private static final String ACTION_PUB = "pub";
 	private static final String ACTION_FORWARD ="forw";
 	private static final String ACTION_BACKWARD ="bckw";
 	
@@ -112,9 +113,6 @@ public class RepositoryEditPropertiesController extends BasicController {
 	private AccessConfigurationController acCtr;
 	private TabbedPane tabbedPane;
 	private RepositoryEntry repositoryEntry;
-	
-	private boolean isOwner;
-	private boolean isAuthor;
 	
   private LockResult courseLockEntry;
   
@@ -148,14 +146,6 @@ public class RepositoryEditPropertiesController extends BasicController {
 		//DBFactory.getInstance().reputInHibernateSessionCache(secGroup);
 		//o_clusterREVIEW
 		secGroup = (SecurityGroup) DBFactory.getInstance().loadObject(secGroup);
-		
-		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			isOwner = true;
-			isAuthor = true;
-		} else {
-			isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(ureq.getIdentity(), Constants.PERMISSION_ACCESS, secGroup);
-			isAuthor = ureq.getUserSession().getRoles().isAuthor();
-		}
 		
 		bgVC = createVelocityContainer("bgrep");
 		bgVC.contextPut("title", entry.getDisplayname());
@@ -233,6 +223,15 @@ public class RepositoryEditPropertiesController extends BasicController {
 			GlossaryEditSettingsController glossEditCtr = new GlossaryEditSettingsController(ureq, getWindowControl(), repositoryEntry.getOlatResource());
 			tabbedPane.addTab(translate("tab.glossary.edit"), glossEditCtr.getInitialComponent());
 		
+		} else if (ImsCPFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(repositoryEntry.getOlatResource());
+			Controller quotaCtrl = QuotaManager.getInstance().getQuotaEditorInstance(ureq, wControl, cpRoot.getRelPath(), false);
+			tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
+		} else if (BlogFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())
+				|| PodcastFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(repositoryEntry.getOlatResource());
+			Controller quotaCtrl = QuotaManager.getInstance().getQuotaEditorInstance(ureq, wControl, feedRoot.getRelPath(), false);
+			tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
 		}
 
 		bgVC.put("descTB", tabbedPane);

@@ -98,21 +98,29 @@ public class QuotaManagerImpl extends QuotaManager {
 
 	private void initDefaultQuotas() {
 		defaultQuotas = new HashMap<String,Quota>();
-		Quota defaultQuotaUsers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS);
+		Quota defaultQuotaUsers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS, 1.0d);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_USERS, defaultQuotaUsers);
-		Quota defaultQuotaPowerusers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER);
+		Quota defaultQuotaPowerusers = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER, 1.0d);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_POWER, defaultQuotaPowerusers);
-		Quota defaultQuotaGroups = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
+		Quota defaultQuotaGroups = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS, 1.0d);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS, defaultQuotaGroups);
-		Quota defaultQuotaRepository = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO);
+		Quota defaultQuotaRepository = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO, 1.0d);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_REPO, defaultQuotaRepository);
-		Quota defaultQuotaCourseFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
+		Quota defaultQuotaCourseFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE, 1.0d);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_COURSE, defaultQuotaCourseFolder);
-		Quota defaultQuotaNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
+		Quota defaultQuotaNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES, 1.0d);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_NODES, defaultQuotaNodeFolder);
+		Quota defaultQuotaFeed = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, 2.0d);
+		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, defaultQuotaFeed);
 	}
 
-	private Quota initDefaultQuota(String quotaIdentifier) {
+	/**
+	 * 
+	 * @param quotaIdentifier
+	 * @param factor Multiplier for some long running resources as blogs
+	 * @return
+	 */
+	private Quota initDefaultQuota(String quotaIdentifier, double factor) {
 		Quota q = null;
 		Property p = propertyManager.findProperty(null, null, quotaResource, QUOTA_CATEGORY, quotaIdentifier);
 		if (p != null) q = parseQuota(p);

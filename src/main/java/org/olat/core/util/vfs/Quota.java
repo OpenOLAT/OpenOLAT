@@ -52,5 +52,11 @@ public interface Quota {
 	 * @return Upload Limit in KB.
 	 */
 	public abstract Long getUlLimitKB();
+	
+	/**
+	 * Every time calculated. I can be very costly. Use it wisely
+	 * @return
+	 */
+	public abstract Long getRemainingSpace();
 
 }

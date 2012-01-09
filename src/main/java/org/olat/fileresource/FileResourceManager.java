@@ -328,7 +328,23 @@ public class FileResourceManager extends BasicManager {
 	 */
 	public File unzipFileResource(final OLATResourceable res) {
 		final File dir = getFileResourceRoot(res);
-		if (!dir.exists()) return null;
+		return unzipFileResource(res, dir);
+	}
+	
+	public OlatRootFolderImpl unzipContainerResource(final OLATResourceable res) {
+		OlatRootFolderImpl container = getFileResourceRootImpl(res);
+		File dir = container.getBasefile();
+		File unzipDir = unzipFileResource(res, dir);
+		if(unzipDir == null) {
+			return null;
+		}
+		return (OlatRootFolderImpl)container.resolve(unzipDir.getName());
+	}
+	
+	private final File unzipFileResource(final OLATResourceable res, final File dir) {
+		if (!dir.exists()) {
+			return null;
+		}
 		File zipTargetDir = new File(dir, ZIPDIR);
 		if (!zipTargetDir.exists()) {
 			// if not unzipped yet, synchronize all unzipping processes

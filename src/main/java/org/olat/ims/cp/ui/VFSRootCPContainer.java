@@ -71,6 +71,8 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 		VFSContainer rawContainer = new VFSMediaFilesContainer(rawTitle, cloneContainer(rootContainer));
 		rawContainer.setDefaultItemFilter(new VFSMediaFilter(false));
 		roots.add(rawContainer);
+		
+		secCallback = rootContainer.getLocalSecurityCallback();
 	}
 	
 	private VFSContainer cloneContainer(VFSContainer container) {

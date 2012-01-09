@@ -39,8 +39,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
@@ -80,6 +84,11 @@ public class EpisodeFormController extends FormBasicController {
 		this.episode = episode;
 		this.podcast = podcast;
 		this.baseDir = FeedManager.getInstance().getItemContainer(episode, podcast);
+		if(baseDir.getLocalSecurityCallback() == null) {
+			Quota quota = FeedManager.getInstance().getQuota(podcast.getResource());
+			baseDir.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
+		}
+		
 		setTranslator(translator);
 		initForm(ureq);
 	}
@@ -139,6 +148,8 @@ public class EpisodeFormController extends FormBasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == file && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
 			// display the uploaded file
+
+			file.clearError();
 			if (file.isUploadSuccess()) {
 				String newFilename = file.getUploadFileName();
 				boolean isValidFileType = newFilename.toLowerCase().matches(MIME_TYPES_ALLOWED);
@@ -149,8 +160,6 @@ public class EpisodeFormController extends FormBasicController {
 					} else if (!isFilenameValid) {
 						file.setErrorKey("podcastfile.name.notvalid", null);
 					}
-				} else {
-					file.clearError();
 				}
 			}
 		}
@@ -179,8 +188,17 @@ public class EpisodeFormController extends FormBasicController {
 					allOk = false;
 				}
 			} else {
-				file.clearError();
 				flc.setDirty(true);
+			}
+		}
+		
+		if(baseDir.getLocalSecurityCallback() == null || baseDir.getLocalSecurityCallback().getQuota() != null) {
+			Quota feedQuota = baseDir.getLocalSecurityCallback().getQuota();
+			Long remainingQuotaKb = feedQuota.getRemainingSpace();
+			if (remainingQuotaKb != -1 && file.getUploadFile().length() / 1024 > remainingQuotaKb) {
+				String supportAddr = WebappHelper.getMailConfig("mailSupport");
+				Long uploadLimitKB = feedQuota.getUlLimitKB();
+				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));
 			}
 		}
 		
@@ -245,6 +263,11 @@ public class EpisodeFormController extends FormBasicController {
 		File mediaFile = FeedManager.getInstance().getItemEnclosureFile(episode, podcast);
 		file.setInitialFile(mediaFile);
 		file.addActionListener(this, FormEvent.ONCHANGE);
+		if(baseDir.getLocalSecurityCallback() != null && baseDir.getLocalSecurityCallback().getQuota() != null) {
+			Long uploadLimitKB = baseDir.getLocalSecurityCallback().getQuota().getUlLimitKB();
+			String supportAddr = WebappHelper.getMailConfig("mailSupport");
+			file.setMaxUploadSizeKB(uploadLimitKB.intValue(), "ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB.floatValue()) / 1024f, 1), supportAddr });
+		}
 		
 		String width = episode.getWidth() > 0 ? Integer.toString(episode.getWidth()) : "";
 		widthEl = uifactory.addTextElement("video-width", "podcast.episode.file.width", 12, width, flc);

@@ -22,6 +22,7 @@ package org.olat.modules.webFeed.managers;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingServiceFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -31,6 +32,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -159,6 +161,8 @@ public abstract class FeedManager extends BasicManager implements CommentAndRati
 	 * @return The newly read feed (without items)
 	 */
 	public abstract Feed getFeed(OLATResourceable feed);
+	
+	public abstract OlatRootFolderImpl getResourceContainer(OLATResourceable ores);
 
 	/**
 	 * Returns the media file of the item
@@ -251,6 +255,8 @@ public abstract class FeedManager extends BasicManager implements CommentAndRati
 	 * @return The feed container
 	 */
 	public abstract VFSContainer getFeedContainer(OLATResourceable feed);
+	
+	public abstract Quota getQuota(OLATResourceable feed);
 
 	/**
 	 * Validates a feed url.

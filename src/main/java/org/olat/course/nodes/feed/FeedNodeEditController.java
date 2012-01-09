@@ -46,7 +46,6 @@ import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.group.ui.context.BGContextEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.webFeed.FeedPreviewSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;

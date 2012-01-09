@@ -24,16 +24,13 @@
 */
 package org.olat.ims.cp.ui;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -101,6 +98,10 @@ public class CPFileImportController extends FormBasicController {
 			file.setErrorKey("NoFileChosen", null);
 			return false;
 		}
+		if (file.getUploadSize() / 1024 > file.getMaxUploadSizeKB()) {
+			return false;
+		}
+		
 		return super.validateFormLogic(ureq);
 	}
 
@@ -116,6 +117,12 @@ public class CPFileImportController extends FormBasicController {
 		file = uifactory.addFileElement("file", this.flc);
 		file.setLabel("cpfileuploadcontroller.import.text", null);
 		file.addActionListener(this, FormEvent.ONCHANGE);
+		
+		Long uploadLimitKb = getUploadLimitKb();
+		if(uploadLimitKb != null) {
+			Long uploadLimitMb =  new Long(uploadLimitKb / 1024);
+			file.setMaxUploadSizeKB(uploadLimitKb.intValue(), "cpfileuploadcontroller.tooBig", new String[]{ uploadLimitMb.toString() });
+		}
 
 		// checkboxes
 		String[] keys = { "htm", "pdf", "doc", "xls", "ppt", ALL };
@@ -128,6 +135,14 @@ public class CPFileImportController extends FormBasicController {
 		this.flc.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", "cpfileuploadcontroller.import.button", buttonLayout);
 		cancelButton = uifactory.addFormLink("cancel", buttonLayout, Link.BUTTON);
+	}
+	
+	private Long getUploadLimitKb() {
+		if(cp.getRootDir() != null && cp.getRootDir().getLocalSecurityCallback() != null
+				&& cp.getRootDir().getLocalSecurityCallback().getQuota() != null) {
+			return cp.getRootDir().getLocalSecurityCallback().getQuota().getUlLimitKB();
+		}
+		return null;
 	}
 
 	/**
