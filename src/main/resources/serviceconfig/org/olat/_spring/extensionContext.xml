@@ -606,22 +606,7 @@
 				</list>
 			</property>
 			<property name="order" value="12" />
-		</bean>	
-		
-		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-			<property name="actionController">	
-				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="ch.goodsolutions.demo.poll.PollDemoController"/>
-				</bean>
-			</property>
-			<property name="translationPackage" value="org.olat.test.guidemo" />
-			<property name="extensionPoints">
-				<list>	
-					<value>org.olat.test.GUIDemoMainController</value>		
-				</list>
-			</property>
-			<property name="order" value="13" />
-		</bean>		
+		</bean>
 				
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 			<property name="actionController">	
