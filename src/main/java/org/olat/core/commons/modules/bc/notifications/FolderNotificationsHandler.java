@@ -24,7 +24,7 @@
 * <p>
 */
 
-package org.olat.notifications.bc;
+package org.olat.core.commons.modules.bc.notifications;
 
 import java.util.Date;
 import java.util.Iterator;
