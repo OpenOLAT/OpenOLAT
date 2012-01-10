@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,6 +47,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -309,6 +312,15 @@ class ContactForm extends FormBasicController {
 				attachmentEl.reset();
 			} else {
 				File attachment = attachmentEl.moveUploadFileTo(attachementTempDir);
+//				attachment = null;
+				// OO-48  somehow file-move can fail, check for it, display error-dialog if it failed
+				if(attachment == null){
+					attachmentEl.reset();
+					logError("Could not move contact-form attachment to " + attachementTempDir.getAbsolutePath(), null);
+					setTranslator(Util.createPackageTranslator(FileUploadController.class, getLocale(),getTranslator()));
+					showError("FileMoveCopyFailed","");
+					return;
+				}
 				attachmentEl.reset();
 				attachmentSize += size;
 				FormLink removeFile = uifactory.addFormLink(attachment.getName(), "delete", null, uploadCont, Link.BUTTON_SMALL);
