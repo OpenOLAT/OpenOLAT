@@ -594,7 +594,9 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		int imDelCount = 0;
 		int imCreateCount = 0;
 		for (Identity identity : allIdentities) {
-			if (BaseSecurityManager.getInstance().getRoles(identity).isGuestOnly()) continue;
+			Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
+			if (roles.isGuestOnly() || roles.isInvitee()) continue;
+			
 			String userName = identity.getName();
 			boolean hasIMAccount = im.hasAccount(userName);
 			// try to detect double wrapped users on IM-Server

@@ -14,7 +14,7 @@
 		$r.render("imclient")
 	</li>
 #end
-#if (!$inAssessment)
+#if (!$inAssessment && $r.available("search_input"))
 	<li id="o_topnav_search">
 		$r.render("search_input")
 	</li>

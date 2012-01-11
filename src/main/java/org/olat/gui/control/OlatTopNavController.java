@@ -85,8 +85,11 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		
 		topNavVC = createVelocityContainer("topnav");
 		
+		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
+		
 		// instant messaging area, only when enabled and user is not a guest user
-		if (InstantMessagingModule.isEnabled() && !ureq.getUserSession().getRoles().isGuestOnly()) {
+		if (InstantMessagingModule.isEnabled() && !isGuest && !isInvitee) {
 			imController = InstantMessagingModule.getAdapter().createClientController(ureq, this.getWindowControl());
 			listenTo(imController);
 			topNavVC.put("imclient", imController.getInitialComponent());
@@ -114,13 +117,12 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			impressumLink.setTarget("_blank");
 		}
 		
-		SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
-		searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
-		searchC.setResourceContextEnable(false);
-		topNavVC.put("search_input", searchC.getInitialComponent());
-		
+		if(ureq.getIdentity() != null && !isGuest && !isInvitee) {
+			SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
+			searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
+			searchC.setResourceContextEnable(false);
+			topNavVC.put("search_input", searchC.getInitialComponent());
 
-		if (ureq.getIdentity() != null) {
 			ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 			singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 			singleUserEventCenter.registerFor(this, getIdentity(), ass);

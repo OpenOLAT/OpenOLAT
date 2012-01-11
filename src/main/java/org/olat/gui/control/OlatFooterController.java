@@ -76,17 +76,28 @@ public class OlatFooterController extends BasicController implements GenericEven
 		olatFootervc = createVelocityContainer("olatFooter");
 		//
 		Identity identity = ureq.getIdentity();
-		Boolean isGuest = (identity == null ? Boolean.TRUE : new Boolean(ureq.getUserSession().getRoles().isGuestOnly()));
+		boolean isGuest = (identity == null ? true : ureq.getUserSession().getRoles().isGuestOnly());
+		boolean isInvitee = (identity == null ? false : ureq.getUserSession().getRoles().isInvitee());
 		
 		showOtherUsers = LinkFactory.createLink("other.users.online", olatFootervc, this);
 		showOtherUsers.setAjaxEnabled(false);
 		showOtherUsers.setTarget("_blanc");
-		if (isGuest) showOtherUsers.setEnabled(false);
+		if (isGuest || isInvitee) {
+			showOtherUsers.setEnabled(false);
+		}
 		
 		// some variables displayed in the footer
-		Translator translator = getTranslator();
-		olatFootervc.contextPut("username", identity != null && !isGuest.booleanValue() ? translator.translate("username", new String[] { identity.getName() })
-				: translator.translate("not.logged.in"));
+		String username;
+		if(isGuest) {
+			username = "";
+		} else if(isInvitee) {
+			username = translate("logged.in.invitee");
+		} else if (identity != null) {
+			username = translate("username", new String[] { identity.getName() });
+		} else {
+			username = translate("not.logged.in");
+		}
+		olatFootervc.contextPut("username", username);
 		olatFootervc.contextPut("olatversion", Settings.getFullVersionInfo() +" "+ Settings.getNodeInfo());
 		// instant messaging awareness
 		olatFootervc.contextPut("instantMessagingEnabled", new Boolean(InstantMessagingModule.isEnabled()));
