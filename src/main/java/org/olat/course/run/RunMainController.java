@@ -657,11 +657,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				}
 				
 				//re set current user count but not every click
-				if (currentUserCountLink != null && event.hashCode() % 2 == 0) {
+				if (currentUserCountLink != null) {
 					OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, course.getResourceableId());
 					int cUsers = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
-					if (cUsers == 0) cUsers = 1;
-					currentUserCountLink.setCustomDisplayText("&nbsp;&nbsp;&nbsp;&nbsp;"+String.valueOf(cUsers)+" "+getTranslator().translate("participants.in.course"));
+					if (cUsers == 0) {
+						cUsers = 1;
+					}
+					currentUserCountLink.setCustomDisplayText(getTranslator().translate("participants.in.course", new String[]{ String.valueOf(cUsers) }));
 					currentUserCountLink.setEnabled(false);
 				}
 			}
@@ -1277,7 +1279,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				return;
 			}
 			
-			currentUserCount = 1 + CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+			currentUserCount = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+			if(currentUserCount == 0) {
+				currentUserCount = 1;
+			}
 			
 			currentUserCountLink.setCustomDisplayText(
 					translate(
