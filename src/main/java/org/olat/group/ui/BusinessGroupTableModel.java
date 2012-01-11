@@ -91,5 +91,8 @@ public class BusinessGroupTableModel extends DefaultTableDataModel {
 	public BusinessGroup getBusinessGroupAt(int row) {
 		return (BusinessGroup) objects.get(row);
 	}
-
+	
+	public void removeBusinessGroup(BusinessGroup businessGroup) {
+		objects.remove(businessGroup);
+	}
 }

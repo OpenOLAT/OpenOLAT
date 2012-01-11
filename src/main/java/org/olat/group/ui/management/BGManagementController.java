@@ -572,8 +572,12 @@ public class BGManagementController extends MainLayoutBasicController implements
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
-				this.currentGroup = groupListModel.getBusinessGroupAt(rowid);
-				if (actionid.equals(CMD_GROUP_EDIT)) {
+				BusinessGroup selectedGroup = groupListModel.getBusinessGroupAt(rowid);
+				currentGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(selectedGroup.getKey(), false);
+				if(currentGroup == null) {
+					groupListModel.removeBusinessGroup(selectedGroup);
+					groupListCtr.modelChanged();
+				} else if (actionid.equals(CMD_GROUP_EDIT)) {
 					doGroupEdit(ureq);
 				} else if (actionid.equals(CMD_GROUP_RUN)) {
 					doGroupRun(ureq);

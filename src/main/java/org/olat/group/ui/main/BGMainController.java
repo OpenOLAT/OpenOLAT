@@ -318,7 +318,15 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			TableEvent te = (TableEvent) event;
 			String actionid = te.getActionId();
 			int rowid = te.getRowId();
-			currBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
+			BusinessGroup selectedBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
+			//reload the group
+			currBusinessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(selectedBusinessGroup.getKey(), false);
+			if(currBusinessGroup == null) {
+				groupListModel.removeBusinessGroup(selectedBusinessGroup);
+				groupListCtr.modelChanged();
+				return;
+			}
+			
 			String trnslP = currBusinessGroup.getName();
 
 			if (actionid.equals(TABLE_ACTION_LAUNCH)) {

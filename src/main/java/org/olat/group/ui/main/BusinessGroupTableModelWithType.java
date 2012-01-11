@@ -119,4 +119,14 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 		BGTableItem wrapped = (BGTableItem)objects.get(row);
 		return wrapped.getBusinessGroup();
 	}
+	
+	public void removeBusinessGroup(BusinessGroup bg) {
+		for(int i=objects.size(); i-->0; ) {
+			BGTableItem wrapped = (BGTableItem)objects.get(i);
+			if(bg.equals(wrapped.getBusinessGroup())) {
+				objects.remove(i);
+				return;
+			}
+		}
+	}
 }
