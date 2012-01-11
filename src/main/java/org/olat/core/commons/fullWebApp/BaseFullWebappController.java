@@ -745,7 +745,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 			navVc.remove(navVc.getComponent("a" + delt.hashCode()));
 			navVc.remove(navVc.getComponent("ca" + delt.hashCode()));
 			navVc.remove(navVc.getComponent("cp" + delt.hashCode()));
-			if (delt == curDTab) { // if we close the current tab -> return to the
+			if (delt == curDTab && prevSite != null) { // if we close the current tab -> return to the
 				// latest selected static tab
 				// pre: prevSite != null
 				// activate previous chosen static site -> this site has already been
