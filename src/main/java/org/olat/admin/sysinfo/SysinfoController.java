@@ -178,18 +178,14 @@ public class SysinfoController extends BasicController implements Activateable2 
 		tabbedPane.addTab(ACTION_INFOMSG,infoMsgCtrl.getInitialComponent());
 		tabbedPane.addTab(ACTION_ERRORS, myErrors);
 		//fxdiff: FXOLAT-79 check fxadmin-rights
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		String FXADMIN_SECURITY_GROUP = "fxadmins"; // see FrentixOlatModule
-		SecurityGroup fxAdminGroup = securityManager.findSecurityGroupByName(FXADMIN_SECURITY_GROUP);
-		boolean isFXAdmin = securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), fxAdminGroup);
-		if (isFXAdmin) tabbedPane.addTab(ACTION_LOGLEVELS, myLoglevels);		
+		tabbedPane.addTab(ACTION_LOGLEVELS, myLoglevels);		
 		tabbedPane.addTab(ACTION_SYSINFO, mySysinfo);
 		tabbedPane.addTab(ACTION_SNOOP, mySnoop);
-		if (isFXAdmin) tabbedPane.addTab("requestloglevel", requestLoglevelController.getInitialComponent());
+		tabbedPane.addTab("requestloglevel", requestLoglevelController.getInitialComponent());
 		tabbedPane.addTab("usersessions", sessionAdministrationController.getInitialComponent());
 		tabbedPane.addTab(ACTION_LOCKS, lockController.getInitialComponent());
 		// fxdiff: not usable:	tabbedPane.addTab(getTranslator().translate("sess.multiuserevents"), myMultiUserEvents);
-		if (isFXAdmin) tabbedPane.addTab(ACTION_HIBERNATEINFO, myHibernateInfo);
+		tabbedPane.addTab(ACTION_HIBERNATEINFO, myHibernateInfo);
 		
 		//fxdiff: no cluster anyway:
 //		AutoCreator controllerCreator = (AutoCreator)CoreSpringFactory.getBean("clusterAdminControllerCreator");
@@ -197,8 +193,7 @@ public class SysinfoController extends BasicController implements Activateable2 
 //		tabbedPane.addTab("Cluster", clusterController.getInitialComponent());
 
 		cachePanel = new Panel("cachepanel");
-		//fxdiff: FXOLAT-79 check fxadmin-rights
-		if (isFXAdmin) tabbedPane.addTab("caches", cachePanel);
+		tabbedPane.addTab("caches", cachePanel);
 		
 		VelocityContainer myBuildinfo = createVelocityContainer("buildinfo");
 		fillBuildInfoTab(myBuildinfo);		
