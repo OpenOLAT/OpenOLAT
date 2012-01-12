@@ -98,6 +98,8 @@ public class WikiEditArticleForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		wikiContent = uifactory.addTextAreaElement("wikiContentElement", 20, 110, page.getContent() , formLayout);
+		wikiContent.preventValueTrim(true);//OO-31 prevent trimming, so first line can be with inset (wiki pre-formatted)
+
 		updateComment = uifactory.addTextElement("wikiUpdateComment", null, 40, "", formLayout);
 		updateComment.setExampleKey ("update.comment", null);
 		// Button layout
