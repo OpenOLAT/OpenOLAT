@@ -190,17 +190,19 @@ public class EpisodeFormController extends FormBasicController {
 			} else {
 				flc.setDirty(true);
 			}
-		}
-		
-		if(baseDir.getLocalSecurityCallback() == null || baseDir.getLocalSecurityCallback().getQuota() != null) {
-			Quota feedQuota = baseDir.getLocalSecurityCallback().getQuota();
-			Long remainingQuotaKb = feedQuota.getRemainingSpace();
-			if (remainingQuotaKb != -1 && file.getUploadFile().length() / 1024 > remainingQuotaKb) {
-				String supportAddr = WebappHelper.getMailConfig("mailSupport");
-				Long uploadLimitKB = feedQuota.getUlLimitKB();
-				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));
+			
+			// quota check
+			if(baseDir.getLocalSecurityCallback() == null || baseDir.getLocalSecurityCallback().getQuota() != null) {
+				Quota feedQuota = baseDir.getLocalSecurityCallback().getQuota();
+				Long remainingQuotaKb = feedQuota.getRemainingSpace();
+				if (remainingQuotaKb != -1 && file.getUploadFile().length() / 1024 > remainingQuotaKb) {
+					String supportAddr = WebappHelper.getMailConfig("mailSupport");
+					Long uploadLimitKB = feedQuota.getUlLimitKB();
+					getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));
+				}
 			}
 		}
+		
 		
 		//fxdiff FXOLAT-118: size for video podcast
 		String width = widthEl.getValue();
