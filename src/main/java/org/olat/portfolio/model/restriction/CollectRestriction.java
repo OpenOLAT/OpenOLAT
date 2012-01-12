@@ -118,6 +118,11 @@ public class CollectRestriction extends PersistentObject {
 	public void setRestriction(String restriction) {
 		this.restriction = restriction;
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 17637 : getKey().hashCode();
+	}
 
 	@Override
 	public boolean equals(Object obj) {

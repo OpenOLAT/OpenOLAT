@@ -122,7 +122,7 @@ public class TagImpl extends PersistentObject implements Tag {
 			return true;
 		if(obj instanceof TagImpl) {
 			TagImpl tagImpl = (TagImpl)obj;
-			return this.getKey().equals(tagImpl.getKey());
+			return getKey() != null && getKey().equals(tagImpl.getKey());
 		}
 		return false;
 	}

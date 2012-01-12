@@ -95,7 +95,7 @@ public class UserImpl extends PersistentObject implements User {
 			return false;
 		// object must be UserImpl at this point
 		UserImpl user = (UserImpl)obj;
-		return this.getKey().equals(user.getKey());
+		return getKey() != null && getKey().equals(user.getKey());
 	}
 
 	public int hashCode() {

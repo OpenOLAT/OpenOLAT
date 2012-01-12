@@ -127,4 +127,21 @@ public class AuthenticationImpl extends PersistentObject implements Authenticati
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 20818 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof Authentication) {
+			Authentication auth = (Authentication)obj;
+			return getKey() != null && getKey().equals(auth.getKey());
+		}
+		return false;
+	}
 }

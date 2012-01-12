@@ -173,4 +173,21 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 		if (key == null) throw new AssertException("no key yet!");
 		return key;
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -7759 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CatalogEntry) {
+			CatalogEntry entry = (CatalogEntry)obj;
+			return getKey() != null && getKey().equals(entry.getKey());
+		}
+		return false;
+	}
 }

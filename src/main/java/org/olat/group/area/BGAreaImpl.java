@@ -112,23 +112,21 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 	 * Compares the keys.
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
-		try {
-			BGAreaImpl that = (BGAreaImpl)obj;
-			if(this.getKey().equals(that.getKey())) {
-				return true;
-			}
-		} catch (Exception ex) {	
-      //nothing to do
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof BGArea) {
+			BGArea area = (BGArea)obj;
+			return getKey() != null && getKey().equals(area.getKey());
 		}
 		return false;
 	}
 	
+	@Override
 	public int hashCode() {
-		if(this.getKey()!=null) {
-			return getKey().intValue();
-		}
-		return 0;
+		return getKey() ==null ? 568301 : getKey().hashCode();
 	}
 
 }

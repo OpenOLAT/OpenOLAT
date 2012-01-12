@@ -85,7 +85,7 @@ public class InvitationImpl extends PersistentObject implements Invitation {
 			return true;
 		} else if (obj instanceof InvitationImpl) {
 			InvitationImpl invitation = (InvitationImpl)obj;
-			return getKey().equals(invitation.getKey());
+			return getKey() != null && getKey().equals(invitation.getKey());
 		}
 		return false;
 	}

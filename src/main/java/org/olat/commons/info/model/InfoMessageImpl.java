@@ -131,4 +131,21 @@ public class InfoMessageImpl extends PersistentObject implements InfoMessage {
 			}
 		};
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 8225 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof InfoMessage) {
+			InfoMessage info = (InfoMessage)obj;
+			return getKey() != null && getKey().equals(info.getKey());
+		}
+		return false;
+	}
 }
