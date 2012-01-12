@@ -53,8 +53,8 @@ public class EPStructuredMapTemplate extends EPAbstractMap {
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
-	public int hashCode() {		
-		return super.hashCode();
+	public int hashCode() {
+		return getKey() == null ? -925 : getKey().hashCode();
 	}
 	
 	

@@ -39,5 +39,24 @@ public class EPPage extends EPStructureElement  {
 	public String getIcon(){
 		return "b_ep_page_icon";
 	}
+	
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof EPPage) {
+			return equalsByPersistableKey((EPPage)obj);
+		}
+		return false;
+	}
+
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -238145 : getKey().hashCode();
+	}
 
 }

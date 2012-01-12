@@ -156,7 +156,7 @@ public class EPStructuredMap extends EPAbstractMap {
 	}
 	
 	@Override
-	public int hashCode() {		
-		return super.hashCode();
+	public int hashCode() {
+		return getKey() == null ? -9254 : getKey().hashCode();
 	}
 }

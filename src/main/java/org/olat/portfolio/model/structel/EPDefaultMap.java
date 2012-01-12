@@ -48,7 +48,7 @@ public class EPDefaultMap extends EPAbstractMap {
 	}
 	
 	@Override
-	public int hashCode() {		
-		return super.hashCode();
+	public int hashCode() {
+		return getKey() == null ? -9544 : getKey().hashCode();
 	}
 }

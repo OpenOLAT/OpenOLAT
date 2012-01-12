@@ -117,6 +117,11 @@ public class TagImpl extends PersistentObject implements Tag {
 	}
 	
 	@Override
+	public int hashCode() {
+		return getKey() == null ? -92544 : getKey().hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj)
 			return true;
