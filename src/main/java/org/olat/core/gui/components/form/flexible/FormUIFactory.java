@@ -936,6 +936,7 @@ public class FormUIFactory {
 	 */
 	public FormLink addFormLink(String name, String i18nLink, String i18nLabel, FormItemContainer formLayout, int presentation){
 		FormLinkImpl fte = new FormLinkImpl(name,name,i18nLink,presentation);
+		fte.setI18nKey(i18nLink);
 		setLabelIfNotNull(i18nLabel, fte);
 		formLayout.add(fte);
 		return fte;

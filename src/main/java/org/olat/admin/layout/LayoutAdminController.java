@@ -87,15 +87,7 @@ public class LayoutAdminController extends FormBasicController {
 		if(!themesDir.exists()){
 			logWarn("Themes dir not found: "+staticAbsPath, null);
 		}
-		File[] themes = themesDir.listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				// remove files - only accept dirs
-				if ( ! new File(dir, name).isDirectory()) return false;
-				// remove unwanted meta-dirs
-				if (name.equalsIgnoreCase("CVS")) return false;
-				else if (name.equalsIgnoreCase(".DS_Store")) return false;
-				else return true;
-			}});
+		File[] themes = themesDir.listFiles(new ThemesFileNameFilter());
 		
 		String[] themesStr = new String[themes.length];
 		for (int i = 0; i < themes.length; i++) {
@@ -131,6 +123,25 @@ public class LayoutAdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// saving already done in formInnerEvent method - no submit button
+	}
+	
+	/**
+	 * just a simple fileNameFilter that skips OS X .DS_Store , CVS and .sass-cache directories
+	 * 
+	 * @author strentini
+	 */
+	protected class ThemesFileNameFilter implements FilenameFilter {
+
+		@Override
+		public boolean accept(File dir, String name) {
+				// remove files - only accept dirs
+				if ( ! new File(dir, name).isDirectory()) return false;
+				// remove unwanted meta-dirs
+				if (name.equalsIgnoreCase("CVS")) return false;
+				else if (name.equalsIgnoreCase(".DS_Store")) return false;
+				else if (name.equalsIgnoreCase(".sass-cache")) return false;
+				else return true;
+			}
 	}
 
 }

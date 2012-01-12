@@ -46,7 +46,7 @@
 		</property>
 	</bean>
 	
-	<!-- Portfolio admin. panel -->
+	<!-- vitero admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
@@ -64,6 +64,6 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="order" value="39" />
+		
 	</bean>
 </beans>
