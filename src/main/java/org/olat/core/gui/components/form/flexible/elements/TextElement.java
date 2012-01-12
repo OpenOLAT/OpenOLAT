@@ -63,6 +63,18 @@ public interface TextElement extends FormItem{
 	 */
 	public void setValue(String value);
 
+	
+	/**
+	 * OO-31
+	 * 
+	 * if you set this to true, this will prevent the default behavior of trimming
+	 * the input-value on set. ( setValue() )
+	 * 
+	 * @param preventTrim
+	 */
+	public void preventValueTrim(boolean preventTrim); 
+	
+	
 	/**
 	 * Set a new value as the original value that is used when resetting the
 	 * form. This can be used when a form is saved and in a later form should be

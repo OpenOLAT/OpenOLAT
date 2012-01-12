@@ -63,6 +63,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private boolean checkForEquals = false; 
 	private boolean checkForMatchRegexp = false;
 	private boolean checkForCustomItemValidator = false;
+	private boolean preventTrim = false; //OO-31
 	private String notEmptyErrorKey;
 	private int notLongerLength;
 	protected int displaySize;
@@ -129,6 +130,12 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		return filter.filter(value);
 	}
 	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#preventValueTrim()
+	 */
+	public void preventValueTrim(boolean preventTrim){
+		this.preventTrim = preventTrim;
+	}
 
 	/**
 	 * Sets the value. if null is given, an empty string is assumed.
@@ -138,7 +145,9 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public void setValue(String value) {
 		if (value == null) value = "";
 		else {
-			value = value.trim();
+			if(!preventTrim) // OO-31
+				value = value.trim();
+			
 			// Remember original value for dirty evaluation.
 			// null value is not regarded as initial value. only
 			// real values are used inital values
