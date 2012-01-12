@@ -194,10 +194,10 @@ border-collapse: collapse;
 		<h4>
     		<img align="middle"  border="0">
 			<xsl:if test="$score &gt; 0">
-    			<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/correct.png</xsl:attribute>
+    			<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/correct.png</xsl:attribute>
 			</xsl:if>
 			<xsl:if test="$score &lt;= 0">
-    			<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/wrong.png</xsl:attribute>
+    			<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/wrong.png</xsl:attribute>
 			</xsl:if>
     		</img>
 			&nbsp;<xsl:value-of select="@title"/>
@@ -266,27 +266,27 @@ border-collapse: collapse;
 						<xsl:choose>
 							<xsl:when test="$response/response_value = concat(@ident, ':correct')">
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_on.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
 								</img>
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 								</img>
 							</xsl:when>
 							<xsl:when test="$response/response_value = concat(@ident, ':wrong')">
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 								</img>
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_on.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
 								</img>
 							</xsl:when>
 							<!-- no answer -->
 							<xsl:otherwise>
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 								</img>
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 								</img>
 							</xsl:otherwise>
 						</xsl:choose>
@@ -298,12 +298,12 @@ border-collapse: collapse;
 								<xsl:choose>
 									<xsl:when test="$response/response_value = @ident">
 										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/check_on.png</xsl:attribute>
+    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_on.png</xsl:attribute>
 										</img>
 									</xsl:when>
 									<xsl:otherwise>
 										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/check_off.png</xsl:attribute>
+    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_off.png</xsl:attribute>
 										</img>
 									</xsl:otherwise>
 								</xsl:choose>
@@ -313,12 +313,12 @@ border-collapse: collapse;
 								<xsl:choose>
 									<xsl:when test="$response/response_value = @ident">
 										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_on.png</xsl:attribute>
+    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
 										</img>
 									</xsl:when>
 									<xsl:otherwise>
 										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 										</img>
 									</xsl:otherwise>
 								</xsl:choose>
@@ -348,18 +348,18 @@ border-collapse: collapse;
 				<xsl:choose>
 					<xsl:when test="$response/response_form/correct_response = concat(@ident, ':correct')">
 						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_on.png</xsl:attribute>
+    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
 						</img>
 						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 						</img>
 					</xsl:when>
 					<xsl:otherwise>
 						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 						</img>
 						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_on.png</xsl:attribute>
+    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
 						</img>
 					</xsl:otherwise>
 				</xsl:choose>
@@ -372,13 +372,13 @@ border-collapse: collapse;
 							<xsl:when test="$response/response_form/correct_response = @ident"> 
 								<!-- case correct MC answer -->
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/check_on.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_on.png</xsl:attribute>
 								</img>
 							</xsl:when>
 							<xsl:otherwise>
 								<!-- case incorrect MC answer -->
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/check_off.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_off.png</xsl:attribute>
 								</img>
 							</xsl:otherwise>
 						</xsl:choose>
@@ -389,13 +389,13 @@ border-collapse: collapse;
 							<xsl:when test="$response/response_form/correct_response = @ident">
 								<!-- case correct SC answer -->
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_on.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
 								</img>
 							</xsl:when>
 							<xsl:otherwise>
 						<!-- case incorrect SC answer -->
 								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/default/images/olat/qti/radio_off.png</xsl:attribute>
+    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
 								</img>
 							</xsl:otherwise>
 						</xsl:choose>

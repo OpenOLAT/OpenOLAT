@@ -30,9 +30,9 @@
 	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_file_icon {background-image: url(../openolat/images/docs/document--pencil.png); }
 	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_icon {background-image: url(../openolat/images/docs/document_metadata_edit.png); }
 	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_edit_meta_dis_icon {background-image: url(../openolat/images/docs/document_metadata_edit.png); opacity:0.2; }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon {background-image: url(../images/brasato/versions.png); }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon {background-image: url(../images/brasato/versions_dis.png); opacity:0.2; }
-	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon {background-image: url(../images/brasato/locked.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon {background-image: url(../openolat/images/docs/document_versions.png); }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon {background-image: url(../openolat/images/docs/document_versions.png); opacity:0.2; }
+	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon {background-image: url(../openolat/images/locked.png); }
 	div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_noicon { }	
 	div.b_briefcase_preview { background-color:white; width:200px; height:200px; border:1px solid #8EAACE; margin-top: 2px; }
 	

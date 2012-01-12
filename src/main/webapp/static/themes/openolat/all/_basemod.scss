@@ -99,6 +99,12 @@ body {
 	border-left: 0;
 }
 
+.b_hideboth #b_col1, .b_hideboth #b_col2, 
+.b_hidecol1 #b_col1, .b_hidecol2 #b_col2, 
+#b_ie_clearing {
+	display: none;
+}
+
 
 .b_c15r,.b_c20r,.b_c80r,.b_c85r{float:right;margin-left:-5px;}
 .b_c15l,.b_c15r{width:15%}
@@ -328,20 +334,21 @@ div.b_tree {
 			
 		} // end li
 		
-		
 		/* link to select the item with icon */
-		&.b_tree_l0  a.b_tree_icon { padding-left:20px;  background-position:2px 50%; }
-		&.b_tree_l1  a.b_tree_icon { padding-left:30px;  background-position:12px 50%; }
-		&.b_tree_l2  a.b_tree_icon { padding-left:40px;  background-position:22px 50%; }
-		&.b_tree_l3  a.b_tree_icon { padding-left:50px;  background-position:32px 50%; }
-		&.b_tree_l4  a.b_tree_icon { padding-left:60px;  background-position:42px 50%; }
-		&.b_tree_l5  a.b_tree_icon { padding-left:70px;  background-position:52px 50%; }
-		&.b_tree_l6  a.b_tree_icon { padding-left:80px; background-position:62px 50%; }
-		&.b_tree_l7  a.b_tree_icon { padding-left:90px; background-position:72px 50%; }
-		&.b_tree_l8  a.b_tree_icon { padding-left:100px; background-position:82px 50%; }
-		&.b_tree_l9  a.b_tree_icon { padding-left:110px; background-position:92px 50%; }
-		&.b_tree_l10 a.b_tree_icon { padding-left:120px; background-position:102px 50%; }
-		&.b_tree_l11 a.b_tree_icon { padding-left:130px; background-position:112px 50%; }
+		$treeicon_spread_px: 6px;
+		
+		&.b_tree_l0  a.b_tree_icon { padding-left:$treeicon_spread_px+20px;  background-position:$treeicon-spread_px+2px 50%; }
+		&.b_tree_l1  a.b_tree_icon { padding-left:$treeicon_spread_px+30px;  background-position:$treeicon-spread_px+12px 50%; }
+		&.b_tree_l2  a.b_tree_icon { padding-left:$treeicon_spread_px+40px;  background-position:$treeicon-spread_px+22px 50%; }
+		&.b_tree_l3  a.b_tree_icon { padding-left:$treeicon_spread_px+50px;  background-position:$treeicon-spread_px+32px 50%; }
+		&.b_tree_l4  a.b_tree_icon { padding-left:$treeicon_spread_px+60px;  background-position:$treeicon-spread_px+42px 50%; }
+		&.b_tree_l5  a.b_tree_icon { padding-left:$treeicon_spread_px+70px;  background-position:$treeicon-spread_px+52px 50%; }
+		&.b_tree_l6  a.b_tree_icon { padding-left:$treeicon_spread_px+80px; background-position:$treeicon-spread_px+62px 50%; }
+		&.b_tree_l7  a.b_tree_icon { padding-left:$treeicon_spread_px+90px; background-position:$treeicon-spread_px+72px 50%; }
+		&.b_tree_l8  a.b_tree_icon { padding-left:$treeicon_spread_px+100px; background-position:$treeicon-spread_px+82px 50%; }
+		&.b_tree_l9  a.b_tree_icon { padding-left:$treeicon_spread_px+110px; background-position:$treeicon-spread_px+92px 50%; }
+		&.b_tree_l10 a.b_tree_icon { padding-left:$treeicon_spread_px+120px; background-position:$treeicon-spread_px+102px 50%; }
+		&.b_tree_l11 a.b_tree_icon { padding-left:$treeicon_spread_px+130px; background-position:$treeicon-spread_px+112px 50%; }
 	
 	}// end ul
 	
@@ -373,20 +380,6 @@ div.b_tree {
 	#b_footer_powered { text-align: center; width: auto; background: none;  a { display: inline; } }
 }
 
-
-
-/** ------------------ COURSE EDITOR --------------- **/
-#o_course_editor_errorbox {
-	font-size: 90%;
-	padding: 3px 2px 2px 25px;
-	margin: 0 0 1em 0;
-}
-div.o_courseeditor_legend { 
-	margin-top: 3em;
-	strong { font-weight: bold; }
-	div { top: 0; left: 0; padding-left: 12px; background-repeat: no-repeat; background-position: 0 50%; }
-}
-	
 
 
 
@@ -422,32 +415,31 @@ div.b_noti {
 		a.b_noti_subscribe_link { background: url(../openolat/images/mail--plus.png)  no-repeat left 50%; padding: 1px 0 1px 20px; }
 		a.b_noti_markedread_link { background: url(../openolat/images/tick.png)  no-repeat left 50%; padding: 1px 0 1px 20px;}	
 }
-
 	
 /* ---------- TITLE Wrapper --------------- */
+div.b_titled_wrapper div.b_noti {position:absolute;  right:25px; top:0px; }
+div.b_titled_wrapper fieldset div.b_noti {top:12px;}
 h1.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
 h2.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
 h3.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
 h4.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
-div.b_titled_wrapper div.b_togglebox div.b_togglebox_content { background:#fff; border:0px; padding:0px; }
-div.b_titled_wrapper_desc a.b_togglebox_opened { z-index:10; display:block; width:16px; height:16px; position:absolute; top:5px; left:5px; background: url(../images/brasato/information.png) no-repeat 0 50%; padding:0; }
-div.b_titled_wrapper_desc a.b_togglebox_opened:hover { background: url(../images/brasato/information_over.png) no-repeat 0 50%; padding:0; }
-div.b_titled_wrapper_desc a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../images/brasato/information_discreet.png) no-repeat top left; padding:0; }
-div.b_titled_wrapper_desc a.b_togglebox_closed:hover { background: url(../images/brasato/information.png) no-repeat top left; }
-div.b_titled_wrapper_desc div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
-div.b_titled_wrapper_desc a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
-div.b_titled_wrapper_desc a.b_togglebox_hide:hover { text-decoration:underline; }
+
+div.b_titled_wrapper {
+	div.b_togglebox div.b_togglebox_content { background:#fff; border:0px; padding:0px; }
+	a.b_togglebox_opened { z-index:10; display:block; width:16px; height:16px; position:absolute; top:5px; left:5px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; padding:0; }
+	a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left; padding:0; opacity:0.6; }
+	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
+	a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
+	a.b_togglebox_hide:hover { text-decoration:underline; }
+}
 /* Needed for IE6 */
 div.b_titled_wrapper div.b_togglebox div.b_togglebox_content div.o_course_run_objectives { position:relative; }
-div.b_titled_wrapper div.b_noti { position:absolute; top:0; right:25px; }
 div.o_course_run_dropbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
 div.o_course_run_returnbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
 div.o_course_run_solutionbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
 	
-
 /** ------------------ CATALOG ------------------------ **/
-
 div.o_catalog {
 	 div.o_catalog_title {
 		display: none; //hide title
@@ -556,7 +548,10 @@ div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../op
 div.b_ext_elem .x-tree-selected a.x-tree-node-anchor { border: 1px dotted #444; text-decoration: none; }
 div.b_ext_elem .x-tree-node .x-tree-selected { background-color:#FFC266; }
 	
-	
+	/* fix margins in tooltip */
+.x-tip {
+	dl,dd {margin:0;}
+}
 
 	
 }

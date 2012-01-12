@@ -69,6 +69,8 @@ for THEMERAW in $(find . -type d -maxdepth 1 -mindepth 1 \! -name "CVS"); do
 		done
 	echo ""
 	
+	exit 
+
 	# now check for existing images, which are never referenced in layout.css
 	
 	echo "----------------------------------------------------------------"		
@@ -80,10 +82,10 @@ for THEMERAW in $(find . -type d -maxdepth 1 -mindepth 1 \! -name "CVS"); do
 		IMGPATH=${IMGPATHRAW:2}
 		# check if a css file exist that contains the image path
 		RESULT=`find . -name "*.css" | xargs grep -n $IMGPATH`
-		#		if [ -z "$RESULT" ]; then
-			#	# test was empty -> image not referenced
-			#		echo $THEME/$IMGPATH
-		#	fi
+				if [ -z "$RESULT" ]; then
+				# test was empty -> image not referenced
+					echo $THEME/$IMGPATH
+			fi
 	done
 	echo ""
 	

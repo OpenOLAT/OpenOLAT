@@ -1,0 +1,40 @@
+
+
+/*
+* ------ NOTE -------  
+*  since OpenOLAT directly includes the content.css from the theme, we need to compile this to a separate css file.
+*  to do that, we need to "@import" our definitions and mixins.
+*
+*/
+
+
+@import "definitions";
+@import "mixins";
+
+// import the default content.scss
+@import "../openolat/all/content.scss";
+
+/** ---- our modifications ---- **/
+
+* {
+	font-family: $defaultfont;
+}
+
+body {
+	font-size: $defaultfontsize;
+	color:#444;
+}
+
+h1,h2,h3,h4,h5,fieldset legend {
+	@include o-text-shadow(0,3px,3px,rgba(0,0,0,0.4));
+}
+
+
+a,a:visited {
+	text-decoration:none;
+	color:$basecolor;
+}
+a:hover {
+	text-decoration:underline;
+	color:$basecolor;
+}

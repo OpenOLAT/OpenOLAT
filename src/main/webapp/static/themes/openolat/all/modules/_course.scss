@@ -17,3 +17,67 @@ div.b_selectiontree {
    	.b_selectiontree_junction {background-image: url(../openolat/images/tree/dots_nt.gif); }
    	.b_selectiontree_end {background-image: url(../openolat/images/tree/dots_nl.gif); }
 }
+
+
+
+/** ------------------ COURSE EDITOR --------------- **/
+#o_course_editor_errorbox {
+	font-size: 90%;
+	padding: 3px 2px 2px 25px;
+	margin: 0 0 1em 0;
+}
+div.o_courseeditor_legend { 
+	margin-top: 3em;
+	strong { font-weight: bold; }
+	div { top: 0; left: 0; padding-left: 12px; background-repeat: no-repeat; background-position: 0 50%; }
+}
+	
+/* COURSE */
+div.o_course_run {
+	h3 {}
+
+	div.o_course_run_displaytitle { font-style: italic;}
+	div.o_course_run_objectives { background-color: #E9EAEF; padding: 5px 5px 5px 25px; margin:0; border:1px solid #C5C4C4;  @include o-border-radius(4px);}
+	div.o_course_run_scoreinfo {background: #E9EAEF url(../openolat/images/seal.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);} 
+	div.o_course_run_disclaimer {background: #E9EAEF url(../openolat/images/information-white.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);}  
+	div.o_course_run_groupinfo{ background: #E9EAEF url(../openolat/images/users.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4;@include o-border-radius(4px);} 
+	div.o_course_run_statusinfo {background: url(../openolat/images/bullet_go.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);}  
+	div.o_course_run_returnbox { background: #E9EAEF url(../openolat/images/box_return.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);}
+	div.o_course_run_dropbox { background: #E9EAEF url(../openolat/images/box_drop.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);}
+	div.o_course_run_solutionbox { background: #E9EAEF url(../openolat/images/box_solution.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);}
+	div.o_course_run_task { background: #E9EAEF url(../openolat/images/assign.png) no-repeat 5px 5px; padding: 5px 5px 5px 25px; margin: 1.5em 0; border:1px solid #C5C4C4; @include o-border-radius(4px);}
+	div.o_course_run_disclaimer h4,
+	div.o_course_run_objectives h4,	
+	div.o_course_run_scoreinfo h4,
+	div.o_course_run_returnbox h4,
+	div.o_course_run_dropbox h4, 
+	div.o_course_run_solutionbox h4,
+	div.o_course_run_task h4,
+	div.o_course_run_log h4 { font-size: 100%; margin: 0 0 1em 0;}
+	div.o_course_run_scoreinfo_noinfo { font-style: italic; font-weight: bold} 
+	div.o_course_run_toc { 
+		margin: 1em 0 0 0;
+		div.o_course_run_toc_entry { margin: 0 0 1em 0; padding: 1em 20px 0 0; } 
+		div.o_course_run_shorttitle { border-bottom: 1px solid #ACAAAA; } 
+		div.o_course_run_displaytitle { margin-top: 0.5em; color: #aaaaaa } 
+		div.o_course_run_objectives { margin: 1em 0 1em 0; border: 0; background: none;} 
+		div.o_course_run_toc_entry { background: #FBFBFB; padding: 5px; border:1px solid #eee; @include o-border-radius(4px); }  
+	} 
+
+	#b_content_popup { position:absolute; top:0; right:0; }
+}
+
+div.o_course_run_toc_one_columns { } 
+div.o_course_run_toc_two_columns { }
+
+div.o_sp_peekview { 
+	margin: 1em 0 1em 0;
+	ul { list-style: none; }
+	li { margin-top: 0.5em;}
+	a { position: relative; left: -20px; }
+}
+
+div.o_peekview_author { padding: 3px 0 5px 0; font-style: italic; color: #aaaaaa; font-size: 90%;}
+	
+	
+	

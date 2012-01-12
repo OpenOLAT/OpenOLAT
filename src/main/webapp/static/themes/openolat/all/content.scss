@@ -11,23 +11,27 @@
 *   (as of yaml compliance, contains css rules for
 *   styling fonts, colors, font-style, etc. ) 
 *   
-*   this file is included in layout.scss
-*   it is not compiled to a separate css-file...  
+*   this file is included in layout.scss and is _also_
+*   compiled to a separate css-file! (it is needed
+*   in iframes within course, tinyMCE, etc.)
 *
 *  =================================================
 */
 
+// we need those 'cause we compile this file to content.css
+@import "definitions";
+@import "mixins";
+
 
 * {
-	font-family: Century Gothic, Apple Gothic, sans-serif;
-	//font-family: Geneva, Lucida Sans, Lucida Grande, Lucida Sans Unicode, Verdana, sans-serif;
+	font-family: $defaultfont;
 }
 
 textarea, pre, tt, code { font-size: 90%; color:inherit; line-height:inherit;margin:inherit;}
 
 
 body {
-	font-size:75%;
+	font-size: $defaultfontsize;
 	color:#444;
 }
 
@@ -91,7 +95,7 @@ div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
 .b_align_center { text-align: center; }
 .b_align_inverse { text-align: right; }
 .b_quote_wrapper { position: relative; margin: 20px; }
-.b_quote_author { background: url(../images/olat/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
+.b_quote_author { background: url(../openolat/images/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
 blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464; }
 .b_border_box { border: 1px solid #ccc; padding: 1em; }
 .b_warning { padding: 1em; border: 2px #ffc659 solid; @include o-border-radius(4px); @include o-gradient2(#ffe49c,#fff4da); }
@@ -172,7 +176,6 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 		div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
 		div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
 	}
-	
 	
 	
 	/* RATING */

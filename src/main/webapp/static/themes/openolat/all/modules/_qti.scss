@@ -14,18 +14,20 @@
 	#o_qti_run_questionprogress	{float: left; display: inline; margin-left:1em;}
 	#o_qti_run_status {clear: both; }
 	#o_qti_run_main { clear:both; border-top: 1px solid #504D4E;  margin: 0.5em 0; padding: 1em 0;}
-	#o_qti_run_menu_inner h4 {font-size: 100%;}
-	#o_qti_run_menu_inner ul { padding: 0; margin: 0; list-style: none;}
-	#o_qti_run_menu_inner li { clear: both; padding: 0; margin: 0; white-space: normal;}
-	#o_qti_run_menu_inner li.o_qti_menu_section { padding: 1em 0;}
+	#o_qti_run_menu_inner { 
+		h4 {font-size: 100%;}
+		ul { padding: 0; margin: 0; list-style: none;}
+	 	li { clear: both; padding: 0; margin: 0; white-space: normal;}
+	 	li.o_qti_menu_section { padding: 1em 0;}
+	}
+	
 	#o_qti_run_menu_inner li div.o_qti_menu_item, #o_qti_run_menu li div.o_qti_menu_section {float: left; display: inline; margin-right: 10px;}		
 	#o_qti_run_content_inner { }
 	#o_qti_results td { padding: 0; }  /* fixes problem with truncated testresults, see OLAT-3416 */	
 	#b_main.o_editor_qti_correct {background-image: url(../openolat/images/qti/correct_bg.png); background-position: top left; }
-	#b_main.o_editor_qti {background-image: url(../images/olat/editor/edit_bg.png); background-position: top left; }
+	#b_main.o_editor_qti {background-image: url(../openolat/images/edit_bg.png); background-position: top left; }
 	#o_qti_hints, #o_qti_solutions { margin: 1em 0;}
-	#o_qti_hints a { background: url(../images/olat/lightbulb.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
-	#o_qti_hints a:focus, #o_qti_hints a:hover{ background-image: url(../images/olat/lightbulb_hover.png); }	
+	#o_qti_hints a { background: url(../openolat/images/light-bulb.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
 	#o_qti_solutions a { background: url(../openolat/images/magnifier-zoom.png) no-repeat left 50%; cursor: help; padding-left: 20px; }
 	.qti_response_level_feedback_label { margin-top: 1em; font-style:italic }
 	.qti_edit_layout { position:relative; padding-right:30px; margin-bottom:0.6em; }
@@ -45,16 +47,20 @@
 	div.o_qti_item_choice_option_flow {display:table-cell; padding: .5em; border: 1px solid transparent;}
 	div.o_qti_item_choice_option:hover {border: 1px solid silver;}
 	div.o_qti_item_choice_option_flow:hover {border: 1px solid silver;}
-	div.o_qti_item_choice_option_input {display:table-cell; vertical-align:middle; padding-right:.5em;}
-	div.o_qti_item_choice_option_input input {vertical-align:middle;}
-	div.o_qti_item_choice_option_value {display:table-cell;}
-	div.o_qti_item_choice_option_value span {line-height:1.5em; margin-right:1em;}
+	div.o_qti_item_choice_option_input {
+		display:table-cell; vertical-align:middle; padding-right:.5em;
+		input {vertical-align:middle;}
+	}
+	div.o_qti_item_choice_option_value {
+		display:table-cell;
+		span {line-height:1.5em; margin-right:1em;}
+	}
 	div.o_qti_item_choice_option_autoenum{display:table-cell;line-height:1.5em;width:1em;overflow:hidden;vertical-align:middle;color:silver;border:0;padding:0;margin:0;}
 	
 	#o_qti_menu td {}
     #o_qti_menu a {text-decoration: none;}
 
-    .o_qti_menu_section{padding:.3em;}
+    .o_qti_menu_section{padding:.3em; border-top:1px solid $basecolor_light;}
     .o_qti_menu_section_clickable {padding:.3em; border: 1px solid transparent; display:inline-block;}
     .o_qti_menu_section_clickable:hover {padding:.3em; border: 1px solid silver; display:inline-block;}
     .o_qti_menu_section_active {padding:.3em; border: 1px dashed silver; display:inline-block;}
@@ -76,7 +82,7 @@
 	div.o_qti_item_note_box_title{color: silver;}
 	
 	div.o_qti_item_itemfeedback, div.o_qti_item_assessfeedback, div.o_qti_item_o_qti_item_sectionfeedback{margin: 1em 0; background: url(../openolat/images/lightning.png) no-repeat left 50%; padding-left: 20px;}
-	div.o_qti_item_objectives {margin: 1em 0; background: url(../images/brasato/information.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
+	div.o_qti_item_objectives {margin: 1em 0; background: url(../openolat/images/information-white.png) no-repeat left 50%; padding-left: 20px; line-height:2em;}
 	/* qti menu items */
 	.o_qti_timelimit_icon {background-image: url(../openolat/images/qti/time.png); }
 	.o_qti_attemptslimit_icon {background-image: url(../openolat/images/qti/tries.png); }

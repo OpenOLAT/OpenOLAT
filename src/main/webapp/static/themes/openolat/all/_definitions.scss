@@ -15,21 +15,26 @@
 
 
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
-$basecolor: #025D8C;
-$basecolor_light : #94bed3;
-$basecolor_ultra_light : #f3feff;
+$basecolor: #025D8C !default;
+$basecolor_light : #94bed3 !default;
+$basecolor_ultra_light : #f3feff !default;
 
 /* then we need a base-gray and some variations */
-$basegray: #555;
-$basegray_light: #777;
-$basegray_ultra_light: #eee;
+$basegray: #555 !default;
+$basegray_light: #777 !default;
+$basegray_ultra_light: #eee !default;
 
 
-$ico_plus : '../openolat/images/toggle-small-expand.png' ;
-$ico_minus : '../openolat/images/toggle-small.png' ;
+/* here you can define the two small icons used in trees:  + and - */ 
+$ico_plus : '../openolat/images/toggle-small-expand.png'  !default;
+$ico_minus : '../openolat/images/toggle-small.png'  !default;
+$defaultfont : Century Gothic, Apple Gothic, sans-serif !default;
+$defaultfontsize : 75% !default;
 
 
+/* defines the body-background */
 @mixin bodybg(){
 	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 88px;
 }
+
 

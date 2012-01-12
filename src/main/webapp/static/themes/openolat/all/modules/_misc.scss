@@ -1,0 +1,247 @@
+/*  misc */
+
+
+/* BUSINESS CARD */
+div.o_bcard { background-color: #eee; margin-top: 10px;}
+div.o_bcard_header, div.o_members_header {color: #fff; background-color: #777; padding: 2px;}
+div.o_bcard_portrait {
+		float: left; display:inline; width: 100px; height: 100px; margin: 10px; 
+		img {border:1px #d3d3d3 solid;}
+}
+div.o_bcard_portrait_group { background-image: url(../images/group_100x100.png); border:1px #d3d3d3 solid;}
+div.o_bcard_text {margin-left: 120px; margin-top: 10px; line-height:150%}
+div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31, 73, 179); padding: 5px;}
+
+
+/* INFO MESSAGES */
+div.o_infomsgs { 
+		padding-top:5px; 
+		div.b_datecomp { top: 2px; float: left; display: inline; }
+		div.o_infomsg {  margin-bottom:1em; padding:10px 0 0 0; }
+		.b_year { display: none; }
+		.o_item_info { color: #7D7D7D; font-size: 90%; }
+		.o_item_info .o_item_info_mod { color:#98221F; }
+}
+
+div.b_table_wrapper td a.o_peekview_infomsg_link { display:inline; }
+div.o_infomsgs_config { 	
+	padding-bottom:5px; 
+	div { display:inline; }
+}
+.o_infomsg_icon { background-image: url(../openolat/images/information-button.png); }
+.o_infomsg_create_button { position:absolute; top:0; right:250px; }
+	
+/* MEMBERS BB  ( Course Buildingblock: "Teilnehmerliste" ) */
+div.o_cmembers {
+	* { vertical-align:middle; }
+	div.o_cmember { 
+		float:left; 
+		
+		width:30%; 
+		height:75px; /* let's fix this, we want all boxes the same height */
+		overflow: hidden;
+		margin: 5px 5px 5px 0; 
+		padding:8px; 
+		border:1px solid #ddd; 
+
+		@include o_gradient2(#f6f6f6,#ebebeb);
+		@include o-border-radius(5px);
+		@include o-box-shadow(0, 1px, 2px, #d3d3d3);
+		
+		.o_cmember_portrait_wrapper { height:100%; width:65px; overflow:hidden; display:inline-block; margin-right: 5px;   border:1px solid #ddd;  }
+		img.o_cmember_portrait { height:100%; width:100%; background-color:white; background-position:50% 50%; background-repeat:no-repeat; }
+	}
+	a.o_cmembers_mail { float:none; margin-left:5px; padding-left:20px; background-image:url(../openolat/images/mail.png); }
+	a.o_cmembers_mail span { display:none; }
+	h4 { padding: 7px 0 0 0; clear:both;}
+}
+
+/* LINK LIST */
+div.o_ll_container ul li { 
+		list-style: circle;
+		margin: 1em; 
+		div { font-style: italic;}
+}
+a.o_ll_browse span { display:block; width:20px; height:18px; background:url(../openolat/images/library.png) top left no-repeat; margin-left:1px;}
+
+/* DATE COMPONENT (e.g. in notifications, shows calendar-image with date) */
+div.b_datecomp {
+		width: 2.5em; height: 3em; position: relative; margin-right: 5px;  font-weight: normal; color: white; text-align: center; vertical-align: middle; border: 1px solid #000; font-size: 85%;
+		div { width: 100%;  position: absolute; left: 0;}
+		div.b_year {height: 1em; top: -1.5em; font-size: 80%; font-weight: normal; color: #000; }
+		div.b_month {background: #BE5B5D; height: 40%; top: 0; font-size: 80%; font-weight: normal; color: white; }
+		div.b_day {background: #fff; height: 60%; bottom: 0; font-size: 120%; font-weight: bold; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #aaaaaa; }
+}
+	
+
+/* Dummy user portrait (avatar) display */
+img.o_portrait_dummy                {background-image: url(../openolat/images/dummy.png); width: 100px; height: 100px;}
+img.o_portrait_dummy_small          {background-image: url(../openolat/images/dummy_small.png); }
+img.o_portrait_dummy_female_big     {background-image: url(../openolat/images/dummy_female_big.png); width: 100px; height: 100px;}
+img.o_portrait_dummy_female_small   {background-image: url(../openolat/images/dummy_female_small.png); }
+img.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
+img.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); }
+
+/* classes to use in course layout generator to have previews in dropdown elements */
+/* note: this does not work in chrome (jan2012, chrome 16.0.) */
+.clgen_font_arial { font-family: arial,helvetica; }
+.clgen_font_arial_black { font-family: arial black,avant garde; }
+.clgen_font_comic { font-family: comic sans ms,sans-serif; }
+.clgen_font_courier { font-family: courier new,courier; }
+.clgen_font_georgia	{ font-family: georgia,serif; }
+.clgen_font_impact { font-family: impact,chicago; }
+.clgen_font_lucida { font-family: lucida console,monaco,monospace; }
+.clgen_font_palatino { font-family: palatino linotype,book antiqua,palatino,serif; }
+.clgen_font_times { font-family: times new roman,times; } 
+.clgen_font_verdana { font-family: verdana,geneva,sans-serif; }
+.clgen_font_xxlarge { font-size: 130%; }
+.clgen_font_xxsmall { font-size: 70%; }
+option.Black { background-color: Black ; }
+option.Navy { background-color: Navy ; }
+option.DarkBlue { background-color: DarkBlue ; }
+option.MediumBlue { background-color: MediumBlue ; }
+option.Blue { background-color: Blue ; }
+option.DarkGreen { background-color: DarkGreen ; }
+option.Green { background-color: Green ; }
+option.Teal { background-color: Teal ; }
+option.DarkCyan { background-color: DarkCyan ; }
+option.DeepSkyBlue { background-color: DeepSkyBlue ; }
+option.DarkTurquoise { background-color: DarkTurquoise ; }
+option.MediumSpringGreen { background-color: MediumSpringGreen ; }
+option.Lime { background-color: Lime ; }
+option.SpringGreen { background-color: SpringGreen ; }
+option.Aqua { background-color: Aqua ; }
+option.Cyan { background-color: Cyan ; }
+option.MidnightBlue { background-color: MidnightBlue ; }
+option.DodgerBlue { background-color: DodgerBlue ; }
+option.LightSeaGreen { background-color: LightSeaGreen ; }
+option.ForestGreen { background-color: ForestGreen ; }
+option.SeaGreen { background-color: SeaGreen ; }
+option.DarkSlateGray { background-color: DarkSlateGray ; }
+option.DarkSlateGrey { background-color: DarkSlateGrey ; }
+option.LimeGreen { background-color: LimeGreen ; }
+option.MediumSeaGreen { background-color: MediumSeaGreen ; }
+option.Turquoise { background-color: Turquoise ; }
+option.RoyalBlue { background-color: RoyalBlue ; }
+option.SteelBlue { background-color: SteelBlue ; }
+option.DarkSlateBlue { background-color: DarkSlateBlue ; }
+option.MediumTurquoise { background-color: MediumTurquoise ; }
+option.Indigo  { background-color: Indigo  ; }
+option.DarkOliveGreen { background-color: DarkOliveGreen ; }
+option.CadetBlue { background-color: CadetBlue ; }
+option.CornflowerBlue { background-color: CornflowerBlue ; }
+option.MediumAquaMarine { background-color: MediumAquaMarine ; }
+option.DimGray { background-color: DimGray ; }
+option.DimGrey { background-color: DimGrey ; }
+option.SlateBlue { background-color: SlateBlue ; }
+option.OliveDrab { background-color: OliveDrab ; }
+option.SlateGray { background-color: SlateGray ; }
+option.SlateGrey { background-color: SlateGrey ; }
+option.LightSlateGray { background-color: LightSlateGray ; }
+option.LightSlateGrey { background-color: LightSlateGrey ; }
+option.MediumSlateBlue { background-color: MediumSlateBlue ; }
+option.LawnGreen { background-color: LawnGreen ; }
+option.Chartreuse { background-color: Chartreuse ; }
+option.Aquamarine { background-color: Aquamarine ; }
+option.Maroon { background-color: Maroon ; }
+option.Purple { background-color: Purple ; }
+option.Olive { background-color: Olive ; }
+option.Gray { background-color: Gray ; }
+option.Grey { background-color: Grey ; }
+option.SkyBlue { background-color: SkyBlue ; }
+option.LightSkyBlue { background-color: LightSkyBlue ; }
+option.BlueViolet { background-color: BlueViolet ; }
+option.DarkRed { background-color: DarkRed ; }
+option.DarkMagenta { background-color: DarkMagenta ; }
+option.SaddleBrown { background-color: SaddleBrown ; }
+option.DarkSeaGreen { background-color: DarkSeaGreen ; }
+option.LightGreen { background-color: LightGreen ; }
+option.MediumPurple { background-color: MediumPurple ; }
+option.DarkViolet { background-color: DarkViolet ; }
+option.PaleGreen { background-color: PaleGreen ; }
+option.DarkOrchid { background-color: DarkOrchid ; }
+option.YellowGreen { background-color: YellowGreen ; }
+option.Sienna { background-color: Sienna ; }
+option.Brown { background-color: Brown ; }
+option.DarkGray { background-color: DarkGray ; }
+option.DarkGrey { background-color: DarkGrey ; }
+option.LightBlue { background-color: LightBlue ; }
+option.GreenYellow { background-color: GreenYellow ; }
+option.PaleTurquoise { background-color: PaleTurquoise ; }
+option.LightSteelBlue { background-color: LightSteelBlue ; }
+option.PowderBlue { background-color: PowderBlue ; }
+option.FireBrick { background-color: FireBrick ; }
+option.DarkGoldenRod { background-color: DarkGoldenRod ; }
+option.MediumOrchid { background-color: MediumOrchid ; }
+option.RosyBrown { background-color: RosyBrown ; }
+option.DarkKhaki { background-color: DarkKhaki ; }
+option.Silver { background-color: Silver ; }
+option.MediumVioletRed { background-color: MediumVioletRed ; }
+option.IndianRed  { background-color: IndianRed  ; }
+option.Peru { background-color: Peru ; }
+option.Chocolate { background-color: Chocolate ; }
+option.Tan { background-color: Tan ; }
+option.LightGray { background-color: LightGray ; }
+option.LightGrey { background-color: LightGrey ; }
+option.PaleVioletRed { background-color: PaleVioletRed ; }
+option.Thistle { background-color: Thistle ; }
+option.Orchid { background-color: Orchid ; }
+option.GoldenRod { background-color: GoldenRod ; }
+option.Crimson { background-color: Crimson ; }
+option.Gainsboro { background-color: Gainsboro ; }
+option.Plum { background-color: Plum ; }
+option.BurlyWood { background-color: BurlyWood ; }
+option.LightCyan { background-color: LightCyan ; }
+option.Lavender { background-color: Lavender ; }
+option.DarkSalmon { background-color: DarkSalmon ; }
+option.Violet { background-color: Violet ; }
+option.PaleGoldenRod { background-color: PaleGoldenRod ; }
+option.LightCoral { background-color: LightCoral ; }
+option.Khaki { background-color: Khaki ; }
+option.AliceBlue { background-color: AliceBlue ; }
+option.HoneyDew { background-color: HoneyDew ; }
+option.Azure { background-color: Azure ; }
+option.SandyBrown { background-color: SandyBrown ; }
+option.Wheat { background-color: Wheat ; }
+option.Beige { background-color: Beige ; }
+option.WhiteSmoke { background-color: WhiteSmoke ; }
+option.MintCream { background-color: MintCream ; }
+option.GhostWhite { background-color: GhostWhite ; }
+option.Salmon { background-color: Salmon ; }
+option.AntiqueWhite { background-color: AntiqueWhite ; }
+option.Linen { background-color: Linen ; }
+option.LightGoldenRodYellow { background-color: LightGoldenRodYellow ; }
+option.OldLace { background-color: OldLace ; }
+option.Red { background-color: Red ; }
+option.Fuchsia { background-color: Fuchsia ; }
+option.Magenta { background-color: Magenta ; }
+option.DeepPink { background-color: DeepPink ; }
+option.OrangeRed { background-color: OrangeRed ; }
+option.Tomato { background-color: Tomato ; }
+option.HotPink { background-color: HotPink ; }
+option.Coral { background-color: Coral ; }
+option.Darkorange { background-color: Darkorange ; }
+option.LightSalmon { background-color: LightSalmon ; }
+option.Orange { background-color: Orange ; }
+option.LightPink { background-color: LightPink ; }
+option.Pink { background-color: Pink ; }
+option.Gold { background-color: Gold ; }
+option.PeachPuff { background-color: PeachPuff ; }
+option.NavajoWhite { background-color: NavajoWhite ; }
+option.Moccasin { background-color: Moccasin ; }
+option.Bisque { background-color: Bisque ; }
+option.MistyRose { background-color: MistyRose ; }
+option.BlanchedAlmond { background-color: BlanchedAlmond ; }
+option.PapayaWhip { background-color: PapayaWhip ; }
+option.LavenderBlush { background-color: LavenderBlush ; }
+option.SeaShell { background-color: SeaShell ; }
+option.Cornsilk { background-color: Cornsilk ; }
+option.LemonChiffon { background-color: LemonChiffon ; }
+option.FloralWhite { background-color: FloralWhite ; }
+option.Snow { background-color: Snow ; }
+option.Yellow { background-color: Yellow ; }
+option.LightYellow { background-color: LightYellow ; }
+option.Ivory { background-color: Ivory ; }
+option.White { background-color: White ; }
+	
+    

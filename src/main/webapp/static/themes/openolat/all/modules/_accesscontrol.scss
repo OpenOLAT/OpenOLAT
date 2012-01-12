@@ -1,0 +1,32 @@
+
+
+
+/* ACCESS CONTROL */
+/* fxdiff VCRP-1,2: access control of resources */
+.b_group_accesscontrolled { background-image:url('../openolat/images/ac/umbrella.png'); }	
+.b_order_icon { background-image: url('../openolat/images/ac/shopping-basket.png'); }
+div.b_order_details { margin-top: 2em;}
+div.b_order_details label { font-weight: bold;}
+
+div.b_access_create ul { padding: 0; margin-left: 0;}
+div.b_access_create li { padding: 0; list-style: none;}
+table.b_access_method td { padding: 0.2em 1em 0.2em 0; }
+table.b_access_method tr.b_access_desc td { padding: 0 1em 1em 20px; font-style: italic;}
+table.b_access_method td div.b_form_element { margin-left:0; }	
+div.b_access_method_list div.b_access_method legend { background-repeat: no-repeat; padding-left: 20px; }
+table span.b_access_method { padding-right: 5px; font-size: 90%; vertical-align: bottom; line-height: 16px;  }
+ 
+.b_access_member_icon {background-image: url(../openolat/images/ac/lock-unlock.png);}
+.b_access_membersonly_icon {background-image: url('../openolat/images/ac/lock.png');}
+/* free method */
+.b_access_method_free_icon { background-image: url('../openolat/images/ac/open-share.png'); }
+.b_group_accesscontrolled.b_access_method_free, b_order_icon.b_access_method_free { background-image: url('../openolat/images/ac/open-share.png'); }
+div.b_access_method_list div.b_access_method_free legend { background-image: url('../openolat/images/ac/open-share.png'); }
+/* token method */
+.b_access_method_token_icon { background-image: url('../openolat/images/ac/license-key.png'); }
+.b_group_accesscontrolled.b_access_method_token, b_order_icon.b_access_method_token { background-image: url('../openolat/images/ac/license-key.png'); }
+div.b_access_method_list div.b_access_method_token legend { background-image: url('../openolat/images/ac/license-key.png'); }
+div.b_access_method_list div.b_access_method_token div.b_form_element_wrapper:nth-last-of-type(3) label, table.b_access_method tr.b_access_method_token .b_access_infos { background-image: url('../openolat/images/ac/key.png'); background-repeat: no-repeat; padding-left: 20px; }
+div.b_access_method_list div.b_form_element_wrapper:nth-last-of-type(4) label { background-image: url('../openolat/images/information-white.png'); background-repeat: no-repeat; padding-left: 20px; }
+/* access panel */
+#b_main_access_control { margin:0 20% 0 20%; padding: 20px 0 0 20px;}

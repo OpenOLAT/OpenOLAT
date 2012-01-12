@@ -14,7 +14,7 @@
 */
 
 
-/* the base-color and variations (for openolat-theme this is the openolat-blue) */
+/* the base-color and variations */
 $basecolor: red;
 $basecolor_light : lighten($basecolor, 20%);
 $basecolor_ultra_light : lighten($basecolor, 40%);
@@ -33,3 +33,6 @@ $ico_minus : '../openolat/images/toggle-small.png' ;
 @mixin bodybg(){
 	@include o-gradient4(yellow,red,blue,green);
 }
+
+$defaultfont : Comic Sans, Comic Sans MS, cursive;
+$defaultfontsize : 90%;

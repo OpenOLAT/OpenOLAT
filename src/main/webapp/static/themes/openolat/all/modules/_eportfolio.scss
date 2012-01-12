@@ -1,4 +1,7 @@
-/* ePortfolio */
+/* ePortfolio 
+*
+*  note:  this file needs a lot of sass beautifying and cleaning..
+*/
 
 div.b_struct_edit_btn { float: right; display: inline;}
 	
@@ -10,17 +13,17 @@ div.o_ep_struct_editor div.b_subcr {
 	overflow-x: auto;
 }
 
-	.b_artefact { 
-		margin: 5px; border: 1px solid #ddd; padding: 1em;
-		@include o-border-radius(5px);
-		@include o-box-shadow(0,1px,2px,lightGrey); 
-		background: #ebebeb url(../openolat/images/portfolio/artefaktbg.png) top left repeat-x;
-	}
+.b_artefact { 
+	margin: 5px; border: 1px solid #ddd; padding: 1em;
+	@include o-border-radius(5px);
+	@include o-box-shadow(0,1px,2px,lightGrey); 
+	@include o_gradient2(#f6f6f6,#ebebeb);
+}
 	
 	.b_artefact div.b_actions { margin-top: 2em;}
 	.b_artefact div.b_desc { font-style: italic; margin: 1em 0; }
 	.b_ep_artAttribLink { background-image: url(../openolat/images/table_gear.png); }
-	div.b_artefact_closed { font-size:25px; float:right; background: url(../images/brasato/locked.png) top right no-repeat; }
+	div.b_artefact_closed { font-size:25px; float:right; background: url(../openolat/images/locked.png) top right no-repeat; }
 	div.b_eportfolio_preview_c100l .b_artefact { margin:3px; }
 	div.b_eportfolio_preview_c33l .b_artefact { font-size:85%; margin:3px; }
 	.b_ep_nolink { color: #000000; }
@@ -65,7 +68,7 @@ div.o_ep_struct_editor div.b_subcr {
 	.b_map_page { text-align:center; clear:left;}
 	.b_map_page_all{text-align:center;}
 	.b_map_page > span { padding-right:3px;}
-	.b_map_page a.b_map_page_forward {background: url(../images/brasato/resultset_next.png) no-repeat center right; padding-right: 16px;}
+	.b_map_page a.b_map_page_forward {background: url(../openolat/images/arrow_right.png) no-repeat center right; padding-right: 16px;}
 	
 	.b_eportfolio_map { background: white; padding: 1.5em; min-height: 30em;}
 	.b_eportfolio_map .b_ep_relative { position: relative; }
@@ -131,7 +134,7 @@ div.o_ep_struct_editor div.b_subcr {
 	.b_ep_tagbrowser { width: 30%; margin-right: 0px; }
 	.b_ep_tagbrowser_view { width: 68%; margin-left: 0px; } 
 	
-	.b_ep_collection_icon { background-image: url(../images/brasato/eportfolio/ep_collection.png) ! important; }
+	.b_ep_collection_icon { background-image: url(../openolat/images/portfolio/ep_collection.png) ! important; }
 	.b_ep_map_icon, .b_portfolio_toc .type_map { background-image: url(../openolat/images/portfolio/briefcase.png) ! important; }
 	.b_ep_page_icon, .b_portfolio_toc .type_page { background-image: url(../openolat/images/portfolio/ep_page.png) ! important; }
 	.b_ep_page_icon.b_eportfolio_add_link { background-image: url(../openolat/images/portfolio/ep_page_add.png) ! important; }
@@ -139,15 +142,24 @@ div.o_ep_struct_editor div.b_subcr {
 	.b_ep_struct_icon.b_eportfolio_add_link { background-image: url(../openolat/images/portfolio/ep_struct_add.png) ! important; }
 	.type_artefact { background-image: url(../openolat/images/le_resources/portfolio.png) ! important; }
 	
-	div.b_eportfolio_collect_restriction { margin-top:5px; }
-	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_el { float:left; margin-right:5px; }
-	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_link { float:left; margin-right:5px; }
-	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_link a { padding-left:0px; text-decoration:none }
-	div.b_eportfolio_collect_restriction div.b_eportfolio_collect_restriction_link a:hover { text-decoration:none }
-	div.b_eportfolio_restriction_wrapper a.b_togglebox_opened { z-index:10; display:block; width:9px; height:9px; padding:0; margin-left:12px; }
-	div.b_eportfolio_restriction_wrapper a.b_togglebox_closed { display:block; width:9px; height:9px; padding:0; margin-left:12px; }
-	div.b_eportfolio_restriction_wrapper p { padding:0 0 0 15px; margin:0; }
-	div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+div.b_eportfolio_collect_restriction { 
+	margin-top:5px;
+	
+	div.b_eportfolio_collect_restriction_el { float:left; margin-right:5px; }
+	div.b_eportfolio_collect_restriction_link { 
+		float:left; margin-right:5px; 
+		a { padding-left:0px; text-decoration:none }
+		a:hover { text-decoration:none }
+	}
+}
+	
+div.b_eportfolio_restriction_wrapper {
+	a.b_togglebox_opened { z-index:10; display:block; width:9px; height:9px; padding:0; margin-left:12px; }
+	a.b_togglebox_closed { display:block; width:9px; height:9px; padding:0; margin-left:12px; }
+	p { padding:0 0 0 15px; margin:0; }
+	div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+}
+	
   div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../openolat/images/decorator/deco_warn.png) no-repeat 3px 2px !important; }
   div.b_eportfolio_restriction_passed div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #F0F0F0 !important; background:#FCFCFC url(../openolat/images/decorator/deco_ok.png) no-repeat 3px 2px !important; }
   div.b_eportfolio_restriction_error div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_warn.png) no-repeat top left !important; }
@@ -159,12 +171,22 @@ div.o_ep_struct_editor div.b_subcr {
 	.b_eportfolio_fulltextsearch { float:left; }
 	.b_eportfolio_fulltextsearch div.b_form div.b_form_element_wrapper.b_form_horizontal { }
 	
-	.b_eportfolio_share_policy_wrapper { margin: 5px; border: 1px solid #ddd; padding: 1em; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.2); -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.2); background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; }
-	.b_eportfolio_share_policy_wrapper .b_float_right { text-align: right; }
-	.b_eportfolio_share_policy_wrapper a.bit-input { text-decoration: none; }
-	.b_eportfolio_share_policy div input, .b_eportfolio_share_policy div span, .b_eportfolio_share_policy div select { float: left; margin-right:5px; padding-right:5px; }
-	.b_eportfolio_share_policy div span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px;}
-	.b_eportfolio_share_policy .b_ep_share_date span { float: left; }
+.b_eportfolio_share_policy_wrapper { 
+	margin: 5px; border: 1px solid #ddd; padding: 1em; 
+	@include o-border-radius(5px);
+	@include o-box-shadow(0,1px,4px,rgba(0,0,0,0.2));
+	@include o_gradient2(#f6f6f6,#ebebeb);
+	
+	.b_float_right { text-align: right; }
+	 a.bit-input { text-decoration: none; }
+}
+	
+.b_eportfolio_share_policy {
+	div input,div span,div select { float: left; margin-right:5px; padding-right:5px; }
+	div span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px;}
+	.b_ep_share_date span { float: left; }
+}
+	
 	.b_eportfolio_share_policy_wrapper .b_eportfolio_share_policy { padding-left: 20px; background: url(../openolat/images/user.png) top left no-repeat; }
 	.b_eportfolio_share_policy_wrapper.policytype_group .b_eportfolio_share_policy { background-image: url(../openolat/images/users.png); }
 	.b_eportfolio_share_policy_wrapper.policytype_invitation .b_eportfolio_share_policy { background-image: url(../openolat/images/share.png); }

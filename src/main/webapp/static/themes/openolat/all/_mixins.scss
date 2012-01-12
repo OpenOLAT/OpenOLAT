@@ -15,7 +15,6 @@
 */
 
 
-
 // will produce a shiny-glassy gradient (ie9 will produce linear gradient with only 2 colors) */
 @mixin o-gradient-glassy($col1,$col2,$col3,$col4){
 	background: $col1;
@@ -101,6 +100,11 @@
 	-o-box-shadow: inset  $a $b $c $color;
 	-webkit-box-shadow: inset  $a $b $c $color;
 	box-shadow: inset $a $b $c $color;
+}
+
+@mixin o-text-shadow($a,$b,$c,$color){
+	text-shadow: $a $b $c $color;
+	-moz-text-shadow: $a $b $c $color;
 }
 
 @mixin o-transition($what, $dur,$eff){

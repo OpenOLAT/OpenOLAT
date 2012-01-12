@@ -30,12 +30,12 @@
 	}
 }
 
-
 /* disabled buttons */
 .b_disabled.b_button {
+	&,span { @include btt-inner; cursor: default !important; color:#888;}
+	
 	@include btt-outer;
-	&,span {@include btt-inner;}
-	border: 1px solid #ACAAAA;
+	border: 1px dotted #ccc;
 	background:#fff;
 	&:focus, &:hover {
 		@include o-box-shadow(0, 0, 0, transparent);
@@ -130,11 +130,12 @@ input:focus, select:focus, textarea:focus { background: #fff; border: 1px solid 
 input.b_checkbox, input.b_radio { height: 1em; width: 1em; border: 0; margin: 0 2px 0 0;}
 label.b_checkbox_label, label.b_radio_label { padding-left: 0.5em; }
 .b_inline_editable { padding: 1px 20px 1px 0; vertical-align: middle; min-height: 16px; }
-.b_inline_editable:hover { background-position: 100% 50%; background-repeat: no-repeat; background-image: url(../images/brasato/page_edit_tiny.png);}
+.b_inline_editable:hover { background-position: 100% 50%; background-repeat: no-repeat; background-image: url(../openolat/images/pencil-small.png);}
 
 span.b_inline_editable:hover {cursor:text !important;}
 
 fieldset {
+		position:relative;
 		padding:1em;
 		padding-top: 1.5em;
 		border:none;
@@ -149,7 +150,7 @@ fieldset {
 
 div.b_form { 
 	div.b_form_desc { padding-bottom: 1em; font-style: italic;}
-	div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../images/brasato/icon_error.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid #990000; color: #990000; font-style: italic;}
+	div.b_form_general_error { padding: 10px 10px 10px 50px; margin-bottom: 20px; text-align: left; background: url(../openolat/images/icon_error_32.png) no-repeat 10px 10px; min-height: 32px; border: 1px solid #990000; color: #990000; font-style: italic;}
 	div.b_form_spacer { margin: 10px 0; }
 	
 	hr {
@@ -212,7 +213,10 @@ div.b_form {
 	}
 
 }// end div.b_form
-	
+
+// LOL :)  shift form to left if no labels (see linklist edit for example)
+div.form_shift_left { left: -25%; }
+
 div.b_button_group {
 	div.b_form_element_wrapper { vertical-align: middle; margin: 0.5em 0; float: none; display: block;}
 	div.b_form_element_wrapper div.b_form_element_label{ width: auto; float: none; display: block; } 

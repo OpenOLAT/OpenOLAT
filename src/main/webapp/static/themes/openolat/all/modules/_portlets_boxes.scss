@@ -114,7 +114,7 @@ div.o_home_rsslink {
 		a.b_portlet_edit_right { background-image: url(../openolat/images/arrow_right_big.png);}
 		a.b_portlet_edit_down { background-image: url(../openolat/images/arrow_down_big.png); }
 		a.b_portlet_edit_up { background-image: url(../openolat/images/arrow_up_big.png); }
-		a.b_portlet_edit_delete { background-image: url(../openolat/images/cross-script.png); }
+		a.b_portlet_edit_delete { background-image: url(../openolat/images/bin-metal-full.png); }
 		a.b_portlet_edit_sort_auto { background-image: url(../openolat/images/table_sort.png); }
 		a.b_portlet_edit_sort_manual { background-image: url(../openolat/images/table_gear.png); }
 		
@@ -166,7 +166,7 @@ div.o_home_rsslink {
 				span.b_toolbox_toggle_wrapper {float: right; font-size: 90%;}
 				
 				/* disabled toolbox items */
-				span.b_toolbox_link.b_disabled,span.b_toolbox_disabled { color: #999; background: no-repeat 0 50% url(../images/brasato/bullet_white.png); padding-left: 18px; display: block;}
+				span.b_toolbox_link.b_disabled,span.b_toolbox_disabled { color: #999; background: no-repeat 0 50% url(../openolat/images/bullet_white.png); padding-left: 18px; display: block;}
 			 }
 		}// end toolbox_content
 	

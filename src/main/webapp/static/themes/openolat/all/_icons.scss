@@ -13,11 +13,12 @@
 */
 
 .b_with_small_icon_left {
-	padding: 1px 0 1px 20px;
+	padding: 2px 0 2px 20px;
 	min-height: 16px;
 	background-position: 0 50%;
 	background-repeat: no-repeat;
 }
+
 
 option.b_with_small_icon_left { 
 	padding: 0 0 0 20px;
@@ -44,6 +45,11 @@ option.b_with_small_icon_left {
 	background-repeat: no-repeat;
 }
 
+a.b_small_icon:hover {
+	// a link containing no text (just a small icon as background) should not display underline while hovering
+	text-decoration:none; 
+}
+
 /* ------- misc icons --------- */
 .b_info_icon { background-image: url('../openolat/images/comment.png')}
 .b_warn_icon { background-image: url('../openolat/images/exclamation.png')}
@@ -56,7 +62,7 @@ option.b_with_small_icon_left {
 .b_move_right_icon { background-image: url('../openolat/images/arrow_right_big.png');}
 .b_move_down_icon { background-image: url('../openolat/images/arrow_down_big.png'); }
 .b_move_up_icon { background-image: url('../openolat/images/arrow_up_big.png'); }
-.b_delete_icon { background-image: url('../openolat/images/cross-script.png'); }
+.b_delete_icon { background-image: url('../openolat/images/bin-metal-full.png'); }
 .b_share_icon { background-image: url('../openolat/images/share.png'); }
 .b_status_enabled_icon { background-image: url('../openolat/images/tick.png') }	
 .b_status_disabled_icon { background-image: url('../openolat/images/cross.png') }	
@@ -71,7 +77,7 @@ option.b_with_small_icon_left {
 .o_login_guests {background-image: url('../openolat/images/user_silhouette.png');}
 .o_login_pwd {background-image: url('../openolat/images/user_excl.png');}
 .o_login_register {background-image: url('../openolat/images/user_register.png');}
-.o_news_icon { background-image: url('../images/olat/information.png'); }
+.o_news_icon { background-image: url('../openolat/images/information-white.png'); }
 .o_course_icon { background-image: url('../openolat/images/le_resources/book-open-text-image.png'); }
 .o_chat_icon { background-image: url('../images/olat/chat_icon.png'); }
 .o_admin_icon { background-image: url('../openolat/images/wrench-screwdriver.png'); }
@@ -142,8 +148,8 @@ div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_fil
 .b_filetype_js { background-image: url('../openolat/images/docs/document_tags.png') ! important; }
 .b_filetype_log { background-image: url('../openolat/images/docs/document_plain.png') ! important; }
 .b_filetype_midi { background-image: url('../openolat/images/docs/document-music.png') ! important; }
-.b_filetype_mov { background-image: url('../openolat/images/docs/document-film.png') ! important; }
-.b_filetype_mp3,.b_filetype_m3u { background-image: url('../openolat/images/docs/document-music.png') ! important; }
+.b_filetype_video, .b_filetype_mov { background-image: url('../openolat/images/docs/document-film.png') ! important; }
+.b_filetype_audio, .b_filetype_mp3,.b_filetype_m3u { background-image: url('../openolat/images/docs/document-music.png') ! important; }
 .b_filetype_mpeg,.b_filetype_mpg { background-image: url('../openolat/images/docs/document-film.png') ! important; }
 .b_filetype_odp { background-image: url('../openolat/images/docs/document-powerpoint.png') ! important; }
 .b_filetype_ods { background-image: url('../openolat/images/docs/document-excel.png') ! important; }
@@ -167,7 +173,6 @@ div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.b_filetype_folder, .b_fil
 .b_filetype_xsl { background-image: url('../openolat/images/docs/document_tags.png') ! important; }
 .b_filetype_zip { background-image: url('../openolat/images/docs/document-zipper.png') ! important; }
 
-
 /* tab icons in nav  and in LE-resources table*/
 
 
@@ -177,7 +182,7 @@ li.b_nav_site div, li.b_nav_tab div { background: url('../openolat/images/applic
 // the others		
 li.b_resource_BusinessGroup div, .o_BusinessGroup_icon  { background-image: url('../openolat/images/users.png') }
 li.b_resource_CourseModule div, .o_CourseModule_icon  { background-image: url('../openolat/images/le_resources/book-open-text-image.png') }
-li.b_resource_HOMEPAGECONFIG div, .o_HOMEPAGECONFIG_icon,  li.b_resource_Identity div { background-image: url('../images/olat/vcard.png') }
+li.b_resource_HOMEPAGECONFIG div, .o_HOMEPAGECONFIG_icon,  li.b_resource_Identity div { background-image: url('../openolat/images/card-address.png') }
 li.b_resource_FileResource-SHAREDFOLDER div, .o_FileResource-SHAREDFOLDER_icon  { background-image: url('../openolat/images/folder_shared.png') }
 li.b_resource_FileResource-WIKI div, .o_FileResource-WIKI_icon  { background-image: url('../openolat/images/le_resources/wiki.png') }
 li.b_resource_FileResource-PODCAST div, .o_FileResource-PODCAST_icon  { background-image: url('../openolat/images/le_resources/media-player-cast.png') }
@@ -220,7 +225,7 @@ li a.b_toolbox_preview { background-image: url('../openolat/images/docs/document
 li a.b_toolbox_publish { background-image: url('../openolat/images/docs/document_share.png'); }
 li a.b_toolbox_move { background-image: url('../openolat/images/docs/document_move.png'); }
 li a.b_toolbox_close { background-image: url('../openolat/images/close.png'); }
-li a.b_toolbox_delete { background-image: url('../openolat/images/cross-script.png'); }
+li a.b_toolbox_delete { background-image: url('../openolat/images/bin-metal-full.png'); }
 li a.b_toolbox_copy, .b_copy_icon { background-image: url('../openolat/images/docs/document-copy.png'); }
 	
 	

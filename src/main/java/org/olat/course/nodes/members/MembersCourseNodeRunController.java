@@ -127,11 +127,11 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		
 		boolean canEmail =  canEmail(owners, coaches);
 		if(canEmail) {
-			ownersEmailLink = uifactory.addFormLink("owners-email", "members.email", null, formLayout, Link.LINK);
+			ownersEmailLink = uifactory.addFormLink("owners-email", "", null, formLayout, Link.NONTRANSLATED);
 			ownersEmailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
-			coachesEmailLink = uifactory.addFormLink("coaches-email", "members.email", null, formLayout, Link.LINK);
+			coachesEmailLink = uifactory.addFormLink("coaches-email", "", null, formLayout, Link.NONTRANSLATED);
 			coachesEmailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
-			participantsEmailLink = uifactory.addFormLink("participants-email", "members.email", null, formLayout, Link.LINK);
+			participantsEmailLink = uifactory.addFormLink("participants-email", "", null, formLayout, Link.NONTRANSLATED);
 			participantsEmailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
 			
 			formLayout.add("owners-email", ownersEmailLink);

@@ -28,6 +28,8 @@ div.b_modal_area {
 	margin: 10%;
 	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
 }
+
+
 /* MODAL OVERLAY: transparent background that covers the whole content */
 div.b_modal_overlay { 
 	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;
@@ -43,7 +45,7 @@ div.b_modal_overlay, div.ext-el-mask { background: #fff; -moz-opacity: 0.75; opa
 
 div.b_window {
 	text-align: left;
-	border: 1px solid rgba(0,0,0,0.2);
+	border:1px solid $basecolor;
 	background:#fff;
 	.b_window_header_wrapper {
 		padding:2px 8px 0px 8px;
@@ -141,49 +143,55 @@ div.b_msg_error_winicon { background: url(../openolat/images/icon_error_32.png) 
 	}
 }
 
+
 /* OPEN / CLOSE BOX TOGGLER */
 a.b_togglebox_closed {background: url(../openolat/images/toggle-small-expand.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
 a.b_togglebox_opened {background: url(../openolat/images/toggle-small.png) no-repeat 0 50%; padding: 1px 0 1px 14px; vertical-align: middle;}
 div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAAA; background: #fff; }
 	
-
 /** ----------------- WIZARD ----------------- **/
 	div.b_wizard {
-		div.b_wizard_header_wrapper { background:#fff; }
-		div.b_wizard_header {background:#fff; position: relative; }
+		@include o-gradient2($basecolor_light,$basecolor_ultra_light);
+		$col_outerwizard: transparent;
+	
+		border:1px solid $basecolor;
+		div.b_wizard_header_wrapper { background: $col_outerwizard; }
+		div.b_wizard_header {background: $col_outerwizard; position: relative; }
 	 	div.b_wizard_header_title {
-	 		background: #fff; min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px; color: #4F576A;
+	 		background: $col_outerwizard;
+	 		min-height: 18px; line-height: 18px; vertical-align: middle; padding: 2px 5px 2px 5px; 
 	 		a.b_link_close { top:4px; right: 4px; background: url(../openolat/images/close.png); background-repeat: no-repeat; } 
 	 		strong { font-weight: bold; }	
 	 	}
 	 	
-	 	div.b_wizard_steps_wrapper {clear:both; width:auto; padding: 0 4px 0 4px; background: #fff;}
-	 	div.b_wizard_steps_content { background: #fff  }
+	 	
+	 	div.b_wizard_steps_wrapper {clear:both; width:auto; padding: 0 4px 0 4px; background: $col_outerwizard;}
+	 	div.b_wizard_steps_content { background: #fff ; border: 1px solid $basegray;}
 	 	
 	 	div.b_wizard_steps_list {
 	 		width: 20em; 
 	 		padding: 0; 
-	 		color: #4F576A;
+	 		color: $basegray;
 	 		
-	 		ol { list-style-type: decimal; z-index: 14; font-size: 95%; padding: 1em 5px 5px;}
-	 		li { line-height: 1.5em; white-space: normal;}
-	 		li.b_wizard_steps_current { font-weight: bold; }	
-	 		li a { color: #4F576A;}	
+	 		ol { list-style-type: decimal; z-index: 14; font-size: 100%; padding: 2em 5px 5px;}
+	 		li { line-height: 1.5em; white-space: normal;margin-bottom:1em; list-style: none; padding-left:18px;}
+	 		li.b_wizard_steps_current { font-weight: bold; background: url(../openolat/images/bullet_go.png) 0% 50% no-repeat;padding-left:18px; }	
+	 		li a { color: $basegray;}	
 	 		li a:hover { color: #4F576A; background: transparent; text-decoration: underline}
-	 		li .b_disabled { color: #4F576A; border: 0; background: transparent; padding:0; margin:0; white-space: normal; font-style: italic;}
-	 		li.b_wizard_steps_current .b_disabled { font-style: normal; }		
+	 		li .b_disabled { color: #basegray_light; border: 0; background: transparent; padding:0; margin:0; white-space: normal; font-style: italic;}
+	 		li.b_wizard_steps_current .b_disabled { color: $basegray;font-style: normal; }		
 	 	}
 	 	
-	 	div.b_wizard_steps_current { margin-left:20em; border-left:1px solid #777;} 
-	 	div.b_wizard_steps_current_inner { border-bottom: 1px solid #fff;  padding: 1em;  }		
+	 	div.b_wizard_steps_current { margin-left:20em; padding-top:0.5em;padding-bottom:0.5em;} 
+	 	div.b_wizard_steps_current_inner { padding: 1em; border-left: 1px solid #ccc; }		
 	 	div.b_wizard_steps_current_content {min-height: 300px; position: relative; }		
 	 	
-	 	div.b_wizard_footer_wrapper { background:#fff;}
+	 	div.b_wizard_footer_wrapper { background:$col_outerwizard}
 	 	div.b_wizard_footer div.b_button_group { text-align: left; padding: 0.5em 1em 0.5em 21em; margin: 0; }	
 	 }
 
-	span.b_wizard_button_prev:before, a.b_wizard_button_prev span:before { content: "< ";}
-	span.b_wizard_button_next:after, a.b_wizard_button_next span:after { content: " >";}
+	span.b_wizard_button_prev:before, a.b_wizard_button_prev span:before { content: "\00ab \00a0";}
+	span.b_wizard_button_next:after, a.b_wizard_button_next span:after { content: " \00bb";}
 	a.b_wizard_button_finish, span.b_wizard_button_finish {margin-left: 3em;}
 	a.b_wizard_button_cancel, span.b_wizard_button_cancel { margin-left: 3em; }
 	.b_wizard_table_changedcell { font-style: italic; font-weight: bold; background: url(../openolat/images/new-text.png) no-repeat; padding-left: 18px;}

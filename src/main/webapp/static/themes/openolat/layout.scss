@@ -7,13 +7,12 @@
 @import url(../../yaml/core/slim_base.css);
 
 /* --------------- */
-@import "mixins";
 @import "definitions";
+@import "mixins";
 
 
 /* --------------- */
 @import "basemod";
-@import "dd";
 @import "icons";
 @import "content";
 
@@ -24,8 +23,9 @@
 /* ------- mobile -------- */
 @import "m_basemod";
 
-
 /* -------- modules -------- */
+@import "dd";
+@import "accesscontrol";
 @import "dialogs";
 @import "portlets_boxes";
 @import "tabpane";
@@ -40,3 +40,5 @@
 @import "qti";
 @import "translationtool";
 @import "course";
+@import "misc";
+@import "feedandblog";
