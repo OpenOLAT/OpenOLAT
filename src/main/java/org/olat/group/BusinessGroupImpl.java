@@ -285,23 +285,20 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * Compares the keys.
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
-		try {
-			BusinessGroupImpl that = (BusinessGroupImpl)obj;
-			if(this.getKey().equals(that.getKey())) {
-				return true;
-			}
-		} catch (Exception ex) {	
-      //nothing to do
+		if(this == obj) {
+			return true;
+		} else if (obj instanceof BusinessGroup) {
+			BusinessGroup bg = (BusinessGroup)obj;
+			return getKey() != null && getKey().equals(bg.getKey());
 		}
 		return false;
 	}
 	
+	@Override
 	public int hashCode() {
-		if(this.getKey()!=null) {
-			return getKey().intValue();
-		}
-		return 0;
+		return getKey() == null ? 2901 : getKey().hashCode();
 	}
 
 	/**

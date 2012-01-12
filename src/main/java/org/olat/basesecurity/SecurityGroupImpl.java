@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.logging.AssertException;
 
 /**
+ * The object is immutable
  * @author Felix Jost
  */
 public class SecurityGroupImpl extends PersistentObject implements SecurityGroup {
@@ -54,5 +55,21 @@ public class SecurityGroupImpl extends PersistentObject implements SecurityGroup
 		if (key == null) throw new AssertException("not persisted yet");
 		return key;
 	}
-
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 29851 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof SecurityGroup) {
+			SecurityGroup sec = (SecurityGroup)obj;
+			return getKey() != null && getKey().equals(sec.getKey());
+		}
+		return false;
+	}
 }

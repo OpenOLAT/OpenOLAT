@@ -45,6 +45,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
@@ -336,15 +338,19 @@ public class GroupDeletionManager extends BasicManager {
 	}
 
 
-	public void setLastUsageNowFor(BusinessGroup group) {
-		group = (BusinessGroup) DBFactory.getInstance().loadObject(group, true);
-		group.setLastUsage(new Date());
-		LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(group);
-		if (lcManager.lookupLifeCycleEntry(SEND_DELETE_EMAIL_ACTION) != null) {
-			logAudit("Group-Deletion: Remove from delete-list group=" + group);
-			LifeCycleManager.createInstanceFor(group).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
-		}
-		BusinessGroupManagerImpl.getInstance().updateBusinessGroup(group);		
+	public void setLastUsageNowFor(final BusinessGroup group) {
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
+			public BusinessGroup execute() {
+				BusinessGroup bg =  (BusinessGroup) DBFactory.getInstance().loadObject(group, true);
+				bg.setLastUsage(new Date());
+				LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(bg);
+				if (lcManager.lookupLifeCycleEntry(SEND_DELETE_EMAIL_ACTION) != null) {
+					logAudit("Group-Deletion: Remove from delete-list group=" + bg);
+					LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
+				}
+				BusinessGroupManagerImpl.getInstance().updateBusinessGroup(bg);	
+				return bg;
+			}
+		});
 	}
-
 }

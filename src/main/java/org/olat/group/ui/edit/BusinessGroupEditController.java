@@ -67,6 +67,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -84,7 +85,6 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
 import org.olat.group.delete.service.GroupDeletionManager;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
@@ -126,10 +126,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private BGRightManager rightManager;
 	private RightsToGroupDataModel rightDataModel;
 	private Choice areasChoice, rightsChoice;
-	private List allAreas, selectedAreas;
-	private List selectedRights;
+	private List<BGArea> selectedAreas;
+	private List<String> selectedRights;
 	private BGRights bgRights;
-	private BGContext bgContext;
 	private TabbedPane tabbedPane;
 	private VelocityContainer vc_edit;
 	private VelocityContainer vc_tab_bgDetails;
@@ -157,14 +156,14 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 *          controller does no type specific stuff implicit just by looking at
 	 *          the group type. Type specifig features must be flagged.
 	 */
-	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, BusinessGroup currBusinessGroup,
+	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
 			BGConfigFlags configurationFlags) {
 		super(ureq, wControl);
 		
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the bg editor to be of type 'admin'
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
-		addLoggingResourceable(LoggingResourceable.wrap(currBusinessGroup));
+		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		
 		// Initialize managers
 		this.areaManager = BGAreaManagerImpl.getInstance();
@@ -172,14 +171,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		this.bgm = BusinessGroupManagerImpl.getInstance();
 		// Initialize other members
 
-		this.currBusinessGroup = bgm.loadBusinessGroup(currBusinessGroup); // reload
 		// group
 		this.flags = configurationFlags;
-		this.bgContext = currBusinessGroup.getGroupContext();
 		// Initialize translator:
 		// package translator with default group fallback translators and type
 		// translator
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, currBusinessGroup.getType(), ureq.getLocale()));
+		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, businessGroup.getType(), ureq.getLocale()));
 		// Initialize available rights
 		if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
 			// for now only course rights are relevant
@@ -189,15 +186,18 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		}
 		// try to acquire edit lock on business group
 		String locksubkey = "groupEdit";
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(currBusinessGroup, ureq.getIdentity(), locksubkey);
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(businessGroup, ureq.getIdentity(), locksubkey);
 		if (lockEntry.isSuccess()) {
 			// reload group to minimize stale object exception and update last usage
 			// timestamp
-			currBusinessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(currBusinessGroup);
-			currBusinessGroup.setLastUsage(new Date(System.currentTimeMillis()));
-			LifeCycleManager.createInstanceFor(currBusinessGroup).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
-			BusinessGroupManagerImpl.getInstance().updateBusinessGroup(currBusinessGroup);
-
+			currBusinessGroup = BusinessGroupManagerImpl.getInstance().setLastUsageFor(businessGroup);
+			if(currBusinessGroup == null) {
+				VelocityContainer vc = createVelocityContainer("deleted");
+				vc.contextPut("name", businessGroup.getName());
+				putInitialPanel(vc);
+				return;
+			}
+			
 			// add as listener to BusinessGroup so we are being notified about
 			// changes.
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), currBusinessGroup);
@@ -419,33 +419,39 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 * persist the updates
 	 */
 	private void updateBusinessGroup() {
-		// refresh group to prevent stale object exception and context proxy issues
-		this.currBusinessGroup = this.bgm.loadBusinessGroup(this.currBusinessGroup);
-		String bgName = this.modifyBusinessGroupController.getGroupName();
-		String bgDesc = this.modifyBusinessGroupController.getGroupDescription();
-		Integer bgMax = this.modifyBusinessGroupController.getGroupMax();
-		Integer bgMin = this.modifyBusinessGroupController.getGroupMin();
-		Boolean waitingListEnabled = this.modifyBusinessGroupController.isWaitingListEnabled();
-		Boolean autoCloseRanksEnabled = this.modifyBusinessGroupController.isAutoCloseRanksEnabled();
+		final BusinessGroup  businessGroup = currBusinessGroup;
+		currBusinessGroup = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(businessGroup, new SyncerCallback<BusinessGroup>() {
+			public BusinessGroup execute() {
+				// refresh group to prevent stale object exception and context proxy issues
+				BusinessGroup bg = bgm.loadBusinessGroup(businessGroup);
+				String bgName = modifyBusinessGroupController.getGroupName();
+				String bgDesc = modifyBusinessGroupController.getGroupDescription();
+				Integer bgMax = modifyBusinessGroupController.getGroupMax();
+				Integer bgMin = modifyBusinessGroupController.getGroupMin();
+				Boolean waitingListEnabled = modifyBusinessGroupController.isWaitingListEnabled();
+				Boolean autoCloseRanksEnabled = modifyBusinessGroupController.isAutoCloseRanksEnabled();
 		
-		this.currBusinessGroup.setName(bgName);
-		this.currBusinessGroup.setDescription(bgDesc);
-		this.currBusinessGroup.setMaxParticipants(bgMax);
-		this.currBusinessGroup.setMinParticipants(bgMin);
-		this.currBusinessGroup.setWaitingListEnabled(waitingListEnabled);
-		if (waitingListEnabled.booleanValue() && (this.currBusinessGroup.getWaitingGroup() == null) ) {
-			// Waitinglist is enabled but not created => Create waitingGroup
-			BaseSecurity securityManager = BaseSecurityManager.getInstance();
-			SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
-			currBusinessGroup.setWaitingGroup(waitingGroup);
-		}
-		currBusinessGroup.setAutoCloseRanksEnabled(autoCloseRanksEnabled);
-		currBusinessGroup.setLastUsage(new Date(System.currentTimeMillis()));
-		LifeCycleManager.createInstanceFor(currBusinessGroup).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
-		// switch on/off waiting-list in member tab
-		vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
-		
-		bgm.updateBusinessGroup(currBusinessGroup);
+				bg.setName(bgName);
+				bg.setDescription(bgDesc);
+				bg.setMaxParticipants(bgMax);
+				bg.setMinParticipants(bgMin);
+				bg.setWaitingListEnabled(waitingListEnabled);
+				if (waitingListEnabled.booleanValue() && (bg.getWaitingGroup() == null) ) {
+					// Waitinglist is enabled but not created => Create waitingGroup
+					BaseSecurity securityManager = BaseSecurityManager.getInstance();
+					SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
+					bg.setWaitingGroup(waitingGroup);
+				}
+				bg.setAutoCloseRanksEnabled(autoCloseRanksEnabled);
+				bg.setLastUsage(new Date(System.currentTimeMillis()));
+				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
+				// switch on/off waiting-list in member tab
+				vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
+				
+				bgm.updateBusinessGroup(bg);
+				return bg;
+			}
+		});
 	}
 
 	/**
@@ -527,14 +533,14 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private VelocityContainer createTabAreas() {
 		VelocityContainer tmp = createVelocityContainer("tab_bgAreas");
-		this.allAreas = areaManager.findBGAreasOfBGContext(this.bgContext);
-		this.selectedAreas = areaManager.findBGAreasOfBusinessGroup(this.currBusinessGroup);
-		this.areaDataModel = new AreasToGroupDataModel(this.allAreas, this.selectedAreas);
+		List allAreas = areaManager.findBGAreasOfBGContext(currBusinessGroup.getGroupContext());
+		selectedAreas = areaManager.findBGAreasOfBusinessGroup(currBusinessGroup);
+		areaDataModel = new AreasToGroupDataModel(allAreas, selectedAreas);
 
 		areasChoice = new Choice("areasChoice", getTranslator());
 		areasChoice.setSubmitKey("submit");
 		areasChoice.setCancelKey("cancel");
-		areasChoice.setTableDataModel(this.areaDataModel);
+		areasChoice.setTableDataModel(areaDataModel);
 		areasChoice.addListener(this);
 		tmp.put("areasChoice", areasChoice);
 		tmp.contextPut("noAreasFound", (allAreas.size() > 0 ? Boolean.FALSE : Boolean.TRUE));
@@ -694,9 +700,11 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, this.currBusinessGroup);
-		//release lock on dispose
-		releaseBusinessGroupEditLock();
+		if(currBusinessGroup != null) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, currBusinessGroup);
+			//release lock on dispose
+			releaseBusinessGroupEditLock();
+		}
 	}
 
 	private void releaseBusinessGroupEditLock() {

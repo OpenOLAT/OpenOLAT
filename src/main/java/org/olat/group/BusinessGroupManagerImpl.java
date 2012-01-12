@@ -40,6 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
@@ -558,6 +559,10 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			Tracing.logAudit("Deleted Business Group", businessGroupTodelete.toString(), this.getClass());
 		} catch(DBRuntimeException dbre) {
 			Throwable th = dbre.getCause();
+			if ((th instanceof ObjectNotFoundException) && th.getMessage().contains("org.olat.group.BusinessGroupImpl")) {
+				//group already deleted
+				return;
+			}
 			if ((th instanceof StaleObjectStateException) &&
 					(th.getMessage().startsWith("Row was updated or deleted by another transaction"))) {
 				// known issue OLAT-3654
@@ -1734,18 +1739,27 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * @see org.olat.group.BusinessGroupManager#setLastUsageFor(org.olat.group.BusinessGroup)
 	 */
-	public void setLastUsageFor(final BusinessGroup currBusinessGroup) {
+	public BusinessGroup setLastUsageFor(final BusinessGroup currBusinessGroup) {
 		//o_clusterOK by:cg
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor(){
-			public void execute() {
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerCallback<BusinessGroup>() {
+			public BusinessGroup execute() {
 				// force a reload from db loadObject(..., true) by evicting it from
 				// hibernates session
 				// cache to catch up on a different thread having commited the update of
 				// the launchcounter
-				BusinessGroup reloadedBusinessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(currBusinessGroup);
-				reloadedBusinessGroup.setLastUsage(new Date());
-				LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
-				BusinessGroupManagerImpl.getInstance().updateBusinessGroup(reloadedBusinessGroup);
+				try {
+					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(currBusinessGroup);
+					reloadedBusinessGroup.setLastUsage(new Date());
+					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
+					updateBusinessGroup(reloadedBusinessGroup);
+					return reloadedBusinessGroup;
+				} catch(DBRuntimeException e) {
+					if(e.getCause() instanceof ObjectNotFoundException) {
+						//group deleted
+						return null;
+					}
+					throw e;
+				}
 			}
 		});
 	}

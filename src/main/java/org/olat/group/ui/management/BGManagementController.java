@@ -41,6 +41,7 @@ import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.jumpin.JumpInManager;
+import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -96,7 +97,6 @@ import org.olat.group.ui.BusinessGroupTableModel;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.group.ui.area.BGAreaEditController;
-import org.olat.group.ui.area.BGAreaFormController;
 import org.olat.group.ui.area.BGAreaTableModel;
 import org.olat.group.ui.context.BGContextEditController;
 import org.olat.group.ui.context.BGContextEvent;
@@ -108,6 +108,7 @@ import org.olat.group.ui.wizard.BGCopyWizardController;
 import org.olat.group.ui.wizard.BGMultipleCopyWizardController;
 import org.olat.group.ui.wizard.MemberListWizardController;
 import org.olat.modules.co.ContactFormController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManagerImpl;
@@ -157,7 +158,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private static final String CMD_LIST_MEMBERS_WITH_GROUPS = "cmd.list.members.with.groups";
 	private static final String CMD_LIST_MEMBERS_WITH_AREAS = "cmd.list.members.with.areas";
 
-	private Translator areaTrans, userTrans;
+	private Translator userTrans;
 	private BGContext bgContext;
 	private String groupType;
 	private BGConfigFlags flags;
@@ -207,7 +208,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private BGAreaManager areaManager;
 
 	// Workflow variables
-	private List areaFilters;
+	private List<ShortName> areaFilters;
 	private BGArea currentAreaFilter;
 	private Component backComponent, currentComponent;
 	private BusinessGroup currentGroup;
@@ -245,11 +246,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// 1 - package translator with default group fallback translators and type
 		// translator
 		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, this.groupType, ureq.getLocale()));
-		// 2 - area specific translator
-		if (flags.isEnabled(BGConfigFlags.AREAS)) {
-			//areaTrans = new PackageTranslator(Util.getPackageName(BGAreaForm.class), ureq.getLocale(), trans);
-			areaTrans = Util.createPackageTranslator(BGAreaFormController.class, ureq.getLocale(), getTranslator());
-		}
 		// user translator
 		this.userTrans = Util.createPackageTranslator(UserManager.class, ureq.getLocale());
 
@@ -538,7 +534,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 		} else if (source == confirmDeleteGroup) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				releaseAdminLockAndGroupMUE();
-				String deletedGroupName = this.currentGroup.getName();
 				LoggingResourceable lri = LoggingResourceable.wrap(currentGroup);
 				doGroupDelete();
 				doGroupList(ureq, false);
@@ -550,7 +545,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 			// TODO event: changed area: update models
 		} else if (source == confirmDeleteArea) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
-				String deletedAreaName = this.currentArea.getName();
 				LoggingResourceable lri = LoggingResourceable.wrap(currentArea);
 				doAreaDelete();
 				doAreaList(ureq, false);
@@ -886,7 +880,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private void doAddOtherResourcesList(UserRequest ureq) {
-		List repoTableModelEntries = contextManager.findRepositoryEntriesForBGContext(this.bgContext);
+		List<RepositoryEntry> repoTableModelEntries = contextManager.findRepositoryEntriesForBGContext(this.bgContext);
 		if (repoTableModelEntries.size() > 1) {
 			Translator resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, ureq.getLocale(), getTranslator()); 
 			

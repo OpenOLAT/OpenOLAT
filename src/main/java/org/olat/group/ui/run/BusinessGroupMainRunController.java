@@ -173,14 +173,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private Panel mainPanel;
 	private VelocityContainer main, vc_sendToChooserForm, resourcesVC;
-	private Identity identity;
 	private PackageTranslator resourceTrans;
 
 	private BusinessGroup businessGroup;
 
 	private MenuTree bgTree;
 	private LayoutMain3ColsController columnLayoutCtr;
-	private Panel all;
 
 	private Controller collabToolCtr;
 	private Controller chatCtr;
@@ -203,7 +201,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private BusinessGroupPropertyManager bgpm;
 	private UserSession userSession;
 	private String adminNodeId; // reference to admin menu item
-	private String acNodeId;//fxdiff VCRP-1,2: access control of resources
 
 	// not null indicates tool is enabled
 	private GenericTreeNode nodeFolder;
@@ -231,30 +228,44 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * @param flags
 	 * @param initialViewIdentifier supported are null, "toolforum", "toolfolder"
 	 */
-	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup currBusinessGroup, BGConfigFlags flags,
+	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup, BGConfigFlags flags,
 			String initialViewIdentifier) {
 		super(ureq, control);
-		addLoggingResourceable(LoggingResourceable.wrap(currBusinessGroup));
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
-		this.bgpm = new BusinessGroupPropertyManager(currBusinessGroup);
 		this.flags = flags;
-		this.businessGroup = currBusinessGroup;
-		this.identity = ureq.getIdentity();
+		/*
+		 * lastUsage, update lastUsage if group is run if you can acquire the lock
+		 * on the group for a very short time. If this is not possible, then the
+		 * lastUsage is already up to date within one-day-precision.
+		 */
+		businessGroup = BusinessGroupManagerImpl.getInstance().setLastUsageFor(bGroup);
+		if(businessGroup == null) {
+			VelocityContainer vc = createVelocityContainer("deleted");
+			vc.contextPut("name", bGroup.getName());
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
+			listenTo(columnLayoutCtr); // cleanup on dispose
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			return;
+		}
+
+		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
+		bgpm = new BusinessGroupPropertyManager(businessGroup);
+	
 		this.userSession = ureq.getUserSession();
 		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS, businessGroup);
+		boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(getIdentity(), Constants.PERMISSION_ACCESS, businessGroup);
 		this.isAdmin = isOwner || flags.isEnabled(BGConfigFlags.IS_GM_ADMIN);
 
 		// Initialize translator:
 		// package translator with default group fallback translators and type
 		// translator
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, currBusinessGroup.getType(), ureq.getLocale()));
+		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, businessGroup.getType(), ureq.getLocale()));
 		this.resourceTrans = new PackageTranslator(Util.getPackageName(RepositoryTableModel.class), ureq.getLocale(), getTranslator());
 
 		// main component layed out in panel
 		main = createVelocityContainer("bgrun");
-		exposeGroupDetailsToVC(currBusinessGroup);
+		exposeGroupDetailsToVC(businessGroup);
 
 		mainPanel = new Panel("p_buddygroupRun");
 		mainPanel.setContent(main);
@@ -268,16 +279,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		
 		//
-		all = putInitialPanel(columnLayoutCtr.getInitialComponent());
+		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		// register for AssessmentEvents triggered by this user			
 		userSession.getSingleUserEventCenter().registerFor(this, userSession.getIdentity(), assessmentEventOres);
-		/*
-		 * lastUsage, update lastUsage if group is run if you can acquire the lock
-		 * on the group for a very short time. If this is not possible, then the
-		 * lastUsage is already up to date within one-day-precision.
-		 */
-		
-		BusinessGroupManagerImpl.getInstance().setLastUsageFor(currBusinessGroup);
 		
 		//disposed message controller
 		//must be created beforehand
@@ -288,7 +292,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		setDisposedMsgController(disposedController);
 
 		// add as listener to BusinessGroup so we are being notified about changes.
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), currBusinessGroup);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), businessGroup);
 
 		// show disabled message when collaboration is disabled (e.g. in a test)		
 		if(AssessmentEvent.isAssessmentStarted(ureq.getUserSession())){
@@ -299,10 +303,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		//check managed
 		//fxdiff VCRP-1,2: access control of resources
 		ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
-		AccessResult acResult = acFrontendManager.isAccessible(currBusinessGroup, getIdentity(), false);
+		AccessResult acResult = acFrontendManager.isAccessible(businessGroup, getIdentity(), false);
 		if(acResult.isAccessible()) {
 			//ok
-		}  else if (currBusinessGroup != null && acResult.getAvailableMethods().size() > 0) {
+		}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
 			accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
 			listenTo(accessController);
 			mainPanel.setContent(accessController.getInitialComponent());
@@ -987,7 +991,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 					// Activate edit menu item
 					bgTree.setSelectedNodeId(ACTIVITY_MENUSELECT_ADMINISTRATION);
 				}
-			} else if (bgmfe.wasMyselfRemoved(identity)) {
+			} else if (bgmfe.wasMyselfRemoved(getIdentity())) {
 				//nothing more here!! The message will be created and displayed upon disposing
 				dispose();//disposed message controller will be set
 			}
@@ -1188,7 +1192,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 					gtnChild.setAltText(translate("menutree.ac.alt"));
 					gtnChild.setIconCssClass("b_order_icon");
 					root.addChild(gtnChild);
-					acNodeId = gtnChild.getIdent();
+					//acNodeId = gtnChild.getIdent();
 				}
 			}
 		}

@@ -488,7 +488,7 @@ public interface BusinessGroupManager {
 	 * Set certain business-group as active (set last-usage and delete time stamp for 'SEND_DELETE_EMAIL_ACTION' in LifeCycleManager):
 	 * @param currBusinessGroup
 	 */
-	public void setLastUsageFor(BusinessGroup currBusinessGroup);
+	public BusinessGroup setLastUsageFor(BusinessGroup currBusinessGroup);
 
 	/**
 	 * Creates business-groups with certain name when no group in a given BGContext with this names already exists.
