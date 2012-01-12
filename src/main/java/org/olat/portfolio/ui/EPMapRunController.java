@@ -170,20 +170,7 @@ public class EPMapRunController extends BasicController implements Activateable 
 	@Override
 	public void activate(UserRequest ureq, String viewIdentifier) {
 		if(!StringHelper.containsNonWhitespace(viewIdentifier)) return;
-		
-		int index = viewIdentifier.indexOf("[map:");
-		if(index >= 0) {
-			multiMapCtrl.activate(ureq, viewIdentifier);
-		} else {
-			try {
-				Long.parseLong(viewIdentifier);
-			} catch (Exception e) {
-				logError("could not convert viewIdentifier to mapID", e);
-			} finally {
-				multiMapCtrl.activate(ureq, viewIdentifier);
-			}
-		}
-
+		multiMapCtrl.activate(ureq, viewIdentifier);
 	}
 
 	@SuppressWarnings("unused")

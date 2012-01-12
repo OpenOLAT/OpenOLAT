@@ -401,8 +401,17 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 				naviKey = viewIdentifier.substring(0,viewIdentifier.indexOf(':'));
 			}
 			ae = ExtManager.getInstance().getActionExtensioByNavigationKey(naviKey);
+			if(ae == null){
+				// this happens, if someone uses a navigation key, that no actionExtension uses...
+				logWarn("couldn't find an ActionExtension for  navigationKey '"+naviKey+"' . I suggest adjusting spring configuration for GenericMainController.." , null);
+			}
 		}
 
+		if(ae == null){
+			// no action extension to activate...
+			return;
+		}
+			
 		try {
 			if (olatMenuTree.getTreeModel() instanceof GenericTreeModel) {
 				activateTreeNodeByActionExtension(ureq, ae);

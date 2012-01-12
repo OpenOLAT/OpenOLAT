@@ -233,6 +233,7 @@
 	<!--  the "my maps" menu -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="home.menupoint.ep.maps" init-method="initExtensionPoints" >
 		<property name="order" value="302" />
+		<property name="navigationKey" value="EPMap" />
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -254,6 +255,7 @@
 	<!--  the "my portfolioaufgaben" menu -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="home.menupoint.ep.structuredmaps" init-method="initExtensionPoints" >
 		<property name="order" value="303" />
+		<property name="navigationKey" value="EPStructuredMap" />
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -281,6 +283,7 @@
 				<property name="factoryMethod" value="createPortfolioMapsFromOthersController"/>
 			</bean>
 		</property>
+		<property name="navigationKey" value="EPSharedMap" />
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
 		<property name="translationPackage" value="org.olat.portfolio.ui" />
 		<property name="i18nActionKey" value="othermaps.menu.title"/>

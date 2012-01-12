@@ -353,24 +353,53 @@ public class EPMultipleMapController extends BasicController implements Activate
 
 	@Override
 	public void activate(UserRequest ureq, String viewIdentifier) {
-		int index = viewIdentifier.indexOf("[map:");
+		
+		// fix OO-37 by supporting different "syntax" of given viewIdentifier
+		// still check for the "old" [map:12345] syntax
+		int index = -1;
 		Long key = null;
-		boolean idIsKey = true;
+		boolean viewIdisNumerical = true;
+		
 		try {
 			key = Long.parseLong(viewIdentifier);
 		} catch (Exception e) {
-			idIsKey = false;
+			viewIdisNumerical = false;
 		} 
 		
-		if(index >= 0 && !idIsKey) {
-			int lastIndex = viewIdentifier.indexOf("]", index);
-			if(lastIndex < viewIdentifier.length()) {
-				String keyStr = viewIdentifier.substring(index + 5, lastIndex);
+		// viewIdentifier is not numerical, check for old and new "syntax"
+		if (!viewIdisNumerical) {
+			String keyStr = "a";
+
+			if (viewIdentifier.contains("[map:")) {
+				// old BusinessPath
+				index = viewIdentifier.indexOf("[map:");
+				int lastIndex = viewIdentifier.indexOf("]", index);
+				if (lastIndex < viewIdentifier.length()) {
+					keyStr = viewIdentifier.substring(index + 5, lastIndex);
+				}
+			} else if (viewIdentifier.contains("EPStructuredMap:")) {
+				// new genericMainController activation with navigation key
+				index = viewIdentifier.indexOf("EPStructuredMap:");
+				keyStr = viewIdentifier.substring(index + 16);
+			} else if (viewIdentifier.contains("GMCMenuTree:")) {
+				// new genericMainController activation
+				index = viewIdentifier.indexOf("GMCMenuTree:");
+				keyStr = viewIdentifier.substring(index + 12);
+			}
+
+			try {
 				key = Long.parseLong(keyStr);
+			} catch (Exception e) {
+				logError("could not parse eportfolio mapId from viewIdentifier: " + viewIdentifier, null);
 			}
 		}
+		
+		// still no key, return
+		if(key == null) return;
+		
+		// we have a key, find the corresponding map
 		for(PortfolioStructureMap map: userMaps) {
-			if(map.getKey().equals(key) || (idIsKey && map.getResourceableId().equals(key))) {
+			if(map.getKey().equals(key) || (map.getResourceableId().equals(key))) {
 				activateMap(ureq, map);
 				fireEvent(ureq, new EPMapEvent(EPStructureEvent.SELECT, map));
 				break;
