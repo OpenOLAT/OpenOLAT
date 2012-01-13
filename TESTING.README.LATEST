@@ -54,8 +54,11 @@ junit and integration tests in OpenOLAT 8
 
 * Execute jUnit integration tests
 -----------------------------------------
-- junit integration tests with MySQL that load the framework to execute (execution time ca. 10-15m)
-	mvn clean test -Dwith-mysql
+- junit integration tests that load the framework to execute (execution time ca. 10-15m)
+  - MySQL
+	  mvn clean test -Dwith-mysql
+  - PostgreSQL
+	  mvn clean test -Dwith-postgresql
 
 - The junit testresults can be found at target/surefire-reports/*
   Double click the xml files in Eclipse to display the results in the standards jUnit console

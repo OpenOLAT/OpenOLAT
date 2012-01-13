@@ -236,111 +236,9 @@
 	</bean>
 
 
-<!--  HSQLDB:
-
+<!--
       mysql  :  select businesspath,date(creationdate) day, count(*) cnt from o_loggingtable group by businesspath,day
-      hsqldb :  select businesspath,convert(creationdate,date) d,count(*) cnt from o_loggingtable group by businesspath,d
-      
  -->
-	<bean id="statisticUpdateConfig_hsqldb" class="org.olat.course.statistic.StatisticUpdateConfig">
-		<property name="updaters">
-			<list>
-				<bean class="org.olat.course.statistic.StatisticUpdater" >
-					<property name="loggingName" value="DailyStatisticUpdater"/>
-					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
-					<property name="updateSQL">
-						<list>
-							<value>
-								delete from o_stat_daily;
-							</value>
-							<value>
-								insert into o_stat_daily 
-									(businesspath,resid,day,value)  
-									(select businesspath, 
-										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
-										convert(creationdate,date) d,
-										count(*)  c 
-									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != ''  group by businesspath, d);
-							</value>
-						</list>
-					</property>
-					
-					<property name="deleteSQL" value="delete from o_stat_daily;"/>
-					
-				</bean>
-			
-				<bean class="org.olat.course.statistic.StatisticUpdater" >
-					<property name="loggingName" value="WeeklyStatisticUpdater"/>
-					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
-					<property name="updateSQL">
-						<list>
-							<!--  NOTE: week(date) seems broken in hsqldb currently - using an approximation instead:
-										select (dayofyear(now())-dayofweek(now()))/7 from o_loggingtable;  -->
-							<value>
-								delete from o_stat_weekly;
-							</value>
-							<value>
-								insert into o_stat_weekly
-									(businesspath,resid,week,value)  
-									(select businesspath, 
-										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
-										year(creationdate)+ '-'+repeat('0',2-length(convert((dayofyear(creationdate)-dayofweek(creationdate))/7,varchar(7))))+convert((dayofyear(creationdate)-dayofweek(creationdate))/7,varchar(7)) d,
-										count(*)  c 
-									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != '' group by businesspath, d);
-							</value>
-						</list>
-					</property>
-					<property name="deleteSQL" value="delete from o_stat_weekly;"/>
-				</bean>
-			
-				<bean class="org.olat.course.statistic.StatisticUpdater" >
-					<property name="loggingName" value="DayOfWeekStatisticUpdater"/>
-					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
-					<property name="updateSQL">
-						<list>
-							<value>
-								delete from o_stat_dayofweek;
-							</value>
-							<value>
-								insert into o_stat_dayofweek
-									(businesspath,resid,day,value)  
-									(select businesspath, 
-										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
-										dayofweek(creationdate) d,
-										count(*)  c 
-									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != ''  group by businesspath, d);							
-							</value>
-						</list>
-					</property>
-					<property name="deleteSQL" value="delete from o_stat_dayofweek;"/>
-				</bean>
-			
-				<bean class="org.olat.course.statistic.StatisticUpdater" >
-					<property name="loggingName" value="HourOfDayStatisticUpdater"/>
-					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
-					<property name="updateSQL">
-						<list>
-							<value>
-								delete from o_stat_hourofday;
-							</value>
-							<value>
-								insert into o_stat_hourofday
-									(businesspath,resid,hour,value)  
-									(select businesspath, 
-										convert(substr(businesspath, locate(':', businesspath) + 1, locate(']', businesspath) - locate(':', businesspath) - 1), int), 
-										hour(creationdate) d,
-										count(*)  c 
-									from o_loggingtable where actionverb='launch' and actionobject='node' and businesspath != ''  group by businesspath, d);
-							</value>
-						</list>
-					</property>
-					<property name="deleteSQL" value="delete from o_stat_hourofday;"/>
-				</bean>
-			
-			</list>
-		</property>
-	</bean>
-	
 	<bean id="statisticUpdateConfig_test" class="org.olat.course.statistic.StatisticUpdateConfig" >
 		<property name="updaters">
 			<list />
@@ -519,7 +417,6 @@
 	<!--  Postgres:
 
       mysql  :  select businesspath,date(creationdate) day, count(*) cnt from o_loggingtable group by businesspath,day
-      hsqldb :  select businesspath,convert(creationdate,date) d,count(*) cnt from o_loggingtable group by businesspath,d
       
  	-->
 	<bean id="statisticUpdateConfig_postgresql" class="org.olat.course.statistic.StatisticUpdateConfig">
@@ -554,8 +451,6 @@
 					<property name="jdbcTemplate" ref="statisticsMysqlJdbcTemplate" />
 					<property name="updateSQL">
 						<list>
-							<!--  NOTE: week(date) seems broken in hsqldb currently - using an approximation instead:
-										select (dayofyear(now())-dayofweek(now()))/7 from o_loggingtable;  -->
 							<value>
 								delete from o_stat_weekly;
 							</value>
@@ -637,9 +532,6 @@
 		</constructor-arg>
 		<constructor-arg>
 			<map>
-				<entry key="hsqldb">
-					<value>select "org.olat.course.statistic.HsqldbUnixTimeConverter.convertTimestampToUnixMillis"(convert(creationdate,varchar(100))) from o_loggingtable limit 1;</value>
-				</entry>
 				<entry key="mysql">
 					<value>select unix_timestamp(creationdate) from o_loggingtable limit 1;</value>
 				</entry>

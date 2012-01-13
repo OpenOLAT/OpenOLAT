@@ -112,7 +112,6 @@ This product uses software based on the Apache Software License like
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
 * antisamy (BSD license.) [https://www.owasp.org/index.php/Category:OWASP_AntiSamy_Project]
-* HSQLDB (HSQLDB License, a BSD open source license) [http://hsqldb.org]
 * XStream (BSD style) [http://xstream.codehaus.org]
 * dom4j (BSD style license) [http://dom4j.sourceforge.net]
 * Mail	(CDDL-1.0, BSD, GPL-2.0, GNU-Classpath) [http://kenai.com/projects/javamail]

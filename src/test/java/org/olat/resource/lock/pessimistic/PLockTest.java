@@ -57,9 +57,6 @@ public class PLockTest extends OlatTestCase {
 	
 	
 	@Test public void testReentrantLock() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-		
 		long start = System.currentTimeMillis();
 		String asset = "p1";
 		// make sure the lock is created first
@@ -89,16 +86,7 @@ public class PLockTest extends OlatTestCase {
 	 *
 	 */
 	@Test public void testReentrantLock2Threads() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-
-		
-		
-		
-		long start = System.currentTimeMillis();
 		final String asset = "p1-2";
-		final int thread1Running = 0;
-		final int thread2Running = 0;
 		
 		// make sure the lock is created first
 		PLock pc = PessimisticLockManager.getInstance().findOrPersistPLock(asset);
@@ -177,9 +165,8 @@ public class PLockTest extends OlatTestCase {
 	}
 
 	@Test public void testLockWaitTimout() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-		assumeTrue(!isPostgresqlConfigured());//no lock timeout on postgres
+		//Ignore Test if DB is PostgreSQL. PostgreSQL has not lock timeout
+		assumeTrue(!isPostgresqlConfigured());
 		
 		System.out.println("testing if holding a lock timeouts");
 		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
@@ -256,11 +243,6 @@ public class PLockTest extends OlatTestCase {
 	}
 	
 	@Test public void testSingleRowLockingSupported() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-
-		
-		
 		System.out.println("testing if one lock only locks the given row and not the complete table (test whether the database supports rowlocking)");
 		// make sure both row entries for the locks are created, otherwise the system-wide locking 
 		// applied on lock-row-creation cannot support row-level-locking by definition. 
@@ -295,11 +277,6 @@ public class PLockTest extends OlatTestCase {
 	}
 	
 	@Test public void testNestedLockingSupported() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-
-		
-		
 		System.out.println("testing if nested locking is supported");
 		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
 		// applied on lock-row-creation cannot support row-level-locking by definition. 
@@ -340,11 +317,6 @@ public class PLockTest extends OlatTestCase {
 	}
 	
 	@Test public void testDeadLockTimeout() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-
-		
-		
 		System.out.println("testing if deadlock detection and handling is supported");
 		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
 		// applied on lock-row-creation cannot support row-level-locking by definition. 
@@ -429,11 +401,6 @@ public class PLockTest extends OlatTestCase {
 	
 	
 	@Test public void testPerf() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-
-		
-		
 		System.out.println("testing what the throughput is for the pessimistic locking");
 		// test what the throughput is for the pessimistic locking.
 		// take 500 threads (created and started with no delay (as fast as the vm can) trying to acquire a plock on 20 different olatresourceables.
@@ -526,12 +493,6 @@ public class PLockTest extends OlatTestCase {
 	}
 	
 	@Test public void testSync() {
-		//Ignore Test if DB is HSQLDB. HSQLDB does not support LockMode.UPGRADE, which is a prerequisite for testing PessimisticLockManager 
-		assumeTrue(!getHsqlDbConfigured());
-
-		
-		
-		
 		System.out.println("testing enrollment");
     //	 ------------------ now check with lock -------------------
 		// create a group

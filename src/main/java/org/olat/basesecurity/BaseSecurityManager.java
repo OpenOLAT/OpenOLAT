@@ -1211,9 +1211,8 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			// append queries for user attributes
 				if (login != null) {
 					login = makeFuzzyQueryString(login);
-					if (login.contains("_") && (dbVendor.equals("hsqldb") || dbVendor.equals("oracle"))) {
-						//hsqldb needs special ESCAPE sequence to search for escaped strings
-						// fxdiff: 
+					if (login.contains("_") && dbVendor.equals("oracle")) {
+						//oracle needs special ESCAPE sequence to search for escaped strings
 						sb.append(" lower(ident.name) like :login ESCAPE '\\'");
 					} else if (dbVendor.equals("mysql")) {
 						sb.append(" ident.name like :login");
@@ -1253,11 +1252,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 							sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
 						} else {
 							sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
-							if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+							if(dbVendor.equals("oracle")) {
 					 	 		sb.append(" escape '\\'");
 					 	 	}
 						}
-						if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+						if(dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
 						}
 						needsOr = true;
@@ -1274,11 +1273,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 						sb.append(" user.properties['").append(key).append("'] like :").append(key).append("_value ");
 					} else {
 						sb.append(" lower(user.properties['").append(key).append("']) like :").append(key).append("_value ");
-						if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+						if(dbVendor.equals("oracle")) {
 				 	 		sb.append(" escape '\\'");
 				 	 	}
 					}
-					if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
 					}
 					needsAnd = true;

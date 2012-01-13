@@ -114,35 +114,6 @@
 	<property name="addMoreProperties" ref="c3p0HibernateProperties" />
 </bean>
 
-<bean id="hsqldbHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
-	<constructor-arg>
-		<props>
-		     <!-- Using datasource of hibernate -->
-			<prop key="hibernate.connection.driver_class">org.hsqldb.jdbc.JDBCDriver</prop>
-	        <prop key="hibernate.connection.url">jdbc:hsqldb:file:${java.io.tmpdir}/olatdata/database/${db.name}</prop>
-	        <prop key="hibernate.connection.username">SA</prop>
-	        <prop key="hibernate.connection.password"></prop>
-	        <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-        </props>            
-	</constructor-arg>
-	<property name="addMoreProperties" ref="commonHibernateProperties" />
-</bean>
-
-<bean id="testHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
-	<constructor-arg>
-		<props>
-		     <!-- Using datasource of hibernate -->
-			<prop key="hibernate.connection.driver_class">org.hsqldb.jdbc.JDBCDriver</prop>
-	        <prop key="hibernate.connection.url">jdbc:hsqldb:mem:${db.name}</prop>
-	        <prop key="hibernate.connection.username">SA</prop>
-	        <prop key="hibernate.connection.password"></prop>
-	        <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-        </props>            
-	</constructor-arg>
-	<property name="addMoreProperties" ref="commonHibernateProperties" />
-</bean>
-
-
 <bean id="postgresqlHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 	<constructor-arg>
 		<props>
@@ -231,30 +202,8 @@
 	</constructor-arg>        
 </bean>
 
-
-
-
 	<!-- The following dataresources are referenced from the statisticContext.xml and upgradeContext.xml, but are not used in the SessionFactory!
 		 The SessionFactory's DB Connection is configured with the bean "${db.vendor}HibernateProperties".-->
-
-
-	<!-- if you do not like the database in java.io.tmpdir you can either overwrite this bean with your own 
-	or set java.io.tmpdir as VM arg like: java -Djava.io.tmpdir=/yourdir -->
-	<bean id="hsqldbDataSource" class="org.olat.core.commons.persistence.HsqldbDriverManagerDataSourceWithShutdownHook" lazy-init="true" destroy-method="destroy">
-	        <property name="driverClassName"><value>org.hsqldb.jdbc.JDBCDriver</value></property>
-	        <property name="url"><value>jdbc:hsqldb:file:${java.io.tmpdir}/olatdata/database/${db.name}</value></property>
-	        <property name="username" value="SA" />
-	        <property name="password" value="" />
-	        <property name="olatClustering" value="${cluster.mode}"/> <!-- when OLAT is started as cluster an exception will be thrown as hsqldb only supports the singlevm setup -->
-	</bean>
-
-	<!-- this datasource is used for unit testing and is in memory only! -->
-	<bean id="testDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" lazy-init="true">
-	        <property name="driverClassName"><value>org.hsqldb.jdbc.JDBCDriver</value></property>
-	        <property name="url"><value>jdbc:hsqldb:mem:${db.name}</value></property>
-	        <property name="username"><value>SA</value></property>
-	        <property name="password"><value></value></property>
-	</bean>
 
 	<!-- The mysql datasource checks upon startup whether the tables are of type InnoDB, if not it will not start. If you have an other type of transactional tables just switch back the spring config
 	to the normal  org.springframework.jdbc.datasource.DriverManagerDataSource and the check is gone.-->                  

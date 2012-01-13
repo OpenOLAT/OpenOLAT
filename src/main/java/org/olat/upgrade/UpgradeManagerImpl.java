@@ -121,7 +121,6 @@ public class UpgradeManagerImpl extends UpgradeManager {
 		//only run upgrades on mysql or postgresql
 		if (dbVendor.contains("mysql")) dialect = "mysql";
 		else if (dbVendor.contains("postgresql")) dialect = "postgresql";
-		else if (dbVendor.contains("hsqldb")) return;
 		else return;
 			
 		Statement statement = null;

@@ -70,9 +70,8 @@
     <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
     <skipTests>true</skipTests>
     <skipITs>true</skipITs>
-    <!-- properties to define the testing environment
-          values: hsql / mysql -->
-    <test.env>hsql</test.env>
+    <!-- properties to define the testing environment -->
+    <test.env>mysql</test.env>
     <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
     <test.env.db.name>olattest</test.env.db.name>
     <test.env.db.user>olat</test.env.db.user>
@@ -170,71 +169,6 @@
 				</plugins>
 			</build>
 		</profile>
-		
-
-    <profile>
-      <id>hsqlunittests</id>
-      <activation>
-        <property>
-          <name>with-hsql</name>
-        </property>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <skipITs>true</skipITs>
-        <testFailureIgnore>false</testFailureIgnore>
-        <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
-        <test.env>hsql</test.env>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.8.1</version>
-            <configuration>
-              <argLine>-XX:MaxPermSize=256m -Xmx1024m -Xms256m</argLine>
-            	<systemPropertyVariables>
-								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
-							</systemPropertyVariables>
-              <testNGArtifactName>none:none</testNGArtifactName>
-              <includes>
-                <include>**/AllTestsOlatCoreJunit4.java</include>
-                <include>**/AllTestsJunit4.java</include>
-              </includes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.4.3</version>
-            <executions>
-              <execution>
-                <id>copy-resources-4-unittests</id>
-                <!-- hook in to copy maven.build.properties to allow test and integration-test phase run properly -->
-                <phase>generate-test-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
-                  <resources>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/test/profile/${test.env}</directory>
-                      <includes>
-                        <include>olat.local.properties</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
 
     <profile>
       <id>mysqlunittests</id>
@@ -888,7 +822,7 @@
                   <overwrite>true</overwrite>
                   <resources>
                     <!-- olat.local.properties with different environments
-                      typically meant for hsql / mysql / etc.   -->
+                      typically meant for mysql / postgresql / etc.   -->
                     <resource>
                       <directory>src/test/profile/cluster/tomcat-one/lib</directory>
                       <includes>
@@ -2247,12 +2181,6 @@
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
 			<version>3.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.0.0</version>
-			<scope>test</scope>
 		</dependency>
 		<!-- Spring dependencies -->
 		<dependency>

@@ -90,7 +90,6 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 })
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
-	private static boolean hsqlDBConfigured = false;
 	private static boolean postgresqlConfigured = false;
 	private static boolean started = false;;
 	
@@ -127,7 +126,6 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 				};
 		
 		String connectionURL = (String)properties.get("hibernate.connection.url");
-		hsqlDBConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("hsqldb") > 0; 
 		postgresqlConfigured = connectionURL != null && connectionURL.toLowerCase().indexOf("postgres") > 0; 
 		
 		
@@ -169,10 +167,6 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	 * 
 	 * @return
 	 */
-	protected boolean getHsqlDbConfigured(){
-		return hsqlDBConfigured;
-	}
-
 	protected boolean isPostgresqlConfigured() {
 		return postgresqlConfigured;
 	}

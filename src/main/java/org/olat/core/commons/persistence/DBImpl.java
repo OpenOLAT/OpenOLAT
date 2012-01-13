@@ -881,7 +881,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	@Override
 	public void destroy() {
 		//clean up registered drivers to prevent messages like
-		// The web application [/olat] registered the JBDC driver [org.hsqldb.jdbc.JDBCDriver] but failed to unregister...
+		// The web application [/olat] registered the JBDC driver [com.mysql.Driver] but failed to unregister...
 		Enumeration<Driver> registeredDrivers = DriverManager.getDrivers();
 		while(registeredDrivers.hasMoreElements()) {
 			try {

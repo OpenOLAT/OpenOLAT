@@ -289,7 +289,7 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	
 	/**
 	 * testFloatValues
-	 * THIS test does only success when you run it against hsqldb or mysql with FLOAT(65,30). FLOAT(65,30) is mysql specific and if you let hibernate generate
+	 * THIS test does only success when you run it against mysql with FLOAT(65,30). FLOAT(65,30) is mysql specific and if you let hibernate generate
 	 * the tables automatic it will result in FLOAT only and this test will fail. So this means that you have to populate the tables yourself via the sql file.
 	 */
 	@Test public void testFloatValues() {

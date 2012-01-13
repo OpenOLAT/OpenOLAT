@@ -434,7 +434,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			sb.append(" user.properties['").append(key).append("'] like :").append(var);
 		} else {
 			sb.append(" lower(user.properties['").append(key).append("']) like :").append(var);
-			if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+			if(dbVendor.equals("oracle")) {
 	 	 		sb.append(" escape '\\'");
 	 	 	}
 		}
@@ -446,7 +446,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			sb.append(" ").append(objName).append(".").append(attribute).append(" like :").append(var);
 		} else {
 			sb.append(" lower(").append(objName).append(".").append(attribute).append(") like :").append(var);
-			if(dbVendor.equals("hsqldb") || dbVendor.equals("oracle")) {
+			if(dbVendor.equals("oracle")) {
 	 	 		sb.append(" escape '\\'");
 	 	 	}
 		}
