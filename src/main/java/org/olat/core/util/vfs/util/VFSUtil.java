@@ -26,10 +26,7 @@
 
 package org.olat.core.util.vfs.util;
 
-import org.olat.core.gui.media.ClasspathMediaResource;
-import org.olat.core.util.vfs.StreamedImpl;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * Initial Date: 17.01.2006
@@ -67,16 +64,5 @@ public class VFSUtil {
 		return new ContainerAndFile(newC, newFile);
 	}
 	
-	/**
-	 * Creates a VFS leaf for a file that is somewhere in the classpath. 
-	 * @param clazz The classpath that is used as a base
-	 * @param file The filepath relative to the classpath
-	 * @return a VFS leaf for the given file
-	 */
-	public static VFSLeaf createLeafFromClasspath(Class clazz, String file) {
-		ClasspathMediaResource cmr = new ClasspathMediaResource(clazz, file);
-		StreamedImpl si = new StreamedImpl("vfs-from-classpath", null, cmr.getInputStream());		
-		return si;
-	}
 
 }
