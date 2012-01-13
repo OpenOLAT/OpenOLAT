@@ -159,7 +159,9 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 		}
 		blockquote.b_comment { padding: 3px 0 0 0px; margin: 0;}
 		div.b_form { 
-			padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; background: #fbfbfb url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left;@include o-border-radius(4px); 
+			padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; 
+			@include o-gradient-white();
+			@include o-border-radius(4px); 
 			h5 { font-size: 1em; margin-bottom: 0.5em;}
 			div.b_button_group { text-align: center; }
 		}		

@@ -8,7 +8,7 @@ div.o_bcard_portrait {
 		float: left; display:inline; width: 100px; height: 100px; margin: 10px; 
 		img {border:1px #d3d3d3 solid;}
 }
-div.o_bcard_portrait_group { background-image: url(../images/group_100x100.png); border:1px #d3d3d3 solid;}
+div.o_bcard_portrait_group { background-image: url(../openolat/images/group_100x100.png); border:1px #d3d3d3 solid;}
 div.o_bcard_text {margin-left: 120px; margin-top: 10px; line-height:150%}
 div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31, 73, 179); padding: 5px;}
 
@@ -30,6 +30,23 @@ div.o_infomsgs_config {
 }
 .o_infomsg_icon { background-image: url(../openolat/images/information-button.png); }
 .o_infomsg_create_button { position:absolute; top:0; right:250px; }
+	
+/* EMAIL */
+.b_mail_icon { background-image: url(../openolat/images/mail.png) }
+div.b_mail_message div.b_form_element_wrapper:first-child div.b_form_element{ font-weight: bold;}
+.b_mail_new { width: 20px ! important; background-image: url(../openolat/images/new-text.png); }
+.b_table_wrapper {
+	span.b_mail_unread { display:block; display:inline-block; width:16px; height:16px; background:transparent url(../openolat/images/bullet_black.png) top left no-repeat;}
+	span.b_mail_read {  display:block;display:inline-block; width:16px; height:16px;}
+	span.b_mail_marked {  display:block;display:inline-block; width:16px; height:16px; background:transparent url(../openolat/images/flag.png) top left no-repeat;}
+	span.b_mail_unmarked { display:block; display:inline-block; width:16px; height:16px; }
+	.b_marked { font-weight: bold; }
+}
+
+ul.b_mail_attachments { 
+		list-style: none; margin:0; padding:0;
+		li { margin:0; } 
+}
 	
 /* MEMBERS BB  ( Course Buildingblock: "Teilnehmerliste" ) */
 div.o_cmembers {

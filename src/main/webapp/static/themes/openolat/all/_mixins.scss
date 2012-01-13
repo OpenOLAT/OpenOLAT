@@ -55,6 +55,20 @@
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
 }
 
+
+@mixin o-gradient-white(){
+	$col1 : #fff;
+	$col2 : #f8f8f8;
+	background: $col1;
+	background: -moz-linear-gradient(top, $col1 80%, $col2 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(80%,$col1), color-stop(100%,$col2));
+	background: -webkit-linear-gradient(top, $col1 80%,$col2 100%);
+	background: -o-linear-gradient(top, $col1 80%,$col2 100%);
+	background: -ms-linear-gradient(top, $col1 80%,$col2 100%);
+	background: linear-gradient(top, $col1 80%,$col2 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
+}
+
 @mixin o-gradient4($col1,$col2,$col3,$col4){
 	background: $col1;
 	background: -moz-linear-gradient(top, $col1 0%, $col2 33%, $col3 66%, $col4 100%);

@@ -10,7 +10,6 @@
 @import "definitions";
 @import "mixins";
 
-
 /* --------------- */
 @import "basemod";
 @import "icons";
@@ -23,11 +22,11 @@
 /* ------- mobile -------- */
 @import "m_basemod";
 
+
 /* -------- modules -------- */
 @import "dd";
 @import "accesscontrol";
 @import "dialogs";
-@import "portlets_boxes";
 @import "tabpane";
 @import "formsandbuttons";
 @import "tables";
@@ -42,3 +41,5 @@
 @import "course";
 @import "misc";
 @import "feedandblog";
+@import "im";
+@import "portlets_boxes";

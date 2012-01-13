@@ -1,7 +1,9 @@
 /* FEED general */	
 #o_feed { 
 		
-	.o_box { border:1px solid #eee; padding: 0.8em; margin-bottom: 2em; background: #fbfbfb url(../images/brasato/generic/background_gradient_white.png) repeat-x bottom left; @include o-border-radius(4px); }
+	.o_box { border:1px solid #eee; padding: 0.8em; margin-bottom: 2em; 
+		@include o-gradient-white();
+		@include o-border-radius(4px); }
 	div.o_feed_edit { float: right; position:relative; top:0.2em; margin-right:0 }
 	#o_link_container {
 		margin-bottom: 0.8em; 
@@ -30,7 +32,7 @@ div.o_feed_peekview {
 	}
 	div.o_podcast_subscription { 
 		clear:both; 
-		a.o_podcast_rss_link { display:block; float:right; width:16px; height:16px; background: url(../images/olat/feed.png) no-repeat; }
+		a.o_podcast_rss_link { display:block; float:right; width:16px; height:16px; background: url(../openolat/images/feed.png) no-repeat; }
 	}
 
 	div.o_podcast_episode { 
@@ -52,15 +54,15 @@ div.o_feed_peekview {
 	
 	.back_link.o_podcast { margin-bottom: 1.5em; }
 }
-div.o_podcast_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-image: url(../images/olat/sound.png); }
+div.o_podcast_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-image: url(../openolat/images/control/speaker-volume.png); }
 
 /* BLOG */
 #o_feed .o_blog_posts .o_post, #o_feed .o_blog_post .o_post {  margin-bottom:1em; padding:10px 0; }
 #o_feed .o_blog_posts .o_draft { padding: 0.8em; background-color: #fcf7ac; border: 1px solid #fddc55; }
 #o_feed .o_blog_posts .o_scheduled { padding: 0.8em; background-color: #d9ffd0; border: 1px solid #beffae; }
-#o_feed div.o_blog_info div.o_blog_subscription { min-height:16px; padding-left:20px; background: url(../images/olat/feed.png) no-repeat; }	
+#o_feed div.o_blog_info div.o_blog_subscription { min-height:16px; padding-left:20px; background: url(../openolat/images/feed.png) no-repeat; }	
 #o_feed .o_blog_info .o_author, #o_feed .o_blog_posts .o_item_info { color: #7D7D7D; font-size: 90%; margin: 0;}
 #o_feed .o_blog_posts p.o_item_info span.o_item_info_mod { color:#98221F; }
 #o_feed .o_blog_post .back_link { margin-bottom: 1.5em; }
-div.o_blog_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-image: url(../images/brasato/comment.png); }
+div.o_blog_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-image: url(../openolat/images/comment.png); }
 	

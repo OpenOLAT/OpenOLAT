@@ -3,13 +3,14 @@
 .calendar {
   position: relative;
   display: none;
-  border-top: 2px solid #FFFFFF;
-  border-right: 2px solid #000000;
-  border-bottom: 2px solid #000000;
-  border-left: 2px solid #FFFFFF;
+  border:1px solid #444;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
+  
   color: #000000;
   cursor: default;
-  background: #D4D4F7;
+  background: #FFF;
   z-index:950;
   font-size: 90%;
 }
@@ -21,12 +22,13 @@
   border-left: 1px solid #000000;
   color: #000000;
   cursor: default;
-  background: #D4D4F7;
+  background: #FFF;
 }
 
 .calendar table td {
   font-size:  90%;;
   font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif;
+  border:1px solid transparent;
 }
 
 /* Header part -- contains navigation buttons and day names. */
@@ -48,8 +50,14 @@
   font-weight: bold;
   padding: 1px;
   border: 1px solid #000000;
-  background: #7E7EA9;
-  color: #FFFFFF;
+  background: #ccc;
+background: -moz-linear-gradient(top, #ccc 0%, #ddd 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ccc), color-stop(100%,#ddd));
+background: -webkit-linear-gradient(top, #ccc 0%,#ddd 100%);
+background: -o-linear-gradient(top, #ccc 0%,#ddd 100%);
+background: -ms-linear-gradient(top, #ccc 0%,#ddd 100%);
+background: linear-gradient(top, #ccc 0%,#ddd 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{#ccc}', endColorstr='#{#ddd}',GradientType=0 );
   text-align: center;
 }
 
@@ -63,7 +71,7 @@
   border-bottom: 1px solid #000000;
   padding: 2px;
   text-align: center;
-  background: #D6D7E0;
+  background: #EEE;
 }
 
 .calendar thead .weekend { /* How a weekend day name shows in header */
@@ -71,20 +79,12 @@
 }
 
 .calendar thead .hilite { /* How do the buttons in header appear when hover */
-  border-top: 2px solid #FFFFFF;
-  border-right: 2px solid #000000;
-  border-bottom: 2px solid #000000;
-  border-left: 2px solid #FFFFFF;
   padding: 0px;
-  background-color: #D6D7E0;
+  background-color: #EEE;
 }
 
 .calendar thead .active { /* Active (pressed) buttons in header */
   padding: 2px 0px 0px 2px;
-  border-top: 1px solid #000000;
-  border-right: 1px solid #FFFFFF;
-  border-bottom: 1px solid #FFFFFF;
-  border-left: 1px solid #000000;
   background-color: #DCDDE0;
 }
 
@@ -106,7 +106,7 @@
 .calendar table .wn {
   padding: 2px 3px 2px 2px;
   border-right: 1px solid #000000;
-  background: #D6D7E0;
+  background: #EEE;
 }
 
 .calendar tbody .rowhilite td {
@@ -118,23 +118,22 @@
 }
 
 .calendar tbody td.hilite { /* Hovered cells <TD> */
-  padding: 1px 3px 1px 1px;
-  border: 1px solid;
-  border-color: #FFFFFF #000000 #000000 #FFFFFF;
+  border:1px solid #ccc;
+  border-width: 1px;
+  border-color: #ccc;
+  border-style: solid;
 }
 
 .calendar tbody td.active { /* Active (pressed) cells <TD> */
   padding: 2px 2px 0px 2px;
-  border: 1px solid;
   border-color: #000000 #FFFFFF #FFFFFF #000000;
 }
 
 .calendar tbody td.selected { /* Cell showing selected date */
   font-weight: bold;
   padding: 2px 2px 0px 2px;
-  border: 1px solid;
-  border-color: #000000 #FFFFFF #FFFFFF #000000;
-  background: #D6D7E0;
+	  border-color: #000000 #FFFFFF #FFFFFF #000000;
+  background: #EEE;
 }
 
 .calendar tbody td.weekend { /* Cells showing weekend days */
@@ -162,12 +161,18 @@
 }
 
 .calendar tfoot .ttip { /* Tooltip (status bar) cell <TD> */
-  background: #D6D7E0;
-  padding: 1px;
-  border: 1px solid #000000;
-  background: #7E7EA9;
-  color: #FFFFFF;
-  text-align: center;
+
+	background: #ccc;
+	background: -moz-linear-gradient(top, #ccc 0%, #ddd 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ccc), color-stop(100%,#ddd));
+	background: -webkit-linear-gradient(top, #ccc 0%,#ddd 100%);
+	background: -o-linear-gradient(top, #ccc 0%,#ddd 100%);
+	background: -ms-linear-gradient(top, #ccc 0%,#ddd 100%);
+	background: linear-gradient(top, #ccc 0%,#ddd 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{#ccc}', endColorstr='#{#ddd}',GradientType=0 );
+	
+	  padding: 1px;
+	  text-align: center;
 }
 
 .calendar tfoot .hilite { /* Hover style for buttons in footer */
@@ -176,7 +181,7 @@
   border-bottom: 1px solid #000000;
   border-left: 1px solid #FFFFFF;
   padding: 1px;
-  background: #D6D7E0;
+  background: #EEE;
 }
 
 .calendar tfoot .active { /* Active (pressed) style for buttons in footer */
@@ -200,7 +205,7 @@
   border-right: 1px solid #000000;
   border-bottom: 1px solid #000000;
   border-left: 1px solid #FFFFFF;
-  background: #D6D7E0;
+  background: #EEE;
   font-size: 90%;
   padding: 1px;
 }
@@ -216,7 +221,7 @@
 }
 
 .calendar .combo .active {
-  background: #D4D4F7;
+  background: #FFF;
   padding: 0px;
   border-top: 1px solid #000000;
   border-right: 1px solid #FFFFFF;
@@ -233,7 +238,7 @@
   border-top: 1px solid #000000;
   padding: 1px 0px;
   text-align: center;
-  background-color: #D6D7E0;
+  background-color: #EEE;
 }
 
 .calendar td.time .hour,

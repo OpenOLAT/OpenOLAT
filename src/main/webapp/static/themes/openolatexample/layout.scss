@@ -13,19 +13,18 @@
 @import "icons";
 @import "content";
 
-
-// * ------- print -------- */
+/* ------- print -------- */
 @import "p_basemod";
 @import "p_content";
 
-// * ------- mobile -------- */
+/* ------- mobile -------- */
 @import "m_basemod";
 
-// * -------- modules -------- */
+
+/* -------- modules -------- */
 @import "dd";
 @import "accesscontrol";
 @import "dialogs";
-@import "portlets_boxes";
 @import "tabpane";
 @import "formsandbuttons";
 @import "tables";
@@ -40,5 +39,7 @@
 @import "course";
 @import "misc";
 @import "feedandblog";
+@import "im";
+@import "portlets_boxes";
 
 

@@ -538,9 +538,9 @@ div.b_ext_tooltip_wrapper {padding: 1px;}
 /* EXT TREE */
 
 
-div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url($ico_plus); background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url($ico_minus); background-position: 50% 50%;}
 div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url($ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url($ico_plus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url($ico_minus);background-position: 50% 50%;}
 div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url($ico_plus);background-position: 50% 50%;}
 div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../openolat/images/folder.png); }
 div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../openolat/images/folder_open.png); }

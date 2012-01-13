@@ -1,8 +1,10 @@
 @charset "UTF-8";
-/* use the grey ext theme */
-/*@import url(../../js/ext/resources/css/xtheme-gray.css);*/
 /*
  * ========================================================
+ *  this could be your customized license. It will be included in your 
+ *  compiled css file, even if you use sass --style compressed
+ *
+ *  ========================================================
  *  <a href="http://www.openolat.org">
  *  OpenOLAT - Online Learning and Training</a><br>
  *  <p>
@@ -31,7 +33,7 @@
 /*
 *  =================================================
 *   
-*   CONTAINS SOME SASS VARIABLES
+*   CONTAINS SOME SASS VARIABLES FOR the EXAMPLE THEME
 *   you can change these and compile the theme :)
 *
 *   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
@@ -42,7 +44,7 @@
 *
 *  =================================================
 */
-/* the base-color and variations (for openolat-theme this is the openolat-blue) */
+/* the base-color and variations */
 /* then we need a base-gray and some variations */
 /* here you can define the two small icons used in trees:  + and - */
 /* defines the body-background */
@@ -97,7 +99,14 @@
   body {
     min-height: 100%;
     overflow-y: scroll;
-    background: #ececec url("../openolat/images/sky.png") repeat-x left 88px; }
+    background: yellow;
+    background: -moz-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, yellow), color-stop(33%, red), color-stop(66%, blue), color-stop(100%, green));
+    background: -webkit-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: -o-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: -ms-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='yellow', endColorstr='green',GradientType=0 ); }
 
   #b_page_margins {
     min-width: 740px;
@@ -355,15 +364,15 @@
     left: 0px;
     z-index: 9; }
   div.b_tree ul li a:focus, div.b_tree ul li a:hover {
-    color: #025d8c;
+    color: red;
     background-color: white;
     text-decoration: underline; }
   div.b_tree ul li a.b_tree_selected, div.b_tree ul li a:active {
-    color: #025d8c;
+    color: red;
     background-color: white;
     text-decoration: none; }
   div.b_tree ul li li a.b_tree_selected_parents, div.b_tree ul li a.b_tree_l0, div.b_tree ul li strong {
-    color: #025d8c;
+    color: red;
     font-weight: bold; }
   div.b_tree ul li .b_tree_oc_l1 {
     position: absolute;
@@ -1609,7 +1618,7 @@ body#b_body .o_CourseModule_icon_closed {
 *  =================================================
 */
 * {
-  font-family: Century Gothic, Apple Gothic, sans-serif; }
+  font-family: Comic Sans, Comic Sans MS, cursive; }
 
 textarea, pre, tt, code {
   font-size: 90%;
@@ -1618,7 +1627,7 @@ textarea, pre, tt, code {
   margin: inherit; }
 
 body {
-  font-size: 75%;
+  font-size: 90%;
   color: #444; }
 
 /** ----------------- HEADERS ----------------- **/
@@ -1654,11 +1663,11 @@ h6 {
 /** ----------------- LINKS ----------------- **/
 a, a:visited {
   text-decoration: none;
-  color: #025d8c; }
+  color: red; }
 
 a:hover {
   text-decoration: underline;
-  color: #025d8c; }
+  color: red; }
 
 a.b_link_extern {
   background: transparent url("../openolat/images/external_link_trimmed.png") no-repeat right top;
@@ -2344,7 +2353,7 @@ div.b_modal_overlay, div.ext-el-mask {
 
 div.b_window {
   text-align: left;
-  border: 1px solid #025d8c;
+  border: 1px solid red;
   border-radius: 2px;
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
@@ -2508,7 +2517,7 @@ div.b_wizard {
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
   -o-border-radius: 2px;
-  border: 1px solid #025d8c; }
+  border: 1px solid red; }
 div.b_wizard div.b_wizard_header_wrapper {
   background: transparent; }
 div.b_wizard div.b_wizard_header {
@@ -2976,14 +2985,14 @@ div.b_segments_container div.b_segment_content {
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
 .b_button:focus {
-  border-color: #025d8c; }
+  border-color: red; }
 .b_button:active {
   moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   -ms-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   -o-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-  border-color: #025d8c; }
+  border-color: red; }
 
 /* dirty button (form with unsaved values ) */
 .b_button_dirty {
@@ -3240,14 +3249,14 @@ span.b_toggle_slide_legend {
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); }
 .b_link_back:focus {
-  border-color: #025d8c; }
+  border-color: red; }
 .b_link_back:active {
   moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   -ms-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   -o-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-  border-color: #025d8c; }
+  border-color: red; }
 
 /** ----------------- FORMS + LOGIN  ----------------- **/
 div.o_login_form li {
@@ -3304,7 +3313,7 @@ fieldset {
   padding: 1em;
   padding-top: 1.5em;
   border: none;
-  border-top: 1px solid #94bed3; }
+  border-top: 1px solid #ff6666; }
 fieldset legend {
   padding: 0 5px;
   font-size: 120%;
@@ -3586,18 +3595,18 @@ div.b_fileinput div.b_button_group {
 div.b_progress div.b_progress_bar {
   height: 12px;
   border: 1px solid #bfbfbf;
-  background: #f3feff; }
+  background: #ffcccc; }
 
 div.b_progress div.b_progress_bar div {
   height: 12px;
-  background: #94bed3;
-  background: -moz-linear-gradient(top, #94bed3 0%, #025d8c 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #94bed3), color-stop(100%, #025d8c));
-  background: -webkit-linear-gradient(top, #94bed3 0%, #025d8c 100%);
-  background: -o-linear-gradient(top, #94bed3 0%, #025d8c 100%);
-  background: -ms-linear-gradient(top, #94bed3 0%, #025d8c 100%);
-  background: linear-gradient(top, #94bed3 0%, #025d8c 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#94bed3', endColorstr='#025d8c',GradientType=0 ); }
+  background: #ff6666;
+  background: -moz-linear-gradient(top, #ff6666 0%, red 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ff6666), color-stop(100%, red));
+  background: -webkit-linear-gradient(top, #ff6666 0%, red 100%);
+  background: -o-linear-gradient(top, #ff6666 0%, red 100%);
+  background: -ms-linear-gradient(top, #ff6666 0%, red 100%);
+  background: linear-gradient(top, #ff6666 0%, red 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff6666', endColorstr='red',GradientType=0 ); }
 
 /* MARK */
 div.b_mark {
@@ -3658,7 +3667,7 @@ div.b_table_wrapper table {
   margin-left: 1px;
   border: 1px solid #eeeeee; }
 div.b_table_wrapper table tbody tr:hover td {
-  background: #f3feff; }
+  background: #ffcccc; }
 div.b_table_wrapper div.b_table_filter {
   float: left;
   display: inline;
@@ -4039,7 +4048,7 @@ div.b_send_documents textarea {
     -o-border-radius: 4px;
     margin-right: 2px; }
   div.o_wiki_wrapper div.o_wikimod_btn a:hover {
-    border: 1px solid #025d8c; }
+    border: 1px solid red; }
   div.o_wiki_wrapper div.o_wikimod_btn div.b_contexthelp_wrapper a.b_contexthelp {
     position: absolute;
     top: 0;
@@ -5241,7 +5250,7 @@ div.o_qti_item_choice_option_autoenum {
 
 .o_qti_menu_section {
   padding: .3em;
-  border-top: 1px solid #94bed3; }
+  border-top: 1px solid #ff6666; }
 
 .o_qti_menu_section_clickable {
   padding: .3em;
@@ -6724,7 +6733,7 @@ div.o_home_rsslink {
   right: 0;
   top: 0; }
 .b_portlet .b_portlet_header {
-  border-bottom: 1px solid #94bed3;
+  border-bottom: 1px solid #ff6666;
   white-space: nowrap;
   overflow-y: hidden !important;
   overflow-x: hidden !important; }
@@ -7043,7 +7052,7 @@ div.b_portlet_toolbox span.b_portlet_edit_sort_manual_disabled {
   /* the toolbox head */
   /* toolbox content */ }
 .b_toolboxes .b_toolbox .b_toolbox_head_wrapper {
-  border-bottom: 1px solid #94bed3;
+  border-bottom: 1px solid #ff6666;
   background: inherit; }
 .b_toolboxes .b_toolbox .b_toolbox_head_wrapper .b_toolbox_head {
   vertical-align: top; }

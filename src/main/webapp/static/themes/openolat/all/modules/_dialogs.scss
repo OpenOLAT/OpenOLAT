@@ -11,6 +11,9 @@
 *
 *  =================================================
 */
+
+$di_border_radius:2px;
+
 .b_layeredPanel {
 }
 
@@ -46,7 +49,9 @@ div.b_modal_overlay, div.ext-el-mask { background: #fff; -moz-opacity: 0.75; opa
 div.b_window {
 	text-align: left;
 	border:1px solid $basecolor;
+	@include o-border-radius($di_border_radius);
 	background:#fff;
+	
 	.b_window_header_wrapper {
 		padding:2px 8px 0px 8px;
 	}
@@ -151,7 +156,8 @@ div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAA
 	
 /** ----------------- WIZARD ----------------- **/
 	div.b_wizard {
-		@include o-gradient2($basecolor_light,$basecolor_ultra_light);
+		@include o-gradient2(#ccc,#fff);
+		@include o-border-radius($di_border_radius);
 		$col_outerwizard: transparent;
 	
 		border:1px solid $basecolor;
@@ -166,12 +172,13 @@ div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAA
 	 	
 	 	
 	 	div.b_wizard_steps_wrapper {clear:both; width:auto; padding: 0 4px 0 4px; background: $col_outerwizard;}
-	 	div.b_wizard_steps_content { background: #fff ; border: 1px solid $basegray;}
+	 	div.b_wizard_steps_content { background: #fff ; border: 1px solid $basegray; @include o-border-radius($di_border_radius+1px);}
 	 	
 	 	div.b_wizard_steps_list {
 	 		width: 20em; 
 	 		padding: 0; 
 	 		color: $basegray;
+	 		
 	 		
 	 		ol { list-style-type: decimal; z-index: 14; font-size: 100%; padding: 2em 5px 5px;}
 	 		li { line-height: 1.5em; white-space: normal;margin-bottom:1em; list-style: none; padding-left:18px;}
