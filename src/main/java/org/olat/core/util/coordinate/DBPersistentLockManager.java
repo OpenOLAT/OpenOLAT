@@ -22,7 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.util.locks;
+package org.olat.core.util.coordinate;
 
 import org.hibernate.Hibernate;
 import org.hibernate.type.Type;
@@ -32,12 +32,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
-import org.olat.core.util.coordinate.LockEntry;
-import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.coordinate.LockResultImpl;
-import org.olat.core.util.coordinate.PersistentLockManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -134,7 +129,7 @@ public class DBPersistentLockManager extends BasicManager implements PersistentL
 		String query = "from v in class org.olat.properties.Property where v.category = ? and v.longValue = ?";
 		DBFactory.getInstance().delete(query, new Object[] { CATEGORY_PERSISTENTLOCK, identity.getKey() },
 				new Type[] { Hibernate.STRING, Hibernate.LONG });
-		Tracing.logDebug("All db-persisting-locks deleted for identity=" + identity, this.getClass());
+		logDebug("All db-persisting-locks deleted for identity=" + identity);
 	}
 
 }

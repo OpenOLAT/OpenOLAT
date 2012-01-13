@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.commons.servlets.util.URLEncoder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
@@ -45,6 +44,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.servlets.URLEncoder;
 
 
 /**

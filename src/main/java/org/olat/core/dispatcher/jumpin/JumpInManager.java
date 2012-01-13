@@ -26,22 +26,19 @@
 
 package org.olat.core.dispatcher.jumpin;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.servlets.util.URLEncoder;
 import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StackedBusinessControl;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.servlets.URLEncoder;
 
 /**
  * Description: <br>

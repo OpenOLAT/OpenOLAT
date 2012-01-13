@@ -124,12 +124,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
-import org.olat.core.commons.servlets.util.URLEncoder;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.servlets.FastHttpDateFormat;
 import org.olat.core.util.servlets.Globals;
 import org.olat.core.util.servlets.MD5Encoder;
-import org.olat.core.util.servlets.ServerInfo;
+import org.olat.core.util.servlets.URLEncoder;
 
 
 /**

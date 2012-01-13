@@ -42,7 +42,7 @@
 		*** Define the persistent lock manager    ***
 		*****************************************
 	-->
-	<bean id="persistentLockManager" class="org.olat.util.locks.DBPersistentLockManager"  >
+	<bean id="persistentLockManager" class="org.olat.core.util.coordinate.DBPersistentLockManager"  >
 		<constructor-arg index="0" ref="userDeletionManager" />
 	</bean>  
 

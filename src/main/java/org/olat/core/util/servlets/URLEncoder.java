@@ -22,7 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.core.commons.servlets.util;
+package org.olat.core.util.servlets;
 
 /*
  * ====================================================================

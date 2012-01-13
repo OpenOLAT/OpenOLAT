@@ -29,7 +29,6 @@ package org.olat.core.util.controller;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
