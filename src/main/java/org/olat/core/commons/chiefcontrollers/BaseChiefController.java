@@ -81,9 +81,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(BaseChiefController.class);
 	static final OLog log = Tracing.createLoggerFor(BaseChiefController.class);
 
-	private VelocityContainer mainvc;
-	private Panel contentPanel, mainPanel;
-	private Translator translator;
+	private Panel contentPanel;
 
 	private boolean autoDisposeOnWindowClose;
 	private Controller contentController;
@@ -157,13 +155,13 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 */
 	public BaseChiefController(UserRequest ureq) {
 		setLoggingUserRequest(ureq);
-		translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
+		Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 
 		// main layout/structure
-		mainPanel = new Panel("brasatoMainPanel");
+		Panel mainPanel = new Panel("brasatoMainPanel");
 		mainPanel.setDomReplaceable(false);
 
-		mainvc = new VelocityContainer("baseccvc", VELOCITY_ROOT + "/body.html", translator, this);
+		VelocityContainer mainvc = new VelocityContainer("baseccvc", VELOCITY_ROOT + "/body.html", translator, this);
 		// disallow wrapping of divs around the panel and the main velocity page
 		// (since it contains the "<html><head... intro of the html page,
 		// and thus has better to be replaced as a whole (new page load) instead of

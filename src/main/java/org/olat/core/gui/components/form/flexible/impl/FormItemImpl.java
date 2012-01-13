@@ -25,10 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
@@ -41,14 +38,11 @@ import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleLabelText;
-import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.Util;
 
 /**
  * <h2>Description:</h2>
@@ -59,7 +53,6 @@ import org.olat.core.util.Util;
  */
 public abstract class FormItemImpl implements FormItem, InlineElement {
 	private static final String PREFIX = "PANEL_";
-	private Map actionListeners = new HashMap(5);
 	private boolean componentIsMandatory;
 	private String errorKey;
 	private String[] errorParams;
@@ -81,7 +74,6 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	private Form rootForm = null;
 	protected int action;
 	private Object userObject;
-	private Panel itemPanel;
 	private boolean hasFocus = false;
 	private boolean formItemIsEnabled = true;
 	private boolean isInlineEditingElement;
@@ -100,7 +92,6 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	public FormItemImpl(String name, boolean asInlineEditingElement){
 		this.name = name;
 		this.isInlineEditingElement = asInlineEditingElement;
-		itemPanel = new Panel(name);
 		/*
 		 * prepare three panels as placeholder for label, example, error
 		 */
@@ -451,9 +442,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 						//listeners.add(listener);
 					//}
 				//}else{
-					String key = String.valueOf(this.action);
-					List listeners = new ArrayList(1);
-					actionListeners.put(key, listeners);
+					//String key = String.valueOf(this.action);
+					//List listeners = new ArrayList(1);
+					//actionListeners.put(key, listeners);
 				//}
 			//}
 			//
@@ -461,9 +452,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		//}
 	}
 	
-	public List getActionListenersFor(int event){
+	/*public List getActionListenersFor(int event){
 		return (List)actionListeners.get(String.valueOf(event));
-	}
+	}*/
 
 	public int getAction() {
 		return action;

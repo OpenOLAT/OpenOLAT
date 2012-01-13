@@ -89,7 +89,6 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author Felix Jost
  */
 public class Window extends Container {
-	private static final int MAX_HISTORY_ENTRIES = 100;
 	
 	private static final String LOG_SEPARATOR = "^$^";
 	/**
