@@ -70,7 +70,6 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.render.intercept.InterceptHandler;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.themes.Theme;
-import org.olat.core.gui.util.ReusableURLHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -1126,7 +1125,7 @@ public class Window extends Container {
 				target = cur;
 			} else {
 				String childName = res[0]; // Pre: all paths have at least one entry	
-				List<Component> founds = ReusableURLHelper.findComponentsWithChildName(childName, getContentPane());
+				List<Component> founds = findComponentsWithChildName(childName, getContentPane());
 				int foundsCnt = founds.size();
 				if (foundsCnt == 1) {
 					// unique -> high probability that the recorded link is still the same
@@ -1225,6 +1224,22 @@ public class Window extends Container {
 			latestDispatchedComp = null; 
 		}
 		return toDispatch;
+	}
+	
+	private List<Component> findComponentsWithChildName(final String childName, Component searchRoot) {
+		final List<Component> founds = new ArrayList<Component>();
+		ComponentTraverser ct = new ComponentTraverser(new ComponentVisitor(){
+			public boolean visit(Component comp, UserRequest ureq) {
+				if(comp.getParent()==null){
+					return true;
+				}
+				if (comp.getParent().getComponent(childName) == comp) {
+					founds.add(comp);
+				}
+				return true;
+			}}, searchRoot, true);
+		ct.visitAll(null);
+		return founds;
 	}
 
 
