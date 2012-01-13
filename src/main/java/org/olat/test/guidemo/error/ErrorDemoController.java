@@ -26,7 +26,7 @@
 * JGS goodsolutions GmbH, http://www.goodsolutions.ch
 * <p>
 */
-package org.olat.core.test.gui.error;
+package org.olat.test.guidemo.error;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;

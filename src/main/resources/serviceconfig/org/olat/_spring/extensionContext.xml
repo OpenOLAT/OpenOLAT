@@ -781,7 +781,7 @@
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.core.test.gui.error.ErrorDemoController"/>
+					<property name="className" value="org.olat.test.guidemo.error.ErrorDemoController"/>
 				</bean>
 			</property>
 			<property name="translationPackage" value="org.olat.test.guidemo" />
