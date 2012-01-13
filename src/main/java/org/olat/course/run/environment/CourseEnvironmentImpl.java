@@ -62,7 +62,6 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		this.course = course;
 		this.propertyManager = PersistingCoursePropertyManager.getInstance(course);
 		this.cgm = PersistingCourseGroupManager.getInstance(course);
-		this.assessmentManager = NewCachePersistingAssessmentManager.getInstance(course);
 	}
 
 	/**
@@ -104,7 +103,14 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 	 * @see org.olat.course.run.environment.CourseEnvironment#getAssessmentManager()
 	 */
 	public AssessmentManager getAssessmentManager() {
-		return this.assessmentManager;
+		if(assessmentManager == null) {
+			synchronized(this) {
+				if(assessmentManager == null) {
+					assessmentManager = NewCachePersistingAssessmentManager.getInstance(course);
+				}
+			}
+		}
+		return assessmentManager;
 	}
 
 	/**
