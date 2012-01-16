@@ -2333,10 +2333,10 @@ div.b_modal_overlay {
 
 /* modal overlay color */
 div.b_modal_overlay, div.ext-el-mask {
-  background: #fff;
-  -moz-opacity: 0.75;
-  opacity: 0.75;
-  filter: alpha(opacity=75); }
+  background: #000;
+  -moz-opacity: 0.25;
+  opacity: 0.25;
+  filter: alpha(opacity=25); }
 
 .b_floatscrollbox {
   overflow-x: hidden;
@@ -2425,9 +2425,8 @@ div.b_msg_dialog .b_msg_title {
   clear: both;
   padding: 10px 10px 10px 50px;
   min-height: 32px;
-  background: #ebcccc url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px;
-  border-bottom: 1px #ccc dotted;
-  border-top: 1px #ccc dotted; }
+  background: #ffb651 url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px;
+  border: none; }
 
 /* info message ( slide-in, top) */
 div.b_msg-div {
@@ -2472,10 +2471,12 @@ div.b_msg_error_winicon {
 /* "info-message" on login screen */
 .o_infomessage_wrapper {
   border: 1px solid #ccc;
-  background: #FAFAFA; }
+  background: #FAFAFA;
+  margin-bottom: 20px; }
 .o_infomessage_wrapper .o_infomessage {
   padding: 10px 10px 10px 50px;
   text-align: left;
+  min-height: 40px;
   background: url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; }
 
 /* OPEN / CLOSE BOX TOGGLER */

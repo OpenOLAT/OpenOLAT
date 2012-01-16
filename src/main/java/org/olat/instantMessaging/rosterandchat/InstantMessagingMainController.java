@@ -128,7 +128,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		File soundFile = new File(WebappHelper.getContextRoot() + "/themes/" + guiTheme.getIdentifyer() + "/sounds/new_message.wav");
 		if (!soundFile.exists()) {
 			// fallback to default theme when file does not exist in configured theme
-			newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/default");
+			newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/openolat");
 		}
 		newMsgIcon.contextPut("newMessageSoundURL", newMessageSoundURL);
 

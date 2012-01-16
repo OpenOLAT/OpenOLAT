@@ -38,8 +38,7 @@ div.b_modal_overlay {
 	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;
 }	
 /* modal overlay color */
-div.b_modal_overlay, div.ext-el-mask { background: #fff; -moz-opacity: 0.75; opacity:0.75; filter: alpha(opacity=75);} 
-
+div.b_modal_overlay, div.ext-el-mask { background: #000; -moz-opacity: 0.25; opacity:0.25; filter: alpha(opacity=25);} 
 
 .b_floatscrollbox {
 	overflow-x: hidden;
@@ -101,7 +100,9 @@ div.b_msg_dialog {
 
 /* sticky info (admins can create stick-messages that will show for all users) */
 #b_msg_sticky { 
-	clear:both; padding: 10px 10px 10px 50px; min-height: 32px; background: #ebcccc url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; border-bottom: 1px #ccc dotted;  border-top: 1px #ccc dotted;
+	clear:both; padding: 10px 10px 10px 50px;
+	min-height: 32px; background: #FFB651 url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; 
+	border:none;
 }
 
 /* info message ( slide-in, top) */
@@ -138,9 +139,12 @@ div.b_msg_error_winicon { background: url(../openolat/images/icon_error_32.png) 
 .o_infomessage_wrapper {
 	border: 1px solid #ccc;
 	background:#FAFAFA;
+	margin-bottom:20px;
+	
 	.o_infomessage{
 		padding: 10px 10px 10px 50px;
 		text-align: left;
+		min-height:40px;
 		background: url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px;
 		.o_infomessage_inner {
 		
