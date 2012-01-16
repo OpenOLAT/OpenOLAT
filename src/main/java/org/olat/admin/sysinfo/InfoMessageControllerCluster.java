@@ -44,7 +44,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM {
 
-	private Link infomsgEditButtonCluster,maintenancemsgEditButtonCluster;
+	private Link infomsgEditButtonCluster,infomsgClearButtonCluster,maintenancemsgEditButtonCluster,maintenancemsgClearButtonCluster;
 	private InfoMsgForm infoMsgFormCluster, maintenanceMsgFormCluster;
 	
 	/**
@@ -58,7 +58,9 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 		
 		
 		infomsgEditButtonCluster = LinkFactory.createButton("infomsgEditCluster", getViewContainer(), this);
+		infomsgClearButtonCluster = LinkFactory.createButton("infomsgClearCluster", getViewContainer(), this);
 		maintenancemsgEditButtonCluster = LinkFactory.createButton("maintenancemsgEditCluster", getViewContainer(), this);
+		maintenancemsgClearButtonCluster = LinkFactory.createButton("maintenancemsgClearCluster", getViewContainer(), this);
 		
 		//info message stuff
 		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
@@ -97,6 +99,20 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 			getEditContainer().contextPut("cluster", Boolean.TRUE);
 			getMainContainer().pushContent(getEditContainer());
 		}
+		
+		// clear buttons
+		else if (source == maintenancemsgClearButtonCluster) {
+			GlobalStickyMessage.setGlobalStickyMessage("", true);
+			getViewContainer().contextRemove("maintenanceMsgThisNodeOnly");
+			maintenanceMsgFormCluster.reset();
+		}
+		else if (source == infomsgClearButtonCluster) {
+			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+			mrg.setInfoMessage("");
+			getViewContainer().contextRemove("infoMsgCluster");
+			infoMsgFormCluster.reset();
+		}
+			
 	}
 	
 	@Override

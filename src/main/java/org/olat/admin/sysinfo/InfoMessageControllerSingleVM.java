@@ -50,7 +50,7 @@ import org.olat.properties.PropertyManager;
  */
 public class InfoMessageControllerSingleVM extends BasicController {
 	
-	private Link infomsgEditButton, maintenancemsgEditButton;
+	private Link infomsgEditButton,infomsgClearButton, maintenancemsgEditButton,maintenancemsgClearButton;
 	private VelocityContainer infoMsgView, infoMsgEdit;
 	private InfoMsgForm infoMsgForm, maintenanceMsgForm;
 	private Panel container;
@@ -73,7 +73,9 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		infoMsgView.contextPut("admintoken", adminToken);
 		
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
+		infomsgClearButton = LinkFactory.createButton("infomsgClear", infoMsgView, this);
 		maintenancemsgEditButton = LinkFactory.createButton("maintenancemsgEdit", infoMsgView, this);
+		maintenancemsgClearButton = LinkFactory.createButton("maintenancemsgClear", infoMsgView, this);
 		
 		//info message stuff
 		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
@@ -116,6 +118,19 @@ public class InfoMessageControllerSingleVM extends BasicController {
 			infoMsgEdit.contextPut("infoEdit", Boolean.FALSE);
 			infoMsgEdit.contextPut("cluster", Boolean.FALSE);
 			container.pushContent(infoMsgEdit);
+		}
+		
+		// clear buttons
+		else if (source == maintenancemsgClearButton){
+			GlobalStickyMessage.setGlobalStickyMessage("", true);
+			infoMsgView.contextRemove("maintenanceMsgAllNodes");
+			maintenanceMsgForm.reset();
+		}
+		else if (source == infomsgClearButton){
+			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+			mrg.setInfoMessage("");
+			infoMsgView.contextRemove("infomsg");
+			infoMsgForm.reset();
 		}
 	}
 		
