@@ -393,22 +393,39 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 	
 	/**
-	 * Some temporary files of specific editors need to be force deleted
+	 * Some temporary/lock files of specific editors need to be force deleted
 	 * with all versions. Word can reuse older names.
 	 * @param leaf
 	 * @return
 	 */
 	private boolean isTemporaryFile(VFSLeaf leaf) {
 		String name = leaf.getName();
-		//temporary files of Word 2010: ~WRD0002.tmp
-		if((name.startsWith("~WRD") || name.startsWith("~WRL")) && name.endsWith(".tmp")) {
+		//temporary files
+		if(name.endsWith(".tmp")) {
+			//Word 2010: ~WRD0002.tmp
+			if(name.startsWith("~WRD") || name.startsWith("~WRL")) {
+				return true;
+			}
+			//PowerPoint 2010: ppt5101.tmp 
+			if(name.startsWith("ppt")) {
+				return true;
+			}
+		}
+		//lock files of Word 2010, Excel 2010, PowerPoint 2010:
+		if(name.startsWith("~$") && (name.endsWith(".docx") || name.endsWith(".xlsx") || name.endsWith(".pptx"))) {
 			return true;
 		}
-		//temporary files of PowerPoint 2010: ppt5101.tmp 
-		if(name.startsWith("ppt") && name.endsWith(".tmp")) {
+		
+		//OpenOffice locks: .~lock.Versions_21.odt#
+		if(name.startsWith(".~lock.") && (name.endsWith(".odt#") /* Writer */ || name.endsWith(".ods#") /* Calc */
+				|| name.endsWith(".odp#") /* Impress */ || name.endsWith("odf#") /* Math */
+				|| name.endsWith(".odg#") /* Draw */)) {
 			return true;
 		}
-		//OpenOffice Text: .~lock.Versions_21.odt#
+		//OpenOffice database lock
+		if(name.endsWith(".odb.lck")) {
+			return true;
+		}
 		
 		return false;
 	}
