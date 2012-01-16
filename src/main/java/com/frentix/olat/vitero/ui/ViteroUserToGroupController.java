@@ -215,7 +215,7 @@ public class ViteroUserToGroupController extends BasicController {
 		try {
 			ViteroGroupRoles groupRoles = viteroManager.getGroupRoles(booking.getGroupId());
 			
-			ResourceMembers members = getIdentitiesInResource();
+			ResourceMembers members = getIdentitiesInResource(groupRoles);
 			tableCtr.setTableDataModel(new UserToGroupDataModel(members, groupRoles));
 			
 			int numOfFreePlaces = booking.getRoomSize() - groupRoles.size();
@@ -225,10 +225,11 @@ public class ViteroUserToGroupController extends BasicController {
 		}
 	}
 	
-	private ResourceMembers getIdentitiesInResource() {
+	private ResourceMembers getIdentitiesInResource(ViteroGroupRoles groupRoles) {
 		Set<Identity> owners = new HashSet<Identity>();
 		Set<Identity> coaches = new HashSet<Identity>();
 		Set<Identity> participants = new HashSet<Identity>();
+		Set<Identity> selfParticipants = new HashSet<Identity>();
 		
 		if(group != null) {
 			owners.addAll(securityManager.getIdentitiesOfSecurityGroup(group.getOwnerGroup()));
@@ -258,27 +259,55 @@ public class ViteroUserToGroupController extends BasicController {
 				coaches.addAll(repoTutors);
 			}
 		}
-		return new ResourceMembers(owners, coaches, participants);
+		
+		//add all self signed participants
+		if(booking.isAutoSignIn()) {
+			List<String> emailsOfParticipants = groupRoles.getEmailsOfParticipants();
+			//remove owners, coaches and already participating users
+			for(Identity owner:owners) {
+				emailsOfParticipants.remove(owner.getUser().getProperty(UserConstants.EMAIL, null));
+			}
+			for(Identity coach:coaches) {
+				emailsOfParticipants.remove(coach.getUser().getProperty(UserConstants.EMAIL, null));
+			}
+			for(Identity participant:participants) {
+				emailsOfParticipants.remove(participant.getUser().getProperty(UserConstants.EMAIL, null));
+			}
+
+			if(!emailsOfParticipants.isEmpty()) {
+				List<Identity> selfSignedParticipants =  UserManager.getInstance().findIdentitiesByEmail(emailsOfParticipants);
+				selfParticipants.addAll(selfSignedParticipants);
+			}
+		}
+		return new ResourceMembers(owners, coaches, participants, selfParticipants);
 	}
 	
 	public class ResourceMembers {
 		private final List<Identity> owners = new ArrayList<Identity>();
 		private final List<Identity> coaches = new ArrayList<Identity>();
 		private final List<Identity> participants = new ArrayList<Identity>();
+		private final List<Identity> selfParticipants = new ArrayList<Identity>();
 		
 		public ResourceMembers() {
 			//
 		}
 		
-		public ResourceMembers(Collection<Identity> owners, Collection<Identity> coaches, Collection<Identity> participants) {
+		public ResourceMembers(Collection<Identity> owners, Collection<Identity> coaches, Collection<Identity> participants,
+				Collection<Identity> selfParticipants) {
 			this.owners.addAll(owners);
 			this.coaches.addAll(coaches);
 			this.participants.addAll(participants);
+			this.selfParticipants.addAll(selfParticipants);
 			
 			//remove duplicates
 			coaches.removeAll(owners);
+			
 			participants.removeAll(owners);
 			participants.removeAll(coaches);
+			
+			selfParticipants.remove(owners);
+			selfParticipants.remove(coaches);
+			selfParticipants.remove(participants);
 		}
 
 		public List<Identity> getOwners() {
@@ -291,6 +320,10 @@ public class ViteroUserToGroupController extends BasicController {
 
 		public List<Identity> getParticipants() {
 			return participants;
+		}
+
+		public List<Identity> getSelfParticipants() {
+			return selfParticipants;
 		}
 	}
 	
@@ -308,6 +341,7 @@ public class ViteroUserToGroupController extends BasicController {
 			identities.addAll(members.getOwners());
 			identities.addAll(members.getCoaches());
 			identities.addAll(members.getParticipants());
+			identities.addAll(members.getSelfParticipants());
 		}
 
 		public ResourceMembers getMembers() {

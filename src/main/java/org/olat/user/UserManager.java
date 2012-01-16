@@ -96,6 +96,15 @@ public abstract class UserManager extends BasicManager {
 	 * @return The identity found for this email or null if not found
 	 */
 	public abstract Identity findIdentityByEmail(String email);
+	
+	/**
+	 * Find the identity (and the user) that match the given email address. The
+	 * match is an exact match
+	 * 
+	 * @param email A list of emails to search with
+	 * @return The identities found for these emails
+	 */
+	public abstract List<Identity> findIdentitiesByEmail(List<String> emails);
 
 	/**
 	 * Find user by its email

@@ -65,7 +65,7 @@ public class ViteroBookingsRunController extends BasicController {
 		this.resourceName = resourceName;
 		
 		if(ureq.getUserSession().getRoles().isGuestOnly()) {
-		
+			//no accessible to guests
 		} else if(admin) {
 			mainVC = createVelocityContainer("run_admin");
 			

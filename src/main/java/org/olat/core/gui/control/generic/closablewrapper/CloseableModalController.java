@@ -59,8 +59,6 @@ import org.olat.core.util.Util;
  * 
  * </pre>
  * 
- * @deprecated don't use this anymore. Use BasicController methods or
- *             controllers from org.core.gui.control.modal package
  */
 public class CloseableModalController extends DefaultController {
 	/**

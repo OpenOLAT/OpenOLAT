@@ -40,6 +40,7 @@ import org.olat.group.BusinessGroup;
 import com.frentix.olat.vitero.manager.ViteroManager;
 import com.frentix.olat.vitero.manager.VmsNotAvailableException;
 import com.frentix.olat.vitero.model.ViteroBooking;
+import com.frentix.olat.vitero.model.ViteroStatus;
 
 /**
  * 
@@ -231,23 +232,23 @@ public class ViteroBookingEditController extends FormBasicController {
 			if(booking.getBookingId() >= 0) {
 				ViteroBooking updatedBooking = viteroManager.updateBooking(group, ores, booking);
 				if(updatedBooking != null) {
-					showInfo("check.ok");
+					showInfo("booking.ok");
 					fireEvent(ureq, Event.DONE_EVENT);
 				} else {
-					showError("check.nok");
+					showError("error.unkown");
 				}
 			} else {
-				if(viteroManager.createBooking(group, ores, booking)) {
-					showInfo("check.ok");
+				ViteroStatus status = viteroManager.createBooking(group, ores, booking);
+				if(status.isOk()) {
+					showInfo("booking.ok");
 					fireEvent(ureq, Event.DONE_EVENT);
 				} else {
-					showError("check.nok");
+					showError(status.getError().i18nKey());
 				}
 			}
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}
-
 	}
 
 	@Override

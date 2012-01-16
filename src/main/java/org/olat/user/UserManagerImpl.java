@@ -20,6 +20,8 @@
 package org.olat.user;
 
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -159,6 +161,48 @@ public class UserManagerImpl extends UserManager {
 			return instIdentities.get(0);
 		}
 		return null;
+	}
+	
+	@Override
+	public List<Identity> findIdentitiesByEmail(List<String> emails) {
+		for(Iterator<String> emailIt=emails.iterator(); emailIt.hasNext(); ) {
+			String email = emailIt.next();
+			if (!MailHelper.isValidEmailAddress(email)) {
+				emailIt.remove();
+				logWarn("Invalid email address: " + email, null);
+			}
+		}
+		
+		if(emails.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
+			.append(" inner join identity.user user ")
+			.append(" where ");
+		
+		//search email
+		StringBuilder emailSb = new StringBuilder(sb);
+		emailSb.append(" user.properties['").append(UserConstants.EMAIL).append("']  in (:emails) ");
+		DBQuery emailQuery = db.createQuery(emailSb.toString());
+		emailQuery.setParameterList("emails", emails);
+		List<Identity> identities = emailQuery.list();
+
+		//search institutional email
+		StringBuilder institutionalSb = new StringBuilder(sb);
+		institutionalSb.append(" user.properties['").append(UserConstants.INSTITUTIONALEMAIL).append("'] in (:emails) ");
+		if(!identities.isEmpty()) {
+			institutionalSb.append(" and identity not in (:identities) ");
+		}
+		DBQuery institutionalQuery = db.createQuery(institutionalSb.toString());
+		institutionalQuery.setParameterList("emails", emails);
+		if(!identities.isEmpty()) {
+			institutionalQuery.setParameterList("identities", identities);
+		}
+		List<Identity> instIdentities = institutionalQuery.list();
+		identities.addAll(instIdentities);
+		return identities;
 	}
 
 	/**

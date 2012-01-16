@@ -180,7 +180,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param name
 	 * @return a list of Property objects
 	 */
-	public List listProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
+	public List<Property> listProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
 		if (resourceable == null) 
 			return listProperties(identity, grp, null, null, category, name);
 		else
@@ -198,7 +198,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param name
 	 * @return a list of Property objects
 	 */
-	public List listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
+	public List<Property> listProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
 		StringBuilder query = new StringBuilder();
 		ArrayList objs = new ArrayList();
 		ArrayList types = new ArrayList();
@@ -332,7 +332,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param name
 	 * @return a list of Property objects.
 	 */
-	public List findProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
+	public List<Property> findProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
 		if (resourceable == null) 
 			return findProperties(identity, grp, null, null, category, name);
 		else
@@ -349,7 +349,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @param name
 	 * @return List of properties
 	 */
-	public List findProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
+	public List<Property> findProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
 		StringBuilder query = new StringBuilder();
 		ArrayList objs = new ArrayList();
 		ArrayList types = new ArrayList();
@@ -489,7 +489,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 */
 	public Property findProperty(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
 		
-		List props = findProperties(identity, grp, resourceable, category, name);
+		List<Property> props = findProperties(identity, grp, resourceable, category, name);
 		if (props == null || props.size() == 0) {
 			if(Tracing.isDebugEnabled(PropertyManager.class)) Tracing.logDebug("Could not find property: " + name, PropertyManager.class);
 			return null;
