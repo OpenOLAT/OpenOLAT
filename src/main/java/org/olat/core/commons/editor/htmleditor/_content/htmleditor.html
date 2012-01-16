@@ -4,7 +4,7 @@
 		$r.translate("error.pageeditedby", $lockOwner)
 	</p>
 #else
-	
+#if ($r.available("rtfElement"))
 	<script language="JavaScript">
 	/* <![CDATA[ */ 
 	function b_resizetofit_htmleditor() {
@@ -86,6 +86,8 @@
 			<span id="b_htmleditor_button_close">$r.render("cancel")</span>
 		#end
 	</div>
+
+#end
 
 #end		
 </div>

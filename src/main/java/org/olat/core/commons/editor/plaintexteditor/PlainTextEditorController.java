@@ -27,6 +27,7 @@ package org.olat.core.commons.editor.plaintexteditor;
 
 import java.io.InputStream;
 
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -76,9 +77,9 @@ public class PlainTextEditorController extends BasicController {
 		this.newFile = newFile;
 		long size = vfsfile.getSize(); //bytes
 		
-		if (size > 500000) { // max filesize is 500kb
+		if (size > FolderConfig.getMaxEditSizeLimit()) {
 			// limit to reasonable size, see OLAT-3025
-			showError("plaintext.error.tolarge", (size / 1000) + "");
+			getWindowControl().setError(translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""}));
 			putInitialPanel(new Panel("empty"));
 			return;
 		}		

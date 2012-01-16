@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.util.Date;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
+import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -42,6 +45,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.SimpleHtmlParser;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
@@ -139,6 +143,16 @@ public class HTMLEditorController extends FormBasicController {
 		this.fileName = ((relFilePath.charAt(0) == '/') ? relFilePath.substring(1) : relFilePath);
 		this.fileLeaf = (VFSLeaf) baseContainer.resolve(fileName);
 		if (fileLeaf == null) throw new AssertException("file::" + getFileDebuggingPath(baseContainer, relFilePath) + " does not exist!");
+		long size = fileLeaf.getSize();
+		if ( size > FolderConfig.getMaxEditSizeLimit()) {
+			// limit to reasonable size, see OO-57
+			setTranslator(Util.createPackageTranslator(PlainTextEditorController.class, getLocale(),getTranslator()));
+			getWindowControl().setError(translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""}));
+			this.body = "";
+			//initForm(ureq);
+			return;
+		}		
+		
 		// check if someone else is already editing the file
 		if (fileLeaf instanceof LocalFileImpl) {
 			// Cast to LocalFile necessary because the VFSItem is missing some

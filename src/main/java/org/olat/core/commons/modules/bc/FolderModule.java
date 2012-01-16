@@ -45,6 +45,7 @@ public class FolderModule extends AbstractOLATModule {
 	OLog log = Tracing.createLoggerFor(FolderModule.class);
 	private static final String CONFIG_ROOT = "Root";
 	private static final String CONFIG_LIMITULMB = "LimitULMB";
+	private static final String CONFIG_EDITFILESIZELIMIT = "EditFileSizeLimit";
 	private static final String CONFIG_QUOTAMB = "QuotaMB";
 	private static final String CONFIG_SENDDOCLINKONLY = "SendDocLinkOnly";
 	private static final String CONFIG_SENDDOCTOEXTERN = "SendDocToExtern";
@@ -72,6 +73,9 @@ public class FolderModule extends AbstractOLATModule {
 		}
 		
 		log.info("Folder root set to '" + FolderConfig.getCanonicalRoot() + "'.");
+		
+		int maxEditSizeLimit = getIntConfigParameter(CONFIG_EDITFILESIZELIMIT, 524288);
+		FolderConfig.setMaxEditSizeLimit(maxEditSizeLimit);
 		
 		// Set maximum upload filesize
 		int maxULMB =getIntConfigParameter(CONFIG_LIMITULMB, 100);

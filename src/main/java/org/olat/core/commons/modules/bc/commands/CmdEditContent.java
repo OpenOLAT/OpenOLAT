@@ -90,8 +90,15 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
 		}
-		else if (!(currentItem instanceof VFSLeaf)) {
-			throw new AssertException("Invalid file: " + folderComponent.getCurrentContainerPath() + "/" + currentItem.getName());
+		
+		// do fileEditSanityCheck
+		// OO-57
+		status = FolderCommandHelper.fileEditSanityCheck(currentItem);
+		if (status == FolderCommandStatus.STATUS_FAILED) {
+			// this should no longer happen, since folderComponent -> ListRenderer does not display edit-link for folders
+			logWarn("Given VFSItem is not a file, can't edit it: "+folderComponent.getCurrentContainerPath() + "/" + currentItem.getName(),null);
+			getWindowControl().setError(translator.translate("FileEditFailed"));
+			return null;
 		}
 		
 		if(MetaInfoHelper.isLocked(currentItem, ureq)) {

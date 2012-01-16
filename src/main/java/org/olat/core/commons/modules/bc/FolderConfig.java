@@ -54,6 +54,7 @@ public class FolderConfig {
 
 	private static long limitULKB = LIMITULKB_DEFAULT;
 	private static long quotaKB = QUOTAKB_DEFAULT;
+	private static long editFileSizeLimit;
 	private static final String META_DIR = "/.meta";
 	private static final String TMP_DIR = "/tmp";
 	private static final String VERSION_DIR = "/.version";
@@ -170,6 +171,16 @@ public class FolderConfig {
 	public static String getRelativeTmpDir() {
 		return TMP_DIR;
 	}
+	
+	/**
+	 * Returns the max File-Size in _Bytes_ that is allowed for online-editing.
+	 * (plaintext and html wysiwyg editor)
+	 * 
+	 * @return
+	 */
+	public static long getMaxEditSizeLimit(){
+		return editFileSizeLimit;
+	}
 
 
 	/* =================  Setters  ================ */
@@ -182,6 +193,13 @@ public class FolderConfig {
 		limitULKB = newLimitULKB;
 	}
 
+	/**
+	 * 
+	 */
+	public static void setMaxEditSizeLimit(long sizelimit) {
+		editFileSizeLimit = sizelimit;
+	}
+	
 	/**
 	 * Sets the userHomes.
 	 * @param newUserHomes The userHomes to set

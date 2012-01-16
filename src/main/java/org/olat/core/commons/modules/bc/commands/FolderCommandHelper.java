@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 
 /**
@@ -71,6 +72,26 @@ public class FolderCommandHelper {
 			return FolderCommandStatus.STATUS_FAILED;
 		}
 		return FolderCommandStatus.STATUS_SUCCESS;		
+	}
+	
+	/**
+	 * Checks whether the given VFSItem is valid for online-editing.<br />
+	 * Checks whether the file is a VFSLeaf see: OO-57
+	 * 
+	 * notice: htmlEditor and plaintext editor check for file-size and show
+	 * appropriate message to user
+	 * 
+	 * @param currentItem
+	 *            the VFSItem to check
+	 * @return Returns STATUS_FAILED if item is a directory. Returns
+	 *         STATUS_SUCCESS if vfsItem is a leaf
+	 */
+	public static final int fileEditSanityCheck(VFSItem currentItem) {
+		if ((currentItem instanceof VFSLeaf)) {
+			return FolderCommandStatus.STATUS_SUCCESS;
+		} else {
+			return FolderCommandStatus.STATUS_FAILED;
+		}
 	}
 	
 	/**

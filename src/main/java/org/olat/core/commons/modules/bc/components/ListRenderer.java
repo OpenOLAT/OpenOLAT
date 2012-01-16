@@ -422,7 +422,8 @@ public class ListRenderer {
 
 			// content edit action
 			String nameLowerCase = name.toLowerCase();
-			if (!lockedForUser && (nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm") || nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css"))) {
+			boolean isLeaf= (child instanceof VFSLeaf); // OO-57 only display edit link if it's not a folder
+			if (isLeaf && !lockedForUser && (nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm") || nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css") || nameLowerCase.endsWith(".csv	"))) {
 
 				sb.append("<a href=\"");
 				ubu.buildURI(sb, new String[] { PARAM_CONTENTEDITID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
