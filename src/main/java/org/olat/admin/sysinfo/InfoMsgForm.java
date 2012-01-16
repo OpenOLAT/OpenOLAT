@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * Initial Date:  Apr 30, 2004
@@ -79,8 +78,9 @@ public class InfoMsgForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addTextAreaElement("msg", "infomsg", 1024, 20, 60, true, infomsg, formLayout);
-
+		msg = uifactory.addRichTextElementForStringDataMinimalistic("msg", "infomsg", infomsg, 20, 60, false, formLayout, ureq.getUserSession(), getWindowControl());
+		msg.setMaxLength(1024);
+		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("submit", "submit", buttonGroupLayout);
