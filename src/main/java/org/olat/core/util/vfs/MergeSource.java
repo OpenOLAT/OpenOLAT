@@ -46,8 +46,8 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 public class MergeSource extends AbstractVirtualContainer {
 
 	private VFSContainer parentContainer;
-	private final List mergedContainers;
-	private final List mergedContainersChildren;
+	private final List<VFSContainer> mergedContainers;
+	private final List<VFSContainer> mergedContainersChildren;
 	private VFSContainer rootWriteContainer;
 	private VFSSecurityCallback securityCallback;
 
@@ -57,8 +57,8 @@ public class MergeSource extends AbstractVirtualContainer {
 	public MergeSource(VFSContainer parentContainer, String name) {
 		super(name);
 		this.parentContainer = parentContainer;
-		this.mergedContainers = new ArrayList();
-		this.mergedContainersChildren = new ArrayList();
+		this.mergedContainers = new ArrayList<VFSContainer>();
+		this.mergedContainersChildren = new ArrayList<VFSContainer>();
 	}
 
 	/**
@@ -126,23 +126,22 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
 	 */
-	public List getItems() {
+	public List<VFSItem> getItems() {
 		return getItems(null);
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
 	 */
-	public List getItems(VFSItemFilter filter) {
+	public List<VFSItem> getItems(VFSItemFilter filter) {
 		// remember: security callback and parent was already set during add to this MergeSource
 		// and refreshed on any setSecurityCallback() so no need to handle the quota of children here.
-		List all = new ArrayList();
+		List<VFSItem> all = new ArrayList<VFSItem>();
 		if (filter == null && defaultFilter == null) {
 			all.addAll(mergedContainers);
 		} else {
 			// custom filter or default filter is set
-			for (Iterator iter = mergedContainers.iterator(); iter.hasNext();) {
-				VFSContainer mergedContainer = (VFSContainer) iter.next();
+			for (VFSContainer mergedContainer : mergedContainers) {
 				boolean passedFilter = true;
 				// check for default filter
 				if (defaultFilter != null && ! defaultFilter.accept(mergedContainer)) passedFilter = false;
@@ -153,8 +152,7 @@ public class MergeSource extends AbstractVirtualContainer {
 			}
 		}
 
-		for (Iterator iter = mergedContainersChildren.iterator(); iter.hasNext();) {
-			VFSContainer container = (VFSContainer) iter.next();
+		for (VFSContainer container: mergedContainersChildren) {
 			all.addAll(container.getItems(filter));
 		}
 		return all;
@@ -203,8 +201,7 @@ public class MergeSource extends AbstractVirtualContainer {
 		
 		String childName = VFSManager.extractChild(path);
 		VFSItem vfsItem = null; 
-		for (Iterator iter = mergedContainers.iterator(); iter.hasNext();) {
-			VFSContainer container = (VFSContainer) iter.next();
+		for (VFSContainer container:mergedContainers) {
 			String nextPath = path.substring(childName.length() + 1);
 			// fxdiff FXOLAT-176 a namedContainer doesn't match with its own getName()! -> work with delegate
 			boolean nameMatch = container.getName().equals(childName);
@@ -232,8 +229,7 @@ public class MergeSource extends AbstractVirtualContainer {
 			}
 		}
 
-		for (Iterator iter = mergedContainersChildren.iterator(); iter.hasNext();) {
-			VFSContainer container = (VFSContainer) iter.next();
+		for (VFSContainer container : mergedContainersChildren) {
 			// fxdiff FXOLAT-176 a namedContainer doesn't match with its own getName()! -> work with delegate
 			if (container instanceof NamedContainerImpl) {
 				container = ((NamedContainerImpl) container).getDelegate();
@@ -282,8 +278,8 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 	
 	private boolean isContainerNameTaken(String containerName) {
-		for (Iterator iter = mergedContainers.iterator(); iter.hasNext();) {
-			VFSContainer mergedContainer = (VFSContainer) iter.next();
+		for (Iterator<VFSContainer> iter = mergedContainers.iterator(); iter.hasNext();) {
+			VFSContainer mergedContainer = iter.next();
 			if (mergedContainer.getName().equals(containerName)) return true;
 			
 		}

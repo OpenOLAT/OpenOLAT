@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.util.ContainerAndFile;
 
 /**
 * Initial Date:  13.12.2005
@@ -155,10 +156,10 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 					relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
 				}
 				VFSContainer writableRootContainer = folderComponent.getRootContainer();
-				Object[] result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
+				ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
 				if (result != null) {
-					writableRootContainer = (VFSContainer) result[0];
-					relFilePath = (String) result[1];
+					writableRootContainer = result.getContainer();
+					relFilePath = result.getFileName();
 				} else {
 					// use fallback that always work: current directory and current file
 					relFilePath = fileName;

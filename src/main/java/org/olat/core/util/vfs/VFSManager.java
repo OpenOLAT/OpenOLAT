@@ -44,6 +44,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.util.ContainerAndFile;
 
 public class VFSManager extends BasicManager {
 	private static final Pattern fileNamePattern = Pattern.compile("(.+)[.](\\w{3,4})");
@@ -331,11 +332,11 @@ public class VFSManager extends BasicManager {
 	 *         corrected relFilePath that mathes to the new rootDir. Can be NULL
 	 *         if no writable root folder could be found.
 	 */
-	public static Object[] findWritableRootFolderFor(VFSContainer rootDir, String relFilePath){ 
+	public static ContainerAndFile findWritableRootFolderFor(VFSContainer rootDir, String relFilePath){ 
 		int level = 0;
 		return findWritableRootFolderForRecursion(rootDir, relFilePath, level);
 	}
-	private static Object[] findWritableRootFolderForRecursion(VFSContainer rootDir, String relFilePath, int recursionLevel){
+	private static ContainerAndFile findWritableRootFolderForRecursion(VFSContainer rootDir, String relFilePath, int recursionLevel){
 		recursionLevel++;
 		if (recursionLevel > 20) {
 			// Emergency exit condition: a directory hierarchy that has more than 20
@@ -344,21 +345,39 @@ public class VFSManager extends BasicManager {
 					+ " relFilePath::" + relFilePath);
 			return null;
 		}
+
 		if (rootDir instanceof NamedContainerImpl)  {
-			rootDir = ((NamedContainerImpl)rootDir).delegate;
+			rootDir = ((NamedContainerImpl)rootDir).getDelegate();
 		}
 		if (rootDir instanceof MergeSource) {
-			VFSContainer rootWriteContainer = ((MergeSource)rootDir).getRootWriteContainer();
+			MergeSource mergedDir = (MergeSource)rootDir;
+			//first check if the next level is not a second MergeSource
+			int stop = relFilePath.indexOf("/", 1);
+			if(stop > 0) {
+				String nextLevel = extractChild(relFilePath);
+				VFSItem item = mergedDir.resolve(nextLevel);
+				if (item instanceof NamedContainerImpl)  {
+					item = ((NamedContainerImpl)item).getDelegate();
+				}
+				if(item instanceof MergeSource) {
+					rootDir = (MergeSource)item;
+					relFilePath = relFilePath.substring(stop);
+					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
+				}
+			}
+
+			VFSContainer rootWriteContainer = mergedDir.getRootWriteContainer();
 			if (rootWriteContainer == null) {
 				// we have a merge source without a write container, try it one higher,
 				// go through all children of this one and search the correct child in
 				// the path
 				List<VFSItem> children = rootDir.getItems();
-				String nextChildName = relFilePath.substring(1, relFilePath.indexOf("/", 1));
-				if (children.size() == 0) {
+				if (children.isEmpty()) {
 					// ups, a merge source without children, no good, return null
 					return null;
 				}
+
+				String nextChildName = relFilePath.substring(1, relFilePath.indexOf("/", 1));
 				for (VFSItem child : children) {
 					// look up for the next child in the path
 					if (child.getName().equals(nextChildName)) {
@@ -382,7 +401,7 @@ public class VFSManager extends BasicManager {
 		}
 		if (rootDir != null && rootDir instanceof LocalFolderImpl) {
 			// finished, we found a local folder we can use to write
-			return new Object[] {rootDir, relFilePath};
+			return new ContainerAndFile(rootDir, relFilePath);
 		} else {
 			// do recursion
 			return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);

@@ -48,12 +48,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.util.ContainerAndFile;
 
 public class CmdEditContent extends BasicController implements FolderCommand {
 
@@ -120,10 +120,10 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 			relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
 		}
 		VFSContainer writableRootContainer = folderComponent.getRootContainer();
-		Object[] result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
+		ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
 		if (result != null) {
-			writableRootContainer = (VFSContainer) result[0];
-			relFilePath = (String) result[1];
+			writableRootContainer = result.getContainer();
+			relFilePath = currentItem.getName();
 		} else {
 			// use fallback that always work: current directory and current file
 			relFilePath = currentItem.getName();
