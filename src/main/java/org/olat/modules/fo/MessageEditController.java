@@ -76,7 +76,7 @@ public class MessageEditController extends FormBasicController {
 	protected static final String EDITMODE_REPLYMSG = "replymsg";
 	private static final String STICKY_SET_IDENTIFIER = "stickyset";
 	private static final String CMD_DELETE_ATTACHMENT = "delete.attachment.";
-	protected static final Integer MAX_BODY_LENGTH = 4000;
+	protected static final Integer MAX_BODY_LENGTH = 32000;
 
 	// see OLAT-4182/OLAT-4219 and OLAT-4259
 	// the filtering of .nfs is sort of temporary until we make sure that we no longer reference
