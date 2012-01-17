@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderRunController;
@@ -71,7 +72,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.control.winmgr.JSCommand;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -188,14 +188,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	
-	private Identity identity;
 	private LockResult lockEntry;
-	private String cssFileRef;
 	private Mapper cssUriMapper;
 	private MapperRegistry mapreg;
 	
 	private HtmlHeaderComponent hc;
-	EditorUserCourseEnvironmentImpl euce;
+	private EditorUserCourseEnvironmentImpl euce;
 	
 	private Link undelButton;
 	private Link keepClosedErrorButton;
@@ -206,7 +204,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private MultiSPController multiSPChooserCtr;
 
-	private OLATResourceable ores;
+	private final OLATResourceable ores;
 	
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
@@ -222,7 +220,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
 		super(ureq,wControl);
 		this.ores = ores;
-		this.identity = ureq.getIdentity();
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
@@ -233,7 +230,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
 		OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), lockEntryOres);
-
+		
 		try {			
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
 
