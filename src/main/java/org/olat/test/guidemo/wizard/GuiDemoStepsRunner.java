@@ -120,9 +120,9 @@ public class GuiDemoStepsRunner extends BasicController {
 					// here goes the code which reads out the wizards data from the
 					// runContext and then does some wizardry
 					//
-					// after successfully finishing -> send a NOSTEP to indicate proper
+					// after successfully finishing -> send a DONE_CHANGED or DONE_UNCHANGED to indicate proper
 					// finishing
-					return Step.NOSTEP;
+					return StepsMainRunController.DONE_UNCHANGED;
 				}
 
 			};
@@ -261,7 +261,6 @@ public class GuiDemoStepsRunner extends BasicController {
 		@Override
 		@SuppressWarnings("unused")
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("another one");
 			//
 			firstName = uifactory.addTextElement("firstname", null, 256, (String) getFromRunContext("firstname"), formLayout);
 			firstName.setEnabled(false);

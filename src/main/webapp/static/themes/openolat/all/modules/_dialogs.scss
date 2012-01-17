@@ -38,7 +38,7 @@ div.b_modal_overlay {
 	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;
 }	
 /* modal overlay color */
-div.b_modal_overlay, div.ext-el-mask { background: #000; -moz-opacity: 0.25; opacity:0.25; filter: alpha(opacity=25);} 
+div.b_modal_overlay, div.ext-el-mask { background: #000; @include o-opacity(25);} 
 
 .b_floatscrollbox {
 	overflow-x: hidden;
@@ -160,7 +160,8 @@ div.b_togglebox div.b_togglebox_content { padding: 1em; border: 1px solid #ACAAA
 	
 /** ----------------- WIZARD ----------------- **/
 	div.b_wizard {
-		@include o-gradient2(#ccc,#fff);
+		//@include o-gradient2(#ccc,#fff);
+		background:#fff;
 		@include o-border-radius($di_border_radius);
 		$col_outerwizard: transparent;
 	

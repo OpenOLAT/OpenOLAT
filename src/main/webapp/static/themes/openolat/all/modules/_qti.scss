@@ -72,8 +72,8 @@
     .o_qti_menu_item:hover {border: 1px solid silver;}
     .o_qti_menu_item_closed {padding:.3em; border: 1px solid transparent;}
 
-	.o_qti_menu_item_attempts_marked, .o_qti_menu_item_attempts {color: silver; padding: .2em .4em; border: 1px solid transparent; background: url(../openolat/images/flag.png) center right no-repeat;  display:block; width:20px; height:12px; }
-    .o_qti_menu_item_attempts { opacity:0.4;filter:alpha(opacity=40); }
+	.o_qti_menu_item_attempts_marked, .o_qti_menu_item_attempts {@include o-opacity(100); color: silver; padding: .2em .4em; border: 1px solid transparent; background: url(../openolat/images/flag.png) center right no-repeat;  display:block; width:20px; height:12px; }
+    .o_qti_menu_item_attempts { @include o-opacity(40);}
     .o_qti_menu_item_attempts:hover, .o_qti_menu_item_attempts_marked:hover {color: silver; border: 1px solid silver; cursor:pointer; }
 	
 	

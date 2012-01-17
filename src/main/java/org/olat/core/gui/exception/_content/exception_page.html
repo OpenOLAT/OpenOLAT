@@ -136,7 +136,7 @@ $r.renderHeaderIncludes()
 			<textarea cols="70" rows="15" name="textarea" >$r.translate('error.errnum') ${errnum}&#10;$r.translate('error.businesspath.previous') #if($!prevbusinesspath) $prevbusinesspath #else $r.translate('error.businesspath.unkown') #{end}&#10;$r.translate('error.businesspath') #if($!lastbusinesspath) $lastbusinesspath #else $r.translate('error.businesspath.unkown') #{end}&#10;$r.translate('error.time') ${time}&#10;---------------------------------------------
 			</textarea>
 			<div class="b_button_group">
-				<input type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="b_button" />
+				<input type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="b_button b_button_preferred" />
 				<input type="reset" value="$r.translateInAttribute('cancel')" class="b_button" />
 			</div>
 		</form>
@@ -161,10 +161,11 @@ $stacktrace
 			<div id="b_ie_clearing">&nbsp;</div>
 		</div>
 	</div>
+	<a id="b_toplink" href="#b_top" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
+	
+</div><!--  end b_page -->
 	<div id="b_footer" class="b_clearfix">
-		<div class="b_floatbox">
-			<a id="b_toplink" href="#b_top" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
-		</div>
-	</div>
-</div></div>
+			<div class="b_floatbox"></div>
+	</div><!--  end footer -->
+	</div><!--  end page_margins -->
 </body>

@@ -21,6 +21,9 @@
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
 /* then we need a base-gray and some variations */
 /* here you can define the two small icons used in trees:  + and - */
+/* the defaultfont used in : text, main content, etc. */
+/* the font used in :  navigation (tabs + tree), headings */
+/* the overall default font-size */
 /* defines the body-background */
 /*
 *  =================================================
@@ -36,6 +39,10 @@
 *   it is not compiled to a separate css-file...  
 *
 *  =================================================
+*/
+/**
+*  $percent is a number between 0 and 100
+*  for opacity:0.5, you would use:  @import o-opacity(50);
 */
 /*
 *  =================================================
@@ -73,6 +80,9 @@
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
 /* then we need a base-gray and some variations */
 /* here you can define the two small icons used in trees:  + and - */
+/* the defaultfont used in : text, main content, etc. */
+/* the font used in :  navigation (tabs + tree), headings */
+/* the overall default font-size */
 /* defines the body-background */
 /*
 *  =================================================
@@ -89,21 +99,28 @@
 *
 *  =================================================
 */
-* {
-  font-family: Century Gothic, Apple Gothic, sans-serif; }
-
+/**
+*  $percent is a number between 0 and 100
+*  for opacity:0.5, you would use:  @import o-opacity(50);
+*/
 textarea, pre, tt, code {
+  font-family: Arial, sans-serif;
   font-size: 90%;
   color: inherit;
   line-height: inherit;
   margin: inherit; }
 
 body {
+  font-family: Arial, sans-serif;
   font-size: 75%;
   color: #444; }
 
+#b_header #b_topnav, #b_nav_main, div.b_tree {
+  font-family: Century Gothic, Apple Gothic, sans-serif; }
+
 /** ----------------- HEADERS ----------------- **/
 h1, h2, h3, h4, h5, h6 {
+  font-family: Century Gothic, Apple Gothic, sans-serif;
   font-weight: bold;
   margin: 0 0 0.25em 0; }
 
@@ -255,11 +272,16 @@ blockquote.b_quote {
   border: 1px solid #e5e5e5;
   color: black;
   padding: 8px 10px 6px;
-  color: #646464; }
+  color: #646464;
+  background: #fff; }
 
 .b_border_box {
   border: 1px solid #ccc;
-  padding: 1em; }
+  padding: 1em;
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -o-border-radius: 2px; }
 
 .b_warning {
   padding: 1em;
@@ -278,9 +300,24 @@ blockquote.b_quote {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffe49c', endColorstr='#fff4da',GradientType=0 ); }
 
 .b_dimmed {
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=40);
+  /* Older than Firefox 0.9 */
   -moz-opacity: 0.4;
-  opacity: 0.4;
-  filter: alpha(opacity=40); }
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.4;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.4; }
 
 .o_ochre {
   color: #c8a959; }
@@ -551,7 +588,7 @@ div.b_form_auto_completer_item {
   padding-bottom: 2px; }
 
 div.b_form_auto_completer_item.x-combo-selected {
-  background-color: #c4d0dc;
+  background-color: #f3feff;
   border-left: 0 !important;
   border-right: 0 !important; }
 
@@ -565,7 +602,7 @@ div.b_form_auto_completer_item.b_error_icon {
 
 /** ---- our modifications ---- **/
 * {
-  font-family: Century Gothic, Apple Gothic, sans-serif; }
+  font-family: Arial, sans-serif; }
 
 body {
   font-size: 75%;

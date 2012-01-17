@@ -128,6 +128,39 @@
  	transition: $what  $dur $eff;
 }
 
+
+/**
+*  $percent is a number between 0 and 100
+*  for opacity:0.5, you would use:  @import o-opacity(50);
+*/
+@mixin o-opacity($percent){
+		$op : $percent/100;
+		
+	   	/* Required for IE 5, 6, 7 */
+        /* ...or something to trigger hasLayout, like zoom: 1; */
+       	zoom:1;
+
+        /* Theoretically for IE 8 & 9 (more valid) */
+        /* ...but not required as filter works too */
+        /* should come BEFORE filter */
+        -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+
+        /* This works in IE 8 & 9 too */
+        /* ... but also 5, 6, 7 */
+        filter: alpha(opacity=$percent);
+
+        /* Older than Firefox 0.9 */
+        -moz-opacity:$op;
+
+        /* Safari 1.x (pre WebKit!) */
+        -khtml-opacity: $op;
+
+        /* Modern!
+        /* Firefox 0.9+, Safari 2?, Chrome any?
+        /* Opera 9+, IE 9+ */
+        opacity: $op;
+}
+
 // the OpenOLAT button style 
 @mixin btt-outer {
 		@include o-border-radius(2px);
