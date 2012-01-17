@@ -45,6 +45,9 @@
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
 /* then we need a base-gray and some variations */
 /* here you can define the two small icons used in trees:  + and - */
+/* the defaultfont used in : text, main content, etc. */
+/* the font used in :  navigation (tabs + tree), headings */
+/* the overall default font-size */
 /* defines the body-background */
 /*
 *  =================================================
@@ -60,6 +63,10 @@
 *   it is not compiled to a separate css-file...  
 *
 *  =================================================
+*/
+/**
+*  $percent is a number between 0 and 100
+*  for opacity:0.5, you would use:  @import o-opacity(50);
 */
 /* --------------- */
 /*
@@ -149,11 +156,17 @@
 
   .b_hidecol2 #b_col3 {
     margin-right: 0 !important;
-    border-right: 0; }
+    border-right: none; }
 
   .b_hidecol1 #b_col3 {
     margin-left: 0 !important;
-    border-left: 0; }
+    border-left: none; }
+
+  .b_hideboth #b_col3 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-left: none;
+    border-right: none; }
 
   .b_hideboth #b_col1, .b_hideboth #b_col2, .b_hidecol1 #b_col1, .b_hidecol2 #b_col2, #b_ie_clearing {
     display: none; }
@@ -187,6 +200,11 @@
     margin: 0;
     padding: 0;
     background: transparent; }
+
+  /* RedScreen View */
+  #b_main.b_exception {
+    padding-left: 165px;
+    padding-right: 165px; }
 
   /** ----------------- HEADER AND TOP NAVIGATION ----------------- **/
   #b_header {
@@ -257,14 +275,14 @@
     text-decoration: none; }
   #b_nav_main ul li.b_nav_site {
     /** sites icons **/ }
-  #b_nav_main ul li.b_nav_site.b_nav_active, #b_nav_main ul li.b_nav_site:hover {
+  #b_nav_main ul li.b_nav_site.b_nav_active, #b_nav_main ul li.b_nav_site:hover, #b_nav_main ul li.b_nav_site.b_exception {
     moz-box-shadow: 0 -4px 8px -1px #d3d3d3;
     -ms-box-shadow: 0 -4px 8px -1px #d3d3d3;
     -o-box-shadow: 0 -4px 8px -1px #d3d3d3;
     -webkit-box-shadow: 0 -4px 8px -1px #d3d3d3;
     box-shadow: 0 -4px 8px -1px #d3d3d3;
     background: #fff; }
-  #b_nav_main ul li.b_nav_site.b_nav_active a.b_nav_tab_close, #b_nav_main ul li.b_nav_site:hover a.b_nav_tab_close {
+  #b_nav_main ul li.b_nav_site.b_nav_active a.b_nav_tab_close, #b_nav_main ul li.b_nav_site:hover a.b_nav_tab_close, #b_nav_main ul li.b_nav_site.b_exception a.b_nav_tab_close {
     background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
   #b_nav_main ul li.b_nav_site > div {
     padding-left: 16px;
@@ -287,6 +305,8 @@
     background-image: url("../openolat/images/information-white.png"); }
   #b_nav_main ul li.b_nav_site.f_site_library > div {
     background-image: url("../openolat/images/library.png"); }
+  #b_nav_main ul li.b_nav_site.fx_members > div {
+    background-image: url("../openolat/images/users_members.png"); }
   #b_nav_main ul li.b_nav_site.o_site_guidemo div {
     background-image: url("../openolat/images/light-bulb.png"); }
   #b_nav_main ul li.b_nav_site.b_resource_GroupInfoMainController div {
@@ -336,6 +356,7 @@
     background: transparent;
     margin-left: 0;
     padding-left: 0;
+    line-height: 1.7em;
     /* selected, hovered, active <a> tag */
     /*  icon positioning */
     /*   decorators in tree (e.g. course-editor ) */ }
@@ -356,11 +377,11 @@
     z-index: 9; }
   div.b_tree ul li a:focus, div.b_tree ul li a:hover {
     color: #025d8c;
-    background-color: white;
+    background-color: transparent;
     text-decoration: underline; }
   div.b_tree ul li a.b_tree_selected, div.b_tree ul li a:active {
     color: #025d8c;
-    background-color: white;
+    background-color: transparent;
     text-decoration: none; }
   div.b_tree ul li li a.b_tree_selected_parents, div.b_tree ul li a.b_tree_l0, div.b_tree ul li strong {
     color: #025d8c;
@@ -650,6 +671,23 @@
     height: 20px;
     background: url(../openolat/images/information-white.png) no-repeat top left;
     padding: 0;
+    /* Required for IE 5, 6, 7 */
+    /* ...or something to trigger hasLayout, like zoom: 1; */
+    zoom: 1;
+    /* Theoretically for IE 8 & 9 (more valid) */
+    /* ...but not required as filter works too */
+    /* should come BEFORE filter */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+    /* This works in IE 8 & 9 too */
+    /* ... but also 5, 6, 7 */
+    filter: alpha(opacity=60);
+    /* Older than Firefox 0.9 */
+    -moz-opacity: 0.6;
+    /* Safari 1.x (pre WebKit!) */
+    -khtml-opacity: 0.6;
+    /* Modern!
+    /* Firefox 0.9+, Safari 2?, Chrome any?
+    /* Opera 9+, IE 9+ */
     opacity: 0.6; }
   div.b_titled_wrapper div.b_togglebox div.b_togglebox_content {
     position: relative;
@@ -1553,6 +1591,9 @@ li a.b_toolbox_copy, .b_copy_icon {
 .o_cmembers_icon {
   background-image: url("../openolat/images/users.png") !important; }
 
+.fx_members_icon {
+  background-image: url("../openolat/images/users_members.png") !important; }
+
 body#b_body .o_CourseModule_icon_closed {
   background-image: url("../openolat/images/le_resources/book-open-text-image_locked.png"); }
 
@@ -1592,6 +1633,9 @@ body#b_body .o_CourseModule_icon_closed {
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
 /* then we need a base-gray and some variations */
 /* here you can define the two small icons used in trees:  + and - */
+/* the defaultfont used in : text, main content, etc. */
+/* the font used in :  navigation (tabs + tree), headings */
+/* the overall default font-size */
 /* defines the body-background */
 /*
 *  =================================================
@@ -1608,21 +1652,28 @@ body#b_body .o_CourseModule_icon_closed {
 *
 *  =================================================
 */
-* {
-  font-family: Century Gothic, Apple Gothic, sans-serif; }
-
+/**
+*  $percent is a number between 0 and 100
+*  for opacity:0.5, you would use:  @import o-opacity(50);
+*/
 textarea, pre, tt, code {
+  font-family: Arial, sans-serif;
   font-size: 90%;
   color: inherit;
   line-height: inherit;
   margin: inherit; }
 
 body {
+  font-family: Arial, sans-serif;
   font-size: 75%;
   color: #444; }
 
+#b_header #b_topnav, #b_nav_main, div.b_tree {
+  font-family: Century Gothic, Apple Gothic, sans-serif; }
+
 /** ----------------- HEADERS ----------------- **/
 h1, h2, h3, h4, h5, h6 {
+  font-family: Century Gothic, Apple Gothic, sans-serif;
   font-weight: bold;
   margin: 0 0 0.25em 0; }
 
@@ -1774,11 +1825,16 @@ blockquote.b_quote {
   border: 1px solid #e5e5e5;
   color: black;
   padding: 8px 10px 6px;
-  color: #646464; }
+  color: #646464;
+  background: #fff; }
 
 .b_border_box {
   border: 1px solid #ccc;
-  padding: 1em; }
+  padding: 1em;
+  border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -o-border-radius: 2px; }
 
 .b_warning {
   padding: 1em;
@@ -1797,9 +1853,24 @@ blockquote.b_quote {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffe49c', endColorstr='#fff4da',GradientType=0 ); }
 
 .b_dimmed {
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=40);
+  /* Older than Firefox 0.9 */
   -moz-opacity: 0.4;
-  opacity: 0.4;
-  filter: alpha(opacity=40); }
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.4;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.4; }
 
 .o_ochre {
   color: #c8a959; }
@@ -2070,7 +2141,7 @@ div.b_form_auto_completer_item {
   padding-bottom: 2px; }
 
 div.b_form_auto_completer_item.x-combo-selected {
-  background-color: #c4d0dc;
+  background-color: #f3feff;
   border-left: 0 !important;
   border-right: 0 !important; }
 
@@ -2160,9 +2231,24 @@ div.b_form_auto_completer_item.b_error_icon {
   z-index: 1000; }
 
 .b_dd_proxy {
-  opacity: 0.4;
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=40);
+  /* Older than Firefox 0.9 */
   -moz-opacity: 0.4;
-  filter: alpha(opacity=40); }
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.4;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.4; }
 
 .b_dd_item.b_dd_over {
   background-color: #ffff60; }
@@ -2334,9 +2420,24 @@ div.b_modal_overlay {
 /* modal overlay color */
 div.b_modal_overlay, div.ext-el-mask {
   background: #000;
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=25);
+  /* Older than Firefox 0.9 */
   -moz-opacity: 0.25;
-  opacity: 0.25;
-  filter: alpha(opacity=25); }
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.25;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.25; }
 
 .b_floatscrollbox {
   overflow-x: hidden;
@@ -2497,14 +2598,7 @@ div.b_togglebox div.b_togglebox_content {
 
 /** ----------------- WIZARD ----------------- **/
 div.b_wizard {
-  background: #cccccc;
-  background: -moz-linear-gradient(top, #cccccc 0%, white 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #cccccc), color-stop(100%, white));
-  background: -webkit-linear-gradient(top, #cccccc 0%, white 100%);
-  background: -o-linear-gradient(top, #cccccc 0%, white 100%);
-  background: -ms-linear-gradient(top, #cccccc 0%, white 100%);
-  background: linear-gradient(top, #cccccc 0%, white 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#cccccc', endColorstr='white',GradientType=0 );
+  background: #fff;
   border-radius: 2px;
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
@@ -2985,6 +3079,16 @@ div.b_segments_container div.b_segment_content {
   -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
   border-color: #025d8c; }
+.b_button.b_button_preferred {
+  background: #dce7ec;
+  background: -moz-linear-gradient(top, #dce7ec 0%, #f1f1f1 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #dce7ec), color-stop(100%, #f1f1f1));
+  background: -webkit-linear-gradient(top, #dce7ec 0%, #f1f1f1 100%);
+  background: -o-linear-gradient(top, #dce7ec 0%, #f1f1f1 100%);
+  background: -ms-linear-gradient(top, #dce7ec 0%, #f1f1f1 100%);
+  background: linear-gradient(top, #dce7ec 0%, #f1f1f1 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dce7ec', endColorstr='#f1f1f1',GradientType=0 );
+  border: 1px solid #025d8c; }
 
 /* dirty button (form with unsaved values ) */
 .b_button_dirty {
@@ -3307,6 +3411,7 @@ fieldset {
   border: none;
   border-top: 1px solid #94bed3; }
 fieldset legend {
+  font-family: Century Gothic, Apple Gothic, sans-serif;
   padding: 0 5px;
   font-size: 120%;
   font-weight: bold; }
@@ -3572,9 +3677,24 @@ div.b_fileinput input.b_fileinput_realchooser {
   top: 0;
   left: 0;
   z-index: 2;
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=0);
+  /* Older than Firefox 0.9 */
   -moz-opacity: 0;
-  opacity: 0;
-  filter: alpha(opacity=0); }
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0; }
 div.b_fileinput div.b_button_group {
   text-align: left;
   padding-left: 0;
@@ -3620,8 +3740,24 @@ div.b_mark a.b_mark_not_set {
   display: block;
   width: 20px;
   height: 20px;
-  opacity: 0.4;
-  filter: alpha(opacity=40); }
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=40);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.4;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.4;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.4; }
 div.b_mark a.b_mark_set span, div.b_mark a.b_mark_not_set span {
   display: block;
   width: 19px;
@@ -3941,6 +4077,23 @@ div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_edit_meta_i
 
 div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_edit_meta_dis_icon {
   background-image: url(../openolat/images/docs/document_metadata_edit.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 
 div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_icon {
@@ -3948,6 +4101,23 @@ div.b_briefcase_foldercomp table.b_briefcase_filetable a.b_briefcase_versions_ic
 
 div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_versions_dis_icon {
   background-image: url(../openolat/images/docs/document_versions.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 
 div.b_briefcase_foldercomp table.b_briefcase_filetable span.b_briefcase_locked_file_icon {
@@ -4192,13 +4362,10 @@ div.b_send_documents textarea {
     text-decoration: line-through; } }
 /* FORUM */
 div.o_forum div.o_forum_switch {
-  border: 1px solid #8F99AD;
-  padding: 3px;
-  font-size: 95%; }
+  font-size: 90%; }
 div.o_forum div.o_forum_message {
   margin: 1em 0 1em 0;
   padding: 0.5em;
-  border: 1px solid #777777;
   border-radius: 4px;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
@@ -4219,18 +4386,19 @@ div.o_forum div.o_forum_message_new div.o_forum_message_title strong {
   padding-right: 20px; }
 div.o_forum div.o_forum_message_creator {
   width: 100px;
-  padding: 0.5em 0px 0px 0px;
+  padding: 0.5em 12px 0px 21px;
   font-size: 95%;
-  color: #4F576A; }
+  color: #4F576A;
+  float: right;
+  border-left: 1px solid #fff; }
 div.o_forum div.o_forum_message_creator strong {
   font-weight: normal; }
 div.o_forum div.o_forum_message_creator img {
   border: 1px solid #4F576A; }
 div.o_forum div.o_forum_message_body {
   padding: 0.5em;
-  margin-left: 100px;
-  background: #fff;
-  margin-right: 3px; }
+  background: transparent;
+  margin-right: 155px; }
 div.o_forum div.o_forum_message_attachments {
   margin: 2em 0 0.5em 0;
   border-top: 1px solid #555555;
@@ -5284,6 +5452,24 @@ div.o_qti_item_choice_option_autoenum {
   border: 1px solid transparent; }
 
 .o_qti_menu_item_attempts_marked, .o_qti_menu_item_attempts {
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=100);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 1;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 1;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 1;
   color: silver;
   padding: .2em .4em;
   border: 1px solid transparent;
@@ -5293,8 +5479,24 @@ div.o_qti_item_choice_option_autoenum {
   height: 12px; }
 
 .o_qti_menu_item_attempts {
-  opacity: 0.4;
-  filter: alpha(opacity=40); }
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=40);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.4;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.4;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.4; }
 
 .o_qti_menu_item_attempts:hover, .o_qti_menu_item_attempts_marked:hover {
   color: silver;
@@ -5678,15 +5880,50 @@ div.o_peekview_author {
   font-size: 90%; }
 
 /*  misc */
-/* BUSINESS CARD */
+/* BUSINESS CARD &  Member site, members search  */
+div.o_members_search {
+  padding-top: 10px;
+  padding-left: 10px; }
+
+div.filters {
+  text-align: center;
+  padding-top: 1.5em; }
+
+div.o_members_search div.searchitem {
+  margin-bottom: 0.5em; }
+
+div.searchitem select, div.searchitem input {
+  width: 250px; }
+
+.o_members_register {
+  margin-bottom: 5px; }
+
+.o_members_register_active {
+  font-weight: bold;
+  font-size: 120%; }
+
+div.o_members_paging {
+  width: 100%;
+  padding-bottom: 1em;
+  padding-top: 0.5em;
+  text-align: center; }
+
+div.o_members_paging div {
+  padding-left: 1em;
+  padding-right: 1em;
+  display: inline; }
+
 div.o_bcard {
   background-color: #eee;
-  margin-top: 10px; }
+  margin-top: 10px;
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -o-border-radius: 6px; }
 
 div.o_bcard_header, div.o_members_header {
-  color: #fff;
-  background-color: #777;
-  padding: 2px; }
+  padding: 6px;
+  border-bottom: 1px solid #fff; }
 
 div.o_bcard_portrait {
   float: left;
@@ -5712,6 +5949,13 @@ div.o_bcard_footer {
   font-size: 95%;
   color: #1f49b3;
   padding: 5px; }
+
+/*  social links (FB, twitter, google) */
+#fx_share {
+  float: left;
+  clear: left;
+  margin-top: 0.5em;
+  width: 250px; }
 
 /* INFO MESSAGES */
 div.o_infomsgs {
@@ -6756,7 +7000,7 @@ div.o_portlet_repository_teacher td.b_first_child {
 .b_portlet .b_portlet_header {
   background-repeat: no-repeat;
   background-position: 0% 50%;
-  padding-left: 18px;
+  padding-left: 27px;
   padding-top: 5px;
   padding-bottom: 5px; }
 
@@ -6769,157 +7013,157 @@ div.o_portlet_calendar div.b_portlet_header {
 div.o_portlet_calendar.o_day_1 div.b_portlet_header strong:before {
   content: "1";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_2 div.b_portlet_header strong:before {
   content: "2";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_3 div.b_portlet_header strong:before {
   content: "3";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_4 div.b_portlet_header strong:before {
   content: "4";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_5 div.b_portlet_header strong:before {
   content: "5";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_6 div.b_portlet_header strong:before {
   content: "6";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_7 div.b_portlet_header strong:before {
   content: "7";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_8 div.b_portlet_header strong:before {
   content: "8";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_9 div.b_portlet_header strong:before {
   content: "9";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_10 div.b_portlet_header strong:before {
   content: "10";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_11 div.b_portlet_header strong:before {
   content: "11";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_12 div.b_portlet_header strong:before {
   content: "12";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_13 div.b_portlet_header strong:before {
   content: "13";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_14 div.b_portlet_header strong:before {
   content: "14";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_15 div.b_portlet_header strong:before {
   content: "15";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_16 div.b_portlet_header strong:before {
   content: "16";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_17 div.b_portlet_header strong:before {
   content: "17";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_18 div.b_portlet_header strong:before {
   content: "18";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_19 div.b_portlet_header strong:before {
   content: "19";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_20 div.b_portlet_header strong:before {
   content: "20";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_21 div.b_portlet_header strong:before {
   content: "21";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_22 div.b_portlet_header strong:before {
   content: "22";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_23 div.b_portlet_header strong:before {
   content: "23";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_24 div.b_portlet_header strong:before {
   content: "24";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_25 div.b_portlet_header strong:before {
   content: "25";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_26 div.b_portlet_header strong:before {
   content: "26";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_27 div.b_portlet_header strong:before {
   content: "27";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_28 div.b_portlet_header strong:before {
   content: "28";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_29 div.b_portlet_header strong:before {
   content: "29";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_30 div.b_portlet_header strong:before {
   content: "30";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_calendar.o_day_31 div.b_portlet_header strong:before {
   content: "31";
   font-size: smaller;
-  padding-right: 6px; }
+  padding-right: 16px; }
 
 div.o_portlet_infomsg div.b_portlet_header {
   background-image: url(../openolat/images/comment.png); }
@@ -7019,21 +7263,123 @@ div.b_portlet_toolbox a.b_portlet_edit_sort_manual {
   background-image: url(../openolat/images/table_gear.png); }
 div.b_portlet_toolbox span.b_portlet_edit_left_disabled {
   background-image: url(../openolat/images/arrow_left_big.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 div.b_portlet_toolbox span.b_portlet_edit_right_disabled {
   background-image: url(../openolat/images/arrow_right_big.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 div.b_portlet_toolbox span.b_portlet_edit_down_disabled {
   background-image: url(../openolat/images/arrow_down_big.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 div.b_portlet_toolbox span.b_portlet_edit_up_disabled {
   background-image: url(../openolat/images/arrow_up_big.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 div.b_portlet_toolbox span.b_portlet_edit_sort_auto_disabled {
   background-image: url(../openolat/images/table_sort.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 div.b_portlet_toolbox span.b_portlet_edit_sort_manual_disabled {
   background-image: url(../openolat/images/table_gear.png);
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=20);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.2;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.2;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
   opacity: 0.2; }
 
 .b_toolboxes {

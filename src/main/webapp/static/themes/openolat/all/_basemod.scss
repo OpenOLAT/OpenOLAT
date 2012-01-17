@@ -18,6 +18,7 @@
 */
 @media all {
 
+	
 	html{ min-height:100%;}
 /** ----------------- MAIN LAYOUT ----------------- **/
 /** 
@@ -91,12 +92,20 @@ body {
 // hide right margin+border if no right-column (col2)
 .b_hidecol2 #b_col3 {
 	margin-right: 0 ! important;
-	border-right: 0;
+	border-right: none;
 }
 // hide left margin+border if no left-column (col1)
 .b_hidecol1 #b_col3 {
 	margin-left: 0 ! important;
-	border-left: 0;
+	border-left: none;
+}
+
+// hide both margin+border if no left- and right-columns
+.b_hideboth #b_col3 {
+	margin-left: 0 !important;
+	margin-right:0 !important;
+	border-left:none;
+	border-right:none;
 }
 
 .b_hideboth #b_col1, .b_hideboth #b_col2, 
@@ -104,7 +113,6 @@ body {
 #b_ie_clearing {
 	display: none;
 }
-
 
 .b_c15r,.b_c20r,.b_c80r,.b_c85r{float:right;margin-left:-5px;}
 .b_c15l,.b_c15r{width:15%}
@@ -117,6 +125,12 @@ body {
 /* IFRAME */
 div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; border:none; margin: 0; padding: 0; background: transparent;}
 	
+
+/* RedScreen View */
+#b_main.b_exception {
+	padding-left: 165px;
+	padding-right: 165px;
+}
 	
 
 /** ----------------- HEADER AND TOP NAVIGATION ----------------- **/
@@ -184,12 +198,11 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 			background: #fff;
 			background: rgba(255,255,255,0.5);
 			
-			
 			/* -- SITES ( home, users, groups, etc. ) -- */
 			&.b_nav_site { 
 	
 				//active sites
-				&.b_nav_active,&:hover {
+				&.b_nav_active,&:hover,&.b_exception {
 					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
 					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
 					background:#fff;
@@ -212,9 +225,9 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 				&.o_site_repository > div { background-image: url('../openolat/images/books-stack.png'); }
 				&.o_site_groups > div { background-image: url('../openolat/images/users.png'); }
 				&.site_demo_icon > div { background-image: url('../openolat/images/information-white.png');  }
-				&.f_site_library > div { background-image: url('../openolat/images/library.png'); }
+				&.f_site_library > div { background-image: url('../openolat/images/library.png'); } 
+				&.fx_members >  div { background-image: url('../openolat/images/users_members.png'); } 
 				&.o_site_guidemo div { background-image: url('../openolat/images/light-bulb.png') }
-				
 				&.b_resource_GroupInfoMainController div { background-image: url(../openolat/images/users.png) }
 	
 			}
@@ -270,6 +283,7 @@ div.b_tree {
 			background:transparent;
 			margin-left:0;
 			padding-left:0;
+			line-height:1.7em;
 			
 			// a tree element with icon
 			a.b_tree_icon {padding-left: 20px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}	
@@ -288,9 +302,10 @@ div.b_tree {
 				z-index: 9;
 			}
 
+
 			/* selected, hovered, active <a> tag */
-			a:focus, a:hover { color: $basecolor; background-color: white; text-decoration:underline; }	
-			a.b_tree_selected,a:active { color: $basecolor; background-color: white; text-decoration:none; }	
+			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
+			a.b_tree_selected,a:active { color: $basecolor; background-color: transparent; text-decoration:none; }	
 			li a.b_tree_selected_parents,a.b_tree_l0,strong { color: $basecolor; font-weight: bold; }
 			
 			
@@ -428,7 +443,7 @@ h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 div.b_titled_wrapper {
 	div.b_togglebox div.b_togglebox_content { background:#fff; border:0px; padding:0px; }
 	a.b_togglebox_opened { z-index:10; display:block; width:16px; height:16px; position:absolute; top:5px; left:5px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; padding:0; }
-	a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left; padding:0; opacity:0.6; }
+	a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left; padding:0; @include o-opacity(60); }
 	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
 	a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
 	a.b_togglebox_hide:hover { text-decoration:underline; }
@@ -457,8 +472,6 @@ div.o_catalog {
 	}
 }
  
-	
-	
 	
 /** -------------- TAGGING ---------------- **/
 /* tagging */

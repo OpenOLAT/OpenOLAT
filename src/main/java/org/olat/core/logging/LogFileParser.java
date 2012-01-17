@@ -213,16 +213,22 @@ public class LogFileParser extends LogDelegator {
 		SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd");
 		String today = sdb.format(now);
 		String logfilepath = null;
-		if (today.equals(reqdate) == false) {
+		if (! today.equals(reqdate)) {
 			logfilepath  = logfilepathBase + "." + yyyy + "-" + mm + "-" + dd;
 		}else {
 			logfilepath = logfilepathBase;
 		}
-		log.info("logfilepath changed to " + logfilepath + " (" + today + "|" + reqdate + ")");
+		log.info("logfilepath changed to " + logfilepath + "  (today: " + today + ",  requested date:" + reqdate + ")");
 		int counter = linecount;
 		int founderror = 0;
+		final File logFile = new File(logfilepath);
+		if(!logFile.exists() || !logFile.canRead()){
+			errormsg.add("logfile <b>"+logfilepath+"</b> does not exist or unable to read from");
+			return errormsg;
+		}
+			
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(logfilepath));
+			BufferedReader br = new BufferedReader(new FileReader(logFile));
 			while ((line = br.readLine()) != null) {
 				if (counter == 0) {
 					errormsg.add(line);
@@ -248,6 +254,8 @@ public class LogFileParser extends LogDelegator {
 				}
 				memoryline = line;
 			}
+			br.close();
+
 			if (founderror > 0) {
 				if (counter < linecount) {
 					while (counter > 0) {
@@ -256,7 +264,11 @@ public class LogFileParser extends LogDelegator {
 					}
 				}
 			}
-			br.close();
+			
+			if (founderror == 0){
+				errormsg.add("no error with number "+errorNumber+" found in "+logfilepath);
+			}
+			
 			return errormsg;
 		} catch (IOException e) {
 			throw new OLATRuntimeException("error reading OLAT error log at " + logfilepath, e);

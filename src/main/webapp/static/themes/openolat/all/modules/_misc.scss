@@ -1,9 +1,18 @@
 /*  misc */
 
 
-/* BUSINESS CARD */
-div.o_bcard { background-color: #eee; margin-top: 10px;}
-div.o_bcard_header, div.o_members_header {color: #fff; background-color: #777; padding: 2px;}
+/* BUSINESS CARD &  Member site, members search  */
+div.o_members_search { padding-top: 10px; padding-left: 10px;  }
+div.filters { text-align: center; padding-top: 1.5em; }
+div.o_members_search div.searchitem { margin-bottom: 0.5em; }
+div.searchitem select, div.searchitem input { width: 250px; }
+.o_members_register { margin-bottom: 5px; }
+.o_members_register_active { font-weight: bold; font-size: 120%; }
+div.o_members_paging { width: 100%; padding-bottom: 1em; padding-top: 0.5em; text-align: center; }
+div.o_members_paging div { padding-left: 1em; padding-right: 1em; display: inline; }
+	
+div.o_bcard { background-color: #eee; margin-top: 10px; @include o-border-radius(6px); }
+div.o_bcard_header, div.o_members_header {padding: 6px; border-bottom:1px solid #fff; }
 div.o_bcard_portrait {
 		float: left; display:inline; width: 100px; height: 100px; margin: 10px; 
 		img {border:1px #d3d3d3 solid;}
@@ -11,6 +20,16 @@ div.o_bcard_portrait {
 div.o_bcard_portrait_group { background-image: url(../openolat/images/group_100x100.png); border:1px #d3d3d3 solid;}
 div.o_bcard_text {margin-left: 120px; margin-top: 10px; line-height:150%}
 div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31, 73, 179); padding: 5px;}
+
+
+/*  social links (FB, twitter, google) */
+#fx_share {
+	float: left;
+	clear: left;
+	margin-top: 0.5em;
+	width: 250px;
+}
+
 
 
 /* INFO MESSAGES */

@@ -28,13 +28,18 @@ $basegray_ultra_light: #eee !default;
 /* here you can define the two small icons used in trees:  + and - */ 
 $ico_plus : '../openolat/images/toggle-small-expand.png'  !default;
 $ico_minus : '../openolat/images/toggle-small.png'  !default;
-$defaultfont : Century Gothic, Apple Gothic, sans-serif !default;
-$defaultfontsize : 75% !default;
 
+/* the defaultfont used in : text, main content, etc. */
+$defaultfont : Arial, sans-serif !default;
+/* the font used in :  navigation (tabs + tree), headings */
+$headerfont : Century Gothic, Apple Gothic, sans-serif !default;
+/* the overall default font-size */ 
+$defaultfontsize : 75% !default;
 
 /* defines the body-background */
 @mixin bodybg(){
 	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 88px;
 }
+
 
 

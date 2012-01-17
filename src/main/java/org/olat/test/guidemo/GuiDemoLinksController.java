@@ -56,6 +56,7 @@ public class GuiDemoLinksController extends BasicController {
 	private Link buttonSmall;
 	private Link button;
 	private Link buttonDirty;
+	private Link buttonPreferred;
 	
 	private Link link;
 	private Link linkExtern;	
@@ -86,6 +87,8 @@ public class GuiDemoLinksController extends BasicController {
 		button = LinkFactory.createButton("button", mainVC, this);
 		buttonDirty = LinkFactory.createButton("button.dirty", mainVC, this);
 		buttonDirty.setCustomEnabledLinkCSS("b_button b_button_dirty");
+		buttonPreferred = LinkFactory.createButton("button.preferred", mainVC, this);
+		buttonPreferred.setCustomEnabledLinkCSS("b_button b_button_preferred");
 
 		Link buttonDisabled = LinkFactory.createCustomLink("button.disabled", "button.disabled", "button.disabled", Link.BUTTON, mainVC, this);
 		buttonDisabled.setEnabled(false);
@@ -113,8 +116,10 @@ public class GuiDemoLinksController extends BasicController {
 		TextFactory.createTextComponentFromString("text.simple", "Hello World, this text is hardcoded", null, true, mainVC);
 		TextFactory.createTextComponentFromI18nKey("text.translated", "text.translated", getTranslator(), null, true, mainVC);
 		counterText = TextFactory.createTextComponentFromString("text.simple.counter", "I'm counting events fron this controller: 0", null, true, mainVC);
-		TextFactory.createTextComponentFromString("text.span", "I'm a text in a SPAN", "b_dimmed b_border_box", true, mainVC);
-		TextFactory.createTextComponentFromString("text.div", "I'm a text in a DIV", "b_warning b_border_box", false, mainVC);
+		TextFactory.createTextComponentFromString("text.span", "I'm a text in a SPAN", null, true, mainVC);
+		TextFactory.createTextComponentFromString("text.div", "I'm a text in a DIV (with optional CSS class <b>b_warning b_border_box</b>)", "b_warning b_border_box", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>b_note </b>)", "b_note", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.dimmed", "I'm a text in a DIV (with optional CSS class <b>b_dimmed b_border_box</b>)", "b_dimmed b_border_box", false, mainVC);
 		
 		//add sourceview control
 		Controller sourceView = new SourceViewController(ureq, wControl, this.getClass(), mainVC);

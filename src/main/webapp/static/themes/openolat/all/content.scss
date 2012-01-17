@@ -23,21 +23,19 @@
 @import "mixins";
 
 
-* {
-	font-family: $defaultfont;
-}
-
-textarea, pre, tt, code { font-size: 90%; color:inherit; line-height:inherit;margin:inherit;}
-
+textarea, pre, tt, code { font-family: $defaultfont; font-size: 90%; color:inherit; line-height:inherit;margin:inherit;}
 
 body {
+	font-family: $defaultfont;
 	font-size: $defaultfontsize;
 	color:#444;
 }
 
+#b_header #b_topnav,#b_nav_main, div.b_tree { font-family: $headerfont; }
+
 /** ----------------- HEADERS ----------------- **/
 
-h1,h2,h3,h4,h5,h6 { font-weight:bold; margin: 0 0 0.25em 0; }
+h1,h2,h3,h4,h5,h6 {font-family: $headerfont;  font-weight:bold; margin: 0 0 0.25em 0; }
 h1 { font-size: 200% }                        /* 24px */
 h2 { font-size: 166.67% }                     /* 20px */
 h3 { font-size: 150% }                        /* 18px */
@@ -96,10 +94,10 @@ div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
 .b_align_inverse { text-align: right; }
 .b_quote_wrapper { position: relative; margin: 20px; }
 .b_quote_author { background: url(../openolat/images/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
-blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464; }
-.b_border_box { border: 1px solid #ccc; padding: 1em; }
+blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464;background:#fff; }
+.b_border_box { border: 1px solid #ccc; padding: 1em; @include o-border-radius(2px); }
 .b_warning { padding: 1em; border: 2px #ffc659 solid; @include o-border-radius(4px); @include o-gradient2(#ffe49c,#fff4da); }
-.b_dimmed { -moz-opacity: 0.4; opacity:0.4; filter: alpha(opacity=40);}
+.b_dimmed { @include o-opacity(40); }
 .o_ochre { color: #c8a959; }
 	
 /* FLOTING STYLES */
@@ -197,18 +195,15 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 		div.b_rating_explanation { clear: both; font-size: 90%; }
 	}
 	
-	
 
 	/* AJAX AUTOCOMPLETER only color styles override */
 	div.b_form_auto_completer input { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0px; padding: 0; }
 	div.b_form_auto_completer input:focus { border: 1px solid #504D4E; background: #FFF; }
 	div.b_form_auto_completer_item { background-color:#FFF; text-align: left; padding-top: 2px; padding-bottom: 2px;}
-	div.b_form_auto_completer_item.x-combo-selected { background-color: #c4d0dc; border-left:0 ! important; border-right:0 ! important;}
+	div.b_form_auto_completer_item.x-combo-selected { background-color: $basecolor_ultra_light; border-left:0 ! important; border-right:0 ! important;}
 	div.b_form_auto_completer_item span.b_key { color: #999; margin-right: 2px; }
 	div.b_form_auto_completer_item span.b_value { }
 	div.b_form_auto_completer_item.b_error_icon { color: #990000; font-style: italic;}
 		
-
-
 
 
