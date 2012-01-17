@@ -42,6 +42,7 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.NoPermissionException;
 import javax.naming.NotContextException;
 import javax.naming.OperationNotSupportedException;
 import javax.naming.directory.AttributeModificationException;
@@ -88,11 +89,6 @@ public class VFSDirContext extends BaseDirContext {
 	//private static org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(VFSDirContext.class);
 
 	// -------------------------------------------------------------- Constants
-
-	/**
-	 * The string manager for this package.
-	 */
-	private StringManager smgr = new StringManager();
 
 	/**
 	 * The descriptive information string for this implementation.
@@ -248,7 +244,7 @@ public class VFSDirContext extends BaseDirContext {
 	public Object lookup(String name) throws NamingException {
 		
 		VFSItem item = resolveFile(name);
-		if (item == null) throw new NamingException(smgr.getString("resources.notFound", name));
+		if (item == null) throw new NamingException("Resources not found: " + name);
 
 		if (item instanceof VFSContainer) {
 			VFSDirContext tempContext = new VFSDirContext(env);
@@ -337,13 +333,21 @@ public class VFSDirContext extends BaseDirContext {
 	 * @exception NamingException if a naming exception is encountered
 	 */
 	public void unbind(String name) throws NamingException {
+		VFSItem item = resolveFile(name);
+		if (item == null) {
+			throw new NamingException("Resources not found" + name);
+		}
 
-		VFSItem file = resolveFile(name);
-		if (file == null) throw new NamingException(smgr.getString("resources.notFound", name));
-
-		VFSStatus status = file.delete();
-		if (status == VFSConstants.NO)
-			throw new NamingException(smgr.getString("resources.unbindFailed", name));
+		if (item != null && VFSConstants.YES.equals(item.canDelete())) {
+			if(MetaInfoHelper.isLocked(item, userSession)) {
+				throw new NamingException("File locked: " + name);
+			}
+		}
+		
+		VFSStatus status = item.delete();
+		if (status == VFSConstants.NO) {
+			throw new NamingException("resources unbind failed" + name);
+		}
 	}
 
 	/**
@@ -360,15 +364,22 @@ public class VFSDirContext extends BaseDirContext {
 	public void rename(String oldName, String newName) throws NamingException {
 
 		VFSItem oldFile = resolveFile(oldName);
-		if (oldFile == null) throw new NamingException(smgr.getString("resources.notFound", oldName));
+		if (oldFile == null) {
+			throw new NamingException("Resources not found: " + oldName);
+		}
+		if(MetaInfoHelper.isLocked(oldFile, userSession)) {
+			throw new NoPermissionException("Locked");
+		}
 
 		VFSItem newFile = resolveFile(newName);
-		if (newFile != null)
+		if (newFile != null) {
 			throw new NameAlreadyBoundException();
+		}
 		
 		VFSStatus status = oldFile.rename(newName);
-		if (status == VFSConstants.NO)
+		if (status == VFSConstants.NO) {
 			throw new NameAlreadyBoundException();
+		}
 	}
 
 	/**
@@ -386,7 +397,7 @@ public class VFSDirContext extends BaseDirContext {
 	public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
 
 		VFSItem file = resolveFile(name);
-		if (file == null) throw new NamingException(smgr.getString("resources.notFound", name));
+		if (file == null) throw new NamingException("Resources not found: " + name);
 		return new NamingContextEnumeration(list(file).iterator());
 
 	}
@@ -485,7 +496,7 @@ public class VFSDirContext extends BaseDirContext {
 
 		// Building attribute list
 		VFSItem file = resolveFile(name);
-		if (file == null) throw new NamingException(smgr.getString("resources.notFound", name));
+		if (file == null) throw new NamingException("Resources not found" + name);
 		return new VFSResourceAttributes(file);
 
 	}
@@ -552,7 +563,7 @@ public class VFSDirContext extends BaseDirContext {
 
 		// Note: No custom attributes allowed
 		VFSItem file = resolveFile(name);
-		if (file != null) throw new NameAlreadyBoundException(smgr.getString("resources.alreadyBound", name));
+		if (file != null) throw new NameAlreadyBoundException("Resources already bound" + name);
 		
 		int lastSlash = name.lastIndexOf('/');
 		if (lastSlash == -1) throw new NamingException();
@@ -560,11 +571,11 @@ public class VFSDirContext extends BaseDirContext {
 		VFSItem folder = resolveFile(parent);
 		
 		if (folder == null || (!(folder instanceof VFSContainer)))
-			throw new NamingException(smgr.getString("resources.bindFailed", name));
+			throw new NamingException("Resources bind failed: " + name);
 		String newName = name.substring(lastSlash + 1);
 		VFSLeaf childLeaf = ((VFSContainer)folder).createChildLeaf(newName);
 		if (childLeaf == null)
-			throw new NamingException(smgr.getString("resources.bindFailed", name));
+			throw new NamingException("Resources bind failed: " + name);
 		copyVFS(childLeaf, name, obj, attrs);
 		
 		VFSSecurityCallback callback = folder.getLocalSecurityCallback();
@@ -617,8 +628,12 @@ public class VFSDirContext extends BaseDirContext {
 
 		VFSItem vfsItem = resolveFile(name);
 		if (vfsItem == null || (!(vfsItem instanceof VFSLeaf))) {
-			throw new NamingException(smgr.getString("resources.bindFailed", name));
+			throw new NamingException("Resources bind failed" + name);
 		}
+		if(MetaInfoHelper.isLocked(vfsItem, userSession)) {
+			throw new NoPermissionException("Locked");
+		}
+
 		VFSLeaf file = (VFSLeaf)vfsItem;
 		if(file instanceof Versionable && ((Versionable)file).getVersions().isVersioned()) {
 			if(file.getSize() == 0) {
@@ -663,7 +678,9 @@ public class VFSDirContext extends BaseDirContext {
 			createSubcontext(name, attrs);
 			return;
 		}
-		if (is == null) throw new NamingException(smgr.getString("resources.bindFailed", name));
+		if (is == null) {
+			throw new NamingException("Resources bind failed: " + name);
+		}
 
 		// Try to get Quota
 		long quotaLeft = -1;
@@ -697,8 +714,10 @@ public class VFSDirContext extends BaseDirContext {
 		} catch (Exception e) {
 			FileUtils.closeSafely(os); // close first, in order to be able to delete any reamins of the file
 			file.delete();
-			if (e instanceof NamingException) throw (NamingException)e;
-			throw new NamingException(smgr.getString("resources.bindFailed"));
+			if (e instanceof NamingException) {
+				throw (NamingException)e;
+			}
+			throw new NamingException("Resources bind failed");
 		} finally {
 			FileUtils.closeSafely(os);
 			FileUtils.closeSafely(is);
@@ -731,18 +750,18 @@ public class VFSDirContext extends BaseDirContext {
 	public DirContext createSubcontext(String name, Attributes attrs) throws NamingException {
 
 		VFSItem file = resolveFile(name);
-		if (file != null) throw new NameAlreadyBoundException(smgr.getString("resources.alreadyBound", name));
+		if (file != null) throw new NameAlreadyBoundException("Resources already bound" + name);
 		
 		int lastSlash = name.lastIndexOf('/');
 		if (lastSlash == -1) throw new NamingException();
 		String parent = name.substring(0, lastSlash);
 		VFSItem folder = resolveFile(parent);
 		if (folder == null || (!(folder instanceof VFSContainer)))
-			throw new NamingException(smgr.getString("resources.bindFailed", name));
+			throw new NamingException("Resources bind failed" + name);
 		String newName = name.substring(lastSlash + 1);
 		VFSItem childContainer = ((VFSContainer)folder).createChildContainer(newName);
 		if (childContainer == null)
-			throw new NamingException(smgr.getString("resources.bindFailed", name));
+			throw new NamingException("Resources bind failed" + name);
 		return (DirContext)lookup(name);
 
 	}
@@ -957,6 +976,8 @@ public class VFSDirContext extends BaseDirContext {
 	 * (to speed up simple checks, like checking the last modified date).
 	 */
 	protected class VFSResourceAttributes extends ResourceAttributes {
+		
+		private static final long serialVersionUID = 4144775626100809634L;
 
 		// -------------------------------------------------------- Constructor
 
@@ -1063,22 +1084,6 @@ public class VFSDirContext extends BaseDirContext {
 		public String getResourceType() {
 			if (!accessed) isCollection(); // needed to initialize
 			return super.getResourceType();
-		}
-
-	}
-
-	protected class StringManager {
-
-		public StringManager() {
-			// dummy implementation
-		}
-
-		public String getString(String in) {
-			return in;
-		}
-
-		public String getString(String in, String arg) {
-			return in;
 		}
 
 	}
