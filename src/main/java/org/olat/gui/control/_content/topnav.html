@@ -22,11 +22,11 @@
 	<li id="o_topnav_printview">
 		<a href="javascript:b_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" >$r.translate("topnav.printview")</a>
 	</li>
-
+#if ($r.available("topnav.help"))
 	<li id="o_topnav_help">
 		$r.render("topnav.help")
 	</li>
-	
+#end
 #if (!$isGuest)
 	<li id="o_topnav_logout">
 		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out

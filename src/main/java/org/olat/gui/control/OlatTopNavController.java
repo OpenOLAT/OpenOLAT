@@ -99,10 +99,13 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		}
 		//
 		// the help link
-		helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
-		helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
-		helpLink.setTooltip("topnav.help.alt", false);
-		helpLink.setTarget("_help");		
+		if(!isInvitee) {
+			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
+			helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
+			helpLink.setTooltip("topnav.help.alt", false);
+			helpLink.setTarget("_help");
+		}
+		
 		// login link
 		if (ureq.getIdentity() == null) {
 			topNavVC.contextPut("isGuest", Boolean.TRUE);
