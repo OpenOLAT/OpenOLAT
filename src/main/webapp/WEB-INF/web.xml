@@ -37,6 +37,7 @@
 					classpath:/org/olat/core/util/event/_spring/frameworkStartedEventCorecontext.xml
 					classpath:/org/olat/core/id/context/_spring/historyCorecontext.xml
 					
+					classpath:/org/olat/core/commons/controllers/resume/_spring/resumeCorecontext.xml
 					classpath:/org/olat/core/commons/persistence/_spring/databaseCorecontext.xml
 					classpath:/org/olat/core/commons/taskExecutor/_spring/taskExecutorCorecontext.xml
 					classpath:/org/olat/core/commons/fullWebApp/util/_spring/StickyMessageCorecontext.xml

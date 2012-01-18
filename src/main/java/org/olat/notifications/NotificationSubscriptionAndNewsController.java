@@ -158,6 +158,8 @@ public class NotificationSubscriptionAndNewsController extends BasicController i
 		} else if("notifications".equals(path)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			newsCtr.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if(path.startsWith("type")){
+			newsCtr.activate(ureq, entries, state);
 		} else {
 			tabbedPane.activate(ureq, entries, state);
 		}
