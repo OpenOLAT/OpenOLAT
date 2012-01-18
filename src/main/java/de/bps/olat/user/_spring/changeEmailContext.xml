@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="changeemail.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="changeemail.AfterLoginConfig"/>
+		</property>
+	</bean>
+
+	<bean id="changeemail.AfterLoginConfig" class="org.olat.login.AfterLoginConfig">
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="de.bps.olat.user.ChangeEMailExecuteController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>true</value></entry>
+					<entry key="redoTimeout"><value>0</value></entry>
+					<entry key="i18nIntro"><value>de.bps.olat.user:changeemail</value></entry>
+					<entry key="order"><value>0</value></entry>
+				</map>
+			</list>
+		</property>
+	</bean>
+
+</beans>
