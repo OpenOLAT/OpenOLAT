@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.site.UserAdminSite;
+import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -186,6 +188,11 @@ public class UserModule extends AbstractOLATModule {
 		// Add controller factory extension point to launch user profile controller
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(Identity.class.getSimpleName(),
 				new IdentityContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
+				new UserAdminContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(UserAdminSite.class.getSimpleName(),
+				new UserAdminContextEntryControllerCreator());
+		
 		
 		// Append AfterLoginControllers if any configured
 			if (afterLoginConfig != null) {

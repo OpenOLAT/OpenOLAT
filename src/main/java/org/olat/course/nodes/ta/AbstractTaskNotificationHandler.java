@@ -38,6 +38,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.util.Util;
@@ -99,7 +100,7 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 							
 							Date modDate = fi.getLastModified();
 							String desc = translator.translate(getNotificationEntryKey(), new String[] { filePath, fullUserName }); 
-							String urlToSend = NotificationHelper.getURLFromBusinessPathString(p, p.getBusinessPath());
+							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(p.getBusinessPath());
 							
 							String iconCssClass =  null;
 							if (metaInfo != null) {

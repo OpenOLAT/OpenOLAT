@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.NewControllerFactory;
+import org.olat.admin.site.AdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
@@ -37,6 +38,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.User;
+import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.instantMessaging.rosterandchat.ChangePresenceJob;
@@ -234,6 +236,9 @@ public class AdminModule extends AbstractOLATModule {
 				new UserAdminContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("NewIdentityCreated",
 				new UserAdminContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(AdminSite.class.getSimpleName(),
+				new SiteContextEntryControllerCreator(AdminSite.class));
+		
 	}
 
 	@Override

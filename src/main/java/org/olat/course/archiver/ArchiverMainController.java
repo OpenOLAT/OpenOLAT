@@ -260,7 +260,6 @@ public class ArchiverMainController extends MainLayoutBasicController {
 				// inform only once
 				if (!extensionLogged) {
 					extensionLogged = true;
-					extm.inform(extensionPointMenu, anExt, "added menu entry (for locale " + locale.toString() + " '" + menuText + "'");
 				}
 			}
 		}

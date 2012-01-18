@@ -34,6 +34,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.NotificationHelper;
@@ -143,7 +144,7 @@ public class WikiPageChangeOrCreateNotificationHandler extends LogDelegator impl
 								String bControlString = businessControlString + element.getPageName() + "]";						
 								String urlToSend = null;
 								if(p.getBusinessPath() != null) {
-									urlToSend = NotificationHelper.getURLFromBusinessPathString(p, bControlString);
+									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bControlString);
 								}
 								
 								// string[] gets filled into translation key by adding {0...n} to

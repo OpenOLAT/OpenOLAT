@@ -30,8 +30,12 @@ package org.olat.core.id.context;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +46,9 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.servlets.URLEncoder;
 
@@ -57,10 +63,13 @@ import org.olat.core.util.servlets.URLEncoder;
  */
 public class BusinessControlFactory {
 	
+	private static final OLog log = Tracing.createLoggerFor(BusinessControlFactory.class);
+	
 	private static final BusinessControlFactory INSTANCE = new BusinessControlFactory();
 	final BusinessControl EMPTY; // for performance
 	
 	private static final Pattern PAT_CE = Pattern.compile("\\[([^\\]]*)\\]");
+	private static final DateFormat ceDateFormat = new SimpleDateFormat("yyyyMMdd");
 
 	private BusinessControlFactory() {
 		// singleton
@@ -91,10 +100,6 @@ public class BusinessControlFactory {
 
 			public boolean hasContextEntry() {
 				return false;
-			}
-
-			public int getStackedCount() {
-				return 0;
 			}
 
 			@Override
@@ -231,10 +236,8 @@ public class BusinessControlFactory {
 	
 	public BusinessControl createFromString(String businessControlString) {
 		final List<ContextEntry> ces = createCEListFromString(businessControlString);
-		
-		ContextEntry rootEntry = null;
-		if (ces.isEmpty() || ((rootEntry = ces.get(0))==null)) {
-			Tracing.logWarn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is "+businessControlString, new Exception("stacktrace"), getClass());
+		if (ces.isEmpty() || ces.get(0) ==null) {
+			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is "+businessControlString, new Exception("stacktrace"));
 		}
 		return createFromContextEntries(ces);
 	}
@@ -243,7 +246,7 @@ public class BusinessControlFactory {
 	public BusinessControl createFromContextEntries(final List<ContextEntry> ces) {
 		ContextEntry rootEntry = null;
 		if (ces.isEmpty() || ((rootEntry = ces.get(0))==null)) {
-			Tracing.logWarn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty.", new Exception("stacktrace"), getClass());
+			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty.", new Exception("stacktrace"));
 		}
 		
 		//Root businessControl with RootContextEntry which must be defined (i.e. not null)
@@ -294,7 +297,7 @@ public class BusinessControlFactory {
 					Long key = Long.parseLong(keyS);
 					ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, key);
 				} catch (NumberFormatException e) {
-					Tracing.logWarn("Cannot parse business path:" + businessControlString, e, BusinessControlFactory.class);
+					log.warn("Cannot parse business path:" + businessControlString, e);
 					return Collections.emptyList();
 				}
 			}
@@ -356,6 +359,41 @@ public class BusinessControlFactory {
 		return retVal.substring(0, retVal.length()-1);
 	}
 	
+	/**
+	 * Return the standard format for date: [date=20120223:0]
+	 * @param date
+	 * @return
+	 */
+	public String getContextEntryStringForDate(Date date) {
+		StringBuilder sb = new StringBuilder("[date=");
+		synchronized(ceDateFormat) {//DateFormat isn't thread safe but costly to create, we reuse it
+			sb.append(ceDateFormat.format(date));
+		}
+		sb.append(":0]");
+		return sb.toString();
+	}
+	
+	public Date getDateFromContextEntry(ContextEntry entry) {
+		String dateEntry = entry.getOLATResourceable().getResourceableTypeName();
+		
+		Date date = null;
+		if(dateEntry.startsWith("date=")) {
+			try {
+				int sepIndex = dateEntry.indexOf(':');
+				int lastIndex = (sepIndex > 0 ? sepIndex : dateEntry.length());
+				if(lastIndex > 0) {
+					String dateStr = dateEntry.substring("date=".length(), lastIndex);
+					synchronized(ceDateFormat) {//DateFormat isn't thread safe but costly to create, we reuse it
+						date = ceDateFormat.parse(dateStr);
+					}
+				}
+			} catch (ParseException e) {
+				log.warn("Error parsing the date after activate: " + dateEntry, e);
+			}
+		}
+		return date;
+	}
+	
 	//fxdiff BAKS-7 Resume function
 	public String getPath(ContextEntry entry) {
 		String path = entry.getOLATResourceable().getResourceableTypeName();
@@ -374,7 +412,6 @@ public class BusinessControlFactory {
 			if(ceStr.startsWith("[path")) {
 				//the %2F make a problem on browsers.
 				//make the change only for path which is generally used
-				//TODO: find a better method or a better separator as |
 				ceStr = ceStr.replace("%2F", "~~");
 			}
 			ceStr = ceStr.replace(':', '/');
@@ -383,6 +420,23 @@ public class BusinessControlFactory {
 			retVal.append(ceStr);
 		}
 		return retVal.substring(0, retVal.length()-1);
+	}
+	
+	public String getURLFromBusinessPathString(String bPathString){
+		if(!StringHelper.containsNonWhitespace(bPathString)) {
+			return null;
+		}
+		
+		try {
+			BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
+			List<ContextEntry> ceList = bCF.createCEListFromString(bPathString);
+			String busPath = getBusinessPathAsURIFromCEList(ceList); 
+			
+			return Settings.getServerContextPathURI()+"/url/"+busPath;
+		} catch(Exception e) {
+			log.error("Error with business path: " + bPathString, e);
+			return null;
+		}
 	}
 	
 	public String formatFromURI(String restPart) {

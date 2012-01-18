@@ -39,6 +39,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -381,7 +382,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 								String urlToSend = null;
 								if(p.getBusinessPath() != null) {
 									String businessPath = p.getBusinessPath() + "[assessmentTool:0][Identity:" + assessedIdentity.getKey() + "][CourseNode:" + test.getIdent() + "]";
-									urlToSend = NotificationHelper.getURLFromBusinessPathString(p, businessPath);
+									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 								}
 								
 								SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSS_CLASS_USER_ICON);

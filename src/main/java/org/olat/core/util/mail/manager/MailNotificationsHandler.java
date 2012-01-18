@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -97,7 +98,7 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 					for (DBMail mail : inbox) {
 						String subject = mail.getSubject();
 						String businessPath = "[Inbox:" + mail.getKey() + "]";
-						String urlToSend = NotificationHelper.getURLFromBusinessPathString(p, businessPath);
+						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 						SubscriptionListItem subListItem = new SubscriptionListItem(subject, urlToSend, mail.getCreationDate(), "o_co_icon");
 						si.addSubscriptionListItem(subListItem);
 					}

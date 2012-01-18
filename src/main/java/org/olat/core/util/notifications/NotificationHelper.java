@@ -93,45 +93,6 @@ public class NotificationHelper {
 		return subToSubInfo;
 	}
 	
-	public static String getURLFromBusinessPathString(Publisher p, String bPathString){
-		if(!StringHelper.containsNonWhitespace(bPathString)) {
-			log.error("Publisher without businesspath: " + p.getKey() + " resName:" + p.getResName() + " subidentifier:" + p.getSubidentifier() + " data:" + p.getData());
-			return null;//TODO remove after the upgrade 
-		}
-		
-		try {
-			BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
-			List<ContextEntry> ceList = bCF.createCEListFromString(bPathString);
-			String busPath = getBusPathStringAsURIFromCEList(ceList); 
-			
-			return Settings.getServerContextPathURI()+"/url/"+busPath;
-		} catch(Exception e) {
-			log.error("Error with publisher: " + p.getKey() + " resName:" + p.getResName() + " subidentifier:" + p.getSubidentifier() + " data:" + p.getData() + " businessPath:" + p.getBusinessPath(), e);
-			return null;
-		}
-	}
-	
-	public static String getBusPathStringAsURIFromCEList(List<ContextEntry> ceList){
-		if(ceList == null || ceList.isEmpty()) return "";
-		
-		StringBuilder retVal = new StringBuilder();
-		//see code in JumpInManager, cannot be used, as it needs BusinessControl-Elements, not the path
-		for (ContextEntry contextEntry : ceList) {
-			String ceStr = contextEntry != null ? contextEntry.toString() : "NULL_ENTRY";
-			if(ceStr.startsWith("[path")) {
-				//the %2F make a problem on browsers.
-				//make the change only for path which is generally used
-				//TODO: find a better method or a better separator as |
-				ceStr = ceStr.replace("%2F", "~~");
-			}
-			ceStr = ceStr.replace(':', '/');
-			ceStr = ceStr.replaceFirst("\\]", "/");
-			ceStr= ceStr.replaceFirst("\\[", "");
-			retVal.append(ceStr);
-		}
-		return retVal.substring(0, retVal.length()-1);
-	}
-	
 	/**
 	 * returns "firstname lastname" or a translated "user unknown" for a given
 	 * identity

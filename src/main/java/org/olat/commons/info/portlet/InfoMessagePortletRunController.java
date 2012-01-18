@@ -19,8 +19,6 @@
  */
 package org.olat.commons.info.portlet;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -194,14 +192,13 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == showAllLink) {
-			DateFormat format = new SimpleDateFormat("yyyyMMdd");
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
 			cal.add(Calendar.MONTH, -1);
 			// fxdiff activate homes tab in top navigation and activate the correct
 			// menu item
 			String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][notifications:0][type=" + InfoMessage.class.getSimpleName()
-					+ ":0][date=" + format.format(cal.getTime()) + ":0]";
+					+ ":0]" + BusinessControlFactory.getInstance().getContextEntryStringForDate(cal.getTime());
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);

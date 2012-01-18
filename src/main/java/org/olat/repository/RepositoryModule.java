@@ -23,6 +23,8 @@ import org.olat.NewControllerFactory;
 import org.olat.catalog.CatalogEntry;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.repository.site.RepositorySite;
 
 /**
  * Description:<br>
@@ -45,6 +47,10 @@ public class RepositoryModule extends AbstractOLATModule {
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),
 				new CatalogContextEntryControllerCreator());
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositorySite.class.getSimpleName(),
+				new SiteContextEntryControllerCreator(RepositorySite.class));
+		
 	}
 
 	/**

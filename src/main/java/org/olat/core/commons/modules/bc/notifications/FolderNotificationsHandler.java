@@ -37,6 +37,7 @@ import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -109,7 +110,7 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 					String desc = translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(ident) });
 					String urlToSend = null;
 					if(p.getBusinessPath() != null) {
-						urlToSend = NotificationHelper.getURLFromBusinessPathString(p, businessPath + fi.getRelPath() + "]");
+						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath + fi.getRelPath() + "]");
 					}
 					subListItem = new SubscriptionListItem(desc, urlToSend, modDate, iconCssClass);
 					si.addSubscriptionListItem(subListItem);

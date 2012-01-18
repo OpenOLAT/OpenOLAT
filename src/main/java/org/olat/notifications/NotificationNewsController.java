@@ -164,7 +164,7 @@ class NotificationNewsController extends BasicController implements Activateable
 	}
 
 	/**
-	 * Can set type and date of the controller: identifier in the ofrm of [type=Type:0][date=yyyymmdd:0]
+	 * Can set type and date of the controller: identifier in the ofrm of [type=Type:0][date=yyyyMMdd:0]
 	 * @see org.olat.core.gui.control.generic.dtabs.Activateable#activate(org.olat.core.gui.UserRequest, java.lang.String)
 	 */
 	@Override

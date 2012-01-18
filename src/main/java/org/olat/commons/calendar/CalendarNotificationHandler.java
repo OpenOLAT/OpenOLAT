@@ -28,11 +28,11 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.core.util.notifications.NotificationsHandler;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
@@ -145,7 +145,7 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 							}
 							String desc = translator.translate("cal.notifications.entry", new String[] { subject, dateStr, location, author });
 							String businessPath = bPath + "[path=" + kalendarEvent.getID() + ":0]";
-							String urlToSend = NotificationHelper.getURLFromBusinessPathString(p, businessPath);
+							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 							SubscriptionListItem subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSS_CLASS_CALENDAR_ICON);
 							si.addSubscriptionListItem(subListItem);
 						}

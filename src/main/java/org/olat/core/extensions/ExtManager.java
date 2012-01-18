@@ -56,7 +56,7 @@ public class ExtManager extends LogDelegator {
 	
   private Map<Long,Extension> idExtensionlookup;
 	
-  private Map<String,GenericActionExtension> navKeyGAExtensionlookup;
+  private Map<ExtensionPointKeyPair,GenericActionExtension> navKeyGAExtensionlookup;
   
 	/**
 	 * @return the instance
@@ -112,8 +112,11 @@ public class ExtManager extends LogDelegator {
 	 * @param navKey
 	 * @return the GenericActionExtension or null
 	 */
-	public GenericActionExtension getActionExtensioByNavigationKey(String navKey) {
-		if (navKeyGAExtensionlookup.containsKey(navKey)) return navKeyGAExtensionlookup.get(navKey);
+	public GenericActionExtension getActionExtensioByNavigationKey(String extensionPoint, String navKey) {
+		ExtensionPointKeyPair key = new ExtensionPointKeyPair(extensionPoint, navKey);
+		if (navKeyGAExtensionlookup.containsKey(key)) {
+			return navKeyGAExtensionlookup.get(key);
+		}
 		return null;
 	}
 	
@@ -138,21 +141,12 @@ public class ExtManager extends LogDelegator {
 	public long getTimeOfExtensionStartup() {
 		return timeOfExtensionStartup;
 	}
-
-	/**
-	 * @param extensionPoint
-	 * @param anExt
-	 * @param addInfo additional info to log
-	 */
-	public void inform(Class extensionPoint, Extension anExt, String addInfo) {
-		//Tracing.logAudit(this.getClass(), info: "+addInfo);		// TODO Auto-generated method stub		
-	}
 	
 	private void initExtentions() {
 		logInfo("****** start loading extensions *********");
 		Map<Integer, Extension> orderKeys = new HashMap<Integer, Extension>();
 		idExtensionlookup = new HashMap<Long, Extension>();
-		navKeyGAExtensionlookup = new HashMap<String, GenericActionExtension>();
+		navKeyGAExtensionlookup = new HashMap<ExtensionPointKeyPair, GenericActionExtension>();
 		
 		extensions = new ArrayList<Extension>();
 		Map<String, Object> extensionMap = CoreSpringFactory.getBeansOfType(CoreBeanTypes.extension);
@@ -194,14 +188,18 @@ public class ExtManager extends LogDelegator {
 				idExtensionlookup.put(uid, extension);
 				if (extension instanceof GenericActionExtension) {
 					GenericActionExtension gAE = (GenericActionExtension) extension;
-					if (StringHelper.containsNonWhitespace(gAE.getNavigationKey())) {
-						if (!navKeyGAExtensionlookup.containsKey(gAE.getNavigationKey())) {
-							navKeyGAExtensionlookup.put(gAE.getNavigationKey(), gAE);
-						} else {
-							count_duplnavkey++;
-							logInfo(
+					if (StringHelper.containsNonWhitespace(gAE.getNavigationKey()) && gAE.getExtensionPoints() != null) {
+						List<String>extensionPoints = gAE.getExtensionPoints();
+						for(String extensionPoint:extensionPoints) {
+							ExtensionPointKeyPair key = new ExtensionPointKeyPair(extensionPoint, gAE.getNavigationKey());
+							if (navKeyGAExtensionlookup.containsKey(key)) {
+								count_duplnavkey++;
+								logInfo(
 									"Devel-Info :: duplicate navigation-key for extension :: " + gAE.getNavigationKey() + " [ [" + idExtensionlookup.get(uid)
-											+ "]  and [" + extension + "] ]", null);
+									+ "]  and [" + extension + "] ]", null);
+							} else {
+									navKeyGAExtensionlookup.put(key, gAE);
+							}
 						}
 					}
 				}
@@ -210,6 +208,34 @@ public class ExtManager extends LogDelegator {
 		}
 		logInfo("Devel-Info :: initExtensions done. :: "+count_disabled+" disabled Extensions, "+count_duplid+" extensions with duplicate ids, "+count_duplnavkey+ " extensions with duplicate navigationKeys");
 		Collections.sort(extensions);
+	}
+	
+	private class ExtensionPointKeyPair {
+		private String extensionPoint;
+		private String navigationKey;
+		
+		public ExtensionPointKeyPair(String extensionPoint, String navigationKey) {
+			this.extensionPoint = extensionPoint;
+			this.navigationKey = navigationKey;
+		}
+		@Override
+		public int hashCode() {
+			return (extensionPoint  == null ? 9967811 : extensionPoint.hashCode()) + 
+					(navigationKey == null ? 8544 : navigationKey.hashCode());
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof ExtensionPointKeyPair) {
+				ExtensionPointKeyPair pair = (ExtensionPointKeyPair)obj;
+				return extensionPoint != null && extensionPoint.equals(pair.extensionPoint)
+						&& navigationKey != null && navigationKey.equals(pair.navigationKey);
+			}
+			
+			return false;
+		}
 	}
 
 }

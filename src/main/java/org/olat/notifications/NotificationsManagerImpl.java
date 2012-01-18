@@ -49,6 +49,7 @@ import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -1024,7 +1025,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			itemLink = subsInfo.getCustomUrl();
 		}
 		if(itemLink == null && pub.getBusinessPath() != null) {
-			itemLink = NotificationHelper.getURLFromBusinessPathString(pub, pub.getBusinessPath());
+			itemLink = BusinessControlFactory.getInstance().getURLFromBusinessPathString(pub.getBusinessPath());
 		}
 		
 		String description = subsInfo.getSpecificInfo(mimeTypeContent, locale);

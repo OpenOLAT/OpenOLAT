@@ -136,7 +136,6 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 					SiteDefinition sdef = (SiteDefinition) it_extsites.next();
 					SiteInstance si = sdef.createSite(ureq, wControl);
 					sites.add(si);
-					extm.inform(extensionPointSites, anExt, "added sitedefinition " + sdef.getClass().getName());
 				}
 			}
 		}

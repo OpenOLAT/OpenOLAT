@@ -17,64 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+
+package org.olat.home;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.group.site.GroupsManagementSite;
-import org.olat.group.site.GroupsSite;
+import org.olat.home.controllerCreators.GuestHomeCEControllerCreator;
 
 /**
- * Description:<br>
- * The business group module initializes the OLAT groups environment.
- * Configurations are loaded from here.
- * <P>
- * Initial Date: 04.11.2009 <br>
  * 
- * @author gnaegi
+ * Description:<br>
+ * 
+ * <P>
+ * Initial Date:  18 janv. 2012 <br>
+ *
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupModule extends AbstractOLATModule {
-	
-	/**
-	 * [used by spring]
-	 */
-	private BusinessGroupModule() {
-		//
-	}
+public class HomeModule extends AbstractOLATModule {
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#init()
-	 */
 	@Override
 	public void init() {
-		// Add controller factory extension point to launch groups
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(BusinessGroup.class.getSimpleName(),
-				new BusinessGroupContextEntryControllerCreator());
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsSite.class.getSimpleName(),
-				new SiteContextEntryControllerCreator(GroupsSite.class));
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsManagementSite.class.getSimpleName(),
-				new SiteContextEntryControllerCreator(GroupsManagementSite.class));
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(HomeSite.class.getSimpleName(),
+				new SiteContextEntryControllerCreator(HomeSite.class));
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("Guest",
+				new GuestHomeCEControllerCreator());
 		
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initDefaultProperties()
-	 */
 	@Override
 	protected void initDefaultProperties() {
-	// nothing to init
+		//
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initFromChangedProperties()
-	 */
 	@Override
 	protected void initFromChangedProperties() {
-	// nothing to init
+		//
 	}
-
+	
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;

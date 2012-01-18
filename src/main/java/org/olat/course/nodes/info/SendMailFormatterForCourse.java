@@ -31,7 +31,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.util.notifications.NotificationHelper;
 
 /**
  * 
@@ -69,7 +68,7 @@ public class SendMailFormatterForCourse implements MailFormatter {
 	public String getBody(InfoMessage msg) {
 		BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
 		List<ContextEntry> ceList = bCF.createCEListFromString(businessPath);
-		String busPath = NotificationHelper.getBusPathStringAsURIFromCEList(ceList); 
+		String busPath = BusinessControlFactory.getInstance().getBusinessPathAsURIFromCEList(ceList); 
 
 		String author =	msg.getAuthor().getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + msg.getAuthor().getUser().getProperty(UserConstants.LASTNAME, null);
 		String date = DateFormat.getDateInstance(DateFormat.MEDIUM, translator.getLocale()).format(msg.getCreationDate());

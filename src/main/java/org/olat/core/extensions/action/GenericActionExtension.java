@@ -201,6 +201,10 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	public void setNavigationKey(String navKey) {
 		this.navigationKey = navKey;
 	}
+	
+	public List<String> getExtensionPoints() {
+		return extensionPoints;
+	}
 
 	public void setExtensionPoints(List<String> extensionPoints) {
 		this.extensionPoints = extensionPoints;

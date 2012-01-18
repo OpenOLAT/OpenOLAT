@@ -26,7 +26,6 @@
 package org.olat.portal.calendar;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -40,7 +39,6 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -57,12 +55,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.home.HomeCalendarController;
-import org.olat.home.HomeSite;
 
 /**
  * 
@@ -184,11 +180,12 @@ public class CalendarPortletRunController extends BasicController {
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowid = te.getRowId();
 					KalendarEvent kalendarEvent = (KalendarEvent)((DefaultTableDataModel)tableController.getTableDataModel()).getObject(rowid);
-					Date startDate = kalendarEvent.getBegin();
-					String activationCmd = "cal." + new SimpleDateFormat("yyyy.MM.dd").format(startDate);
-					DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-					//was brasato:: getWindowControl().getDTabs().activateStatic(ureq, HomeSite.class.getName(), activationCmd);
-					dts.activateStatic(ureq, HomeSite.class.getName(), activationCmd);
+					String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][calendar:0]"
+							+ BusinessControlFactory.getInstance().getContextEntryStringForDate(kalendarEvent.getBegin());
+					BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+					NewControllerFactory.getInstance().launch(ureq, bwControl);
+					
 				}
 			}
 		}

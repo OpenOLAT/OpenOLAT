@@ -28,6 +28,7 @@ import org.olat.commons.info.manager.InfoMessageManager;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.NotificationHelper;
@@ -87,7 +88,7 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 					String desc = info.getTitle();
 					String tooltip = info.getMessage();
 					String infoBusinessPath = info.getBusinessPath() + "[InfoMessage:" + info.getKey() + "]";
-					String urlToSend = NotificationHelper.getURLFromBusinessPathString(p, infoBusinessPath);
+					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(infoBusinessPath);
 					Date dateInfo = info.getModificationDate() == null ? info.getCreationDate() : info.getModificationDate();
 					SubscriptionListItem subListItem = new SubscriptionListItem(desc, tooltip, urlToSend, dateInfo, CSS_CLASS_ICON);
 					si.addSubscriptionListItem(subListItem);

@@ -47,7 +47,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
@@ -67,7 +70,7 @@ import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
-public class HomeCalendarController extends BasicController implements Activateable, GenericEventListener {
+public class HomeCalendarController extends BasicController implements Activateable, Activateable2, GenericEventListener {
 
 	OLog log = Tracing.createLoggerFor(this.getClass());
 	
@@ -103,6 +106,13 @@ public class HomeCalendarController extends BasicController implements Activatea
 		Calendar cal = Calendar.getInstance();
 		cal.set(Integer.parseInt(year), Integer.parseInt(month) - 1, Integer.parseInt(day));
 		calendarController.setFocus(cal.getTime());
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && !entries.isEmpty() && calendarController instanceof Activateable2) {
+			((Activateable2)calendarController).activate(ureq, entries, state);
+		}
 	}
 
 	public static List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {

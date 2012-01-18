@@ -58,9 +58,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
@@ -75,7 +79,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 import de.bps.olat.util.notifications.SubscriptionProvider;
 import de.bps.olat.util.notifications.SubscriptionProviderImpl;
 
-public class WeeklyCalendarController extends BasicController implements CalendarController, GenericEventListener {
+public class WeeklyCalendarController extends BasicController implements Activateable2, CalendarController, GenericEventListener {
 
 	private static final String CMD_PREVIOUS_WEEK = "pw";
 	private static final String CMD_NEXT_WEEK = "nw";
@@ -502,6 +506,20 @@ public class WeeklyCalendarController extends BasicController implements Calenda
 					SubscriptionContext tmpSubsContext = provider.getSubscriptionContext();
 					NotificationsManager.getInstance().markPublisherNews(tmpSubsContext, ureq.getIdentity());
 				}
+			}
+		}
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String dateEntry = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(dateEntry.startsWith("date")) {
+			Date gotoDate = BusinessControlFactory.getInstance().getDateFromContextEntry(entries.get(0));
+			if(gotoDate != null) {
+				weeklyCalendar.setDate(gotoDate);
+				setWeekYearInVelocityPage(vcMain, weeklyCalendar);
 			}
 		}
 	}

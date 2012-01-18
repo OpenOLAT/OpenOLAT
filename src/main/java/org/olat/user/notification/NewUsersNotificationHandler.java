@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -72,7 +73,7 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 					for (Identity newUser : identities) {
 						String desc = translator.translate("notifications.entry", new String[] { NotificationHelper.getFormatedName(newUser) });
 						String businessPath = "[Identity:" + newUser.getKey() + "]";
-						String urlToSend = NotificationHelper.getURLFromBusinessPathString(p, businessPath);
+						String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 						Date modDate = newUser.getCreationDate();
 						subListItem = new SubscriptionListItem(desc, urlToSend, modDate, CSSHelper.CSS_CLASS_USER);
 						si.addSubscriptionListItem(subListItem);
