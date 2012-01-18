@@ -30,7 +30,10 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.CourseXStreamAliases;
 import org.olat.course.ICourse;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Description: <br>
@@ -89,7 +92,8 @@ public class CourseConfigManagerImpl extends BasicManager implements CourseConfi
 			saveConfigTo(course, retVal);
 		} else {
 			//file exists, load it with XStream, resolve version
-			Object tmp = XStreamHelper.readObject(configFile.getInputStream());
+			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
+			Object tmp = XStreamHelper.readObject(xstream, configFile.getInputStream());
 			if (tmp instanceof CourseConfig) {
 				retVal = (CourseConfig) tmp;
 				if (retVal.resolveVersionIssues()){

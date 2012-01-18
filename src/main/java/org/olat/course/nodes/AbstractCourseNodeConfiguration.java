@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes;
 
+import java.util.List;
+
 import org.olat.core.configuration.AbstractConfigOnOff;
 
 
@@ -35,6 +37,8 @@ import org.olat.core.configuration.AbstractConfigOnOff;
 public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOff {
 	
 	private int order = 0;
+	private String name;
+	private List<String> alias;
 	
 	public AbstractCourseNodeConfiguration() {
 		super();

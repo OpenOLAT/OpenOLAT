@@ -69,6 +69,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 
+import com.thoughtworks.xstream.XStream;
+
 /**
  * Description:<br>
  * Implementation of the course data structure. The course is defined using a 
@@ -411,7 +413,8 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		if (vfsItem == null) {
 			vfsItem = getCourseBaseContainer().createChildLeaf(fileName);
 		}
-		XStreamHelper.writeObject((VFSLeaf)vfsItem, obj);
+		XStream xstream = CourseXStreamAliases.getWriteCourseXStream();
+		XStreamHelper.writeObject(xstream, (VFSLeaf)vfsItem, obj);
 	}
 
 	/**
@@ -423,9 +426,11 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 */
 	private Object readObject(String fileName) {
 		VFSItem vfsItem = getCourseBaseContainer().resolve(fileName);
-		if (vfsItem == null || !(vfsItem instanceof VFSLeaf))
-			throw new AssertException("Cannot resolve file: " + fileName + " course=" + this.toString());
-		return XStreamHelper.readObject(((VFSLeaf)vfsItem).getInputStream());
+		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+			throw new AssertException("Cannot resolve file: " + fileName + " course=" + toString());
+		}
+		XStream xstream = CourseXStreamAliases.getWriteCourseXStream();
+		return XStreamHelper.readObject(xstream, ((VFSLeaf)vfsItem).getInputStream());
 	}
 
 	/**
