@@ -102,7 +102,7 @@ public class DisplayInfoForm extends FormBasicController {
 		//fxdiff VCRP-1,2: access control of resources
 		if(entry.isMembersOnly()) {
 			access.select(RepositoryEntry.MEMBERS_ONLY, true);
-		} else {
+		} else if (entry.getAccess() > 0) {
 			access.select(""+entry.getAccess(), true);
 		}
 
