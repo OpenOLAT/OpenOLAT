@@ -5,10 +5,15 @@
 		<div class="b_subcolumns">
 			<div class="b_c25l">
 			  <div class="b_subcl">
-			  <!-- TODO:gs:a refactor to use normal link component -->
+				$r.render("cal.thisweek")
+				$r.render("cal.prevweek")
+				$r.render("cal.nextweek")
+				
+			  <!-- TODO:gs:a refactor to use normal link component 
 				<a href="$r.commandURIbg("pw")" $r.bgTarget() title="$r.translateInAttribute("cal.previousweek")" class="o_cal_wv_prev" onclick="return o2cl()" onkeypress="return o2cl()"></a>
 				<a href="$r.commandURIbg("nw")" $r.bgTarget() title="$r.translateInAttribute("cal.nextweek")" class="o_cal_wv_next" onclick="return o2cl()" onkeypress="return o2cl()"></a>
-				$r.render("cal.thisweek")
+				-->
+				
 			  </div>
 			</div>
 			<div class="b_c50l">

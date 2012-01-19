@@ -103,6 +103,8 @@ public class WeeklyCalendarController extends BasicController implements Activat
 	private Controller subscriptionController;
 	private String caller;
 	private boolean dirty = false;
+	private Link prevWeekLink;
+	private Link nextWeekLink;
 	private Link thisWeekLink;
 	private Link searchLink;
 	private Link subscribeButton;
@@ -194,11 +196,18 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		
 		// main velocity controller
 		vcMain = createVelocityContainer("indexWeekly");
-		thisWeekLink = LinkFactory.createLink("cal.thisweek", vcMain, this);
+		thisWeekLink = LinkFactory.createButton("cal.thisweek", vcMain, this);
+
+		prevWeekLink = LinkFactory.createCustomLink("cal.prevweek", CMD_PREVIOUS_WEEK, "", Link.NONTRANSLATED, vcMain, this);
+		prevWeekLink.setCustomEnabledLinkCSS("b_button o_cal_wv_prev");
+		
+		nextWeekLink = LinkFactory.createCustomLink("cal.nextweek", CMD_NEXT_WEEK, "", Link.NONTRANSLATED, vcMain, this);
+		nextWeekLink.setCustomEnabledLinkCSS("b_button o_cal_wv_next");
+		
 		gotoDateForm = new GotoDateCalendarsForm(ureq, wControl, getTranslator());
 		listenTo(gotoDateForm); 
 		vcMain.put("cal.gotodate", gotoDateForm.getInitialComponent());
-		searchLink = LinkFactory.createLink("cal.search.button", vcMain, this);
+		searchLink = LinkFactory.createButton("cal.search.button", vcMain, this);
 		subscribeButton = LinkFactory.createButtonXSmall("cal.subscribe", vcMain, this);
 		unsubscribeButton = LinkFactory.createButtonXSmall("cal.unsubscribe", vcMain, this);
 		
@@ -333,12 +342,11 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		} else if (event == ComponentUtil.VALIDATE_EVENT && weeklyCalendar.isDirty() && modifiedCalenderDirty  ) {
 			KalendarRenderWrapper kalendarRenderWrapper = weeklyCalendar.getKalendarRenderWrapper(modifiedCalendarId);
 			kalendarRenderWrapper.reloadKalendar();	
-		}else if (source == vcMain) {
-			if (event.getCommand().equals(CMD_PREVIOUS_WEEK)) {
-				weeklyCalendar.previousWeek();
-			} else if (event.getCommand().equals(CMD_NEXT_WEEK)) {
-				weeklyCalendar.nextWeek();
-			}
+		} else if(source == prevWeekLink){
+			weeklyCalendar.previousWeek();
+			setWeekYearInVelocityPage(vcMain, weeklyCalendar);
+		} else if(source == nextWeekLink){
+			weeklyCalendar.nextWeek();
 			setWeekYearInVelocityPage(vcMain, weeklyCalendar);
 		} else if (source == thisWeekLink){
 			Calendar cal = CalendarUtils.createCalendarInstance(ureq.getLocale());

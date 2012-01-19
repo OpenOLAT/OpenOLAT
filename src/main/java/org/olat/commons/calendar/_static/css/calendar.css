@@ -8,9 +8,6 @@
 }
 
 #o_cal_config_below_cal_container {
-	font-size: 80%;
-	background: #F2F2F2;
-	border: 1px solid #BFBFBF;
 	padding: 6px;
 	position: relative;
 	overflow: hidden;
@@ -49,27 +46,19 @@
 	float: left; display: inline;
 	position: absolute; top: 5px; left: 5px;
 }
-.o_cal_wv_prev {
-	width: 20px;
-	height: 20px;
-	background: url(move_left.png);
-	background-repeat: no-repeat;
-	float: left; display: inline;
+
+.o_cal_wv_prev, .o_cal_wv_next {margin-left:0 !important; margin-right:0 !important;}
+.o_cal_wv_prev span {
+	width:20px;
+	height:20px;
+	float:left;
+	background: transparent url(arrow_left_big.png) no-repeat center center;
 }
-a.o_cal_wv_prev:hover {
-	background: url(move_left_over.png);
-	background-repeat: no-repeat;
-}
-.o_cal_wv_next {
-	width: 20px;
-	height: 20px;
-	background: url(move_right.png);
-	background-repeat: no-repeat;
-	float: left; display: inline;
-}
-a.o_cal_wv_next:hover {
-	background: url(move_right_over.png);
-	background-repeat: no-repeat;
+.o_cal_wv_next span {
+	width:20px;
+	height:20px;
+	float:left;
+	background: transparent url(arrow_right_big.png) no-repeat center center;
 }
 
 /* calendar: height = 20px (header) + 10*20px (hours) + 10*20px (half-hours) */
@@ -81,12 +70,12 @@ a.o_cal_wv_next:hover {
 #o_cal_wv_header_wrapper {
 	padding-top:10px;
 	position: relative; 
-	margin-right: 15px;
 	clear: both;
 }
 #o_cal_wv_header {
 	border: 1px solid #888;
-	position: relative; width: 99.5%; height: 20px;
+	position: relative; 
+	height: 20px;
  	margin-bottom: 2px;
  	background: #FFF;
 }
@@ -124,12 +113,12 @@ a.o_cal_wv_next:hover {
 }
 /* time column time legend rows: height = 40px = 19px (content) + 1px  (border-bottom) */
 .o_cal_wv_legend_hour { 
-	border-bottom: 1px solid #AAA;
+	border-bottom: 1px solid #DDD;
 	margin: 0; padding: 0; height: 39px; 
 }
 /* content wrapper for hour labeling*/
 .o_cal_wv_legend_hour div {
-	padding: 3px 3px 0 3px; text-align: center; color: #888; 
+	padding: 3px 3px 0 3px; text-align: center; color: #444; 
 	overflow: hidden; height: 16px; 
 }
 
@@ -152,12 +141,12 @@ a.o_cal_wv_next:hover {
 }
 /* day column hour row: height = 20px = 19px (content) + 1px  (border-bottom) */
 .o_cal_wv_hour { 
-	border-bottom: 1px dotted #AAA;
+	border-bottom: 1px dotted #DDD;
 	margin: 0; padding: 0; height: 19px; 
 }
 /* day column hour row: height = 20px = 19px (content) + 1px  (border-bottom) */
 .o_cal_wv_half_hour { 
-	border-bottom: 1px solid #AAA;
+	border-bottom: 1px solid #DDD;
 	margin: 0; padding: 0; height: 19px;
 }
 .o_cal_wv_half_hour:hover {background: #DCDDE0;}
@@ -175,7 +164,7 @@ a.o_cal_wv_next:hover {
 
 
 /* background colors of holiday days and current day */
-.o_cal_wv_holiday { background: #E9EAEF;}
+.o_cal_wv_holiday { background: #eee;}
 .o_cal_wv_today { background: #fff5cc;}
 
 /* remove right border on last day and bottom border on last hour */
@@ -214,6 +203,9 @@ a.o_cal_wv_next:hover {
 .o_cal_wv_event_content {
 	padding: 1px 2px 1px 2px;
 }
+.o_cal_gotodate {
+	margin-top:8px; /* margin-top hack ...*/
+}
 
 /* day long events */
 .o_cal_wv_devent_wrapper { 
@@ -223,8 +215,8 @@ a.o_cal_wv_next:hover {
 }
 .o_cal_wv_devent { 
 	border: 1px solid;
-	padding: 0; margin: 0; 
-	position: absolute;
+	padding: 0;
+	margin: 0; 
 	width: 100%; height:19px;
 	overflow: hidden;
 	z-index: 11;
@@ -237,8 +229,6 @@ a.o_cal_wv_next:hover {
 /* day event content */
 .o_cal_wv_devent_content {
 	padding: 1px 2px 1px 2px;
-	height: 1em;
-	overflow: hidden;
 }
 
 
@@ -289,9 +279,6 @@ a.o_cal_config_enabled:hover {
 	background: url(check_off.png) no-repeat;
 	float: left; display: inline;
 }
-a.o_cal_config_disabled:hover {
-	background: url(check_off_over.png) no-repeat;
-}
 .o_cal_config_calendar {
 	border: 1px solid;
 	padding: 0; margin: 0; 
@@ -303,11 +290,8 @@ a.o_cal_config_disabled:hover {
 .o_cal_config_chosecolor {
 	position: relative;
 	width: 20px; height: 16px;
-	background: url(color_picker.png) no-repeat 2px 0px;
+	background: url(color.png) no-repeat 2px 0px;
 	float: left; display: inline;
-}
-a.o_cal_config_chosecolor:hover {
-	background: url(color_picker_over.png) no-repeat 2px 0px;
 }
 .o_cal_config_subscribeical {
 	position: relative;
@@ -315,29 +299,17 @@ a.o_cal_config_chosecolor:hover {
 	background: url(calendar_ical_export.png) no-repeat 2px 0px;
 	float: left; display: inline;
 }	
-a.o_cal_config_subscribeical:hover {
-	width: 20px; height: 16px;
-	background: url(calendar_ical_export_over.png) no-repeat 2px 0px;
-}
 .o_cal_config_remove_subscribeical {
 	position: relative;
 	width: 20px; height: 16px;
 	background: url(calendar_ical_export_remove.png) no-repeat 0 0;
 	float: left; display: inline;		
 }
-a.o_cal_config_remove_subscribeical:hover {
-	width: 20px; height: 16px;
-	background: url(calendar_ical_export_remove_over.png) no-repeat 0 0;
-}
 a.o_cal_config_unsubscribe {
 	position: relative;
 	width: 20px; height: 16px;
 	background: url(calendar_remove.png) no-repeat 0 0;
 	float: left; display: inline;	
-}
-a.o_cal_config_unsubscribe:hover {
-	width: 20px; height: 16px;
-	background: url(calendar_remove_over.png) no-repeat 0 0;
 }
 
 .o_cal_config_regenerate_link {
@@ -346,45 +318,30 @@ a.o_cal_config_unsubscribe:hover {
 	background: url(calendar_ical_export_regen.png) no-repeat 0 0;
 	float: left; display: inline;		
 }
-a.o_cal_config_regenerate_link:hover {
-	width: 20px; height: 16px;
-	background: url(calendar_ical_export_regen_over.png) no-repeat 0 0;
-}
 .o_cal_config_remove_cal {
 	position: relative;
 	width: 20px; height: 16px;
 	background: url(delete.png) no-repeat 2px 0px;
 	float: left; display: inline;
 }
-a.o_cal_config_remove_cal:hover {
-	width: 20px; height: 16px;
-	background: url(delete_over.png) no-repeat 2px 0px;
-}
 .o_cal_config_addevent {
 	position: relative;
 	width: 20px; height: 16px;
-	background: url(calendar_add.png) no-repeat 0 0;
+	background: url(calendar--plus.png) no-repeat 0 0;
 	float: left; display: inline;
 }
-	.o_cal_config_importevent {
+.o_cal_config_importevent {
 	position: relative;
 	width: 20px; height: 16px;
-	background: url(calendar_import.png) no-repeat 0 0;
+	background: url(calendar--arrow.png) no-repeat 0 0;
 	float: left; display: inline;
 }
 .o_cal_config_readonly {
 	position: relative;
 	width: 20px; height: 16px;
-	background: url(calendar_add_dis.png) no-repeat 0 0;
+	background: url(calendar--plus.png) no-repeat 0 0;
+	opacity:0.6;
 	float: left; display: inline;	
-}
-a.o_cal_config_addevent:hover {
-	width: 20px; height: 16px;
-	background: url(calendar_add_over.png) no-repeat 0 0;
-}
-a.o_cal_config_importevent:hover {
-	width: 20px; height: 16px;
-	background: url(calendar_import_over.png) no-repeat 0 0;
 }
 
 /* colorchooser */
@@ -435,7 +392,7 @@ a.o_cal_config_importevent:hover {
 .o_cal_red .o_cal_wv_event_header {background: #990000;}
 .o_cal_red a { color: #FFF ! important; } 
 
-.o_cal_grey { background: #AAAAAA; border-color: #5D5D5D; color: #FFF; }
+.o_cal_grey { background: #DDDAAA; border-color: #5D5D5D; color: #FFF; }
 .o_cal_grey .o_cal_wv_event_header {background: #5D5D5D;}
 .o_cal_grey a { color: #FFF ! important; } 
 

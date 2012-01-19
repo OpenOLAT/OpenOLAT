@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,8 +57,7 @@ public class GotoDateCalendarsForm extends FormBasicController {
 		gotoDate = uifactory.addDateChooser("goto",null, "",horizontalL);//null because no label is desired.
 		gotoDate.setMandatory(false);
 		gotoDate.setDate(new Date());
-		gotoDateLink = new FormLinkImpl("cal.search.gotodate.button");
-		horizontalL.add(gotoDateLink);
+		gotoDateLink =  uifactory.addFormLink("cal.search.gotodate.button", horizontalL,Link.BUTTON);
 	}	
 	
 	@Override
