@@ -177,8 +177,10 @@ public class KalendarEntryDetailsController extends BasicController {
 		} else if (source == copyEventToCalendarController) {
 			if (event.equals(Event.DONE_EVENT))
 				fireEvent(ureq, Event.DONE_EVENT);
-			else if (event.equals(Event.CANCELLED_EVENT))
+			else if (event.equals(Event.CANCELLED_EVENT)){
+				eventForm.setMulti(false);// OO-61
 				mainPanel.setContent(mainVC);
+			}
 		} else if (source == activeLinkProvider) {
 			if(kalendarEvent.getCalendar() != null) {
 				fireEvent(ureq, Event.DONE_EVENT);

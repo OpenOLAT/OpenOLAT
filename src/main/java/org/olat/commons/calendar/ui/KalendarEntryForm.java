@@ -191,6 +191,14 @@ public class KalendarEntryForm extends FormBasicController {
 		return isMulti;
 	}
 	
+	/**
+	 * OO-61
+	 * @param multi
+	 */
+	protected void setMulti(boolean multi){
+		isMulti = multi;
+	}
+	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
 		
