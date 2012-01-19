@@ -240,14 +240,14 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	/**
 	 * @return Set containing the usernames
 	 */
-	public Set getUsernamesFromConnectedUsers() {
+	public Set<String> getUsernamesFromConnectedUsers() {
 		return new HashSet<String>(getClients().keySet());
 	}
 
 	/**
 	 * @see org.olat.instantMessaging.InstantMessaging#getClients()
 	 */
-	public Map getClients() {
+	public Map<String,InstantMessagingClient> getClients() {
 		return clientManager.getClients();
 	}
 

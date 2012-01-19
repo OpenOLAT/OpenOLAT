@@ -86,19 +86,19 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 
   //clusterNOK cache ??
 	private static Set<UserSession> authUserSessions = new HashSet<UserSession>(101);
-	private static Map<String, Identity> userNameToIdentity = new HashMap<String, Identity>(101);
+	private static Set<String> userNameToIdentity = new HashSet<String>(101);
 	private static int sessionTimeoutInSec = 300;
 	private static int sessionTimeoutAuthInSec = 7200;
 	private static Set<String> authUsersNamesOtherNodes = new HashSet<String>(101);
 
 	// things to put into that should not be clear when signing on (e.g. remember
 	// url for a direct jump)
-	private Map nonClearedStore = new HashMap();
+	private Map<String,Object> nonClearedStore = new HashMap<String,Object>();
 
 	// the environment (identity, locale, ..) of the identity
 	private IdentityEnvironment identityEnvironment;
-	private SessionInfo sessionInfo = null;
-	private Map store = null;
+	private SessionInfo sessionInfo;
+	private Map<String,Object> store;
 	private boolean authenticated = false;
 	private boolean registeredWithBus = false;
 	private Preferences guiPreferences;
@@ -122,7 +122,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * 
 	 */
 	private void init() {
-		store = new HashMap(4);
+		store = new HashMap<String,Object>(4);
 		identityEnvironment = new IdentityEnvironment();
 		singleUserSystemBus = CoordinatorManager.getInstance().getCoordinator().createSingleUserInstance();
 		authenticated = false;
@@ -214,7 +214,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @param key
 	 * @return removed entry
 	 */
-	public Object removeEntry(Object key) {
+	public Object removeEntry(String key) {
 		return store.remove(key);
 	}
 
@@ -227,7 +227,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @param key
 	 * @param o
 	 */
-	public void putEntryInNonClearedStore(Object key, Object o) {
+	public void putEntryInNonClearedStore(String key, Object o) {
 		nonClearedStore.put(key, o);
 	}
 
@@ -235,7 +235,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @param key
 	 * @return removed entry
 	 */
-	public Object removeEntryFromNonClearedStore(Object key) {
+	public Object removeEntryFromNonClearedStore(String key) {
 		return nonClearedStore.remove(key);
 	}
 
@@ -434,7 +434,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 					// if
 					// Disposable
 
-					for (Iterator it_storevals = new ArrayList(store.values()).iterator(); it_storevals.hasNext();) {
+					for (Iterator<Object> it_storevals = new ArrayList<Object>(store.values()).iterator(); it_storevals.hasNext();) {
 						obj = it_storevals.next();
 						if (obj instanceof Disposable) {
 							// synchronous, since triggered by tomcat session timeout or user
@@ -545,9 +545,9 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		
 		UserSession invalidatedSession = null;
 		synchronized (authUserSessions) {  //o_clusterOK by:fj
-		    // check if allready a session exist for this user
-		    if ( (userNameToIdentity.containsKey(identity.getName().toLowerCase()) || authUsersNamesOtherNodes.contains(identity.getName()) ) 
-		         && !sessionInfo.isWebDAV() && !this.getRoles().isGuestOnly()) {
+		    // check if already a session exist for this user
+		    if ( (userNameToIdentity.contains(identity.getName().toLowerCase()) || authUsersNamesOtherNodes.contains(identity.getName()) ) 
+		         && !sessionInfo.isWebDAV() && !sessionInfo.isREST() && !getRoles().isGuestOnly()) {
 		        Tracing.logInfo("Loggin-process II: User has already a session => signOffAndClear existing session", this.getClass());
 		        
 		        invalidatedSession = getUserSessionFor(identity.getName().toLowerCase());
@@ -563,7 +563,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			// database queries, the login form or the IM account. IM works only with lowercase
 			// characters -> map stores values as such
 			Tracing.logDebug("signOn() adding to userNameToIdentity: "+identity.getName().toLowerCase(), getClass());
-			userNameToIdentity.put(identity.getName().toLowerCase(), identity);
+			userNameToIdentity.add(identity.getName().toLowerCase());
 		}
 		// load user prefs
 		guiPreferences = PreferencesFactory.getInstance().getPreferencesFor(identity, identityEnvironment.getRoles().isGuestOnly());
@@ -593,16 +593,17 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 
 
 	/**
-	 * Lookup non-webdav UserSession for username.
+	 * Lookup non-webdav, non-REST UserSession for username.
 	 * @param userName
 	 * @return user-session or null when no session was founded. 
 	 */
 	private UserSession getUserSessionFor(String userName) {
 		//do not call from somewhere else then signOffAndClear!!
-		Set authUserSessionsCopy = new HashSet(authUserSessions);
-		for (Iterator iterator = authUserSessionsCopy.iterator(); iterator.hasNext();) {
+		Set<UserSession> authUserSessionsCopy = new HashSet<UserSession>(authUserSessions);
+		for (Iterator<UserSession> iterator = authUserSessionsCopy.iterator(); iterator.hasNext();) {
 			UserSession userSession = (UserSession) iterator.next();			
-			if (userName.equalsIgnoreCase(userSession.getIdentity().getName()) && userSession.getSessionInfo()!=null && !userSession.getSessionInfo().isWebDAV()) {
+			if (userName.equalsIgnoreCase(userSession.getIdentity().getName()) && userSession.getSessionInfo()!=null
+					&& !userSession.getSessionInfo().isWebDAV() && !userSession.getSessionInfo().isREST() ) {
 				return userSession;
 			}
 		}
@@ -616,19 +617,19 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * @return the identity or null if no user with userName is currently logged
 	 *         on
 	 */
-	public static Identity getSignedOnIdentity(String userName) {
+	public static boolean isSignedOnIdentity(String userName) {
 		synchronized (authUserSessions) {  //o_clusterOK by:fj
-			return (Identity) userNameToIdentity.get(userName.toLowerCase());
+			return userNameToIdentity.contains(userName.toLowerCase());
 		}
 	}
 	
 	/**
 	 * @return set of authenticated active user sessions
 	 */
-	public static Set getAuthenticatedUserSessions() {
-		Set copy;
+	public static Set<UserSession> getAuthenticatedUserSessions() {
+		Set<UserSession> copy;
 		synchronized (authUserSessions) {  //o_clusterOK by:fj
-			copy = new HashSet(authUserSessions);
+			copy = new HashSet<UserSession>(authUserSessions);
 		}
 		return copy;
 	}
@@ -744,8 +745,8 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		int invalidateCounter = 0;
 		Tracing.logAudit("All sessions were invalidated by an administrator", UserSession.class);
 		//clusterNOK ?? invalidate only locale sessions ?
-		Set iterCopy = new HashSet(authUserSessions);
-		for (Iterator iterator = iterCopy.iterator(); iterator.hasNext();) {
+		Set<UserSession> iterCopy = new HashSet<UserSession>(authUserSessions);
+		for (Iterator<UserSession> iterator = iterCopy.iterator(); iterator.hasNext();) {
 			UserSession userSession = (UserSession) iterator.next();
 			Roles userRoles = userSession != null ? userSession.getRoles() : null; 
 			if (userRoles != null && !userRoles.isOLATAdmin()) {
@@ -771,18 +772,18 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 		int invalidateCounter = 0;
 		// 1. Copy authUserSessions in sorted TreeMap
 		// This is the Comparator that will be used to sort the TreeSet:
-		Comparator sessionComparator = new Comparator() {
-			public int compare(Object o1, Object o2) {
-				Long long1 = new Long(((UserSession) o1).getSessionInfo().getLastClickTime());
-				Long long2 = new Long(((UserSession) o2).getSessionInfo().getLastClickTime());
+		Comparator<UserSession> sessionComparator = new Comparator<UserSession>() {
+			public int compare(UserSession o1, UserSession o2) {
+				Long long1 = new Long((o1).getSessionInfo().getLastClickTime());
+				Long long2 = new Long((o2).getSessionInfo().getLastClickTime());
 				return long1.compareTo(long2);
 			}
 		};
 		// clusterNOK ?? invalidate only locale sessions ?
-		TreeSet sortedSet = new TreeSet(sessionComparator);
+		TreeSet<UserSession> sortedSet = new TreeSet<UserSession>(sessionComparator);
 		sortedSet.addAll(authUserSessions);
 		int i = 0;	
-		for (Iterator iterator = sortedSet.iterator(); iterator.hasNext() && i++<nbrSessions;) {
+		for (Iterator<UserSession> iterator = sortedSet.iterator(); iterator.hasNext() && i++<nbrSessions;) {
 			try {
 				UserSession userSession = (UserSession) iterator.next();
 				if (!userSession.getRoles().isOLATAdmin() && !userSession.getSessionInfo().isWebDAV()) {

@@ -93,7 +93,7 @@ public class Authentication {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//fxdiff: FXOLAT-268 update last login date and register active user
 			UserDeletionManager.getInstance().setIdentityAsActiv(identity);

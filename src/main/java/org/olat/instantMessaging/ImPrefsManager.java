@@ -87,6 +87,11 @@ public class ImPrefsManager extends BasicManager {
 	 */
 	public ImPreferences loadOrCreatePropertiesFor(final Identity identity) {
 		//o_clusterOK by guido
+		ImPreferences imPrefs = findPropertiesFor(identity);
+		if(imPrefs != null) {
+			return imPrefs;
+		}
+
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(
 				OresHelper.createOLATResourceableInstanceWithoutCheck(LOCK_KEY, identity.getKey()), new SyncerCallback<ImPreferences>(){
 

@@ -23,13 +23,7 @@
 				<entry key="/url/">
 					<!-- if you change /url make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
 					<ref bean="restdispatcher" />
-				</entry> <!-- 
-				 -->
-				<!-- for fast developement mode  
-				<entry key="/temp/">
-					<ref bean="tempdispatcher" />
 				</entry>
-				-->
 				<entry key="/">
 					<ref bean="redirect2defaultbean" />
 				</entry>
@@ -178,9 +172,6 @@
 		form action: /olat/remotelogin/
 	-->
 	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher" />
-	
-	<bean id="tempdispatcher"
-		class="org.olat.dispatcher.TemporaryAutoDispatcher" />
 
 	<bean id="shibbean"
 		class="org.olat.shibboleth.ShibbolethDispatcher" />

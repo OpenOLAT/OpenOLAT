@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -88,8 +88,7 @@ public class ConnectedUsersLocal implements InstantMessagingSessionItems {
 		List<ConnectedUsersListEntry> entries = new ArrayList<ConnectedUsersListEntry>();
 		Map<String, Long> lastActivity = new HashMap<String, Long>();
 		Set<String> usernames = InstantMessagingModule.getAdapter().getUsernamesFromConnectedUsers();
-		List<UserSession> authSessions = new ArrayList(UserSession.getAuthenticatedUserSessions());
-		
+		Set<UserSession> authSessions = UserSession.getAuthenticatedUserSessions();
 		for (Iterator<UserSession> iter = authSessions.iterator(); iter.hasNext();) {
 			UserSession userSession = iter.next();
 			long lastAccTime = 0;
@@ -108,14 +107,14 @@ public class ConnectedUsersLocal implements InstantMessagingSessionItems {
 			
 			ConnectedUsersListEntry entry = (ConnectedUsersListEntry)sessionItemsCache.get(olatusername);
 			if (entry != null && !olatusername.equals(username)) {
+				entry.setLastActivity(lastActivity.get(olatusername));
 				entries.add(entry);
 				if (log.isDebug()) log.debug("loading item from cache: "+olatusername);
 			
 			} else {
 				//item not in cache
-				Identity identity = UserSession.getSignedOnIdentity(olatusername);
-				if (identity != null) {
-					identity = (Identity) DBFactory.getInstance().loadObject(identity);
+				if (UserSession.isSignedOnIdentity(olatusername)) {
+					Identity identity = (Identity)BaseSecurityManager.getInstance().findIdentityByName(olatusername);
 					try {
 						ImPreferences imPrefs = imPrefsManager.loadOrCreatePropertiesFor(identity);
 						if ( (imPrefs != null) ) {

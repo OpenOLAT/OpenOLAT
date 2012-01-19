@@ -117,7 +117,7 @@ public class AuthHelper {
 	 * @return True if success, false otherwise.
 	 */
 	public static int doLogin(Identity identity, String authProvider, UserRequest ureq) {
-		int initializeStatus = initializeLogin(identity, authProvider, ureq);
+		int initializeStatus = initializeLogin(identity, authProvider, ureq, false);
 		if (initializeStatus != LOGIN_OK) { 
 			return initializeStatus; // login not successfull
 		}
@@ -153,10 +153,11 @@ public class AuthHelper {
 	 * @param identity
 	 * @param authProvider
 	 * @param ureq
+	 * @param Is login via REST API?
 	 * @return
 	 */
-	public static int doHeadlessLogin(Identity identity, String authProvider, UserRequest ureq) {
-		int initializeStatus = initializeLogin(identity, authProvider, ureq);
+	public static int doHeadlessLogin(Identity identity, String authProvider, UserRequest ureq, boolean rest) {
+		int initializeStatus = initializeLogin(identity, authProvider, ureq, rest);
 		if (initializeStatus != LOGIN_OK) { 
 			return initializeStatus; // login not successful
 		}
@@ -297,7 +298,7 @@ public class AuthHelper {
 	 * @param ureq
 	 * @return boolean
 	 */
-	private static int initializeLogin(Identity identity, String authProvider, UserRequest ureq) {
+	private static int initializeLogin(Identity identity, String authProvider, UserRequest ureq, boolean rest) {
 		// continue only if user has login permission.
 		if (identity == null) return LOGIN_FAILED;
 		//test if a user may not logon, since he/she is in the PERMISSION_LOGON
@@ -334,7 +335,7 @@ public class AuthHelper {
 		// put users personal rss token into session
 		RSSUtil.putPersonalRssTokenInSession(ureq);
 		// calculate session info and attach it to the user session
-		setSessionInfoFor(identity, authProvider, ureq);
+		setSessionInfoFor(identity, authProvider, ureq, rest);
 		//confirm signedOn
 		usess.signOn();
 		// set users web delivery mode
@@ -488,7 +489,7 @@ public class AuthHelper {
 	 * @param authProvider
 	 * @param ureq
 	 */
-	public static void setSessionInfoFor(Identity identity, String authProvider, UserRequest ureq) {
+	public static void setSessionInfoFor(Identity identity, String authProvider, UserRequest ureq, boolean rest) {
 		HttpSession session = ureq.getHttpReq().getSession();
 		SessionInfo sinfo = new SessionInfo(identity.getName(), session);
 		sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
@@ -505,6 +506,7 @@ public class AuthHelper {
 		sinfo.setUserAgent(ureq.getHttpReq().getHeader("User-Agent"));
 		sinfo.setSecure(ureq.getHttpReq().isSecure());
 		sinfo.setLastClickTime();
+		sinfo.setREST(rest);
 		// set session info for this session
 		UserSession usess = ureq.getUserSession();
 		usess.setSessionInfo(sinfo);
@@ -513,6 +515,7 @@ public class AuthHelper {
 		sessionInfoForUsertracking.put("language", usess.getLocale().toString());
 		sessionInfoForUsertracking.put("authprovider", authProvider);
 		sessionInfoForUsertracking.put("iswebdav", String.valueOf(sinfo.isWebDAV()));
+		sessionInfoForUsertracking.put("isrest", String.valueOf(sinfo.isREST()));
 		usess.getIdentityEnvironment().setAttributes(sessionInfoForUsertracking);
 		
 	}

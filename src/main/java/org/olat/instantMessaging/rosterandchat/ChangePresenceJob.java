@@ -72,15 +72,15 @@ public class ChangePresenceJob extends JobWithDB  {
 			long lastAccessTime = 0;
 			String username = null;
 			InstantMessagingClient client = null;
-			boolean isWebDav = false;
+			boolean isWebDavOrRest = false;
 			try {
 				lastAccessTime = session.getSessionInfo().getLastClickTime();
 				username = session.getIdentity().getName();
-				isWebDav = session.getSessionInfo().isWebDAV();
+				isWebDavOrRest = session.getSessionInfo().isWebDAV() || session.getSessionInfo().isREST();
 			} catch (Exception e) {
 				log.info("Tried to get LastAccessTime from session that became in the meantime invalid", e.toString());
 			}
-			if (!isWebDav) { // leave webdav sessions untouched
+			if (!isWebDavOrRest) { // leave webdav sessions untouched
 
 				if (InstantMessagingModule.isEnabled()) {
 					// avoid reconnection of dead or duplicate sessions

@@ -172,7 +172,7 @@ public class RestApiLoginFilter implements Filter {
 						}
 						request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 						
-						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 						if (loginStatus == AuthHelper.LOGIN_OK) {
 							//fxdiff: FXOLAT-268 update last login date and register active user
 							UserDeletionManager.getInstance().setIdentityAsActiv(identity);
@@ -279,7 +279,7 @@ public class RestApiLoginFilter implements Filter {
 			request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
 			Identity identity = securityBean.getIdentity(token);
-			int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+			int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 			if(loginStatus == AuthHelper.LOGIN_OK) {
 				response.setHeader(RestSecurityHelper.SEC_TOKEN, securityBean.renewToken(token));
 				synchronized(uress) {
