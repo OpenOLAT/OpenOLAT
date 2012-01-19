@@ -28,5 +28,9 @@ div.b_access_method_list div.b_access_method_free legend { background-image: url
 div.b_access_method_list div.b_access_method_token legend { background-image: url('../openolat/images/ac/license-key.png'); }
 div.b_access_method_list div.b_access_method_token div.b_form_element_wrapper:nth-last-of-type(3) label, table.b_access_method tr.b_access_method_token .b_access_infos { background-image: url('../openolat/images/ac/key.png'); background-repeat: no-repeat; padding-left: 20px; }
 div.b_access_method_list div.b_form_element_wrapper:nth-last-of-type(4) label { background-image: url('../openolat/images/information-white.png'); background-repeat: no-repeat; padding-left: 20px; }
+
+/*  paypal */
+.fx_access_method_paypal_icon { background-image: url('../openolat/images/ac/credit-cards.png'); }
+
 /* access panel */
 #b_main_access_control { margin:0 20% 0 20%; padding: 20px 0 0 20px;}

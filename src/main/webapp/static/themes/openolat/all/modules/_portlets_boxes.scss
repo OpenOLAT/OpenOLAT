@@ -231,7 +231,7 @@ div.b_portlet.o_pt_w_if div.b_portlet_header { background-image: url(../openolat
 		.b_toolbox_content { 
 			 ul { padding: 0 0 0 6px; margin: 0; list-style: none; }
 			 li { 
-			 	padding: 0; margin: 0; line-height: 1.5em; white-space: nowrap;
+			 	padding: 0; margin: 0; line-height: 1.7em; white-space: nowrap;
 			 	a { color: #667; background-repeat: no-repeat; background-position:  0 50%; padding-left: 20px; display: block;}
 			 	a:focus, a:hover, a:active { color: #504D4E; text-decoration: underline; }	
 				
@@ -247,3 +247,17 @@ div.b_portlet.o_pt_w_if div.b_portlet_header { background-image: url(../openolat
 	
 	}// end b_toolbox
 }// end b_toolboxes
+
+
+/* links list portlet */
+div.b_portlet.o_pt_w_if div.b_portlet_header { background-image: url(../openolat/images/globe.png); }
+div.b_portlet p { margin-bottom: 0; }
+   
+ /* did you know portlet */
+div.b_portlet_dyk_q { font-weight: bold;}
+div.b_portlet_dyk_a { padding-top: 5px;}
+div.b_portlet_dyk_next { text-align: right; }	
+
+	
+	
+	

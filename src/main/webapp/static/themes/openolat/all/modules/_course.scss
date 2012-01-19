@@ -79,5 +79,37 @@ div.o_sp_peekview {
 
 div.o_peekview_author { padding: 3px 0 5px 0; font-style: italic; color: #aaaaaa; font-size: 90%;}
 	
+/* course preview */
+#b_preview_wrapper {
+	clear:both;
+	padding:10px;
+	background:#fff;
+	border-bottom:1px solid $basecolor_light;
+}
+
+#b_main.b_preview {
+	@include o-box-shadow(0,0,0,#fff);
+	background: #fff url(../openolat/images/prevbg.png) repeat;
+}
+
+
+/* fullscreen ( TEST & SCORM ) */
+/* Full screen */
+body.b_full_screen {
+	 background-color: white; background-image:none; 
+	#b_page_margins {display:none;}
+	 
+	div#b_preview_wrapper {
+		margin: 5px; border:1px solid #ddd; padding:0; 
+		@include o-border-radius(5px);
+		@include o-box-shadow(0,1px,2px,lightGrey);
+	 	background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; 
+	 	
+	 	div.b_preview_link { border:none; }
+	 	div.b_preview_link div.b_preview_wrapper_loading { background:transparent url(../openolat/images/ajax-loader.gif) no-repeat top left; }
+	}
+}
+div#b_preview_wrapper div#b_preview_wrapper_message { float:right; padding-left:16px; width:100px; }
+
 	
 	

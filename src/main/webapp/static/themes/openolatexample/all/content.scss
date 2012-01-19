@@ -7,28 +7,27 @@
 *
 */
 
+// import the default content.css
+@import url("../../openolat/all/content.css");
 
-@import "definitions";
-@import "mixins";
+// import our modified definitions and mixins
+@import "../_definitions.scss";
+@import "../_mixins.scss";
 
-// import the default content.scss
-@import "../openolat/all/content.scss";
 
-/** ---- our modifications ---- **/
 
-* {
-	font-family: $defaultfont;
-}
+/** ---- our modifications : change everything we want different from the default theme ---- **/
 
 body {
+	font-family: $defaultfont;
 	font-size: $defaultfontsize;
 	color:#444;
 }
 
 h1,h2,h3,h4,h5,fieldset legend {
 	@include o-text-shadow(0,3px,3px,rgba(0,0,0,0.4));
+	font-family: $headerfont;
 }
-
 
 a,a:visited {
 	text-decoration:none;
@@ -38,3 +37,5 @@ a:hover {
 	text-decoration:underline;
 	color:$basecolor;
 }
+
+

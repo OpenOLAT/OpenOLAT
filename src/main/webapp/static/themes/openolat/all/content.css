@@ -11,10 +11,11 @@
 *   (as of yaml compliance, contains css rules for
 *   styling fonts, colors, font-style, etc. ) 
 *   
-*   this file is included in layout.scss and is _also_
-*   compiled to a separate css-file! (it is needed
+*   this file is compiled to a separate css-file! (it is needed
 *   in iframes within course, tinyMCE, etc.)
-*
+*   
+*   the resulting content.css is also included in layout.scss
+*   (as "default" css import, because of the relative image-links)
 *  =================================================
 */
 /*
@@ -37,6 +38,7 @@
 /* the defaultfont used in : text, main content, etc. */
 /* the font used in :  navigation (tabs + tree), headings */
 /* the overall default font-size */
+/* enable business / kmu mode */
 /* defines the body-background */
 /*
 *  =================================================
@@ -113,11 +115,11 @@ a:hover {
   color: #025d8c; }
 
 a.b_link_extern {
-  background: transparent url("../openolat/images/external_link_trimmed.png") no-repeat right top;
+  background: transparent url("../../openolat/images/external_link_trimmed.png") no-repeat right top;
   padding-right: 13px; }
 
 .b_link_mailto {
-  background: transparent url("../openolat/images/mail_small.png") no-repeat left center;
+  background: transparent url("../../openolat/images/mail_small.png") no-repeat left center;
   padding-left: 18px; }
 
 hr {
@@ -134,7 +136,7 @@ p {
 /** ----------------- CONTENT CLASSES ----------------- **/
 /* content boxes */
 .b_info {
-  background: #e9eaef url(../openolat/images/information-white.png) no-repeat 5px 5px;
+  background: #e9eaef url(../../openolat/images/information-white.png) no-repeat 5px 5px;
   padding: 5px 5px 5px 30px;
   border: 1px solid #C5C4C4;
   border-radius: 4px;
@@ -214,7 +216,7 @@ div.b_note, div.b_important, div.b_warning, div.b_info {
   margin: 20px; }
 
 .b_quote_author {
-  background: url(../openolat/images/forum/quote.gif) no-repeat left bottom;
+  background: url(../../openolat/images/forum/quote.gif) no-repeat left bottom;
   padding: 10px 5px 15px 11px;
   position: relative;
   top: 1px;
@@ -310,7 +312,7 @@ a.b_contexthelp {
   display: block;
   width: 16px;
   height: 16px;
-  background: url(../openolat/images/help.png) no-repeat;
+  background: url(../../openolat/images/help.png) no-repeat;
   line-height: 0;
   cursor: help; }
 
@@ -345,7 +347,7 @@ fieldset a.b_contexthelp, fieldset div.b_contexthelp_wrapper a.b_contexthelp {
   width: 50%; }
 
 .b_contexthelp_icon {
-  background-image: url(../openolat/images/help.png); }
+  background-image: url(../../openolat/images/help.png); }
 
 /* USER COMMENTS */
 div.b_ratings_and_comments {
@@ -374,7 +376,7 @@ div.b_ratings_and_comments div.b_rating_personal {
   z-index: 5; }
 
 div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments {
-  background: url(../openolat/images/comment.png) 3px 50% no-repeat;
+  background: url(../../openolat/images/comment.png) 3px 50% no-repeat;
   padding: 3px 0 1px 23px;
   vertical-align: middle;
   min-height: 18px; }
@@ -394,7 +396,7 @@ div.b_comments div.b_comment_wrapper div.b_avatar img {
   border: 1px solid #aaa; }
 div.b_comments div.b_comment_wrapper h5 {
   font-size: 1em;
-  background: url(../openolat/images/user.png) 0 50% no-repeat;
+  background: url(../../openolat/images/user.png) 0 50% no-repeat;
   padding: 1px 0 1px 20px;
   vertical-align: middle;
   min-height: 16px; }
@@ -436,7 +438,7 @@ div.b_comments div.b_form div.b_button_group {
   text-align: center; }
 
 .b_comment_icon {
-  background-image: url(../openolat/images/comment.png); }
+  background-image: url(../../openolat/images/comment.png); }
 
 #b_comment_form_link {
   font-size: 0.9em;
@@ -510,15 +512,15 @@ div.b_rating div.b_rating_items a {
   background-position: 0 0;
   margin: 1px 4px 1px 0; }
 div.b_rating div.b_rating_items a.b_rating_item_on {
-  background-image: url(../openolat/images/star.png); }
+  background-image: url(../../openolat/images/star.png); }
 div.b_rating div.b_rating_items a.b_rating_item_off {
-  background-image: url(../openolat/images/star_grey.png); }
+  background-image: url(../../openolat/images/star_grey.png); }
 div.b_rating div.b_rating_items a:hover {
   cursor: default; }
 div.b_rating div.b_rating_items.b_enabled a:hover {
   cursor: pointer; }
 div.b_rating div.b_rating_items.b_enabled a.b_rating_item_off:hover {
-  background-image: url(../openolat/images/star.png); }
+  background-image: url(../../openolat/images/star.png); }
 div.b_rating div.b_rating_explanation {
   clear: both;
   font-size: 90%; }
@@ -553,3 +555,95 @@ div.b_form_auto_completer_item span.b_key {
 div.b_form_auto_completer_item.b_error_icon {
   color: #990000;
   font-style: italic; }
+
+/* ---------- smilies / emoticons in tinyMCE ------------------------ */
+/* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
+img.b_emoticons_angel {
+  background: url(../../openolat/images/emoticons/smiley-angel.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_angry {
+  background: url(../../openolat/images/emoticons/smiley-mad.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_blushing {
+  background: url(../../openolat/images/emoticons/smiley-red.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_confused {
+  background: url(../../openolat/images/emoticons/smiley-confuse.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_cool {
+  background: url(../../openolat/images/emoticons/smiley-cool.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_cry {
+  background: url(../../openolat/images/emoticons/smiley-cry.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_devil {
+  background: url(../../openolat/images/emoticons/smiley-evil.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_grin {
+  background: url(../../openolat/images/emoticons/smiley-grin.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_kiss {
+  background: url(../../openolat/images/emoticons/smiley-kiss.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_ohoh {
+  background: url(../../openolat/images/emoticons/smiley-eek.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_sad {
+  background: url(../../openolat/images/emoticons/smiley-sad.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_sick {
+  background: url(../../openolat/images/emoticons/smiley-sad-blue.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_smile {
+  background: url(../../openolat/images/emoticons/smiley.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_tongue {
+  background: url(../../openolat/images/emoticons/smiley-razz.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_ugly {
+  background: url(../../openolat/images/emoticons/smiley-money.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_weird {
+  background: url(../../openolat/images/emoticons/smiley-nerd.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_wink {
+  background: url(../../openolat/images/emoticons/smiley-wink.png) no-repeat;
+  width: 18px;
+  height: 18px; }
+
+img.b_emoticons_worried {
+  background: url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat;
+  width: 18px;
+  height: 18px; }

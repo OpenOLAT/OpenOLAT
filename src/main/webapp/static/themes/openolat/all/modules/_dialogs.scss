@@ -108,7 +108,7 @@ div.b_msg_dialog {
 /* info message ( slide-in, top) */
 div.b_msg-div { 
 	left: 35%; position:absolute; top:10px; width:30%; z-index:20000;
-	border: 1px solid #ccc;
+	border: 1px solid $basecolor;
 	background: #FAFAFA;
 	@include o-border-radius(4px);
 	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
@@ -119,8 +119,8 @@ div.b_msg-div {
 		background: transparent url(../openolat/images/icon_info_32.png) no-repeat 10px center;
 	}
 }
-
 div.b_msg_info_content { padding: 10px 10px 10px 50px; }
+
 
 /* warn message (ext-dialog) */
 div.b_msg_warn_winicon { background: url(../openolat/images/icon_warning_32.png) no-repeat }

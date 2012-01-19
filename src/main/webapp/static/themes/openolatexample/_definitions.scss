@@ -34,5 +34,8 @@ $ico_minus : '../openolat/images/toggle-small.png' ;
 	@include o-gradient4(yellow,red,blue,green);
 }
 
-$defaultfont : Comic Sans, Comic Sans MS, cursive;
+$headerfont : Comic Sans, Comic Sans MS, cursive;
+$defaultfont : Courier;
 $defaultfontsize : 90%;
+
+

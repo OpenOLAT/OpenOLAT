@@ -16,10 +16,15 @@
 *
 *  =================================================
 */
+@import "definitions";
+
+
 @media all {
 
-	
-	html{ min-height:100%;}
+
+
+html{ min-height:100%;}
+
 /** ----------------- MAIN LAYOUT ----------------- **/
 /** 
    * (en) Forcing vertical scrollbars in IE8, Firefox, Webkit & Opera 
@@ -64,7 +69,12 @@ body {
 		padding-left: 14px;
 		z-index: 5;
 	}
+	
+	@if $enablebiz == true {
+		background:#fff;
+	}
 }
+
 
 #b_header, #b_page,#b_col1_content, #b_col2_content, #b_col3_content,#b_col3_content_inner {
 	position: relative;
@@ -132,12 +142,19 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 	padding-right: 165px;
 }
 	
-
 /** ----------------- HEADER AND TOP NAVIGATION ----------------- **/
 #b_header {
 	height: auto;
 	min-height:30px;
+	
+	overflow:hidden;
+	
+	@if $enablebiz == true {
+		height: 154px;
+		background:#fff;
+	}
 	position:relative;
+	
 	//background:transparent url('../openolat/images/openolat_logo_header.png') no-repeat 20px 20px;
 	
 	/* the top-navigation */
@@ -167,15 +184,28 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 		li {
 			float:left;
 			list-style: none;
+			margin-left:1.7em;
 			div.b_form_element_wrapper.b_form_horizontal {margin:0;}
 		}
+		
+		li#o_topnav_imclient li {
+			margin-left:0.5em;
+		} 
 	}
 }
+
+
+
 
 
 /** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
 #b_nav_main {
 	float: left;
+	
+	@if $enablebiz == true {
+		margin-top:-27px;
+	}
+	
 	ul {
 		padding-left:40px;
 		margin:0;
@@ -188,6 +218,12 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 			margin:0px;
 			padding: 4px 3px 4px 12px;
 			margin-right:2px;
+			
+			@if $enablebiz == true {
+				border:1px solid #ddd;
+				border-bottom:none;
+			}
+			
 			a {
 				/* "bloat" the links (better for touch) */
 				padding: 4px 12px 4px 3px; 
@@ -197,6 +233,10 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 			@include o-border-radius-all(6px,6px,0,0);
 			background: #fff;
 			background: rgba(255,255,255,0.5);
+			
+			@if $enablebiz == true {
+				background: rgba(255,255,255,0.7);
+			}
 			
 			/* -- SITES ( home, users, groups, etc. ) -- */
 			&.b_nav_site { 
@@ -256,11 +296,13 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 				border:none;
 				width:20px;
 				height:1px;
+				padding:0;
 			}
 			
 		}//end li
 	}//end ul
 }
+	
 	
 	
 

@@ -36,10 +36,17 @@ $headerfont : Century Gothic, Apple Gothic, sans-serif !default;
 /* the overall default font-size */ 
 $defaultfontsize : 75% !default;
 
+
+/* enable business / kmu mode */
+$enablebiz: false;
+
 /* defines the body-background */
 @mixin bodybg(){
 	background: #ECECEC url('../openolat/images/sky.png') repeat-x left 88px;
+	
+	@if $enablebiz == true {
+		background: #ECECEC url('../openolat/images/sky.png') repeat-x left 175px;
+	}
 }
-
 
 

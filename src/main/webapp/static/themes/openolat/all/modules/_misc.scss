@@ -23,14 +23,19 @@ div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31
 
 
 /*  social links (FB, twitter, google) */
-#fx_share {
-	float: left;
-	clear: left;
-	margin-top: 0.5em;
-	width: 250px;
+#fx_share { 
+	float:left; clear:left; margin-top:0.5em; width:250px; 
+	a, span { margin: 0 0 0 3px; background-repeat: no-repeat; width: 16px; height: 16px; float: left; display: inline; @include o-opacity(60);}
+	a:hover { @include o-opacity(100); }
+	#fx_facebook {background-image: url(../openolat/images/social/facebook_16.png);}
+	#fx_twitter {background-image: url(../openolat/images/social/twitter_16.png);}
+	#fx_google {background-image: url(../openolat/images/social/google_16.png);}
+	#fx_delicious {background-image: url(../openolat/images/social/delicious_16.png);}
+	#fx_digg {background-image: url(../openolat/images/social/digg_16.png);}
+	#fx_mail {background-image: url(../openolat/images/social/email_16.png);}
+	#fx_link {background-image: url(../openolat/images/social/link_16.png);}
 }
-
-
+#callout_fx_link input { width:460px;}
 
 /* INFO MESSAGES */
 div.o_infomsgs { 
@@ -118,6 +123,33 @@ img.o_portrait_dummy_female_small   {background-image: url(../openolat/images/du
 img.o_portrait_dummy_male_big       {background-image: url(../openolat/images/dummy_male_big.png); width: 100px; height: 100px;}
 img.o_portrait_dummy_male_small     {background-image: url(../openolat/images/dummy_male_small.png); }
 
+
+
+/* Portlet admin. */
+div.fx_portal_admin { margin-top: 10px; }
+div.fx_portlets_column { 
+	width:30%; float:left; margin-right: 10px; 
+	div.b_portlet { min-height:1em; }
+}
+div.fx_portlets_column_name { 
+	padding: 5px 5px 0px 5px;
+	span { color:#4F576A; font-weight:bold; text-deocration:underline; }
+}
+div.fx_portlets_column_portlets { border:1px solid #eee; @include o-border-radius(4px); @include o-gradient-white(); }
+
+div.fx_available_portlets { 
+		width:28%; float:right;
+		div.b_portlet { min-height:1em; } 
+}
+
+div.fx_portlets_admin_column { min-height:12em; }
+
+	
+/* Site admin. */
+div.fx_site_admin_column { float:left; }
+div.fx_site_admin_column div.fx_site_definition { min-height:1em;}
+	
+	
 /* classes to use in course layout generator to have previews in dropdown elements */
 /* note: this does not work in chrome (jan2012, chrome 16.0.) */
 .clgen_font_arial { font-family: arial,helvetica; }

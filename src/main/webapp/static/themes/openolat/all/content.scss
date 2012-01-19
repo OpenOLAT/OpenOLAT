@@ -11,10 +11,11 @@
 *   (as of yaml compliance, contains css rules for
 *   styling fonts, colors, font-style, etc. ) 
 *   
-*   this file is included in layout.scss and is _also_
-*   compiled to a separate css-file! (it is needed
+*   this file is compiled to a separate css-file! (it is needed
 *   in iframes within course, tinyMCE, etc.)
-*
+*   
+*   the resulting content.css is also included in layout.scss
+*   (as "default" css import, because of the relative image-links)
 *  =================================================
 */
 
@@ -30,6 +31,7 @@ body {
 	font-size: $defaultfontsize;
 	color:#444;
 }
+
 
 #b_header #b_topnav,#b_nav_main, div.b_tree { font-family: $headerfont; }
 
@@ -53,8 +55,8 @@ a:hover {
 	color:$basecolor;
 }
 
-a.b_link_extern { background: transparent url('../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
-.b_link_mailto { background: transparent url('../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_extern { background: transparent url('../../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
+.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
 
 hr {
   color:#fff;
@@ -73,7 +75,7 @@ p { margin: 0 0 1em 0; }
 /** ----------------- CONTENT CLASSES ----------------- **/
 
 /* content boxes */
-.b_info { background: #E9EAEF url(../openolat/images/information-white.png) no-repeat 5px 5px; padding: 5px 5px 5px 30px; border:1px solid #C5C4C4; @include o-border-radius(4px);}
+.b_info { background: #E9EAEF url(../../openolat/images/information-white.png) no-repeat 5px 5px; padding: 5px 5px 5px 30px; border:1px solid #C5C4C4; @include o-border-radius(4px);}
 .b_note {background: #E2E2E2; padding: 1em; border: 2px #B5B5B5 solid; @include o-border-radius(4px);}
 .b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; @include o-border-radius(4px);}
 .b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; @include o-border-radius(4px);}
@@ -93,7 +95,7 @@ div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
 .b_align_center { text-align: center; }
 .b_align_inverse { text-align: right; }
 .b_quote_wrapper { position: relative; margin: 20px; }
-.b_quote_author { background: url(../openolat/images/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
+.b_quote_author { background: url(../../openolat/images/forum/quote.gif) no-repeat left bottom; padding: 10px 5px 15px 11px;position: relative;top: 1px;font-style: italic;color: #A2A2A2;}
 blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464;background:#fff; }
 .b_border_box { border: 1px solid #ccc; padding: 1em; @include o-border-radius(2px); }
 .b_warning { padding: 1em; border: 2px #ffc659 solid; @include o-border-radius(4px); @include o-gradient2(#ffe49c,#fff4da); }
@@ -113,7 +115,7 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 	
 	/* HELP, context sensitive */
 	div.b_contexthelp_wrapper { position: relative; }
-	a.b_contexthelp { display: block; width: 16px; height: 16px; background: url(../openolat/images/help.png) no-repeat; line-height: 0; cursor: help; }
+	a.b_contexthelp { display: block; width: 16px; height: 16px; background: url(../../openolat/images/help.png) no-repeat; line-height: 0; cursor: help; }
 	div.b_contexthelp_wrapper a.b_contexthelp { position: absolute; top: 0; right: 0; }
 	fieldset a.b_contexthelp, fieldset div.b_contexthelp_wrapper a.b_contexthelp { position: absolute; top: -1.5em; right: -0.8em; }
 	#b_contexthelp {}
@@ -127,7 +129,7 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 			 td { width: 50%; }
 		 }
 	}
-	.b_contexthelp_icon {background-image: url(../openolat/images/help.png); }
+	.b_contexthelp_icon {background-image: url(../../openolat/images/help.png); }
 	
 	
 	
@@ -140,7 +142,7 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 		div.b_rating_personal { background: #fff; z-index: 5; }
 	}
 	
-	div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments { background: url(../openolat/images/comment.png) 3px 50% no-repeat; padding: 3px 0 1px 23px; vertical-align: middle; min-height: 18px;}
+	div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments { background: url(../../openolat/images/comment.png) 3px 50% no-repeat; padding: 3px 0 1px 23px; vertical-align: middle; min-height: 18px;}
 
 	div.b_comments { 
 		font-size: 0.9em;
@@ -149,7 +151,7 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 			border:1px solid #eee; padding: 10px 10px 5px 10px; margin-bottom: 2em; background: #fbfbfb;
 			@include o-border-radius(4px);
 			div.b_avatar img { border: 1px solid #aaa; }
-			h5 { font-size: 1em; background: url(../openolat/images/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
+			h5 { font-size: 1em; background: url(../../openolat/images/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
 			span.b_date { color: #aaaaaa; font-weight: normal; display: block; margin-top: 5px;}
 			
 			// wrapper in wrapper in wrapper in ....
@@ -165,7 +167,7 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 		}		
 	}
 	
-	.b_comment_icon {background-image: url(../openolat/images/comment.png);}
+	.b_comment_icon {background-image: url(../../openolat/images/comment.png);}
 	#b_comment_form_link {font-size: 0.9em; position: relative; top: -15px; left: 23px;}
 	
 	/* DATE COMPONENT */
@@ -186,24 +188,44 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 		div.b_rating_items { 
 			vertical-align: middle; line-height: 18px; 
 			a { float: left; display: inline; width: 16px; height: 16px; background-repeat: no-repeat; background-position: 0 0; margin: 1px 4px 1px 0}
-			a.b_rating_item_on { background-image: url(../openolat/images/star.png); }
-			a.b_rating_item_off { background-image: url(../openolat/images/star_grey.png); }
+			a.b_rating_item_on { background-image: url(../../openolat/images/star.png); }
+			a.b_rating_item_off { background-image: url(../../openolat/images/star_grey.png); }
 			a:hover {cursor: default;}
 			&.b_enabled a:hover {cursor: pointer;}
-			&.b_enabled a.b_rating_item_off:hover { background-image: url(../openolat/images/star.png);}
+			&.b_enabled a.b_rating_item_off:hover { background-image: url(../../openolat/images/star.png);}
 		}
 		div.b_rating_explanation { clear: both; font-size: 90%; }
 	}
 	
 
-	/* AJAX AUTOCOMPLETER only color styles override */
-	div.b_form_auto_completer input { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0px; padding: 0; }
-	div.b_form_auto_completer input:focus { border: 1px solid #504D4E; background: #FFF; }
-	div.b_form_auto_completer_item { background-color:#FFF; text-align: left; padding-top: 2px; padding-bottom: 2px;}
-	div.b_form_auto_completer_item.x-combo-selected { background-color: $basecolor_ultra_light; border-left:0 ! important; border-right:0 ! important;}
-	div.b_form_auto_completer_item span.b_key { color: #999; margin-right: 2px; }
-	div.b_form_auto_completer_item span.b_value { }
-	div.b_form_auto_completer_item.b_error_icon { color: #990000; font-style: italic;}
-		
+/* AJAX AUTOCOMPLETER only color styles override */
+div.b_form_auto_completer input { border: 1px solid #ACAAAA; background: #F6F6F6; line-height: 1.3em; margin: 0px; padding: 0; }
+div.b_form_auto_completer input:focus { border: 1px solid #504D4E; background: #FFF; }
+div.b_form_auto_completer_item { background-color:#FFF; text-align: left; padding-top: 2px; padding-bottom: 2px;}
+div.b_form_auto_completer_item.x-combo-selected { background-color: $basecolor_ultra_light; border-left:0 ! important; border-right:0 ! important;}
+div.b_form_auto_completer_item span.b_key { color: #999; margin-right: 2px; }
+div.b_form_auto_completer_item span.b_value { }
+div.b_form_auto_completer_item.b_error_icon { color: #990000; font-style: italic;}
 
+
+/* ---------- smilies / emoticons in tinyMCE ------------------------ */
+/* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
+img.b_emoticons_angel     {background : url(../../openolat/images/emoticons/smiley-angel.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_angry     {background : url(../../openolat/images/emoticons/smiley-mad.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_blushing  {background : url(../../openolat/images/emoticons/smiley-red.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_confused  {background : url(../../openolat/images/emoticons/smiley-confuse.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_cool      {background : url(../../openolat/images/emoticons/smiley-cool.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_cry       {background : url(../../openolat/images/emoticons/smiley-cry.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_devil     {background : url(../../openolat/images/emoticons/smiley-evil.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_grin      {background : url(../../openolat/images/emoticons/smiley-grin.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_kiss      {background : url(../../openolat/images/emoticons/smiley-kiss.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_ohoh      {background : url(../../openolat/images/emoticons/smiley-eek.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_sad       {background : url(../../openolat/images/emoticons/smiley-sad.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_sick      {background : url(../../openolat/images/emoticons/smiley-sad-blue.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_smile     {background : url(../../openolat/images/emoticons/smiley.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_tongue    {background : url(../../openolat/images/emoticons/smiley-razz.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_ugly      {background : url(../../openolat/images/emoticons/smiley-money.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_weird     {background : url(../../openolat/images/emoticons/smiley-nerd.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_wink      {background : url(../../openolat/images/emoticons/smiley-wink.png) no-repeat; width: 18px; height: 18px;}
+img.b_emoticons_worried   {background : url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat; width: 18px; height: 18px;}
 

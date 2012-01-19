@@ -4,7 +4,10 @@
 
 @import "license";
 
+// default css import
 @import url(../../yaml/core/slim_base.css);
+@import url(all/content.css);
+
 
 /* --------------- */
 @import "definitions";
@@ -13,7 +16,6 @@
 /* --------------- */
 @import "basemod";
 @import "icons";
-@import "content";
 
 /* ------- print -------- */
 @import "p_basemod";
