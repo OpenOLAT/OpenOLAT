@@ -82,7 +82,7 @@ public class OlatGuestFooterController extends BasicController {
 		
 		showOtherUsers = LinkFactory.createLink("other.users.online", olatFootervc, this);
 		showOtherUsers.setAjaxEnabled(false);
-		showOtherUsers.setTarget("_blanc");
+		showOtherUsers.setTarget("_blank");
 		if (isGuest) showOtherUsers.setEnabled(false);
 		
 		loginLink = LinkFactory.createLink("footer.login", olatFootervc, this);

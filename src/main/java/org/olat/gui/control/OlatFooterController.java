@@ -81,7 +81,7 @@ public class OlatFooterController extends BasicController implements GenericEven
 		
 		showOtherUsers = LinkFactory.createLink("other.users.online", olatFootervc, this);
 		showOtherUsers.setAjaxEnabled(false);
-		showOtherUsers.setTarget("_blanc");
+		showOtherUsers.setTarget("_blank");
 		if (isGuest || isInvitee) {
 			showOtherUsers.setEnabled(false);
 		}

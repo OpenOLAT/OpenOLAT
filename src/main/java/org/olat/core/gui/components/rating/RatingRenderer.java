@@ -91,7 +91,7 @@ public class RatingRenderer implements ComponentRenderer {
 			// Add action
 			if (rating.isAllowUserInput()) {
 				// Add link
-				sb.append("href=\"");
+				sb.append(" href=\"");
 				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { (i+1) +"" },
 						ajaxModeEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				sb.append("\"");

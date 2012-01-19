@@ -226,7 +226,7 @@ public class Renderer {
 
 		if (source.isVisible()) {
 			int lev = renderResult.getNestedLevel();
-			if (lev > 42) throw new AssertException("components were nested more than 42 times, assuming endless loop bug: latest comp name: "+source.getComponentName());
+			if (lev > 60) throw new AssertException("components were nested more than 60 times, assuming endless loop bug: latest comp name: "+source.getComponentName());
 			Translator componentTranslator = source.getTranslator();
 			
 			// for ajax mode: render surrounding divs or spans as a positional
