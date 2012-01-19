@@ -282,7 +282,9 @@ public class TableController extends BasicController {
 		//preference + download links
 		preferenceLink = LinkFactory.createCustomLink("prefLink", "cmd.changecols", "", Link.NONTRANSLATED, contentVc, this);
 		preferenceLink.setCustomEnabledLinkCSS("b_table_prefs");
+		preferenceLink.setTooltip(translate("command.changecols"),false);
 		downloadLink = LinkFactory.createCustomLink("downloadLink", "cmd.download", "", Link.NONTRANSLATED, contentVc, this);
+		downloadLink.setTooltip(translate("table.export.title"),false);
 		downloadLink.setCustomEnabledLinkCSS("b_table_download");
 		
 		putInitialPanel(contentVc);

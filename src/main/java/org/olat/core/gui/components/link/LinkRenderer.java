@@ -174,27 +174,7 @@ public class LinkRenderer implements ComponentRenderer {
 				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
 						iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				sb.append("\"");
-				//if link only has backgroud image (no translation), we need to set qtip here because of empty span
-				if (nontranslated && link.hasTooltip && link.getCustomDisplayText() == null) {
-					if (nontranslated) {
-						sb.append(" ext:qtip=\"").append(title).append("\"");
-					} else {
-						sb.append(" ext:qtip=\"").append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
-					}
-				}
 			}
-
-			if (/* !link.isEnabledForLongTransaction && */!flexiformlink) {
-				// clash with onclick ... FIXME:pb/as find better solution to solve this
-				// problem.
-				String clickCmd = (link.isSuppressDirtyFormWarning() ? "o2c=0;return o2cl();" : "return o2cl();");
-				// only catch click event - modern browser fire click event even
-				// when event was triggered by keyboard
-				sb.append(" onclick=\"").append(clickCmd).append("\">");
-			} else {
-				sb.append(">");
-			}
-			sb.append("<span "); // inner wrapper for layouting
 			
 			//tooltips
 			if(title != null) {
@@ -218,8 +198,22 @@ public class LinkRenderer implements ComponentRenderer {
 					//sb.append(" ext:hide=\"user\"");
 				}
 			}
-			sb.append(">");
 			
+
+			if (/* !link.isEnabledForLongTransaction && */!flexiformlink) {
+				// clash with onclick ... FIXME:pb/as find better solution to solve this
+				// problem.
+				String clickCmd = (link.isSuppressDirtyFormWarning() ? "o2c=0;return o2cl();" : "return o2cl();");
+				// only catch click event - modern browser fire click event even
+				// when event was triggered by keyboard
+				sb.append(" onclick=\"").append(clickCmd).append("\">");
+			} else {
+				sb.append(">");
+			}
+			
+			
+			
+			sb.append("<span> "); // inner wrapper for layouting
 			if (customDisplayText != null) {
 				//link is nontranslated but has custom text
 				sb.append(customDisplayText);
