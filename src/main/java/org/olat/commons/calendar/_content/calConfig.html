@@ -35,7 +35,7 @@ $r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-callist
 		$calendarWrapper.getKalendarConfig().getDisplayName()
 	</div>
 
-	  <a class="o_cal_config_chosecolor" 
+	  <a id="colorchooser_$calendarWrapper.getKalendar().getCalendarID()" class="o_cal_config_chosecolor" 
 		  href="$r.commandURIbg("cc", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
   		$r.bgTarget() 
 	  	title="$r.translateInAttribute("cal.color.choose")"></a>

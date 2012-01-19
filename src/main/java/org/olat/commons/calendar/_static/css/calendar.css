@@ -63,7 +63,7 @@
 
 /* calendar: height = 20px (header) + 10*20px (hours) + 10*20px (half-hours) */
 #o_cal_wv { 
-	padding: 0 5px 5px 5px;
+	padding: 0 0px 5px 0px;
 	position: relative; width: auto;
 }
 
@@ -203,9 +203,33 @@
 .o_cal_wv_event_content {
 	padding: 1px 2px 1px 2px;
 }
-.o_cal_gotodate {
-	margin-top:8px; /* margin-top hack ...*/
+
+/** toolbar **/
+.o_cal_toptoolbar {
+	margin-bottom:0.8em;
+	min-width:707px;
+	padding-bottom:8px;
+	border-bottom:1px solid #eee;
 }
+.o_cal_toptoolbar .o_cal_pagination {
+	float:left;
+	height:2em;
+	width:235px;
+}
+.o_cal_toptoolbar .o_cal_gotodate {
+	float:left;
+	height:2em;
+	width:350px;
+}
+.o_cal_gotodate div.b_form div.b_form_element_wrapper div.b_form_element {
+	margin-left:0;
+}
+.o_cal_toptoolbar .o_cal_search {
+	float:left;
+	height:2em;
+}
+
+
 
 /* day long events */
 .o_cal_wv_devent_wrapper { 
@@ -400,7 +424,7 @@ div.o_cal_gotodate div.b_form_element {margin-left:0%; margin-top:-4px; }
 
 div.o_cal_search_subscribe {float: right; margin-right: 20px; }
 
-div.o_cal_week_year_label {font-weight: bold;}
+div.o_cal_week_year_label {font-weight: bold; margin-top:8px;}
 	
 .o_cal_config_regenerate_link {
 	position: relative;
