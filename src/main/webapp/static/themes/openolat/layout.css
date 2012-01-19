@@ -7054,3 +7054,177 @@ div.b_portlet_dyk_a {
 
 div.b_portlet_dyk_next {
   text-align: right; }
+
+/* Library */
+div.f_library_catalog div.b_tree {
+  /* overflowing menu */ }
+div.f_library_catalog div.b_tree ul {
+  white-space: normal; }
+div.f_library_catalog div.b_tree ul.b_tree_l1 li a.b_tree_icon {
+  background-image: none !important; }
+div.f_library_catalog div.f_metadata {
+  background-color: #fcfcfc;
+  margin-left: 20px;
+  padding: 4px; }
+div.f_library_catalog h4 {
+  padding-left: 25px;
+  background-repeat: no-repeat;
+  background-position: center left; }
+div.f_library_catalog div.f_folder_info div.f_metadata {
+  margin-bottom: 1.5em; }
+div.f_library_catalog div.b_noti {
+  right: 90px; }
+div.f_library_catalog div.f_thumbnails_switch {
+  border: 1px solid #E9EAEF;
+  display: inline;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  float: right;
+  padding: 3px 3px 3px 23px; }
+div.f_library_catalog div.f_thumbnails_on {
+  background: url(../openolat/images/docs/document_preview.png) no-repeat 3px 50%; }
+div.f_library_catalog div.f_thumbnails_off {
+  background: url(../openolat/images/docs/document_preview.png) no-repeat 3px 50%;
+  /* Required for IE 5, 6, 7 */
+  /* ...or something to trigger hasLayout, like zoom: 1; */
+  zoom: 1;
+  /* Theoretically for IE 8 & 9 (more valid) */
+  /* ...but not required as filter works too */
+  /* should come BEFORE filter */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+  /* This works in IE 8 & 9 too */
+  /* ... but also 5, 6, 7 */
+  filter: alpha(opacity=70);
+  /* Older than Firefox 0.9 */
+  -moz-opacity: 0.7;
+  /* Safari 1.x (pre WebKit!) */
+  -khtml-opacity: 0.7;
+  /* Modern!
+  /* Firefox 0.9+, Safari 2?, Chrome any?
+  /* Opera 9+, IE 9+ */
+  opacity: 0.7; }
+div.f_library_catalog th, div.f_library_catalog td {
+  text-align: left;
+  font-size: 0.9em;
+  color: #999;
+  margin: 0;
+  padding: 0;
+  border: 0; }
+div.f_library_catalog th {
+  font-weight: bold;
+  width: 14em;
+  vertical-align: top; }
+div.f_library_catalog h3.b_filetype_folder {
+  margin-top: 20px; }
+div.f_library_catalog div.f_item {
+  margin-bottom: 1em;
+  padding: 0.5em; }
+div.f_library_catalog div.f_item div.f_item_thumbnail {
+  width: 200px;
+  height: 200px;
+  float: left;
+  margin-right: 20px; }
+div.f_library_catalog div.f_item div.f_item_links a {
+  background-repeat: no-repeat; }
+div.f_library_catalog div.f_item div.f_item_links a.b_filetype_file {
+  display: block;
+  width: 70%;
+  float: left;
+  padding: 2px 10px 2px 20px;
+  background-repeat: no-repeat;
+  margin: 0; }
+div.f_library_catalog div.f_item div.f_item_links a.f_permalink {
+  text-decoration: none;
+  display: block;
+  width: 9px;
+  height: 9px;
+  float: right;
+  padding: 4px 2px 2px 2px;
+  margin: 0;
+  background-position: center center; }
+div.f_library_catalog div.f_item div.f_item_links span a.f_sendmail {
+  text-decoration: none;
+  background: url(../openolat/images/mail.png) no-repeat top left;
+  display: block;
+  width: 16px;
+  height: 16px;
+  float: right;
+  padding: 0 0 0 2px;
+  margin: 0; }
+div.f_library_catalog div.f_item div.f_metadata {
+  position: relative;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -o-border-radius: 4px;
+  moz-box-shadow: 0 1px 2px #d3d3d3;
+  -ms-box-shadow: 0 1px 2px #d3d3d3;
+  -o-box-shadow: 0 1px 2px #d3d3d3;
+  -webkit-box-shadow: 0 1px 2px #d3d3d3;
+  box-shadow: 0 1px 2px #d3d3d3; }
+div.f_library_catalog div.f_item div.f_metadata div.f_thumbnail {
+  float: left;
+  border-right: 1px solid #eeeeee; }
+div.f_library_catalog div.f_item div.f_metadata div.f_thumbnail_inner {
+  width: 200px;
+  height: 200px; }
+div.f_library_catalog div.f_item div.f_metadata div.f_thumbnail_unavailable {
+  width: 200px;
+  height: 200px;
+  background-image: url(../openolat/images/no_preview.png);
+  background-repeat: no-repeat;
+  background-position: 50% 50%; }
+div.f_library_catalog div.f_item div.f_metadata div.f_metadata_text {
+  padding-bottom: 35px; }
+div.f_library_catalog div.f_item div.f_metadata div.f_metadata_text_inner {
+  width: 100%; }
+div.f_library_catalog div.f_item div.f_metadata div.f_item_ratings {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 300px; }
+div.f_library_catalog div.f_item div.f_metadata div.f_item_ratings div.b_ratings_and_comments {
+  margin: 0;
+  border: none; }
+div.f_library_catalog div.f_item_selected div.f_metadata {
+  background-color: #F0F0F0 !important;
+  moz-box-shadow: 1 1px 4px #d3d3d3;
+  -ms-box-shadow: 1 1px 4px #d3d3d3;
+  -o-box-shadow: 1 1px 4px #d3d3d3;
+  -webkit-box-shadow: 1 1px 4px #d3d3d3;
+  box-shadow: 1 1px 4px #d3d3d3; }
+div.f_library_catalog h3.f_search_results {
+  background-image: url(../openolat/images/magnifier-zoom.png) !important; }
+div.f_library_catalog div.b_toolbox div.o_toolbox_searchbox input {
+  line-height: 1.3em;
+  margin: 0;
+  width: 10em; }
+div.f_library_catalog div.b_toolbox div.o_toolbox_searchbox input:focus {
+  border: 1px solid #504D4E; }
+div.f_library_catalog div.b_toolbox div.o_toolbox_searchbox button {
+  width: 16px;
+  height: 16px;
+  background: url(../openolat/images/magnifier-zoom.png) no-repeat;
+  border: 0;
+  vertical-align: top; }
+
+div.f_library_overview img {
+  float: right;
+  max-width: 50%; }
+div.f_library_overview p {
+  padding-left: 20px; }
+div.f_library_overview div.f_library_big_icon {
+  float: right;
+  width: 425px;
+  height: 282px;
+  background: url(../openolat/images/library_image.png) no-repeat; }
+div.f_library_overview div.f_library_newest_files ul li {
+  white-space: normal;
+  padding-bottom: 0.3em; }
+div.f_library_overview div.f_library_newest_files ul li a {
+  background-position: top left;
+  min-height: 16px; }
+
+.f_library_icon {
+  background-image: url(../openolat/images/library.png); }
