@@ -149,6 +149,29 @@ div.fx_portlets_admin_column { min-height:12em; }
 div.fx_site_admin_column { float:left; }
 div.fx_site_admin_column div.fx_site_definition { min-height:1em;}
 	
+
+/* nicer html error pages (404, 403, 500 ) */
+div.error-box { 
+	width: 400px;
+	margin: 30px auto;
+	padding: 20px;
+	border: 2px solid $basecolor;
+	border-radius: 6px; 
+	background: white;
+	@include o-box-shadow(0,2px, 4px, #ccc);
+	@include o-border-radius(6px);
+	
+	h1 {
+		background-image: url(../openolat/images/icon_warning_32.png);
+		background-repeat: no-repeat;
+		padding-left: 30px;
+		font-size: 14pt;
+		font-weight: bold;
+	}
+}
+
+
+
 	
 /* classes to use in course layout generator to have previews in dropdown elements */
 /* note: this does not work in chrome (jan2012, chrome 16.0.) */

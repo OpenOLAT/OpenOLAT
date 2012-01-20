@@ -5760,6 +5760,30 @@ div.fx_site_admin_column {
 div.fx_site_admin_column div.fx_site_definition {
   min-height: 1em; }
 
+/* nicer html error pages (404, 403, 500 ) */
+div.error-box {
+  width: 400px;
+  margin: 30px auto;
+  padding: 20px;
+  border: 2px solid #025d8c;
+  border-radius: 6px;
+  background: white;
+  moz-box-shadow: 0 2px 4px #cccccc;
+  -ms-box-shadow: 0 2px 4px #cccccc;
+  -o-box-shadow: 0 2px 4px #cccccc;
+  -webkit-box-shadow: 0 2px 4px #cccccc;
+  box-shadow: 0 2px 4px #cccccc;
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -o-border-radius: 6px; }
+div.error-box h1 {
+  background-image: url(../openolat/images/icon_warning_32.png);
+  background-repeat: no-repeat;
+  padding-left: 30px;
+  font-size: 14pt;
+  font-weight: bold; }
+
 /* classes to use in course layout generator to have previews in dropdown elements */
 /* note: this does not work in chrome (jan2012, chrome 16.0.) */
 .clgen_font_arial {
