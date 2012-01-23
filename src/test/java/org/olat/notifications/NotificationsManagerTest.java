@@ -36,6 +36,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -154,7 +155,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		
 		JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
 		
-		final SubscriptionContext sc = new SubscriptionContext("Course", new Long(1238778565), "676");
+		final SubscriptionContext sc = new SubscriptionContext("Course", new Long(1238778565), UUID.randomUUID().toString().replace("-", ""));
 		final PublisherData pd = new PublisherData("Forum", "e.g. forumdata=keyofforum", null );
 
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
@@ -201,7 +202,9 @@ public class NotificationsManagerTest extends OlatTestCase {
 				}
 			}}).start();
 
+		System.out.println("Thread point 3");
 		sleep(2000);
+		System.out.println("Thread point 4");
 		// check thread 2 should not finished
 		assertEquals("Thread already finished => synchronization did not work",0,statusList.size());
 		try {
