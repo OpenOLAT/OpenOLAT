@@ -20,6 +20,7 @@
 package org.olat.user.propertyhandlers;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
@@ -93,17 +94,40 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 	public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
 		if ( ! super.isValidValue(value, validationError, locale)) return false;
 		
+		boolean allOk = true;
 		if (StringHelper.containsNonWhitespace(value)) {			
 			// check url address syntax
 			try {
-				new URL(value);
+				URL url = new URL(value);
+				url.toURI();
+
+				if(!"http".equals(url.getProtocol()) && !"https".equals(url.getProtocol())) {
+					validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
+					allOk &= false;
+				}
+				if(!StringHelper.containsNonWhitespace(url.getAuthority())) {
+					validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
+					allOk &= false;
+				}
+				if(!StringHelper.containsNonWhitespace(url.getHost())) {
+					validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
+					allOk &= false;
+				}
 			} catch (MalformedURLException e) {
 				validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
-				return false;
+				allOk &= false;
+			} catch (URISyntaxException e) {
+				validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
+				allOk &= false;
+			}
+			
+			if(!value.startsWith("http://") &&!value.startsWith("https://")) {
+				validationError.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
+				allOk &= false;
 			}
 		}
-		// everthing ok
-		return true;
+		
+		return allOk;
 	}
 
 }
