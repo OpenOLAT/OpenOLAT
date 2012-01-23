@@ -448,7 +448,10 @@ div.o_cal_links {}
 	
 } /* end all media styles */
 
+
+	
 @media print {
+	.o_cal_toptoolbar.b_clearfix { display: none; } /* hide top toolbar */
 	.o_cal_wv { display: none; } /* hide grid calendar */
 	.o_cal_wv_print { display: block; } /* display the print view */
 	#o_cal_config .b_float_right { display: none; } /* hide buttons */

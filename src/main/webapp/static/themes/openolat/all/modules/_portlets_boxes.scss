@@ -202,11 +202,10 @@ div.b_portlet.o_pt_w_if div.b_portlet_header { background-image: url(../openolat
 	
 	}
 
-	
 
 
 .b_toolboxes{
-	font-size: 95%; 
+  // 	font-size: 95%;   // as of jan 20.  we try with normal font-size 
 	padding:6px;
 	.b_toolbox{ 
 		margin-bottom: 20px;

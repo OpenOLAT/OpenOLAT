@@ -122,6 +122,32 @@ a.b_link_extern {
   background: transparent url("../../openolat/images/mail_small.png") no-repeat left center;
   padding-left: 18px; }
 
+/* TEXT FORMATTING */
+cite, blockquote {
+  font-style: italic; }
+
+blockquote {
+  margin: 0 0 1em 1.5em; }
+
+strong, b {
+  font-weight: bold; }
+
+em, i {
+  font-style: italic; }
+
+textarea, pre, tt, code {
+  font-family: monospace;
+  font-size: 1.2em; }
+
+acronym, abbr {
+  letter-spacing: .07em;
+  border-bottom: .1em dashed #c00;
+  cursor: help; }
+
+legend {
+  padding: 0 5px;
+  color: #504D4E; }
+
 hr {
   color: #fff;
   background: transparent;
@@ -132,6 +158,12 @@ hr {
 
 p {
   margin: 0 0 1em 0; }
+
+dt {
+  font-weight: bold; }
+
+dd {
+  margin: 0 0 1em 2em; }
 
 /** ----------------- CONTENT CLASSES ----------------- **/
 /* content boxes */
@@ -647,3 +679,58 @@ img.b_emoticons_worried {
   background: url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat;
   width: 18px;
   height: 18px; }
+
+/** ---------------------- EXT JS PATCHES  ------------------ **/
+/* (are needed here in content.css ,  e.g.  glossary tooltip in iframes...) */
+div.b_ext_elem ol, div.b_ext_elem ul, div.b_ext_elem li {
+  list-style: none;
+  padding: 0;
+  margin: 0; }
+
+div.b_ext_elem.x-tree .x-panel-body {
+  background: transparent; }
+
+div.b_ext_tooltip_wrapper {
+  padding: 1px; }
+
+.x-window-mc {
+  font-size: 100%; }
+
+/* EXT TREE */
+div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {
+  background-image: url("../openolat/images/toggle-small.png");
+  background-position: 50% 50%; }
+
+div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {
+  background-image: url("../openolat/images/toggle-small-expand.png");
+  background-position: 50% 50%; }
+
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {
+  background-image: url("../openolat/images/toggle-small.png");
+  background-position: 50% 50%; }
+
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {
+  background-image: url("../openolat/images/toggle-small-expand.png");
+  background-position: 50% 50%; }
+
+div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon {
+  background-image: url(../openolat/images/folder.png); }
+
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon {
+  background-image: url(../openolat/images/folder_open.png); }
+
+div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon {
+  background-image: url(../openolat/images/docs/document_plain.png); }
+
+div.b_ext_elem .x-tree-selected a.x-tree-node-anchor {
+  border: 1px dotted #444;
+  text-decoration: none; }
+
+div.b_ext_elem .x-tree-node .x-tree-selected {
+  background-color: #FFC266; }
+
+/* fix margins in tooltip */
+.x-tip dl, .x-tip dd, .x-tip-body dl, .x-tip-body dd {
+  margin: 0 !important; }
+.x-tip dl, .x-tip-body dl {
+  padding: 1px; }

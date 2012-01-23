@@ -28,6 +28,8 @@ $basegray_ultra_light: #eee;
 $ico_plus : '../openolat/images/toggle-small-expand.png' ;
 $ico_minus : '../openolat/images/toggle-small.png' ;
 
+/* enable business / kmu mode */
+$enablebiz: false;
 
 /* defines the body-background */
 @mixin bodybg(){

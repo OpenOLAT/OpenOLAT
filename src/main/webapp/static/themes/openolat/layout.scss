@@ -1,4 +1,20 @@
 @charset "UTF-8";
+
+/*
+*  =================================================
+*  
+*   main SASS file for OpenOLAT 8 theme
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*	also read themes.README!
+*
+*   this file includes all other modules
+*  =================================================
+*/
+
+
 /* use the grey ext theme */
 /*@import url(../../js/ext/resources/css/xtheme-gray.css);*/
 
@@ -6,6 +22,7 @@
 
 // default css import
 @import url(../../yaml/core/slim_base.css);
+//@import url(../../yaml/core/slim_print_base.css);
 @import url(all/content.css);
 
 
@@ -16,13 +33,6 @@
 /* --------------- */
 @import "basemod";
 @import "icons";
-
-/* ------- print -------- */
-@import "p_basemod";
-@import "p_content";
-
-/* ------- mobile -------- */
-@import "m_basemod";
 
 /* -------- modules -------- */
 @import "dd";
@@ -45,3 +55,11 @@
 @import "im";
 @import "portlets_boxes";
 @import "library";
+
+/* print & mobile, let's keep 'em down here... */
+/* ------- print -------- */
+@import "p_basemod";
+@import "p_content";
+
+/* ------- mobile -------- */
+@import "m_basemod";

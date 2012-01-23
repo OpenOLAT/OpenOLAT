@@ -1,4 +1,17 @@
 @charset "UTF-8";
+/*
+*  =================================================
+*  
+*   main SASS file for OpenOLAT 8 theme
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*	also read themes.README!
+*
+*   this file includes all other modules
+*  =================================================
+*/
 /* use the grey ext theme */
 /*@import url(../../js/ext/resources/css/xtheme-gray.css);*/
 /*
@@ -89,28 +102,6 @@
 *
 *  =================================================
 */
-/*
-*  =================================================
-*   
-*   CONTAINS SOME SASS VARIABLES
-*   you can change these and compile the theme :)
-*
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*
-*   also read themes.README!
-*
-*  =================================================
-*/
-/* the base-color and variations (for openolat-theme this is the openolat-blue) */
-/* then we need a base-gray and some variations */
-/* here you can define the two small icons used in trees:  + and - */
-/* the defaultfont used in : text, main content, etc. */
-/* the font used in :  navigation (tabs + tree), headings */
-/* the overall default font-size */
-/* enable business / kmu mode */
-/* defines the body-background */
 @media all {
   html {
     min-height: 100%; }
@@ -937,59 +928,7 @@
 
   input.inputMessage {
     color: #AAA;
-    font-size: 11px; }
-
-  /** ---------------------- EXT JS PATCHES ------------------ **/
-  div.b_ext_elem ol, div.b_ext_elem ul, div.b_ext_elem li {
-    list-style: none;
-    padding: 0;
-    margin: 0; }
-
-  div.b_ext_elem.x-tree .x-panel-body {
-    background: transparent; }
-
-  div.b_ext_tooltip_wrapper {
-    padding: 1px; }
-
-  .x-window-mc {
-    font-size: 100%; }
-
-  /* EXT TREE */
-  div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {
-    background-image: url("../openolat/images/toggle-small.png");
-    background-position: 50% 50%; }
-
-  div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {
-    background-image: url("../openolat/images/toggle-small-expand.png");
-    background-position: 50% 50%; }
-
-  div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {
-    background-image: url("../openolat/images/toggle-small.png");
-    background-position: 50% 50%; }
-
-  div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {
-    background-image: url("../openolat/images/toggle-small-expand.png");
-    background-position: 50% 50%; }
-
-  div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon {
-    background-image: url(../openolat/images/folder.png); }
-
-  div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon {
-    background-image: url(../openolat/images/folder_open.png); }
-
-  div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon {
-    background-image: url(../openolat/images/docs/document_plain.png); }
-
-  div.b_ext_elem .x-tree-selected a.x-tree-node-anchor {
-    border: 1px dotted #444;
-    text-decoration: none; }
-
-  div.b_ext_elem .x-tree-node .x-tree-selected {
-    background-color: #FFC266; }
-
-  /* fix margins in tooltip */
-  .x-tip dl, .x-tip dd {
-    margin: 0; } }
+    font-size: 11px; } }
 /*
 *  =================================================
 *  
@@ -1626,64 +1565,6 @@ li a.b_toolbox_copy, .b_copy_icon {
 body#b_body .o_CourseModule_icon_closed {
   background-image: url("../openolat/images/le_resources/book-open-text-image_locked.png"); }
 
-/* ------- print -------- */
-/*
-*  =================================================
-*  
-*   basemod rules for OpenOLAT 8  (PRINT)
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*
-*
-*   (as of yaml compliance, contains css rules for
-*   positioning and sizing elements) 
-*   
-*   this file is included in layout.scss
-*   it is not compiled to a separate css-file...  
-*
-*  =================================================
-*/
-@media print {
-  /* (en) change font size unit to [pt] - avoiding problems with [px] unit in Gecko based browsers  */
-  /* (de) Wechsel der der Schriftgrößen-Maßheinheit zu [pt] - Probleme mit Maßeinheit [px] in Gecko-basierten Browsern vermeiden */
-  body {
-    font-size: 10pt; } }
-/*
-*  =================================================
-*  
-*   content rules for OpenOLAT 8  (PRINT)
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*
-*
-*   (as of yaml compliance, contains css rules for
-*   styling fonts, colors, font-style, etc. ) 
-*   
-*   this file is included in layout.scss
-*   it is not compiled to a separate css-file...  
-*
-*  =================================================
-*/
-/* ------- mobile -------- */
-/*
-*  =================================================
-*  
-*   MOBILE rules for OpenOLAT 8  (MOBILE DEVICES)
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*   also read themes.README!
-* 
-*
-*  =================================================
-*/
-/* iPad ( and other tablets, some netbooks as well, I guess...) */
-/*  mobile phones */
 /* -------- modules -------- */
 /*
 *  =================================================
@@ -5168,6 +5049,13 @@ div.b_selectiontree .b_selectiontree_junction {
 div.b_selectiontree .b_selectiontree_end {
   background-image: url(../openolat/images/tree/dots_nl.gif); }
 
+#b_main.o_editor #b_col3 {
+  background-image: url(../openolat/images/edit_bg.png);
+  background-position: top left;
+  background-repeat: repeat; }
+#b_main.o_editor div.b_tabbedpane_wrapper div.b_tabbedpane_content {
+  background: #fff; }
+
 /** ------------------ COURSE EDITOR --------------- **/
 #o_course_editor_errorbox {
   font-size: 90%;
@@ -7008,7 +6896,6 @@ div.b_portlet_toolbox span.b_portlet_edit_sort_manual_disabled {
   opacity: 0.2; }
 
 .b_toolboxes {
-  font-size: 95%;
   padding: 6px; }
 .b_toolboxes .b_toolbox {
   margin-bottom: 20px;
@@ -7252,3 +7139,153 @@ div.f_library_overview div.f_library_newest_files ul li a {
 
 .f_library_icon {
   background-image: url(../openolat/images/library.png); }
+
+/* print & mobile, let's keep 'em down here... */
+/* ------- print -------- */
+/*
+*  =================================================
+*  
+*   basemod rules for OpenOLAT 8  (PRINT)
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*
+*
+*   (as of yaml compliance, contains css rules for
+*   positioning and sizing elements) 
+*   
+*   this file is included in layout.scss
+*   it is not compiled to a separate css-file...  
+*
+*  =================================================
+*/
+@media print {
+  /* (en) change font size unit to [pt] - avoiding problems with [px] unit in Gecko based browsers  */
+  /* (de) Wechsel der der Schriftgrößen-Maßheinheit zu [pt] - Probleme mit Maßeinheit [px] in Gecko-basierten Browsern vermeiden */
+  body {
+    font-size: 10pt; }
+
+  /* don't print wiki navigation menu */
+  div.o_wiki_wrapper div.b_subcolumns div.b_c20l {
+    display: none; }
+
+  div.o_wiki_wrapper div.b_subcolumns div.b_c80r div.b_tabbedpane_tabs {
+    display: none; }
+
+  /* login site background image */
+  #b_main.o_loginscreen {
+    background-image: none; }
+
+  /* home site background image */
+  #b_main.o_home {
+    background-image: none; }
+
+  /* editor background */
+  #b_main.o_editor {
+    background-image: none; }
+
+  /* remove box-shadow if any */
+  #b_main {
+    moz-box-shadow: 0 0 0 transparent;
+    -ms-box-shadow: 0 0 0 transparent;
+    -o-box-shadow: 0 0 0 transparent;
+    -webkit-box-shadow: 0 0 0 transparent;
+    box-shadow: 0 0 0 transparent;
+    border: none; }
+
+  /* no borders, no margin, no padding */
+  body, #b_page_margins, #b_page, #b_main, #b_page_wrapper {
+    margin: 0;
+    padding: 0;
+    border: 0; }
+
+  /* a default font for printout */
+  body * {
+    font-family: "Times New Roman", Times, serif; }
+
+  /* font for code and pre */
+  code, pre {
+    font-family: "Courier New", Courier, mono; }
+
+  /* width to pagewidth */
+  #b_page_margins, #b_page {
+    width: 100% !important;
+    min-width: 0;
+    max-width: none; }
+
+  /* hide footer, hide topnav, hide main navigation */
+  #b_footer, #b_topnav, #b_nav, #search {
+    display: none; }
+
+  /* hide col1 and col2, make main column without margins */
+  #b_col1, #b_col2 {
+    display: none; }
+
+  #b_col3 {
+    margin: 0 !important;
+    border: none !important; }
+
+  .b_c25l, .b_c33l, .b_c38l, .b_c50l, .b_c62l, .b_c66l, .b_c75l, .b_c25r, .b_c33r, .b_c38r, .b_c50r, .b_c62r, .b_c66r, .b_c75r {
+    width: 100%;
+    margin: 0;
+    float: none;
+    overflow: visible;
+    display: table; }
+
+  .b_subc, .b_subcl, .b_subcr {
+    margin: 0;
+    padding: 0; }
+
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid; }
+
+  #b_page a[href^="http:"], #b_page a[href^="https:"] {
+    padding-left: 0;
+    background-image: none; }
+
+  #b_col1_content:before, #b_col2_content:before, #b_col3_content:before {
+    content: "";
+    color: #888;
+    background: inherit;
+    display: block;
+    font-weight: 700;
+    font-size: 1.5em; }
+
+  .b_floatbox, .b_subcolumns, .b_subcolums_oldgecko {
+    overflow: visible;
+    display: table; } }
+/*
+*  =================================================
+*  
+*   content rules for OpenOLAT 8  (PRINT)
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*
+*
+*   (as of yaml compliance, contains css rules for
+*   styling fonts, colors, font-style, etc. ) 
+*   
+*   this file is included in layout.scss
+*   it is not compiled to a separate css-file...  
+*
+*  =================================================
+*/
+/* ------- mobile -------- */
+/*
+*  =================================================
+*  
+*   MOBILE rules for OpenOLAT 8  (MOBILE DEVICES)
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*   also read themes.README!
+* 
+*
+*  =================================================
+*/
+/* iPad ( and other tablets, some netbooks as well, I guess...) */
+/*  mobile phones */

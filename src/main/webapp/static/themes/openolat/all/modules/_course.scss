@@ -18,6 +18,12 @@ div.b_selectiontree {
    	.b_selectiontree_end {background-image: url(../openolat/images/tree/dots_nl.gif); }
 }
 
+#b_main.o_editor {
+	#b_col3 { background-image: url(../openolat/images/edit_bg.png); background-position: top left; background-repeat:repeat;}
+	div.b_tabbedpane_wrapper div.b_tabbedpane_content { background:#fff;}	
+}
+
+
 
 
 /** ------------------ COURSE EDITOR --------------- **/
