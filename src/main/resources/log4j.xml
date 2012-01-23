@@ -9,9 +9,21 @@
   	 </layout>
 </appender>
 
-<root>
+	<root>
   	<priority value="info"></priority>
-	<appender-ref ref="stdout"/>
-</root>
+		<appender-ref ref="stdout"/>
+	</root>
+  <logger name="org.apache.commons.httpclient">
+    <level value="WARN"/>
+    <appender-ref ref="stdout"/>
+  </logger>
+   <logger name="org.apache.pdfbox">
+    <level value="FATAL"/>
+    <appender-ref ref="stdout"/>
+  </logger>
+   <logger name="org.apache.fontbox">
+    <level value="FATAL"/>
+    <appender-ref ref="stdout"/>
+  </logger>
 
 </log4j:configuration>
