@@ -120,6 +120,15 @@ public class MailManager extends BasicManager {
 		this.notificationsManager = notificationsManager;
 	}
 	
+	/**
+	 * [used by Spring]
+	 */
+	public void init() {
+		PublisherData pdata = getPublisherData();
+		SubscriptionContext scontext = getSubscriptionContext();
+		notificationsManager.getOrCreatePublisher(scontext, pdata);
+	}
+	
 	public SubscriptionContext getSubscriptionContext() {
 		return new SubscriptionContext("Inbox", 0l, "");
 	}

@@ -531,7 +531,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param pdata
 	 * @return the publisher
 	 */
-	private Publisher findOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata) {
+	public Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata) {
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(scontext.getResName() + "_" + scontext.getSubidentifier(),scontext.getResId());
 		//o_clusterOK by:cg
 		//fxdiff VCRP-16:prevent nested doInSync
@@ -758,7 +758,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	public void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData) {
 		// no need to sync, since an identity only has one gui thread / one mouse
-		Publisher p = findOrCreatePublisher(subscriptionContext, publisherData);
+		Publisher p = getOrCreatePublisher(subscriptionContext, publisherData);
 		Subscriber s = getSubscriber(identity, p);
 		if (s == null) {
 			// no subscriber -> create.

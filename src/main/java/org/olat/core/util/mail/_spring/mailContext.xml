@@ -54,7 +54,7 @@
 		<property name="order" value="780" />
 	</bean> 
 	
-	<bean id="mailManager" class="org.olat.core.util.mail.manager.MailManager">
+	<bean id="mailManager" class="org.olat.core.util.mail.manager.MailManager" init-method="init">
 		<constructor-arg index="0" ref="mailModule" />
 		<property name="dbInstance" ref="database"/>
 		<property name="notificationsManager" ref="org.olat.core.util.notifications.NotificationsManager"/>

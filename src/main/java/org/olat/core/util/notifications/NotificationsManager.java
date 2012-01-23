@@ -97,10 +97,19 @@ public abstract class NotificationsManager extends BasicManager {
 	public abstract Subscriber getSubscriber(Long key);
 
 	/**
+	 * Get the publisher or return null if not exists
 	 * @param subsContext
 	 * @return the publisher belonging to the given context or null
 	 */
 	public abstract Publisher getPublisher(SubscriptionContext subsContext);
+	
+	/**
+	 * Get or create the publisher
+	 * @param scontext
+	 * @param pdata
+	 * @return
+	 */
+	public abstract Publisher getOrCreatePublisher(final SubscriptionContext scontext, final PublisherData pdata);
 	
 	public abstract List<Publisher> getAllPublisher();
 
