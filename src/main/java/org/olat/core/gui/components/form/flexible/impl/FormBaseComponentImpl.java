@@ -47,8 +47,16 @@ public abstract class FormBaseComponentImpl extends Component implements FormBas
 		super(name);
 	}
 	
+	public FormBaseComponentImpl(String id, String name) {
+		super(id, name);
+	}
+	
 	public FormBaseComponentImpl(String name, Translator translator) {
 		super(name, translator);
+	}
+	
+	public FormBaseComponentImpl(String id, String name, Translator translator) {
+		super(id, name, translator);
 	}
 	
 	private long replayDispatchId;

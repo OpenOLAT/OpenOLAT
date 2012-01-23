@@ -84,7 +84,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 	public PreviewRunController(UserRequest ureq, WindowControl wControl, IdentityEnvironment identEnv, CourseEnvironment cenv, String role, LayoutMain3ColsPreviewController previewLayoutCtr) { 
 		super(ureq, wControl);
 		// set up the components
-		luTree = new MenuTree("luTreeRun", this);
+		luTree = new MenuTree(null, "luTreeRun", this);
 
 		// build up the running structure for this user;
 		uce = new UserCourseEnvironmentImpl(identEnv, cenv);

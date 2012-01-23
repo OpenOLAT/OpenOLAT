@@ -52,9 +52,10 @@ public abstract class Component {
 	private boolean spanReplaceable = false;
 
 	private String name;
-	private long dispatchID;
+	private String dispatchID;
 
-	private int timestamp = 1;
+	private long timestamp = 1l;
+	private boolean staticCmp = true;
 	
 	private boolean visible = true;
 	private boolean enabled = true;
@@ -62,7 +63,7 @@ public abstract class Component {
 	private boolean dirty = false;
 	private boolean domReplaceable = true;
 
-	private List<Controller> listeners;
+	private final List<Controller> listeners;
 	private Translator translator;
 	// for debugging reasons to trace where the latest dispatch occured
 	private Controller latestDispatchedController;
@@ -82,7 +83,15 @@ public abstract class Component {
 	 * @param name the name of this component
 	 */
 	public Component(String name) {
-		this(name, null);
+		this(null, name, null);
+	}
+	
+	/**
+	 * @param id The id of the component, must be unique
+	 * @param name The name of this component
+	 */
+	public Component(String id, String name) {
+		this(id, name, null);
 	}
 
 	/**
@@ -91,7 +100,25 @@ public abstract class Component {
 	 * @param translator the translator
 	 */
 	public Component(String name, Translator translator) {
-		dispatchID = CodeHelper.getRAMUniqueID();
+		this(null, name, translator);
+		staticCmp = false;
+	}
+	
+	/**
+	 * 
+	 * @param id The id of the component, must be unique
+	 * @param name The name of this component
+	 * @param translator The translator
+	 */
+	public Component(String id, String name, Translator translator) {
+		if(id == null) {
+			dispatchID = Long.toString(CodeHelper.getRAMUniqueID());
+			staticCmp = false;
+		} else {
+			dispatchID = id;
+			staticCmp = true;
+		}
+		
 		this.name = name;
 		this.translator = translator;
 		listeners = new ArrayList<Controller>(2);
@@ -141,8 +168,10 @@ public abstract class Component {
 	 */
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		if (this.dirty) {
-			timestamp++;
-			if ( Tracing.isDebugEnabled(this.getClass()) ) Tracing.logDebug("increment component.timestamp new value=" + timestamp + " ureq=" + ureq + " component=" + this, this.getClass());
+			if(!staticCmp) {
+				timestamp++;
+			}
+			if ( log_.isDebug() ) log_.debug("increment component.timestamp new value=" + timestamp + " ureq=" + ureq + " component=" + this);
 		}
 	}
 	
@@ -227,7 +256,7 @@ public abstract class Component {
 	/**
 	 * @return long the dispatchid (which is assigned at construction time of the component and never changes)
 	 */
-	public long getDispatchID() {
+	public String getDispatchID() {
 		return dispatchID;
 	}
 
@@ -362,8 +391,11 @@ public abstract class Component {
 	 * to be used by Window.java to detect browser back in ajax-mode
 	 * @return Returns the timestamp.
 	 */
-	public int getTimestamp() {
-		return timestamp;
+	public String getTimestamp() {
+		if(staticCmp) {
+			return "1";
+		}
+		return Long.toString(timestamp);
 	}
 
 }

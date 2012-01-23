@@ -65,7 +65,8 @@ public class FormReset extends FormButton implements Reset {
 	 */
 	@Override
 	protected void rootFormAvailable() {
-		component = new FormButtonComponent(this);
+		String formItemId = getFormItemId();
+		component = new FormButtonComponent(formItemId, this);
 	}
 
 

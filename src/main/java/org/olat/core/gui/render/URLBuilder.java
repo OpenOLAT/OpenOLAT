@@ -39,16 +39,15 @@ import org.olat.core.util.StringHelper;
  */
 public class URLBuilder {
 
-	private String uriPrefix;
+	private final String uriPrefix;
 
-	private String windowID;
-	private String timestampID;
+	private final String windowID;
+	private final String timestampID;
 	private String componentID;
 	private String componentTimestamp;
 	private String componentPath;
 	
 	private final String iframeTargetName;
-	//private final String businessControlPath;
 
 	private final WindowBackOfficeImpl wboImpl;
 
@@ -65,7 +64,6 @@ public class URLBuilder {
 		this.wboImpl = wboImpl;
 		// brasato:: add helper method  a la window.createredirecturi so we need not check on null below - see call hierarchy of this constructor
 		this.iframeTargetName = wboImpl == null? null: wboImpl.getIframeTargetName();
-		//this.businessControlPath = wboImpl.getBusinessControlPath();
 	}
 
 	/**
@@ -74,11 +72,11 @@ public class URLBuilder {
 	public URLBuilder createCopyFor(Component source) {
 		URLBuilder n = new URLBuilder(uriPrefix, windowID, timestampID, wboImpl);
 		// adjust the component id of the urlbuilder for the new component
-		n.componentID = String.valueOf(source.getDispatchID());
+		n.componentID = source.getDispatchID();
 		// for ajax-mode needed: (but we set it anyway)
 		// we also provide the component's timestamp in addition to the window's timestamp to enabled component-based timestamp checking.
 		// the window-based timestamp checking is still needed for link which are not in ajax-mode and for the asynmediaresponsible
-		n.componentTimestamp = Integer.toString(source.getTimestamp());
+		n.componentTimestamp = source.getTimestamp();
 		return n;
 	}
 	

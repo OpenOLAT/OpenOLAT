@@ -119,6 +119,25 @@ public class LinkFactory {
 	public static Link createLink(String name, VelocityContainer vc, Controller listeningController){
 		return new Link(name, name, name, Link.LINK, vc, listeningController);
 	}
+	
+	/**
+	 * add a link to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this link.<p>
+	 * Follow these instructions to show the link and catch its events:
+	 * <ol>
+	 * <li><code>$r.render("myLink")</code> in your velocity page, that the link shows up.</li>
+	 * <li>save the returned link as a instance variable <code>myLink</code></li>
+	 * <li>in the <code>listeningController.event(UserRequest ureq, Component source, Event event)</code> you catch the back link by<br><code>if(source == myLink){..your stuff here..}</code></li>
+	 * </ol>
+	 * 
+	 * @param id A fix identification for state-less behavior, must be unique
+	 * @param one string for name of component, command and i18n key
+	 * @param vc the VelocityContainer within you put this link
+	 * @param listeningController
+	 * @return the link component
+	 */
+	public static Link createLink(String id, String name, VelocityContainer vc, Controller listeningController){
+		return new Link(id, name, name, name, Link.LINK, vc, listeningController);
+	}
 
 	/**
 	 * add a customized link to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this link. A customized link means that you can

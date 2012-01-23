@@ -215,7 +215,7 @@ public class TreeController extends BasicController {
 	}
 	
 	//fxdiff FXOLAT-132: alert unsaved changes in HTML editor
-	public long getTreePanelID() {
+	public String getTreePanelID() {
 		return mainVC.getDispatchID();
 	}
 

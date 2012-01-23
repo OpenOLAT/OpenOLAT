@@ -82,8 +82,6 @@ public class UserRequest {
 	private String uuid;
 	private static int count = 0;
 
-	//private String businessControlPath;
-
 
 	/**
 	 * @param uriPrefix
@@ -107,6 +105,10 @@ public class UserRequest {
 	public String getUuid() {
 		return uuid;
 	}
+	
+	public String getUriPrefix() {
+		return uriPrefix;
+	}
 
 	/**
 	 * @param key
@@ -119,7 +121,7 @@ public class UserRequest {
 	/**
 	 * @return the Set of parameters
 	 */
-	public Set getParameterSet() {
+	public Set<String> getParameterSet() {
 		return params.keySet();
 	}
 

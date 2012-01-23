@@ -51,7 +51,7 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	 * See OLAT-4735.
 	 */
 	@Override
-	public long getDispatchID() {
+	public String getDispatchID() {
 		return (element.getTextElementComponent().getDispatchID());
 	}
 

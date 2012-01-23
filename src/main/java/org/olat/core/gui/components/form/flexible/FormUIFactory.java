@@ -336,7 +336,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addRadiosHorizontal(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
-		SingleSelection ss = new SingleSelectionImpl(name, SingleSelectionImpl.createHorizontalLayout(name)){
+		SingleSelection ss = new SingleSelectionImpl(null, name, SingleSelectionImpl.createHorizontalLayout(null, name)){
 			{
 				this.keys = theKeys;
 				this.values = theValues;
@@ -375,7 +375,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addRadiosVertical(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
-		SingleSelection ss = new SingleSelectionImpl(name, SingleSelectionImpl.createVerticalLayout(name)){
+		SingleSelection ss = new SingleSelectionImpl(null, name, SingleSelectionImpl.createVerticalLayout(null, name)){
 			{
 				this.keys = theKeys;
 				this.values = theValues;
@@ -400,7 +400,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addDropdownSingleselect(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theValues, final String[] theCssClasses) {
-		return addDropdownSingleselect(name, name, formLayout, theKeys, theValues, theCssClasses);
+		return addDropdownSingleselect(null, name, name, formLayout, theKeys, theValues, theCssClasses);
 	}
 	
 	/**
@@ -414,7 +414,22 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addDropdownSingleselect(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues, final String[] theCssClasses) {
-		SingleSelection ss = new SingleSelectionImpl(name, SingleSelectionImpl.createSelectboxLayouter(name)){
+		return addDropdownSingleselect(null, name, i18nLabel, formLayout, theKeys, theValues, theCssClasses);
+	}
+	
+	/**
+	 * Add a drop down menu (also called pulldown menu).
+	 * @param id The unique identifier of the selection box (can be null, will be auto generated)
+	 * @param name
+	 * @param labelKey i18n key for the label, may be <code>null</code> indicating no label.
+	 * @param formLayout
+	 * @param theKeys
+	 * @param theValues
+	 * @param theCssClasses
+	 * @return
+	 */
+	public SingleSelection addDropdownSingleselect(final String id, final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues, final String[] theCssClasses) {
+		SingleSelection ss = new SingleSelectionImpl(id, name, SingleSelectionImpl.createSelectboxLayouter(id, name)){
 			{
 				this.keys = theKeys;
 				this.values = theValues;
@@ -457,7 +472,7 @@ public class FormUIFactory {
 	}
 	
 	public TextElement addInlineTextElement(String name, String value, FormItemContainer formLayout, FormBasicController listener) {
-		TextElement ie = new TextElementImpl(name, value, TextElementImpl.HTML_INPUT_TYPE_TEXT, true);
+		TextElement ie = new TextElementImpl(null, name, value, TextElementImpl.HTML_INPUT_TYPE_TEXT, true);
 		ie.addActionListener(listener, FormEvent.ONCLICK);
 		if(listener != null){
 			formLayout.add(ie);
@@ -559,7 +574,21 @@ public class FormUIFactory {
 	 */
 	public TextElement addTextElement(String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
-		TextElement te = new TextElementImpl(name, initialValue);
+		return addTextElement(null, name, i18nLabel, maxLen, initialValue, formLayout);
+	}
+	
+	/**
+	 * @param id The unique identifier of this text element (can be null)
+	 * @param name
+	 * @param maxLen
+	 * @param initialValue
+	 * @param i18nLabel
+	 * @param formLayout
+	 * @return
+	 */
+	public TextElement addTextElement(String id, String name, final String i18nLabel, final int maxLen, String initialValue,
+			FormItemContainer formLayout) {
+		TextElement te = new TextElementImpl(id, name, initialValue);
 		te.setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 		setLabelIfNotNull(i18nLabel, te);
 		te.setMaxLength(maxLen);
@@ -584,13 +613,17 @@ public class FormUIFactory {
 		formLayout.add(tbe);
 		return tbe;
 	}
-	
-	
-	
+
 	public TextElement addPasswordElement(String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
-		TextElement te = new TextElementImpl(name, initialValue,
-				TextElementImpl.HTML_INPUT_TYPE_PASSWORD);
+		return addPasswordElement(null, name, i18nLabel, maxLen, initialValue, formLayout);
+	}
+	
+	
+	
+	public TextElement addPasswordElement(String id, String name, final String i18nLabel, final int maxLen, String initialValue,
+			FormItemContainer formLayout) {
+		TextElement te = new TextElementImpl(id, name, initialValue, TextElementImpl.HTML_INPUT_TYPE_PASSWORD);
 		te.setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 		setLabelIfNotNull(i18nLabel, te);
 		te.setMaxLength(maxLen);
@@ -1029,7 +1062,20 @@ public class FormUIFactory {
 	 * @return the new form button
 	 */
 	public FormSubmit addFormSubmitButton(String name, String i18nKey, FormItemContainer formLayout) {
-		FormSubmit subm = new FormSubmit(name, i18nKey);
+		return addFormSubmitButton(null, name, i18nKey, formLayout);
+	}
+	
+	/**
+	 * Add a form submit button.
+	 * 
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 * @param name the button name (identifier) 
+	 * @param i18nKey The display key
+	 * @param formItemContiner The container where to add the button
+	 * @return the new form button
+	 */
+	public FormSubmit addFormSubmitButton(String id, String name, String i18nKey, FormItemContainer formLayout) {
+		FormSubmit subm = new FormSubmit(id, name, i18nKey);
 		formLayout.add(subm);
 		return subm;
 	}

@@ -108,8 +108,22 @@ public class Link extends Component {
 	 * @param presentation
 	 * @param title
 	 */
-	protected Link(String name, String command, String i18n, int presentation, VelocityContainer vc, Controller listeningController){
-		this(name, command, i18n, presentation, null);
+	protected Link(String name, String command, String i18n, int presentation, VelocityContainer vc, Controller listeningController) {
+		this(null, name, command, i18n, presentation, vc, listeningController);
+	}
+	
+	/**
+	 * Same as but with fix ID
+	 * @param id A fix identifier for the link, must be unique or null
+	 * @param name
+	 * @param command
+	 * @param i18n
+	 * @param presentation
+	 * @param vc
+	 * @param listeningController
+	 */
+	protected Link(String id, String name, String command, String i18n, int presentation, VelocityContainer vc, Controller listeningController) {
+		this(id, name, command, i18n, presentation, null);
 		if (listeningController == null) throw new AssertException("please provide a listening controller, listeningController is null at the moment");
 		addListener(listeningController);
 		if (vc != null) vc.put(getComponentName(), this);
@@ -118,13 +132,15 @@ public class Link extends Component {
 
 	/**
 	 * the new flexible forms needs links where the VC and listener are unknown at construction time.
+	 * @param id A fix identifier for the link, must be unique or null
 	 * @param name
 	 * @param command
 	 * @param i18n
 	 * @param presentation
+	 * @param internalAttachedObj
 	 */
-	protected Link(String name, String command, String i18n, int presentation, Object internalAttachedObj){
-		super(name);
+	protected Link(String id, String name, String command, String i18n, int presentation, Object internalAttachedObj){
+		super(id, name);
 		this.internalAttachedObj = internalAttachedObj;
 		this.command = command;
 		if ( this.command == null || this.command.equals(""))  throw new AssertException("command string must be a valid string and not null");

@@ -151,7 +151,6 @@ public class Form extends LogDelegator {
 	private String formName;
 	private String dispatchFieldId;
 	private String eventFieldId;
-	private Map actionListeners = new HashMap(5); 
 
 	// the real form
 	private FormItemContainer formLayout = null;
@@ -190,7 +189,7 @@ public class Form extends LogDelegator {
 	 * @param listener the component listener of this form, typically the caller
 	 * @return
 	 */
-	public static Form create(String name, FormItemContainer formLayout, Controller listener) {
+	public static Form create(String id, String name, FormItemContainer formLayout, Controller listener) {
 		Form form = new Form(listener);
 		// this is where the formitems go to
 		form.formLayout = formLayout;
@@ -203,7 +202,7 @@ public class Form extends LogDelegator {
 		if (translator == null) { throw new AssertException("please provide a translator in the FormItemContainer <" + formLayout.getName()
 				+ ">"); }
 		// renders header + <formLayout> + footer of html form
-		form.formWrapperComponent = new FormWrapperContainer(name, translator, form);
+		form.formWrapperComponent = new FormWrapperContainer(id, name, translator, form);
 		form.formWrapperComponent.addListener(listener);
 		form.formWrapperComponent.put(formLayout.getComponent().getComponentName(), formLayout.getComponent());
 		// generate name for form and dispatch uri hidden field
@@ -739,6 +738,10 @@ public class Form extends LogDelegator {
 			return true;
 		}
 	}
+	
+	public String getFormId() {
+		return formWrapperComponent.getDispatchID();
+	}
 
 	public String getDispatchFieldId() {
 		return dispatchFieldId;
@@ -865,7 +868,7 @@ public class Form extends LogDelegator {
 	}
 	
 	// Map to replayableID real dispatchID
-	private  HashMap<Long,Long> replayIdMap = new HashMap<Long,Long>();
+	private  HashMap<String,Long> replayIdMap = new HashMap<String,Long>();
 	
 	/**
 	 * Get the replayableID for a component, for use only in urlReplay mode.
@@ -876,7 +879,7 @@ public class Form extends LogDelegator {
 	 */
 	
 	public long getReplayableDispatchID (Component comp) {
-		Long oid = comp.getDispatchID();
+		String oid = comp.getDispatchID();
 		Long id = replayIdMap.get(oid);
 		if (id != null) return id.longValue();
 		id = new Long(++replayIdCount);

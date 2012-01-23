@@ -70,42 +70,59 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	protected String transientValue;//last submitted value, which may be good or wrong
 	OLog log = Tracing.createLoggerFor(this.getClass());
 	
-	
-	public TextElementImpl(String name, String predefinedValue) {
-		this(name, predefinedValue, HTML_INPUT_TYPE_TEXT);		
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 */
+	public TextElementImpl(String id, String name, String predefinedValue) {
+		this(id, name, predefinedValue, HTML_INPUT_TYPE_TEXT);		
 	}
 	
 	/**
 	 * TODO: check if htmlInputType is valid
+	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 * @param name
 	 * @param predefinedValue
 	 * @param htmlInputType
 	 */	
-	public TextElementImpl(String name, String predefinedValue, String htmlInputType) {
-		this(name, predefinedValue, htmlInputType, false);
+	public TextElementImpl(String id, String name, String predefinedValue, String htmlInputType) {
+		this(id, name, predefinedValue, htmlInputType, false);
 	}
 
-	public TextElementImpl(String name, String predefinedValue, boolean asInline) {
-		super(name, asInline);
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 * @param name
+	 * @param predefinedValue
+	 * @param asInline
+	 */
+	public TextElementImpl(String id, String name, String predefinedValue, boolean asInline) {
+		super(id, name, asInline);
 		if(asInline){
 			initInlineEditing(predefinedValue);
 		}else{
-			this.component = new TextElementComponent(this);
+			this.component = new TextElementComponent(id, this);
 		}
 	}
 	
 	/**
 	 * for specialized TextElements, i.e. IntegerElementImpl.
+	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 * @param name
 	 */
-	protected TextElementImpl(String name){
+	protected TextElementImpl(String id, String name){
 		//if you change something here, please see if other constructors need a change too.
 		super(name);
-		this.component = new TextElementComponent(this);
+		this.component = new TextElementComponent(id, this);
 	}
 	
-	public TextElementImpl(String name, String predefinedValue, String htmlInputType, boolean asInlineEditingElement){
-		super(name, asInlineEditingElement);
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 * @param name
+	 * @param predefinedValue
+	 * @param htmlInputType
+	 * @param asInlineEditingElement
+	 */
+	public TextElementImpl(String id, String name, String predefinedValue, String htmlInputType, boolean asInlineEditingElement){
+		super(id, name, asInlineEditingElement);
 		setValue(predefinedValue);
 		if(HTML_INPUT_TYPE_TEXT.equals(htmlInputType) || HTML_INPUT_TYPE_PASSWORD.equals(htmlInputType)) {
 			this.htmlInputType = htmlInputType;
@@ -117,7 +134,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			initInlineEditing(predefinedValue);
 		}else{
 			// init the standard element component
-			this.component = new TextElementComponent(this);
+			this.component = new TextElementComponent(id, this);
 		}
 		
 		

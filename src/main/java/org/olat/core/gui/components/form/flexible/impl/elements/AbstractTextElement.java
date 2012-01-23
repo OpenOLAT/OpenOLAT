@@ -50,9 +50,16 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	public AbstractTextElement(String name) {
 		this(name, false);
 	}
-
+	
 	protected AbstractTextElement(String name, boolean asInlineEditingElement) {
-		super(name, asInlineEditingElement);
+		this(null, name, false);
+	}
+
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique
+	 */
+	protected AbstractTextElement(String id, String name, boolean asInlineEditingElement) {
+		super(id, name, asInlineEditingElement);
 		displaySize = 35;
 	}
 

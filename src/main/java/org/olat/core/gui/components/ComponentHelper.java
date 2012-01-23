@@ -49,17 +49,17 @@ public class ComponentHelper {
 	 * @param foundPath
 	 * @return
 	 */
-	public static Component findDescendantOrSelfByID(Component startFrom, long id, List foundPath) {
+	public static Component findDescendantOrSelfByID(Component startFrom, String id, List<Component> foundPath) {
 		return dofind(startFrom, id, foundPath);
 	}
 
-	private static Component dofind(Component current, long id, List foundPath) {
-		if (current.getDispatchID() == id) return current;
+	private static Component dofind(Component current, String id, List<Component> foundPath) {
+		if (id.equals(current.getDispatchID())) return current;
 		if (current instanceof Container) {
 			Container co = (Container) current;
-			Map children = co.getComponents();
-			for (Iterator iter = children.values().iterator(); iter.hasNext();) {
-				Component child = (Component) iter.next();
+			Map<String,Component> children = co.getComponents();
+			for (Iterator<Component> iter = children.values().iterator(); iter.hasNext();) {
+				Component child = iter.next();
 				Component found = dofind(child, id, foundPath);
 				if (found != null) {
 					foundPath.add(child);
@@ -90,9 +90,9 @@ public class ComponentHelper {
 		current.validate(ureq, vr);
 		if (current instanceof Container) { // visit children
 			Container co = (Container) current;
-			Map children = co.getComponents();
-			for (Iterator iter = children.values().iterator(); iter.hasNext();) {
-				Component child = (Component) iter.next();
+			Map<String,Component> children = co.getComponents();
+			for (Iterator<Component> iter = children.values().iterator(); iter.hasNext();) {
+				Component child = iter.next();
 				doValidate(ureq, child, vr);
 			}
 		}
@@ -107,8 +107,8 @@ public class ComponentHelper {
 	 */
 	protected static Window findWindowWithComponentInIt(Windows wins, final Component compToFind) {
 		Window awin = null;
-		for (Iterator it_wins = wins.getWindowIterator(); it_wins.hasNext();) {
-			awin = (Window) it_wins.next();
+		for (Iterator<Window> it_wins = wins.getWindowIterator(); it_wins.hasNext();) {
+			awin = it_wins.next();
 
 			// find the correct component within the window
 			MyVisitor v = new MyVisitor(compToFind);

@@ -93,26 +93,26 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		// use fallback translator to registration module
 		super(ureq, winControl, Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale()));
 
-		loginComp = createVelocityContainer("olatlogin");
+		loginComp = createVelocityContainer("olat_log", "olatlogin");
 		
 		if(UserModule.isPwdchangeallowed(ureq.getIdentity())) {
-			pwLink = LinkFactory.createLink("menu.pw", loginComp, this);
+			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
 			pwLink.setCustomEnabledLinkCSS("o_login_pwd b_with_small_icon_left");
 		}
 		
 		if (RegistrationModule.isSelfRegistrationEnabled()) {
-			registerLink = LinkFactory.createLink("menu.register", loginComp, this);
+			registerLink = LinkFactory.createLink("_olat_login_register", "menu.register", loginComp, this);
 			registerLink.setCustomEnabledLinkCSS("o_login_register b_with_small_icon_left");
 		}
 		
 		if (LoginModule.isGuestLoginLinksEnabled()) {
-			anoLink = LinkFactory.createLink("menu.guest", loginComp, this);
+			anoLink = LinkFactory.createLink("_olat_login_guest", "menu.guest", loginComp, this);
 			anoLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
 		}
 		
 		
 		// prepare login form
-		loginForm = new OLATAuthentcationForm(ureq, winControl, getTranslator());
+		loginForm = new OLATAuthentcationForm(ureq, winControl, "olat_login", getTranslator());
 		listenTo(loginForm);
 		
 		loginComp.put("loginForm",loginForm.getInitialComponent());

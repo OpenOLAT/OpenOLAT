@@ -340,7 +340,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			}
 		}
 		// create and add selectbox element
-		SelectboxComponent sssc = new SelectboxComponent(getName() + "_SELBOX", translator, this, keys, values, cssClasses);
+		SelectboxComponent sssc = new SelectboxComponent(getFormItemId() + "_SELBOX", getName() + "_SELBOX", translator, this, keys, values, cssClasses);
 
 		formLayoutContainer.put(getName() + "_SELBOX", sssc);
 		formLayoutContainer.contextPut("selectbox", getName() + "_SELBOX");
@@ -349,7 +349,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		formLayoutContainer.contextPut("size", items.length);
 
 		// set container dirty to render new config
-		this.formLayoutContainer.setDirty(true);
+		formLayoutContainer.setDirty(true);
 	}
 
 	/**

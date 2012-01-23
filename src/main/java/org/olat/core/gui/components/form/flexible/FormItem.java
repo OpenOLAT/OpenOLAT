@@ -189,7 +189,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void doDispatchFormRequest(UserRequest ureq);
 
 	/**
-	 * The form item's name within an manageing form container. This has nothing
+	 * The form item's name within an managing form container. This has nothing
 	 * to do with a name displayed on the screen to the user.<br>
 	 * The default implementation {@link FormItemImpl} uses the name to make the
 	 * element available in the velocity container.
@@ -199,6 +199,11 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @return
 	 */
 	public String getName();
+	
+	/**
+	 * The id of the item, can be null
+	 */
+	public String getFormItemId();
 
 	/**
 	 * The elements panel to be rendered by the GUI Framework.

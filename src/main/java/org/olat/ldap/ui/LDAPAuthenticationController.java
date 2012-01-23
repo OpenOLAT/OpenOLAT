@@ -86,16 +86,16 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		loginComp = createVelocityContainer("ldaplogin");
 		
 		if(UserModule.isPwdchangeallowed(null) && LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			pwLink = LinkFactory.createLink("menu.pw", loginComp, this);
+			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
 			pwLink.setCustomEnabledLinkCSS("o_login_pwd");
 		}
 		if (LoginModule.isGuestLoginLinksEnabled()) {
-			anoLink = LinkFactory.createLink("menu.guest", loginComp, this);
+			anoLink = LinkFactory.createLink("_olat_login_guest", "menu.guest", loginComp, this);
 			anoLink.setCustomEnabledLinkCSS("o_login_guests");
 		}
 		
 		// Use the standard OLAT login form but with our LDAP translator
-		loginForm = new OLATAuthentcationForm(ureq, control, getTranslator());
+		loginForm = new OLATAuthentcationForm(ureq, control, "ldap_login", getTranslator());
 		listenTo(loginForm);
 		
 		loginComp.put("ldapForm", loginForm.getInitialComponent());

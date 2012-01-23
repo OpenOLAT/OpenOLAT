@@ -169,7 +169,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		mainvc.setDomReplaceable(false);
 
 		// component-id of mainPanel for the window id
-		mainvc.contextPut("o_winid", String.valueOf(mainPanel.getDispatchID()));
+		mainvc.contextPut("o_winid", mainPanel.getDispatchID());
 		// add jsMath library
 		mainvc.contextPut("jsMathEnabled", Boolean.valueOf(jsMathEnabled));
 		// add optional css classes
@@ -211,7 +211,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		// content panel
 		contentPanel = new Panel("olatContentPanel");
 		mainvc.put("olatContentPanel", contentPanel);
-		mainvc.contextPut("o_winid", Long.valueOf(w.getDispatchID()));
+		mainvc.contextPut("o_winid", w.getDispatchID());
 		mainvc.contextPut("buildversion", Settings.getVersion());
 		
 		WindowControl wControl = new WindowControl() {
@@ -347,44 +347,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 *      org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == getWindow()) {
-//		REVIEW:12-2007:CodeCleanup PB:27.02.2008 let those codefragments exist
-			//if (event == Window.END_OF_DISPATCH_CYCLE) {
-				/*String bc = wbo.getBusinessControlPath();
-				wbo.getWindowManager().
-				mainvc.contextPut("o_bc", bc);
-				*/
-		//	}	else if (event == Window.BEFORE_INLINE_RENDERING) {
-				//String bc = wbo.getBusinessControlPath();				
-				//mainvc.contextPut("o_bc", bc);
-				
-				/*if (!bookmarkWaitOnce) {
-					mainvc.contextPut("bkme", "true");
-				} else {
-					bookmarkWaitOnce = false;
-				}*/
-				
-			//}	else if (event == WindowBackOffice.IGNORE_BOOKMARK_ONE_TIME) {
-				//bookmarkWaitOnce = true;
-				//mainvc.contextPut("bkme", "false");
-			//}	else 
-				
-			if (event == Window.OLDTIMESTAMPCALL) {
-				// we have a "reload" push or such -> set Warn Msg
-				// but now WindowControl which allows setting a warn message -> the
-				// (first) main layouting controller should also listen to window
-				// and set the appropriate message
-			} else if (event == Window.COMPONENTNOTFOUND) {
-				// we tried to dispatch to a nonexisting component: -> set Warn Msg
-				// the reason may be:
-				// a) a bug
-				// b) the current component was removed by another thread from the
-				// rendering tree. (e.g. in the course when a course is published while
-				// users are working on it)
-				// if (wbo.isDebuging())
-				// guiMessage.setWarn(translator.translate("warn.notdispatched"));
-			}
-		}
+		//
 	}
 
 	/**

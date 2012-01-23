@@ -48,9 +48,19 @@ public abstract class Container extends Component {
 
 	/**
 	 * @param name
+	 * @param translator
 	 */
 	public Container(String name, Translator translator) {
 		super(name, translator);
+	}
+	
+	/**
+	 * @param id
+	 * @param name
+	 * @param translator
+	 */
+	public Container(String id, String name, Translator translator) {
+		super(id, name, translator);
 	}
 
 	/**

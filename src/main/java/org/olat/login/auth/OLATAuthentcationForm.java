@@ -50,8 +50,8 @@ public class OLATAuthentcationForm extends FormBasicController {
 	 * Login form used by the OLAT Authentication Provider
 	 * @param name
 	 */
-	public OLATAuthentcationForm(UserRequest ureq, WindowControl wControl, Translator translator) {
-		super(ureq, wControl);
+	public OLATAuthentcationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
+		super(ureq, wControl, id, (String)null);
 		setTranslator(translator);
 		initForm(ureq);
 	}
@@ -96,13 +96,13 @@ public class OLATAuthentcationForm extends FormBasicController {
 			setFormWarning("loadtest.warn");
 		}
 	
-		login = uifactory.addTextElement("lf_login", "lf.login", 128, "", formLayout);
-		pass  = uifactory.addPasswordElement("lf_pass",  "lf.pass", 128, "", formLayout);
+		login = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", formLayout);
+		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", formLayout);
 
 		login.setDisplaySize(20);
 		pass.setDisplaySize(20);
 		
-		uifactory.addFormSubmitButton("login.button", formLayout);
+		uifactory.addFormSubmitButton(mainForm.getFormId() + "_button", "login.button", "login.button", formLayout);
 	}
 
 	@Override

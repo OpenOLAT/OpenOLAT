@@ -80,6 +80,9 @@ import org.olat.core.util.resource.OresHelper;
  * @author Felix Jost
  */
 public class UserSession implements HttpSessionBindingListener, GenericEventListener, Serializable  {
+	
+	private static final long serialVersionUID = 1975177605776990868L;
+	
 	private static final String USERSESSIONKEY = UserSession.class.getName();
 	public static final OLATResourceable ORES_USERSESSION = OresHelper.createOLATResourceableType(UserSession.class);
 	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
@@ -108,9 +111,6 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	
 	
 	private UserSession() {
-		//System.out.println("<init> UserSession... hash="+hashCode());
-		//Logger.getLogger(getClass().getName()).debug("UserSession<init> START");
-		//(new Exception("UserSession<init>")).printStackTrace(System.out);
 		init();
 		//usersession is listening for SignOnOffEvents from other clusternodes
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, ORES_USERSESSION);

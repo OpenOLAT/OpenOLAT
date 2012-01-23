@@ -67,6 +67,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	private Component labelC;
 	private Panel labelPanel;
 	protected Translator translator;
+	private final String id;
 	private String name;
 	private boolean hasLabel = false;
 	private boolean hasExample = false;
@@ -88,8 +89,13 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	public FormItemImpl(String name) {
 		this(name, false);//default is not inline
 	}
+	
+	public FormItemImpl(String name, boolean asInlineEditingElement) {
+		this(null, name, asInlineEditingElement);
+	}
 
-	public FormItemImpl(String name, boolean asInlineEditingElement){
+	public FormItemImpl(String id, String name, boolean asInlineEditingElement) {
+		this.id = id;
 		this.name = name;
 		this.isInlineEditingElement = asInlineEditingElement;
 		/*
@@ -98,7 +104,10 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		errorPanel = new Panel(PREFIX + name + FormItem.ERRORC);
 		examplePanel = new Panel(PREFIX + name + FormItem.EXAMPLEC);
 		labelPanel = new Panel(PREFIX + name + FormItem.LABELC);
-		
+	}
+	
+	public String getFormItemId() {
+		return id;
 	}
 	
 	public String getName() {

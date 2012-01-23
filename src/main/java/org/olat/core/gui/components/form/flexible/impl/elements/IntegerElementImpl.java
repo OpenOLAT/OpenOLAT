@@ -73,8 +73,18 @@ public class IntegerElementImpl extends TextElementImpl implements
 		this(name, predefinedValue, false);
 	}
 
-	public IntegerElementImpl(String name, int predefinedValue, boolean asInline){		
-		super(name, String.valueOf(predefinedValue), asInline);
+	public IntegerElementImpl(String name, int predefinedValue, boolean asInline) {	
+		this(null, name, predefinedValue, asInline);
+	}
+
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 * @param name
+	 * @param predefinedValue
+	 * @param asInline
+	 */
+	public IntegerElementImpl(String id, String name, int predefinedValue, boolean asInline) {	
+		super(id, name, String.valueOf(predefinedValue), asInline);
 		originalInt = predefinedValue;
 		setIntValue(predefinedValue);
 	}

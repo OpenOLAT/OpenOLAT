@@ -42,8 +42,8 @@ class FormButtonComponent extends FormBaseComponentImpl {
 	private boolean isSubmitAndValidate = false;
 	private static final ComponentRenderer RENDERER = new FormButtonRenderer();
 
-	FormButtonComponent(FormButton foButton) {
-		super(foButton.getName());
+	FormButtonComponent(String id, FormButton foButton) {
+		super(id, foButton.getName());
 		this.formButton = foButton;
 	}
 	
@@ -52,8 +52,8 @@ class FormButtonComponent extends FormBaseComponentImpl {
 	 * @param foButton
 	 * @param isSubmitAndValidateButton
 	 */
-	FormButtonComponent(FormButton foButton, boolean isSubmitAndValidateButton) {
-		this(foButton);
+	FormButtonComponent(String id, FormButton foButton, boolean isSubmitAndValidateButton) {
+		this(id, foButton);
 		this.isSubmitAndValidate = isSubmitAndValidateButton;
 	}
 	

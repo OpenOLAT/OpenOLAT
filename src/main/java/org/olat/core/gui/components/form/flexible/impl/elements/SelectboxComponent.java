@@ -48,8 +48,11 @@ class SelectboxComponent extends FormBaseComponentImpl {
 	private String[] options;
 	private String[] cssClasses;
 
-	public SelectboxComponent(String name, Translator translator, SelectionElement selectionWrapper, String[] options, String[] values, String[] cssClasses) {
-		super(name, translator);
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 */
+	public SelectboxComponent(String id, String name, Translator translator, SelectionElement selectionWrapper, String[] options, String[] values, String[] cssClasses) {
+		super(id, name, translator);
 		this.selectionWrapper = selectionWrapper;
 		this.options = options;
 		this.values = values;

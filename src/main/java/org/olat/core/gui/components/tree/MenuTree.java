@@ -119,21 +119,31 @@ public class MenuTree extends Component {
 	
 	private boolean dirtyForUser = false;
 
+	
 	/**
 	 * @param name
 	 */
 	public MenuTree(String name) {
-		super(name);
+		this(null, name);
+	}
+	
+	/**
+	 * @param id Fix unique identifier for state-less behavior
+	 * @param name
+	 */
+	public MenuTree(String id, String name) {
+		super(id, name);
 		//fxdiff VCRP-9: drag and drop in menu tree
 		dragAndDropCmp = new JSAndCSSComponent("jsComp", MenuTree.class, new String[]{"dd.js"}, null, false); 
 	}
 	
 	/**
+	 * @param id Fix unique identifier for state-less behavior
 	 * @param name
 	 * @param eventListener
 	 */
-	public MenuTree(String name, Controller eventListener) {
-		this(name);
+	public MenuTree(String id, String name, Controller eventListener) {
+		this(id, name);
 		addListener(eventListener);
 	}
 
@@ -220,9 +230,8 @@ public class MenuTree extends Component {
 		}
 
 		TreeNode deleg = selTreeNode.getDelegate();
-		boolean changeSelectedNodeId = false;
 		if (deleg != null) {
-			changeSelectedNodeId = updateOpenedNode(selTreeNode, selNodeId, cmd);
+			updateOpenedNode(selTreeNode, selNodeId, cmd);
 			selNodeId = deleg.getIdent();
 			selTreeNode = deleg;
 		}
@@ -233,7 +242,7 @@ public class MenuTree extends Component {
 		} else if (TREENODE_OPEN.equals(cmd)) {
 			subCmd = TreeEvent.COMMAND_TREENODE_OPEN;
 		}
-		changeSelectedNodeId |= updateOpenedNode(selTreeNode, selNodeId, cmd);
+		updateOpenedNode(selTreeNode, selNodeId, cmd);
 
 		TreeEvent te = new TreeEvent(COMMAND_TREENODE_CLICKED, subCmd, selNodeId);
 		if (selTreeNode.getChildCount() > 0) {

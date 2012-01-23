@@ -87,6 +87,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private VelocityContainer content;
 	private Controller authController;
+	private final List<Controller> authControllers = new ArrayList<Controller>();
 	private Panel dmzPanel;
 	private GenericTreeNode checkNode;
 	private GenericTreeNode accessibilityNode;
@@ -113,7 +114,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		dmzPanel.pushContent(content);
 
 		// DMZ navigation
-		olatMenuTree = new MenuTree("olatMenuTree");				
+		olatMenuTree = new MenuTree("dmz_menu", "olatMenuTree");				
 		TreeModel tm = buildTreeModel(); 
 		olatMenuTree.setTreeModel(tm);
 		olatMenuTree.setSelectedNodeId(tm.getRootNode().getIdent());
@@ -151,14 +152,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private VelocityContainer initLoginContent(UserRequest ureq, String provider) {
 		// in every case we build the container for pages to fill the panel
-		VelocityContainer contentBorn = createVelocityContainer("login");
-
-//	REVIEW:12-2007:CodeCleanup
-//		// is this a logout request?
-//		if (ureq.getHttpReq().getPathInfo().equals(DispatcherAction.getPathDefault() + AuthHelper.LOGOUT_PAGE)) {
-//			content.setPage(VELOCITY_ROOT + "/logout.html");
-//			return content;
-//		}
+		VelocityContainer contentBorn = createVelocityContainer("main_loging", "login");
 
 		// browser not supported messages
 		// true if browserwarning should be showed
@@ -171,13 +165,34 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if (authProvider == null)
 			throw new AssertException("Invalid authentication provider: " + provider);
 		
+		//clean-up controllers
+		if(authController != null) {
+			removeAsListenerAndDispose(authController);
+		}
+		for(Controller controller:authControllers) {
+			removeAsListenerAndDispose(controller);
+		}
+		authControllers.clear();
+		
+		//recreate controllers
 		authController = authProvider.createController(ureq, getWindowControl());
 		listenTo(authController);
 		contentBorn.put("loginComp", authController.getInitialComponent());
 		Collection<AuthenticationProvider> providers = LoginModule.getAuthenticationProviders();
 		List<AuthenticationProvider> providerSet = new ArrayList<AuthenticationProvider>(providers.size());
+		int count = 0;
 		for (AuthenticationProvider prov : providers) {
-			if (prov.isEnabled()) providerSet.add(prov);
+			if (prov.isEnabled()) {
+				providerSet.add(prov);
+				if(!prov.getName().equals(authProvider.getName())) {
+					//hang these components to the component tree, for state-less behavior
+					Controller controller = prov.createController(ureq, getWindowControl());
+					authControllers.add(controller);
+					Component cmp = controller.getInitialComponent();
+					contentBorn.put("dormant_" + count++, cmp);
+					listenTo(controller);
+				}
+			}
 		}
 		providerSet.remove(authProvider); // remove active authProvider from list of alternate authProviders
 		contentBorn.contextPut("providerSet", providerSet);
@@ -203,8 +218,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//auto-disposed
 	}
 
 	/**
@@ -315,13 +329,13 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		GenericTreeNode root, gtn;
 		
 		GenericTreeModel gtm = new GenericTreeModel();
-		root = new GenericTreeNode();
+		root = new GenericTreeNode("dmz_login");
 		root.setTitle(translate("menu.root"));
 		root.setUserObject(ACTION_LOGIN);
 		root.setAltText(translate("menu.root.alt"));
 		gtm.setRootNode(root);
 		
-		gtn = new GenericTreeNode();
+		gtn = new GenericTreeNode("login_item");
 		gtn.setTitle(translate("menu.login"));
 		gtn.setUserObject(ACTION_LOGIN);
 		gtn.setAltText(translate("menu.login.alt"));
@@ -329,26 +343,26 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		root.setDelegate(gtn);		
 
 		if (LoginModule.isGuestLoginLinksEnabled()) {
-			gtn = new GenericTreeNode();		
+			gtn = new GenericTreeNode("guest_item");		
 			gtn.setTitle(translate("menu.guest"));
 			gtn.setUserObject(ACTION_GUEST);
 			gtn.setAltText(translate("menu.guest.alt"));
 			root.addChild(gtn);
 		}
 		
-		gtn = checkNode = new GenericTreeNode();//fxdiff FXOLAT-113: business path in DMZ
+		gtn = checkNode = new GenericTreeNode("check_item");//fxdiff FXOLAT-113: business path in DMZ
 		gtn.setTitle(translate("menu.check"));
 		gtn.setUserObject(ACTION_BROWSERCHECK);
 		gtn.setAltText(translate("menu.check.alt"));
 		root.addChild(gtn);
 
-		gtn = accessibilityNode = new GenericTreeNode();//fxdiff FXOLAT-113: business path in DMZ
+		gtn = accessibilityNode = new GenericTreeNode("accessiblity_item");//fxdiff FXOLAT-113: business path in DMZ
 		gtn.setTitle(translate("menu.accessibility"));
 		gtn.setUserObject(ACTION_ACCESSIBILITY);
 		gtn.setAltText(translate("menu.accessibility.alt"));
 		root.addChild(gtn);
 
-		gtn = aboutNode = new GenericTreeNode();//fxdiff FXOLAT-113: business path in DMZ
+		gtn = aboutNode = new GenericTreeNode("about_item");//fxdiff FXOLAT-113: business path in DMZ
 		gtn.setTitle(translate("menu.about"));
 		gtn.setUserObject(ACTION_ABOUT);
 		gtn.setAltText(translate("menu.about.alt"));

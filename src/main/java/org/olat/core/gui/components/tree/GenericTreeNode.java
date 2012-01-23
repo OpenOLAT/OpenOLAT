@@ -47,6 +47,21 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	private String iconDecorator2CssClass;
 	private String iconDecorator3CssClass;
 	private String iconDecorator4CssClass;
+	
+	/**
+	 * 
+	 */
+	public GenericTreeNode() {
+		//
+	}
+	
+	/**
+	 * Fix identifier for state-less behavior
+	 * @param ident
+	 */
+	public GenericTreeNode(String ident) {
+		super(ident);
+	}
 
 	/**
 	 * @param title
@@ -56,12 +71,16 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 		this.title = title;
 		this.userObject = userObject;
 	}
-
+	
 	/**
-	 * 
+	 * @param id A fix identification for state-less behavior, must be unique
+	 * @param title
+	 * @param userObject
 	 */
-	public GenericTreeNode() {
-	//
+	public GenericTreeNode(String ident, String title, Object userObject) {
+		super(ident);
+		this.title = title;
+		this.userObject = userObject;
 	}
 
 	/**

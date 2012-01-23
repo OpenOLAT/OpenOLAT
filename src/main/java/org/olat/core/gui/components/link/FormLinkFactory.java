@@ -46,8 +46,19 @@ public class FormLinkFactory {
 	 * @param key
 	 * @return
 	 */
-	public static Link createFormLink(String name, Form form){
-		Link foLnk = new Link(name, name, name,  Link.LINK + Link.FLEXIBLEFORMLNK, form);
+	public static Link createFormLink(String name, Form form) {
+		return createFormLink(null, name, form);
+	}
+	
+	/**
+	 * Create a link with a fix ID
+	 * @param id The id of the component, must be unique or null
+	 * @param name
+	 * @param form
+	 * @return
+	 */
+	public static Link createFormLink(String id, String name, Form form) {
+		Link foLnk = new Link(id, name, name, name,  Link.LINK + Link.FLEXIBLEFORMLNK, form);
 		if (GUIInterna.isLoadPerformanceMode()) {
 			foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+form.getReplayableDispatchID(foLnk));
 		} else {
@@ -64,8 +75,22 @@ public class FormLinkFactory {
 	 * @param presentation
 	 * @return
 	 */
-	public static Link createCustomFormLink(String name, String cmd, String key, int presentation, Form form){
-		Link foLnk = new Link(name, cmd, key, presentation + Link.FLEXIBLEFORMLNK, form);
+	public static Link createCustomFormLink(String name, String cmd, String key, int presentation, Form form) {
+		return createCustomFormLink(null, name, cmd, key, presentation, form);
+	}
+	
+	/**
+	 * 
+	 * @param id The unique identifier of the link, must be unique or null
+	 * @param name
+	 * @param cmd
+	 * @param key
+	 * @param presentation
+	 * @param form
+	 * @return
+	 */
+	public static Link createCustomFormLink(String id, String name, String cmd, String key, int presentation, Form form) {
+		Link foLnk = new Link(id, name, cmd, key, presentation + Link.FLEXIBLEFORMLNK, form);
 		if (GUIInterna.isLoadPerformanceMode()) {
 			foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+form.getReplayableDispatchID(foLnk));
 		} else {

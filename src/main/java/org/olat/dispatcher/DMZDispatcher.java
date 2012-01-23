@@ -255,7 +255,7 @@ public class DMZDispatcher implements Dispatcher {
 			synchronized (ws) { //o_clusterOK by:fj per user session
 
 				Window window;
-				boolean windowHere = ws.isExisting(ureq.getWindowID());
+				boolean windowHere = ws.isExisting(uriPrefix, ureq.getWindowID());
 				boolean validDispatchUri = ureq.isValidDispatchURI();
 				if (validDispatchUri && !windowHere) {
 					// probably valid framework link from previous user && new Session(no window):
@@ -288,14 +288,6 @@ public class DMZDispatcher implements Dispatcher {
 					// main controller which also implements the windowcontroller for pagestatus and modal dialogs
 					ChiefController occ = chiefControllerCreator.createChiefController(ureq);
 					
-//				REVIEW:12-2007:CodeCleanup				
-					// browser did not send a cookie && url has a window id with it (= we
-					// are clicking a framework link or submitting a framework form)
-					//if (sessionId == null && ureq.getWindowID() != null) {
-						//Translator trans = new PackageTranslator("org.olat", ureq.getLocale()); // locale
-						//occ.getWindowControl().setWarning(trans.translate("wayf.cookies"));
-					//}
-
 					window = occ.getWindow();
 					window.setUriPrefix(uriPrefix);
 					ws.registerWindow(window);
@@ -307,7 +299,7 @@ public class DMZDispatcher implements Dispatcher {
 						dts.activate(ureq, null, null, ces);
 					}
 					
-					window.dispatchRequest(ureq, true);
+					window.dispatchRequest(ureq);
 				
 				} else {
 					window.dispatchRequest(ureq);

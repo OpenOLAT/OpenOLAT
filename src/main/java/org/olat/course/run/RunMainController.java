@@ -251,7 +251,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// set up the components
 		all = new Panel("allofcourse");
-		luTree = new MenuTree("luTreeRun", this);
+		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setExpandSelectedNode(false);
 		contentP = new Panel("building_block_content");
 

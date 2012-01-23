@@ -56,8 +56,8 @@ public class LanguageChooserController extends FormBasicController {
 	private SingleSelection langs;
 
 	String curlang;
-	public LanguageChooserController(WindowControl wControl, UserRequest ureq) {
-		super(ureq, wControl, "langchooser");
+	public LanguageChooserController(WindowControl wControl, UserRequest ureq, String id) {
+		super(ureq, wControl, id, "langchooser");
 		// init variables
 		curlang = ureq.getLocale().toString();
 		initForm(this.flc, this, ureq);
@@ -122,7 +122,7 @@ public class LanguageChooserController extends FormBasicController {
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
 		// Build css classes for reference languages
 		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "b_with_small_icon_left");
-		langs = uifactory.addDropdownSingleselect("select.language", formLayout, langKeys, langValues, langCssClasses); 
+		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, langCssClasses); 
 		langs.addActionListener(this, FormEvent.ONCHANGE);
 		langs.select(curlang, true);
 		// Add to velocity for flag

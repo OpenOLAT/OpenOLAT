@@ -256,7 +256,7 @@ public class AjaxController extends DefaultController {
 	private JSONObject createJSON(WindowCommand wc) {
 		Command c = wc.getCommand();
 		WindowBackOffice wbo = wc.getWindowBackOffice();
-		long winId = wbo.getWindow().getDispatchID();
+		String winId = wbo.getWindow().getDispatchID();
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put("cmd", c.getCommand());

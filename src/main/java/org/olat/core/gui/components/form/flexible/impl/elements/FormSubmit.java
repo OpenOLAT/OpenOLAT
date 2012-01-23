@@ -48,7 +48,11 @@ public class FormSubmit extends FormButton implements Submit{
 	private FormButtonComponent component;
 
 	public FormSubmit(String name, String i18nKey) {
-		super(name);
+		this(null, name, i18nKey);
+	}
+	
+	public FormSubmit(String id, String name, String i18nKey) {
+		super(id, name);
 		if(!StringHelper.containsNonWhitespace(i18nKey)){
 			throw new AssertException("i18nKey must not be null");
 		}
@@ -57,7 +61,8 @@ public class FormSubmit extends FormButton implements Submit{
 	}
 
 	protected void rootFormAvailable(){
-		this.component = new FormButtonComponent(this,true);
+		String formItemId = getFormItemId();
+		component = new FormButtonComponent(formItemId, this,true);
 	}
 	
 	/**

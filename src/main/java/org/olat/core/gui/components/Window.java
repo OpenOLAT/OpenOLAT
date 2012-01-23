@@ -129,7 +129,7 @@ public class Window extends Container {
 	private String latestTimestamp;
 	private AsyncMediaResponsible asyncMediaResponsible;
 	private String instanceId;
-	private int timestamp = 1; // used to find out when a user has called
+	private final int timestamp = 1; // used to find out when a user has called
 	// back/forward/reload in the browser and to detect
 	// asyncmedia resources
 	
@@ -218,11 +218,10 @@ public class Window extends Container {
 	 * @param renderOnly
 	 */
 	public void dispatchRequest(UserRequest ureq, boolean renderOnly) {
-		HttpServletRequest request = ureq.getHttpReq();
-		HttpServletResponse response = ureq.getHttpResp();
-		String timestampID = ureq.getTimestampID();
-		String componentID = ureq.getComponentID();
-		//int browserT = timestampID == null? 0 : Integer.parseInt(timestampID);
+		final HttpServletRequest request = ureq.getHttpReq();
+		final HttpServletResponse response = ureq.getHttpResp();
+		final String timestampID = "1";//ureq.getTimestampID();
+		final String componentID = ureq.getComponentID();
 
 		// case windowId timestamp componentId
 		// --------------------------------------------
@@ -298,13 +297,12 @@ public class Window extends Container {
 						String s_compID = ureq.getComponentID();
 						if (s_compID == null) throw new AssertException("no component id found in req:" + ureq.toString());
 						// throws NumberFormatException if not a number
-						long compID = Long.parseLong(s_compID); 
-						List foundPath = new ArrayList(10);
-						Component target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), compID, foundPath);
-						boolean validForDispatching;
+						//long compID = Long.parseLong(s_compID); 
+						List<Component> foundPath = new ArrayList<Component>(10);
+						Component target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), s_compID, foundPath);
+						final boolean validForDispatching;
 						if (target != null) { // the target was found
-							int tst = target.getTimestamp();
-							String cTimest = Integer.toString(tst, 10);
+							String cTimest = target.getTimestamp();
 							String urlCTimest = ureq.getComponentTimestamp();
 							validForDispatching = cTimest.equals(urlCTimest);
 							if (!validForDispatching && Tracing.isDebugEnabled(this.getClass()) ) { 
@@ -316,26 +314,6 @@ public class Window extends Container {
 							if (Tracing.isDebugEnabled(this.getClass())) Tracing.logDebug("no ajax dispatch: component not found (target=null)",this.getClass());
 							validForDispatching = false;
 						}
-						
-						/*
-						 * REVIEW:PB: this will be the code allowing back forward navigation
-						 * so far it is disabled
-						 * window fires OLDTIMESTAMPCALL event
-						 * --->
-						if (!validForDispatching) {
-							// user clicked back or forward after an ajax request which causes the history of the hidden iframe to go back one and post 
-							// an old request which has an old timestamp.
-							int diff = findInHistory(ureq);
-							// if not found in history: probably the case that a link got opened in a new window by the user by using the right-mouse-button.
-							// in this case, we later send a full page reload
-							//System.out.println("ajax back: diff "+diff);
-							if (diff != 0) {
-								wbackofficeImpl.browserBackOrForward(ureq, diff);
-								inline = true;
-								inlineAfterBackForward = true;
-							}
-						}
-						<-------- */								
 						
 						// 2.) collect dirty components (top-down, return from sub-path when first dirty node met)
 						// 3.) return to sender...
@@ -519,6 +497,7 @@ public class Window extends Container {
 						
 							ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
 							Window errWindow = msgcc.getWindow();
+							errWindow.setUriPrefix("error");
 							// register window
 							Windows.getWindows(ureq).registerWindow(errWindow);
 							// redirect to the error window
@@ -564,8 +543,7 @@ public class Window extends Container {
 					// asynchronous media
 					if (asyncMediaResponsible == null) { // no async resp.
 						// assume it to be a link from an old window (using browser back or
-						// "open in new
-						// window/tab" in the browser).
+						// "open in new window/tab" in the browser).
 						if ((componentID != null && componentID.equals("-1")) || (ureq.getParameter("o_winrndo") != null)) { 
 							// just rerender
 						}	else {
@@ -575,26 +553,6 @@ public class Window extends Container {
 							//fxdiff BAKS-7: resume controller
 							Tracing.logDebug("Removed old timestamp event", Window.class);
 							//fireEvent(ureq, OLDTIMESTAMPCALL);
-							/*
-							 * 
-							 * REVIEW:PB: this will be the code allowing back forward navigation
-							 * ---->
-							// look at the timestamps more thoroughly.
-							if (!timestampID.equals("-1")) {
-								int diff = findInHistory(ureq);
-								// diff == 0 -> reload (->ignore, so it will cause a simple rerendering)
-								// diff < 0  -> browser-back
-								// diff > 0  -> browser-forward
-								//System.out.println("!!!!(normal) back: diff "+diff);
-								wbackofficeImpl.browserBackOrForward(ureq, diff);
-							} // else a 302 redirect of the main window -> simply rerender
-							if (ureq.getComponentID() != null) {
-								//System.out.println("normal: compid:"+ureq.getComponentID()+" win-ts:"+ureq.getTimestampID()+" comp-ts:"+ureq.getComponentTimestamp());
-							} else {
-								//System.out.println("special url - no component part (e.g. 302 redirect because of new req. js / css) compid:"+ureq.getComponentID()+" win-ts:"+ureq.getTimestampID()+" comp-ts:"+ureq.getComponentTimestamp());
-							}
-							validate = true;
-							<------------- */
 						}
 						// just rerender current window
 						inline = true;
@@ -728,8 +686,8 @@ public class Window extends Container {
 					String result;
 					synchronized(render_mutex) { //o_clusterOK by:fj
 						// render now
-						if (incTimestamp) timestamp++;
-						String newTimestamp = String.valueOf(timestamp);
+						//TODO state-less if (incTimestamp) timestamp++;
+						final String newTimestamp = String.valueOf(timestamp);
 						// add the businesscontrol path for bookmarking:
 						// each url has a part in it (the so called business path), which, in case of an invalid url or invalidated
 						// session, can be used as a bookmark. that is, urls from our framework are bookmarkable, but require some little
@@ -777,7 +735,7 @@ public class Window extends Container {
 					
 					//DUMP FOR EACH CLICK THE CURRENT JumpInPath -> for later usage and debugging.
 					//System.err.println("VV^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^VV");
-					WindowControl current = (WindowControl)wbackofficeImpl.getWindow().getAttribute("BUSPATH");
+					//WindowControl current = (WindowControl)wbackofficeImpl.getWindow().getAttribute("BUSPATH");
 					//System.err.println(current != null ? JumpInManager.getRestJumpInUri(current.getBusinessControl()) : "NONE");
 					//System.err.println("TT^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TT");
 					wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
@@ -1001,7 +959,7 @@ public class Window extends Container {
 							}
 							
 							JSONObject jo = new JSONObject();
-							long cid = toRender.getDispatchID();
+							String cid = toRender.getDispatchID();
 							if (Settings.isDebuging()) {
 								// for debugging only
 								jo.put("cname", toRender.getComponentName());
@@ -1022,7 +980,9 @@ public class Window extends Container {
 						}
 						//polling case should never set the asyncMediaResp. 
 						//to null otherwise it possible that e.g. pdf served as following click within a CP component
-						if (amr != null) setAsyncMediaResponsible(amr);
+						if (amr != null) {
+							setAsyncMediaResponsible(amr);
+						}
 											
 						if (isDebugLog) {
 							long rstop = System.currentTimeMillis();
@@ -1136,9 +1096,7 @@ public class Window extends Container {
 				}
 			}			
 		} else {
-			long compID = Long.parseLong(s_compID); // throws NumberFormatException if
-			// not a number
-			target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), compID, foundPath);			
+			target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), s_compID, foundPath);			
 		}
 		
 		if (target == null) {
@@ -1265,6 +1223,10 @@ public class Window extends Container {
 	 */
 	public void setInstanceId(String instanceId) {
 		this.instanceId = instanceId;
+	}
+	
+	public String getUriPrefix() {
+		return uriPrefix;
 	}
 
 	/**

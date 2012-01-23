@@ -203,7 +203,7 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 					RenderResult renderResult, String[] args) {
 				if (debugURLBuilder != null && !DebugHelper.isProtected(source)) {
 					// remember source for later debug info access
-					long did = source.getDispatchID();
+					String did = source.getDispatchID();
 					String didS = String.valueOf(did);
 					idToComponent.put(didS, source);
 					int lev = renderResult.getNestedLevel();

@@ -70,18 +70,18 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * @param name
 	 */
 	public SingleSelectionImpl(String name) {
-		this(name, createHorizontalLayout(name));
+		this(null, name, createHorizontalLayout(null, name));
 	}
 
 
 	/**
 	 * set your layout
-	 * 
+	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 * @param name
 	 * @param presentation
 	 */
-	public SingleSelectionImpl(String name, FormLayouter formLayout) {
-		super(name);
+	public SingleSelectionImpl(String id, String name, FormLayouter formLayout) {
+		super(id, name, false);
 		formLayoutContainer = formLayout;
 	}
 
@@ -303,7 +303,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			}
 		}
 		//create and add selectbox element
-		SelectboxComponent sssc = new SelectboxComponent(getName()+"_SELBOX",translator, this, keys, values, cssClasses);
+		SelectboxComponent sssc = new SelectboxComponent(getFormItemId() + "_SELBOX" , getName() + "_SELBOX", translator, this, keys, values, cssClasses);
 		formLayoutContainer.put(getName()+"_SELBOX", sssc);
 		formLayoutContainer.contextPut("selectbox", getName()+"_SELBOX");
 		//formComponentsNames.add(getName()+"_SELBOX");
@@ -314,29 +314,35 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 
 	/**
 	 * as selectbox
+	 * @param id A fix identification for state-less behavior, must be unique
 	 * @param name
 	 * @return
 	 */
-	public static FormLayoutContainer createSelectboxLayouter(String name) {
-		return FormLayoutContainer.createCustomFormLayout(name+"SELECTBOX", null, SELECTBOX);
+	public static FormLayoutContainer createSelectboxLayouter(String id, String name) {
+		String contId = (id == null ? null : id + "_SELECTBOX_CONT");
+		return FormLayoutContainer.createCustomFormLayout(contId, name+"SELECTBOX", null, SELECTBOX);
 	}
 
 	/**
 	 * radio buttons horizontal
+	 * @param id A fix identification for state-less behavior, must be unique
 	 * @param name
 	 * @return
 	 */
-	public static FormLayoutContainer createHorizontalLayout(String name) {
-		return FormLayoutContainer.createCustomFormLayout(name+"HORIZONTAL_DEFAULT_RADIO", null, HORIZONTAL_DEFAULT_RADIO);
+	public static FormLayoutContainer createHorizontalLayout(String id, String name) {
+		String contId = (id == null ? null : id + "_HORIZONTAL_DEFAULT_RADIO_CONT");
+		return FormLayoutContainer.createCustomFormLayout(contId, name+"HORIZONTAL_DEFAULT_RADIO", null, HORIZONTAL_DEFAULT_RADIO);
 	}
 
 	/**
 	 * radio buttons vertical
+	 * @param id A fix identification for state-less behavior, must be unique
 	 * @param name
 	 * @return
 	 */
-	public static FormLayoutContainer createVerticalLayout(String name) {
-		return FormLayoutContainer.createCustomFormLayout(name+"VERTICAL_RADIO", null, VERTICAL_RADIO);
+	public static FormLayoutContainer createVerticalLayout(String id, String name) {
+		String contId = (id == null ? null : id + "_VERTICAL_RADIO_CONT");
+		return FormLayoutContainer.createCustomFormLayout(contId, name+"VERTICAL_RADIO", null, VERTICAL_RADIO);
 	}
 
 	protected Component getFormItemComponent() {
@@ -353,7 +359,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			return formLayoutContainer.getComponent();
 		}else{
 			//return a dummy, not to break rendering process with a null component.
-			return createSelectboxLayouter("dummy").getComponent();
+			return createSelectboxLayouter(null, "dummy").getComponent();
 		}
 	}
 

@@ -38,12 +38,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
  */
 class TextElementComponent extends FormBaseComponentImpl {
 
-	private ComponentRenderer RENDERER = new TextElementRenderer();
+	private static final ComponentRenderer RENDERER = new TextElementRenderer();
 	private TextElementImpl element;
 	
-
-	public TextElementComponent(TextElementImpl element) {
-		super(element.getName());
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 */
+	public TextElementComponent(String id, TextElementImpl element) {
+		super(id, element.getName(), null);
 		this.element = element;
 	}
 	

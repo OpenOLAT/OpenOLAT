@@ -254,7 +254,20 @@ public abstract class BasicController extends DefaultController {
 	 *            page name e.g. "index.html".
 	 */
 	protected VelocityContainer createVelocityContainer(String page) {
-		return new VelocityContainer("vc_" + page, velocity_root + "/" + page
+		return createVelocityContainer(null, page);
+	}
+	
+	/**
+	 * convenience method to generate a velocitycontainer
+	 * 
+	 * @param id The identifier
+	 * @param page
+	 *            the velocity page to use in the _content folder, e.g. "index",
+	 *            or "edit". The suffix ".html" gets automatically added to the
+	 *            page name e.g. "index.html".
+	 */
+	protected VelocityContainer createVelocityContainer(String id, String page) {
+		return new VelocityContainer(id, "vc_" + page, velocity_root + "/" + page
 				+ ".html", translator, this);
 	}
 

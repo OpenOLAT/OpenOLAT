@@ -37,9 +37,9 @@ import java.util.Set;
  * 
  * @author Felix Jost
  */
-public class FIFOMap {
+public class FIFOMap<T,U> {
 	private int maxsize;
-	private LinkedHashMap lhm;
+	private LinkedHashMap<T,U> lhm;
 
 	/**
 	 * Constructor for FIFOMap.
@@ -48,7 +48,7 @@ public class FIFOMap {
 	 */
 	public FIFOMap(int maxsize) {
 		this.maxsize = maxsize;
-		lhm = new LinkedHashMap();
+		lhm = new LinkedHashMap<T,U>();
 		//Map m = lhm;
 	}
 
@@ -58,11 +58,11 @@ public class FIFOMap {
 	 * @param key
 	 * @param value
 	 */
-	public void put(Object key, Object value) {
+	public void put(T key, U value) {
 		lhm.put(key, value);
 		if (lhm.size() > maxsize) {
 			// removed oldest = 1. in queue
-			Iterator it = lhm.keySet().iterator();
+			Iterator<T> it = lhm.keySet().iterator();
 			it.next();
 			it.remove();
 		}
@@ -73,7 +73,7 @@ public class FIFOMap {
 	 * @param key
 	 * @return the value for the supplied key
 	 */
-	public Object get(Object key) {
+	public U get(T key) {
 		return lhm.get(key);
 	}
 
@@ -82,42 +82,17 @@ public class FIFOMap {
 	 * @param key
 	 * @return value of removed key
 	 */
-	public Object remove(Object key) {
-		Object o = lhm.get(key);
+	public U remove(T key) {
+		U o = lhm.get(key);
 		lhm.remove(key);
 		return o;
 	}
 
 	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		FIFOMap fm = new FIFOMap(4);
-		for (int i = 0; i < 9; i++) {
-			fm.put("a" + i, "aa" + i);
-			System.out.println(fm.lhm.entrySet());
-		}
-		System.out.println("-pop");
-		fm.remove("a6");
-		System.out.println(fm.lhm.entrySet());
-		fm.remove("a8");
-		System.out.println(fm.lhm.entrySet());
-		fm.remove("a1");
-		System.out.println(fm.lhm.entrySet());
-		fm.remove("a5");
-		fm.put("a5", "bb6");
-		System.out.println(fm.lhm.entrySet());
-		System.out.println("get " + fm.get("a7"));
-		System.out.println(fm.lhm.entrySet());
-	}
-
-	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
-		//return "FIFOMap:"+lhm.size()+":
-		// "+lhm.keySet().toString()+"="+lhm.entrySet().toString()+",
-		// super:"+super.toString();
 		return "FIFOMap:" + lhm.size() + ": " + lhm.keySet().toString() + ", super:" + super.toString();
 	}
 
@@ -131,14 +106,14 @@ public class FIFOMap {
 	/**
 	 * @return ordered set of keys
 	 */
-	public Set getOrderedKeySet() {
+	public Set<T> getOrderedKeySet() {
 		return lhm.keySet();
 	}
 
 	/**
 	 * @return value iterator
 	 */
-	public Iterator getValueIterator() {
+	public Iterator<U> getValueIterator() {
 		return lhm.values().iterator();
 	}
 

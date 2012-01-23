@@ -106,10 +106,14 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @param translator
 	 */
 	private FormLayoutContainer(String name, Translator formTranslator, String page) {
-		super(name);
-		//
-		this.formLayoutContainer = new VelocityContainer(name, page, formTranslator, null);
-		this.translator = formTranslator;//
+		this(null, name, formTranslator, page);
+		
+	}
+
+	private FormLayoutContainer(String id, String name, Translator formTranslator, String page) {
+		super(id, name, false);
+		formLayoutContainer = new VelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator, null);
+		translator = formTranslator;
 		// add the form decorator for the $f.hasError("ddd") etc.
 		formLayoutContainer.contextPut("f", new FormDecoratorImpl(this));
 		// this container manages the form items, the GUI form item componentes are
@@ -511,8 +515,12 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @param page
 	 * @return
 	 */
-	public static FormLayoutContainer createCustomFormLayout(String name, Translator formTranslator, String page){
-		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, page);
+	public static FormLayoutContainer createCustomFormLayout(String name, Translator formTranslator, String page) {
+		return createCustomFormLayout(null, name, formTranslator, page);
+	}
+
+	public static FormLayoutContainer createCustomFormLayout(String id, String name, Translator formTranslator, String page) {	
+		FormLayoutContainer tmp = new FormLayoutContainer(id, name, formTranslator, page);
 		return tmp;
 	}
 

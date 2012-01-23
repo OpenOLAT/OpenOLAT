@@ -46,8 +46,7 @@ public class Windows implements Disposable {
 
 	private static final String SESSIONID_NAME_FOR_WINDOWS = Windows.class.getName();
 
-	//TODO: better solution with named chiefcontrollers
-	private FIFOMap windows = new FIFOMap(100); // one user may at most save 100
+	private FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<UriPrefixIdPair,Window>(100); // one user may at most save 100
 	// windows in a session
 	private int windowId = 1;
 	private WindowManager windowManagerImpl;
@@ -93,8 +92,8 @@ public class Windows implements Disposable {
 	 * @param wId
 	 * @return true if there is a window with this windowId
 	 */
-	public boolean isExisting(String wId) {
-		return (getWindow(wId) != null);
+	public boolean isExisting(String uriPrefix, String wId) {
+		return (getWindow(uriPrefix, wId) != null);
 	}
 
 	/**
@@ -107,7 +106,8 @@ public class Windows implements Disposable {
 	public Window getWindow(UserRequest ureq) {
 		String windowID = ureq.getWindowID();
 		if (windowID == null) return null;
-		return getWindow(windowID);
+		String uriPrefix = ureq.getUriPrefix();
+		return getWindow(uriPrefix, windowID);
 	}
 
 	/**
@@ -116,8 +116,8 @@ public class Windows implements Disposable {
 	 * @param windowID
 	 * @return null if the window is not existing (here in windows)
 	 */
-	private Window getWindow(String windowID) {
-		Window w = (Window) windows.get(windowID);
+	private Window getWindow(String uriPrefix, String windowID) {
+		Window w = windows.get(new UriPrefixIdPair(uriPrefix, windowID));
 		return w;
 	}
 
@@ -126,8 +126,9 @@ public class Windows implements Disposable {
 	 * @return true if already registered
 	 */
 	public boolean isRegistered(Window w) {
+		String uriPrefix = w.getUriPrefix();
 		String id = w.getInstanceId();
-		return (windows.get(id) != null);
+		return windows.get(new UriPrefixIdPair(uriPrefix, id)) != null;
 	}
 
 	/**
@@ -137,13 +138,14 @@ public class Windows implements Disposable {
 	 * @param w
 	 */
 	public void registerWindow(Window w) {
+		String uriPrefix = w.getUriPrefix();
 		String id = w.getInstanceId();
-		if (windows.get(id) != null) return; // we are already registered
+		if (windows.get(new UriPrefixIdPair(uriPrefix, id)) != null) {
+			return; // we are already registered
+		}
 		String wiid = String.valueOf(windowId++); // ok since per user session, not
-		// global
-		// //String.valueOf(CodeHelper.getRAMUniqueID());
 		w.setInstanceId(wiid);
-		windows.put(wiid, w);
+		windows.put(new UriPrefixIdPair(uriPrefix, wiid), w);
 	}
 
 	/**
@@ -151,17 +153,18 @@ public class Windows implements Disposable {
 	 * that deregistering does not clean up, e.g. dispose the window!
 	 * @param w
 	 */
-	public void deregisterWindow(Window w){
+	public void deregisterWindow(Window w) {
+		String uriPrefix = w.getUriPrefix();
 		String id = w.getInstanceId();
 		//no longer available
-		if(windows.get(id) == null) return;
-		windows.remove(id);
+		if(windows.get(new UriPrefixIdPair(uriPrefix, id)) == null) return;
+		windows.remove(new UriPrefixIdPair(uriPrefix, id));
 	}
 	
 	/**
 	 * @return the iterator with windows in it
 	 */
-	public Iterator getWindowIterator() {
+	public Iterator<Window> getWindowIterator() {
 		return windows.getValueIterator();
 	}
 
@@ -184,13 +187,6 @@ public class Windows implements Disposable {
 	 */
 	public WindowManager getWindowManager() {
 		return windowManagerImpl;
-	}
-
-	/**
-	 * @return Returns the windows.
-	 */
-	public FIFOMap getWindows() {
-		return windows;
 	}
 	
 	public void setAttribute(String key, Object value) {
@@ -215,5 +211,33 @@ public class Windows implements Disposable {
 		if (sbws == null) sbws = new SlowBandWidthSimulatorImpl();
 		return sbws;
 	}
-
+	
+	private class UriPrefixIdPair {
+		private final String uriPrefix;
+		private final String windowId;
+		
+		public UriPrefixIdPair(String uriPrefix, String windowId) {
+			this.uriPrefix = uriPrefix;
+			this.windowId = windowId;
+		}
+		
+		@Override
+		public int hashCode() {
+			return (uriPrefix == null ? 364587 : uriPrefix.hashCode())
+					+ (windowId == null ? 9827 : windowId.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof UriPrefixIdPair) {
+				UriPrefixIdPair pair = (UriPrefixIdPair)obj;
+				return uriPrefix != null && uriPrefix.equals(pair.uriPrefix)
+						&& windowId != null && windowId.equals(pair.windowId);
+			}
+			return false;
+		}
+	}
 }

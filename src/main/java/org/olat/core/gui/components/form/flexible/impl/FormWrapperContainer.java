@@ -40,12 +40,13 @@ class FormWrapperContainer extends Container {
 	private boolean firstInit;
 
 	/**
+	 * @param id A fix identifier for the container
 	 * @param name
 	 * @param translator
 	 * @param form
 	 */
-	public FormWrapperContainer(String name, Translator translator, Form form) {
-		super(name, translator);
+	public FormWrapperContainer(String id, String name, Translator translator, Form form) {
+		super(id, name, translator);
 		this.form = form;
 		firstInit = false;
 	}

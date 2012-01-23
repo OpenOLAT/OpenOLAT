@@ -65,7 +65,20 @@ public class VelocityContainer extends Container {
 	 *          caller has no need to register for events
 	 */
 	public VelocityContainer(String componentName, String pagePath, Translator trans, Controller listeningController) {
-		super(componentName, trans);
+		this(null, componentName, pagePath, trans, listeningController);
+	}
+	
+	/**
+	 * Constructor to create a VC container from a given file path
+	 * @param id A fix identifier for state-less behavior
+	 * @param componentName Name of component, displayed in debug mode
+	 * @param pagePath Full path to velocity page
+	 * @param trans Translator to be used
+	 * @param listeningController the listenenController; may be null if the
+	 *          caller has no need to register for events
+	 */
+	public VelocityContainer(String id, String componentName, String pagePath, Translator trans, Controller listeningController) {
+		super(id, componentName, trans);
 		setPage(pagePath);
 		if (listeningController != null) addListener(listeningController);
 	}

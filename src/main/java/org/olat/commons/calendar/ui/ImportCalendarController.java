@@ -81,9 +81,9 @@ public class ImportCalendarController extends FormBasicController {
 	}
 
 	@Override
-	protected void constructorInit(String pageName) {
+	protected void constructorInit(String id, String pageName) {
 		velocity_root = VELOCITY_ROOT;
-		super.constructorInit(pageName);
+		super.constructorInit(id, pageName);
 		setBasePackage(CalendarManager.class);
 	}
 

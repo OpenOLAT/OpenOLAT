@@ -44,7 +44,7 @@ public abstract class GenericNode implements INode, Serializable {
 
 	private String ident; // generated automatically
 	private INode parent = null;
-	private List children = null; // lazy init
+	private List<INode> children = null; // lazy init
 
 	/**
 	 * 
@@ -52,6 +52,10 @@ public abstract class GenericNode implements INode, Serializable {
 	protected GenericNode() {
 		//FIXME:fj: add a flag in param whether forever unique id or just session unique
 		this.ident = String.valueOf(CodeHelper.getForeverUniqueID());
+	}
+	
+	protected GenericNode(String ident) {
+		this.ident = ident;
 	}
 
 	/**
@@ -94,7 +98,7 @@ public abstract class GenericNode implements INode, Serializable {
 	 * @see org.olat.core.util.nodes.INode#getChildAt(int)
 	 */
 	public INode getChildAt(int childIndex) {
-		if (children == null) children = new ArrayList(INITIAL_CHILD_SIZE);
+		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
 		return (GenericNode) children.get(childIndex);
 	}
 
@@ -127,7 +131,7 @@ public abstract class GenericNode implements INode, Serializable {
 		if (isNodeAncestor(newChild)) throw new IllegalArgumentException("new child is an ancestor");
 		newChild.removeFromParent();
 		newChild.setParent(this);
-		if (children == null) children = new ArrayList(INITIAL_CHILD_SIZE);
+		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
 		children.add(index, newChild);
 	}
 
@@ -158,7 +162,7 @@ public abstract class GenericNode implements INode, Serializable {
 	 * @see org.olat.core.util.nodes.INode#addChild(org.olat.core.util.nodes.INode)
 	 */
 	public void addChild(INode newChild) {
-		if (children == null) children = new ArrayList(INITIAL_CHILD_SIZE);
+		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
 		insert(newChild, children.size());
 	}
 

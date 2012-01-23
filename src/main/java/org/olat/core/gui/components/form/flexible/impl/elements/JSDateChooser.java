@@ -66,7 +66,14 @@ public class JSDateChooser extends TextElementImpl implements DateChooser{
 	private boolean checkForValidDate;
 
 	public JSDateChooser(String name, String predefinedValue) {
-		super(name, predefinedValue);
+		this(null, name, predefinedValue);
+	}
+	
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 */
+	public JSDateChooser(String id, String name, String predefinedValue) {
+		super(id, name, predefinedValue);
 		jscomponent = new JSDateChooserComponent(this);
 		txtcomponent = (TextElementComponent) super.getFormItemComponent();
 	}

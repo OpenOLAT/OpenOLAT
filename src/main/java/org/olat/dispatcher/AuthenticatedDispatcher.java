@@ -76,7 +76,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	protected static final String GUEST = "guest";
 	protected static final String INVITATION = "invitation";
 	protected static final String TRUE = "true";
-	private static final String LANG = "lang";
 	private static final String D_TABS = "DTabs";
 	/** forces secure http connection to access olat if set to true **/
 	private boolean forceSecureAccessOnly = false;

@@ -56,14 +56,14 @@ public class OlatDmzTopNavController extends BasicController{
 		
 		// impressum
 		if(impressum) {
-			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
+			impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", topNavVC, this);
 			impressumLink.setTooltip("topnav.impressum.alt", false);
 			impressumLink.setAjaxEnabled(false);
 			impressumLink.setTarget("_blank");
 		}
 
 		//choosing language 
-		languageChooserC = new LanguageChooserController(getWindowControl(), ureq);
+		languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");
 		//DOKU:pb:2008-01 listenTo(languageChooserC); not necessary as LanguageChooser sends a MultiUserEvent
 		//which is catched by the BaseFullWebappController. This one is then 
 		//responsible to recreate the GUI with the new Locale 

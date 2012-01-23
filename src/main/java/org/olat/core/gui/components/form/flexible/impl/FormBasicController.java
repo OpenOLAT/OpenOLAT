@@ -89,8 +89,19 @@ public abstract class FormBasicController extends BasicController {
 	}
 
 	public FormBasicController(UserRequest ureq, WindowControl wControl, String pageName) {
+		this(ureq, wControl, null, pageName);
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param mainFormId Give a fix identifier to the main form for state-less behavior
+	 * @param pageName
+	 */
+	public FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, String pageName) {
 		super(ureq, wControl);
-		constructorInit(pageName);
+		constructorInit(mainFormId, pageName);
 	}
 
 	/** pay attention when using this with stacked translators, they may get lost somehow!
@@ -99,23 +110,40 @@ public abstract class FormBasicController extends BasicController {
 	* this.setTranslator(pT);
 	*/
 	public FormBasicController(UserRequest ureq, WindowControl wControl, String pageName, Translator fallbackTranslator) {
+		this(ureq, wControl, null, pageName, fallbackTranslator);
+	}
+	
+	/**
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param mainFormId Give a fix identifier to the main form for state-less behavior
+	 * @param pageName
+	 * @param fallbackTranslator
+	 */
+	public FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, String pageName, Translator fallbackTranslator) {
 		super(ureq, wControl, fallbackTranslator);
-		constructorInit(pageName);
+		constructorInit(mainFormId, pageName);
 		//TODO: Translator-fix: flc , mainForm also needs to know about the new Translator
 //		setTranslator(getTranslator()); 
 	}
+	
 
-	protected FormBasicController(UserRequest ureq, WindowControl wControl, int layout){
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, int layout) {
+		this(ureq, wControl, null, layout);
+	}
+
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, int layout){
 		super(ureq, wControl);
 		if (layout == LAYOUT_HORIZONTAL) {
 			// init with horizontal layout
 			flc = FormLayoutContainer.createHorizontalFormLayout("ffo_horizontal", getTranslator());		
-			mainForm = Form.create("ffo_main_horizontal", flc, this);
+			mainForm = Form.create(mainFormId, "ffo_main_horizontal", flc, this);
 
 		} else if (layout == LAYOUT_VERTICAL) {
 			// init with vertical layout
 			flc = FormLayoutContainer.createVerticalFormLayout("ffo_vertical", getTranslator());		
-			mainForm = Form.create("ffo_main_vertical", flc, this);
+			mainForm = Form.create(mainFormId, "ffo_main_vertical", flc, this);
 
 		} else if (layout == LAYOUT_CUSTOM) {
 			throw new AssertException("Use another constructor to work with a custom layout!");
@@ -123,7 +151,7 @@ public abstract class FormBasicController extends BasicController {
 		} else {
 			// init with default layout
 			flc = FormLayoutContainer.createDefaultFormLayout("ffo_default", getTranslator());
-			mainForm = Form.create("ffo_main_default", flc, this);
+			mainForm = Form.create(mainFormId, "ffo_main_default", flc, this);
 		}
 		initialPanel = putInitialPanel(mainForm.getInitialComponent());
 	}
@@ -157,8 +185,10 @@ public abstract class FormBasicController extends BasicController {
 	
 	/**
 	 * should be rarely overwritten, only if you provide infrastructure around flexi forms
+	 * @param mainFormId Give a fix identifier to the main form for state-less behavior
+	 * @param pageName
 	 */
-	protected void constructorInit(String pageName) {
+	protected void constructorInit(String mainFormId, String pageName) {
 		String ffo_pagename = null;
 		if (pageName != null) {
 			// init with provided layout
@@ -171,7 +201,7 @@ public abstract class FormBasicController extends BasicController {
 			flc = FormLayoutContainer.createDefaultFormLayout(ffo_pagename, getTranslator());
 		}
 		//
-		mainForm = Form.create("ffo_main_" + pageName, flc, this);
+		mainForm = Form.create(mainFormId, "ffo_main_" + pageName, flc, this);
 		/*
 		 * implementor must call initFormElements(...)
 		 */

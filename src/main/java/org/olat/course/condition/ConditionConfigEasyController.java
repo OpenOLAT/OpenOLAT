@@ -1397,7 +1397,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		assessNodesListContainer = (FormLayoutContainer)FormLayoutContainer.createSelbox("assNodesListContainer", getTranslator());
 		assessNodesListContainer.setLabel("form.easy.nodePassed", null);
 		assessSubContainer.add(assessNodesListContainer);
-		nodePassed = new SingleSelectionImpl("nodePassed", assessNodesListContainer) {
+		nodePassed = new SingleSelectionImpl(null, "nodePassed", assessNodesListContainer) {
 			{
 				keys = nodePassedKeys;
 				values = nodePassedValues;
@@ -1415,7 +1415,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		}
 		assessNodesListContainer.add(nodePassed);
 		
-		assessmentTypeSwitch = new SingleSelectionImpl("assessmentTypeSwitch", SingleSelectionImpl.createVerticalLayout("yingyang")) {
+		assessmentTypeSwitch = new SingleSelectionImpl(null, "assessmentTypeSwitch", SingleSelectionImpl.createVerticalLayout(null, "yingyang")) {
 			{
 				keys = assessmentSwitchKeys;
 				values = assessmentSwitchValues;

@@ -42,7 +42,14 @@ abstract class FormButton extends FormItemImpl {
 	public FormButton(String name) {
 		super(name);
 	}
-
+	
+	/**
+	 * @param id A fix identifier for state-less behavior, must be unique or null
+	 * @param name
+	 */
+	public FormButton(String id, String name) {
+		super(id, name, false);
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)

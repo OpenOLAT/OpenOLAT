@@ -102,7 +102,7 @@ public class CPTreeController extends BasicController {
 		setLinks();
 		contentVC.put("cptreecontroller.tree", treeCtr.getInitialComponent());
 		//fxdiff FXOLAT-132: alert unsaved changes in HTML editor
-		contentVC.contextPut("treeId", Long.toString(treeCtr.getTreePanelID()));
+		contentVC.contextPut("treeId", treeCtr.getTreePanelID());
 
 		putInitialPanel(contentVC);
 	}
