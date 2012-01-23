@@ -54,6 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -145,7 +146,7 @@ public class TaskController extends BasicController {
 		taskLaunchButton.setTarget("_blank");
 		taskLaunchButton.setAjaxEnabled(false); // opened in new window
 		
-		if ( (taskText != null) && (taskText.length() > 0) ) { 
+		if (StringHelper.containsNonWhitespace(taskText)) { 
 			myContent.contextPut(VC_TASKTEXT, taskText);
 		}
 
@@ -167,7 +168,7 @@ public class TaskController extends BasicController {
 				
 				myContent = createVelocityContainer("taskChoose");
 				
-				List availableTasks = compileAvailableTasks();
+				List<String> availableTasks = compileAvailableTasks();
 				if (availableTasks.size() == 0 && assignedTask==null) { // no more tasks available
 					myContent.contextPut(VC_NOMORETASKS, translate("task.nomoretasks"));
 				} else {
@@ -241,7 +242,7 @@ public class TaskController extends BasicController {
 				} else if (ta.getActionId().equals(TaskController.ACTION_SELECT)){
 					// select a task
 					assignedTask = (String)taskTableModel.getValueAt(ta.getRowId(),0);
-					List availableTasks = compileAvailableTasks();
+					List<String> availableTasks = compileAvailableTasks();
 					if (!availableTasks.contains(assignedTask)) {
 						showWarning("task.chosen");					
 						taskTableModel.setObjects(availableTasks);
@@ -256,7 +257,7 @@ public class TaskController extends BasicController {
 						  pushTaskToVC();
 						} else {
 							//if assignedTask selected, and deselectable, update taskTableModel 
-							List allTasks = compileAvailableTasks();
+							List<String> allTasks = compileAvailableTasks();
 							if(!samplingWithReplacement) {
 								//if assignable to only one user, this means that the assignedTask is no more in the availableTasks, but show it in taskTableModel
 							  allTasks.add(assignedTask);
@@ -268,7 +269,7 @@ public class TaskController extends BasicController {
 				} else if (ta.getActionId().equals(TaskController.ACTION_DESELECT)) {
 					if(assignedTask!=null) {
 						this.removeAssignedTask(ureq.getIdentity(), assignedTask);
-						List availableTasks = compileAvailableTasks();
+						List<String> availableTasks = compileAvailableTasks();
 						taskTableModel.setObjects(availableTasks);
 						tableCtr.modelChanged();
 					}
@@ -283,6 +284,9 @@ public class TaskController extends BasicController {
 		}
 		
 		myContent = createVelocityContainer ("taskAssigned");
+		if (StringHelper.containsNonWhitespace(taskText)) {
+			myContent.contextPut(VC_TASKTEXT, taskText);
+		}
 		myContent.put("task.launch", taskLaunchButton);
 		myContent.contextPut(VC_ASSIGNEDTASK, assignedTask);
 		myContent.contextPut(VC_ASSIGNEDTASK_NEWWINDOW,Boolean.TRUE);
@@ -295,7 +299,7 @@ public class TaskController extends BasicController {
 	 * @return name of the assigned task or null if no more tasks are available.
 	 */
 	private String assignTask(Identity identity) {
-		List availableTasks = compileAvailableTasks();
+		List<String> availableTasks = compileAvailableTasks();
 		if (availableTasks.size() == 0 && samplingWithReplacement) {
 			unmarkAllSampledTasks(); // unmark all tasks if samplingWithReplacement and no more tasks available
 			availableTasks = compileAvailableTasks(); // refetch tasks
@@ -310,7 +314,7 @@ public class TaskController extends BasicController {
 	}
 	
 	public static String getAssignedTask(Identity identity, CourseEnvironment courseEnv, CourseNode node) {
-		List samples = courseEnv.getCoursePropertyManager().findCourseNodeProperties(node, identity, null, PROP_ASSIGNED);
+		List<Property> samples = courseEnv.getCoursePropertyManager().findCourseNodeProperties(node, identity, null, PROP_ASSIGNED);
 		if (samples.size() == 0) return null; // no sample assigned yet
 		return ((Property)samples.get(0)).getStringValue();
 	}
@@ -329,9 +333,9 @@ public class TaskController extends BasicController {
 	private void removeAssignedTask(Identity identity, String task) {
 		CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
 		//remove assigned
-		List properties = cpm.findCourseNodeProperties(node, identity, null, PROP_ASSIGNED);
+		List<Property> properties = cpm.findCourseNodeProperties(node, identity, null, PROP_ASSIGNED);
 		if(properties!=null && properties.size()>0) {
-		  Property propety = (Property)properties.get(0);
+		  Property propety = properties.get(0);
 		  cpm.deleteProperty(propety);
 		  assignedTask = null;
 		}
@@ -358,10 +362,10 @@ public class TaskController extends BasicController {
 	 * which have not been sampled so far.
 	 * @return List of available tasks.
 	 */
-	private List compileAvailableTasks() {
+	private List<String> compileAvailableTasks() {
 		File[] taskSources = taskFolder.listFiles();
-		List tasks = new ArrayList(taskSources.length);
-		List sampledTasks = compileSampledTasks();
+		List<String> tasks = new ArrayList<String>(taskSources.length);
+		List<String> sampledTasks = compileSampledTasks();
 		for (int i = 0; i < taskSources.length; i++) {
 			File nextTask = taskSources[i];
 			if (nextTask.isFile() && !sampledTasks.contains(nextTask.getName()))
@@ -374,11 +378,11 @@ public class TaskController extends BasicController {
 	 * Compile a list of tasks marked as sampled.
 	 * @return List of sampled tasks.
 	 */
-	private List compileSampledTasks() {
-		List sampledTasks = new ArrayList();
-		List samples = courseEnv.getCoursePropertyManager()
+	private List<String> compileSampledTasks() {
+		List<String> sampledTasks = new ArrayList<String>();
+		List<Property> samples = courseEnv.getCoursePropertyManager()
 			.findCourseNodeProperties(node, null, null, PROP_SAMPLED);
-		for (Iterator iter = samples.iterator(); iter.hasNext();) {
+		for (Iterator<Property> iter = samples.iterator(); iter.hasNext();) {
 			Property sample = (Property) iter.next();
 			sampledTasks.add(sample.getStringValue());
 		}
