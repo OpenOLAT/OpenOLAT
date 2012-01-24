@@ -497,7 +497,7 @@ public class Window extends Container {
 						
 							ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
 							Window errWindow = msgcc.getWindow();
-							errWindow.setUriPrefix("error");
+							errWindow.setUriPrefix(getUriPrefix());
 							// register window
 							Windows.getWindows(ureq).registerWindow(errWindow);
 							// redirect to the error window
