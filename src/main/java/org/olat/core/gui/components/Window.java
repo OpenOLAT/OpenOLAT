@@ -813,7 +813,7 @@ public class Window extends Container {
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
 		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
 			StringBuilder sb = new StringBuilder();
-			List<ContextEntry> ces = BusinessControlFactory.getInstance().createCEListFromString(p.getBusinessPath());
+			List<ContextEntry> ces = p.getEntries();
 			String url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
 			sb.append("try { o_info.businessPath='").append(url).append("';");
 			sb.append("b_shareActiveSocialUrl(); } catch(e) { }");

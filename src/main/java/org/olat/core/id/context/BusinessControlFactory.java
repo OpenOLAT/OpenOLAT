@@ -277,7 +277,7 @@ public class BusinessControlFactory {
 	}
 	
 	public List<ContextEntry> createCEListFromString(String businessControlString) {
-		// e.g. [repo:123][CourseNode:345][folder][path=sdfsd/sdfd/]
+		// e.g. [repo:123][CourseNode:345][folder][path=/sdfsd/sdfd:0]
 		List<ContextEntry> entries = new ArrayList<ContextEntry>();
 		BusinessControlFactory bcf = BusinessControlFactory.getInstance();
 		
@@ -287,12 +287,18 @@ public class BusinessControlFactory {
 			int pos = ces.indexOf(':');
 			OLATResourceable ores;
 			// FIXME:chg: 'path=' define only once, same path in SearchResourceContext
-			if ( (ces.startsWith("path="))||(pos == -1) ) {
-				ces = ces.replace("|", "/");
+			
+			if(pos == -1) {
+				if(ces.startsWith("path=")) {
+					ces = ces.replace("|", "/");
+				}
 				ores = OresHelper.createOLATResourceableTypeWithoutCheck(ces);
 			} else {
 				String type = ces.substring(0, pos);
 				String keyS = ces.substring(pos+1);
+				if(type.startsWith("path=")) {
+					ces = type.replace("|", "/");
+				}
 				try {
 					Long key = Long.parseLong(keyS);
 					ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, key);

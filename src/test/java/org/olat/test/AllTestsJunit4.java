@@ -47,6 +47,7 @@ import org.junit.runners.Suite;
 	org.olat.user.UserPropertiesPerformanceTest.class,//ok
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
 	org.olat.user.UserTest.class,//ok
+	org.olat.user.UserPropertiesTest.class,//ok
 	org.olat.commons.calendar.ui.components.WeeklyCalendarComponentTest.class,//ok
 	org.olat.commons.calendar.test.CalendarUtilsTest.class,//ok
 	org.olat.commons.calendar.ICalFileCalendarManagerTest.class,//ok
