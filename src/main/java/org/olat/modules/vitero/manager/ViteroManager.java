@@ -669,13 +669,13 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		return roomSizes;
 	}
 	
-	public int createGroup()
+	public int createGroup(String groupName)
 	throws VmsNotAvailableException {
 		try {
 			GroupServiceStub groupWs = getGroupWebService();
 			GroupServiceStub.CreateGroupRequest createRequest = new GroupServiceStub.CreateGroupRequest();
 			GroupServiceStub.Groupnamecustomerid groupInfos = new GroupServiceStub.Groupnamecustomerid();
-			groupInfos.setGroupname("OLAT-" + UUID.randomUUID().toString().replace("-", ""));
+			groupInfos.setGroupname(groupName + "_OLAT_" + UUID.randomUUID().toString().replace("-", ""));
 			groupInfos.setCustomerid(viteroModule.getCustomerId());
 			createRequest.setGroup(groupInfos);
 			
@@ -878,7 +878,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 
 		try {
 			//a group per meeting
-			int groupId = createGroup();
+			String groupName = vBooking.getGroupName();
+			int groupId = createGroup(groupName);
 			if(groupId < 0) {
 				return new ViteroStatus(ErrorCode.unkown);
 			}

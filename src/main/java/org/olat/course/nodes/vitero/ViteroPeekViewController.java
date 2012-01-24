@@ -85,6 +85,7 @@ public class ViteroPeekViewController extends BasicController {
 		listenTo(tableCtrl);
 		
 		// dummy header key, won't be used since setDisplayTableHeader is set to false
+		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.group", ViteroBookingDataModel.Column.name.ordinal(), null, ureq.getLocale()));
 		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
 		tableCtrl.setTableDataModel(new ViteroBookingDataModel(bookings));

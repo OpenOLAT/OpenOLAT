@@ -299,14 +299,14 @@ public class ViteroUserToGroupController extends BasicController {
 			this.selfParticipants.addAll(selfParticipants);
 			
 			//remove duplicates
-			coaches.removeAll(owners);
+			this.coaches.removeAll(owners);
 			
-			participants.removeAll(owners);
-			participants.removeAll(coaches);
+			this.participants.removeAll(owners);
+			this.participants.removeAll(coaches);
 			
-			selfParticipants.remove(owners);
-			selfParticipants.remove(coaches);
-			selfParticipants.remove(participants);
+			this.selfParticipants.removeAll(owners);
+			this.selfParticipants.removeAll(coaches);
+			this.selfParticipants.removeAll(participants);
 		}
 
 		public List<Identity> getOwners() {

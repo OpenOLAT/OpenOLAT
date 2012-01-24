@@ -3,6 +3,7 @@
 	$r.contextHelpWithWrapper("org.olat.modules.vitero.ui","ced-vitero-config.html","help.hover.vitero")
 	<table>
 		<tr>
+			<td>$r.translate("group.name")</td>
 			<td>$r.translate("booking.begin")</td>
 			<td>$r.translate("booking.end")</td>
 			<td colspan="3"></td>
@@ -10,6 +11,7 @@
 		
 		#foreach($bookingDisplay in $bookingDisplays)
 			<tr>
+				<td>$bookingDisplay.groupName</td>
 				<td>$r.formatDateAndTime($bookingDisplay.begin)</td>
 				<td>$r.formatDateAndTime($bookingDisplay.end)</td>
 				<td>

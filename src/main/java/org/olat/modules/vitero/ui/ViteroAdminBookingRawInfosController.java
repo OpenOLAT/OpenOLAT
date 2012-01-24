@@ -68,7 +68,13 @@ public class ViteroAdminBookingRawInfosController extends FormBasicController {
 		uifactory.addStaticTextElement("booking.roomSize", Integer.toString(booking.getRoomSize()), formLayout);
 		uifactory.addStaticTextElement("group.numOfParticipants", Integer.toString(group.getNumOfParticipants()), formLayout);
 		uifactory.addStaticTextElement("group.id", Integer.toString(group.getGroupId()), formLayout);
-		uifactory.addStaticTextElement("group.name", group.getName(), formLayout);
+		
+		String name = group.getName();
+		int sepIndex = name.indexOf("_OLAT_");
+		if(sepIndex > 0) {
+			name = name.substring(0, sepIndex);
+		}
+		uifactory.addStaticTextElement("group.name", name, formLayout);
 
 		MultipleSelectionElement autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues, null);
 		if(booking.isAutoSignIn()) {

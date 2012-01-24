@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.vitero.manager.ViteroManager;
@@ -248,6 +249,14 @@ public class ViteroBookingsEditController extends FormBasicController {
 
 		public ViteroBooking getMeeting() {
 			return meeting;
+		}
+		
+		public String getGroupName() {
+			String name = meeting.getGroupName();
+			if(StringHelper.containsNonWhitespace(name)) {
+				return name;
+			}
+			return "";
 		}
 
 		public Date getBegin() {
