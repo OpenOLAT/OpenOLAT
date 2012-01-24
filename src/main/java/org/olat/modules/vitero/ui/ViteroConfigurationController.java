@@ -83,7 +83,12 @@ public class ViteroConfigurationController extends FormBasicController {
 		
 		enabledValues = new String[]{translate("enabled")};
 		
-		loadCustomers(false);
+		if(viteroModule.isEnabled()) {
+			loadCustomers(false);
+		} else {
+			customerKeys = new String[0];
+			customerValues = new String[0];
+		}
 		
 		initForm(ureq);
 	}
@@ -202,24 +207,28 @@ public class ViteroConfigurationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = validateURL();
-
-		customersEl.clearError();
-		if(customersEl.isOneSelected()) {
-			try {
-				String customerId = customersEl.getSelectedKey();
-				Integer.parseInt(customerId);
-			} catch(Exception e) {
-				customersEl.setErrorKey("error.customer.invalid", null);
+		boolean allOk = true;
+		
+		//validate only if the module is enabled
+		if(viteroModule.isEnabled()) {
+			allOk &= validateURL();
+			customersEl.clearError();
+			if(customersEl.isOneSelected()) {
+				try {
+					String customerId = customersEl.getSelectedKey();
+					Integer.parseInt(customerId);
+				} catch(Exception e) {
+					customersEl.setErrorKey("error.customer.invalid", null);
+					allOk = false;
+				}
+			} else {
+				if(customersEl.getSize() == 0) {
+					loadCustomers(true);
+					customersEl.setKeysAndValues(customerKeys, customerValues, null);
+				}
+				customersEl.setErrorKey("form.legende.mandatory", null);
 				allOk = false;
 			}
-		} else {
-			if(customersEl.getSize() == 0) {
-				loadCustomers(true);
-				customersEl.setKeysAndValues(customerKeys, customerValues, null);
-			}
-			customersEl.setErrorKey("form.legende.mandatory", null);
-			allOk = false;
 		}
 		
 		return allOk && super.validateFormLogic(ureq);
@@ -285,6 +294,7 @@ public class ViteroConfigurationController extends FormBasicController {
 		try {
 			boolean ok = viteroManager.checkConnection(url, login, password, Integer.parseInt(customerId));
 			if(ok) {
+				loadCustomers(true);
 				showInfo("check.ok");
 			} else {
 				showError("check.nok");

@@ -236,7 +236,16 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	throws VmsNotAvailableException {
 		try {
 			int userId = getVmsUserId(identity, true);
-			SessionCodeServiceStub sessionCodeWs = this.getSessionCodeWebService();
+			
+			//update user information
+			try {
+				updateVmsUser(identity, userId);
+				storePortrait(identity, userId);
+			} catch (Exception e) {
+				logError("Cannot update user on vitero system:" + identity.getName(), e);
+			}
+
+			SessionCodeServiceStub sessionCodeWs = getSessionCodeWebService();
 			SessionCodeServiceStub.CreatePersonalBookingSessionCodeRequest codeRequest = new SessionCodeServiceStub.CreatePersonalBookingSessionCodeRequest();
 			
 			SessionCodeServiceStub.Sessioncode_type2 code = new SessionCodeServiceStub.Sessioncode_type2();
@@ -368,6 +377,80 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			userId = Integer.parseInt(authentication.getAuthusername());
 		}
 		return userId;
+	}
+	
+	protected boolean updateVmsUser(Identity identity, int vmsUserId)
+	throws VmsNotAvailableException {
+		try {
+			UserServiceStub userWs = getUserWebService();
+			UserServiceStub.UpdateUserRequest updateRequest = new UserServiceStub.UpdateUserRequest();
+			UserServiceStub.Completeusertype user = new UserServiceStub.Completeusertype();
+			user.setId(vmsUserId);
+			
+			//mandatory
+			User olatUser = identity.getUser();
+			user.setUsername("olat." + WebappHelper.getInstanceId() + "." + identity.getName());
+			user.setSurname(olatUser.getProperty(UserConstants.LASTNAME, null));
+			user.setFirstname(olatUser.getProperty(UserConstants.FIRSTNAME, null));
+			user.setEmail(olatUser.getProperty(UserConstants.EMAIL, null));
+
+			//optional
+			String language = identity.getUser().getPreferences().getLanguage();
+			if(StringHelper.containsNonWhitespace(language) && language.startsWith("de")) {
+				user.setLocale("de");
+			} else {
+				user.setLocale("en");
+			}
+			user.setPcstate("NOT_TESTED");
+			user.setTimezone(viteroModule.getTimeZoneId());
+			
+			String street = olatUser.getProperty(UserConstants.STREET, null);
+			if(StringHelper.containsNonWhitespace(street)) {
+				user.setStreet(street);
+			}
+			String zip = olatUser.getProperty(UserConstants.ZIPCODE, null);
+			if(StringHelper.containsNonWhitespace(zip)) {
+				user.setZip(zip);
+			}
+			String city = olatUser.getProperty(UserConstants.CITY, null);
+			if(StringHelper.containsNonWhitespace(city)) {
+				user.setCity(city);
+			}
+			String country = olatUser.getProperty(UserConstants.COUNTRY, null);
+			if(StringHelper.containsNonWhitespace(country)) {
+				user.setCountry(country);
+			}
+			
+			String mobile = olatUser.getProperty(UserConstants.TELMOBILE, null);
+			if(StringHelper.containsNonWhitespace(mobile)) {
+				user.setMobile(mobile);
+			}
+			String phonePrivate = olatUser.getProperty(UserConstants.TELPRIVATE, null);
+			if(StringHelper.containsNonWhitespace(phonePrivate)) {
+				user.setPhone(phonePrivate);
+			}
+			String phoneOffice = olatUser.getProperty(UserConstants.TELOFFICE, null);
+			if(StringHelper.containsNonWhitespace(phoneOffice)) {
+				user.setPhone(phoneOffice);
+			}
+			String institution = olatUser.getProperty(UserConstants.INSTITUTIONALNAME, null);
+			if(StringHelper.containsNonWhitespace(institution)) {
+				user.setCompany(institution);
+			}
+			
+			updateRequest.setUser(user);
+			userWs.updateUser(updateRequest);
+			return true;
+		} catch(AxisFault f) {
+			ErrorCode code = handleAxisFault(f);
+			switch(code) {
+				default: logAxisError("Cannot create vms user.", f);
+			}
+			return true;
+		} catch (RemoteException e) {
+			logError("Cannot create vms user.", e);
+			return true;
+		}
 	}
 	
 	protected int createVmsUser(Identity identity)
@@ -668,6 +751,14 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			int userId = getVmsUserId(identity, true);
 			if(userId < 0) {
 				return false;
+			}
+			
+			//update user information
+			try {
+				updateVmsUser(identity, userId);
+				storePortrait(identity, userId);
+			} catch (Exception e) {
+				logError("Cannot update user on vitero system:" + identity.getName(), e);
 			}
 			
 			GroupServiceStub groupWs = getGroupWebService();
