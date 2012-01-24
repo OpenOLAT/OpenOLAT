@@ -36,6 +36,7 @@ public class ViteroBooking {
 	
 	private int bookingId;
 	private int groupId;
+	private String groupName;
 	private Date start;
 	private int startBuffer;
 	private Date end;
@@ -83,6 +84,14 @@ public class ViteroBooking {
 
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
 	}
 
 	public int getRoomSize() {

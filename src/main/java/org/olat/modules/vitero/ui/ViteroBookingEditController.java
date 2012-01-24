@@ -29,12 +29,14 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
@@ -52,6 +54,7 @@ import org.olat.modules.vitero.model.ViteroStatus;
  */
 public class ViteroBookingEditController extends FormBasicController {
 	
+	private TextElement groupName;
 	private DateChooser beginChooser;
 	private DateChooser endChooser;
 	private SingleSelection beginBufferEl;
@@ -105,6 +108,11 @@ public class ViteroBookingEditController extends FormBasicController {
 		if(editable) {
 			setFormWarning("new.booking.warning");
 		}
+		
+		String name = booking.getGroupName();
+		groupName = uifactory.addTextElement("group.name", "group.name", 32, name, formLayout);
+		groupName.setMandatory(true);
+		groupName.setEnabled(editable);
 		
 		//begin
 		beginChooser = uifactory.addDateChooser("booking.begin", "", formLayout);
@@ -161,6 +169,18 @@ public class ViteroBookingEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		String name = groupName.getValue();
+		groupName.clearError();
+		if(StringHelper.containsNonWhitespace(name)) {
+			if(name.contains("_")) {
+				groupName.setErrorKey("error.bookingName", null);
+				allOk &= false;
+			}
+		} else {
+			groupName.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		Date begin = beginChooser.getDate();
 		if(beginChooser.isEnabled()) {
@@ -200,6 +220,9 @@ public class ViteroBookingEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String name = groupName.getValue();
+		booking.setGroupName(name);
+
 		Date begin = beginChooser.getDate();
 		booking.setStart(begin);
 		
