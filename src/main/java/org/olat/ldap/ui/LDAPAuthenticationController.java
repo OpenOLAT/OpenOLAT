@@ -87,11 +87,11 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		
 		if(UserModule.isPwdchangeallowed(null) && LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
-			pwLink.setCustomEnabledLinkCSS("o_login_pwd");
+			pwLink.setCustomEnabledLinkCSS("o_login_pwd  b_with_small_icon_left");
 		}
 		if (LoginModule.isGuestLoginLinksEnabled()) {
 			anoLink = LinkFactory.createLink("_olat_login_guest", "menu.guest", loginComp, this);
-			anoLink.setCustomEnabledLinkCSS("o_login_guests");
+			anoLink.setCustomEnabledLinkCSS("o_login_guests  b_with_small_icon_left");
 		}
 		
 		// Use the standard OLAT login form but with our LDAP translator
