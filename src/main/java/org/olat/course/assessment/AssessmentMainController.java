@@ -712,6 +712,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		} else if(mode == MODE_GROUPFOCUS){
 			//fxdiff VCRP-4: assessment overview with max score
 			tableConfig.setPreferencesOffered(true, "assessmentGroupUsersNode");
+		} else if (mode == MODE_NODEFOCUS) {
+			tableConfig.setPreferencesOffered(true, "assessmentUserNodeList");
 		}
 		
 		if (mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS) {

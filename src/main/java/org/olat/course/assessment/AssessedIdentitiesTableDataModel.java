@@ -270,8 +270,8 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel {
 				userListCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", colCount++, translator.translate("passed.true"), 
 						translator.translate("passed.false")));
 			}
-			userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.initialLaunchDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
-			userListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastScoreDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.initialLaunchDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastScoreDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 		}
 	}
 
