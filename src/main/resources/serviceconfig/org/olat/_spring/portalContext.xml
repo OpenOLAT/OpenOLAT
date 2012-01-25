@@ -42,16 +42,6 @@
 			</map>
 		</property>
 	</bean>
-	<bean id="Macartney" class="org.olat.portal.macartney.MacartneyPortlet" scope="prototype">
-		<property name="name" value="Macartney" />
-		<property name="enabled" value="${portlet.macartney.enabled}" />
-		<property name="configuration">
-			<map>
-				<!-- use protocol relativ URL to support http and https -->
-				<entry key="imageBaseUri" value="${portlet.macartney.baseUri}" />
-			</map>		
-		</property>
-	</bean>
 	<bean id="DidYouKnow" class="org.olat.core.commons.portlets.didYouKnow.DidYouKnowPortlet" scope="prototype">
 		<property name="name" value="DidYouKnow" />
 		<property name="enabled" value="${portlet.didYouKnow.enabled}" />
@@ -151,8 +141,7 @@
 					<value>Information</value>
 					<value>Zsuz</value>
 					<value>Quickstart</value>
-					<value>DidYouKnow</value>
-					<value>Macartney</value>								
+					<value>DidYouKnow</value>								
 				</list>
 				<list>
 					<value>RepositoryPortletStudent</value>
@@ -182,7 +171,6 @@
 				<list>
 					<value>Information</value>
 					<value>DidYouKnow</value>
-					<value>Macartney</value>
 				</list>
 			</list>
 		</property>

@@ -6439,35 +6439,6 @@ div.o_home_rsslink {
   display: inline;
   margin: 10px 0; }
 
-#o_macartney_open {
-  width: 20px;
-  bottom: 0;
-  left: 0;
-  height: 16px;
-  background: white url(../openolat/images/magnifier-zoom.png) no-repeat 4px 0; }
-
-#o_macartney_large {
-  position: fixed;
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  z-index: 10;
-  border: 1px solid black;
-  background: white;
-  padding: 5px; }
-
-#o_macartney_large img {
-  width: 100%; }
-
-#o_macartney_close {
-  position: absolute;
-  width: 16px;
-  top: 0;
-  right: 0;
-  height: 16px;
-  border-left: 1px solid #000;
-  border-bottom: 1px solid #000;
-  background: white url(../openolat/images/close.png); }
 
 /** ----------------- PORTLETS & BOXES ----------------- **/
 .b_portlet {
@@ -6680,9 +6651,6 @@ div.o_portlet_calendar.o_day_31 div.b_portlet_header strong:before {
 
 div.o_portlet_infomsg div.b_portlet_header {
   background-image: url(../openolat/images/comment.png); }
-
-div.o_portlet_macartney div.b_portlet_header {
-  background-image: url(../openolat/images/macartney.png); }
 
 div.o_portlet_quickstart div.b_portlet_header {
   background-image: url(../openolat/images/mouse.png); }
