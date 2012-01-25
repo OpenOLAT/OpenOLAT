@@ -242,6 +242,8 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		if (!newpass1.getValue().equals(newpass2.getValue())) {
 			newpass2.setErrorKey("form.check5", null);
+			// OO-92 : must return false, if passwords don't match!
+			return false;
 		}
 		return true;
 	}
