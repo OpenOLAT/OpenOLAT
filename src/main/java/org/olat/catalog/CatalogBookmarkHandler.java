@@ -19,6 +19,8 @@
  */
 package org.olat.catalog;
 
+import java.util.Collections;
+
 import org.olat.bookmark.Bookmark;
 import org.olat.bookmark.BookmarkHandler;
 import org.olat.bookmark.BookmarkManager;
@@ -26,6 +28,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.site.RepositorySite;
 
 /**
@@ -63,8 +68,10 @@ public class CatalogBookmarkHandler implements BookmarkHandler {
 	public String createJumpInURL(Bookmark bookmark) {
 		OLATResourceable reores = BookmarkManager.getInstance().getLaunchOlatResourceable(bookmark);
 		// only create jump in urls for bookmarks of type catalog entry
-		if(reores.getResourceableTypeName().equals(CatalogManager.CATALOGENTRY)){			
-			return CatalogJumpInHandlerFactory.buildRepositoryDispatchURI(bookmark.getOlatreskey());
+		if(reores.getResourceableTypeName().equals(CatalogManager.CATALOGENTRY)){	
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CatalogManager.CATALOGENTRY, bookmark.getOlatreskey());
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
+			return BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
 		}
 		return null;
 	}

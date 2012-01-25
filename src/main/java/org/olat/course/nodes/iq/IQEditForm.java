@@ -189,7 +189,7 @@ class IQEditForm extends FormBasicController {
 		
 		Boolean fullWindow = (Boolean) modConfig.get(IQEditController.CONFIG_FULLWINDOW);
 		fullWindowEl = uifactory.addCheckboxesVertical("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"fullwindow"}, new String[]{null}, null, 1);
-		fullWindowEl.select("fullwindow", fullWindow == null ? false : fullWindow.booleanValue());
+		fullWindowEl.select("fullwindow", fullWindow == null ? true : fullWindow.booleanValue());
 		
 		Boolean CdisplayMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
 		displayMenu = uifactory.addCheckboxesVertical("qti_displayMenu", "qti.form.menudisplay", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);

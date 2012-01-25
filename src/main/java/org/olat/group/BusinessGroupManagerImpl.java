@@ -100,7 +100,6 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.syncservice.SyncSingleUserTask;
 import org.olat.notifications.NotificationsManagerImpl;
 import org.olat.properties.Property;
-import org.olat.repository.RepoJumpInHandlerFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -1548,32 +1547,6 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	//////////////////
 	// Private Methods
 	//////////////////
-	/**
-	 * Get all learning resources associated with the context from the given group
-	 * and buid a direct jump url to this resources
-	 * @param group
-	 * @return String with direct-jumpin-urls
-	 */
-	private String getAllLearningResourcesFor(BusinessGroup group) {
-		// g
-		StringBuilder learningResources = new StringBuilder();
-		if (group.getGroupContext() != null) {
-			BGContextManager contextManager = BGContextManagerImpl.getInstance();
-			List repoEntries = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
-			Iterator iter = repoEntries.iterator();
-			while (iter.hasNext()) {
-				RepositoryEntry entry = (RepositoryEntry) iter.next();
-				String title = entry.getDisplayname();
-				String url = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(entry);
-				learningResources.append(title);
-				learningResources.append("\n");
-				learningResources.append(url);
-				learningResources.append("\n\n");
-			}
-		}
-		return learningResources.toString();
-  }
-
 	private void addToRoster(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
 		if (flags.isEnabled(BGConfigFlags.BUDDYLIST)) {
 			if (InstantMessagingModule.isEnabled()) {

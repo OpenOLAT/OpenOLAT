@@ -38,6 +38,8 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -322,68 +324,80 @@ public class RegistrationController extends BasicController {
 			}
 		} else if (source == dclController) {
 			if (event == Event.DONE_EVENT) {
-
+				// OO-92
+				// disclaimer done -> now display all entered information (as table, see http://jira.openolat.org/browse/OO-92)
+				// this is step 5
 				wic.setCurStep(5);
-				myContent.contextRemove("text");
+				
+				// hide the text we don't need anymore 
 				myContent.contextPut("pwdhelp", "");
 				myContent.contextPut("loginhelp", "");
-				myContent.contextPut("disclaimer", "");
-				//myContent.contextPut("yourdata", translate("step5.reg.yourdata"));
+				myContent.contextPut("text", "");
 				
-				rf2.freeze();
-				regarea.setContent(rf2.getInitialComponent());
+				// finalize the registration by creating the user
+				User persitedUser = createNewUserAfterRegistration();
 				
-				// create user with mandatory fields from registrationform
-				//FIXME
-				UserManager um = UserManager.getInstance();
-				User volatileUser = um.createUser(
-						rf2.getFirstName(),
-						rf2.getLastName(),
-						tempKey.getEmailAddress()
-				);
-				// set user configured language
-				Preferences preferences = volatileUser.getPreferences();
+				// show last screen
+				VelocityContainer finishVC = createVelocityContainer("finish");
 				
-				preferences.setLanguage(rf2.getLangKey());
-				volatileUser.setPreferences(preferences);
-				// create an identity with the given username / pwd and the user object
-				String login = rf2.getLogin();
-				String pwd = rf2.getPassword();
-				Identity persistedIdentity = rm.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
-				if (persistedIdentity == null) {
-					showError("user.notregistered");
-				} else {
-					// update other user properties from form
-					List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
-					User persistedUser = persistedIdentity.getUser();
-					for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-						FormItem fi = rf2.getPropFormItem(userPropertyHandler.getName());
-						userPropertyHandler.updateUserFromFormItem(persistedUser, fi);
-					}
-					// persist changes in db
-					um.updateUserFromIdentity(persistedIdentity);
-					// send notification mail to sys admin
-					String notiEmail = RegistrationModule.getRegistrationNotificationEmail();
-					if (notiEmail != null) {
-						rm.sendNewUserNotificationMessage(notiEmail, persistedIdentity);
-					}			
-					
-					// tell system that this user did accept the disclaimer
-					RegistrationManager.getInstance().setHasConfirmedDislaimer(persistedIdentity);
-					
-					// show last screen
-					myContent.contextPut("text", getTranslator().translate(
-							"step5.reg.text",
-							new String[] { WebappHelper.getServletContextPath(), login }
-					));
-				}
-
-
+				List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+				finishVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+				finishVC.contextPut("user", persitedUser);
+				finishVC.contextPut("locale", getLocale());
+				finishVC.contextPut("username", rf2.getLogin());
+				finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[] {"notused",rf2.getLogin() }));
+				finishVC.contextPut("loginhref", WebappHelper.getServletContextPath());
+				
+				regarea.setContent(finishVC);
 			} else if (event == Event.CANCELLED_EVENT) {
 				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
 			}
 		}
 
+	}
+
+	/**
+	 * OO-92
+	 * this will finally create the user, set all it's userproperties
+	 * 
+	 * @return User the newly created, persisted User Object
+	 */
+	private User createNewUserAfterRegistration() {
+		// create user with mandatory fields from registration-form
+		UserManager um = UserManager.getInstance();
+		User volatileUser = um.createUser(rf2.getFirstName(), rf2.getLastName(), tempKey.getEmailAddress());
+		// set user configured language
+		Preferences preferences = volatileUser.getPreferences();
+
+		preferences.setLanguage(rf2.getLangKey());
+		volatileUser.setPreferences(preferences);
+		// create an identity with the given username / pwd and the user object
+		String login = rf2.getLogin();
+		String pwd = rf2.getPassword();
+		Identity persistedIdentity = rm.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
+		if (persistedIdentity == null) {
+			showError("user.notregistered");
+			return null;
+		} else {
+			// update other user properties from form
+			List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+			User persistedUser = persistedIdentity.getUser();
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				FormItem fi = rf2.getPropFormItem(userPropertyHandler.getName());
+				userPropertyHandler.updateUserFromFormItem(persistedUser, fi);
+			}
+			// persist changes in db
+			um.updateUserFromIdentity(persistedIdentity);
+			// send notification mail to sys admin
+			String notiEmail = RegistrationModule.getRegistrationNotificationEmail();
+			if (notiEmail != null) {
+				rm.sendNewUserNotificationMessage(notiEmail, persistedIdentity);
+			}
+
+			// tell system that this user did accept the disclaimer
+			RegistrationManager.getInstance().setHasConfirmedDislaimer(persistedIdentity);
+			return persistedUser;
+		}
 	}
 
 	protected void doDispose() {

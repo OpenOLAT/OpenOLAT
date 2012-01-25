@@ -192,7 +192,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		String encContent = (String) config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
 		String encJS = (String) config.get(NodeEditController.CONFIG_JS_ENCODING);
 		//fxdiff FXOLAT-116: SCORM improvements
-		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, false);
+		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
 		//= conf.get(CONFIG_CUTVALUE);
@@ -235,7 +235,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 			} else {
 				File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 				boolean showMenu = config.getBooleanSafe(CONFIG_SHOWMENU, true);
-				boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, false);
+				boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 				
 				if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));

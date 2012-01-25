@@ -47,6 +47,7 @@ import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.user.UserManager;
 
 /**
@@ -95,7 +96,7 @@ public class ScoreAccountingArchiveController extends DefaultController {
 		if (source == startButton) {
 			ICourse course = CourseFactory.loadCourse(ores);
 			List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-			List nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
+			List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 			
 			String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, ureq.getLocale());
 

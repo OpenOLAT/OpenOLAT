@@ -117,8 +117,10 @@ public class NodeEvaluation extends GenericNode {
 			gtn.setAltText(courseNode.getLongTitle());
 			String type = courseNode.getType();
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
-			String nodeCssClass = cnConfig.getIconCSSClass();
-			gtn.setIconCssClass(nodeCssClass);
+			if(cnConfig != null) {
+				String nodeCssClass = cnConfig.getIconCSSClass();
+				gtn.setIconCssClass(nodeCssClass);
+			}
 			gtn.setUserObject(this); // the current NodeEval is set into the treenode
 																// as the userobject
 			// all treenodes added here are set to be visible/accessible, since the

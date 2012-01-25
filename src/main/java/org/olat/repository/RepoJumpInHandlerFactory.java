@@ -25,14 +25,12 @@
 
 package org.olat.repository;
 
-import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.dispatcher.jumpin.JumpInHandlerFactory;
 import org.olat.core.dispatcher.jumpin.JumpInReceptionist;
 import org.olat.core.dispatcher.jumpin.JumpInResult;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 
 /**
@@ -40,11 +38,11 @@ import org.olat.core.id.OLATResourceable;
  * 
  * Initial Date: 23.02.2005 <br>
  * @author Felix Jost
+ * @deprecated Use business path instead
  */
 public class RepoJumpInHandlerFactory implements JumpInHandlerFactory {
 	private static final String CONST_RID = "rid";
 	static final String CONST_PAR = "par";
-	private static final String CONST_EXTLINK = "repo/go";
 
 	/**
 	 * 
@@ -77,27 +75,7 @@ public class RepoJumpInHandlerFactory implements JumpInHandlerFactory {
 
 	}
 
-	/**
-	 * Build a dispatch URI which a user can use to call re directly by entering
-	 * the dispatch URI into his/her browser location bar.
-	 * 
-	 * @param re
-	 * @return Complete dispatch URI.
-	 */
-	public static String buildRepositoryDispatchURI(RepositoryEntry re) {
-		return buildRepositoryDispatchURI(re, null);
-	}
 
-	//TODO DOCU + use this in NodeEditController
-	public static String buildRepositoryDispatchURI(RepositoryEntry re, String initialViewIdentifyer) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(Settings.getServerContextPathURI()).append(DispatcherAction.PATH_AUTHENTICATED).append(CONST_EXTLINK).append("?").append(CONST_RID)
-				.append("=").append(re.getKey());
-		if (initialViewIdentifyer != null) {
-			sb.append("&").append(CONST_PAR).append("=").append(initialViewIdentifyer);
-		}
-		return sb.toString();
-	}
 	
 	
 }

@@ -19,15 +19,11 @@
  */
 package org.olat.catalog;
 
-import java.util.Locale;
-
-import org.olat.core.dispatcher.DispatcherAction;
 import org.olat.core.dispatcher.jumpin.JumpInHandlerFactory;
 import org.olat.core.dispatcher.jumpin.JumpInReceptionist;
 import org.olat.core.dispatcher.jumpin.JumpInResult;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.site.RepositorySite;
@@ -44,44 +40,11 @@ import org.olat.repository.site.RepositorySite;
 public class CatalogJumpInHandlerFactory implements JumpInHandlerFactory {
 
 	public static final String CONST_CAID = "caid";
-	private static final String CONST_EXTLINK = "cata/go";
 
 	public JumpInReceptionist createJumpInHandler(UserRequest ureq) {
 		String catEntryId = ureq.getParameter(CONST_CAID);
 		return new CatalogJumpInReceptionist(catEntryId);
 	}
-
-	/**
-	 * Build a dispatch URI which a user can use to call re directly by entering
-	 * the dispatch URI into his/her browser location bar.
-	 * 
-	 * @param catEntryId The catalog entry key
-	 * @return Complete dispatch URI.
-	 */
-	public static String buildRepositoryDispatchURI(long catEntryId) {
-		StringBuffer sb = new StringBuffer();
-		sb.append(Settings.getServerContextPathURI()).append(DispatcherAction.PATH_AUTHENTICATED).append(CONST_EXTLINK).append("?").append(
-				CONST_CAID).append("=").append(catEntryId);
-		return sb.toString();
-	}
-
-	/**
-	 * Build a dispatch URI which a guest user can use to call re directly by
-	 * entering the dispatch URI into his/her browser location bar.
-	 * <p>
-	 * When displaying the URL in a HTML page, don't forget to format the URL with
-	 * Formatter.esc() because this URL contains & characters.
-	 * 
-	 * @param catEntryId The catalog entry key
-	 * @param loc The users language
-	 * @return Complete dispatch URI.
-	 */
-	public static String buildRepositoryDispatchGuestURI(long catEntryId, Locale loc) {
-		StringBuffer sb = new StringBuffer();
-		sb.append(buildRepositoryDispatchURI(catEntryId)).append("&guest=true&lang=").append(loc.toString());
-		return sb.toString();
-	}
-
 }
 
 /**

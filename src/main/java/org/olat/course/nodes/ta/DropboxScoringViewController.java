@@ -27,7 +27,6 @@ package org.olat.course.nodes.ta;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.admin.quota.QuotaConstants;
@@ -53,10 +52,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailTemplate;
@@ -277,9 +279,12 @@ public class DropboxScoringViewController extends BasicController {
 					Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
 					am.appendToUserNodeLog(node, coach, student, "FILE UPLOADED: " + folderEvent.getFilename());
 					String toMail = student.getUser().getProperty(UserConstants.EMAIL, ureq.getLocale());
-					Locale locale = I18nManager.getInstance().getLocaleOrDefault(student.getUser().getPreferences().getLanguage());
-					String nodeUrl = new URLEncoder().encode("[" + OresHelper.calculateTypeName(CourseNode.class) + ":" + node.getIdent() + "]");
-					String link = JumpInManager.getJumpInUri(this.getWindowControl().getBusinessControl()) + nodeUrl;
+					
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(node.getIdent()));
+					ContextEntry ce =		BusinessControlFactory.getInstance().createContextEntry(ores);
+					BusinessControl bc = BusinessControlFactory.getInstance().createBusinessControl(ce, getWindowControl().getBusinessControl());
+					String link = BusinessControlFactory.getInstance().getAsURIString(bc, true);
+					
 					log.debug("DEBUG : Returnbox notification email with link=" + link);
 					MailTemplate mailTempl = new MailTemplate(translate("returnbox.email.subject"), translate(
 							"returnbox.email.body", new String[] { userCourseEnv.getCourseEnvironment().getCourseTitle(), node.getShortTitle(),

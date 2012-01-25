@@ -183,13 +183,15 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 			config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, Boolean.TRUE.booleanValue());
 			config.setBooleanEntry(ScormEditController.CONFIG_SHOWNAVBUTTONS, Boolean.TRUE.booleanValue());
 			config.set(ScormEditController.CONFIG_HEIGHT, ScormEditController.CONFIG_HEIGHT_AUTO);
+			config.set(NodeEditController.CONFIG_CONTENT_ENCODING, NodeEditController.CONFIG_CONTENT_ENCODING_AUTO);	
+			config.set(NodeEditController.CONFIG_JS_ENCODING, NodeEditController.CONFIG_JS_ENCODING_AUTO);	
 			//fxdiff FXOLAT-116: SCORM improvements
-			config.setBooleanEntry(ScormEditController.CONFIG_FULLWINDOW, false);
+			config.setBooleanEntry(ScormEditController.CONFIG_FULLWINDOW, true);
 			config.setBooleanEntry(ScormEditController.CONFIG_CLOSE_ON_FINISH, false);
 			config.setBooleanEntry(ScormEditController.CONFIG_ADVANCESCORE, true);
 			config.setBooleanEntry(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false);
 			config.setIntValue(ScormEditController.CONFIG_MAXATTEMPTS, 0);
-			config.setConfigurationVersion(1);
+			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		} else {
 			int version = config.getConfigurationVersion();
 			if (version < CURRENT_CONFIG_VERSION) {

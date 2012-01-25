@@ -407,8 +407,8 @@ public class IQRunController extends BasicController implements GenericEventList
 					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
 					displayContainerController.setDisposedMessageController(disposedRestartController);
 					
-					final Boolean fullWindow = (Boolean)modConfig.get(IQEditController.CONFIG_FULLWINDOW);
-					if(fullWindow != null && fullWindow.booleanValue()) {
+					final Boolean fullWindow = (Boolean)modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW, true);
+					if(fullWindow.booleanValue()) {
 						displayContainerController.setAsFullscreen(ureq);
 					}
 					displayContainerController.activate();

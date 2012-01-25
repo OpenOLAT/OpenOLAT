@@ -426,11 +426,6 @@ public class Window extends Container {
 											long durationAfterHandleDirties = System.currentTimeMillis() - debug_start;
 											Tracing.logDebug("Perf-Test: Window durationAfterHandleDirties=" + durationAfterHandleDirties, Window.class);
 										}
-										//DUMP FOR EACH CLICK THE CURRENT JumpInPath -> for later usage and debugging.
-										//System.err.println("V^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^V");
-										WindowControl current = (WindowControl)wbackofficeImpl.getWindow().getAttribute("BUSPATH");
-										//System.err.println(current != null ? JumpInManager.getRestJumpInUri(current.getBusinessControl()) : "NONE");
-										//System.err.println("T^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^T");
 										wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
 										if (co != null) { // see method handleDirties for the rare case of co == null even if there are dirty components;
 											wbackofficeImpl.sendCommandTo(co);
@@ -733,11 +728,6 @@ public class Window extends Container {
 						debugMsg.append("inl_comp:").append(diff).append(LOG_SEPARATOR);
 					}
 					
-					//DUMP FOR EACH CLICK THE CURRENT JumpInPath -> for later usage and debugging.
-					//System.err.println("VV^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^VV");
-					//WindowControl current = (WindowControl)wbackofficeImpl.getWindow().getAttribute("BUSPATH");
-					//System.err.println(current != null ? JumpInManager.getRestJumpInUri(current.getBusinessControl()) : "NONE");
-					//System.err.println("TT^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TT");
 					wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
 					ServletUtil.serveStringResource(request, response, result);
 					if (isDebugLog) {

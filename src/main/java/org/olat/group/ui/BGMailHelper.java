@@ -43,6 +43,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
@@ -191,12 +192,10 @@ public class BGMailHelper {
 		StringBuilder learningResources = new StringBuilder();
 		if (group.getGroupContext() != null) {
 			BGContextManager contextManager = BGContextManagerImpl.getInstance();
-			List repoEntries = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
-			Iterator iter = repoEntries.iterator();
-			while (iter.hasNext()) {
-				RepositoryEntry entry = (RepositoryEntry) iter.next();
+			List<RepositoryEntry> repoEntries = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
+			for (RepositoryEntry entry: repoEntries) {
 				String title = entry.getDisplayname();
-				String url = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(entry);
+				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
 				learningResources.append(title);
 				learningResources.append(" (");
 				learningResources.append(url);

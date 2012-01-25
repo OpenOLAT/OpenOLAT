@@ -258,7 +258,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		String courseId;
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
 		// fxdiff FXOLAT-116: SCORM improvements
-		final boolean fullWindow = config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, false);
+		final boolean fullWindow = config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, true);
 
 		if (isPreview) {
 			courseId = new Long(CodeHelper.getRAMUniqueID()).toString();

@@ -45,6 +45,7 @@ import org.olat.core.util.servlets.URLEncoder;
  * Initial Date: 23.02.2005 <br>
  * 
  * @author Felix Jost
+ * @deprecated Use business path instead
  */
 public class JumpInManager  extends BasicManager {
 	private static JumpInManager INSTANCE;
