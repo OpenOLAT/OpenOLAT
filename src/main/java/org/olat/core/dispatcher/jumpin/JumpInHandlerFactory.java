@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
  * Initial Date:  23.02.2005 <br>
  *
  * @author Felix Jost
+ * @deprecated Use business path instead
  */
 public interface JumpInHandlerFactory {
 	public JumpInReceptionist createJumpInHandler(UserRequest ureq);

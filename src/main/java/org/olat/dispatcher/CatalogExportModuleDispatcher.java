@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -65,12 +66,13 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.repository.RepoJumpInHandlerFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.controllers.RepositoryDetailsController;
@@ -271,13 +273,17 @@ public class CatalogExportModuleDispatcher implements Dispatcher {
 					
 					Element links = doc.createElement(XML_LINKS);													// links container
 					String tmp = "";
+					
+
+					ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(re);
+					String url = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(contextEntry), false);
 					switch (re.getAccess()) { // Attention! This uses the switch-case-fall-through mechanism!
 						case RepositoryEntry.ACC_USERS_GUESTS:		tmp = catalogExportTranslator.translate(NLS_TABLE_HEADER_ACCESS_GUEST) + tmp;
-																											appendLinkElement(doc, links, XML_LINKTYPE_GUEST, RepoJumpInHandlerFactory.buildRepositoryDispatchURI(re) + "&guest=true&amp;lang=" + I18nModule.getDefaultLocale().toString().toLowerCase());
+																											appendLinkElement(doc, links, XML_LINKTYPE_GUEST, url + "&guest=true&amp;lang=" + I18nModule.getDefaultLocale().toString().toLowerCase());
 						case RepositoryEntry.ACC_USERS:						tmp = catalogExportTranslator.translate(NLS_TABLE_HEADER_ACCESS_USER) + tmp;
 						case RepositoryEntry.ACC_OWNERS_AUTHORS:	tmp = catalogExportTranslator.translate(NLS_TABLE_HEADER_ACCESS_AUTHOR) + tmp;
 						case RepositoryEntry.ACC_OWNERS:					tmp = catalogExportTranslator.translate(NLS_TABLE_HEADER_ACCESS_OWNER) + tmp;
-																											appendLinkElement(doc, links, XML_LINKTYPE_LOGIN, RepoJumpInHandlerFactory.buildRepositoryDispatchURI(re));
+																											appendLinkElement(doc, links, XML_LINKTYPE_LOGIN, url);
 																											break;
 						default:																	tmp = catalogExportTranslator.translate(NLS_TABLE_HEADER_ACCESS_USER);
 																											break;

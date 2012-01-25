@@ -339,7 +339,6 @@ public class BusinessControlFactory {
 		retVal.append(Settings.getServerContextPathURI())
 			.append("/url/");
 
-		//see code in JumpInManager, cannot be used, as it needs BusinessControl-Elements, not the path
 		String lastEntryString = null;
 		for (ContextEntry contextEntry : ceList) {
 			String ceStr = contextEntry != null ? contextEntry.toString() : "NULL_ENTRY";
@@ -412,7 +411,6 @@ public class BusinessControlFactory {
 		if(ceList == null || ceList.isEmpty()) return "";
 		
 		StringBuilder retVal = new StringBuilder();
-		//see code in JumpInManager, cannot be used, as it needs BusinessControl-Elements, not the path
 		for (ContextEntry contextEntry : ceList) {
 			String ceStr = contextEntry != null ? contextEntry.toString() : "NULL_ENTRY";
 			if(ceStr.startsWith("[path")) {

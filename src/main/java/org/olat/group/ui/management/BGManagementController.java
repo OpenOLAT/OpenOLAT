@@ -40,7 +40,6 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.dispatcher.jumpin.JumpInManager;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -72,6 +71,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
@@ -1267,7 +1267,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 				}
 			}
 		}
-		String resourceUrl = JumpInManager.getJumpInUri(this.getWindowControl().getBusinessControl());
+		String resourceUrl = BusinessControlFactory.getInstance().getAsURIString(getWindowControl().getBusinessControl(), true);
 		cmsg.setSubject( businessGroupTranslator.translate("businessgroup.contact.subject", new String[]{ this.currentGroup.getName()} ) );
 		cmsg.setBodyText( businessGroupTranslator.translate("businessgroup.contact.bodytext", new String[]{ this.currentGroup.getName(), resourceUrl} ) );
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(this.currentGroup);

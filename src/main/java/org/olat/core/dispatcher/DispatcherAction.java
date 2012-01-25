@@ -75,7 +75,6 @@ public class DispatcherAction implements Dispatcher {
 	private Map<String, Dispatcher> dispatchers;
 
 	// brasato::remove!!
-	// used by core.dispatcher.jumpin.JumpInManager.getJumpInUri
 	// ............used by BusinessGroupMainRunController
 	// ............used by DropboxScoringViewController
 	// used by olat.basesecurity.AuthHelper.doLogin

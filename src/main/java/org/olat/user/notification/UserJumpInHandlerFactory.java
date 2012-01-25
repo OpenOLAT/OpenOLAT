@@ -36,10 +36,11 @@ import org.olat.core.id.Identity;
  * Initial Date:  19 august 2009 <br>
  *
  * @author srosse
+ * @deprecated Use business path instead
  */
 public class UserJumpInHandlerFactory implements JumpInHandlerFactory {
 
-	public static final String CONST_EXTLINK = "user/go";
+	private static final String CONST_EXTLINK = "user/go";
 	public static final String CONST_IDENTITY_ID = "idenid";
 	
 	public JumpInReceptionist createJumpInHandler(UserRequest ureq) {

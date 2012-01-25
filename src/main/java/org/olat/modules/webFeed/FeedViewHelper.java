@@ -38,6 +38,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.modules.webFeed.dispatching.Path;
 import org.olat.modules.webFeed.managers.FeedManager;
@@ -46,7 +47,6 @@ import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.models.ItemPublishDateComparator;
 import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
-import org.olat.repository.RepoJumpInHandlerFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
@@ -341,12 +341,17 @@ public class FeedViewHelper {
 		RepositoryManager resMgr = RepositoryManager.getInstance();
 		if (courseId != null && nodeId != null) {
 			OLATResourceable oresCourse = OLATResourceManager.getInstance().findResourceable(courseId, CourseModule.getCourseTypeName());
+			OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(nodeId));
 			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(oresCourse, false);
-			jumpInLink = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(repositoryEntry, nodeId);
+			List<ContextEntry> ces = new ArrayList<ContextEntry>();
+			ces.add(BusinessControlFactory.getInstance().createContextEntry(repositoryEntry));
+			ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
+			jumpInLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
 		} else {
 			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(feed, false);
 			if (repositoryEntry != null){
-				jumpInLink = RepoJumpInHandlerFactory.buildRepositoryDispatchURI(repositoryEntry);
+				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(repositoryEntry);
+				jumpInLink = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
 			} else {
 				// its a liveblog-feed
 				final BusinessControlFactory bCF = BusinessControlFactory.getInstance();

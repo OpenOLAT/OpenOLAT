@@ -46,6 +46,7 @@ import org.olat.group.BusinessGroupManagerImpl;
  * Description: <br>
  * Initial Date: 23.02.2005 <br>
  * @author Felix Jost
+ * @deprecated Use business path instead
  */
 @Deprecated // not to be used after 6.3, all done with businessPaths. 
 //FIXME:FG:6.4 Delete Class and remove from olatextconfig.xml

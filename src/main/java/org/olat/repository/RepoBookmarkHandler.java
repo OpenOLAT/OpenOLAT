@@ -19,6 +19,8 @@
  */
 package org.olat.repository;
 
+import java.util.Collections;
+
 import org.olat.ControllerFactory;
 import org.olat.bookmark.Bookmark;
 import org.olat.bookmark.BookmarkHandler;
@@ -31,6 +33,8 @@ import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -100,7 +104,9 @@ public class RepoBookmarkHandler implements BookmarkHandler {
 		RepositoryEntry re = rm.lookupRepositoryEntry(reores.getResourceableId());
 		// only create jump in urls for bookmarks of type repo entry
 		if (re != null) {
-			return RepoJumpInHandlerFactory.buildRepositoryDispatchURI(re);
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(reores);
+			String url = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+			return url;
 		}
 		return null;
 	}

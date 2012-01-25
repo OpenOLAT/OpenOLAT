@@ -47,13 +47,15 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -854,12 +856,16 @@ public class DENManager {
 	
 	private void createKalendarEventLinks(ICourse course, DENCourseNode courseNode, KalendarEvent event) {
 		List kalendarEventLinks = event.getKalendarEventLinks();
-		StringBuilder extLink = new StringBuilder();
-		extLink.append(WebappHelper.getContextRoot()).append("/auth/repo/go?rid=");
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		extLink.append(re.getKey()).append("&amp;par=").append(courseNode.getIdent());
+
+		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(courseNode.getIdent()));
+		List<ContextEntry> ces = new ArrayList<ContextEntry>();
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
+		String extLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
+
 		String iconCssClass = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass();
-		KalendarEventLink link = new KalendarEventLink("COURSE", courseNode.getIdent(), courseNode.getShortTitle(), extLink.toString(), iconCssClass);
+		KalendarEventLink link = new KalendarEventLink("COURSE", courseNode.getIdent(), courseNode.getShortTitle(), extLink, iconCssClass);
 		kalendarEventLinks.clear();
 		kalendarEventLinks.add(link);
 	}

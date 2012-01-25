@@ -54,7 +54,7 @@ public abstract class BookmarkManager extends BasicManager {
 	 * @param identity
 	 * @return a List of found bookmarks of given subject
 	 */
-	public abstract List findBookmarksByIdentity(Identity identity);
+	public abstract List<Bookmark> findBookmarksByIdentity(Identity identity);
 
 	/**
 	 * Finds bookmarks of a specific type for an identity
@@ -63,7 +63,7 @@ public abstract class BookmarkManager extends BasicManager {
 	 * @param type
 	 * @return list of bookmarks for this identity
 	 */
-	public abstract List findBookmarksByIdentity(Identity identity, String type);
+	public abstract List<Bookmark> findBookmarksByIdentity(Identity identity, String type);
 
 	/**
 	 * @param changedBookmark

@@ -25,6 +25,7 @@
 
 package org.olat.course.run.calendar;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,10 +47,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
-import org.olat.course.CourseFactory;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -115,12 +117,13 @@ public class CourseLinkProviderController extends BasicController implements Lin
 	private void rebuildKalendarEventLinks(TreeNode node, List selectedNodeIDs, List kalendarEventLinks) {
 		if (selectedNodeIDs.contains(node.getIdent())) {
 			// assemble link
-			StringBuilder extLink = new StringBuilder();
-			extLink.append(Settings.getServerContextPathURI()).append("/auth/repo/go?rid=");
-			ICourse course = CourseFactory.loadCourse(ores);
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-			extLink.append(re.getKey()).append("&amp;par=").append(node.getIdent());
-			KalendarEventLink link = new KalendarEventLink(COURSE_LINK_PROVIDER, node.getIdent(), node.getTitle(), extLink.toString(), node.getIconCssClass());
+			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
+			OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(node.getIdent()));
+			List<ContextEntry> ces = new ArrayList<ContextEntry>();
+			ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
+			ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
+			String extLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
+			KalendarEventLink link = new KalendarEventLink(COURSE_LINK_PROVIDER, node.getIdent(), node.getTitle(), extLink, node.getIconCssClass());
 			kalendarEventLinks.add(link);
 			node.setSelected(true);
 		}
