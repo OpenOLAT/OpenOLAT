@@ -25,6 +25,7 @@
 
 package org.olat.course.properties;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -130,7 +131,8 @@ public interface CoursePropertyManager extends IdentityAnonymizerCallback {
 
 	/**
 	 * @return a list of all identities that have generated any assessment properties within this courses
+	 * @param excludeIdentities Exclude a list of identities
 	 */
-	public List getAllIdentitiesWithCourseAssessmentData();
+	public List<Identity> getAllIdentitiesWithCourseAssessmentData(Collection<Identity> excludeIdentities);
 
 }

@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -345,7 +346,7 @@ public class RepositoryEditPropertiesController extends BasicController {
 				if((changedCourseConfig.isEfficencyStatementEnabled() != initialCourseConfig.isEfficencyStatementEnabled() && ceffC.getLoggingAction()!=null)) {
 					if(changedCourseConfig.isEfficencyStatementEnabled()) {
             // first create the efficiencies, send event to agency (all courses add link)
-						List identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData();
+						List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
 						EfficiencyStatementManager.getInstance().updateEfficiencyStatements(course, identitiesWithData, false);							
 					} else {
             // delete really the efficiencies of the users.

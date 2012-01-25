@@ -25,11 +25,14 @@
 
 package org.olat.course.properties;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -198,25 +201,34 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#getAllIdentitiesWithCourseAssessmentData()
 	 */
-	public List getAllIdentitiesWithCourseAssessmentData() {
-		StringBuffer query = new StringBuffer();
-		query.append("select distinct i from ");
-		query.append(" org.olat.basesecurity.IdentityImpl as i,");
-		query.append(" org.olat.properties.Property as p");
-		query.append(" where i = p.identity and p.resourceTypeName = :resname");
-		query.append(" and p.resourceTypeId = :resid");
-		query.append(" and p.identity is not null");
-		query.append(" and ( p.name = '").append(AssessmentManager.SCORE);
-		query.append("' or p.name = '").append(AssessmentManager.PASSED);
-		query.append("' )");
+	public List<Identity> getAllIdentitiesWithCourseAssessmentData(Collection<Identity> excludeIdentities) {
+		StringBuilder query = new StringBuilder();
+		query.append("select distinct i from ")
+			.append(IdentityImpl.class.getName()).append(" as i,")
+			.append(Property.class.getName()).append(" as p")
+			.append(" where i = p.identity and p.resourceTypeName = :resname")
+			.append(" and p.resourceTypeId = :resid")
+			.append(" and p.identity is not null")
+			.append(" and p.name in ('").append(AssessmentManager.SCORE).append("','").append(AssessmentManager.PASSED).append("')");
+		
+		if(excludeIdentities != null && !excludeIdentities.isEmpty()) {
+			query.append(" and p.identity.key not in (:excludeIdentities) ");
+		}
 
 		DB db = DBFactory.getInstance();
 		DBQuery dbq = db.createQuery(query.toString());
 		ICourse course = CourseFactory.loadCourse(ores);
 		dbq.setLong("resid", course.getResourceableId().longValue());
 		dbq.setString("resname", course.getResourceableTypeName());
+		if(excludeIdentities != null && !excludeIdentities.isEmpty()) {
+			List<Long> excludeKeys = new ArrayList<Long>();
+			for(Identity identity:excludeIdentities) {
+				excludeKeys.add(identity.getKey());
+			}
+			dbq.setParameterList("excludeIdentities", excludeKeys);
+		}
 
-		List res = dbq.list();
+		List<Identity> res = dbq.list();
 		return res;
 	}
 

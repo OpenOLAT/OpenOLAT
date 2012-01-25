@@ -26,6 +26,7 @@
 package org.olat.course.run.preview;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -204,7 +205,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 	/**
 	 * @see org.olat.course.properties.CoursePropertyManager#getAllIdentitiesWithCourseAssessmentData()
 	 */
-	public List getAllIdentitiesWithCourseAssessmentData() {
+	public List<Identity> getAllIdentitiesWithCourseAssessmentData(Collection<Identity> excludeIdentities) {
 		throw new AssertException("Not implemented for preview.");
 	}
 }

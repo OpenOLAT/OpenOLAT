@@ -404,7 +404,10 @@ public class ScoreAccountingHelper {
 			secGroups.add(re.getParticipantGroup());
 		}
 		
-		return securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		List<Identity> userList = securityManager.getIdentitiesOfSecurityGroups(secGroups);
+		List<Identity> assessedList = courseEnv.getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(userList);
+		userList.addAll(assessedList);
+		return userList;
 	}
 	
 	/**

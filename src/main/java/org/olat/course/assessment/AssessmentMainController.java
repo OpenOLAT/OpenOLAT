@@ -29,11 +29,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.admin.user.UserTableDataModel;
@@ -290,7 +288,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		if(focusOnIdentity != null) {
 			//fill the user list for the 
 			this.mode = MODE_USERFOCUS;
-			this.identitiesList = getAllIdentitisFromGroupmanagement();
+			this.identitiesList = getAllAssessableIdentities();
 			//fxdiff FXOLAT-108: improve results table of tests
 			doUserChooseWithData(ureq, identitiesList, null, null);
 			
@@ -331,7 +329,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					main.setContent(index);
 				} else if (cmd.equals(CMD_USERFOCUS)) {
 					this.mode = MODE_USERFOCUS;
-					this.identitiesList = getAllIdentitisFromGroupmanagement();
+					this.identitiesList = getAllAssessableIdentities();
 					//fxdiff FXOLAT-108: improve results table of tests
 					doUserChooseWithData(ureq, identitiesList, null, null);
 				} else if (cmd.equals(CMD_GROUPFOCUS)) {
@@ -346,7 +344,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				}
 			}
 		} else if (source == allUsersButton){	
-			this.identitiesList = getAllIdentitisFromGroupmanagement();
+			this.identitiesList = getAllAssessableIdentities();
 			// Init the user list with this identitites list
 			this.currentGroup = null;
 			doUserChooseWithData(ureq, this.identitiesList, null, this.currentCourseNode);
@@ -469,7 +467,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					this.currentCourseNode = (AssessableCourseNode) node;
 					// cast should be save, only assessable nodes are selectable
 					if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
-						identitiesList = getAllIdentitisFromGroupmanagement();
+						identitiesList = getAllAssessableIdentities();
 						doUserChooseWithData(ureq, this.identitiesList, null, currentCourseNode);
 					} else {
 						doGroupChoose(ureq);
@@ -601,69 +599,32 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	}
 
 	/**
-	 * @return List of all course participants
+	 * Load the identities which are participants of a group attached to the course,
+	 * participants of the course as members and all users which have make the tests.
+	 * @return List of identities
 	 */
-	/*List<Identity> getAllIdentitisFromGroupmanagement() {
-		List<Identity> allUsersList = new ArrayList<Identity>();
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		Iterator<BusinessGroup> iter = this.coachedGroups.iterator();
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
-		while (iter.hasNext()) {
-			BusinessGroup group = iter.next();
-			SecurityGroup secGroup = group.getPartipiciantGroup();
-			secGroups.add(secGroup);
-			List<Identity> identities = secMgr.getIdentitiesOfSecurityGroup(secGroup);
-			for (Iterator<Identity> identitiyIter = identities.iterator(); identitiyIter.hasNext();) {
-				Identity identity = identitiyIter.next();
-				if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
-					// only add if not already in list
-					allUsersList.add(identity);
-				}
-			}
-		}
-		
-		List<Long> idKeys = secMgr.getIdentitiesOfSecurityGroups(secGroups);
-		System.out.println();
-		
-		//fxdiff VCRP-1,2: access control of resources
-		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
-			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
-			if(re.getParticipantGroup() != null) {
-				for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
-					if (!PersistenceHelper.listContainsObjectByKey(allUsersList, identity)) {
-						allUsersList.add(identity);
-					}
-				}
-			}
-		}
-		
-		return allUsersList;
-	}*/
-	
-	List<Identity> getAllIdentitisFromGroupmanagement() {
+	private List<Identity> getAllAssessableIdentities() {
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		for (BusinessGroup group: coachedGroups) {
 			secGroups.add(group.getPartipiciantGroup());
 		}
-		
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
-		Set<Identity> smashDuplicates = new HashSet<Identity>(usersList);
-		List<Identity> allUsersList = new ArrayList<Identity>(usersList);
-		
+
 		//fxdiff VCRP-1,2: access control of resources
 		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);
 			if(re.getParticipantGroup() != null) {
-				for (Identity identity : secMgr.getIdentitiesOfSecurityGroup(re.getParticipantGroup())) {
-					if (!smashDuplicates.contains(identity)) {
-						allUsersList.add(identity);
-					}
-				}
+				secGroups.add(re.getParticipantGroup());
 			}
 		}
 
-		return allUsersList;
+		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
+
+		ICourse course = CourseFactory.loadCourse(ores);
+		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
+		List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
+		usersList.addAll(assessedRsers);
+		return usersList;
 	}
 
 	/**
@@ -888,7 +849,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	
 	private void doBulkChoose(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(ores);
-		List<Identity> allowedIdentities = getAllIdentitisFromGroupmanagement();
+		List<Identity> allowedIdentities = getAllAssessableIdentities();
 		removeAsListenerAndDispose(bamc);
 		bamc = new BulkAssessmentMainController(ureq, getWindowControl(), course, allowedIdentities);
 		listenTo(bamc);
@@ -1178,7 +1139,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			course.getCourseEnvironment().getAssessmentManager().preloadCache();
 			// 2) preload controller local user environment cache
 			start = System.currentTimeMillis();
-			List<Identity> identities = getAllIdentitisFromGroupmanagement();
+			List<Identity> identities = getAllAssessableIdentities();
 			
 			CourseNode node = course.getCourseEnvironment().getRunStructure().getRootNode();
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
@@ -1250,7 +1211,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				}
 				
 				mode = MODE_USERFOCUS;
-				identitiesList = getAllIdentitisFromGroupmanagement();
+				identitiesList = getAllAssessableIdentities();
 				doUserChooseWithData(ureq, identitiesList, null, currentCourseNode);
 				menuTree.setSelectedNode(userNode);
 
