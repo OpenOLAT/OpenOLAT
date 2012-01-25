@@ -325,7 +325,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 			assertTrue(foundLanguages.contains("pt_BR"));
 			// Set must contain some LocaleStrings from the jar package
 			assertTrue(foundLanguages.contains("fr"));
-			assertTrue(foundLanguages.contains("vi"));
 			assertTrue(foundLanguages.contains("zh_CN"));
 			// Final check
 			assertEquals(6, foundLanguages.size());
@@ -333,7 +332,6 @@ public class I18nTest extends OlatcoreTestCaseWithMocking {
 			Set<String> foundLanguages = I18nModule.getAvailableLanguageKeys();
 			// Set must contain some LocaleStrings from the jar package
 			assertTrue(foundLanguages.contains("fr"));
-			assertTrue(foundLanguages.contains("vi"));
 			assertTrue(foundLanguages.contains("zh_CN"));			
 		}
 	}
