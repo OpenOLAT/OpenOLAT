@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -73,7 +72,6 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
 import org.olat.course.nodes.ta.TACourseNodeRunController;
 import org.olat.course.nodes.ta.TaskController;
-import org.olat.course.nodes.ta.TaskFormController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -104,17 +102,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	private static final String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
 	private static final String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
 	private static final String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
-	private static final String NLS_ERROR_MISSING_GROUP_SHORT = "error.missing.group.short";
-	private static final String NLS_ERROR_MISSING_GROUP_LONG = "error.missing.group.long";
 	private static final String NLS_WARN_NODEDELETE = "warn.nodedelete";
-	private static final String NLS_DROPBOX_ERROR_MISSING_GROUP_SHORT = "error.dropbox.missing.group.short";
-	private static final String NLS_DROPBOX_ERROR_MISSING_GROUP_LONG  = "error.dropbox.missing.group.long";
-	private static final String NLS_RETURNBOX_ERROR_MISSING_GROUP_SHORT = "error.returnbox.missing.group.short";
-	private static final String NLS_RETURNBOX_ERROR_MISSING_GROUP_LONG  = "error.returnbox.missing.group.long";
-	private static final String NLS_SOLUTION_ERROR_MISSING_GROUP_SHORT = "error.solution.missing.group.short";
-	private static final String NLS_SOLUTION_ERROR_MISSING_GROUP_LONG  = "error.solution.missing.group.long";
-	private static final String NLS_SCORING_ERROR_MISSING_GROUP_SHORT = "error.scoring.missing.group.short";
-	private static final String NLS_SCORING_ERROR_MISSING_GROUP_LONG  = "error.scoring.missing.group.long";
 	
 	
 	private static final int CURRENT_CONFIG_VERSION = 2;
@@ -284,52 +272,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	    hasSolution = new Boolean(false);
 	  }
 	  
-	  if (hasScoring.booleanValue() || hasDropbox.booleanValue() || hasSolution.booleanValue() || hasReturnbox.booleanValue()) {
-			// check if any group exit for this course
-			if ((groupMgr != null) && (groupMgr.getAllLearningGroupsFromAllContexts().size() == 0)) {
-				String[] params = new String[] { this.getShortTitle() };
-				String translPackage = Util.getPackageName(TaskFormController.class);
-				sd = new StatusDescription(StatusDescription.WARNING, NLS_ERROR_MISSING_GROUP_SHORT, NLS_ERROR_MISSING_GROUP_LONG, params, translPackage);
-				sd.setDescriptionForUnit(getIdent());
-				// set which pane is affected by error
-				sd.setActivateableViewIdentifier(TACourseNodeEditController.PANE_TAB_ACCESSIBILITY);				
-			} else if (hasDropbox.booleanValue() && ( conditionDrop.getEasyModeGroupAccess() == null || conditionDrop.getEasyModeGroupAccess().equals("") ) 
-					&& ( conditionDrop.getEasyModeGroupAreaAccess() == null || conditionDrop.getEasyModeGroupAreaAccess().equals("") )) {
-				String[] params = new String[] { this.getShortTitle() };
-				String translPackage = Util.getPackageName(TaskFormController.class);
-				sd = new StatusDescription(StatusDescription.WARNING, NLS_DROPBOX_ERROR_MISSING_GROUP_SHORT, NLS_DROPBOX_ERROR_MISSING_GROUP_LONG, params, translPackage);
-				sd.setDescriptionForUnit(getIdent());
-				// set which pane is affected by error
-				sd.setActivateableViewIdentifier(TACourseNodeEditController.PANE_TAB_ACCESSIBILITY);					
-			}  else if (hasReturnbox.booleanValue() && ( conditionReturnbox.getEasyModeGroupAccess() == null || conditionReturnbox.getEasyModeGroupAccess().equals("") ) 
-					&& ( conditionReturnbox.getEasyModeGroupAreaAccess() == null || conditionReturnbox.getEasyModeGroupAreaAccess().equals("") )) {
-				//show NLS_RETURNBOX_ERROR_MISSING_GROUP error only if the dropCondition is also null, else use same group as for the dropbox
-				if( conditionDrop.getEasyModeGroupAccess() == null /*|| conditionDrop.getEasyModeGroupAccess().equals("")*/ ) {
-				  String[] params = new String[] { this.getShortTitle() };
-				  String translPackage = Util.getPackageName(TaskFormController.class);
-				  sd = new StatusDescription(StatusDescription.WARNING, NLS_RETURNBOX_ERROR_MISSING_GROUP_SHORT, NLS_RETURNBOX_ERROR_MISSING_GROUP_LONG, params, translPackage);
-				  sd.setDescriptionForUnit(getIdent());
-				  // set which pane is affected by error
-				  sd.setActivateableViewIdentifier(TACourseNodeEditController.PANE_TAB_ACCESSIBILITY);		
-				}
-			} else if (hasScoring.booleanValue() && ( conditionScoring.getEasyModeGroupAccess() == null || conditionScoring.getEasyModeGroupAccess().equals("") ) 
-					&& ( conditionScoring.getEasyModeGroupAreaAccess() == null || conditionScoring.getEasyModeGroupAreaAccess().equals("") )) {
-				String[] params = new String[] { this.getShortTitle() };
-				String translPackage = Util.getPackageName(TaskFormController.class);
-				sd = new StatusDescription(StatusDescription.WARNING, NLS_SCORING_ERROR_MISSING_GROUP_SHORT, NLS_SCORING_ERROR_MISSING_GROUP_LONG, params, translPackage);
-				sd.setDescriptionForUnit(getIdent());
-				// set which pane is affected by error
-				sd.setActivateableViewIdentifier(TACourseNodeEditController.PANE_TAB_ACCESSIBILITY);					
-			} else if (hasSolution.booleanValue() && ( conditionSolution.getEasyModeGroupAccess() == null || conditionSolution.getEasyModeGroupAccess().equals("") ) 
-					&& ( conditionSolution.getEasyModeGroupAreaAccess() == null || conditionSolution.getEasyModeGroupAreaAccess().equals("") )) {
-				String[] params = new String[] { this.getShortTitle() };
-				String translPackage = Util.getPackageName(TaskFormController.class);
-				sd = new StatusDescription(StatusDescription.WARNING, NLS_SOLUTION_ERROR_MISSING_GROUP_SHORT, NLS_SOLUTION_ERROR_MISSING_GROUP_LONG, params, translPackage);
-				sd.setDescriptionForUnit(getIdent());
-				// set which pane is affected by error
-				sd.setActivateableViewIdentifier(TACourseNodeEditController.PANE_TAB_ACCESSIBILITY);					
-			} 
-		}
+	  //remove the error handling for missing groups as you can use the course members
 		return sd;
 	}
 
@@ -346,7 +289,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 		if (groupMgr == null) {
 			groupMgr = cev.getCourseGroupManager();
 		}
-		List sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
@@ -382,7 +325,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	public String informOnDelete(Locale locale, ICourse course) {
 		Translator trans = new PackageTranslator(PACKAGE_TA, locale);
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-		List list = cpm.listCourseNodeProperties(this, null, null, null);
+		List<Property> list = cpm.listCourseNodeProperties(this, null, null, null);
 		if (list.size() != 0) return trans.translate("warn.nodedelete"); // properties exist
 		File fTaskFolder = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course, this));
 		if (fTaskFolder.exists() && fTaskFolder.list().length > 0) return trans.translate(NLS_WARN_NODEDELETE); // task folder contains files
@@ -730,7 +673,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		CoursePropertyManager propMgr = userCourseEnvironment.getCourseEnvironment().getCoursePropertyManager();
-		List samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
+		List<Property> samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
 		if (samples.size() == 0) return null; // no sample assigned yet
 		return ((Property) samples.get(0)).getStringValue();
 	}
@@ -823,8 +766,8 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			}	
 			
 			// prepare writing course results overview table
-			List users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-			List nodes = new ArrayList();
+			List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
+			List<AssessableCourseNode> nodes = new ArrayList<AssessableCourseNode>();
 			nodes.add(this);
 			String s = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
 	
@@ -835,7 +778,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			ExportUtil.writeContentToFile(fileName, s, tmpDir, charset);
 
 			// prepare zipping the node directory and the course results overview table
-			Set fileList = new HashSet();
+			Set<String> fileList = new HashSet<String>();
 			// move xls file to tmp dir
 			fileList.add(fileName);
 			// copy solutions to tmp dir
@@ -866,8 +809,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			// copy only the choosen task to user taskfolder, loop over all users
 			String taskfolderPath = FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(),this);
 			boolean taskFolderExist = false;
-			for(Iterator iter=users.iterator();iter.hasNext();) {
-				Identity identity = (Identity)iter.next();
+			for(Identity identity:users) {
   			// check if user already chose a task
 			  String assignedTask = TaskController.getAssignedTask(identity, course.getCourseEnvironment(), this);
 			  if (assignedTask != null) {
@@ -991,13 +933,13 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
 	 */
 	@Override
-	public List getConditionExpressions() {
-		ArrayList retVal;
-		List parentsConditions = super.getConditionExpressions();
+	public List<ConditionExpression> getConditionExpressions() {
+		List<ConditionExpression> retVal;
+		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList(parentsConditions);
+			retVal = new ArrayList<ConditionExpression>(parentsConditions);
 		} else {
-			retVal = new ArrayList();
+			retVal = new ArrayList<ConditionExpression>();
 		}
 		//
 		String coS = getConditionDrop().getConditionExpression();

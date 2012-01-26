@@ -114,7 +114,7 @@ public class NarrowedPropertyManager {
 	 * @param name
 	 * @return a list of Property objects
 	 */
-	public List listProperties(Identity identity, BusinessGroup grp, String category, String name) {
+	public List<Property> listProperties(Identity identity, BusinessGroup grp, String category, String name) {
 		return pm.listProperties(identity, grp, resourceable, category, name);
 	}
 	
@@ -128,7 +128,7 @@ public class NarrowedPropertyManager {
 	 * @param name
 	 * @return a list of Property objects
 	 */
-	public List findProperties(Identity identity, BusinessGroup grp, String category, String name) {
+	public List<Property> findProperties(Identity identity, BusinessGroup grp, String category, String name) {
 		return pm.findProperties(identity, grp, resourceable, category, name);
 	}
 
