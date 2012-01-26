@@ -193,16 +193,17 @@ public class UserVOFactory {
 	
 	public static UserVO link(UserVO userVO, UriInfo uriInfo) {
 		if(uriInfo != null) {
-			UriBuilder baseUriBuilder = uriInfo.getBaseUriBuilder();
-			URI getUri = baseUriBuilder.path("users").path(userVO.getKey().toString()).build();
+			URI baseUri = uriInfo.getBaseUriBuilder().build();
+
+			URI getUri = UriBuilder.fromUri(baseUri).path("users").path(userVO.getKey().toString()).build();
 			userVO.getLink().add(new LinkVO("self", getUri.toString(), ""));
 			userVO.getLink().add(new LinkVO("edit", getUri.toString(), ""));
 			userVO.getLink().add(new LinkVO("delete", getUri.toString(), ""));
 
-			URI groupUri = baseUriBuilder.path("users").path(userVO.getKey().toString()).path("groups").build();
+			URI groupUri = UriBuilder.fromUri(baseUri).path("users").path(userVO.getKey().toString()).path("groups").build();
 			userVO.getLink().add(new LinkVO("self", groupUri.toString(), "Groups"));
 			
-			URI portraitUri = baseUriBuilder.path("users").path(userVO.getKey().toString()).path("portrait").build();
+			URI portraitUri = UriBuilder.fromUri(baseUri).path("users").path(userVO.getKey().toString()).path("portrait").build();
 			userVO.getLink().add(new LinkVO("self", portraitUri.toString(), "Portrait"));
 		}
 		return userVO;
