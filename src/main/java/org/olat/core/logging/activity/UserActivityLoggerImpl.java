@@ -32,7 +32,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,10 +40,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.hibernate.FlushMode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -509,7 +506,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 				}
 				if (!foundIt) {
 					String oresourceableOres = "n/a (null)";
-					if (ce !=null && ce.getOLATResourceable() !=null) {
+					// SR: why generate exception for unuseable information???
+					if (log_.isDebug() && ce !=null && ce.getOLATResourceable() !=null) {
 							try {
 								java.lang.reflect.Method getOlatResource = ce.getOLATResourceable().getClass().getDeclaredMethod("getOlatResource");
 								if (getOlatResource!=null) {
@@ -532,8 +530,12 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 						ILoggingResourceable resourceInfo = it2.next();
 						log_.info("id: "+resourceInfo.getId()+", name="+resourceInfo.getName()+", type="+resourceInfo.getType()+", toString: "+resourceInfo.toString());
 					}
-					log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), 
-							new Exception("UserActivityLoggerImpl.getCombinedOrderedLoggingResourceables()"));
+					if(log_.isDebug()) {//only generate the stacktrace in debug mode
+						log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), 
+								new Exception("UserActivityLoggerImpl.getCombinedOrderedLoggingResourceables()"));
+					} else {
+						log_.warn("Could not find any LoggingResourceable corresponding to this ContextEntry: "+ce.toString(), null);
+					}
 				}
 			}
 		}
@@ -727,6 +729,12 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 			// alongside the log message
 			
 			// check if we have more than 4 - if we do, issue a log and remove the middle ones
+			for(Iterator<ILoggingResourceable> riIterator=resourceInfos.iterator(); riIterator.hasNext(); ) {
+				if(riIterator.next().isIgnorable()) {
+					riIterator.remove();
+				}
+			}
+			
 			if (resourceInfos.size()>4) {
 				log_.warn("More than 4 resource infos set on a user activity log. Can only have 4. Having: "+resourceInfos.size());
 				int diff = resourceInfos.size()-4;

@@ -61,21 +61,21 @@ import org.olat.core.logging.activity.StringResourceableType;
 	//    the stickyactiontype to admin 
 	public static final ILoggingAction ASSESSMENT_ATTEMPTS_UPDATED = 
 		new AssessmentLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.testattempts).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiAttempts, StringResourceableType.targetIdentity));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiAttempts).addOptional(StringResourceableType.targetIdentity));
 	public static final ILoggingAction ASSESSMENT_SCORE_UPDATED = 
 		new AssessmentLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.testscore).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiScore, StringResourceableType.targetIdentity));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiScore).addOptional(StringResourceableType.targetIdentity));
 	public static final ILoggingAction ASSESSMENT_PASSED_UPDATED = 
 		new AssessmentLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.testsuccess).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiPassed, StringResourceableType.targetIdentity));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiPassed).addOptional(StringResourceableType.targetIdentity));
 
 	// note that comments can only be set via a tutor, hence the following two are strict admin actions
 	public static final ILoggingAction ASSESSMENT_USERCOMMENT_UPDATED = 
 		new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.testcomment).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiUserComment, StringResourceableType.targetIdentity));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiUserComment).addOptional(StringResourceableType.targetIdentity));
 	public static final ILoggingAction ASSESSMENT_COACHCOMMENT_UPDATED = 
 		new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.testcomment).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiCoachComment, StringResourceableType.targetIdentity));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiCoachComment).addOptional(StringResourceableType.targetIdentity));
 
 	
 	/**

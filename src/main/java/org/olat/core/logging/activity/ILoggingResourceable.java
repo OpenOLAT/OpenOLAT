@@ -66,4 +66,11 @@ public interface ILoggingResourceable {
 	 * @return the ILoggingResourceableType of this LoggingResourceable
 	 */
 	public ILoggingResourceableType getResourceableType();
+	
+	/**
+	 * Some components of a list of context entries are used to recreate the
+	 * controllers hierarchy by back button and haven't any meaning for logging.
+	 * @return
+	 */
+	public boolean isIgnorable();
 }

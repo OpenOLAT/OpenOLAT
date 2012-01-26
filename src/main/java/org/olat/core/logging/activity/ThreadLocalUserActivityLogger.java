@@ -92,7 +92,9 @@ public class ThreadLocalUserActivityLogger {
 	static IUserActivityLogger getUserActivityLogger() {
 		IUserActivityLogger logger = userActivityLogger_.get();
 		if (logger==null) {
-			log_.warn("No UserActivityLogger set! Reinitializing now.", new Exception("stacktrace"));
+			if(log_.isDebug()) {//only generate this exception in debug
+				log_.warn("No UserActivityLogger set! Reinitializing now.", new Exception("stacktrace"));
+			}
 			return new UserActivityLoggerImpl();
 		}
 		return logger;

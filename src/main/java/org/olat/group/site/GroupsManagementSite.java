@@ -40,9 +40,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.ui.context.BGContextManagementController;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -83,6 +85,7 @@ public class GroupsManagementSite implements SiteInstance {
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsManagementSite.class, 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 		MainLayoutController c = ControllerFactory.createLaunchController(ORES_GROUPSMANAGEMENT, null, ureq, bwControl, true);
 		return c;

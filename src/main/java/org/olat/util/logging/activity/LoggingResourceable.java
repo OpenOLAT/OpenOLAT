@@ -127,6 +127,9 @@ public class LoggingResourceable implements ILoggingResourceable {
 	/** the OlatResourceable if we have one - null otherwise. Used for equals() and the businessPath check mainly **/
 	private final OLATResourceable resourceable_;
 	
+	
+	private final boolean ignorable;
+	
 	/**
 	 * Restrict the given argument to the given number of bytes using UTF-8 encoding.
 	 * <p>
@@ -193,12 +196,22 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 * @param id the id to be stored to the database
 	 * @param name the name to be stored to the database
 	 */
-	private LoggingResourceable(OLATResourceable resourceable, ILoggingResourceableType resourceableType, String type, String id, String name) {
+	private LoggingResourceable(OLATResourceable resourceable, ILoggingResourceableType resourceableType, String type, String id, String name, boolean ignorable) {
 		type_ = restrictStringLength(type, MAX_TYPE_LEN, "type", true);
 		id_ = restrictStringLength(id, MAX_ID_LEN, "id", true);
 		name_ = restrictStringLength(name, MAX_NAME_LEN, "name", true);
 		resourceable_ = resourceable;
 		resourceableType_ = resourceableType;
+		this.ignorable = ignorable;
+	}
+	
+	/**
+	 * These are ignored from the logging.
+	 * @param olatResourceable
+	 * @return
+	 */
+	public static LoggingResourceable wrapBusinessPath(OLATResourceable olatResourceable) {
+		return new LoggingResourceable(olatResourceable, OlatResourceableType.businessPath, "businessPath", "0", "", true);
 	}
 	
 //
@@ -223,7 +236,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			throw new IllegalArgumentException("olatResourceable must not be null");
 		}
 		if (olatResourceable.equals(BusinessGroupMainRunController.ORES_TOOLWIKI)) {
-			return new LoggingResourceable(olatResourceable, OlatResourceableType.wiki, "wiki", "0", "");
+			return new LoggingResourceable(olatResourceable, OlatResourceableType.wiki, "wiki", "0", "", false);
 		} else {
 			return wrap(olatResourceable, OlatResourceableType.wiki);
 		}
@@ -239,7 +252,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			throw new IllegalArgumentException("olatResourceable must not be null");
 		}
 		if (olatResourceable.equals(BusinessGroupMainRunController.ORES_TOOLPORTFOLIO)) {
-			return new LoggingResourceable(olatResourceable, OlatResourceableType.portfolio, "portfolio", "0", "");
+			return new LoggingResourceable(olatResourceable, OlatResourceableType.portfolio, "portfolio", "0", "", false);
 		} else {
 			return wrap(olatResourceable, OlatResourceableType.portfolio);
 		}
@@ -262,14 +275,14 @@ public class LoggingResourceable implements ILoggingResourceable {
 		}
 		if (repoEntry!=null) {
 			return new LoggingResourceable(repoEntry, type, repoEntry.getOlatResource().getResourceableTypeName(),
-					String.valueOf(repoEntry.getOlatResource().getResourceableId()), repoEntry.getDisplayname());
+					String.valueOf(repoEntry.getOlatResource().getResourceableId()), repoEntry.getDisplayname(), false);
 		} else if (olatResourceable instanceof OLATResource) {
 			OLATResource olatResource = (OLATResource) olatResourceable;
 			return new LoggingResourceable(olatResource, type, olatResource.getResourceableTypeName(),
-					String.valueOf(olatResource.getResourceableId()), String.valueOf(olatResource.getKey()));			
+					String.valueOf(olatResource.getResourceableId()), String.valueOf(olatResource.getKey()), false);			
 		} else {
 			return new LoggingResourceable(olatResourceable, type, olatResourceable.getResourceableTypeName(),
-					String.valueOf(olatResourceable.getResourceableId()), "");			
+					String.valueOf(olatResourceable.getResourceableId()), "", false);			
 		}
 	}
 	
@@ -291,7 +304,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 */
 	public static LoggingResourceable wrapNonOlatResource(StringResourceableType type, String idForDB, String nameForDB) {
 		return new LoggingResourceable(null, type, 
-				type.name(), idForDB, nameForDB);
+				type.name(), idForDB, nameForDB, false);
 	}
 	
 	/**
@@ -371,7 +384,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			name = forumMessages.get(0).getTitle();
 		}
 		return new LoggingResourceable(forum, OlatResourceableType.forum, forum.getResourceableTypeName(),
-				String.valueOf(forum.getResourceableId()), name);
+				String.valueOf(forum.getResourceableId()), name, false);
 	}
 
 	/**
@@ -381,7 +394,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 */
 	public static LoggingResourceable wrap(Message forumMessage) {
 		return new LoggingResourceable(OresHelper.createOLATResourceableInstance(Message.class, forumMessage.getKey()), OlatResourceableType.forumMessage, OlatResourceableType.forumMessage.name(),
-				String.valueOf(forumMessage.getKey()), forumMessage.getTitle());
+				String.valueOf(forumMessage.getKey()), forumMessage.getTitle(), false);
 	}
 	
 	/**
@@ -394,7 +407,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		// truncate title after 230 chars
 		if (title.length() > 230) title = title.substring(0, 229);
 		return new LoggingResourceable(feed, OlatResourceableType.feed, feed.getResourceableTypeName(),
-				String.valueOf(feed.getResourceableId()), title);
+				String.valueOf(feed.getResourceableId()), title, false);
 	}
 
 	/**
@@ -428,7 +441,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			name = DEFAULT_COURSE_GROUP_CONTEXT_NAME;
 		}
 		return new LoggingResourceable(bgContext, OlatResourceableType.bgContext, bgContext.getGroupType(),
-				String.valueOf(bgContext.getResourceableId()), name);
+				String.valueOf(bgContext.getResourceableId()), name, false);
 	}
 
 	/**
@@ -438,7 +451,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 */
 	public static LoggingResourceable wrap(BusinessGroup group) {
 		return new LoggingResourceable(group, OlatResourceableType.businessGroup, group.getResourceableTypeName(), 
-				String.valueOf(group.getKey()), group.getName());
+				String.valueOf(group.getKey()), group.getName(), false);
 	}
 	
 	/**
@@ -448,7 +461,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 */
 	public static LoggingResourceable wrap(ICourse course) {
 		return new LoggingResourceable(course, OlatResourceableType.course, course.getResourceableTypeName(), 
-				String.valueOf(course.getResourceableId()), course.getCourseTitle());
+				String.valueOf(course.getResourceableId()), course.getCourseTitle(), false);
 	}
 	
 	/**
@@ -465,10 +478,10 @@ public class LoggingResourceable implements ILoggingResourceable {
 			Long id = Long.parseLong(ident);
 
 			return new LoggingResourceable(OresHelper.createOLATResourceableInstance("CourseNode", id), OlatResourceableType.node, typeForLogging,
-					node.getIdent(), name);
+					node.getIdent(), name, false);
 		} catch(NumberFormatException nfe) {
 			return new LoggingResourceable(null, OlatResourceableType.node, typeForLogging,
-					node.getIdent(), name);
+					node.getIdent(), name, false);
 		}
 	}
 	
@@ -533,6 +546,11 @@ public class LoggingResourceable implements ILoggingResourceable {
 		return resourceableType_;
 	}
 	
+	@Override
+	public boolean isIgnorable() {
+		return ignorable;
+	}
+
 	@Override
 	public int hashCode() {
 		return type_.hashCode()+(id_!=null ? id_.hashCode() : 1)+(resourceable_!=null ? resourceable_.getResourceableTypeName().hashCode()+(int)resourceable_.getResourceableId().longValue() : 0) + (resourceableType_!=null ? resourceableType_.hashCode() : 0);

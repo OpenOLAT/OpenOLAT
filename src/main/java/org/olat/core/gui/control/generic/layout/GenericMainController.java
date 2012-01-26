@@ -49,9 +49,11 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -351,6 +353,7 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 				} else {
 					ores = OresHelper.createOLATResourceableInstance(GMCMT, CodeHelper.getUniqueIDFromString(nE.getUniqueExtensionID()));
 				}
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				bwControl = addToHistory(ureq, ores, null);
 			}
 		}

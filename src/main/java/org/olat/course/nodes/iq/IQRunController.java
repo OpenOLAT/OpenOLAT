@@ -52,6 +52,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.event.EventBus;
@@ -381,6 +382,7 @@ public class IQRunController extends BasicController implements GenericEventList
 
 			//fxdiff BAKS-7 Resume function
 			OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("test");
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = addToHistory(ureq, ores, null);
 			Controller returnController = IQManager.getInstance().createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail);
 			/*
@@ -456,7 +458,6 @@ public class IQRunController extends BasicController implements GenericEventList
 			if (event instanceof IQSubmittedEvent) {
 				IQSubmittedEvent se = (IQSubmittedEvent) event;
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-				
 				
 				// Save results in case of test
 				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {

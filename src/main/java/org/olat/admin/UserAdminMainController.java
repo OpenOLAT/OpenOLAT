@@ -71,10 +71,11 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * <pre>
@@ -123,6 +124,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		// we always start with a search controller
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(firstNode.getUserObject().toString(), 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		contentCtr = new UsermanagerUserSearchController(ureq, bwControl);
 		listenTo(contentCtr); // auto dispose later
@@ -168,6 +170,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 
 				//fxdiff BAKS-7 Resume function
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey());
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				
 				WindowControl bwControl;
 				if(contentCtr instanceof UsermanagerUserSearchController) {
 					UsermanagerUserSearchController ctrl = (UsermanagerUserSearchController)contentCtr;
