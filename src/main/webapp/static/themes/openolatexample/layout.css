@@ -73,858 +73,6 @@
 /*
 *  =================================================
 *  
-*   basemod rules for OpenOLAT 8
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*	also read themes.README!
-*
-*   (as of yaml compliance, contains css rules for
-*   positioning and sizing elements) 
-*   
-*   this file is included in layout.scss
-*   it is not compiled to a separate css-file...  
-*
-*  =================================================
-*/
-@media all {
-  html {
-    min-height: 100%; }
-
-  /** ----------------- MAIN LAYOUT ----------------- **/
-  /** 
-     * (en) Forcing vertical scrollbars in IE8, Firefox, Webkit & Opera 
-     * (de) Erzwingen vertikaler Scrollbalken in IE8, Firefox, Webkit & Opera 
-     *
-     * @workaround
-     * @affected IE8, FF, Webkit, Opera
-     * @css-for all
-     * @valid CSS3
-     */
-  body {
-    min-height: 100%;
-    overflow-y: scroll;
-    background: yellow;
-    background: -moz-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, yellow), color-stop(33%, red), color-stop(66%, blue), color-stop(100%, green));
-    background: -webkit-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
-    background: -o-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
-    background: -ms-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
-    background: linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='yellow', endColorstr='green',GradientType=0 ); }
-
-  #b_page_margins {
-    min-width: 740px;
-    max-width: 1324px;
-    margin: 0 auto;
-    width: 100%;
-    height: 100%; }
-
-  #b_page_wrapper {
-    border-bottom: 1px solid lightGrey; }
-
-  #b_main {
-    background: #fff;
-    clear: both;
-    moz-box-shadow: 0 0 14px #d3d3d3;
-    -ms-box-shadow: 0 0 14px #d3d3d3;
-    -o-box-shadow: 0 0 14px #d3d3d3;
-    -webkit-box-shadow: 0 0 14px #d3d3d3;
-    box-shadow: 0 0 14px #d3d3d3; }
-
-  #b_page a#b_toplink {
-    position: absolute;
-    bottom: 1em;
-    right: 1em;
-    background: transparent url(../openolat/images/arrow_up.png) 0 50% no-repeat;
-    padding-left: 14px;
-    z-index: 5; }
-
-  #b_header, #b_page, #b_col1_content, #b_col2_content, #b_col3_content, #b_col3_content_inner {
-    position: relative; }
-
-  #b_col1 {
-    overflow: hidden; }
-
-  #b_col1_content {
-    padding: 1em 10px 1em 0px; }
-
-  #b_col3 {
-    border-left: 1px #DDD dotted;
-    border-right: 1px #DDD dotted; }
-
-  #b_col3_content {
-    min-height: 450px;
-    padding: 20px 20px 30px 20px; }
-
-  #b_col2_content {
-    overflow: hidden;
-    padding: 1em 0; }
-
-  .b_hidecol2 #b_col3 {
-    margin-right: 0 !important;
-    border-right: none; }
-
-  .b_hidecol1 #b_col3 {
-    margin-left: 0 !important;
-    border-left: none; }
-
-  .b_hideboth #b_col3 {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    border-left: none;
-    border-right: none; }
-
-  .b_hideboth #b_col1, .b_hideboth #b_col2, .b_hidecol1 #b_col1, .b_hidecol2 #b_col2, #b_ie_clearing {
-    display: none; }
-
-  .b_c15r, .b_c20r, .b_c80r, .b_c85r {
-    float: right;
-    margin-left: -5px; }
-
-  .b_c15l, .b_c15r {
-    width: 15%; }
-
-  .b_c20l, .b_c20r {
-    width: 20%; }
-
-  .b_c80l, .b_c80r {
-    width: 80%; }
-
-  .b_c85l, .b_c85r {
-    width: 85%; }
-
-  .b_subcolumns_oldgecko, .b_c20l, .b_c15l, .b_c80l, .b_c85l {
-    float: left; }
-
-  /* IFRAME */
-  div.b_iframe_wrapper iframe {
-    width: 100%;
-    position: relative;
-    top: 0;
-    left: 0;
-    border: none;
-    margin: 0;
-    padding: 0;
-    background: transparent; }
-
-  /* RedScreen View */
-  #b_main.b_exception {
-    padding-left: 165px;
-    padding-right: 165px; }
-
-  /** ----------------- HEADER AND TOP NAVIGATION ----------------- **/
-  #b_header {
-    height: auto;
-    min-height: 30px;
-    overflow: hidden;
-    position: relative;
-    /* the top-navigation */ }
-  #b_header #b_topnav {
-    position: absolute;
-    right: 0px;
-    top: 0px;
-    padding: 4px 15px 0px 0px; }
-  #b_header #b_topnav ul {
-    margin: 0; }
-  #b_header #b_topnav #o_topnav_search input {
-    line-height: 1.3em;
-    margin: 0;
-    width: 10em; }
-  #b_header #b_topnav #o_topnav_printview a {
-    background: url(../openolat/images/printer.png) no-repeat top right;
-    padding: 2px 20px 2px 0;
-    margin: 0; }
-  #b_header #b_topnav #o_topnav_logout a {
-    background: url("../openolat/images/control/control-power.png") no-repeat top right;
-    padding: 2px 20px 2px 0;
-    margin: 0;
-    font-weight: bold; }
-  #b_header #b_topnav li {
-    float: left;
-    list-style: none;
-    margin-left: 1.7em; }
-  #b_header #b_topnav li div.b_form_element_wrapper.b_form_horizontal {
-    margin: 0; }
-  #b_header #b_topnav li#o_topnav_imclient li {
-    margin-left: 0.5em; }
-
-  /** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
-  #b_nav_main {
-    float: left; }
-  #b_nav_main ul {
-    padding-left: 40px;
-    margin: 0; }
-  #b_nav_main ul li {
-    float: left;
-    position: relative;
-    list-style: none;
-    margin: 0px;
-    padding: 4px 3px 4px 12px;
-    margin-right: 2px;
-    -webkit-border-top-left-radius: 6px;
-    -webkit-border-top-right-radius: 6px;
-    -webkit-border-bottom-right-radius: 0;
-    -webkit-border-bottom-left-radius: 0;
-    -moz-border-radius-topleft: 6px;
-    -moz-border-radius-topright: 6px;
-    -moz-border-radius-bottomright: 0;
-    -moz-border-radius-bottomleft: 0;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-    background: #fff;
-    background: rgba(255, 255, 255, 0.5);
-    /* -- SITES ( home, users, groups, etc. ) -- */
-    /* -- TABS ( courses, wiki, etc.) -- */
-    /* -- THE SPACER -- */ }
-  #b_nav_main ul li a {
-    /* "bloat" the links (better for touch) */
-    padding: 4px 12px 4px 3px; }
-  #b_nav_main ul li a:hover {
-    text-decoration: none; }
-  #b_nav_main ul li.b_nav_site {
-    /** sites icons **/ }
-  #b_nav_main ul li.b_nav_site.b_nav_active, #b_nav_main ul li.b_nav_site:hover, #b_nav_main ul li.b_nav_site.b_exception {
-    moz-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    -ms-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    -o-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    -webkit-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    box-shadow: 0 -4px 8px -1px #d3d3d3;
-    background: #fff; }
-  #b_nav_main ul li.b_nav_site.b_nav_active a.b_nav_tab_close, #b_nav_main ul li.b_nav_site:hover a.b_nav_tab_close, #b_nav_main ul li.b_nav_site.b_exception a.b_nav_tab_close {
-    background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
-  #b_nav_main ul li.b_nav_site > div {
-    padding-left: 16px;
-    background-repeat: no-repeat;
-    background-position: 0% 50%;
-    background-image: url("../openolat/images/application.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_home > div {
-    background-image: url("../openolat/images/home.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_admin > div {
-    background-image: url("../openolat/images/wrench-screwdriver.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_useradmin > div {
-    background-image: url("../openolat/images/user_conf.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_groupsmanagement > div {
-    background-image: url("../openolat/images/users_conf.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_repository > div {
-    background-image: url("../openolat/images/books-stack.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_groups > div {
-    background-image: url("../openolat/images/users.png"); }
-  #b_nav_main ul li.b_nav_site.site_demo_icon > div {
-    background-image: url("../openolat/images/information-white.png"); }
-  #b_nav_main ul li.b_nav_site.f_site_library > div {
-    background-image: url("../openolat/images/library.png"); }
-  #b_nav_main ul li.b_nav_site.fx_members > div {
-    background-image: url("../openolat/images/users_members.png"); }
-  #b_nav_main ul li.b_nav_site.o_site_guidemo div {
-    background-image: url("../openolat/images/light-bulb.png"); }
-  #b_nav_main ul li.b_nav_site.b_resource_GroupInfoMainController div {
-    background-image: url(../openolat/images/users.png); }
-  #b_nav_main ul li.b_nav_tab {
-    margin-right: 4px; }
-  #b_nav_main ul li.b_nav_tab a.b_nav_tab_close {
-    position: absolute;
-    top: 3px;
-    right: 4px;
-    width: 13px;
-    height: 13px;
-    line-height: 0;
-    padding: 0;
-    margin: 0;
-    background: transparent url(../openolat/images/cross_small_trimmed_grey.png) no-repeat right top; }
-  #b_nav_main ul li.b_nav_tab.b_nav_active, #b_nav_main ul li.b_nav_tab:hover {
-    moz-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    -ms-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    -o-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    -webkit-box-shadow: 0 -4px 8px -1px #d3d3d3;
-    box-shadow: 0 -4px 8px -1px #d3d3d3;
-    background: #fff; }
-  #b_nav_main ul li.b_nav_tab.b_nav_active a.b_nav_tab_close, #b_nav_main ul li.b_nav_tab:hover a.b_nav_tab_close {
-    background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
-  #b_nav_main ul li#b_nav_spacer {
-    background: none;
-    border: none;
-    width: 20px;
-    height: 1px;
-    padding: 0; }
-
-  /** ----------------- SUB NAVIGATION (TREE) ----------------- **/
-  /* note:  the markup will be the one from OLATpro, has to be merged yet */
-  div.b_tree {
-    font-size: 100%;
-    padding: 0;
-    /* the open/close node icons */ }
-  div.b_tree ul {
-    position: relative;
-    padding: 0;
-    margin: 0 0 0 1em;
-    list-style: none;
-    white-space: nowrap;
-    /* link to select the item with icon */ }
-  div.b_tree ul li {
-    position: relative;
-    background: transparent;
-    margin-left: 0;
-    padding-left: 0;
-    line-height: 1.7em;
-    /* selected, hovered, active <a> tag */
-    /*  icon positioning */
-    /*   decorators in tree (e.g. course-editor ) */ }
-  div.b_tree ul li a.b_tree_icon {
-    padding-left: 20px;
-    padding-top: 2px;
-    position: relative;
-    background-position: 0 50%;
-    background-repeat: no-repeat; }
-  div.b_tree ul li a {
-    color: #555555; }
-  div.b_tree ul li a.b_tree_l1 {
-    padding-left: 16px; }
-  div.b_tree ul li .b_tree_oc_l1 {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: 9; }
-  div.b_tree ul li a:focus, div.b_tree ul li a:hover {
-    color: red;
-    background-color: transparent;
-    text-decoration: underline; }
-  div.b_tree ul li a.b_tree_selected, div.b_tree ul li a:active {
-    color: red;
-    background-color: transparent;
-    text-decoration: none; }
-  div.b_tree ul li li a.b_tree_selected_parents, div.b_tree ul li a.b_tree_l0, div.b_tree ul li strong {
-    color: red;
-    font-weight: bold; }
-  div.b_tree ul li .b_tree_oc_l1 {
-    position: absolute;
-    top: 0px;
-    left: 1px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l2 {
-    position: absolute;
-    top: 0px;
-    left: 11px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l3 {
-    position: absolute;
-    top: 0px;
-    left: 21px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l4 {
-    position: absolute;
-    top: 0px;
-    left: 31px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l5 {
-    position: absolute;
-    top: 0px;
-    left: 41px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l6 {
-    position: absolute;
-    top: 0px;
-    left: 51px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l7 {
-    position: absolute;
-    top: 0px;
-    left: 61px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l8 {
-    position: absolute;
-    top: 0px;
-    left: 71px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l9 {
-    position: absolute;
-    top: 0px;
-    left: 81px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l10 {
-    position: absolute;
-    top: 0px;
-    left: 91px;
-    z-index: 9; }
-  div.b_tree ul li .b_tree_oc_l11 {
-    position: absolute;
-    top: 0px;
-    left: 101px;
-    z-index: 9; }
-  div.b_tree ul li a.b_tree_l0 {
-    padding-left: 5px; }
-  div.b_tree ul li a.b_tree_l1 {
-    padding-left: 15px; }
-  div.b_tree ul li a.b_tree_l2 {
-    padding-left: 25px; }
-  div.b_tree ul li a.b_tree_l3 {
-    padding-left: 35px; }
-  div.b_tree ul li a.b_tree_l4 {
-    padding-left: 45px; }
-  div.b_tree ul li a.b_tree_l5 {
-    padding-left: 55px; }
-  div.b_tree ul li a.b_tree_l6 {
-    padding-left: 65px; }
-  div.b_tree ul li a.b_tree_l7 {
-    padding-left: 75px; }
-  div.b_tree ul li a.b_tree_l8 {
-    padding-left: 85px; }
-  div.b_tree ul li a.b_tree_l9 {
-    padding-left: 95px; }
-  div.b_tree ul li a.b_tree_l10 {
-    padding-left: 105px; }
-  div.b_tree ul li a.b_tree_l11 {
-    padding-left: 115px; }
-  div.b_tree ul li span.b_tree_icon_decorator {
-    width: 12px;
-    height: 12px;
-    float: right;
-    display: inline;
-    position: static;
-    background-repeat: no-repeat; }
-  div.b_tree ul.b_tree_l0 a.b_tree_icon {
-    padding-left: 26px;
-    background-position: 8px 50%; }
-  div.b_tree ul.b_tree_l1 a.b_tree_icon {
-    padding-left: 36px;
-    background-position: 18px 50%; }
-  div.b_tree ul.b_tree_l2 a.b_tree_icon {
-    padding-left: 46px;
-    background-position: 28px 50%; }
-  div.b_tree ul.b_tree_l3 a.b_tree_icon {
-    padding-left: 56px;
-    background-position: 38px 50%; }
-  div.b_tree ul.b_tree_l4 a.b_tree_icon {
-    padding-left: 66px;
-    background-position: 48px 50%; }
-  div.b_tree ul.b_tree_l5 a.b_tree_icon {
-    padding-left: 76px;
-    background-position: 58px 50%; }
-  div.b_tree ul.b_tree_l6 a.b_tree_icon {
-    padding-left: 86px;
-    background-position: 68px 50%; }
-  div.b_tree ul.b_tree_l7 a.b_tree_icon {
-    padding-left: 96px;
-    background-position: 78px 50%; }
-  div.b_tree ul.b_tree_l8 a.b_tree_icon {
-    padding-left: 106px;
-    background-position: 88px 50%; }
-  div.b_tree ul.b_tree_l9 a.b_tree_icon {
-    padding-left: 116px;
-    background-position: 98px 50%; }
-  div.b_tree ul.b_tree_l10 a.b_tree_icon {
-    padding-left: 126px;
-    background-position: 108px 50%; }
-  div.b_tree ul.b_tree_l11 a.b_tree_icon {
-    padding-left: 136px;
-    background-position: 118px 50%; }
-  div.b_tree a.b_tree_level_close span {
-    background: url("../openolat/images/toggle-small.png") no-repeat 0% 50%;
-    padding-right: 8px; }
-  div.b_tree a.b_tree_level_open span {
-    background: url("../openolat/images/toggle-small-expand.png") no-repeat 0% 50%;
-    padding-right: 8px; }
-  div.b_tree a.b_tree_level_close:hover, div.b_tree a.b_tree_level_open:hover {
-    text-decoration: none; }
-
-  /** ----------------- FOOTER ----------------- **/
-  #b_footer {
-    color: #9D9D9D;
-    padding: 8px 20px;
-    margin-top: 12px; }
-  #b_footer .b_floatbox {
-    padding-top: 8px;
-    border-top: 1px solid #ddd; }
-  #b_footer #b_footer_user {
-    float: left;
-    line-height: 16px; }
-  #b_footer #b_footer_user a.b_ajax {
-    background: url(../openolat/images/ajax.png) no-repeat;
-    width: 20px;
-    height: 16px;
-    display: block;
-    float: left; }
-  #b_footer #b_footer_version {
-    float: right;
-    display: block; }
-  #b_footer #b_footer_powered {
-    text-align: center;
-    width: auto;
-    background: none; }
-  #b_footer #b_footer_powered a {
-    display: inline; }
-
-  /* --------------- MENU TOOLBAR & BREADCRUMBS ------------ **/
-  #b_main.b_menu_toolbar #b_col1_content {
-    padding-top: 0;
-    padding-right: 0; }
-
-  #b_main.b_menu_toolbar #b_col3_content {
-    padding: 0; }
-
-  div.b_menu_toolbar {
-    background: #f9f9f9;
-    background: -moz-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f9f9f9), color-stop(100%, #d0d0d0));
-    background: -webkit-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
-    background: -o-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
-    background: -ms-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
-    background: linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#d0d0d0',GradientType=0 );
-    border-bottom: 1px solid #7D7D7D;
-    padding: 5px 5px 2px 0; }
-
-  /* breadcrumbs */
-  div.b_breadcumb_path {
-    padding: 0;
-    margin: 0;
-    float: left;
-    display: inline; }
-  div.b_breadcumb_path ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    float: left;
-    display: inline; }
-  div.b_breadcumb_path ul li {
-    padding: 0 7px 0 14px;
-    margin: 0;
-    list-style: none;
-    float: left;
-    display: inline;
-    background: url(../openolat/images/breadcrumb-separator.png) no-repeat left center; }
-  div.b_breadcumb_path ul li.b_first {
-    background: url(../openolat/images/home.png) no-repeat top left;
-    padding-left: 25px; }
-  div.b_breadcumb_path ul li a {
-    color: #464444; }
-  div.b_breadcumb_path ul li span.b_disabled {
-    color: #000;
-    padding: 0 10px 0 0;
-    margin: 0; }
-
-  div.b_breadcumb_content {
-    clear: both;
-    margin-top: 0.5em;
-    padding-top: 0.5em;
-    border-top: 1px solid #ACAAAA; }
-
-  /* NOTIFICATIONS */
-  div.b_noti {
-    border: 1px solid #E9EAEF;
-    padding: 3px 23px 3px 3px;
-    float: right;
-    display: inline;
-    position: relative;
-    right: 0;
-    font-size: 95%; }
-  div.b_noti a.b_contexthelp {
-    position: absolute;
-    top: 2px;
-    right: 2px; }
-  div.b_noti a.b_noti_unsubscribe_link {
-    background: url(../openolat/images/mail--minus.png) no-repeat left 50%;
-    padding: 1px 0 1px 20px; }
-  div.b_noti a.b_noti_subscribe_link {
-    background: url(../openolat/images/mail--plus.png) no-repeat left 50%;
-    padding: 1px 0 1px 20px; }
-  div.b_noti a.b_noti_markedread_link {
-    background: url(../openolat/images/tick.png) no-repeat left 50%;
-    padding: 1px 0 1px 20px; }
-
-  /* ---------- TITLE Wrapper --------------- */
-  div.b_titled_wrapper div.b_noti {
-    position: absolute;
-    right: 25px;
-    top: 0px; }
-
-  div.b_titled_wrapper fieldset div.b_noti {
-    top: 12px; }
-
-  h1.b_titled_wrapper span {
-    padding-right: 4em;
-    font-style: italic; }
-
-  h2.b_titled_wrapper span {
-    padding-right: 4em;
-    font-style: italic; }
-
-  h3.b_titled_wrapper span {
-    padding-right: 4em;
-    font-style: italic; }
-
-  h4.b_titled_wrapper span {
-    padding-right: 3em;
-    font-style: italic; }
-
-  h5.b_titled_wrapper span {
-    padding-right: 3em;
-    font-style: italic; }
-
-  div.b_titled_wrapper div.b_togglebox div.b_togglebox_content {
-    background: #fff;
-    border: 0px;
-    padding: 0px; }
-  div.b_titled_wrapper a.b_togglebox_opened {
-    z-index: 10;
-    display: block;
-    width: 16px;
-    height: 16px;
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: url(../openolat/images/information-white.png) no-repeat 0 50%;
-    padding: 0; }
-  div.b_titled_wrapper a.b_togglebox_closed {
-    display: block;
-    width: 20px;
-    height: 20px;
-    background: url(../openolat/images/information-white.png) no-repeat top left;
-    padding: 0;
-    /* Required for IE 5, 6, 7 */
-    /* ...or something to trigger hasLayout, like zoom: 1; */
-    zoom: 1;
-    /* Theoretically for IE 8 & 9 (more valid) */
-    /* ...but not required as filter works too */
-    /* should come BEFORE filter */
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
-    /* This works in IE 8 & 9 too */
-    /* ... but also 5, 6, 7 */
-    filter: alpha(opacity=60);
-    /* Older than Firefox 0.9 */
-    -moz-opacity: 0.6;
-    /* Safari 1.x (pre WebKit!) */
-    -khtml-opacity: 0.6;
-    /* Modern!
-    /* Firefox 0.9+, Safari 2?, Chrome any?
-    /* Opera 9+, IE 9+ */
-    opacity: 0.6; }
-  div.b_titled_wrapper div.b_togglebox div.b_togglebox_content {
-    position: relative;
-    margin-bottom: 1em; }
-  div.b_titled_wrapper a.b_togglebox_hide span {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    padding: 0 6px 3px 0; }
-  div.b_titled_wrapper a.b_togglebox_hide:hover {
-    text-decoration: underline; }
-
-  /* Needed for IE6 */
-  div.b_titled_wrapper div.b_togglebox div.b_togglebox_content div.o_course_run_objectives {
-    position: relative; }
-
-  div.o_course_run_dropbox div.b_noti {
-    position: relative;
-    top: 0;
-    right: 25px;
-    border: 1px solid #FFFFFF; }
-
-  div.o_course_run_returnbox div.b_noti {
-    position: relative;
-    top: 0;
-    right: 25px;
-    border: 1px solid #FFFFFF; }
-
-  div.o_course_run_solutionbox div.b_noti {
-    position: relative;
-    top: 0;
-    right: 25px;
-    border: 1px solid #FFFFFF; }
-
-  /** ------------------ CATALOG ------------------------ **/
-  div.o_catalog div.o_catalog_title {
-    display: none; }
-  div.o_catalog div.o_catalog_nav {
-    font-size: 95%;
-    padding: 1px 0 1px 20px;
-    border-bottom: 1px solid #EEE;
-    background: url(../openolat/images/folder_open.png) 0 50% no-repeat; }
-  div.o_catalog div.o_catalog_links {
-    margin-top: 1em;
-    padding-top: 1em;
-    border-top: 1px solid #EEE; }
-
-  /** -------------- TAGGING ---------------- **/
-  /* tagging */
-  .b_tag_list {
-    background: url(../openolat/images/tag-label-yellow.png) 0px 3px no-repeat !important; }
-
-  .b_tag_icon {
-    background-image: url(../openolat/images/tag-label-yellow.png); }
-
-  div.b_tags {
-    margin: 2em 0; }
-  div.b_tags div {
-    padding: 0.5em 0 0 20px; }
-  div.b_tags span.b_tag {
-    font-size: 80%;
-    padding: 5px 2px 5px 2px;
-    line-height: 3em;
-    white-space: nowrap; }
-
-  div.o_ep_toc_editor div.b_subcl {
-    min-height: 35em; }
-
-  div.o_ep_struct_editor div.b_subcr {
-    min-height: 35em;
-    background: #FFF;
-    padding-right: 1em;
-    overflow-x: auto; }
-
-  div.b_struct_edit_btn {
-    float: right;
-    display: inline; }
-
-  div.b_struct_submit_assess_btn {
-    float: right;
-    display: inline; }
-
-  /* TextboxList  */
-  *:first-child + html div.holder {
-    padding-bottom: 2px; }
-
-  * html div.holder {
-    padding-bottom: 2px; }
-
-  /* ie7 and below */
-  .textbox-outer {
-    list-style-type: none;
-    margin-left: 0em; }
-
-  div.holder {
-    font-size: 80%; }
-
-  .textboxlist-auto {
-    position: absolute;
-    width: 300px;
-    overflow: show; }
-
-  /* autocompleter bitbox (item) holder */
-  a.bit-box, span.b_tag {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border-radius: 6px;
-    border: 1px solid #CAD8F3;
-    background: #DEE7F8;
-    padding: 1px 5px 2px;
-    padding-right: 15px;
-    position: relative; }
-
-  div.holder {
-    min-width: 200px;
-    width: auto;
-    margin: 0;
-    overflow: hidden;
-    height: auto !important;
-    height: 1%;
-    padding: 0px 0px 0;
-    cursor: text;
-    /* no left/right padding here please */ }
-  div.holder a {
-    float: left;
-    margin: 0 5px 4px 0; }
-  div.holder a.bit {
-    text-decoration: none;
-    color: black; }
-  div.holder a.bit:active, div.holder a.bit:focus {
-    outline: none; }
-  div.holder a.bit-box-focus {
-    border-color: #598BEC;
-    background: #598BEC;
-    color: #fff; }
-  div.holder a.bit-input input {
-    width: 100px;
-    margin: 0;
-    border: none;
-    background: white;
-    outline: 0;
-    padding: 3px 0 2px; }
-  div.holder a.bit-input input.smallinput {
-    width: 20px; }
-  div.holder a.bit-hover {
-    background: #BBCEF1;
-    border: 1px solid #6D95E0; }
-  div.holder a.bit-box-focus {
-    background: #598BEC;
-    color: #fff; }
-  div.holder a.bit-box a.closebutton {
-    position: absolute;
-    right: 0;
-    top: 5px;
-    display: block;
-    width: 7px;
-    height: 7px;
-    font-size: 1px;
-    background: url("../openolat/images/tag_x.gif"); }
-  div.holder a.bit-box a.closebutton:hover {
-    background-position: 7px; }
-  div.holder a.bit-box a.closebutton:active {
-    outline: none; }
-  div.holder a.bit-box-focus a.closebutton, div.holder a.bit-box-focus a.closebutton:hover {
-    background-position: bottom; }
-
-  .b_wizard .textbox-outer {
-    background: url(../openolat/images/tag-label-yellow.png) top left no-repeat; }
-  .b_wizard .textbox-outer li {
-    margin-left: 18px; }
-  .b_wizard div.holder a.bit-input input {
-    background: #f8f8f8;
-    padding: 0.4em; }
-
-  /* Autocompleter for textboxlist */
-  ol.textbox-outer {
-    margin: 0;
-    padding: 0; }
-
-  .textboxlist-auto {
-    display: none;
-    background: #eee; }
-  .textboxlist-auto .default {
-    padding: 5px 7px;
-    border: 1px solid #ccc;
-    border-width: 0 1px 1px; }
-  .textboxlist-auto ul {
-    display: none;
-    margin: 0;
-    padding: 0;
-    overflow: auto; }
-  .textboxlist-auto ul li {
-    padding: 5px 12px;
-    z-index: 1000;
-    cursor: pointer;
-    margin: 0;
-    list-style-type: none;
-    border: 1px solid #ccc;
-    border-width: 0 1px 1px; }
-  .textboxlist-auto ul li.loading-indicator {
-    padding-left: 30px;
-    background-position: 5px center;
-    cursor: defat;
-    font-size: 100.01% !important;
-    line-height: 1.5em; }
-  .textboxlist-auto ul li.more-indicator {
-    cursor: defat;
-    font-style: italic; }
-  .textboxlist-auto ul li em {
-    font-weight: bold;
-    font-style: normal;
-    background: #ccc; }
-  .textboxlist-auto ul li.auto-focus {
-    background: #4173CC;
-    color: #fff; }
-  .textboxlist-auto ul li.auto-focus em {
-    background: none; }
-
-  input.inputMessage {
-    color: #AAA;
-    font-size: 11px; } }
-/*
-*  =================================================
-*  
 *   ICON Rules for the OpenOLAT theme
 *   
 *   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
@@ -1558,6 +706,887 @@ li a.b_toolbox_copy, .b_copy_icon {
 body#b_body .o_CourseModule_icon_closed {
   background-image: url("../openolat/images/le_resources/book-open-text-image_locked.png"); }
 
+/*
+*  =================================================
+*  
+*   basemod rules for OpenOLAT 8
+*   
+*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
+*   @date Nov. 2011
+*
+*	also read themes.README!
+*
+*   (as of yaml compliance, contains css rules for
+*   positioning and sizing elements) 
+*   
+*   this file is included in layout.scss
+*   it is not compiled to a separate css-file...  
+*
+*  =================================================
+*/
+@media all {
+  html {
+    min-height: 100%; }
+
+  /** ----------------- MAIN LAYOUT ----------------- **/
+  /** 
+     * (en) Forcing vertical scrollbars in IE8, Firefox, Webkit & Opera 
+     * (de) Erzwingen vertikaler Scrollbalken in IE8, Firefox, Webkit & Opera 
+     *
+     * @workaround
+     * @affected IE8, FF, Webkit, Opera
+     * @css-for all
+     * @valid CSS3
+     */
+  body {
+    min-height: 100%;
+    overflow-y: scroll;
+    background: yellow;
+    background: -moz-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, yellow), color-stop(33%, red), color-stop(66%, blue), color-stop(100%, green));
+    background: -webkit-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: -o-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: -ms-linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    background: linear-gradient(top, yellow 0%, red 33%, blue 66%, green 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='yellow', endColorstr='green',GradientType=0 ); }
+
+  #b_page_margins {
+    min-width: 740px;
+    max-width: 1324px;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%; }
+
+  #b_page_wrapper {
+    border-bottom: 1px solid lightGrey; }
+
+  #b_main {
+    background: #fff;
+    clear: both;
+    moz-box-shadow: 0 0 14px #d3d3d3;
+    -ms-box-shadow: 0 0 14px #d3d3d3;
+    -o-box-shadow: 0 0 14px #d3d3d3;
+    -webkit-box-shadow: 0 0 14px #d3d3d3;
+    box-shadow: 0 0 14px #d3d3d3; }
+
+  #b_page a#b_toplink {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    background: transparent url(../openolat/images/arrow_up.png) 0 50% no-repeat;
+    padding-left: 14px;
+    z-index: 5; }
+
+  #b_header, #b_page, #b_col1_content, #b_col2_content, #b_col3_content, #b_col3_content_inner {
+    position: relative; }
+
+  #b_col1 {
+    overflow: hidden; }
+
+  #b_col1_content {
+    padding: 1em 10px 1em 0px; }
+
+  #b_col3 {
+    border-left: 1px #DDD dotted;
+    border-right: 1px #DDD dotted; }
+
+  #b_col3_content {
+    min-height: 450px;
+    padding: 20px 20px 30px 20px; }
+
+  #b_col2_content {
+    overflow: hidden;
+    padding: 1em 0; }
+
+  .b_hidecol2 #b_col3 {
+    margin-right: 0 !important;
+    border-right: none; }
+
+  .b_hidecol1 #b_col3 {
+    margin-left: 0 !important;
+    border-left: none; }
+
+  .b_hideboth #b_col3 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-left: none;
+    border-right: none; }
+
+  .b_hideboth #b_col1, .b_hideboth #b_col2, .b_hidecol1 #b_col1, .b_hidecol2 #b_col2, #b_ie_clearing {
+    display: none; }
+
+  .b_c15r, .b_c20r, .b_c80r, .b_c85r {
+    float: right;
+    margin-left: -5px; }
+
+  .b_c15l, .b_c15r {
+    width: 15%; }
+
+  .b_c20l, .b_c20r {
+    width: 20%; }
+
+  .b_c80l, .b_c80r {
+    width: 80%; }
+
+  .b_c85l, .b_c85r {
+    width: 85%; }
+
+  .b_subcolumns_oldgecko, .b_c20l, .b_c15l, .b_c80l, .b_c85l {
+    float: left; }
+
+  /* IFRAME */
+  div.b_iframe_wrapper iframe {
+    width: 100%;
+    position: relative;
+    top: 0;
+    left: 0;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background: transparent; }
+
+  /* RedScreen View */
+  #b_main.b_exception {
+    padding-left: 165px;
+    padding-right: 165px; }
+
+  /** ----------------- HEADER AND TOP NAVIGATION ----------------- **/
+  #b_header {
+    height: auto;
+    min-height: 30px;
+    overflow: hidden;
+    position: relative;
+    /* the top-navigation */ }
+  #b_header #b_topnav {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    padding: 4px 15px 0px 0px; }
+  #b_header #b_topnav ul {
+    margin: 0; }
+  #b_header #b_topnav #o_topnav_search input {
+    line-height: 1.3em;
+    margin: 0;
+    width: 10em; }
+  #b_header #b_topnav #o_topnav_printview a {
+    background: url(../openolat/images/printer.png) no-repeat top right;
+    padding: 2px 20px 2px 0;
+    margin: 0; }
+  #b_header #b_topnav #o_topnav_logout a {
+    background: url("../openolat/images/control/control-power.png") no-repeat top right;
+    padding: 2px 20px 2px 0;
+    margin: 0;
+    font-weight: bold; }
+  #b_header #b_topnav li {
+    float: left;
+    list-style: none;
+    margin-left: 1.7em; }
+  #b_header #b_topnav li div.b_form_element_wrapper.b_form_horizontal {
+    margin: 0; }
+  #b_header #b_topnav li#o_topnav_imclient li {
+    margin-left: 0.5em; }
+
+  /** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
+  #b_nav_main {
+    float: left; }
+  #b_nav_main ul {
+    padding-left: 40px;
+    margin: 0; }
+  #b_nav_main ul li {
+    float: left;
+    position: relative;
+    list-style: none;
+    margin: 0px;
+    padding: 4px 3px 4px 12px;
+    margin-right: 2px;
+    -webkit-border-top-left-radius: 6px;
+    -webkit-border-top-right-radius: 6px;
+    -webkit-border-bottom-right-radius: 0;
+    -webkit-border-bottom-left-radius: 0;
+    -moz-border-radius-topleft: 6px;
+    -moz-border-radius-topright: 6px;
+    -moz-border-radius-bottomright: 0;
+    -moz-border-radius-bottomleft: 0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    background: #fff;
+    background: rgba(255, 255, 255, 0.5);
+    /* -- SITES ( home, users, groups, etc. ) -- */
+    /* -- TABS ( courses, wiki, etc.) -- */
+    /* -- THE SPACER -- */ }
+  #b_nav_main ul li a {
+    /* "bloat" the links (better for touch) */
+    padding: 4px 12px 4px 3px; }
+  #b_nav_main ul li a:hover {
+    text-decoration: none; }
+  #b_nav_main ul li.b_nav_site {
+    /** sites icons **/ }
+  #b_nav_main ul li.b_nav_site.b_nav_active, #b_nav_main ul li.b_nav_site:hover, #b_nav_main ul li.b_nav_site.b_exception {
+    moz-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    -ms-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    -o-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    -webkit-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    box-shadow: 0 -4px 8px -1px #d3d3d3;
+    background: #fff; }
+  #b_nav_main ul li.b_nav_site.b_nav_active a.b_nav_tab_close, #b_nav_main ul li.b_nav_site:hover a.b_nav_tab_close, #b_nav_main ul li.b_nav_site.b_exception a.b_nav_tab_close {
+    background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
+  #b_nav_main ul li.b_nav_site > div {
+    padding-left: 16px;
+    background-repeat: no-repeat;
+    background-position: 0% 50%;
+    background-image: url("../openolat/images/application.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_home > div {
+    background-image: url("../openolat/images/home.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_admin > div {
+    background-image: url("../openolat/images/wrench-screwdriver.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_useradmin > div {
+    background-image: url("../openolat/images/user_conf.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_groupsmanagement > div {
+    background-image: url("../openolat/images/users_conf.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_repository > div {
+    background-image: url("../openolat/images/books-stack.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_groups > div {
+    background-image: url("../openolat/images/users.png"); }
+  #b_nav_main ul li.b_nav_site.site_demo_icon > div {
+    background-image: url("../openolat/images/information-white.png"); }
+  #b_nav_main ul li.b_nav_site.f_site_library > div {
+    background-image: url("../openolat/images/library.png"); }
+  #b_nav_main ul li.b_nav_site.fx_members > div {
+    background-image: url("../openolat/images/users_members.png"); }
+  #b_nav_main ul li.b_nav_site.o_site_guidemo div {
+    background-image: url("../openolat/images/light-bulb.png"); }
+  #b_nav_main ul li.b_nav_site.b_resource_GroupInfoMainController div {
+    background-image: url(../openolat/images/users.png); }
+  #b_nav_main ul li.b_nav_tab {
+    margin-right: 4px; }
+  #b_nav_main ul li.b_nav_tab a.b_nav_tab_close {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    width: 13px;
+    height: 13px;
+    line-height: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent url(../openolat/images/cross_small_trimmed_grey.png) no-repeat right top; }
+  #b_nav_main ul li.b_nav_tab.b_nav_active, #b_nav_main ul li.b_nav_tab:hover {
+    moz-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    -ms-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    -o-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    -webkit-box-shadow: 0 -4px 8px -1px #d3d3d3;
+    box-shadow: 0 -4px 8px -1px #d3d3d3;
+    background: #fff; }
+  #b_nav_main ul li.b_nav_tab.b_nav_active a.b_nav_tab_close, #b_nav_main ul li.b_nav_tab:hover a.b_nav_tab_close {
+    background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
+  #b_nav_main ul li#b_nav_spacer {
+    background: none;
+    border: none;
+    width: 20px;
+    height: 1px;
+    padding: 0; }
+
+  /** ----------------- SUB NAVIGATION (TREE) ----------------- **/
+  /* note:  the markup will be the one from OLATpro, has to be merged yet */
+  div.b_tree {
+    font-size: 100%;
+    padding: 0;
+    /* the open/close node icons */ }
+  div.b_tree ul {
+    position: relative;
+    padding: 0;
+    margin: 0 0 0 1em;
+    list-style: none;
+    white-space: nowrap;
+    /* link to select the item with icon */ }
+  div.b_tree ul li {
+    position: relative;
+    background: transparent;
+    margin-left: 0;
+    padding-left: 0;
+    line-height: 1.7em;
+    /* selected, hovered, active <a> tag */
+    /*  icon positioning */
+    /*   decorators in tree (e.g. course-editor ) */ }
+  div.b_tree ul li a.b_tree_icon {
+    padding-left: 20px;
+    padding-top: 2px;
+    position: relative;
+    background-position: 0 50%;
+    background-repeat: no-repeat; }
+  div.b_tree ul li a {
+    color: #555555; }
+  div.b_tree ul li a.b_tree_l1 {
+    padding-left: 16px; }
+  div.b_tree ul li .b_tree_oc_l1 {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 9; }
+  div.b_tree ul li a:focus, div.b_tree ul li a:hover {
+    color: red;
+    background-color: transparent;
+    text-decoration: underline; }
+  div.b_tree ul li a.b_tree_selected, div.b_tree ul li a:active {
+    color: red;
+    background-color: transparent;
+    text-decoration: none; }
+  div.b_tree ul li li a.b_tree_selected_parents, div.b_tree ul li a.b_tree_l0, div.b_tree ul li strong {
+    color: red;
+    font-weight: bold; }
+  div.b_tree ul li .b_tree_oc_l1 {
+    position: absolute;
+    top: 0px;
+    left: 1px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l2 {
+    position: absolute;
+    top: 0px;
+    left: 11px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l3 {
+    position: absolute;
+    top: 0px;
+    left: 21px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l4 {
+    position: absolute;
+    top: 0px;
+    left: 31px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l5 {
+    position: absolute;
+    top: 0px;
+    left: 41px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l6 {
+    position: absolute;
+    top: 0px;
+    left: 51px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l7 {
+    position: absolute;
+    top: 0px;
+    left: 61px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l8 {
+    position: absolute;
+    top: 0px;
+    left: 71px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l9 {
+    position: absolute;
+    top: 0px;
+    left: 81px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l10 {
+    position: absolute;
+    top: 0px;
+    left: 91px;
+    z-index: 9; }
+  div.b_tree ul li .b_tree_oc_l11 {
+    position: absolute;
+    top: 0px;
+    left: 101px;
+    z-index: 9; }
+  div.b_tree ul li a.b_tree_l0 {
+    padding-left: 5px; }
+  div.b_tree ul li a.b_tree_l1 {
+    padding-left: 15px; }
+  div.b_tree ul li a.b_tree_l2 {
+    padding-left: 25px; }
+  div.b_tree ul li a.b_tree_l3 {
+    padding-left: 35px; }
+  div.b_tree ul li a.b_tree_l4 {
+    padding-left: 45px; }
+  div.b_tree ul li a.b_tree_l5 {
+    padding-left: 55px; }
+  div.b_tree ul li a.b_tree_l6 {
+    padding-left: 65px; }
+  div.b_tree ul li a.b_tree_l7 {
+    padding-left: 75px; }
+  div.b_tree ul li a.b_tree_l8 {
+    padding-left: 85px; }
+  div.b_tree ul li a.b_tree_l9 {
+    padding-left: 95px; }
+  div.b_tree ul li a.b_tree_l10 {
+    padding-left: 105px; }
+  div.b_tree ul li a.b_tree_l11 {
+    padding-left: 115px; }
+  div.b_tree ul li span.b_tree_icon_decorator {
+    width: 12px;
+    height: 12px;
+    float: right;
+    display: inline;
+    position: static;
+    background-repeat: no-repeat; }
+  div.b_tree ul.b_tree_l0 a.b_tree_icon {
+    padding-left: 26px;
+    background-position: 8px 50%; }
+  div.b_tree ul.b_tree_l1 a.b_tree_icon {
+    padding-left: 36px;
+    background-position: 18px 50%; }
+  div.b_tree ul.b_tree_l2 a.b_tree_icon {
+    padding-left: 46px;
+    background-position: 28px 50%; }
+  div.b_tree ul.b_tree_l3 a.b_tree_icon {
+    padding-left: 56px;
+    background-position: 38px 50%; }
+  div.b_tree ul.b_tree_l4 a.b_tree_icon {
+    padding-left: 66px;
+    background-position: 48px 50%; }
+  div.b_tree ul.b_tree_l5 a.b_tree_icon {
+    padding-left: 76px;
+    background-position: 58px 50%; }
+  div.b_tree ul.b_tree_l6 a.b_tree_icon {
+    padding-left: 86px;
+    background-position: 68px 50%; }
+  div.b_tree ul.b_tree_l7 a.b_tree_icon {
+    padding-left: 96px;
+    background-position: 78px 50%; }
+  div.b_tree ul.b_tree_l8 a.b_tree_icon {
+    padding-left: 106px;
+    background-position: 88px 50%; }
+  div.b_tree ul.b_tree_l9 a.b_tree_icon {
+    padding-left: 116px;
+    background-position: 98px 50%; }
+  div.b_tree ul.b_tree_l10 a.b_tree_icon {
+    padding-left: 126px;
+    background-position: 108px 50%; }
+  div.b_tree ul.b_tree_l11 a.b_tree_icon {
+    padding-left: 136px;
+    background-position: 118px 50%; }
+  div.b_tree a.b_tree_level_close span {
+    background: url("../openolat/images/toggle-small.png") no-repeat 0% 50%;
+    padding-right: 8px; }
+  div.b_tree a.b_tree_level_open span {
+    background: url("../openolat/images/toggle-small-expand.png") no-repeat 0% 50%;
+    padding-right: 8px; }
+  div.b_tree a.b_tree_level_close:hover, div.b_tree a.b_tree_level_open:hover {
+    text-decoration: none; }
+
+  /** ----------------- FOOTER ----------------- **/
+  #b_footer {
+    color: #9D9D9D;
+    padding: 8px 20px;
+    margin-top: 12px; }
+  #b_footer .b_floatbox {
+    padding-top: 8px;
+    border-top: 1px solid #ddd; }
+  #b_footer #b_footer_user {
+    float: left;
+    line-height: 16px; }
+  #b_footer #b_footer_user a.b_ajax {
+    background: url(../openolat/images/ajax.png) no-repeat;
+    width: 20px;
+    height: 16px;
+    display: block;
+    float: left; }
+  #b_footer #b_footer_version {
+    float: right;
+    display: block; }
+  #b_footer #b_footer_powered {
+    text-align: center;
+    width: auto;
+    background: none; }
+  #b_footer #b_footer_powered a {
+    display: inline; }
+
+  /* --------------- MENU TOOLBAR & BREADCRUMBS ------------ **/
+  #b_main.b_menu_toolbar #b_col1_content {
+    padding-top: 0;
+    padding-right: 0; }
+
+  #b_main.b_menu_toolbar #b_col3_content {
+    padding: 0; }
+
+  div.b_menu_toolbar {
+    background: #f9f9f9;
+    background: -moz-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f9f9f9), color-stop(100%, #d0d0d0));
+    background: -webkit-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
+    background: -o-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
+    background: -ms-linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
+    background: linear-gradient(top, #f9f9f9 0%, #d0d0d0 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#d0d0d0',GradientType=0 );
+    border-bottom: 1px solid #7D7D7D;
+    padding: 5px 5px 2px 0; }
+
+  /* breadcrumbs */
+  div.b_breadcumb_path {
+    padding: 0;
+    margin: 0;
+    float: left;
+    display: inline; }
+  div.b_breadcumb_path ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    float: left;
+    display: inline; }
+  div.b_breadcumb_path ul li {
+    padding: 0 7px 0 14px;
+    margin: 0;
+    list-style: none;
+    float: left;
+    display: inline;
+    background: url(../openolat/images/breadcrumb-separator.png) no-repeat left center; }
+  div.b_breadcumb_path ul li.b_first {
+    background: url(../openolat/images/home.png) no-repeat top left;
+    padding-left: 25px; }
+  div.b_breadcumb_path ul li a {
+    color: #464444; }
+  div.b_breadcumb_path ul li span.b_disabled {
+    color: #000;
+    padding: 0 10px 0 0;
+    margin: 0; }
+
+  div.b_breadcumb_content {
+    clear: both;
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+    border-top: 1px solid #ACAAAA; }
+
+  /* NOTIFICATIONS */
+  div.b_noti {
+    border: 1px solid #E9EAEF;
+    padding: 3px 23px 3px 3px;
+    float: right;
+    display: inline;
+    position: relative;
+    right: 0;
+    font-size: 95%; }
+  div.b_noti a.b_contexthelp {
+    position: absolute;
+    top: 2px;
+    right: 2px; }
+  div.b_noti a.b_noti_unsubscribe_link {
+    background: url(../openolat/images/mail--minus.png) no-repeat left 50%;
+    padding: 1px 0 1px 20px; }
+  div.b_noti a.b_noti_subscribe_link {
+    background: url(../openolat/images/mail--plus.png) no-repeat left 50%;
+    padding: 1px 0 1px 20px; }
+  div.b_noti a.b_noti_markedread_link {
+    background: url(../openolat/images/tick.png) no-repeat left 50%;
+    padding: 1px 0 1px 20px; }
+
+  /* ---------- TITLE Wrapper --------------- */
+  div.b_titled_wrapper div.b_noti {
+    position: absolute;
+    right: 25px;
+    top: 0px; }
+
+  div.b_titled_wrapper fieldset div.b_noti {
+    top: 12px; }
+
+  h1.b_titled_wrapper span {
+    padding-right: 4em;
+    font-style: italic; }
+
+  h2.b_titled_wrapper span {
+    padding-right: 4em;
+    font-style: italic; }
+
+  h3.b_titled_wrapper span {
+    padding-right: 4em;
+    font-style: italic; }
+
+  h4.b_titled_wrapper span {
+    padding-right: 3em;
+    font-style: italic; }
+
+  h5.b_titled_wrapper span {
+    padding-right: 3em;
+    font-style: italic; }
+
+  div.b_titled_wrapper div.b_togglebox div.b_togglebox_content {
+    background: transparent;
+    border: 0px;
+    padding: 0px; }
+  div.b_titled_wrapper a.b_togglebox_opened {
+    z-index: 10;
+    display: block;
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: url(../openolat/images/information-white.png) no-repeat 0 50%;
+    padding: 0; }
+  div.b_titled_wrapper a.b_togglebox_closed {
+    display: block;
+    width: 20px;
+    height: 20px;
+    background: url(../openolat/images/information-white.png) no-repeat top left;
+    padding: 0;
+    /* Required for IE 5, 6, 7 */
+    /* ...or something to trigger hasLayout, like zoom: 1; */
+    zoom: 1;
+    /* Theoretically for IE 8 & 9 (more valid) */
+    /* ...but not required as filter works too */
+    /* should come BEFORE filter */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=$percent)";
+    /* This works in IE 8 & 9 too */
+    /* ... but also 5, 6, 7 */
+    filter: alpha(opacity=60);
+    /* Older than Firefox 0.9 */
+    -moz-opacity: 0.6;
+    /* Safari 1.x (pre WebKit!) */
+    -khtml-opacity: 0.6;
+    /* Modern!
+    /* Firefox 0.9+, Safari 2?, Chrome any?
+    /* Opera 9+, IE 9+ */
+    opacity: 0.6; }
+  div.b_titled_wrapper div.b_togglebox div.b_togglebox_content {
+    position: relative;
+    margin-bottom: 1em; }
+  div.b_titled_wrapper a.b_togglebox_hide span {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0 6px 3px 0; }
+  div.b_titled_wrapper a.b_togglebox_hide:hover {
+    text-decoration: underline; }
+
+  /* Needed for IE6 */
+  div.b_titled_wrapper div.b_togglebox div.b_togglebox_content div.o_course_run_objectives {
+    position: relative; }
+
+  div.o_course_run_dropbox div.b_noti {
+    position: relative;
+    top: 0;
+    right: 25px;
+    border: 1px solid #FFFFFF; }
+
+  div.o_course_run_returnbox div.b_noti {
+    position: relative;
+    top: 0;
+    right: 25px;
+    border: 1px solid #FFFFFF; }
+
+  div.o_course_run_solutionbox div.b_noti {
+    position: relative;
+    top: 0;
+    right: 25px;
+    border: 1px solid #FFFFFF; }
+
+  /** ------------------ CATALOG ------------------------ **/
+  div.o_catalog div.o_catalog_link_title {
+    margin: 2em 0 0 0;
+    border-bottom: 1px solid #ccc;
+    padding: 0.3em; }
+  div.o_catalog div.o_catalog_title {
+    display: none; }
+  div.o_catalog div.o_catalog_nav {
+    font-size: 95%;
+    padding: 1px 0 2px 22px;
+    border-bottom: 1px solid #EEE;
+    background: url(../openolat/images/folder_open.png) 2px 50% no-repeat; }
+  div.o_catalog div.o_catalog_links {
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: 1px solid #EEE; }
+
+  /** -------------- TAGGING ---------------- **/
+  /* tagging */
+  .b_tag_list {
+    background: url(../openolat/images/tag-label-yellow.png) 0px 3px no-repeat !important; }
+
+  .b_tag_icon {
+    background-image: url(../openolat/images/tag-label-yellow.png); }
+
+  div.b_tags {
+    margin: 2em 0; }
+  div.b_tags div {
+    padding: 0.5em 0 0 20px; }
+  div.b_tags span.b_tag {
+    font-size: 80%;
+    padding: 5px 2px 5px 2px;
+    line-height: 3em;
+    white-space: nowrap; }
+
+  div.o_ep_toc_editor div.b_subcl {
+    min-height: 35em; }
+
+  div.o_ep_struct_editor div.b_subcr {
+    min-height: 35em;
+    background: #FFF;
+    padding-right: 1em;
+    overflow-x: auto; }
+
+  div.b_struct_edit_btn {
+    float: right;
+    display: inline; }
+
+  div.b_struct_submit_assess_btn {
+    float: right;
+    display: inline; }
+
+  /* TextboxList  */
+  *:first-child + html div.holder {
+    padding-bottom: 2px; }
+
+  * html div.holder {
+    padding-bottom: 2px; }
+
+  /* ie7 and below */
+  .textbox-outer {
+    list-style-type: none;
+    margin-left: 0em; }
+
+  div.holder {
+    font-size: 80%; }
+
+  .textboxlist-auto {
+    position: absolute;
+    width: 300px;
+    overflow: show; }
+
+  /* autocompleter bitbox (item) holder */
+  a.bit-box, span.b_tag {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    border: 1px solid #CAD8F3;
+    background: #DEE7F8;
+    padding: 1px 5px 2px;
+    padding-right: 15px;
+    position: relative; }
+
+  div.holder {
+    min-width: 200px;
+    width: auto;
+    margin: 0;
+    overflow: hidden;
+    height: auto !important;
+    height: 1%;
+    padding: 0px 0px 0;
+    cursor: text;
+    /* no left/right padding here please */ }
+  div.holder a {
+    float: left;
+    margin: 0 5px 4px 0; }
+  div.holder a.bit {
+    text-decoration: none;
+    color: black; }
+  div.holder a.bit:active, div.holder a.bit:focus {
+    outline: none; }
+  div.holder a.bit-box-focus {
+    border-color: #598BEC;
+    background: #598BEC;
+    color: #fff; }
+  div.holder a.bit-input input {
+    width: 100px;
+    margin: 0;
+    border: none;
+    background: white;
+    outline: 0;
+    padding: 3px 0 2px; }
+  div.holder a.bit-input input.smallinput {
+    width: 20px; }
+  div.holder a.bit-hover {
+    background: #BBCEF1;
+    border: 1px solid #6D95E0; }
+  div.holder a.bit-box-focus {
+    background: #598BEC;
+    color: #fff; }
+  div.holder a.bit-box a.closebutton {
+    position: absolute;
+    right: 0;
+    top: 5px;
+    display: block;
+    width: 7px;
+    height: 7px;
+    font-size: 1px;
+    background: url("../openolat/images/tag_x.gif"); }
+  div.holder a.bit-box a.closebutton:hover {
+    background-position: 7px; }
+  div.holder a.bit-box a.closebutton:active {
+    outline: none; }
+  div.holder a.bit-box-focus a.closebutton, div.holder a.bit-box-focus a.closebutton:hover {
+    background-position: bottom; }
+
+  .b_wizard .textbox-outer {
+    background: url(../openolat/images/tag-label-yellow.png) top left no-repeat; }
+  .b_wizard .textbox-outer li {
+    margin-left: 18px; }
+  .b_wizard div.holder a.bit-input input {
+    background: #f8f8f8;
+    padding: 0.4em; }
+
+  /* Autocompleter for textboxlist */
+  ol.textbox-outer {
+    margin: 0;
+    padding: 0; }
+
+  .textboxlist-auto {
+    display: none;
+    background: #eee; }
+  .textboxlist-auto .default {
+    padding: 5px 7px;
+    border: 1px solid #ccc;
+    border-width: 0 1px 1px; }
+  .textboxlist-auto ul {
+    display: none;
+    margin: 0;
+    padding: 0;
+    overflow: auto; }
+  .textboxlist-auto ul li {
+    padding: 5px 12px;
+    z-index: 1000;
+    cursor: pointer;
+    margin: 0;
+    list-style-type: none;
+    border: 1px solid #ccc;
+    border-width: 0 1px 1px; }
+  .textboxlist-auto ul li.loading-indicator {
+    padding-left: 30px;
+    background-position: 5px center;
+    cursor: defat;
+    font-size: 100.01% !important;
+    line-height: 1.5em; }
+  .textboxlist-auto ul li.more-indicator {
+    cursor: defat;
+    font-style: italic; }
+  .textboxlist-auto ul li em {
+    font-weight: bold;
+    font-style: normal;
+    background: #ccc; }
+  .textboxlist-auto ul li.auto-focus {
+    background: #4173CC;
+    color: #fff; }
+  .textboxlist-auto ul li.auto-focus em {
+    background: none; }
+
+  input.inputMessage {
+    color: #AAA;
+    font-size: 11px; } }
+/* FLOTING STYLES */
+.b_float_left {
+  float: left;
+  display: inline;
+  margin-right: 1em;
+  margin-bottom: 0.15em; }
+
+.b_float_right {
+  float: right;
+  display: inline;
+  margin-left: 1em;
+  margin-bottom: 0.15em; }
+
+.b_center {
+  text-align: center;
+  margin: 0.5em auto; }
+
+/* CLEAR container: additonal to b_floatbox */
+.b_floatscrollbox {
+  overflow-x: auto;
+  overflow-y: hidden; }
+
+.b_overflowscrollbox {
+  overflow: auto; }
+
 /* -------- modules -------- */
 /*
 *  =================================================
@@ -1930,22 +1959,6 @@ div.b_msg_error_winicon {
   text-align: left;
   min-height: 40px;
   background: url(../openolat/images/icon_warning_32.png) no-repeat 10px 10px; }
-
-/* OPEN / CLOSE BOX TOGGLER */
-a.b_togglebox_closed {
-  background: url(../openolat/images/toggle-small-expand.png) no-repeat 0 50%;
-  padding: 1px 0 1px 14px;
-  vertical-align: middle; }
-
-a.b_togglebox_opened {
-  background: url(../openolat/images/toggle-small.png) no-repeat 0 50%;
-  padding: 1px 0 1px 14px;
-  vertical-align: middle; }
-
-div.b_togglebox div.b_togglebox_content {
-  padding: 1em;
-  border: 1px solid #ACAAAA;
-  background: #fff; }
 
 /** ----------------- WIZARD ----------------- **/
 div.b_wizard {
@@ -4354,9 +4367,10 @@ div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content {
   border: 1px solid red;
   background-image: none;
   background-color: transparent;
+  border-radius: 3px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  border-radius: 3px; }
+  -o-border-radius: 3px; }
 
 div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content {
   border: 1px solid #FF9900 !important;
@@ -6432,6 +6446,36 @@ div.o_home_rsslink {
   display: inline;
   margin: 10px 0; }
 
+#o_macartney_open {
+  width: 20px;
+  bottom: 0;
+  left: 0;
+  height: 16px;
+  background: white url(../openolat/images/magnifier-zoom.png) no-repeat 4px 0; }
+
+#o_macartney_large {
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  z-index: 10;
+  border: 1px solid black;
+  background: white;
+  padding: 5px; }
+
+#o_macartney_large img {
+  width: 100%; }
+
+#o_macartney_close {
+  position: absolute;
+  width: 16px;
+  top: 0;
+  right: 0;
+  height: 16px;
+  border-left: 1px solid #000;
+  border-bottom: 1px solid #000;
+  background: white url(../openolat/images/close.png); }
+
 /** ----------------- PORTLETS & BOXES ----------------- **/
 .b_portlet {
   position: relative;
@@ -6643,6 +6687,9 @@ div.o_portlet_calendar.o_day_31 div.b_portlet_header strong:before {
 
 div.o_portlet_infomsg div.b_portlet_header {
   background-image: url(../openolat/images/comment.png); }
+
+div.o_portlet_macartney div.b_portlet_header {
+  background-image: url(../openolat/images/macartney.png); }
 
 div.o_portlet_quickstart div.b_portlet_header {
   background-image: url(../openolat/images/mouse.png); }
@@ -7100,6 +7147,7 @@ div.f_library_overview div.f_library_newest_files ul li a {
 .f_library_icon {
   background-image: url(../openolat/images/library.png); }
 
+/* print & mobile, let's keep 'em down here... */
 /* ------- print -------- */
 /*
 *  =================================================
@@ -7119,7 +7167,17 @@ div.f_library_overview div.f_library_newest_files ul li a {
 *
 *  =================================================
 */
+/** 
+*  hides any element 
+*/
 @media print {
+  /** with the noprint class, you can hide any element in printout **/
+  .o_noprint {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0px !important;
+    width: 0px !important; }
+
   /* (en) change font size unit to [pt] - avoiding problems with [px] unit in Gecko based browsers  */
   /* (de) Wechsel der der Schriftgrößen-Maßheinheit zu [pt] - Probleme mit Maßeinheit [px] in Gecko-basierten Browsern vermeiden */
   body {
@@ -7213,25 +7271,14 @@ div.f_library_overview div.f_library_newest_files ul li a {
 
   .b_floatbox, .b_subcolumns, .b_subcolums_oldgecko {
     overflow: visible;
-    display: table; } }
-/*
-*  =================================================
-*  
-*   content rules for OpenOLAT 8  (PRINT)
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*
-*
-*   (as of yaml compliance, contains css rules for
-*   styling fonts, colors, font-style, etc. ) 
-*   
-*   this file is included in layout.scss
-*   it is not compiled to a separate css-file...  
-*
-*  =================================================
-*/
+    display: table; }
+
+  /* hide jsMath print warning */
+  #jsMath_PrintWarning {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0px !important;
+    width: 0px !important; } }
 /* ------- mobile -------- */
 /*
 *  =================================================

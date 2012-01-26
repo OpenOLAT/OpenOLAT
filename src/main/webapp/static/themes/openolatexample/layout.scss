@@ -2,18 +2,17 @@
 
 @import "license";
 
+// default css import
 @import url(../../yaml/core/slim_base.css);
 @import url(all/content.css);
-
 
 /* --------------- */
 @import "definitions";
 @import "mixins";
 
 /* --------------- */
-@import "basemod";
 @import "icons";
-
+@import "basemod";
 
 /* -------- modules -------- */
 @import "dd";
@@ -37,9 +36,9 @@
 @import "portlets_boxes";
 @import "library";
 
+/* print & mobile, let's keep 'em down here... */
 /* ------- print -------- */
 @import "p_basemod";
-@import "p_content";
 
 /* ------- mobile -------- */
 @import "m_basemod";

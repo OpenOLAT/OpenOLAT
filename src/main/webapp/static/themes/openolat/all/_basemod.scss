@@ -17,7 +17,6 @@
 *  =================================================
 */
 
-
 @media all {
 
 
@@ -479,29 +478,37 @@ h4.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 
 div.b_titled_wrapper {
-	div.b_togglebox div.b_togglebox_content { background:#fff; border:0px; padding:0px; }
+	div.b_togglebox div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
 	a.b_togglebox_opened { z-index:10; display:block; width:16px; height:16px; position:absolute; top:5px; left:5px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; padding:0; }
 	a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left; padding:0; @include o-opacity(60); }
 	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
 	a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
 	a.b_togglebox_hide:hover { text-decoration:underline; }
 }
+
 /* Needed for IE6 */
 div.b_titled_wrapper div.b_togglebox div.b_togglebox_content div.o_course_run_objectives { position:relative; }
 div.o_course_run_dropbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
 div.o_course_run_returnbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
 div.o_course_run_solutionbox div.b_noti { position:relative; top:0; right:25px; border: 1px solid #FFFFFF;}
 	
+	
 /** ------------------ CATALOG ------------------------ **/
 div.o_catalog {
+	 div.o_catalog_link_title {
+	 	margin: 2em 0 0 0;
+	 	border-bottom:1px solid #ccc;
+	 	padding:0.3em;
+	 }
+	 
 	 div.o_catalog_title {
 		display: none; //hide title
 	 }
 	div.o_catalog_nav {
 		font-size: 95%;
-		padding: 1px 0 1px 20px;
+		padding: 1px 0 2px 22px;
 		border-bottom: 1px solid #EEE;
-		background: url(../openolat/images/folder_open.png) 0 50% no-repeat;
+		background: url(../openolat/images/folder_open.png) 2px 50% no-repeat;
 	}
 	div.o_catalog_links {
 		margin-top: 1em;
@@ -509,7 +516,6 @@ div.o_catalog {
 		border-top: 1px solid #EEE;
 	}
 }
- 
 	
 /** -------------- TAGGING ---------------- **/
 /* tagging */
@@ -577,3 +583,12 @@ div.o_catalog {
 	}
 	input.inputMessage { color: #AAA; font-size: 11px; }
 }
+
+
+/* FLOTING STYLES */
+.b_float_left { float: left; display:inline; margin-right: 1em; margin-bottom: 0.15em;  }
+.b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
+.b_center { text-align:center; margin: 0.5em auto }
+/* CLEAR container: additonal to b_floatbox */
+.b_floatscrollbox { overflow-x: auto; overflow-y: hidden;}
+.b_overflowscrollbox { overflow: auto;}
