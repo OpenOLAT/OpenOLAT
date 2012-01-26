@@ -34,6 +34,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import de.bps.course.nodes.VCCourseNode;
 import de.bps.course.nodes.vc.MeetingDate;
+import de.bps.course.nodes.vc.provider.VCProvider;
 import de.bps.course.nodes.vc.provider.VCProviderFactory;
 
 /**
@@ -57,19 +58,20 @@ public class AdobeConnectCleanupJob extends QuartzJobBean {
 
 	@Override
 	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-		AdobeConnectProvider adobe = null;
-		
-		boolean success = VCProviderFactory.existsProvider(providerId);
-		if(!success) return;//same as dummy job
-		
-		try {
-			adobe = (AdobeConnectProvider) VCProviderFactory.createProvider(providerId);
-		} catch(ClassCastException e) {
-			throw new JobExecutionException("Invalid configuration: defined a virtual classroom cleanup job and provider implementation doesn't fit");
+		if(!VCProviderFactory.existsProvider(providerId)) {
+			return;//same as dummy job
 		}
 		
-		success = adobe.isProviderAvailable() && adobe.isEnabled();
-		if(!success) {
+		VCProvider provider = VCProviderFactory.createProvider(providerId);
+		if(!provider.isEnabled()) {
+			return;
+		}
+		if(!(provider instanceof AdobeConnectProvider)) {
+			logger.error("Invalid configuration: defined a virtual classroom cleanup job and provider implementation doesn't fit");
+			return;
+		}
+		AdobeConnectProvider adobe = (AdobeConnectProvider)provider;
+		if(!adobe.isProviderAvailable()) {
 			logger.debug("Tried to cleanup Adobe Connect meetings but it's actually not available");
 			return;
 		}
