@@ -21,6 +21,9 @@
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
+* <p>
+* Initial code contributed and copyrighted by<br>
+* 2012 by frentix GmbH, http://www.frentix.com
 */
 
 package org.olat.user;
@@ -28,6 +31,7 @@ package org.olat.user;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarConfig;
@@ -66,12 +70,15 @@ import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.PortfolioModule;
 
 /**
- * Initial Date:  July 26, 2005
- *
- * @author Alexander Schneider
+ * Initial Date: July 26, 2005
  * 
- * Comment:  
- * TODO as dokumentation
+ * @author Alexander Schneider
+ * @author Florian Gnägi
+ * 
+ *         Comment: Controller creates a main layout controller that represents
+ *         the users visiting card. It has access to the users homepage, public
+ *         folder, public calendar items, published eportfolios and an email
+ *         form.
  * 
  */
 public class UserInfoMainController extends MainLayoutBasicController {
@@ -191,7 +198,13 @@ public class UserInfoMainController extends MainLayoutBasicController {
 		gtn.setAltText(translate("menu.homepage.alt"));
 		root.addChild(gtn);
 
-		if ( !chosenIdentity.getStatus().equals(Identity.STATUS_DELETED) ) {
+		// following user info elements are only shown for undeleted and real
+		// users (not invited
+		// eportfolio users)
+		boolean isInvitee = BaseSecurityManager.getInstance().isIdentityInvited(chosenIdentity);
+		boolean isDeleted = chosenIdentity.getStatus().equals(Identity.STATUS_DELETED);
+		
+		if ( !isDeleted && ! isInvitee) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.calendar"));
 			gtn.setUserObject(CMD_CALENDAR);
@@ -203,13 +216,15 @@ public class UserInfoMainController extends MainLayoutBasicController {
 			gtn.setUserObject(CMD_FOLDER);
 			gtn.setAltText(translate("menu.folder.alt"));
 			root.addChild(gtn);
-	
+		}	
+		if ( !isDeleted) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.contact"));
 			gtn.setUserObject(CMD_CONTACT);
 			gtn.setAltText(translate("menu.contact.alt"));
 			root.addChild(gtn);
-
+		}
+		if ( !isDeleted && ! isInvitee) {
 			PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 			if (portfolioModule.isEnabled()) {
 				gtn = new GenericTreeNode();
@@ -218,15 +233,7 @@ public class UserInfoMainController extends MainLayoutBasicController {
 				gtn.setAltText(translate("menu.portfolio.alt"));
 				root.addChild(gtn);
 			}
-			
-			//TODO:gs only show weblog if user wants this and a weblog exists
-			//not yet active
-//			gtn = new GenericTreeNode();
-//			gtn.setTitle(translate("menu.weblog"));
-//			gtn.setUserObject(CMD_WEBLOG);
-//			gtn.setAltText(translate("menu.weblog.alt"));
-//			root.addChild(gtn);
-		}
+		}			
 		return gtm;
 	}
 
