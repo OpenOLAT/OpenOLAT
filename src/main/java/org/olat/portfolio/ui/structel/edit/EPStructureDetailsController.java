@@ -345,8 +345,14 @@ public class EPStructureDetailsController extends FormBasicController {
 			final TextElement amountElement = amountElements.get(i);
 			
 			final CollectRestriction cr = (CollectRestriction) restrictionElement.getUserObject();
-			final String restriction = restrictionElement.getSelectedKey();
-			final String artefactType = restrictToArtefactElement.getSelectedKey();
+			String restriction = "";
+			if(restrictionElement.isOneSelected()) {
+				restriction = restrictionElement.getSelectedKey();
+			}
+			String artefactType = "";
+			if(restrictToArtefactElement.isOneSelected()) {
+				artefactType = restrictToArtefactElement.getSelectedKey();
+			}
 			final String amount = amountElement.getValue();
 			
 			cr.setRestriction(restriction);
