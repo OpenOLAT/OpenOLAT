@@ -47,4 +47,6 @@ public interface PreferencesStorage {
 	 * @return the preferences for the user
 	 */
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences);
+	
+	public void updatePreferencesFor(Preferences prefs, Identity identity);
 }

@@ -43,10 +43,10 @@ import org.olat.core.util.prefs.PreferencesStorage;
  * @author Felix Jost
  */
 public class RamPreferencesStorage implements PreferencesStorage {
-	private Map identToPrefs;
+	private Map<String, Preferences> identToPrefs;
 
 	public RamPreferencesStorage() {
-		identToPrefs = new HashMap();
+		identToPrefs = new HashMap<String, Preferences>();
 	}
 
 	/**
@@ -64,5 +64,12 @@ public class RamPreferencesStorage implements PreferencesStorage {
 		}
 		return p;
 	}
+
+	@Override
+	public void updatePreferencesFor(Preferences prefs, Identity identity) {
+		//
+	}
+	
+	
 
 }

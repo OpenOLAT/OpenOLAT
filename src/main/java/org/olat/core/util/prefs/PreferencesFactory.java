@@ -67,5 +67,9 @@ public class PreferencesFactory {
 		return preferencesStorage.getPreferencesFor(identity, useTransientPreferences);
 	}
 	
+	public PreferencesStorage getStorage() {
+		return preferencesStorage;
+	}
+	
 	
 }

@@ -39,20 +39,20 @@ import org.olat.core.util.prefs.Preferences;
  * @author Felix
  */
 public class RamPreferences implements Preferences {
-	private Map store = new HashMap();
+	private Map<String, Object> store = new HashMap<String, Object>();
 	
 	
 	/**
 	 * @see org.olat.core.util.prefs.Preferences#get(java.lang.Class, java.lang.String)
 	 */
-	public Object get(Class attributedClass, String key) {
+	public Object get(Class<?> attributedClass, String key) {
 		return store.get(getCompoundKey(attributedClass, key));
 	}
 
 	/**
 	 * @see org.olat.core.util.prefs.Preferences#get(java.lang.Class, java.lang.String, java.lang.Object)
 	 */
-	public Object get(Class attributedClass, String key, Object defaultValue) {
+	public Object get(Class<?> attributedClass, String key, Object defaultValue) {
 		Object value = get(attributedClass, key);
 		if (value == null) return defaultValue;
 		return value;
@@ -61,14 +61,14 @@ public class RamPreferences implements Preferences {
 	/**
 	 * @see org.olat.core.util.prefs.Preferences#put(java.lang.Class, java.lang.String, java.lang.Object)
 	 */
-	public void put(Class attributedClass, String key, Object value) {
+	public void put(Class<?> attributedClass, String key, Object value) {
 		store.put(getCompoundKey(attributedClass, key), value);
 	}
 
 	/**
 	 * @see org.olat.core.util.prefs.Preferences#putAndSave(java.lang.Class, java.lang.String, java.lang.Object)
 	 */
-	public void putAndSave(Class attributedClass, String key, Object value) {
+	public void putAndSave(Class<?> attributedClass, String key, Object value) {
 		put(attributedClass, key, value);
 		save();
 
@@ -82,13 +82,13 @@ public class RamPreferences implements Preferences {
 
 	}
 	
-	private String getCompoundKey(Class attributedClass, String key) {
+	private String getCompoundKey(Class<?> attributedClass, String key) {
 		return attributedClass.getName()+":"+key;
 	}
 
 	public Object findPrefByKey(String partOfKey) {
-		for (Iterator iterator = store.keySet().iterator(); iterator.hasNext();) {
-			String key = (String) iterator.next();
+		for (Iterator<String> iterator = store.keySet().iterator(); iterator.hasNext();) {
+			String key = iterator.next();
 			if (key.endsWith(partOfKey)) return store.get(key);
 		}
 		return null;
