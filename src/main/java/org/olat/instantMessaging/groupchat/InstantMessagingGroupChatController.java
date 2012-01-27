@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -393,7 +394,13 @@ public class InstantMessagingGroupChatController extends BasicController impleme
 				}
 				
 				if (muc != null && muc.isJoined()) {
-					muc.changeAvailabilityStatus("chatOpen", Presence.Mode.available);
+					try {
+						muc.changeAvailabilityStatus("chatOpen", Presence.Mode.available);
+					} catch (IllegalStateException e) {
+						logWarn("Could not change chat status from" + getIdentity().getName(), e);
+						showWarning("groupchat.not.available");
+					}
+					
 				} else {
 					addMeToRosterList(anonymousInChatroom ? NICKNAME_ANONYMOUS : getIdentity().getName());
 				}
