@@ -65,7 +65,6 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 	@Override
 	public void updatePreferencesFor(Preferences prefs, Identity identity) {
 		String props = xstream.toXML(prefs);
-		System.out.println("UPdate preferences");
 		Property property = getPreferencesProperty(identity);
 		if(property == null) {
 			PropertyManager.getInstance().createPropertyInstance(identity, null, null, null, DbStorage.USER_PROPERTY_KEY, null, null, null, props);
