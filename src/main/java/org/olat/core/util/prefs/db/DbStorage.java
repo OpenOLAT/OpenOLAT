@@ -68,7 +68,7 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 		 Property guiProperty = null; 
 		 try { 
 			 guiProperty = PropertyManager.getInstance().findProperty(identity, null, null, null, USER_PROPERTY_KEY); 
-		 } catch (AssertException e) {
+		 } catch (Exception e) {
 			 // OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
 			 List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
 			 if (guiPropertyList != null && guiPropertyList.size() > 0) {
