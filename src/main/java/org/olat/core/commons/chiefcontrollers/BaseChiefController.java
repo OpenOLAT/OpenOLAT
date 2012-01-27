@@ -212,7 +212,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		contentPanel = new Panel("olatContentPanel");
 		mainvc.put("olatContentPanel", contentPanel);
 		mainvc.contextPut("o_winid", w.getDispatchID());
-		mainvc.contextPut("buildversion", Settings.getVersion());
+		mainvc.contextPut("buildrevision", Settings.getRepoRevision());
 		
 		WindowControl wControl = new WindowControl() {
 			private WindowControlInfo wci;
