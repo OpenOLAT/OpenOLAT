@@ -118,6 +118,9 @@ public class LMSDataHandler {
 			// next update the model with the results from browser.
 			// updateClientModel(itemId, cmiStrings);
 			// update prerequisite table
+			if(status == null) {
+				status = SequencerModel.ITEM_NOT_ATTEMPTED;
+			}
 			addtoPrereqTable(itemId, status, true);
 			// If an LMSFinish() was made by the sco then we do not need to update
 			// anything client side

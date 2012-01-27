@@ -308,10 +308,15 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 			// </OLATCE-289>
 		}
 		
-		lmsDataBean.setDataAsMap(cmiData);
-		odatahandler = new LMSDataHandler(scormManager, lmsDataBean, scormSettingsHandler);
-		odatahandler.updateCMIData(olatScoId);
-		return "true";
+		try {
+			lmsDataBean.setDataAsMap(cmiData);
+			odatahandler = new LMSDataHandler(scormManager, lmsDataBean, scormSettingsHandler);
+			odatahandler.updateCMIData(olatScoId);
+			return "true";
+		} catch (Exception e) {
+			logError("Error during commit", e);
+			return "false";
+		}
 	}
 	
 	/**
