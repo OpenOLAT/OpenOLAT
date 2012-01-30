@@ -82,6 +82,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateMapped;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.servlets.WebDAVManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -95,6 +96,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Initial Date: Jan 31, 2006
@@ -310,6 +312,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		removeAsListenerAndDispose(tableCtr);
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		tableCtr = ExtendedIdentitiesTableControllerFactory.createController(tdm, ureq, bwControl, actionEnabled);
 		listenTo(tableCtr);

@@ -30,8 +30,10 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * <h3>Description:</h3> Instantiates the genericmainctrl for a minimal home
@@ -62,6 +64,7 @@ public class HomeSite implements SiteInstance {
 	@Override
 	public MainLayoutController createController(UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(HomeSite.class, ureq.getIdentity().getKey());
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 		MainLayoutController c = new HomeMainController(ureq, bwControl);
 		return c;

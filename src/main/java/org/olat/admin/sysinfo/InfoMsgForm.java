@@ -21,15 +21,20 @@
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
+* <p>
+* Initial code contributed and copyrighted by<br>
+* 2012 by frentix GmbH, http://www.frentix.com
+* <p>
 */
 
 package org.olat.admin.sysinfo;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,10 +43,12 @@ import org.olat.core.gui.control.WindowControl;
  * Initial Date:  Apr 30, 2004
  *
  * @author Mike Stock
+ * @author Sergio Trentini
+ * @author Florian Gnägi
  */
 public class InfoMsgForm extends FormBasicController {
 	
-	private TextElement msg;
+	private RichTextElement msg;
 	private String infomsg;
 	
 	/**
@@ -49,7 +56,7 @@ public class InfoMsgForm extends FormBasicController {
 	 * @param infomsg
 	 */
 	public InfoMsgForm(UserRequest ureq, WindowControl wControl, String infomsg) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.infomsg = infomsg;
 		initForm(ureq);
 	}
@@ -58,7 +65,8 @@ public class InfoMsgForm extends FormBasicController {
 	 * @return the info message
 	 */
 	public String getInfoMsg() {
-		return msg.getValue();
+		// use raw value to circumvent XSS filtering of script tags
+		return msg.getRawValue();
 	}
 	
 	public void reset() {
@@ -78,8 +86,16 @@ public class InfoMsgForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addRichTextElementForStringDataMinimalistic("msg", "infomsg", infomsg, 20, 60, false, formLayout, ureq.getUserSession(), getWindowControl());
+		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", infomsg, 20, 70, false, true, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		msg.setMaxLength(1024);
+		
+		RichTextConfiguration richTextConfig = msg.getEditorConfiguration();
+		// manually enable the source edit button
+		richTextConfig.setQuotedConfigValue(RichTextConfiguration.THEME_ADVANCED_BUTTONS3_ADD, RichTextConfiguration.SEPARATOR_BUTTON + "," + RichTextConfiguration.CODE_BUTTON);
+		//allow script tags...
+		richTextConfig.setQuotedConfigValue(RichTextConfiguration.INVALID_ELEMENTS, RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
+		richTextConfig.setQuotedConfigValue(RichTextConfiguration.EXTENDED_VALID_ELEMENTS, "script[src,type,defer]");
+
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

@@ -12,16 +12,6 @@
 		</div>
 		
 		<table>
-			<tr>
-				<td>
-					<label>
-						$r.translate("form.username")
-					</label>
-				</td>
-				<td>
-					<strong>$userName</strong>
-				</td>
-			</tr>
 			#foreach( $propertyHandler in $userPropertyHandlers )
 				#if($homepageConfig.isEnabled($propertyHandler.getName()))
 			<tr>

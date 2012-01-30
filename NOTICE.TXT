@@ -180,12 +180,6 @@ see http://creativecommons.org/licenses/by/2.0/de) [http://www.yaml.de]
 Please read the licensing terms of YAML if you plan to use OLAT in a commercial setup.
 
 -----------------------------------------------------------------------
-The OpenOLAT comic portlet uses comic strips produces by Alex Macartney
-Please not that these comics are not public domain and must not be used for any
-other purpose than beeing displayed in the OpenOLAT home portal
-[http://www.macartney.ch]
-
------------------------------------------------------------------------
 EXTJS javascript framework [http://www.sencha.com]
 
 

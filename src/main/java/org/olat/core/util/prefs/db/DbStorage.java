@@ -32,13 +32,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesStorage;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Description:<br>
@@ -51,11 +52,25 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 
 	static final String USER_PROPERTY_KEY = "v2guipreferences";
 	
+	private XStream xstream = XStreamHelper.createXStreamInstance();
+	
 	public Preferences getPreferencesFor(Identity identity, boolean useTransientPreferences) {
 		if (useTransientPreferences) {
 			return createEmptyDbPrefs(identity,true);
 		} else {			
 			return getPreferencesFor(identity);
+		}
+	}
+
+	@Override
+	public void updatePreferencesFor(Preferences prefs, Identity identity) {
+		String props = xstream.toXML(prefs);
+		Property property = getPreferencesProperty(identity);
+		if(property == null) {
+			PropertyManager.getInstance().createPropertyInstance(identity, null, null, null, DbStorage.USER_PROPERTY_KEY, null, null, null, props);
+		} else {
+			property.setTextValue(props);
+			PropertyManager.getInstance().updateProperty(property);
 		}
 	}
 
@@ -65,30 +80,34 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 	 * @return
 	 */
 	private DbPrefs getPreferencesFor(final Identity identity) {
-		 Property guiProperty = null; 
-		 try { 
-			 guiProperty = PropertyManager.getInstance().findProperty(identity, null, null, null, USER_PROPERTY_KEY); 
-		 } catch (AssertException e) {
-			 // OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
-			 List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
-			 if (guiPropertyList != null && guiPropertyList.size() > 0) {
-				 logError("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
-				 guiProperty = guiPropertyList.get(0);
-				 Iterator<Property> iterator = guiPropertyList.iterator();
-				 iterator.next();
-				 while (iterator.hasNext()) { 
-					 Property property = (Property) iterator.next(); 
-					 PropertyManager.getInstance().deleteProperty(property); 				 
-					 logInfo("Will delete old property: " + property.getTextValue()); 
-				 } 
-			 }
-		 }
-		
+		Property guiProperty = getPreferencesProperty(identity);
 		if (guiProperty == null) {
 			return createEmptyDbPrefs(identity,false);
 		} else {
 			return getPreferencesForProperty(identity, guiProperty);
 		}
+	}
+	
+	private Property getPreferencesProperty(Identity identity) {
+		Property guiProperty = null; 
+		try { 
+			guiProperty = PropertyManager.getInstance().findProperty(identity, null, null, null, USER_PROPERTY_KEY); 
+		} catch (Exception e) {
+			// OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
+			List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
+			if (guiPropertyList != null && guiPropertyList.size() > 0) {
+				 logError("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
+				 guiProperty = guiPropertyList.get(0);
+				 Iterator<Property> iterator = guiPropertyList.iterator();
+				 iterator.next();
+				 while (iterator.hasNext()) { 
+					 Property property = iterator.next(); 
+					 PropertyManager.getInstance().deleteProperty(property); 				 
+					 logInfo("Will delete old property: " + property.getTextValue()); 
+				} 
+			}
+		}
+		return guiProperty;
 	}
 
 	private DbPrefs getPreferencesForProperty(Identity identity, Property guiProperty) {
@@ -104,14 +123,13 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 	private DbPrefs createEmptyDbPrefs(Identity identity, boolean isTransient) {
 		DbPrefs prefs = new DbPrefs();
 		prefs.setIdentity(identity);
-		prefs.isTransient = isTransient;
+		prefs.setTransient(isTransient);
 		return prefs;
 	}
 
 	private DbPrefs createDbPrefsFrom(Identity identity, Property guiProperty, String textValue) {
-		DbPrefs prefs = (DbPrefs) XStreamHelper.fromXML(textValue);
+		DbPrefs prefs = (DbPrefs) xstream.fromXML(textValue);
 		prefs.setIdentity(identity); // reset transient value
-		prefs.dbProperty = guiProperty; // set property for later use
 		return prefs;
 	}
 

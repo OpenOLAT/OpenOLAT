@@ -42,7 +42,7 @@ public interface Preferences {
 	 * @param key
 	 * @return the object
 	 */
-	public Object get(Class attributedClass, String key);
+	public Object get(Class<?> attributedClass, String key);
 
 	/**
 	 * @param attributedClass
@@ -50,7 +50,7 @@ public interface Preferences {
 	 * @param defaultValue the value returned if no such config exists
 	 * @return the object
 	 */
-	public Object get(Class attributedClass, String key, Object defaultValue);
+	public Object get(Class<?> attributedClass, String key, Object defaultValue);
 
 	
 	/**
@@ -59,7 +59,7 @@ public interface Preferences {
 	 * @param key
 	 * @param value the object to save, which class must have a public default contructor (for xstreams to save/load)
 	 */
-	public void put(Class attributedClass, String key, Object value);
+	public void put(Class<?> attributedClass, String key, Object value);
 
 	/**
 	 * convenience method: as put, followed by a save()
@@ -68,7 +68,7 @@ public interface Preferences {
 	 * @param key
 	 * @param value
 	 */
-	public void putAndSave(Class attributedClass, String key, Object value);
+	public void putAndSave(Class<?> attributedClass, String key, Object value);
 
 	//FIXME fj: remove method is missing
 	

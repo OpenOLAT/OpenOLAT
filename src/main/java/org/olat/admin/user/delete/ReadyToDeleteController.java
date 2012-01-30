@@ -25,6 +25,7 @@
 
 package org.olat.admin.user.delete;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class ReadyToDeleteController extends BasicController {
 	private Panel readyToDeletePanel;
 	private TableController tableCtr;
 	private UserDeleteTableModel tdm;
-	private List readyToDeleteIdentities;
+	private List<Identity> readyToDeleteIdentities;
 	private DialogBoxController deleteConfirmController;
 	private boolean isAdministrativeUser;
 	private Translator propertyHandlerTranslator;
@@ -126,8 +127,18 @@ public class ReadyToDeleteController extends BasicController {
 			} 
 		} else if (source == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				deleteIdentities(readyToDeleteIdentities);
-				showInfo("deleted.feedback.msg");
+				List<String> errors = new ArrayList<String>();
+				deleteIdentities(readyToDeleteIdentities, errors);
+				if(errors.isEmpty()) {
+					showInfo("deleted.feedback.msg");
+				} else {
+					StringBuilder sb = new StringBuilder();
+					for(String error:errors) {
+						if(sb.length() > 0) sb.append(", ");
+						sb.append(error);
+					}
+					showWarning("error.delete", sb.toString());
+				}
 				initializeContent();
 			}
 		}
@@ -152,10 +163,10 @@ public class ReadyToDeleteController extends BasicController {
    * @param readyToDeleteIdentities2
    * @return String with login-name, comma separated
    */
-	private String getUserlistAsString(List readyToDeleteIdentities2) {
+	private String getUserlistAsString(List<Identity> readyToDeleteIdentities2) {
 		StringBuilder strb = new StringBuilder();
-		for (Iterator iter = readyToDeleteIdentities2.iterator(); iter.hasNext();) {
-			 strb.append(((Identity)iter.next()).getName());
+		for (Iterator<Identity> iter = readyToDeleteIdentities2.iterator(); iter.hasNext();) {
+			 strb.append((iter.next()).getName());
 			 if (iter.hasNext()) {
 				 strb.append(",");
 			 }
@@ -196,10 +207,20 @@ public class ReadyToDeleteController extends BasicController {
 		tableCtr.setTableDataModel(tdm);
 	}
 	
-	private void deleteIdentities(List objects) {
-		for (Iterator iter = objects.iterator(); iter.hasNext();) {
-			UserDeletionManager.getInstance().deleteIdentity( (Identity) iter.next() );
-			DBFactory.getInstance().intermediateCommit();
+	private void deleteIdentities(List<Identity> identities, List<String> errors) {
+		for (Identity id:identities) {
+			try {
+				UserDeletionManager.getInstance().deleteIdentity( id );
+			} catch (Exception e) {
+				errors.add(id.getName());
+				logError("", e);
+			} finally {
+				try {
+					DBFactory.getInstance().intermediateCommit();
+				} catch (Exception e) {
+					logError("", e);
+				}
+			}
 		}
 	}
 

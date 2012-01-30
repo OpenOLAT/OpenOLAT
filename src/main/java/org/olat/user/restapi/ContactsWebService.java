@@ -76,7 +76,7 @@ public class ContactsWebService {
 		int count = 0;
 		UserVO[] userVOs = new UserVO[contacts.size()];
 		for(Identity contact:contacts) {
-			userVOs[count++] = link(get(contact), uriInfo);
+			userVOs[count++] = link(get(contact, null, true, false, true), uriInfo);
 		}
 		UserVOes voes = new UserVOes();
 		voes.setUsers(userVOs);

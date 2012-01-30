@@ -102,8 +102,9 @@ public class ModuleConfiguration implements Serializable {
 	 */
 	public Boolean getBooleanEntry(String config_key) {
 		// boolean are stored either as null (no val yet), "true", or "false" (Strings)
-		String val = (String) get(config_key);
+		Object val = get(config_key);
 		if (val == null) return null;
+		if( val instanceof Boolean) return (Boolean)val;
 		Boolean set = val.equals("true")? Boolean.TRUE : Boolean.FALSE;
 		return set;
 	}

@@ -713,6 +713,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			WindowControl bwControl = getWindowControl();
 			// calculate the new businesscontext for the forum clicked
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLCAL);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, bwControl);
 
 			collabToolCtr = collabTools.createCalendarController(ureq, bwControl, this.businessGroup, isAdmin);
@@ -721,6 +722,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		} else if (ACTIVITY_MENUSELECT_INFORMATION.equals(cmd)) {
 			//fxdiff BAKS-7 Resume function
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLMSG);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
 			collabToolCtr = collabTools.createNewsController(ureq, bwControl);
 			listenTo(collabToolCtr);
@@ -733,6 +735,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			WindowControl bwControl = getWindowControl();
 			// calculate the new businesscontext for the forum clicked
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLFOLDER);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, bwControl);
 			//fxdiff VCRP-8: collaboration tools folder access control
 			collabToolCtr = collabTools.createFolderController(ureq, bwControl, businessGroup, isAdmin, sc);
@@ -777,6 +780,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doAdministration(UserRequest ureq) {
 		removeAsListenerAndDispose(bgEditCntrllr);
 		//fxdiff BAKS-7 Resume function
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ORES_TOOLADMIN));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLADMIN, null, getWindowControl());
 		collabToolCtr = bgEditCntrllr = BGControllerFactory.getInstance().createEditControllerFor(ureq, bwControl, businessGroup);
 		listenTo(bgEditCntrllr);

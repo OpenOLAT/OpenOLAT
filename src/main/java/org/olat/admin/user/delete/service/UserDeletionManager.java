@@ -31,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -70,8 +69,6 @@ import org.olat.repository.delete.service.DeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-
-import com.thoughtworks.xstream.XStream;
 
 
 /**
@@ -132,8 +129,8 @@ public class UserDeletionManager extends BasicManager {
 		if (template != null) {
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			template.addToContext("responseTo", deletionModule.getEmailResponseTo());
-			for (Iterator iter = selectedIdentities.iterator(); iter.hasNext();) {
-				Identity identity = (Identity)iter.next();
+			for (Iterator<Identity> iter = selectedIdentities.iterator(); iter.hasNext();) {
+				Identity identity = iter.next();
 				if (!isTemplateChanged) {
 					// Email template has NOT changed => take translated version of subject and body text
 					Translator identityTranslator = Util.createPackageTranslator(SelectionController.class, I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()));
@@ -157,8 +154,8 @@ public class UserDeletionManager extends BasicManager {
 			}
 		} else {
 			// no template => User decides to sending no delete-email, mark only in lifecycle table 'sendEmail'
-			for (Iterator iter = selectedIdentities.iterator(); iter.hasNext();) {
-				Identity identity = (Identity)iter.next();
+			for (Iterator<Identity> iter = selectedIdentities.iterator(); iter.hasNext();) {
+				Identity identity = iter.next();
 				logAudit("User-Deletion: Move in 'Email sent' section without sending email, identity=" + identity.getName());
 				markSendEmailEvent(identity);
 			}
@@ -260,6 +257,7 @@ public class UserDeletionManager extends BasicManager {
 		logInfo("Start deleteIdentity for identity=" + identity);
 
 		String newName = getBackupStringWithDate(identity.getName());
+		
 
 		// TODO: chg: Workaround: instances each manager which implements UaserDataDeletable interface
 		// Each manager register themself as deletable 
@@ -297,9 +295,9 @@ public class UserDeletionManager extends BasicManager {
 		logInfo("deleteUserProperties user=" + identity.getUser());
 		UserManager.getInstance().deleteUserProperties(identity.getUser());
 		// Delete all authentications for certain identity
-		List authentications = BaseSecurityManager.getInstance().getAuthentications(identity);
-		for (Iterator iter = authentications.iterator(); iter.hasNext();) {
-			Authentication auth = (Authentication) iter.next();
+		List<Authentication> authentications = BaseSecurityManager.getInstance().getAuthentications(identity);
+		for (Iterator<Authentication> iter = authentications.iterator(); iter.hasNext();) {
+			Authentication auth = iter.next();
 			logInfo("deleteAuthentication auth=" + auth);
 			BaseSecurityManager.getInstance().deleteAuthentication(auth);
 			logDebug("Delete auth=" + auth + "  of identity="  + identity);
@@ -422,7 +420,7 @@ public class UserDeletionManager extends BasicManager {
 	}
 
 	private int getPropertyByName(String name, int defaultValue) {
-		List properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
+		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
 		if (properties.size() == 0) {
 			return defaultValue;
 		} else {
@@ -439,7 +437,7 @@ public class UserDeletionManager extends BasicManager {
 	}
 
 	private void setProperty(String propertyName, int value) {
-		List properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
+		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
 		Property property = null;
 		if (properties.size() == 0) {
 			property = PropertyManager.getInstance().createPropertyInstance(null, null, null, PROPERTY_CATEGORY, propertyName, null,  new Long(value), null, null);

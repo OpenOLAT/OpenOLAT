@@ -157,7 +157,7 @@ div.b_eportfolio_restriction_wrapper {
 	a.b_togglebox_opened { z-index:10; display:block; width:9px; height:9px; padding:0; margin-left:12px; }
 	a.b_togglebox_closed { display:block; width:9px; height:9px; padding:0; margin-left:12px; }
 	p { padding:0 0 0 15px; margin:0; }
-	div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+	div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; @include o-border-radius(3px); }
 }
 	
   div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../openolat/images/decorator/deco_warn.png) no-repeat 3px 2px !important; }

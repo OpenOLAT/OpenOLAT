@@ -40,6 +40,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -145,7 +146,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 
 	private NodeTableDataModel nodeTableModel;
 	private TableController groupListCtr, userListCtr, nodeListCtr;
-	private List nodeFilters;
+	private List<ShortName> nodeFilters;
 	private List<Identity> identitiesList;
 
 	// Course assessment notification support fields	
@@ -377,19 +378,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		ICourse course = CourseFactory.loadCourse(ores);
 		this.isFiltering = enableFiltering;
 		userChoose.contextPut("isFiltering", enableFiltering);
-		this.nodeFilters = addAssessableNodesToList(course.getRunStructure().getRootNode(), this.currentGroup);
-		userListCtr.setFilters(this.nodeFilters, null );
-	}
-
-	/**
-	 * Enable/disable filtering of groups in 
-	 * @param enableFiltering
-	 * @param ureq
-	 */
-	private void enableFilteringGroups(boolean enableFiltering, UserRequest ureq) {
-		this.isFiltering = enableFiltering;
-		groupChoose.contextPut("isFiltering", enableFiltering);
-		doGroupChoose(ureq);
+		nodeFilters = getNodeFilters(course.getRunStructure().getRootNode(), currentGroup);
+		userListCtr.setFilters(nodeFilters, null);
 	}
 
 	/**
@@ -451,8 +441,13 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					}
 				}
 			} else if (event.equals(TableController.EVENT_FILTER_SELECTED)) {
-				this.currentCourseNode = (AssessableCourseNode) userListCtr.getActiveFilter();
-				doUserChooseWithData(ureq, this.identitiesList, this.currentGroup, this.currentCourseNode);
+				ShortName filter = userListCtr.getActiveFilter();
+				if(filter instanceof AssessableCourseNode) {
+					currentCourseNode = (AssessableCourseNode)filter; 
+				} else {
+					currentCourseNode = null;
+				}
+				doUserChooseWithData(ureq, identitiesList, currentGroup, currentCourseNode);
 			}
 		}
 		else if (source == nodeListCtr) {
@@ -474,8 +469,13 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					}
 				}
 			} else if (event.equals(TableController.EVENT_FILTER_SELECTED)) {
-				this.currentCourseNode = (AssessableCourseNode) nodeListCtr.getActiveFilter();
-				doUserChooseWithData(ureq, this.identitiesList, null, this.currentCourseNode);
+				ShortName filter = nodeListCtr.getActiveFilter();
+				if(filter instanceof AssessableCourseNode) {
+					currentCourseNode = (AssessableCourseNode)filter;
+				} else {
+					currentCourseNode = null;
+				}
+				doUserChooseWithData(ureq, identitiesList, null, currentCourseNode);
 			}
 		}
 		else if (source == assessmentEditController) {
@@ -669,8 +669,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		Translator defaultContextTranslator = new PackageTranslator(Util.getPackageName(BGContextTableModel.class), ureq.getLocale());
 		// loop over all groups to filter depending on condition
 		List<BusinessGroup> currentGroups = new ArrayList<BusinessGroup>();
-		for (Iterator iter = this.coachedGroups.iterator(); iter.hasNext();) {
-			BusinessGroup group = (BusinessGroup) iter.next();
+		for (Iterator<BusinessGroup> iter = this.coachedGroups.iterator(); iter.hasNext();) {
+			BusinessGroup group = iter.next();
 			if ( !isFiltering || isVisibleAndAccessable(this.currentCourseNode, group) ) {
 				currentGroups.add(group);
 			}
@@ -697,11 +697,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		ICourse course = CourseFactory.loadCourse(ores);
 		//fxdiff FXOLAT-108: improve results table of tests
 		if (mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS) {
-			this.nodeFilters = addAssessableNodesToList(course.getRunStructure().getRootNode(), group);
-			if (courseNode == null && this.nodeFilters.size() > 0) {
-				this.currentCourseNode = (AssessableCourseNode) this.nodeFilters.get(0);
-				courseNode = this.currentCourseNode;
-			}
+			nodeFilters = getNodeFilters(course.getRunStructure().getRootNode(), group);
 		}		
 		// Init table headers
 		removeAsListenerAndDispose(userListCtr);
@@ -712,6 +708,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		} else if(mode == MODE_GROUPFOCUS){
 			//fxdiff VCRP-4: assessment overview with max score
 			tableConfig.setPreferencesOffered(true, "assessmentGroupUsersNode");
+		} else if (mode == MODE_NODEFOCUS) {
+			tableConfig.setPreferencesOffered(true, "assessmentUserNodeList");
 		}
 		
 		if (mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS) {
@@ -945,8 +943,15 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 * @param courseNode
 	 * @return List of course Nodes
 	 */
-	private List addAssessableNodesToList(CourseNode courseNode, BusinessGroup group) {
-		List result = new ArrayList();		
+	private List<ShortName> getNodeFilters(CourseNode courseNode, BusinessGroup group) {
+		List<ShortName> filters = new ArrayList<ShortName>();
+		filters.add(new FilterName(translate("nodesoverview.filter.showEmptyNodes")));
+		filters.addAll(addAssessableNodesToList(courseNode, group));
+		return filters;
+	}
+
+	private List<ShortName> addAssessableNodesToList(CourseNode courseNode, BusinessGroup group) {
+		List<ShortName> result = new ArrayList<ShortName>();
 		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
 			// TODO:cg 04.11.2010 ProjectBroker : no assessment-tool in V1.0 , remove projectbroker completely form assessment-tool gui			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
@@ -994,13 +999,13 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		identityEnvironment.setIdentity(identity);
 		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
 		OnlyGroupConditionInterpreter ci = new OnlyGroupConditionInterpreter(uce);
-		List listOfConditionExpressions = courseNode.getConditionExpressions();
+		List<ConditionExpression> listOfConditionExpressions = courseNode.getConditionExpressions();
 		boolean allConditionAreValid = true;
 		// loop over all conditions, all must be true
-		for (Iterator iter = listOfConditionExpressions.iterator(); iter.hasNext();) {
+		for (Iterator<ConditionExpression> iter = listOfConditionExpressions.iterator(); iter.hasNext();) {
 			ConditionExpression conditionExpression = (ConditionExpression) iter.next();
-			Tracing.logDebug("conditionExpression=" + conditionExpression, this.getClass());
-			Tracing.logDebug("conditionExpression.getId()=" + conditionExpression.getId(), this.getClass());
+			logDebug("conditionExpression=" + conditionExpression, null);
+			logDebug("conditionExpression.getId()=" + conditionExpression.getId(), null);
 			Condition condition = new Condition();
 			condition.setConditionId(conditionExpression.getId());
 			condition.setConditionExpression(conditionExpression.getExptressionString());

@@ -267,6 +267,14 @@ public class ResourceableTypeList {
 		}
 		
 		List<ILoggingResourceable> resourceInfosCopy = new LinkedList<ILoggingResourceable>(resourceInfos);
+
+		for (Iterator<ILoggingResourceable> it = resourceInfosCopy.iterator(); it.hasNext();) {
+			if(it.next().isIgnorable()) {
+				it.remove();
+			}
+		}
+		
+		
 		List<ILoggingResourceableType> mandatory = getMandatory();
 		for (Iterator<ILoggingResourceableType> it = mandatory.iterator(); it.hasNext();) {
 			ILoggingResourceableType type = it.next();

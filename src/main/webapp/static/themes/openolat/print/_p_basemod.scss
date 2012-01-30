@@ -19,9 +19,19 @@
 *  =================================================
 */
 
+/** 
+*  hides any element 
+*/
+@mixin o-ghost {
+	 display:none !important; visibility: hidden !important; height:0px !important; width:0px !important;
+}
+
 @media print {
 
 
+		/** with the noprint class, you can hide any element in printout **/
+		.o_noprint { @include o-ghost();} 
+		  
 		/* (en) change font size unit to [pt] - avoiding problems with [px] unit in Gecko based browsers  */
 		/* (de) Wechsel der der Schriftgrößen-Maßheinheit zu [pt] - Probleme mit Maßeinheit [px] in Gecko-basierten Browsern vermeiden */
 		body { font-size:10pt; }
@@ -60,7 +70,11 @@
 		h1,h2,h3,h4,h5,h6{page-break-after:avoid}
 		#b_page a[href^="http:"],#b_page a[href^="https:"]{padding-left:0;background-image:none}
 		#b_col1_content:before,#b_col2_content:before,#b_col3_content:before{content:"";color:#888;background:inherit;display:block;font-weight:700;font-size:1.5em}
-		.b_floatbox,.b_subcolumns,.b_subcolums_oldgecko{overflow:visible;display:table}
+		.b_floatbox,.b_subcolumns,.b_subcolums_oldgecko{overflow:visible;display:table;}
+		
+		/* hide jsMath print warning */
+		#jsMath_PrintWarning {@include o-ghost(); }
+
 }
 
 

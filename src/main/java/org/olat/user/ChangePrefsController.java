@@ -206,19 +206,20 @@ class SpecialPrefsForm extends FormBasicController {
 		}
 
 		if (useAjaxCheckbox) {
-			prefs.putAndSave(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
+			prefs.put(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
 		}
 		prefs.putAndSave(WindowManager.class, "web2a-beta-on", prefsElement.getSelectedKeys().contains("web2a"));
 		//fxdiff BAKS-7 Resume function
 		if(resumeElement != null) {
-			prefs.putAndSave(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
+			prefs.put(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
 		}
 		if(backElement != null) {
-			prefs.putAndSave(WindowManager.class, "back-enabled", backElement.isSelected(0));
+			prefs.put(WindowManager.class, "back-enabled", backElement.isSelected(0));
 		}
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			showInfo("preferences.successful");
 		}
+		prefs.save();
 	}
 	
 	@Override

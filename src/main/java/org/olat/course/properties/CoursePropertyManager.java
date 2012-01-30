@@ -82,7 +82,7 @@ public interface CoursePropertyManager extends IdentityAnonymizerCallback {
 	 * @param name
 	 * @return all course node properties
 	 */
-	public List listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name);
+	public List<Property> listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name);
 	
 	/**
 	 * Find course node properties (exact match. I.e. null values are taken into account)

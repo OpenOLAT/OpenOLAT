@@ -59,6 +59,8 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 		or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.wiki).
 		// this is the case when you open a scorm resource as a course node
 		or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.scormResource).
+		// this is the case when you open a QTI resource as a course node
+		or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.iq).
 		// this is another case of closing a resource
 		or().addMandatory(OlatResourceableType.course, OlatResourceableType.node);
 	public static final ILoggingAction LEARNING_RESOURCE_OPEN = 

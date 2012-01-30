@@ -4,15 +4,14 @@
 # can be included into eclipse-project-build (project-properties --> "Builders")
 #
 
-echo "compiling SASS..."
+style=compressed
+
+echo "compiling SASS: $style"
 sass --version
 
-#sass --style extended  --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile .
-
-#sass --style extended  --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile bzg
-#sass --style extended  --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile zag
-sass --style extended  --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile kantiwohlen
+sass --style $style --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile .
 
 
 
 echo "done"
+

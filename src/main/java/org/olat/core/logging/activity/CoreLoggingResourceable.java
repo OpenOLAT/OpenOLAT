@@ -26,7 +26,6 @@
 
 package org.olat.core.logging.activity;
 
-import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -97,6 +96,8 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 	/** the OlatResourceable if we have one - null otherwise. Used for equals() and the businessPath check mainly **/
 	private final OLATResourceable resourceable_;
 	
+	private final boolean ignorable_;
+	
 	/**
 	 * Internal constructor to create a LoggingResourceable object with the given mandatory
 	 * parameters initialized.
@@ -110,7 +111,7 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 	 * @param id the id to be stored to the database
 	 * @param name the name to be stored to the database
 	 */
-	private CoreLoggingResourceable(OLATResourceable resourceable, ILoggingResourceableType resourceableType, String type, String id, String name) {
+	private CoreLoggingResourceable(OLATResourceable resourceable, ILoggingResourceableType resourceableType, String type, String id, String name, boolean ignorable) {
 		if (type!=null && type.length()>32) {
 			log_.error("<init> type too long. Allowed 32, actual: "+type.length()+", type="+type);
 			type = type.substring(0, 32);
@@ -128,6 +129,7 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 		type_ = type;
 		id_ = id;
 		name_ = name;
+		ignorable_ = ignorable;
 	}
 	
 //
@@ -153,7 +155,7 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 	 */
 	public static CoreLoggingResourceable wrapNonOlatResource(StringResourceableType type, String idForDB, String nameForDB) {
 		return new CoreLoggingResourceable(null, type, 
-				type.name(), idForDB, nameForDB);
+				type.name(), idForDB, nameForDB, false);
 	}
 	
 	/**
@@ -220,7 +222,7 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 	 */
 	public static CoreLoggingResourceable wrap(OLATResourceable olatResourceable, ILoggingResourceableType type) {
 		return new CoreLoggingResourceable(olatResourceable, type, olatResourceable.getResourceableTypeName(),
-				String.valueOf(olatResourceable.getResourceableId()), "");			
+				String.valueOf(olatResourceable.getResourceableId()), "", false);			
 	}
 	
 	/**
@@ -275,6 +277,11 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 		return resourceableType_;
 	}
 	
+	@Override
+	public boolean isIgnorable() {
+		return ignorable_;
+	}
+
 	@Override
 	public int hashCode() {
 		return type_.hashCode()+id_.hashCode()+(resourceable_!=null ? resourceable_.getResourceableTypeName().hashCode()+(int)resourceable_.getResourceableId().longValue() : 0) + (resourceableType_!=null ? resourceableType_.hashCode() : 0);

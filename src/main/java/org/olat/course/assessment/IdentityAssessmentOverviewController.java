@@ -248,6 +248,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 					}
 				});
 			}
+			
 			nodesTableModel = new NodeAssessmentTableDataModel(nodesTableList, getTranslator(), nodesSelectable);
 			tableFilterCtr.setTableDataModel(nodesTableModel);
 
@@ -257,23 +258,9 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	
 	private void initNodesoverviewTableFilters(){
 		// create filter for only nodes with values
-		this.discardEmptyNodesFilter = new ShortName() {
-			/** 
-			 * @see org.olat.core.gui.ShortName#getShortName()
-			 */
-			public String getShortName() {
-				return translate("nodesoverview.filter.discardEmptyNodes");
-			}
-		};
+		this.discardEmptyNodesFilter = new FilterName(translate("nodesoverview.filter.discardEmptyNodes"));
 		// create filter for all nodes, even with no values
-		this.showAllNodesFilter = new ShortName() {
-			/** 
-			 * @see org.olat.core.gui.ShortName#getShortName()
-			 */
-			public String getShortName() {
-				return translate("nodesoverview.filter.showEmptyNodes");
-			}
-		};
+		this.showAllNodesFilter = new FilterName(translate("nodesoverview.filter.showEmptyNodes"));
 		// add this two filter to the filters list
 		this.nodesoverviewTableFilters = new ArrayList<ShortName>();
 		this.nodesoverviewTableFilters.add(discardEmptyNodesFilter);

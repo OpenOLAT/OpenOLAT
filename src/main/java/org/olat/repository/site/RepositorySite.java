@@ -40,9 +40,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StateSite;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.controllers.RepositoryMainController;
+import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * Description:<br>
  * TODO: Felix Jost Class Description for HomeSite
@@ -85,6 +87,7 @@ public class RepositorySite implements SiteInstance {
 		// for existing controller which are part of the main olat -> use the controllerfactory
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositorySite.class, 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 		MainLayoutController c = ControllerFactory.createLaunchController(ORES_REPO, null, ureq, bwControl, true);
 		return c;
