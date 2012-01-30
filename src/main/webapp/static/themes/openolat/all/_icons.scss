@@ -234,7 +234,12 @@ li a.b_toolbox_copy, .b_copy_icon { background-image: url('../openolat/images/do
 .o_midwarn{	top: 8px; left: -2px; background-image: url('../openolat/images/decorator/deco_warn.png');}
 .o_midpub{ top: -2px; left: 9px; background-image: url('../openolat/images/decorator/deco_ok.png'); }	
 	
+/* ---  assessment and efficiency statement eff -- */
+span.o_passed { background: url(../openolat/images/tick.png) no-repeat right 50%; padding: 0 25px 0 0; color: #009900; }
+span.o_notpassed { background: url(../openolat/images/cross.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+.o_efficiencystatement_icon { background-image: url(../openolat/images/seal.png);}
 	
+
 /* --------- course building block icons ------------------- */
 .o_bc_icon { background-image: url('../openolat/images/folder.png') ! important; }
 .o_co_icon { background-image: url('../openolat/images/mail.png')!important}
