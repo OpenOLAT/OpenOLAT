@@ -716,10 +716,12 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		DBQuery dbq = createContactsQuery(identity, false);
 		dbq.setFirstResult(firstResult);
 		if(maxResults > 0) {
-			dbq.setMaxResults(maxResults);
+			dbq.setMaxResults(maxResults + 1);
 		}
 		List<Identity> contacts = dbq.list();
-		contacts.remove(identity);
+		if(!contacts.remove(identity) && maxResults > 0 && contacts.size() > maxResults) {
+			contacts.remove(contacts.size() - 1);
+		}
 		return contacts;
 	}
 	
