@@ -510,12 +510,57 @@ div.o_catalog {
 		border-bottom: 1px solid #EEE;
 		background: url(../openolat/images/folder_open.png) 2px 50% no-repeat;
 	}
+	.o_catalog_sub_icon { background-image: url(../openolat/images/folder_small.png); }
+	
 	div.o_catalog_links {
 		margin-top: 1em;
 		padding-top: 1em;
 		border-top: 1px solid #EEE;
 	}
+	
+	div.o_catalog_itemlist ul { 
+		list-style-type: none; margin: 0; padding: 0;
+		li { margin: 0; padding: 0 0 0 0.5em;;overflow: hidden;} 
+		a { display: block; }	    
+	}      
+	
+	div.o_catalog_desc { margin: 0.5em 0 0.5em 0; padding-left: 20px; font-size: 95%; font-style: italic;}
+	
+}/* end div.o_catalog */
+
+div.b_ext_elem {
+	.x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_icon, .x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_icon  { background-image: url(../openolat/images/folder_small.png); }
 }
+div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_noaccess_icon,
+div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_icon { background-image: url(../openolat/folder_open.png); }
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
+div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_entry_icon { background-image: url(../openolat/images/le_resources/book-open-text-image.png); }
+	
+	
+
+/*
+	div.o_catalog div.o_catalog_nav { font-size: 95%; padding: 0 0 0 20px; border-bottom: 1px solid #eee; background: url(../images/olat/folder_open.png) 0 50% no-repeat;}
+	div.o_catalog div.o_catalog_links {margin-top: 1em; padding-top: 1em; border-top: 1px solid #eee;}
+    div.o_catalog div.o_catalog_title { display: none; }
+	div.o_catalog 
+	div.o_catalog 
+	div.o_catalog div.o_catalog_itemlist  
+	div.o_catalog div.o_catalog_itemlist 
+   
+    div.o_catalog div.o_catalog_link { margin: 1em 0 1em 0;}
+    div.o_catalog div.o_catalog_link_title { background: #D6D7E0; line-height: 1.5em; padding: 0 0 0 0.5em; margin: 2em 0 0 0;}
+	
+	div.b_table_wrapper.o_catalog_categories_table table { background: none; }
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr { background: transparent; }	
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr.b_table_odd { background: transparent; }
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr td { border: 0 ! important; font-size: 90%}
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr td.b_last_child { text-align: right;}
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr td.b_first_child { text-align: left;}
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr:hover,
+	div.b_table_wrapper.o_catalog_categories_table table tbody tr:focus { background: #c4d0dc;}	
+    
+   */
 	
 /** -------------- TAGGING ---------------- **/
 /* tagging */
