@@ -477,14 +477,23 @@ h3.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
 h4.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 
+
+/* OPEN / CLOSE BOX TOGGLER */
+a.b_togglebox_closed {background: url($ico_plus) no-repeat 0 50%; padding: 1px 0 1px 18px; vertical-align: middle;}
+a.b_togglebox_opened {background: url($ico_minus) no-repeat 0 50%; padding: 1px 0 1px 18px; vertical-align: middle;}
+
+
 div.b_titled_wrapper {
 	div.b_togglebox div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
-	a.b_togglebox_opened { z-index:10; display:block; width:16px; height:16px; position:absolute; top:5px; left:5px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; padding:0; }
-	a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left; padding:0; @include o-opacity(60); }
+	//a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; }
+	//a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left;  @include o-opacity(60); }
+	
 	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
-	a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
+	a.b_togglebox_hide span { }
 	a.b_togglebox_hide:hover { text-decoration:underline; }
 }
+
+
 
 /* Needed for IE6 */
 div.b_titled_wrapper div.b_togglebox div.b_togglebox_content div.o_course_run_objectives { position:relative; }

@@ -23,9 +23,17 @@ div.b_selectiontree {
 	div.b_tabbedpane_wrapper div.b_tabbedpane_content { background:#fff;}	
 }
 
-
-
-
+/* --- MODULES: SINGLEPAGE ---- */
+a.b_preview { background-image: url(../openolat/images/docs/document_preview.png); background-repeat: no-repeat; background-position: left; padding-left:20px;}
+fieldset a.b_preview, div.b_tabbedpane_wrapper a.b_preview { position: absolute;}
+	
+div.b_module_singlepage_wrapper a.b_content_edit {position:absolute; top:0; right:20px; display: inline; background: url(../openolat/images/docs/document--pencil.png) no-repeat top left; width: 16px; height: 16px; margin: 3px; }
+div.b_module_singlepage_wrapper a.b_content_download { position:absolute; top:0; z-index:10; background: url(../openolat/images/docs/document_download.png) no-repeat top left; padding-left: 20px; margin-top:3px; min-height:19px; height:19px; }
+div.b_titled_wrapper div.b_module_singlepage_wrapper a.b_content_download { position:relative; padding-bottom:3px;}
+div.b_titled_wrapper div.b_module_singlepage_wrapper div.b_iframe_wrapper { margin-top:3px; }
+/* CONTENT POPUP */
+#b_content_popup {float: right; background: url(../openolat/images/applications.png) no-repeat top left; width: 16px; height: 16px; margin: 3px;}
+	
 /** ------------------ COURSE EDITOR --------------- **/
 #o_course_editor_errorbox {
 	font-size: 90%;
