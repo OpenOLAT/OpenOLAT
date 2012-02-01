@@ -143,8 +143,12 @@ public class FormJSHelper {
 		// Execute code within an anonymous function (closure) to not leak
 		// variables to global scope (OLAT-5755)
 		sb.append("(function() {");
-		sb.append("var ").append(id).append(" = Ext.get('").append(id).append("'); ");
+		sb.append("var ").append(secureJSVarName(id)).append(" = Ext.get('").append(id).append("'); ");
 		return sb.toString();
+	}
+	
+	public static String secureJSVarName(String id){
+		return id.replace(".", "_");
 	}
 	
 	public static String getJSStart(){
@@ -159,12 +163,12 @@ public class FormJSHelper {
 	}
 	
 	public static String getExtJSVarDeclaration(String id){
-		return "var "+id+" = Ext.get('"+id+"'); ";
+		return "var "+secureJSVarName(id)+" = Ext.get('"+id+"'); ";
 	}
 	
 	public static String getSetFlexiFormDirty(Form form, String id){
 		String result;
-		String prefix = id + ".on('";
+		String prefix = secureJSVarName(id) + ".on('";
 		// examples:
 		// o_fi400.on({'click',setFormDirty,this,{formId:"ofo_100"}});
 		// o_fi400.on({'change',setFormDirty,this,{formId:"ofo_100"}});
@@ -177,7 +181,7 @@ public class FormJSHelper {
 	
 	public static String getSetFlexiFormDirtyForCheckbox(Form form, String id){
 		String result;
-		String prefix = id + ".on('";
+		String prefix = secureJSVarName(id) + ".on('";
 		// examples:
 		// o_fi400.on({'click',setFormDirty,this,{formId:"ofo_100"}});
 		// o_fi400.on({'change',setFormDirty,this,{formId:"ofo_100"}});
