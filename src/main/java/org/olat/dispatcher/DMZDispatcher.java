@@ -252,7 +252,9 @@ public class DMZDispatcher implements Dispatcher {
 
 			UserSession usess = ureq.getUserSession();
 			Windows ws = Windows.getWindows(usess);
-			synchronized (ws) { //o_clusterOK by:fj per user session
+			//sync over the UserSession Instance as the Windows can be recreated in the synchronize block
+			//and make it useless under heavily load or 2 concurrent requests
+			synchronized (usess) { //o_clusterOK by:fj per user session
 
 				Window window;
 				boolean windowHere = ws.isExisting(uriPrefix, ureq.getWindowID());
@@ -298,12 +300,8 @@ public class DMZDispatcher implements Dispatcher {
 						DTabs dts = (DTabs) window.getAttribute("DTabs");
 						dts.activate(ureq, null, null, ces);
 					}
-					
-					window.dispatchRequest(ureq);
-				
-				} else {
-					window.dispatchRequest(ureq);
 				}
+				window.dispatchRequest(ureq);
 			}
 		} catch (Throwable th) {
 			try {

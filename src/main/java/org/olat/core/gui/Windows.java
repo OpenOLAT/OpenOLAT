@@ -74,16 +74,19 @@ public class Windows implements Disposable {
 	 * @return the Windows for this user
 	 */
 	public static Windows getWindows(UserSession us) {
-		Windows ws = (Windows) us.getEntry(SESSIONID_NAME_FOR_WINDOWS);
-		if (ws == null) {
-			ws = new Windows();
-			// make window id kind of unique (only needed for better user convenience
-			// when a user tries to bookmark an url and uses that browser bookmark
-			// later
-			//TODO: make error handling better
-			//ws.windowId = (int) (System.currentTimeMillis() % 10) * 10 + 1; // must
-			// at least be 1, since 0 is null
-			us.putEntry(SESSIONID_NAME_FOR_WINDOWS, ws);
+		Windows ws;
+		synchronized(us) {//sync the creation of Windows object
+			ws = (Windows)us.getEntry(SESSIONID_NAME_FOR_WINDOWS);
+			if (ws == null) {
+				ws = new Windows();
+				// make window id kind of unique (only needed for better user convenience
+				// when a user tries to bookmark an url and uses that browser bookmark
+				// later
+				//TODO: make error handling better
+				//ws.windowId = (int) (System.currentTimeMillis() % 10) * 10 + 1; // must
+				// at least be 1, since 0 is null
+				us.putEntry(SESSIONID_NAME_FOR_WINDOWS, ws);
+			}
 		}
 		return ws;
 	}

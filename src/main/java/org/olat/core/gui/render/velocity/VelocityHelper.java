@@ -106,6 +106,8 @@ public class VelocityHelper extends LogDelegator {
 			
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_LOGWHENFOUND, "false");
 			p.setProperty(RuntimeConstants.VM_LIBRARY, "velocity/olat_velocimacros.vm");
+			//usefull under heavily load
+			//p.setProperty("parser.pool.size", "200");
 			
 			p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, VelocityModule.isCachePages() ? "true" : "false");
 			p.setProperty(RuntimeConstants.VM_LIBRARY_AUTORELOAD, VelocityModule.isCachePages() ? "true" : "false");
