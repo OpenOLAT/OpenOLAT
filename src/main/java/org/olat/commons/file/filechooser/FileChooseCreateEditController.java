@@ -120,7 +120,7 @@ public class FileChooseCreateEditController extends BasicController{
 	private FileChooserController fileChooserCtr;
 	private String chosenFile;
 	private VFSContainer rootContainer;
-	private Boolean allowRelativeLinks;
+	private boolean allowRelativeLinks;
 	
 	private CloseableModalController cmcFileChooser;
 	private CloseableModalController cmcSelectionTree;
@@ -390,7 +390,7 @@ public class FileChooseCreateEditController extends BasicController{
 
 		if (source == previewLink){
 			removeAsListenerAndDispose(previewLayoutCtr);
-			SinglePageController previewController = new SinglePageController(ureq, getWindowControl(), rootContainer, chosenFile, null, allowRelativeLinks.booleanValue());
+			SinglePageController previewController = new SinglePageController(ureq, getWindowControl(), rootContainer, chosenFile, null, allowRelativeLinks);
 			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, null, previewController.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(previewController);
 			previewLayoutCtr.activate();
@@ -410,7 +410,7 @@ public class FileChooseCreateEditController extends BasicController{
 
 			String editFile;
 			VFSContainer editRoot;
-			if (allowRelativeLinks.booleanValue()) {
+			if (allowRelativeLinks) {
 				editRoot = rootContainer;
 				editFile = chosenFile;
 			} else {
@@ -692,8 +692,8 @@ class AllowRelativeLinksForm extends FormBasicController {
 	/**
 	 * @return Boolean new configuration
 	 */
-	Boolean getAllowRelativeLinksConfig(){
-		return Boolean.valueOf(allowRelativeLinks.isSelected(0));
+	boolean getAllowRelativeLinksConfig(){
+		return allowRelativeLinks.isSelected(0);
 	}
 
 	@Override
