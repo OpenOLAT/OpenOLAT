@@ -76,7 +76,7 @@
 					<list>
 						<value>.*WebKit/5[01].*</value> 		<!-- older than safari 3.0 -->
 						<value>.*MSIE [2345].*</value>			<!-- older than IE 6.0 -->
-						<value>.*Firefox/[1].*</value>			<!-- older than FF 2.0  -->
+						<value>.*Firefox/1\..</value>			<!-- older than FF 2.0  -->
 						<value>.*Opera/[45678].*</value>		<!-- older than Opera 9 -->
 						<value>.*Gecko/200[0123456].*</value>	<!-- Gecko engine older than 2006  -->
 						<value>.*Lynx.*</value>					<!-- Lynx console browser (no js) -->
