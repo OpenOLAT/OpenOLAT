@@ -723,18 +723,20 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		
 		// store the current logging object in the session - for duration calculation at next log
 //		session_.putEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG, logObj);
-
-		if (resourceInfos!=null && resourceInfos.size()!=0) {
-			// this should be the normal case - we do have LoggingResourceables which we can log
-			// alongside the log message
-			
-			// check if we have more than 4 - if we do, issue a log and remove the middle ones
+		
+		if(resourceInfos != null) {
+			//remove all ignorable resources
 			for(Iterator<ILoggingResourceable> riIterator=resourceInfos.iterator(); riIterator.hasNext(); ) {
 				if(riIterator.next().isIgnorable()) {
 					riIterator.remove();
 				}
 			}
-			
+		}
+
+		if (resourceInfos!=null && resourceInfos.size()!=0) {
+			// this should be the normal case - we do have LoggingResourceables which we can log
+			// alongside the log message
+
 			if (resourceInfos.size()>4) {
 				log_.warn("More than 4 resource infos set on a user activity log. Can only have 4. Having: "+resourceInfos.size());
 				int diff = resourceInfos.size()-4;
