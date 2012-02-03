@@ -28,6 +28,7 @@ package org.olat.modules.wiki;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -88,6 +89,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
+import org.olat.modules.fo.ForumController;
 import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.ForumUIFactory;
 import org.olat.modules.wiki.gui.components.wikiToHtml.ErrorEvent;
@@ -101,6 +103,7 @@ import org.olat.modules.wiki.portfolio.WikiArtefact;
 import org.olat.modules.wiki.versioning.HistoryTableDateModel;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
+
 
 
 /**
@@ -123,6 +126,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private VFSContainer wikiContainer;
 	private OLATResourceable ores;
 	private VelocityContainer articleContent, navigationContent, discussionContent, editContent, content, versioningContent, mediaMgntContent, imageDisplay, fileListVC;
+	private ForumController forumController;
 	private WikiEditArticleForm wikiEditForm;
 	private WikiMarkupComponent wikiMenuComp, wikiArticleComp, wikiVersionDisplayComp;
 	private ContextualSubscriptionController cSubscriptionCtrl;
@@ -328,15 +332,54 @@ public class WikiMainController extends BasicController implements CloneableCont
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-		Wiki wiki = getWiki();
-		String activatePageId = WikiManager.generatePageId(FilterUtil.normalizeWikiLink(path));
-		if(wiki.pageExists(activatePageId)) {
-			WikiPage page = wiki.getPage(activatePageId, true);
-			if(page != null) {
-				this.pageId = page.getPageId();
+		ContextEntry ce = entries.get(0);
+		String typ = ce.getOLATResourceable().getResourceableTypeName();
+		if("az".equals(typ)) {
+			openAtoZPage(ureq, getWiki());
+		} else if ("lastChanges".equals(typ)) {
+			openLastChangesPage(ureq, getWiki());
+		} else if ("index".equals(typ)) {
+			WikiPage page = openIndexPage(ureq, getWiki());
+			pageId = page.getPageId();
+		} else if ("Forum".equals(typ)) {
+			Wiki wiki = getWiki();
+			Long forumKey = ce.getOLATResourceable().getResourceableId();
+			for(WikiPage page:wiki.getAllPagesWithContent()) {
+				if(forumKey.longValue() == page.getForumKey()) {
+					if(page != null) {
+						this.pageId = page.getPageId();
+					}
+					updatePageContext(ureq, page);
+					
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance("tab", 1l);
+					ContextEntry tabCe = BusinessControlFactory.getInstance().createContextEntry(ores);
+					tabs.activate(ureq, Collections.singletonList(tabCe), null);
+					if(forumController != null && entries.size() > 1) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						forumController.activate(ureq, subEntries, null);
+					}
+					break;
+				}
 			}
-			updatePageContext(ureq, page);
+		} else {
+			String path = BusinessControlFactory.getInstance().getPath(ce);
+			Wiki wiki = getWiki();
+			String activatePageId = WikiManager.generatePageId(FilterUtil.normalizeWikiLink(path));
+			if(wiki.pageExists(activatePageId)) {
+				WikiPage page = wiki.getPage(activatePageId, true);
+				if(page != null) {
+					this.pageId = page.getPageId();
+				}
+				updatePageContext(ureq, page);
+				
+				if(entries.size() > 1) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					String subTyp = subEntries.get(0).getOLATResourceable().getResourceableTypeName();
+					if("tab".equals(subTyp)) {
+						tabs.activate(ureq, subEntries, ce.getTransientState());
+					}
+				}
+			}
 		}
 	}
 
@@ -362,68 +405,11 @@ public class WikiMainController extends BasicController implements CloneableCont
 			/*************************************************************************
 			 * tabbed pane events
 			 ************************************************************************/
-			// first release a potential lock on this page. only when the edit tab is acitve
-			// a lock will be created. in all other cases it is save to release an existing lock
-			doReleaseEditLock();
+			
 			TabbedPaneChangedEvent tabEvent = (TabbedPaneChangedEvent) event;
 			Component comp = tabEvent.getNewComponent();
 			String compName = comp.getComponentName();
-			if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED)) {
-				updatePageContext(ureq, page);
-			}
-			if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_article")) {
-				/***********************************************************************
-				 * tabbed pane change to article
-				 **********************************************************************/
-				// if(page.getContent().equals("")) wikiArticleComp.setVisible(false);
-				// FIXME:guido: ... && comp == articleContent)) etc.
-			} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_edit")) {
-				/***********************************************************************
-				 * tabbed pane change to edit tab
-				 **********************************************************************/
-				wikiEditForm.resetUpdateComment();
-				editContent.contextPut("mayDeleteArticle", Boolean.valueOf(ident.getKey().equals(Long.valueOf(page.getInitalAuthor() )) || securityCallback.mayEditWikiMenu() ));
-				editContent.contextPut("linkList", wiki.getListOfAllPageNames());
-				editContent.contextPut("fileList", wiki.getMediaFileList());
-				// try to edit acquire lock for this page
-				tryToSetEditLock(page, ureq, ores);
-			} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_versions")) {
-				/***********************************************************************
-				 * tabbed pane change to versioning tab
-				 **********************************************************************/
-				versioningTableModel = new HistoryTableDateModel(wiki.getHistory(page), getTranslator());
-				removeAsListenerAndDispose(versioningTableCtr);
-				versioningTableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-				listenTo(versioningTableCtr);
-				versioningTableModel.addColumnDescriptors(versioningTableCtr);
-				versioningTableCtr.setTableDataModel(versioningTableModel);
-				versioningTableCtr.modelChanged();
-				versioningTableCtr.setSortColumn(1, false);
-				versioningContent.put("versions", versioningTableCtr.getInitialComponent());
-				versioningContent.contextPut("diffs", diffs);
-			} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_discuss")) {
-				/***********************************************************************
-				 * tabbed pane change to discussion tab
-				 **********************************************************************/
-				Forum forum = null;
-				if (page.getForumKey() == 0) {
-					forum = ForumManager.getInstance().addAForum();
-					page.setForumKey(forum.getKey().longValue());
-					WikiManager.getInstance().updateWikiPageProperties(ores, page);
-				}
-				forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
-				// TODO enhance forum callback with subscription stuff								
-				boolean isModerator = securityCallback.mayModerateForum();				
-				ForumCallback forumCallback = new WikiForumCallback(ureq.getUserSession().getRoles().isGuestOnly(), isModerator);
-				
-				// calculate the new businesscontext for the coursenode being called.
-				//FIXME:pb:mannheim discussion should not be "this.ores" -> may be the "forum" should go in here.
-				//
-				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(forum);
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
-				
-				discussionContent.put("articleforum", ForumUIFactory.getStandardForumController(ureq, bwControl, forum, forumCallback).getInitialComponent());
-			}
+			selectTab(ureq, command, compName, page, wiki);
 		} else if (source == wikiArticleComp || source == wikiMenuComp) {
 			/*************************************************************************
 			 * wiki component events
@@ -469,27 +455,11 @@ public class WikiMainController extends BasicController implements CloneableCont
 				tabs.setSelectedPane(2);
 			}
 		} else if (source == toMainPageLink){ // home link
-			page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE, true);
-			page.incrementViewCount();
-			breadCrumpCtr.addLink(page.getPageName(), page.getPageName());
-			updatePageContext(ureq, page);
-			tabs.setSelectedPane(0);
+			page = openIndexPage(ureq, wiki);
 		} else if (source == a2zLink){
-			WikiPage a2zPage = wiki.getPage(WikiPage.WIKI_A2Z_PAGE);
-			articleContent.contextPut("page", a2zPage);
-			a2zPage.setContent(translate("nav.a-z.desc")+wiki.getAllPageNamesSorted());
-			wikiArticleComp.setWikiContent(a2zPage.getContent());
-			clearPortfolioLink();
-			setTabsEnabled(false);
-			tabs.setSelectedPane(0);
+			openAtoZPage(ureq, wiki);
 		} else if (source == changesLink){
-			WikiPage recentChanges = wiki.getPage(WikiPage.WIKI_RECENT_CHANGES_PAGE);
-			recentChanges.setContent(translate("nav.changes.desc")+wiki.getRecentChanges(ureq.getLocale()));
-			clearPortfolioLink();
-			articleContent.contextPut("page", recentChanges);
-			wikiArticleComp.setWikiContent(recentChanges.getContent());
-			setTabsEnabled(false);
-			tabs.setSelectedPane(0);
+			openLastChangesPage(ureq, wiki);
 		} else if (source == editMenuButton){
 			page = wiki.getPage(WikiPage.WIKI_MENU_PAGE);
 			editContent.contextPut("linkList", wiki.getListOfAllPageNames());
@@ -535,6 +505,106 @@ public class WikiMainController extends BasicController implements CloneableCont
 		
 		//set recent page id to the page currently used
 		if(page != null)this.pageId = page.getPageId();
+	}
+	
+	private void selectTab(UserRequest ureq, String command, String compName, WikiPage page, Wiki wiki) {
+		// first release a potential lock on this page. only when the edit tab is acitve
+		// a lock will be created. in all other cases it is save to release an existing lock
+		doReleaseEditLock();
+		if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED)) {
+			updatePageContext(ureq, page);
+		}
+		
+		if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_article")) {
+			/***********************************************************************
+			 * tabbed pane change to article
+			 **********************************************************************/
+			// if(page.getContent().equals("")) wikiArticleComp.setVisible(false);
+			// FIXME:guido: ... && comp == articleContent)) etc.
+		} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_edit")) {
+			/***********************************************************************
+			 * tabbed pane change to edit tab
+			 **********************************************************************/
+			wikiEditForm.resetUpdateComment();
+			editContent.contextPut("mayDeleteArticle", Boolean.valueOf(ident.getKey().equals(Long.valueOf(page.getInitalAuthor() )) || securityCallback.mayEditWikiMenu() ));
+			editContent.contextPut("linkList", wiki.getListOfAllPageNames());
+			editContent.contextPut("fileList", wiki.getMediaFileList());
+			// try to edit acquire lock for this page
+			tryToSetEditLock(page, ureq, ores);
+		} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_versions")) {
+			/***********************************************************************
+			 * tabbed pane change to versioning tab
+			 **********************************************************************/
+			versioningTableModel = new HistoryTableDateModel(wiki.getHistory(page), getTranslator());
+			removeAsListenerAndDispose(versioningTableCtr);
+			versioningTableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
+			listenTo(versioningTableCtr);
+			versioningTableModel.addColumnDescriptors(versioningTableCtr);
+			versioningTableCtr.setTableDataModel(versioningTableModel);
+			versioningTableCtr.modelChanged();
+			versioningTableCtr.setSortColumn(1, false);
+			versioningContent.put("versions", versioningTableCtr.getInitialComponent());
+			versioningContent.contextPut("diffs", diffs);
+		} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_discuss")) {
+			/***********************************************************************
+			 * tabbed pane change to discussion tab
+			 **********************************************************************/
+			Forum forum = null;
+			if (page.getForumKey() == 0) {
+				forum = ForumManager.getInstance().addAForum();
+				page.setForumKey(forum.getKey().longValue());
+				WikiManager.getInstance().updateWikiPageProperties(ores, page);
+			}
+			forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
+			// TODO enhance forum callback with subscription stuff								
+			boolean isModerator = securityCallback.mayModerateForum();				
+			ForumCallback forumCallback = new WikiForumCallback(ureq.getUserSession().getRoles().isGuestOnly(), isModerator);
+
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(forum);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
+			
+			removeAsListenerAndDispose(forumController);
+			forumController = ForumUIFactory.getStandardForumController(ureq, bwControl, forum, forumCallback);
+			listenTo(forumController);
+			discussionContent.put("articleforum", forumController.getInitialComponent());
+		}
+
+		OLATResourceable pageRes = OresHelper.createOLATResourceableTypeWithoutCheck("path=" + page.getPageName());
+		WindowControl wc = addToHistory(ureq, pageRes, null);
+		OLATResourceable tabOres = tabs.getTabResource();
+		addToHistory(ureq, tabOres, null, wc, true);
+	}
+	
+	private WikiPage openIndexPage(UserRequest ureq, Wiki wiki) {
+		WikiPage page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE, true);
+		page.incrementViewCount();
+		breadCrumpCtr.addLink(page.getPageName(), page.getPageName());
+		updatePageContext(ureq, page);
+		tabs.setSelectedPane(0);
+		addToHistory(ureq, OresHelper.createOLATResourceableTypeWithoutCheck("index"), null);
+		return page;
+	}
+	
+	private void openLastChangesPage(UserRequest ureq, Wiki wiki) {
+		WikiPage recentChanges = wiki.getPage(WikiPage.WIKI_RECENT_CHANGES_PAGE);
+		recentChanges.setContent(translate("nav.changes.desc")+wiki.getRecentChanges(ureq.getLocale()));
+		clearPortfolioLink();
+		articleContent.contextPut("page", recentChanges);
+		wikiArticleComp.setWikiContent(recentChanges.getContent());
+		setTabsEnabled(false);
+		tabs.setSelectedPane(0);
+		addToHistory(ureq, OresHelper.createOLATResourceableTypeWithoutCheck("lastChanges"), null);
+	}
+	
+	private void openAtoZPage(UserRequest ureq, Wiki wiki) {
+		WikiPage a2zPage = wiki.getPage(WikiPage.WIKI_A2Z_PAGE);
+		articleContent.contextPut("page", a2zPage);
+		a2zPage.setContent(translate("nav.a-z.desc")+wiki.getAllPageNamesSorted());
+		wikiArticleComp.setWikiContent(a2zPage.getContent());
+		clearPortfolioLink();
+		setTabsEnabled(false);
+		tabs.setSelectedPane(0);
+		addToHistory(ureq, OresHelper.createOLATResourceableTypeWithoutCheck("az"), null);
 	}
 
 
