@@ -19,7 +19,7 @@
  */
 package org.olat.core.util;
 
-import java.io.InputStream;
+import java.io.File;
 
 import org.olat.core.util.ImageHelper.Size;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -36,7 +36,6 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface IImageHelper {
 
-	Size scaleImage(InputStream image, VFSLeaf scaledImage, int maxWidth,
-			int maxHeight);
+	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight);
 
 }

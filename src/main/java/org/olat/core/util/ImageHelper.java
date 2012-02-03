@@ -35,6 +35,7 @@ import java.awt.color.CMMException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,12 +43,21 @@ import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 
 // FIXME:as:c google for deployment of servers with no X installed (fj)
@@ -61,6 +71,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ImageHelper implements IImageHelper {
 	
+	private static final OLog log = Tracing.createLoggerFor(ImageHelper.class);
+	
 	private static final String OUTPUT_FORMAT = "jpeg";
 	
 	/**
@@ -73,7 +85,8 @@ public class ImageHelper implements IImageHelper {
 	 * @return boolean
 	 */
 	public static boolean scaleImage(File image, File scaledImage, int maxSize) {
-		return scaleImage(image, null, scaledImage, maxSize, maxSize);
+		String imageExt = FileUtils.getFileSuffix(image.getName());
+		return scaleImage(image, imageExt, scaledImage, maxSize, maxSize);
 	}
 	
 	/**
@@ -88,24 +101,6 @@ public class ImageHelper implements IImageHelper {
 	public static boolean scaleImage(File image, String imageExt, File scaledImage, int maxSize) {
 		return scaleImage(image, imageExt, scaledImage, maxSize, maxSize);
 	}
-
-	/**
-	 * @param image the image to scale
-	 * @param scaledImaged the new scaled image
-	 * @param maxSize the maximum size (height or width) of the new scaled image
-	 * @return
-	 */
-	public static boolean scaleImage(InputStream image, VFSLeaf scaledImage, int maxSize) {
-		try {
-			OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
-			boolean result = scaleImage(image, bos, maxSize, maxSize, getImageFormat(scaledImage));
-			FileUtils.closeSafely(image);
-			FileUtils.closeSafely(bos);
-			return result;
-		} catch (Exception e) {
-			return false;
-		}
-	}
 	
 	/**
 	 * @param image the image to scale
@@ -113,24 +108,39 @@ public class ImageHelper implements IImageHelper {
 	 * @param maxSize the maximum size (height or width) of the new scaled image
 	 * @return
 	 */
-	public Size scaleImage(InputStream image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
+	@Override
+	public Size scaleImage(File image, String imageExt, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
+		
+		ImageInputStream imageIns = null;
 		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 		try {
-			BufferedImage imageSrc = ImageIO.read(image);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
-				// unsupported image format
-				return null;				
+			imageIns = new FileImageInputStream(image);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight);
+			if(scaledSize == null) {
+				return null;
 			}
-			Size scaledSize = calcScaledSize(imageSrc, maxWidth, maxHeight);
-			if(writeTo(scaleTo(imageSrc, scaledSize), bos, scaledSize, getImageFormat(scaledImage))) {
-				return scaledSize;
+			if(!scaledSize.getScaledSize().isChanged() && isSameFormat(image, scaledImage)) {
+				InputStream cloneIns = new FileInputStream(image);
+				IOUtils.copy(cloneIns, bos);
+				IOUtils.closeQuietly(cloneIns);
+				return scaledSize.getScaledSize();
+			} else {
+				BufferedImage imageSrc = scaledSize.getImage();
+				if (imageSrc == null) {
+					// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
+					// unsupported image format
+					return null;				
+				}
+				BufferedImage scaledBufferedImage = scaleTo(imageSrc, scaledSize.getScaledSize());
+				if(writeTo(scaledBufferedImage, bos, scaledSize.getScaledSize(), getImageFormat(scaledImage))) {
+					return scaledSize.getScaledSize();
+				}
+				return null;
 			}
-			return null;
 		} catch (IOException e) {
 			return null;
 		} finally {
-			FileUtils.closeSafely(image);
+			closeQuietly(imageIns);
 			FileUtils.closeSafely(bos);
 		}
 	}
@@ -142,44 +152,66 @@ public class ImageHelper implements IImageHelper {
 	 * @return
 	 */
 	public static Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
-		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
-		InputStream ins = image.getInputStream();
+		OutputStream bos = null;
+		ImageInputStream ins = null;
 		try {
-			BufferedImage imageSrc = ImageIO.read(ins);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
-				// unsupported image format
-				return null;				
+			ins = getInputStream(image);
+			String extension = FileUtils.getFileSuffix(image.getName());
+			SizeAndBufferedImage scaledSize = calcScaledSize(ins, extension, maxWidth, maxHeight);
+			if(scaledSize == null || scaledSize.getImage() == null) {
+				return null;
 			}
-			Size scaledSize = calcScaledSize(imageSrc, maxWidth, maxHeight);
-			if(!scaledSize.isChanged() && isSameFormat(image, scaledImage)) {
+			
+			ins = getInputStream(image);
+			bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
+			if(!scaledSize.getScaledSize().isChanged() && isSameFormat(image, scaledImage)) {
 				InputStream cloneIns = image.getInputStream();
-				FileUtils.copy(cloneIns, bos);
-				FileUtils.closeSafely(cloneIns);
-				return scaledSize;
-			} else if(writeTo(scaleTo(imageSrc, scaledSize), bos, scaledSize, getImageFormat(scaledImage))) {
-				return scaledSize;
+				IOUtils.copy(cloneIns, bos);
+				IOUtils.closeQuietly(cloneIns);
+				return scaledSize.getScaledSize();
+			} else {
+				BufferedImage imageSrc = scaledSize.getImage();
+				BufferedImage scaledSrc = scaleTo(imageSrc, scaledSize.getScaledSize());
+				boolean scaled = writeTo(scaledSrc, bos, scaledSize.getScaledSize(), getImageFormat(scaledImage));
+				if(scaled) {
+					return scaledSize.getScaledSize();
+				}
+				return null;
 			}
-			return null;
 		} catch (IOException e) {
 			return null;
 		//fxdiff FXOLAT-109: prevent red screen if the image has wrong EXIF data
 		} catch (CMMException e) {
 			return null;
 		} finally {
-			FileUtils.closeSafely(ins);
+			closeQuietly(ins);
 			FileUtils.closeSafely(bos);
 		}
 	}
 	
+	/**
+	 * 
+	 * @param leaf
+	 * @return
+	 */
+	private static ImageInputStream getInputStream(VFSLeaf leaf)
+	throws IOException {
+		if(leaf instanceof LocalFileImpl) {
+			LocalFileImpl file = (LocalFileImpl)leaf;
+			return new FileImageInputStream(file.getBasefile());
+		}
+		return new MemoryCacheImageInputStream(leaf.getInputStream());
+	}
+	
 	public static Size scaleImage(BufferedImage image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
-		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
+		OutputStream bos = null;
 		try {
 			if (image == null) {
 				// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
 				// unsupported image format
 				return null;				
 			}
+			bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 			Size scaledSize = calcScaledSize(image, maxWidth, maxHeight);
 			if(writeTo(scaleTo(image, scaledSize), bos, scaledSize, getImageFormat(scaledImage))) {
 				return scaledSize;
@@ -212,23 +244,26 @@ public class ImageHelper implements IImageHelper {
 	 * @return
 	 */
 	public static boolean scaleImage(File image, String imageExt, File scaledImage, int maxWidth, int maxHeight) {
+		ImageInputStream imageSrc = null;
 		try {
-			BufferedImage imageSrc = ImageIO.read(image);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
-				// unsupported image format
-				return false;				
+			imageSrc = new FileImageInputStream(image);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight);
+			if(scaledSize == null || scaledSize.image == null) {
+				return false;
 			}
-			Size scaledSize = calcScaledSize(imageSrc, maxWidth, maxHeight);
-			if(!scaledSize.isChanged() && isSameFormat(image, imageExt, scaledImage)) {
+			if(!scaledSize.getScaledSize().isChanged() && isSameFormat(image, imageExt, scaledImage)) {
 				return FileUtils.copyFileToFile(image, scaledImage, false);
 			}
-			return writeTo(scaleTo(imageSrc, scaledSize), scaledImage, scaledSize, getImageFormat(scaledImage));
+			BufferedImage bufferedImage = scaledSize.image;
+			BufferedImage scaledBufferedImage = scaleTo(bufferedImage, scaledSize.getScaledSize());
+			return writeTo(scaledBufferedImage, scaledImage, scaledSize.getScaledSize(), getImageFormat(scaledImage));
 		} catch (IOException e) {
 			return false;
 		//fxdiff FXOLAT-109: prevent red screen if the image has wrong EXIF data
 		} catch (CMMException e) {
 			return false;
+		} finally {
+			closeQuietly(imageSrc);
 		}
 	}
 	
@@ -246,6 +281,15 @@ public class ImageHelper implements IImageHelper {
 			return extension.toLowerCase();
 		}
 		return OUTPUT_FORMAT;
+	}
+	
+	private static boolean isSameFormat(File source, VFSLeaf scaled) {
+		String sourceExt = FileUtils.getFileSuffix(source.getName());
+		String scaledExt = getImageFormat(scaled);
+		if(sourceExt != null && sourceExt.equals(scaledExt)) {
+			return true;
+		}
+		return false;
 	}
 	
 	private static boolean isSameFormat(VFSLeaf source, VFSLeaf scaled) {
@@ -269,28 +313,6 @@ public class ImageHelper implements IImageHelper {
 	}
 	
 	/**
-	 * @param image the image to scale
-	 * @param scaledImaged the new scaled image
-	 * @param maxWidth the maximum width of the new scaled image
-	 * @param maxheight the maximum height of the new scaled image
-	 * @return
-	 */
-	public static boolean scaleImage(InputStream image, OutputStream scaledImage, int maxWidth, int maxHeight, String outputFormat) {
-		try {
-			BufferedImage imageSrc = ImageIO.read(image);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
-				// unsupported image format
-				return false;				
-			}
-			Size scaledSize = calcScaledSize(imageSrc, maxWidth, maxHeight);
-			return writeTo(scaleTo(imageSrc, scaledSize), scaledImage, scaledSize, outputFormat);
-		} catch (IOException e) {
-			return false;
-		}
-	}
-	
-	/**
 	 * Calculate the size of the new image. The method keep the ratio and doesn't
 	 * scale up the image.
 	 * @param image the image to scale
@@ -301,7 +323,51 @@ public class ImageHelper implements IImageHelper {
 	private static Size calcScaledSize(BufferedImage image, int maxWidth, int maxHeight) {
 		int width = image.getWidth();
 		int height = image.getHeight();
-		
+		return computeScaledSize(width, height, maxWidth, maxHeight);
+	}
+	
+
+	
+	private static SizeAndBufferedImage calcScaledSize(ImageInputStream stream, String suffix, int maxWidth, int maxHeight) {
+    Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+    if (iter.hasNext()) {
+        ImageReader reader = iter.next();
+        try {
+            reader.setInput(stream);
+            int width = reader.getWidth(reader.getMinIndex());
+            int height = reader.getHeight(reader.getMinIndex());
+            Size size = new Size(width, height, false);
+            Size scaledSize = computeScaledSize(width, height, maxWidth, maxHeight);
+            SizeAndBufferedImage  all = new SizeAndBufferedImage(size, scaledSize);
+            
+            double memoryKB = (width * height * 4) / 1024d;
+            if(memoryKB > 2000) {//check limit at 20MB
+            	double free = Runtime.getRuntime().freeMemory() / 1024d;
+            	if(free > memoryKB) {
+                all.setImage(reader.read(reader.getMinIndex()));
+            	} else {
+            		//make sub sampling to save memory
+            		int ratio = (int)Math.round(Math.sqrt(memoryKB / free));
+            		ImageReadParam param = reader.getDefaultReadParam();
+            		param.setSourceSubsampling(ratio, ratio, 0, 0);
+                all.setImage(reader.read(reader.getMinIndex(), param));
+            	}
+            } else {
+            	all.setImage(reader.read(reader.getMinIndex()));
+            }
+            return all;
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } finally {
+            reader.dispose();
+        }
+    } else {
+        log.error("No reader found for given format: " + suffix, null);
+    }
+    return null;
+	}
+	
+	private static Size computeScaledSize(int width, int height, int maxWidth, int maxHeight) {
 		if(maxHeight > height && maxWidth > width) {
 			return new Size(width, height, false);
     }
@@ -497,6 +563,43 @@ public class ImageHelper implements IImageHelper {
     } while (w != dstWidth || h != dstHeight);
 
     return ret;
+	}
+	
+	private final static void closeQuietly(ImageInputStream ins) {
+		if(ins != null) {
+			try {
+				ins.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static final class SizeAndBufferedImage {
+		private Size size;
+		private Size scaledSize;
+		private BufferedImage image;
+		
+		public SizeAndBufferedImage(Size size, Size scaledSize) {
+			this.size = size;
+			this.scaledSize = scaledSize;
+		}
+		
+		public Size getSize() {
+			return size;
+		}
+		
+		public Size getScaledSize() {
+			return scaledSize;
+		}
+
+		public BufferedImage getImage() {
+			return image;
+		}
+
+		public void setImage(BufferedImage image) {
+			this.image = image;
+		}
 	}
 	
 	public static final class Size {
