@@ -152,24 +152,26 @@ div.b_eportfolio_collect_restriction {
 		a:hover { text-decoration:none }
 	}
 }
+
 	
 div.b_eportfolio_restriction_wrapper {
-	a.b_togglebox_opened { z-index:10; display:block; width:9px; height:9px; padding:0; margin-left:12px; }
-	a.b_togglebox_closed { display:block; width:9px; height:9px; padding:0; margin-left:12px; }
+	a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px; padding:0; margin-left:12px; }
+	a.b_togglebox_closed { display:block; width:20px; height:20px; padding:0; margin-left:12px; }
 	p { padding:0 0 0 15px; margin:0; }
 	div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; @include o-border-radius(3px); }
 }
-	
-  div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../openolat/images/decorator/deco_warn.png) no-repeat 3px 2px !important; }
-  div.b_eportfolio_restriction_passed div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #F0F0F0 !important; background:#FCFCFC url(../openolat/images/decorator/deco_ok.png) no-repeat 3px 2px !important; }
-  div.b_eportfolio_restriction_error div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_warn.png) no-repeat top left !important; }
-  div.b_eportfolio_restriction_passed div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_ok.png) no-repeat top left !important; }
-  div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content .b_togglebox_hide { display:none; }
+		
+/* restriction info on a map */
+div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../openolat/images/decorator/deco_warn.png) no-repeat 3px 7px !important; }
+div.b_eportfolio_restriction_passed div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #F0F0F0 !important; background:#FCFCFC url(../openolat/images/decorator/deco_ok.png) no-repeat 3px 7px !important; }
+div.b_eportfolio_restriction_error div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_warn.png) no-repeat  3px 5px !important; }
+div.b_eportfolio_restriction_passed div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_ok.png) no-repeat  3px 5px !important; }
+div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content .b_togglebox_hide { display:none; }
  
-	.b_eportfolio_deadline_callout { width:300px; }
-	.b_ep_multiartefacts .b_c50l { clear: both; }
-	.b_eportfolio_fulltextsearch { float:left; }
-	.b_eportfolio_fulltextsearch div.b_form div.b_form_element_wrapper.b_form_horizontal { }
+.b_eportfolio_deadline_callout { width:300px; }
+.b_ep_multiartefacts .b_c50l { clear: both; }
+.b_eportfolio_fulltextsearch { float:left; }
+.b_eportfolio_fulltextsearch div.b_form div.b_form_element_wrapper.b_form_horizontal { }
 	
 .b_eportfolio_share_policy_wrapper { 
 	margin: 5px; border: 1px solid #ddd; padding: 1em; 
