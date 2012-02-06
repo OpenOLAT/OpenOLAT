@@ -68,7 +68,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.indexer.identity.PortfolioArtefactIndexer;
-import org.olat.search.service.searcher.SearchClientProxy;
+import org.olat.search.service.searcher.SearchClient;
 
 /**
  * 
@@ -91,7 +91,7 @@ public class EPFrontendManager extends BasicManager {
 	private final TaggingManager taggingManager;
 	private final AssessmentNotificationsHandler assessmentNotificationsHandler;
 	private final DB dbInstance;
-	private SearchClientProxy searchClient;
+	private SearchClient searchClient;
 	private final EPSettingsManager settingsManager; 
 	private final EPPolicyManager policyManager;
 	private PortfolioModule portfolioModule;
@@ -118,7 +118,7 @@ public class EPFrontendManager extends BasicManager {
 	 * [used by Spring]
 	 * @param searchClient
 	 */
-	public void setSearchClient(SearchClientProxy searchClient) {
+	public void setSearchClient(SearchClient searchClient) {
 		this.searchClient = searchClient;
 	}
 
