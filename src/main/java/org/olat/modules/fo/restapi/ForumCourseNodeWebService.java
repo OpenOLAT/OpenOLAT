@@ -45,6 +45,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -273,6 +274,32 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		}
 	}
 	
+	@Path("{nodeId}/forum")
+	public ForumWebService getForumContent(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
+		ICourse course = loadCourse(courseId);
+		if(course == null) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+
+		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
+		if(courseNode == null || !(courseNode instanceof FOCourseNode)) {
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		}
+
+		UserRequest ureq = getUserRequest(request);
+		FOCourseNode forumNode = (FOCourseNode)courseNode;
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
+		NodeEvaluation ne = forumNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+
+		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
+		if(mayAccessWholeTreeUp) {
+			Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
+			return new ForumWebService(forum);
+		} else {
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+		}
+	}
+	
 	/**
 	 * Creates a new thread in the forum of the course node
 	 * @response.representation.200.qname {http://www.example.com}messageVO
@@ -289,6 +316,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @param sticky Creates sticky thread.
 	 * @param request The HTTP request
 	 * @return The new thread
+	 * 
+	 * @deprecated use the {nodeId}/forum/threads instead
 	 */
 	@PUT
 	@Path("{nodeId}/thread")
@@ -316,6 +345,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @param identityName The author identity name (optional)
 	 * @param request The HTTP request
 	 * @return The new thread
+	 * 
+	 * @deprecated use the {nodeId}/forum/messages instead
 	 */
 	@PUT
 	@Path("{nodeId}/message")

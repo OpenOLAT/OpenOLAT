@@ -45,6 +45,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
+import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -85,7 +86,7 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetFolderInfo() throws IOException, URISyntaxException {
+	public void testGetForumInfo() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
@@ -99,7 +100,7 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetFoldersInfo() throws IOException, URISyntaxException {
+	public void testGetForumsInfo() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
@@ -115,9 +116,28 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		assertEquals(1, forums.getForums().length);
 	}
 	
+	@Test
+	public void testGetForum() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		boolean loggedIN = conn.login("administrator", "openolat");
+		assertTrue(loggedIN);
+
+		URI uri = UriBuilder.fromUri(getForumURI()).path("threads").build();
+		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(get);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
+		assertNotNull(threads);
+	}
+	
 	private URI getNodeURI() {
 		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(course1.getResourceableId().toString())
 			.path("elements").path("forum").path(forumNode.getIdent()).build();
+	}
+	
+	private URI getForumURI() {
+		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(course1.getResourceableId().toString())
+			.path("elements").path("forum").path(forumNode.getIdent()).path("forum").build();
 	}
 	
 	private URI getNodesURI() {
