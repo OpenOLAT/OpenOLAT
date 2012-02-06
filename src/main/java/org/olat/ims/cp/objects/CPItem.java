@@ -151,6 +151,8 @@ public class CPItem extends DefaultElement implements CPNode {
 	 * @see org.olat.ims.cp.objects.CPNode#getXML(java.lang.StringBuilder)
 	 */
 	public void buildDocument(DefaultElement parent) {
+		if(!validateElement()) return;
+		
 		DefaultElement itemElement = new DefaultElement(CPCore.ITEM);
 
 		itemElement.addAttribute(CPCore.IDENTIFIER, identifier);
