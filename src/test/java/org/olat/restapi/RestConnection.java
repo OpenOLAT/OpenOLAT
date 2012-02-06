@@ -179,6 +179,18 @@ public class RestConnection {
 		return getBaseURI().path(CONTEXT_PATH);
 	}
 	
+	public <U> U parse(HttpResponse response, Class<U> cl) {
+		try {
+			InputStream body = response.getEntity().getContent();
+			ObjectMapper mapper = new ObjectMapper(jsonFactory);
+			U obj = mapper.readValue(body, cl);
+			return obj;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	public <U> U parse(InputStream body, Class<U> cl) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory);

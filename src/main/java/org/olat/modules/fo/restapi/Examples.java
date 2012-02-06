@@ -35,6 +35,8 @@ public class Examples {
 	public static final MessageVOes SAMPLE_MESSAGEVOes = new MessageVOes();
 	
 	public static final ForumVO SAMPLE_FORUMVO = new ForumVO();
+	
+	public static final ForumVOes SAMPLE_FORUMVOes = new ForumVOes();
   
   static {
   	SAMPLE_MESSAGEVO.setKey(380l);
@@ -45,5 +47,13 @@ public class Examples {
   	SAMPLE_MESSAGEVOes.setTotalCount(1);
   	
   	SAMPLE_FORUMVO.setForumKey(28294l);
+  	SAMPLE_FORUMVO.setCourseKey(286l);
+  	SAMPLE_FORUMVO.setCourseNodeId("2784628");
+  	SAMPLE_FORUMVO.setDetailsName("It is a forum");
+  	SAMPLE_FORUMVO.setForumKey(3865487l);
+  	SAMPLE_FORUMVO.setName("My forum");
+  	
+  	SAMPLE_FORUMVOes.setTotalCount(1);
+  	SAMPLE_FORUMVOes.setForums(new ForumVO[]{SAMPLE_FORUMVO});
   }
 }

@@ -39,6 +39,7 @@
 				<value>org.olat.restapi.repository.course.CourseResourceFolderWebService</value>
 				<value>org.olat.course.nodes.co.COWebService</value>
 				<value>org.olat.course.nodes.en.ENWebService</value>
+				<value>org.olat.course.nodes.bc.BCWebService</value>
 				<value>org.olat.modules.fo.restapi.ForumImportWebService</value>
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
 				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>

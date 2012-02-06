@@ -170,63 +170,12 @@ public class CourseWebService {
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		publishCourse(course, ureq.getIdentity(), locale);
+		CourseFactory.publishCourse(course, ureq.getIdentity(), locale);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
 	
-	/**
-	 * Publish a course
-	 * 
-	 * @param course
-	 * @param identity
-	 * @param locale
-	 */
-	private void publishCourse(ICourse course, Identity identity, Locale locale) {
-		try {
-			 CourseEditorTreeModel cetm = course.getEditorTreeModel();
-			 PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, locale);
-			 PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
 
-			 int newAccess = RepositoryEntry.ACC_USERS;
-			 //access rule -> all users can the see course
-			 //RepositoryEntry.ACC_OWNERS
-			 //only owners can the see course
-			 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
-			 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
-			 //fxdiff VCRP-1,2: access control of resources
-			 publishProcess.changeGeneralAccess(null, newAccess, false);
-			 
-			 if (publishTreeModel.hasPublishableChanges()) {
-				 List<String>nodeToPublish = new ArrayList<String>();
-				 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
-
-			 	publishProcess.createPublishSetFor(nodeToPublish);
-			 	StatusDescription[] status = publishProcess.testPublishSet(locale);
-			 	//publish not possible when there are errors
-			 	for(int i = 0; i < status.length; i++) {
-			 		if(status[i].isError()) return;
-			 	}
-			 }
-
-			 course = CourseFactory.openCourseEditSession(course.getResourceableId());
-			 publishProcess.applyPublishSet(identity, locale);
-			 CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	private void visitPublishModel(TreeNode node, PublishTreeModel publishTreeModel, Collection<String> nodeToPublish) {
-		int numOfChildren = node.getChildCount();
-		for (int i = 0; i < numOfChildren; i++) {
-			INode child = node.getChildAt(i);
-			if (child instanceof TreeNode) {
-				nodeToPublish.add(child.getIdent());
-				visitPublishModel((TreeNode) child, publishTreeModel, nodeToPublish);
-			}
-		}
-	}
 
 	/**
 	 * Get the metadatas of the course by id

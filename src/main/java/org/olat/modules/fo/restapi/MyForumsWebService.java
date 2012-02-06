@@ -119,7 +119,7 @@ public class MyForumsWebService {
 	}
 	
 	/**
-	 * Retrieves the folrum of a course building block
+	 * Retrieves the forum of a course building block
 	 * @response.representation.200.qname {http://www.example.com}fileVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The files

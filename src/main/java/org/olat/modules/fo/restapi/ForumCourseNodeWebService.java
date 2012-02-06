@@ -24,13 +24,21 @@
 */
 package org.olat.modules.fo.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -44,12 +52,21 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.Subscriber;
 import org.olat.course.ICourse;
+import org.olat.course.Structure;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.run.navigation.NavigationHandler;
+import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.TreeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
@@ -69,6 +86,64 @@ import org.olat.restapi.security.RestSecurityHelper;
  */
 @Path("repo/courses/{courseId}/elements/forum")
 public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
+	
+	/**
+	 * Retrieves metadata of the published course node
+	 * @response.representation.200.qname {http://www.example.com}forumVOes
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVOes}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param httpRequest The HTTP request
+	 * @return The persisted structure element (fully populated)
+	 */
+	@GET
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getForums(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
+		
+		ICourse course = loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		UserRequest ureq = getUserRequest(httpRequest);
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
+
+		Set<Long> subcribedForums = new HashSet<Long>();
+		NotificationsManager man = NotificationsManager.getInstance();
+		List<String> notiTypes = Collections.singletonList("Forum");
+		List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
+		for(Subscriber sub:subs) {
+			Long forumKey = Long.parseLong(sub.getPublisher().getData());
+			subcribedForums.add(forumKey);
+		}
+		
+		List<ForumVO> forumVOs = new ArrayList<ForumVO>();
+		List<FOCourseNode> forumNodes = getFOCourseNodes(course);
+		for(FOCourseNode forumNode:forumNodes) {
+			NodeEvaluation ne = forumNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+
+			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
+			if(mayAccessWholeTreeUp) {
+				Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
+				ForumVO forumVo = new ForumVO(forum);
+				forumVo.setName(course.getCourseTitle());
+				forumVo.setDetailsName(forumNode.getShortTitle());
+				forumVo.setSubscribed(subcribedForums.contains(forum.getKey()));
+				forumVo.setForumKey(forum.getKey());
+				forumVo.setCourseKey(course.getResourceableId());
+				forumVo.setCourseNodeId(forumNode.getIdent());
+				forumVOs.add(forumVo);
+			}
+		}
+		
+		ForumVOes voes = new ForumVOes();
+		voes.setForums(forumVOs.toArray(new ForumVO[forumVOs.size()]));
+		voes.setTotalCount(forumVOs.size());
+		return Response.ok(voes).build();
+	}
 
 	/**
 	 * This attaches a Forum Element onto a given course. The element will be
@@ -135,6 +210,67 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			@QueryParam("readerExpertRules") String readerExpertRules, @Context HttpServletRequest request) {
 		ForumCustomConfig config = new ForumCustomConfig(moderatorExpertRules, posterExpertRules, readerExpertRules);
 		return attach(courseId, parentNodeId, "fo", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	}
+	
+	/**
+	 * Retrieves metadata of the published course node
+	 * @response.representation.200.qname {http://www.example.com}forumVO
+   * @response.representation.200.mediaType application/xml, application/json
+   * @response.representation.200.doc The course node metadatas
+   * @response.representation.200.example {@link org.olat.modules.fo.restapi.Examples#SAMPLE_FORUMVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+   * @response.representation.404.doc The course or parentNode not found
+	 * @param courseId The course resourceable's id
+	 * @param nodeId The node's id
+	 * @param httpRequest The HTTP request
+	 * @return The persisted structure element (fully populated)
+	 */
+	@GET
+	@Path("{nodeId}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
+		ICourse course = loadCourse(courseId);
+		if(course == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
+		if(courseNode == null || !(courseNode instanceof FOCourseNode)) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		UserRequest ureq = getUserRequest(httpRequest);
+		FOCourseNode forumNode = (FOCourseNode)courseNode;
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
+		NodeEvaluation ne = forumNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+
+		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
+		if(mayAccessWholeTreeUp) {
+			Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
+			
+			ForumVO forumVo = new ForumVO();
+			forumVo.setName(course.getCourseTitle());
+			forumVo.setDetailsName(forumNode.getShortTitle());
+
+			boolean subscribed = false;
+			NotificationsManager man = NotificationsManager.getInstance();
+			List<String> notiTypes = Collections.singletonList("Forum");
+			List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
+			for(Subscriber sub:subs) {
+				Long forumKey = Long.parseLong(sub.getPublisher().getData());
+				if(forumKey.equals(forum.getKey())) {
+					subscribed = true;
+					break;
+				}
+			}
+			
+			forumVo.setSubscribed(subscribed);
+			forumVo.setCourseKey(course.getResourceableId());
+			forumVo.setCourseNodeId(forumNode.getIdent());
+			return Response.ok(forumVo).build();
+		} else {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 	}
 	
 	/**
@@ -324,6 +460,36 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			}
 			if(StringHelper.containsNonWhitespace(preConditionReader)) {
 				((FOCourseNode)newNode).setPreConditionReader(createExpertCondition("reader", preConditionReader));
+			}
+		}
+	}
+	
+	private List<FOCourseNode> getFOCourseNodes(ICourse course) {
+		List<FOCourseNode> bcNodes = new ArrayList<FOCourseNode>();
+		Structure courseStruct = course.getRunStructure();
+		getFOCourseNodes(courseStruct.getRootNode(), bcNodes);
+		return bcNodes;
+	}
+
+	/**
+	 * Recursive step used by <code>getBCCourseNodes(ICourse)</code>.<br>
+	 * <br>
+	 * <b>PRE CONDITIONS</b>
+	 * <ul>
+	 * <li> <code>course != null</code>
+	 * <li> <code>result != null</code>
+	 * </ul>
+	 * 
+	 * @see #getBCCourseNodes(ICourse)
+	 */
+	private void getFOCourseNodes(INode node, List<FOCourseNode> result) {
+		if (node != null) {
+			if (node instanceof FOCourseNode) {
+				result.add((FOCourseNode) node);
+			}
+
+			for (int i = 0; i < node.getChildCount(); i++) {
+				getFOCourseNodes(node.getChildAt(i), result);
 			}
 		}
 	}
