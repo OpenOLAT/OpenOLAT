@@ -808,6 +808,9 @@ public class MailManager extends BasicManager {
 			} else {
 				// fxdiff: change from/replyto, see FXOLAT-74 . if no from is set, use default sysadmin-address (adminemail).
 				from = createAddress(WebappHelper.getMailConfig("mailReplyTo"));
+				if(from == null) {
+					logError("MailConfigError: mailReplyTo is not set", null);
+				}
 			}
 
 			List<Address> toList = new ArrayList<Address>();
@@ -875,6 +878,7 @@ public class MailManager extends BasicManager {
 	}
 	
 	private Address createAddress(String address) throws AddressException {
+		if(address == null) return null;
 		return new InternetAddress(address);
 	}
 	

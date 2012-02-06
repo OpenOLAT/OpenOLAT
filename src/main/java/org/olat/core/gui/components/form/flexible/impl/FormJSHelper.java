@@ -147,6 +147,15 @@ public class FormJSHelper {
 		return sb.toString();
 	}
 	
+	/**
+	 * OO-98 : a fix in FormUIFactory changed the id from "null" to
+	 * "something.like.this" for selectionElements (like radio-buttons)
+	 * this led to js-errors because output was:  var o_fisomething.like.this [..]
+	 * now this method ensures that the id does not contain dots 
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public static String secureJSVarName(String id){
 		return id.replace(".", "_");
 	}
