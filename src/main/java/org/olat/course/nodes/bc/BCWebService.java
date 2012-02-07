@@ -374,7 +374,11 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		FolderVO folderVo = new FolderVO();
 		folderVo.setName(course.getCourseTitle());
 		folderVo.setDetailsName(bcNode.getShortTitle());
-		folderVo.setSubscribed(subscribed.contains(bcNode.getIdent()));
+		if(subscribed != null && subscribed.contains(bcNode.getIdent())) {
+			folderVo.setSubscribed(true);
+		} else {
+			folderVo.setSubscribed(false);
+		}
 		folderVo.setCourseKey(course.getResourceableId());
 		folderVo.setCourseNodeId(bcNode.getIdent());
 		folderVo.setWrite(secCallback.canWrite());
