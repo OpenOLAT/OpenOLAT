@@ -45,9 +45,11 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -55,14 +57,22 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.FOCourseNode;
+import org.olat.course.nodes.bc.BCWebService;
+import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.fo.restapi.ForumCourseNodeWebService;
+import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
@@ -71,11 +81,16 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
+import org.olat.restapi.support.vo.CourseInfoVO;
+import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
+import org.olat.restapi.support.vo.FolderVO;
 
 /**
  * 
@@ -143,6 +158,88 @@ public class CoursesWebService {
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}
+	}
+	
+
+	/**
+	 * Get courses informations viewable by the authenticated user
+	 * @response.representation.200.qname {http://www.example.com}courseVO
+	 * @response.representation.200.mediaType application/xml, application/json, application/json;pagingspec=1.0
+	 * @response.representation.200.doc List of visible courses
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVOes}
+	 * @param start
+	 * @param limit
+	 * @param httpRequest The HTTP request
+	 * @param request The REST request
+	 * @return
+	 */
+	@GET
+	@Path("infos")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getCourseInfoList(@QueryParam("start") @DefaultValue("0") Integer start,
+			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
+			@Context Request request) {
+		RepositoryManager rm = RepositoryManager.getInstance();
+
+		//fxdiff VCRP-1,2: access control of resources
+		Roles roles = getRoles(httpRequest);
+		Identity identity = getIdentity(httpRequest);
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
+		if(MediaTypeVariants.isPaged(httpRequest, request)) {
+			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
+			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
+			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>(); 
+			
+			for(RepositoryEntry entry:repoEntries) {
+				CourseInfoVO info = collect(identity, roles, entry);
+				if(info != null) {
+					infos.add(info);
+				}
+			}
+
+			CourseInfoVO[] vos = infos.toArray(new CourseInfoVO[infos.size()]);
+			CourseInfoVOes voes = new CourseInfoVOes();
+			voes.setInfos(vos);
+			voes.setTotalCount(totalCount);
+			return Response.ok(voes).build();
+		} else {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+	}
+	
+	private CourseInfoVO collect(Identity identity, Roles roles, RepositoryEntry entry) {
+		CourseInfoVO info = new CourseInfoVO();
+		info.setRepoEntryKey(entry.getKey());
+		info.setSoftKey(entry.getSoftkey());
+		info.setDisplayName(entry.getDisplayname());
+
+		ACFrontendManager acManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		AccessResult result = acManager.isAccessible(entry, identity, false);
+		if(result.isAccessible()) {
+			final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			final List<FolderVO> folders = new ArrayList<FolderVO>();
+			final List<ForumVO> forums = new ArrayList<ForumVO>();
+			final IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
+
+			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
+				@Override
+				public void visit(INode node) {
+					if(node instanceof BCCourseNode) {
+						BCCourseNode bcNode = (BCCourseNode)node;
+						folders.add(BCWebService.createFolderVO(ienv, course, bcNode, false));
+					} else if (node instanceof FOCourseNode) {
+						FOCourseNode forumNode = (FOCourseNode)node;
+						forums.add(ForumCourseNodeWebService.createForumVO(course, forumNode, null));
+					}
+				}
+			});
+			
+			info.setKey(course.getResourceableId());
+			info.setTitle(course.getCourseTitle());
+			info.setFolders(folders.toArray(new FolderVO[folders.size()]));
+			info.setForums(forums.toArray(new ForumVO[forums.size()]));
+		}
+		return info;
 	}
 	
 	private CourseVO[] toCourseVo(List<RepositoryEntry> repoEntries) {

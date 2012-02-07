@@ -45,21 +45,20 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
+import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.ICourse;
-import org.olat.course.Structure;
 import org.olat.course.condition.Condition;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.support.vo.FolderVO;
@@ -94,15 +93,12 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolders(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		
-		ICourse course = loadCourse(courseId);
+		final ICourse course = loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
-		UserRequest ureq = getUserRequest(httpRequest);
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-
+		final UserRequest ureq = getUserRequest(httpRequest);
 		boolean subscribed = false;
 		NotificationsManager man = NotificationsManager.getInstance();
 		List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -115,23 +111,19 @@ public class BCWebService extends AbstractCourseNodeWebService {
 			}
 		}
 		
-		List<FolderVO> folderVOs = new ArrayList<FolderVO>();
-		List<BCCourseNode> bcNodes = getBCCourseNodes(course);
-		for(BCCourseNode bcNode:bcNodes) {
-			NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-			if(mayAccessWholeTreeUp) {
-				FolderVO folderVo = new FolderVO();
-				folderVo.setName(course.getCourseTitle());
-				folderVo.setDetailsName(bcNode.getShortTitle());
-				folderVo.setSubscribed(subscribed);
-				folderVo.setCourseKey(course.getResourceableId());
-				folderVo.setCourseNodeId(bcNode.getIdent());
-				folderVOs.add(folderVo);
+		final boolean subscribed_ = subscribed;
+		final List<FolderVO> folderVOs = new ArrayList<FolderVO>();
+		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof BCCourseNode) {
+					BCCourseNode bcNode = (BCCourseNode)node;
+					FolderVO folder = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, bcNode, subscribed_);
+					folderVOs.add(folder);
+				}
 			}
-		}
-		
+		});
+
 		FolderVOes voes = new FolderVOes();
 		voes.setFolders(folderVOs.toArray(new FolderVO[folderVOs.size()]));
 		voes.setTotalCount(folderVOs.size());
@@ -268,16 +260,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
-		BCCourseNode bcNode = (BCCourseNode)courseNode;
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-		NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-		if(mayAccessWholeTreeUp) {
-			FolderVO folderVo = new FolderVO();
-			folderVo.setName(course.getCourseTitle());
-			folderVo.setDetailsName(bcNode.getShortTitle());
-
+		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode);
+		if(accessible) {
 			boolean subscribed = false;
 			NotificationsManager man = NotificationsManager.getInstance();
 			List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -289,10 +273,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 					break;
 				}
 			}
-			
-			folderVo.setSubscribed(subscribed);
-			folderVo.setCourseKey(course.getResourceableId());
-			folderVo.setCourseNodeId(bcNode.getIdent());
+
+			FolderVO folderVo = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, (BCCourseNode)courseNode, subscribed);
 			return Response.ok(folderVo).build();
 		} else {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -325,16 +307,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		
 		BCCourseNode bcNode = (BCCourseNode)node;
 		UserRequest ureq = getUserRequest(request);
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-		NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-
-		OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
-		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, isOlatAdmin, isGuestOnly, null);
-		container.setLocalSecurityCallback(secCallback);
-		
+		VFSContainer container = BCCourseNode.getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ureq.getUserSession().getIdentityEnvironment());
 		return new VFSWebservice(container);
 	}
 
@@ -369,33 +342,20 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}	
 	}
 	
-	private List<BCCourseNode> getBCCourseNodes(ICourse course) {
-		List<BCCourseNode> bcNodes = new ArrayList<BCCourseNode>();
-		Structure courseStruct = course.getRunStructure();
-		getBCCourseNodes(courseStruct.getRootNode(), bcNodes);
-		return bcNodes;
-	}
-
-	/**
-	 * Recursive step used by <code>getBCCourseNodes(ICourse)</code>.<br>
-	 * <br>
-	 * <b>PRE CONDITIONS</b>
-	 * <ul>
-	 * <li> <code>course != null</code>
-	 * <li> <code>result != null</code>
-	 * </ul>
-	 * 
-	 * @see #getBCCourseNodes(ICourse)
-	 */
-	private void getBCCourseNodes(INode node, List<BCCourseNode> result) {
-		if (node != null) {
-			if (node instanceof BCCourseNode) {
-				result.add((BCCourseNode) node);
-			}
-
-			for (int i = 0; i < node.getChildCount(); i++) {
-				getBCCourseNodes(node.getChildAt(i), result);
-			}
-		}
+	public static FolderVO createFolderVO(IdentityEnvironment ienv, ICourse course, BCCourseNode bcNode, boolean subscribed) {
+		OlatNamedContainerImpl container = BCCourseNode.getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ienv);
+		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+		
+		FolderVO folderVo = new FolderVO();
+		folderVo.setName(course.getCourseTitle());
+		folderVo.setDetailsName(bcNode.getShortTitle());
+		folderVo.setSubscribed(subscribed);
+		folderVo.setCourseKey(course.getResourceableId());
+		folderVo.setCourseNodeId(bcNode.getIdent());
+		folderVo.setWrite(secCallback.canWrite());
+		folderVo.setRead(secCallback.canRead());
+		folderVo.setDelete(secCallback.canDelete());
+		folderVo.setList(secCallback.canList());
+		return folderVo;
 	}
 }

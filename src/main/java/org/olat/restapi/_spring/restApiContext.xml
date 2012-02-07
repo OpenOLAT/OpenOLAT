@@ -33,6 +33,7 @@
 				<value>org.olat.restapi.repository.RepositoryEntriesResource</value>
 				<value>org.olat.restapi.repository.course.CourseWebService</value>
 				<value>org.olat.restapi.repository.course.CoursesWebService</value>
+				<value>org.olat.restapi.repository.course.CoursesInfosWebService</value>
 				<value>org.olat.restapi.repository.course.CourseElementWebService</value>
 				<value>org.olat.restapi.repository.course.CourseAssessmentWebService</value>
 				<value>org.olat.restapi.repository.course.CourseFolderWebService</value>

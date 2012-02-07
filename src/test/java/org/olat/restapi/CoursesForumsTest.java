@@ -47,6 +47,7 @@ import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.test.OlatJerseyTestCase;
 
 /**
@@ -128,6 +129,21 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		assertNotNull(threads);
+	}
+	
+	@Test
+	public void testGetCourseInfos() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		boolean loggedIN = conn.login("administrator", "openolat");
+		assertTrue(loggedIN);
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path("infos").build();
+
+		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(get);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseInfoVOes infos = conn.parse(response, CourseInfoVOes.class);
+		assertNotNull(infos);
 	}
 	
 	private URI getNodeURI() {

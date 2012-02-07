@@ -48,10 +48,8 @@ import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -60,7 +58,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -70,12 +67,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.bc.FolderNodeCallback;
-import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.nodes.bc.BCWebService;
+import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -176,20 +169,12 @@ public class UserFoldersWebService {
 			} else if(!(node instanceof BCCourseNode)) {
 				throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
 			}
-			
-			BCCourseNode bcNode = (BCCourseNode)node;
-			UserRequest ureq = getUserRequest(request);
-			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-			boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-			
-			UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-			NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
 
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-			if(mayAccessWholeTreeUp) {
-				OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
-				VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, isOlatAdmin, isGuestOnly, null);
-				container.setLocalSecurityCallback(secCallback);
+			UserRequest ureq = getUserRequest(request);
+			CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
+			if(courseVisitor.isAccessible(node)) {
+				BCCourseNode bcNode = (BCCourseNode)node;
+				VFSContainer container = BCCourseNode.getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ureq.getUserSession().getIdentityEnvironment());
 				return new VFSWebservice(container);
 			} else {
 				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
@@ -214,7 +199,7 @@ public class UserFoldersWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getForums(@PathParam("identityKey") Long identityKey,
+	public Response getFolders(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		
 		Roles roles;
@@ -232,8 +217,8 @@ public class UserFoldersWebService {
 			roles = getRoles(httpRequest);
 		}
 
-		Map<Long,Long> groupNotified = new HashMap<Long,Long>();
-		Map<Long,Long> courseNotified = new HashMap<Long,Long>();
+		final Map<Long,Long> groupNotified = new HashMap<Long,Long>();
+		final Map<Long,Long> courseNotified = new HashMap<Long,Long>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -250,7 +235,7 @@ public class UserFoldersWebService {
 			}
 		}
 
-		List<FolderVO> folderVOs = new ArrayList<FolderVO>();
+		final List<FolderVO> folderVOs = new ArrayList<FolderVO>();
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		ACFrontendManager acManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
@@ -260,49 +245,19 @@ public class UserFoldersWebService {
 		for(RepositoryEntry entry:entries) {
 			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
 			if(result.isAccessible()) {
-				ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-				CourseNode rootNode = course.getRunStructure().getRootNode();
+				final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+				final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
 				
-				//collect the forums
-				final List<BCCourseNode> bcNodes = new ArrayList<BCCourseNode>();
-				TreeVisitor treeVisitor = new TreeVisitor(new Visitor() {
+				new CourseTreeVisitor(course,  ienv).visit(new Visitor() {
 					@Override
 					public void visit(INode node) {
 						if(node instanceof BCCourseNode) {
-							bcNodes.add((BCCourseNode)node);
+							BCCourseNode bcNode = (BCCourseNode)node;
+							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.containsKey(bcNode.getIdent()));
+							folderVOs.add(folder);
 						}
 					}
-				}, rootNode, false);
-				treeVisitor.visitAll();
-				
-				//check the access
-				if(!bcNodes.isEmpty()) {
-					IdentityEnvironment ienv = new IdentityEnvironment();
-					ienv.setIdentity(retrievedUser);
-					ienv.setRoles(roles);
-					UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-
-					TreeEvaluation treeEval = new TreeEvaluation();
-					rootNode.eval(userCourseEnv.getConditionInterpreter(), treeEval);
-					
-					for(BCCourseNode bcNode:bcNodes) {
-						TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(bcNode);
-						if (newCalledTreeNode != null) {
-							NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-							boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
-							if(mayAccessWholeTreeUp) {
-
-								FolderVO folderVo = new FolderVO();
-								folderVo.setName(course.getCourseTitle());
-								folderVo.setDetailsName(bcNode.getShortTitle());
-								folderVo.setSubscribed(courseNotified.containsKey(bcNode.getIdent()));
-								folderVo.setCourseKey(course.getResourceableId());
-								folderVo.setCourseNodeId(bcNode.getIdent());
-								folderVOs.add(folderVo);
-							}
-						}
-					}
-				}
+				});
 			}
 		}
 		

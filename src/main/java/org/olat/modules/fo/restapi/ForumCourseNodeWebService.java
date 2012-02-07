@@ -59,15 +59,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
-import org.olat.course.Structure;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
@@ -103,16 +100,14 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForums(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		
-		ICourse course = loadCourse(courseId);
+		final ICourse course = loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
 
-		Set<Long> subcribedForums = new HashSet<Long>();
+		final Set<Long> subcribedForums = new HashSet<Long>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		List<String> notiTypes = Collections.singletonList("Forum");
 		List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
@@ -120,26 +115,20 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			Long forumKey = Long.parseLong(sub.getPublisher().getData());
 			subcribedForums.add(forumKey);
 		}
-		
-		List<ForumVO> forumVOs = new ArrayList<ForumVO>();
-		List<FOCourseNode> forumNodes = getFOCourseNodes(course);
-		for(FOCourseNode forumNode:forumNodes) {
-			NodeEvaluation ne = forumNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
 
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-			if(mayAccessWholeTreeUp) {
-				Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
-				ForumVO forumVo = new ForumVO(forum);
-				forumVo.setName(course.getCourseTitle());
-				forumVo.setDetailsName(forumNode.getShortTitle());
-				forumVo.setSubscribed(subcribedForums.contains(forum.getKey()));
-				forumVo.setForumKey(forum.getKey());
-				forumVo.setCourseKey(course.getResourceableId());
-				forumVo.setCourseNodeId(forumNode.getIdent());
-				forumVOs.add(forumVo);
+		final List<ForumVO> forumVOs = new ArrayList<ForumVO>();
+		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(new Visitor() {
+			@Override
+			public void visit(INode node) {
+				if(node instanceof FOCourseNode) {
+					FOCourseNode forumNode = (FOCourseNode)node;
+					
+					ForumVO forum = createForumVO(course, forumNode, subcribedForums);
+					forumVOs.add(forum);
+				}
 			}
-		}
-		
+		});
+
 		ForumVOes voes = new ForumVOes();
 		voes.setForums(forumVOs.toArray(new ForumVO[forumVOs.size()]));
 		voes.setTotalCount(forumVOs.size());
@@ -241,33 +230,20 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
-		FOCourseNode forumNode = (FOCourseNode)courseNode;
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-		NodeEvaluation ne = forumNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+		CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
+		if(courseVisitor.isAccessible(courseNode)) {
+			FOCourseNode forumNode = (FOCourseNode)courseNode;
 
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-		if(mayAccessWholeTreeUp) {
-			Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
-			
-			ForumVO forumVo = new ForumVO();
-			forumVo.setName(course.getCourseTitle());
-			forumVo.setDetailsName(forumNode.getShortTitle());
-
-			boolean subscribed = false;
+			Set<Long> subscriptions = new HashSet<Long>();
 			NotificationsManager man = NotificationsManager.getInstance();
 			List<String> notiTypes = Collections.singletonList("Forum");
 			List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
 			for(Subscriber sub:subs) {
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
-				if(forumKey.equals(forum.getKey())) {
-					subscribed = true;
-					break;
-				}
+				subscriptions.add(forumKey);
 			}
-			
-			forumVo.setSubscribed(subscribed);
-			forumVo.setCourseKey(course.getResourceableId());
-			forumVo.setCourseNodeId(forumNode.getIdent());
+
+			ForumVO forumVo = createForumVO(course, forumNode, subscriptions);
 			return Response.ok(forumVo).build();
 		} else {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -285,14 +261,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		if(courseNode == null || !(courseNode instanceof FOCourseNode)) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
-
+		
 		UserRequest ureq = getUserRequest(request);
-		FOCourseNode forumNode = (FOCourseNode)courseNode;
-		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-		NodeEvaluation ne = forumNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-		if(mayAccessWholeTreeUp) {
+		CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
+		if(courseVisitor.isAccessible(courseNode)) {
+			FOCourseNode forumNode = (FOCourseNode)courseNode;
 			Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
 			return new ForumWebService(forum);
 		} else {
@@ -495,33 +468,22 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		}
 	}
 	
-	private List<FOCourseNode> getFOCourseNodes(ICourse course) {
-		List<FOCourseNode> bcNodes = new ArrayList<FOCourseNode>();
-		Structure courseStruct = course.getRunStructure();
-		getFOCourseNodes(courseStruct.getRootNode(), bcNodes);
-		return bcNodes;
-	}
-
-	/**
-	 * Recursive step used by <code>getBCCourseNodes(ICourse)</code>.<br>
-	 * <br>
-	 * <b>PRE CONDITIONS</b>
-	 * <ul>
-	 * <li> <code>course != null</code>
-	 * <li> <code>result != null</code>
-	 * </ul>
-	 * 
-	 * @see #getBCCourseNodes(ICourse)
-	 */
-	private void getFOCourseNodes(INode node, List<FOCourseNode> result) {
-		if (node != null) {
-			if (node instanceof FOCourseNode) {
-				result.add((FOCourseNode) node);
-			}
-
-			for (int i = 0; i < node.getChildCount(); i++) {
-				getFOCourseNodes(node.getChildAt(i), result);
-			}
+	public static ForumVO createForumVO(ICourse course, FOCourseNode forumNode, Set<Long> subscribed) {
+		Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());	
+		
+		ForumVO forumVo = new ForumVO();
+		forumVo.setName(course.getCourseTitle());
+		forumVo.setDetailsName(forumNode.getShortTitle());
+		if(subscribed != null && subscribed.contains(forum.getKey())) {
+			forumVo.setSubscribed(true);
+		} else {
+			forumVo.setSubscribed(false);
 		}
+		
+		forumVo.setCourseKey(course.getResourceableId());
+		forumVo.setCourseNodeId(forumNode.getIdent());
+		forumVo.setForumKey(forum.getKey());
+		
+		return forumVo;
 	}
 }

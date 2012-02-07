@@ -49,6 +49,18 @@ public class FolderVO {
 	private String courseNodeId;
 	@XmlAttribute(name="subscribed", required=false)
 	private boolean subscribed;
+	@XmlAttribute(name="write", required=false)
+	private boolean write;
+	@XmlAttribute(name="read", required=false)
+	private boolean read;
+	@XmlAttribute(name="list", required=false)
+	private boolean list;
+	@XmlAttribute(name="delete", required=false)
+	private boolean delete;
+	
+	public FolderVO() {
+		//make JAXP happy
+	}
 	
 	public String getName() {
 		return name;
@@ -97,8 +109,36 @@ public class FolderVO {
 	public void setSubscribed(boolean subscribed) {
 		this.subscribed = subscribed;
 	}
-	
-	
-	
 
+	public boolean isWrite() {
+		return write;
+	}
+
+	public void setWrite(boolean write) {
+		this.write = write;
+	}
+
+	public boolean isRead() {
+		return read;
+	}
+
+	public void setRead(boolean read) {
+		this.read = read;
+	}
+
+	public boolean isList() {
+		return list;
+	}
+
+	public void setList(boolean list) {
+		this.list = list;
+	}
+
+	public boolean isDelete() {
+		return delete;
+	}
+
+	public void setDelete(boolean delete) {
+		this.delete = delete;
+	}
 }
