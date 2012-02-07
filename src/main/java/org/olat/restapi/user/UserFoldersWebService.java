@@ -46,6 +46,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -241,10 +242,18 @@ public class UserFoldersWebService {
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
 		for(BusinessGroup group:groups) {
+			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+			VFSContainer container = tools.getSecuredFolder(group, null, retrievedUser, false);
+
 			FolderVO folderVo = new FolderVO();
 			folderVo.setName(group.getName());
 			folderVo.setGroupKey(group.getKey());
 			folderVo.setSubscribed(groupNotified.containsKey(group.getKey()));
+			folderVo.setRead(container.getLocalSecurityCallback().canRead());
+			folderVo.setList(container.getLocalSecurityCallback().canList());
+			folderVo.setWrite(container.getLocalSecurityCallback().canWrite());
+			folderVo.setDelete(container.getLocalSecurityCallback().canDelete());
+
 			folderVOs.add(folderVo);
 		}
 

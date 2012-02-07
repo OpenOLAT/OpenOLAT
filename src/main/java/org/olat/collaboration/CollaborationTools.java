@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -369,15 +370,27 @@ public class CollaborationTools implements Serializable {
 		// do not use a global translator since in the fututre a collaborationtools
 		// may be shared among users
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
-		String relPath = getFolderRelPath();
-		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		OlatRootFolderImpl rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin);
 		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(trans.translate("folder"), rootContainer);
 		
+		FolderRunController frc = new FolderRunController(namedContainer, true, true, true, ureq, wControl);
+		return frc;
+	}
+	
+	/**
+	 * Return the root VFS container with security callback set
+	 * @return
+	 */
+	public OlatRootFolderImpl getSecuredFolder(BusinessGroup businessGroup, SubscriptionContext subsContext, Identity identity, boolean isAdmin) {
+		if(!isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
+			return null;
+		}
+
 		//fxdiff VCRP-8: collaboration tools folder access control
 		boolean writeAccess;
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(ureq.getIdentity(), businessGroup.getOwnerGroup());
+		boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, businessGroup.getOwnerGroup());
 		if (!(isAdmin || isOwner)) {
-			// check if participants have read/write access
+				// check if participants have read/write access
 			int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
 			Long lFolderAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupFolderAccess();
 			if (lFolderAccess != null) {
@@ -388,9 +401,11 @@ public class CollaborationTools implements Serializable {
 			writeAccess = true;
 		}
 
-		namedContainer.setLocalSecurityCallback(new CollabSecCallback(writeAccess, relPath, subsContext));
-		FolderRunController frc = new FolderRunController(namedContainer, true, true, true, ureq, wControl);
-		return frc;
+		String relPath = getFolderRelPath();
+		VFSSecurityCallback secCallback = new CollabSecCallback(writeAccess, relPath, subsContext);
+		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		rootContainer.setLocalSecurityCallback(secCallback);
+		return rootContainer;
 	}
 
 	/**
@@ -855,7 +870,6 @@ public class CollaborationTools implements Serializable {
 	}
 
 	private void archiveForum(OLATResourceable ores, String archivFilePath) {
-		ForumManager fom = ForumManager.getInstance();
 		Property forumKeyProperty = NarrowedPropertyManager.getInstance(ores).findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
 		if (forumKeyProperty != null) {
 			VFSContainer archiveContainer = new LocalFolderImpl(new File(archivFilePath));
