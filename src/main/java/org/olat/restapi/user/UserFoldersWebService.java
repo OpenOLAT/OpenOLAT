@@ -21,7 +21,6 @@ package org.olat.restapi.user;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
@@ -49,12 +48,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -66,7 +62,6 @@ import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.bc.BCWebService;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
@@ -93,9 +88,7 @@ import org.olat.restapi.support.vo.FolderVOes;
  */
 @Path("users/{identityKey}/folders")
 public class UserFoldersWebService {
-	
-	private static final OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
-	
+
 	@Path("personal")
 	public VFSWebservice getFolder(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity identity = getIdentity(request);
@@ -155,32 +148,7 @@ public class UserFoldersWebService {
 	@Path("course/{courseKey}/{courseNodeId}")
 	public VFSWebservice getCourseFolder(@PathParam("courseKey") Long courseKey, @PathParam("courseNodeId") String courseNodeId,
 			@Context HttpServletRequest request) {
-
-		if(courseNodeId == null) {
-			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-		} else if (courseKey != null) {
-			ICourse course = loadCourse(courseKey);
-			if(course == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			}
-			CourseNode node =course.getEditorTreeModel().getCourseNode(courseNodeId);
-			if(node == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			} else if(!(node instanceof BCCourseNode)) {
-				throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
-			}
-
-			UserRequest ureq = getUserRequest(request);
-			CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
-			if(courseVisitor.isAccessible(node)) {
-				BCCourseNode bcNode = (BCCourseNode)node;
-				VFSContainer container = BCCourseNode.getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ureq.getUserSession().getIdentityEnvironment());
-				return new VFSWebservice(container);
-			} else {
-				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-			}
-		}
-		return null;
+		return new BCWebService().getVFSWebService(courseKey, courseNodeId, request);
 	}
 	
 	/**
@@ -279,15 +247,5 @@ public class UserFoldersWebService {
 		voes.setFolders(folderVOs.toArray(new FolderVO[folderVOs.size()]));
 		voes.setTotalCount(folderVOs.size());
 		return Response.ok(voes).build();
-	}
-	
-	private ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
 	}
 }

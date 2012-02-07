@@ -45,11 +45,9 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -57,22 +55,14 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.FOCourseNode;
-import org.olat.course.nodes.bc.BCWebService;
-import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.modules.fo.restapi.ForumCourseNodeWebService;
-import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
@@ -81,16 +71,11 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.AccessResult;
-import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
-import org.olat.restapi.support.vo.CourseInfoVO;
-import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
-import org.olat.restapi.support.vo.FolderVO;
 
 /**
  * 
@@ -166,7 +151,7 @@ public class CoursesWebService {
 		int count=0;
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
-				ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource().getResourceableId());
+				ICourse course = CourseWebService.loadCourse(repoEntry.getOlatResource().getResourceableId());
 				voList.add(ObjectFactory.get(repoEntry, course));
 				if(count % 33 == 0) {
 					DBFactory.getInstance().commitAndCloseSession();

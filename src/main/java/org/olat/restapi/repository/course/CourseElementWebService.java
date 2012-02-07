@@ -51,11 +51,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
-import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractFeedCourseNode;
-import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -128,7 +126,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -1301,7 +1299,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response attachTaskFile(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("filename") @DefaultValue("task") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode node = getParentNode(course, nodeId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -1511,10 +1509,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("task/{nodeId}/configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
+	public Response getTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@Context HttpServletRequest httpRequest) {
+		if(!isAuthor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 		
 		TaskConfigVO config = new TaskConfigVO();
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode courseNode = (TACourseNode) getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
@@ -1679,10 +1681,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("survey/{nodeId}/configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
-		
+	public Response getSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@Context HttpServletRequest httpRequest) {
+		if(!isAuthor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
 		SurveyConfigVO config = new SurveyConfigVO();
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
@@ -1845,7 +1851,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response getTestConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
 		
 		TestConfigVO config = new TestConfigVO();
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		//build configuration with fallback to default values
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();

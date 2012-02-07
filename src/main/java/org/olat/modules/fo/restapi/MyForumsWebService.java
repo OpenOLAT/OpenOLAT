@@ -23,7 +23,6 @@ import static org.olat.collaboration.CollaborationTools.KEY_FORUM;
 import static org.olat.collaboration.CollaborationTools.PROP_CAT_BG_COLLABTOOLS;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
@@ -49,12 +48,9 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -62,14 +58,12 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.SearchBusinessGroupParams;
-import org.olat.modules.fo.Forum;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -90,10 +84,7 @@ import org.olat.restapi.group.LearningGroupWebService;
  */
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
-	
-	private static final OLog log = Tracing.createLoggerFor(MyForumsWebService.class);
 
-	
 	/**
 	 * Retrieves the forum of a group
 	 * @response.representation.200.qname {http://www.example.com}forumVO
@@ -129,32 +120,7 @@ public class MyForumsWebService {
 	@Path("course/{courseKey}/{courseNodeId}")
 	public ForumWebService getCourseFolder(@PathParam("courseKey") Long courseKey, @PathParam("courseNodeId") String courseNodeId,
 			@Context HttpServletRequest request) {
-		
-		if(courseNodeId == null) {
-			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-		} else if (courseKey != null) {
-			ICourse course = loadCourse(courseKey);
-			if(course == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			}
-			CourseNode node =course.getEditorTreeModel().getCourseNode(courseNodeId);
-			if(node == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			} else if(!(node instanceof FOCourseNode)) {
-				throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
-			}
-			
-			UserRequest ureq = getUserRequest(request);
-			CourseTreeVisitor courseVisitor = new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment());
-			if(courseVisitor.isAccessible(node)) {
-				FOCourseNode forumNode = (FOCourseNode)node;
-				Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
-				return new ForumWebService(forum);
-			} else {
-				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-			}
-		}
-		return null;
+		return new ForumCourseNodeWebService().getForumContent(courseKey, courseNodeId, request);
 	}
 	
 	/**
@@ -284,15 +250,5 @@ public class MyForumsWebService {
 		voes.setForums(forumVOs.toArray(new ForumVO[forumVOs.size()]));
 		voes.setTotalCount(forumVOs.size());
 		return Response.ok(voes).build();
-	}
-	
-	private ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
 	}
 }

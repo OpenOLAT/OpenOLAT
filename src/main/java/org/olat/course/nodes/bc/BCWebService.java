@@ -43,6 +43,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.IdentityEnvironment;
@@ -60,7 +61,12 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
+import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 
@@ -93,12 +99,22 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolders(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		final ICourse course = loadCourse(courseId);
+		final ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		final UserRequest ureq = getUserRequest(httpRequest);
+		
+		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		AccessResult result = acManager.isAccessible(entry, ureq.getIdentity(), false);
+		if(!result.isAccessible()) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
 		boolean subscribed = false;
 		NotificationsManager man = NotificationsManager.getInstance();
 		List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -249,9 +265,11 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@Path("{nodeId}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
@@ -290,15 +308,22 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 */
 	@Path("{nodeId}/files")
 	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
-		if(!isAuthor(request)) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-		}
-		
-		ICourse course = loadCourse(courseId);
+		boolean author = isAuthor(request);
+
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
+		} else if (!author && !CourseWebService.isCourseAccessible(course, false, request)) {
+			throw new WebApplicationException( Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
-		CourseNode node =course.getEditorTreeModel().getCourseNode(nodeId);
+		
+		CourseNode node;
+		if(author) {
+			node = course.getEditorTreeModel().getCourseNode(nodeId);
+		} else {
+			node = course.getRunStructure().getNode(nodeId);
+		}
+		
 		if(node == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
 		} else if(!(node instanceof BCCourseNode)) {

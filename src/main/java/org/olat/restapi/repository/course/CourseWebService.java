@@ -52,6 +52,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
@@ -74,6 +75,8 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
@@ -175,10 +178,12 @@ public class CourseWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response findById(@PathParam("courseId") Long courseId) {
+	public Response findById(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
 		ICourse course = loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!isCourseAccessible(course, false, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
@@ -643,7 +648,22 @@ public class CourseWebService {
 		return ores;
 	}
 	
-	private ICourse loadCourse(Long courseId) {
+	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
+		if(authorRightsMandatory && !isAuthor(request)) {
+			return false;
+		}
+
+		Identity identity = getIdentity(request);
+		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		AccessResult result = acManager.isAccessible(entry, identity, false);
+		if(result.isAccessible()) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static ICourse loadCourse(Long courseId) {
 		try {
 			ICourse course = CourseFactory.loadCourse(courseId);
 			return course;

@@ -68,19 +68,21 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 
 public class CoursesFoldersTest extends OlatJerseyTestCase {
 
 	private static ICourse course1;
 	private static CourseNode bcNode;
-	private static Identity admin;
+	private static Identity admin, user;
 	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
 		
 		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		user = JunitTestHelper.createAndPersistIdentityAsUser("rest-cf-one");
 		course1 = CoursesWebService.createEmptyCourse(admin, "course1", "course1 long name", null);
 		DBFactory.getInstance().intermediateCommit();
 		
@@ -101,6 +103,25 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	public void testGetFolderInfo() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
+		assertTrue(loggedIN);
+
+		URI uri = UriBuilder.fromUri(getNodeURI()).build();
+		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(get);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		FolderVO folder = conn.parse(response, FolderVO.class);
+		assertNotNull(folder);
+	}
+	
+	/**
+	 * Check that the permission check are not to restrictive
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testGetFolderInfoByUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		boolean loggedIN = conn.login(user.getName(), "A6B7C8");
 		assertTrue(loggedIN);
 
 		URI uri = UriBuilder.fromUri(getNodeURI()).build();
@@ -148,7 +169,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
 		int code = c.executeMethod(method);
 		assertEquals(code, 200);
-
 
 		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());

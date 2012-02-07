@@ -34,6 +34,8 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
@@ -96,13 +100,15 @@ public class CourseTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetCourse() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		GetMethod method = createGet("/repo/courses/" + course1.getResourceableId(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		CourseVO course = parse(body, CourseVO.class);
+	public void testGetCourse() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue("Cannot login as administrator", conn.login("administrator", "openolat"));
+		
+		URI uri = conn.getContextURI().path("repo").path("courses").path(course1.getResourceableId().toString()).build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
 		assertEquals(course1.getResourceableId(), course.getKey());
 		assertEquals(course1.getCourseTitle(), course.getTitle());

@@ -71,6 +71,7 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.properties.Property;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
+import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 
 /**
@@ -100,9 +101,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForums(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		final ICourse course = loadCourse(courseId);
+		final ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
@@ -122,7 +125,6 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			public void visit(INode node) {
 				if(node instanceof FOCourseNode) {
 					FOCourseNode forumNode = (FOCourseNode)node;
-					
 					ForumVO forum = createForumVO(course, forumNode, subcribedForums);
 					forumVOs.add(forum);
 				}
@@ -219,9 +221,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@Path("{nodeId}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!CourseWebService.isCourseAccessible(course, false, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
@@ -252,9 +256,11 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	
 	@Path("{nodeId}/forum")
 	public ForumWebService getForumContent(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
+		} else if (!CourseWebService.isCourseAccessible(course, false, request)) {
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeId);
@@ -365,7 +371,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		}
 		
 		//load forum
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {

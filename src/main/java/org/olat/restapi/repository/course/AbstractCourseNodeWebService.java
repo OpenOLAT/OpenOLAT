@@ -57,16 +57,6 @@ public abstract class AbstractCourseNodeWebService {
 	private static final String CONDITION_ID_ACCESS = "accessability";
 	private static final String CONDITION_ID_VISIBILITY = "visibility";
 	
-	protected ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
-	}
-	
 	private CourseEditSession openEditSession(ICourse course, Identity identity) {
 		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, identity, CourseFactory.COURSE_EDITOR_LOCK);
 		if(lock.isSuccess()) {
@@ -96,7 +86,7 @@ public abstract class AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 		
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
@@ -137,7 +127,7 @@ public abstract class AbstractCourseNodeWebService {
 		if(config == null || !config.isValid())
 			return Response.serverError().status(Status.CONFLICT).build();
 		
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {

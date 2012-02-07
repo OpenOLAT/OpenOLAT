@@ -72,8 +72,8 @@ public class CoursesInfosWebService {
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
 			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
-			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>(); 
-			
+			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>();
+
 			for(RepositoryEntry entry:repoEntries) {
 				CourseInfoVO info = collect(identity, roles, entry);
 				if(info != null) {
@@ -97,7 +97,7 @@ public class CoursesInfosWebService {
 		info.setSoftKey(entry.getSoftkey());
 		info.setDisplayName(entry.getDisplayname());
 
-		ACFrontendManager acManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
 		AccessResult result = acManager.isAccessible(entry, identity, false);
 		if(result.isAccessible()) {
 			final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
