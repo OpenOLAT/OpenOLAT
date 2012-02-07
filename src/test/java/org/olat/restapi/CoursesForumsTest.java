@@ -131,21 +131,6 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		assertNotNull(threads);
 	}
 	
-	@Test
-	public void testGetCourseInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
-
-		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path("infos").build();
-
-		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		HttpResponse response = conn.execute(get);
-		assertEquals(200, response.getStatusLine().getStatusCode());
-		CourseInfoVOes infos = conn.parse(response, CourseInfoVOes.class);
-		assertNotNull(infos);
-	}
-	
 	private URI getNodeURI() {
 		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(course1.getResourceableId().toString())
 			.path("elements").path("forum").path(forumNode.getIdent()).build();
@@ -160,8 +145,4 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(course1.getResourceableId().toString())
 			.path("elements").path("forum").build();
 	}
-	
-	
-	
-
 }

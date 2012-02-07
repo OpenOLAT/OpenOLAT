@@ -24,7 +24,9 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -115,26 +117,25 @@ public class BCWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		boolean subscribed = false;
+		final Set<String> subscribed = new HashSet<String>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		List<String> notiTypes = Collections.singletonList("FolderModule");
 		List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
 		for(Subscriber sub:subs) {
 			Long courseKey = sub.getPublisher().getResId();
 			if(courseId.equals(courseKey)) {
-				subscribed = true;
+				subscribed.add(sub.getPublisher().getSubidentifier());
 				break;
 			}
 		}
 		
-		final boolean subscribed_ = subscribed;
 		final List<FolderVO> folderVOs = new ArrayList<FolderVO>();
 		new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment()).visit(new Visitor() {
 			@Override
 			public void visit(INode node) {
 				if(node instanceof BCCourseNode) {
 					BCCourseNode bcNode = (BCCourseNode)node;
-					FolderVO folder = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, bcNode, subscribed_);
+					FolderVO folder = createFolderVO(ureq.getUserSession().getIdentityEnvironment(), course, bcNode, subscribed);
 					folderVOs.add(folder);
 				}
 			}
@@ -280,15 +281,14 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		UserRequest ureq = getUserRequest(httpRequest);
 		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode);
 		if(accessible) {
-			boolean subscribed = false;
+			Set<String> subscribed = new HashSet<String>();
 			NotificationsManager man = NotificationsManager.getInstance();
 			List<String> notiTypes = Collections.singletonList("FolderModule");
 			List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);
 			for(Subscriber sub:subs) {
 				Long courseKey = sub.getPublisher().getResId();
 				if(courseId.equals(courseKey)) {
-					subscribed = true;
-					break;
+					subscribed.add(sub.getPublisher().getSubidentifier());
 				}
 			}
 
@@ -367,14 +367,14 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}	
 	}
 	
-	public static FolderVO createFolderVO(IdentityEnvironment ienv, ICourse course, BCCourseNode bcNode, boolean subscribed) {
+	public static FolderVO createFolderVO(IdentityEnvironment ienv, ICourse course, BCCourseNode bcNode, Set<String> subscribed) {
 		OlatNamedContainerImpl container = BCCourseNode.getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ienv);
 		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
 		
 		FolderVO folderVo = new FolderVO();
 		folderVo.setName(course.getCourseTitle());
 		folderVo.setDetailsName(bcNode.getShortTitle());
-		folderVo.setSubscribed(subscribed);
+		folderVo.setSubscribed(subscribed.contains(bcNode.getIdent()));
 		folderVo.setCourseKey(course.getResourceableId());
 		folderVo.setCourseNodeId(bcNode.getIdent());
 		folderVo.setWrite(secCallback.canWrite());

@@ -4,7 +4,11 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -23,6 +27,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -43,6 +49,15 @@ import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.FolderVO;
 
+/**
+ * 
+ * Description:<br>
+ * 
+ * <P>
+ * Initial Date:  7 févr. 2012 <br>
+ *
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
 @Path("repo/courses/infos")
 public class CoursesInfosWebService {
 	
@@ -73,9 +88,38 @@ public class CoursesInfosWebService {
 			int totalCount = rm.countGenericANDQueryWithRolesRestriction(params, true);
 			List<RepositoryEntry> repoEntries = rm.genericANDQueryWithRolesRestriction(params, start, limit, true);
 			List<CourseInfoVO> infos = new ArrayList<CourseInfoVO>();
+			
+			
+			final Set<Long> forumNotified = new HashSet<Long>();
+			final Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
+			NotificationsManager man = NotificationsManager.getInstance();
+			{//collect subscriptions
+				List<String> notiTypes = new ArrayList<String>();
+				notiTypes.add("FolderModule");
+				notiTypes.add("Forum");
+				List<Subscriber> subs = man.getSubscribers(identity, notiTypes);
+				for(Subscriber sub:subs) {
+					String publisherType = sub.getPublisher().getType();
+					String resName = sub.getPublisher().getResName();
+					
+					if("CourseModule".equals(resName)) {
+						if("FolderModule".equals(publisherType)) {
+							Long courseKey = sub.getPublisher().getResId();
+							if(!courseNotified.containsKey(courseKey)) {
+								courseNotified.put(courseKey,new HashSet<String>());
+							}
+							courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
+						} else if ("Forum".equals(publisherType)) {
+							Long forumKey = Long.parseLong(sub.getPublisher().getData());
+							forumNotified.add(forumKey);
+						}
+					}
+				}
+			}
+
 
 			for(RepositoryEntry entry:repoEntries) {
-				CourseInfoVO info = collect(identity, roles, entry);
+				CourseInfoVO info = collect(identity, roles, entry, forumNotified, courseNotified);
 				if(info != null) {
 					infos.add(info);
 				}
@@ -91,7 +135,9 @@ public class CoursesInfosWebService {
 		}
 	}
 	
-	private CourseInfoVO collect(Identity identity, Roles roles, RepositoryEntry entry) {
+	private CourseInfoVO collect(final Identity identity, final Roles roles, final RepositoryEntry entry,
+			final Set<Long> forumNotified, final Map<Long,Set<String>> courseNotified) {
+		
 		CourseInfoVO info = new CourseInfoVO();
 		info.setRepoEntryKey(entry.getKey());
 		info.setSoftKey(entry.getSoftkey());
@@ -110,10 +156,10 @@ public class CoursesInfosWebService {
 				public void visit(INode node) {
 					if(node instanceof BCCourseNode) {
 						BCCourseNode bcNode = (BCCourseNode)node;
-						folders.add(BCWebService.createFolderVO(ienv, course, bcNode, false));
+						folders.add(BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId())));
 					} else if (node instanceof FOCourseNode) {
 						FOCourseNode forumNode = (FOCourseNode)node;
-						forums.add(ForumCourseNodeWebService.createForumVO(course, forumNode, null));
+						forums.add(ForumCourseNodeWebService.createForumVO(course, forumNode, forumNotified));
 					}
 				}
 			});

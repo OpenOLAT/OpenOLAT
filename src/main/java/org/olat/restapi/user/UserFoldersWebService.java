@@ -26,8 +26,10 @@ import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -186,7 +188,7 @@ public class UserFoldersWebService {
 		}
 
 		final Map<Long,Long> groupNotified = new HashMap<Long,Long>();
-		final Map<Long,Long> courseNotified = new HashMap<Long,Long>();
+		final Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -198,7 +200,10 @@ public class UserFoldersWebService {
 					groupNotified.put(groupKey, sub.getPublisher().getResId());
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
-					courseNotified.put(courseKey, sub.getPublisher().getResId());
+					if(!courseNotified.containsKey(courseKey)) {
+						courseNotified.put(courseKey,new HashSet<String>());
+					}
+					courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
 				}
 			}
 		}
@@ -221,7 +226,7 @@ public class UserFoldersWebService {
 					public void visit(INode node) {
 						if(node instanceof BCCourseNode) {
 							BCCourseNode bcNode = (BCCourseNode)node;
-							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.containsKey(bcNode.getIdent()));
+							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
 							folderVOs.add(folder);
 						}
 					}
