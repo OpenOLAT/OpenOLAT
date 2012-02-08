@@ -64,6 +64,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -455,7 +456,9 @@ public class ForumWebService {
 			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 			if(response == null) {
 				File attachment = ((LocalFileImpl)item).getBasefile();
-				response = Response.ok(attachment).lastModified(lastModified).cacheControl(cc);
+				String mimeType = WebappHelper.getMimeType(attachment.getName());
+				if (mimeType == null) mimeType = "application/octet-stream";
+				response = Response.ok(attachment).lastModified(lastModified).type(mimeType).cacheControl(cc);
 			}
 			return response.build();
 		} else if (item instanceof VFSLeaf) {
@@ -464,7 +467,9 @@ public class ForumWebService {
 			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 			if(response == null) {
 				StreamingOutput attachment = new VFSStreamingOutput((VFSLeaf)item);
-				response = Response.ok(attachment).lastModified(lastModified).cacheControl(cc);
+				String mimeType = WebappHelper.getMimeType(item.getName());
+				if (mimeType == null) mimeType = "application/octet-stream";
+				response = Response.ok(attachment).lastModified(lastModified).type(mimeType).cacheControl(cc);
 			}
 			return response.build();
 		}
