@@ -427,18 +427,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 					}
 					// init edit controller for this identity and this course node 
 					// or use identity assessment overview if no course node is defined
-					if (this.currentCourseNode == null) {
-						UserCourseEnvironment chooseUserCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();		
-						removeAsListenerAndDispose(identityAssessmentController);
-						identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, chooseUserCourseEnv, course, true);
-						listenTo(identityAssessmentController);
-						setContent(identityAssessmentController.getInitialComponent());
-					} else {
-						removeAsListenerAndDispose(assessmentEditController);
-						assessmentEditController = new AssessmentEditController(ureq, getWindowControl(),course, currentCourseNode, assessedIdentityWrapper);
-						listenTo(assessmentEditController);
-						main.setContent(assessmentEditController.getInitialComponent());
-					}
+					initIdentityEditController(ureq, course);
 				}
 			} else if (event.equals(TableController.EVENT_FILTER_SELECTED)) {
 				ShortName filter = userListCtr.getActiveFilter();
@@ -644,6 +633,27 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		}
 	}
 	
+	/**
+	 * Init edit controller for this identity and this course node or use identity assessment
+	 * overview if no course node is defined. (Rely on the instance variable currentCourseNode
+	 * and assessedIdentityWrapper)
+	 * @param ureq
+	 * @param course
+	 */
+	private void initIdentityEditController(UserRequest ureq, ICourse course) {
+		if (currentCourseNode == null) {
+			UserCourseEnvironment chooseUserCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
+			removeAsListenerAndDispose(identityAssessmentController);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, chooseUserCourseEnv, course, true);
+			listenTo(identityAssessmentController);
+			setContent(identityAssessmentController.getInitialComponent());
+		} else {
+			removeAsListenerAndDispose(assessmentEditController);
+			assessmentEditController = new AssessmentEditController(ureq, getWindowControl(),course, currentCourseNode, assessedIdentityWrapper);
+			listenTo(assessmentEditController);
+			main.setContent(assessmentEditController.getInitialComponent());
+		}
+	}
 
 	/**
 	 * Initialize the group list table according to the users access rights
@@ -1231,10 +1241,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				}
 				
 				if(assessedIdentityWrapper != null) {
-					removeAsListenerAndDispose(assessmentEditController);
-					assessmentEditController = new AssessmentEditController(ureq, getWindowControl(), course, currentCourseNode, assessedIdentityWrapper);
-					listenTo(assessmentEditController);
-					main.setContent(assessmentEditController.getInitialComponent());
+					initIdentityEditController(ureq, course);
 				}
 			}
 		}

@@ -10,7 +10,9 @@ Ext.onReady(function(){
 #end
 
 <div class="o_efficiencystatement">
-	$r.render("collectArtefactLink")
+	#if($r.available("collectArtefactLink"))
+		$r.render("collectArtefactLink")
+	#end
 	<h3 class="b_with_small_icon_left o_efficiencystatement_icon">$r.translate("efficiencystatement.title")</h3>
 	
 	<table class="b_table">

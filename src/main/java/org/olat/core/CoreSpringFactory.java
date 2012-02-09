@@ -121,7 +121,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		if (m.size() == 1)  {
 			return m.values().iterator().next();
 		}
-		throw new OLATRuntimeException("found more than one bean for: "+ interfaceClass +". Calling this method should only find one bean!", null);
+		throw new OLATRuntimeException("found " + m.size() + " bean for: "+ interfaceClass +". Calling this method should only find one bean!", null);
 	}
 
 	/**
