@@ -310,21 +310,27 @@ public class FileUploadController extends FormBasicController {
 			if (existingVFSItem == null) {
 				// save file and finish
 				newFile = uploadVFSContainer.createChildLeaf(fileName);
-				InputStream in = null;
-				OutputStream out = null;
-				boolean success = true;
 				
-				try {
-					
-					in = new FileInputStream(uploadedFile);
-					out = newFile.getOutputStream(false);
-					FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
-					uploadedFile.delete();
-					
-				} catch (IOException e) {
-					FileUtils.closeSafely(in);
-					FileUtils.closeSafely(out);
+				boolean success = true;
+				if(newFile == null) {
+					// FXOLAT-409 somehow "createChildLeaf" did not succeed...
+					// if so, there is alread a error-msg in log (vfsContainer.createChildLeaf)
 					success = false;
+				} else {
+					InputStream in = null;
+					OutputStream out = null;
+					try {
+						in = new FileInputStream(uploadedFile);
+						out = newFile.getOutputStream(false);
+						FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
+						uploadedFile.delete();
+						
+					} catch (IOException e) {
+						success = false;
+					} finally {
+						FileUtils.closeSafely(in);
+						FileUtils.closeSafely(out);
+					}
 				}
 				
 				if (success) {

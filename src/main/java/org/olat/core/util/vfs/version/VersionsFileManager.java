@@ -38,6 +38,7 @@ import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -386,7 +387,8 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			if (force || isTemporaryFile(leaf)) {
 				cleanUp(leaf);
 			} else {
-				addToRevisions((Versionable)leaf, null, null);
+				Identity identity = ThreadLocalUserActivityLogger.getLoggedIdentity();
+				addToRevisions((Versionable)leaf, identity, null);
 			}
 		}
 		return false;

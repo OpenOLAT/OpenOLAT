@@ -337,6 +337,16 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// don't set runtimeParent !
 	}
 	
+	
+	
+	@Override
+	public Identity getLoggedIdentity() {
+		if(identity_ == null && session_ != null) {
+			return session_.getIdentity();
+		}
+		return identity_;
+	}
+
 	public void frameworkSetSession(UserSession session) {
 		if (session_==session) {
 			return;

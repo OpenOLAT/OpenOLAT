@@ -28,6 +28,7 @@ package org.olat.core.logging.activity;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -98,6 +99,14 @@ public class ThreadLocalUserActivityLogger {
 			return new UserActivityLoggerImpl();
 		}
 		return logger;
+	}
+	
+	public static Identity getLoggedIdentity() {
+		IUserActivityLogger logger = userActivityLogger_.get();
+		if (logger!=null) {
+			logger.getLoggedIdentity();
+		}
+		return null;
 	}
 
 	/**
