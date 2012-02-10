@@ -477,6 +477,15 @@ public class TableController extends BasicController {
 			}
 		} 
 	}
+	
+	public int getRowCount() {
+		return table.getRowCount();
+	}
+	
+	public int getSortedRow(int originalRow) {
+		return table.getSortedRow(originalRow);
+	}
+	
 	/**
 	 * @return The currently active filter object or <code>null</code> if no
 	 *         filter is applied

@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -83,11 +84,14 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	}
 	
 	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
+		this(wControl, ureq, ureq.getIdentity(), efficiencyStatement);
+	}
+	
+	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner, EfficiencyStatement efficiencyStatement) {
 		super(ureq, wControl);
 
 		//either the efficiency statement or the error message, that no data is available goes to the content area
-		Component content = null;
-		
+		final Component content;
 		if (efficiencyStatement != null) {
 			this.efficiencyStatement = efficiencyStatement;
 			
@@ -96,8 +100,8 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 			setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));		
 			userDataVC = createVelocityContainer("efficiencystatement");
 			userDataVC.contextPut("courseTitle", efficiencyStatement.getCourseTitle() + " (" + efficiencyStatement.getCourseRepoEntryKey().toString() + ")");
-			userDataVC.contextPut("user", ureq.getIdentity().getUser());			
-			userDataVC.contextPut("username", ureq.getIdentity().getName());
+			userDataVC.contextPut("user", statementOwner.getUser());			
+			userDataVC.contextPut("username", statementOwner.getName());
 			userDataVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));
 			
 			Roles roles = ureq.getUserSession().getRoles();
@@ -110,11 +114,13 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 			userDataVC.put("assessmentOverviewTable", identityAssessmentCtr.getInitialComponent());
 			
 			//add link to collect efficiencyStatement as artefact
-			portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-			if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
-				collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, userDataVC, this);
-				collectArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
+			if(statementOwner.equals(ureq.getIdentity())) {
+				portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+				EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
+				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
+					collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, userDataVC, this);
+					collectArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
+				}
 			}
 			
 			content = userDataVC;
@@ -130,7 +136,6 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, content, null);
 		listenTo(layoutCtr);
 		putInitialPanel(layoutCtr.getInitialComponent());
-		
 	}
 	
 	/**
