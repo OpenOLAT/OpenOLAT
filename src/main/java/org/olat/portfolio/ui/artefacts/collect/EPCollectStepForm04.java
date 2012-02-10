@@ -41,8 +41,10 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPAbstractMap;
+import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
 /**
@@ -143,6 +145,13 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 						firstLevelDone = true;
 					}
 					for (PortfolioStructure portfolioStructure : structs) {
+						// FXOLAT-436 : skip templateMaps that are closed
+						if (portfolioStructure instanceof EPStructuredMap) {
+							if( ((EPStructuredMap) portfolioStructure).getStatus().equals(StructureStatusEnum.CLOSED)){
+								continue;
+							}
+						}
+						
 						String title = portfolioStructure.getTitle();
 						if (!isUsedInStepWizzard() && oldStructure.getKey().equals(portfolioStructure.getKey())) {
 							title = portfolioStructure.getTitle() + "&nbsp; &nbsp; <-- " + translate("move.artefact.actual.node");
@@ -157,6 +166,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 						child.put(AjaxTreeNode.CONF_DISABLED, portfolioStructure instanceof EPAbstractMap);
 						child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
 						child.put(AjaxTreeNode.CONF_QTIP, portfolioStructure.getDescription());
+						
 						children.add(child);
 					}
 				} catch (JSONException e) {
