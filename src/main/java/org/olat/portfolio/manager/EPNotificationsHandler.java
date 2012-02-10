@@ -66,7 +66,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 			// only do that if a map was found.
 
 			// init the helper;
-			EPNotificationsHelper helper = new EPNotificationsHelper(locale, subscriber.getIdentity());
+			EPNotificationsHelper helper = new EPNotificationsHelper(p.getBusinessPath(), locale, subscriber.getIdentity());
 
 			// gather all changes for the current map
 			if (NotificationsManager.getInstance().isPublisherValid(p)) {

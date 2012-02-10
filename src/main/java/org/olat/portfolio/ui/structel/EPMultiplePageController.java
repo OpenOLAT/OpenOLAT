@@ -32,7 +32,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPAbstractMap;
@@ -40,9 +46,7 @@ import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.structel.view.EPChangelogController;
 import org.olat.portfolio.ui.structel.view.EPTOCReadOnlyController;
-import org.olat.test.util.selenium.olatapi.home.EvidencesOfAchievement;
 
-import com.mchange.util.AssertException;
 
 /**
  * Description:<br>
@@ -53,7 +57,7 @@ import com.mchange.util.AssertException;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class EPMultiplePageController extends BasicController {
+public class EPMultiplePageController extends BasicController implements Activateable2 {
 
 	private List<PortfolioStructure> pageList;
 	private List<Long> pageListByKeys;
@@ -138,7 +142,7 @@ public class EPMultiplePageController extends BasicController {
 
 	private void setAndInitActualPage(UserRequest ureq, int pageNum, boolean withComments) {
 		removeAsListenerAndDispose(pageCtrl);
-		if (pageNum == PAGENUM_TOC){
+		if (pageNum == -1){
 			// this is the toc
 			EPPage page = (EPPage)pageList.get(0);
 			PortfolioStructure map = ePFMgr.loadStructureParent(page);
@@ -146,6 +150,7 @@ public class EPMultiplePageController extends BasicController {
 			// disable toc-link
 			disableLink_TOC(true);
 			disableLINK_LC(false);
+			addToHistory(ureq, OresHelper.createOLATResourceableType("TOC"), null);
 		} else if(pageNum == PAGENUM_CL){
 			EPPage page = (EPPage)pageList.get(0);
 			PortfolioStructure parent = ePFMgr.loadStructureParent(page);
@@ -158,10 +163,12 @@ public class EPMultiplePageController extends BasicController {
 				// huch, why is parent of first page not a epAbstractMap
 				throw new AssertException("parent of first page is expected to be of type EPAbstractMap. Instead was "+parent.getClass().getName() );
 			}
+			addToHistory(ureq, OresHelper.createOLATResourceableType("CL"), null);
 		} else {
 			EPPage page = (EPPage)pageList.get(pageNum);
 			PortfolioStructure map = ePFMgr.loadStructureParent(page);
-			pageCtrl = new EPPageViewController(ureq, getWindowControl(), map, page, withComments, secCallback);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(EPPage.class, page.getKey()), null);
+			pageCtrl = new EPPageViewController(ureq, bwControl, map, page, withComments, secCallback);
 			// enable toc-link
 			disableLink_TOC(false);
 			disableLINK_LC(false);
@@ -203,7 +210,6 @@ public class EPMultiplePageController extends BasicController {
 			
 			setAndInitActualPage(ureq, pageNum, false);
 		}
-
 	}
 
 	/**
@@ -228,7 +234,27 @@ public class EPMultiplePageController extends BasicController {
 			}			
 		} 
 	}
-	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		OLATResourceable ores = entries.get(0).getOLATResourceable();
+		if("TOC".equals(ores.getResourceableTypeName())) {
+			setAndInitActualPage(ureq, PAGENUM_TOC, false); 
+		} else if ("CL".equals(ores.getResourceableTypeName())) {
+			setAndInitActualPage(ureq, PAGENUM_TOC, false); 
+		} else if("EPPage".equals(ores.getResourceableTypeName())) {
+			Long pageKey = ores.getResourceableId();
+			if (pageListByKeys.contains(pageKey)){
+				int pos = pageListByKeys.indexOf(pageKey);
+				if (pos != -1) {
+					setAndInitActualPage(ureq, pos, false);
+				}
+			}
+		}
+	}
+
 	private void findAndActivatePage(UserRequest ureq, PortfolioStructure selStruct, boolean withComments){
 		if (pageListByKeys.contains(selStruct.getKey())){
 			int pos = pageListByKeys.indexOf(selStruct.getKey());

@@ -38,14 +38,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.home.HomeSite;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.EPSecurityCallback;
@@ -74,7 +78,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class EPMultipleMapController extends BasicController implements Activateable {
+public class EPMultipleMapController extends BasicController implements Activateable, Activateable2 {
 	private static final String RESTRICT_LINK = "restrictLink";
 	private static final String VIEW_LINK_PREFIX = "viewLink";
 	private static final String DELETE_LINK_PREFIX = "deleteLink";
@@ -388,18 +392,20 @@ public class EPMultipleMapController extends BasicController implements Activate
 			}
 		}
 		
-		// still no key, return
-		if(key == null) return;
-		
-		// we have a key, find the corresponding map
-		for(PortfolioStructureMap map: userMaps) {
-			if(map.getKey().equals(key) || (map.getResourceableId().equals(key))) {
-				activateMap(ureq, map);
-				fireEvent(ureq, new EPMapEvent(EPStructureEvent.SELECT, map));
-				break;
-			}
+		activateMap(ureq, key);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		Long key = entries.get(0).getOLATResourceable().getResourceableId();
+		activateMap(ureq, key);
+		if(mapViewCtrl != null && entries.size() > 1) {
+			//map successfully activated
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			mapViewCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
-		
 	}
 
 	/**
@@ -471,7 +477,18 @@ public class EPMultipleMapController extends BasicController implements Activate
 		shareBox.activate();
 	}
 	
-
+	private void activateMap(UserRequest ureq, Long mapKey) {
+		if(mapKey == null) return;
+		
+		// we have a key, find the corresponding map
+		for(PortfolioStructureMap map: userMaps) {
+			if(map.getKey().equals(mapKey) || (map.getResourceableId().equals(mapKey))) {
+				activateMap(ureq, map);
+				fireEvent(ureq, new EPMapEvent(EPStructureEvent.SELECT, map));
+				break;
+			}
+		}
+	}
 	
 	public void activateMap(UserRequest ureq, PortfolioStructureMap struct){
 		if(userMaps != null && !userMaps.contains(struct)) {
@@ -484,7 +501,9 @@ public class EPMultipleMapController extends BasicController implements Activate
 
 		EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, struct, ePFMgr);
 		//release the previous if not correctly released by CLOSE events
-		mapViewCtrl = new EPMapViewController(ureq, getWindowControl(), struct, true, secCallback);
+		
+		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(struct.getClass(), struct.getKey()), null);
+		mapViewCtrl = new EPMapViewController(ureq, bwControl, struct, true, secCallback);
 		listenTo(mapViewCtrl);
 		myPanel.pushContent(mapViewCtrl.getInitialComponent());
 	}
@@ -537,6 +556,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 				mapViewCtrl = null;
 				// refresh on close (back-link) to prevent stale object errors, when map got changed meanwhile
 				initOrUpdateMaps(ureq);
+				addToHistory(ureq);
 			} else if (EPStructureEvent.SUBMIT.equals(event.getCommand()) || event.equals(Event.CHANGED_EVENT)){
 				// refresh on submission of a map or on any other changes which needs an ui-update
 				initOrUpdateMaps(ureq);

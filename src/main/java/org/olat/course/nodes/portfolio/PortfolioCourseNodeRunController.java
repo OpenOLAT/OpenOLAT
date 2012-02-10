@@ -23,9 +23,9 @@ package org.olat.course.nodes.portfolio;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -37,9 +37,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -52,7 +53,6 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.home.HomeSite;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.EPLoggingAction;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -244,9 +244,10 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			}
 			updateUI();
 		} else if (source == selectMapLink) {
-			String activationCmd = copy.getClass().getSimpleName() + ":" + copy.getResourceableId();
-			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-			dts.activateStatic(ureq, HomeSite.class.getName(), activationCmd);
+			String resourceUrl = "[HomeSite:" + getIdentity().getKey() + "][EPStructuredMaps:0][" + copy.getClass().getSimpleName() + ":" + copy.getResourceableId() + "]";
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		}
 	}
 	

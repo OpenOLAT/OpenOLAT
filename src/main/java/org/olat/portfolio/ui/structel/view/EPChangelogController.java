@@ -112,7 +112,8 @@ public class EPChangelogController extends FormBasicController {
 	 */
 	private void updateChangelogDisplay(UserRequest ureq) {
 		// init the helper;
-		EPNotificationsHelper helper = new EPNotificationsHelper(getLocale(), ureq.getIdentity());
+		String path = getWindowControl().getBusinessControl().getAsString();
+		EPNotificationsHelper helper = new EPNotificationsHelper(path, getLocale(), ureq.getIdentity());
 
 		// get the date from the dateChooser component
 		Date compareDate = dateChooser.getDate();

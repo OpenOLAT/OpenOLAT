@@ -35,6 +35,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -70,6 +71,7 @@ public class EPNotificationsHelper {
 	private Translator translator;
 	private Identity identity;
 	private EPFrontendManager ePFMgr;
+	private String rootBusinessPath;
 
 	/**
 	 * sets up the helper. provide a locale and an Identity
@@ -77,9 +79,10 @@ public class EPNotificationsHelper {
 	 * @param locale
 	 * @param identity
 	 */
-	public EPNotificationsHelper(Locale locale, Identity identity) {
+	public EPNotificationsHelper(String rootBusinessPath, Locale locale, Identity identity) {
 		this.translator = Util.createPackageTranslator(EPChangelogController.class, locale);
 		this.identity = identity;
+		this.rootBusinessPath = rootBusinessPath;
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 	}
 
@@ -107,7 +110,9 @@ public class EPNotificationsHelper {
 			if (structLink.getCreationDate().after(compareDate)) {
 				if (structLink.getChild() instanceof EPPage) {
 					EPPage childPage = (EPPage) structLink.getChild();
-					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), "", structLink
+					String businessPath = rootBusinessPath + "[EPPage:" + childPage.getKey() + "]";
+					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), urlToSend, structLink
 							.getCreationDate(), "b_ep_page_icon"));
 				} else {
 					allItems.add(new SubscriptionListItem(translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }),
