@@ -61,7 +61,7 @@ public class CPOfflineReadableManager {
 	public static final String CPOFFLINEMENUMAT = "cp_offline_menu_mat";
 	private static final String OLATICON = "olat_icon.gif";
 	private static final String FAVICON = "favicon.ico";
-	private static final String BRANDING = "provided by OLAT";
+	private static final String BRANDING = "provided by OpenOLAT";
 	private static final String MKTREEJS = "mktree.js"; // mattkruseTree ->
 																							// www.mattkruse.com
 	private static final String MKTREECSS = "mktree.css";
@@ -257,7 +257,7 @@ public class CPOfflineReadableManager {
 		sb.append("</title>\n</head>\n");
 		sb.append("<frameset cols=\"250,*\" frameborder=\"0\" framespacing=\"0\" border=\"0\">");
 
-		sb.append("<frameset rows=\"*,25\" frameborder=\"0\" framespacing=\"0\" border=\"0\">");
+		sb.append("<frameset rows=\"*,40\" frameborder=\"0\" framespacing=\"0\" border=\"0\">");
 
 		sb.append("<frame src=\"");
 		sb.append(MENU_FILE);
@@ -305,7 +305,7 @@ public class CPOfflineReadableManager {
 		sb.append(rootTitle);
 		sb.append("</title>\n</head><body>\n");
 		sb.append("<div id=\"branding\">");
-		sb.append("<a target=\"_blank\" href=\"http://www.olat.org\"><img id=\"logo\" src=\"");
+		sb.append("<a target=\"_blank\" href=\"http://www.openolat.org\"><img id=\"logo\" src=\"");
 		sb.append(CPOFFLINEMENUMAT);
 		sb.append("/");
 		sb.append(OLATICON);

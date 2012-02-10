@@ -40,22 +40,22 @@ body{
 }
 
 a:link {
-	color: #636394;
+	color: #025D8C;
 	text-decoration: none;
 	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
 }
 a:visited {
-	color: #636394;
+	color: #025D8C;
 	text-decoration: none;
 	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
 }
 a:hover {
-	color: #666699;
+	color: #025D8C;
 	text-decoration: underline;
 	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
 }
 a:active {
-	color: #636394;
+	color: #025D8C;
 	text-decoration: none;
 	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
 }

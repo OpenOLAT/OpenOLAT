@@ -32,11 +32,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -45,6 +45,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -77,11 +78,11 @@ public class WikiToCPExport {
 
 	/**
 	 * 
-	 * @param ores
+	 * @param ores   the repositoryEntry of the wiki.  this can also be the business-group, if the wiki is in a group
 	 * @param ident
 	 * @param trans
 	 */
-	protected WikiToCPExport(OLATResourceable ores, Identity ident, Translator trans) {
+	public WikiToCPExport(OLATResourceable ores, Identity ident, Translator trans) {
 		this.ores = ores;
 		this.ident = ident;
 		this.trans = trans;
@@ -105,19 +106,35 @@ public class WikiToCPExport {
 	}
 
 	/**
+	 * archives the wiki to a CP and moves it to the users private-home
+	 * directory. The name of the exported wiki-file is auto-generated
+	 * (i.e. "wiki-export-datestamp.zip")
 	 * 
-	 *
 	 */
 	public void archiveWikiToCP() {
+		String dateStamp = Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		LocalFileImpl exportPath = new OlatRootFileImpl(FolderConfig.getUserHomes() + "/" + ident.getName() + "/private/archive/wiki-export-"
+				+ dateStamp + ".zip", null);
+		archiveWikiToCP(exportPath);
+	}
+	
+	/**
+	 * OO-112
+	 * 
+	 * archives the wiki to a cp and saves it to the given File.<br />
+	 * in a first step, the wiki is saved to /tmp/xx/ as html-files.<br />
+	 * in a second step the html-files are packed in a cp and saved to exportPath<br />
+	 * in a last step, the tmp-dir is deleted
+	 * 
+	 * @param exportDir
+	 */
+	public void archiveWikiToCP(LocalFileImpl exportPath){
 		LocalFolderImpl tempFolder = new OlatRootFolderImpl("/tmp/" + ident.getKey() + "-" + ores.getResourceableId(), null);
 		if (tempFolder.resolve("imsmanifest.xml") != null) {
 			tempFolder.delete(); // delete all content if already exists...
 			tempFolder = new OlatRootFolderImpl("/tmp/" + ident.getKey() + "-" + ores.getResourceableId(), null);
 		}
 		Wiki wiki = WikiManager.getInstance().getOrLoadWiki(ores);
-		String dateStamp = Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
-		LocalFolderImpl exportDir = new OlatRootFolderImpl(FolderConfig.getUserHomes() + "/" + ident.getName()
-				+ "/private/archive/wiki-export-" + dateStamp + ".zip", null);
 
 		// create the ims manifest
 		StringBuilder sb = createIMSManifest(wiki, ident);
@@ -131,7 +148,7 @@ public class WikiToCPExport {
 		FileUtils.save(jsFile.getOutputStream(false), jsContent.toString(), "utf-8");
 
 		renderWikiToHtmlFiles(ores, tempFolder);
-		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(tempFolder.getBasefile(), exportDir.getBasefile(), null);
+		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(tempFolder.getBasefile(), exportPath.getBasefile(), null);
 		tempFolder.delete();
 	}
 
@@ -229,8 +246,12 @@ public class WikiToCPExport {
 			name = group.getName();
 			sb.append(trans.translate("wiki.exported.from.group", new String[] { name }));
 		} else {
-			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			name = entry.getDisplayname();
+			if(ores instanceof RepositoryEntry){
+				name = ((RepositoryEntry)ores).getDisplayname();
+			}else{
+				RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
+				name = entry.getDisplayname();
+			}
 			sb.append(trans.translate("wiki.exported.from.repository", new String[] { name }));
 		}
 		sb.append("</title>");
