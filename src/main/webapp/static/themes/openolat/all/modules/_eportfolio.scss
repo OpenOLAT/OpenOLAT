@@ -34,29 +34,69 @@ div.o_ep_struct_editor div.b_subcr {
 	a.b_ep_options { background: url(../openolat/images/gear.png) top left no-repeat; width:16px; height:16px; display: block;}
 	.b_ep_liveblog_icon { background-image: url(../openolat/images/portfolio/ep_liveblog_icon.png); }
 	
-	div.b_portfolio_toc ul { margin: 0; }
-	div.b_portfolio_toc li { list-style-type: none; }
-	div.b_portfolio_toc li.level1 { font-size: 1.2em; margin: 1.2em 0 0.2em 0; border-bottom: 1px solid #ddd; }
-	div.b_portfolio_toc li.level2 { padding-left: 20px; font-size: 1.1em; border-bottom: 1px dotted #ddd; }
-	div.b_portfolio_toc li.level3 { padding-left: 40px; }
-	div.b_portfolio_toc li a  { font-size: 0.8em; text-decoration: none; }
-	div.b_portfolio_toc .link { float: right; margin-right: 0px; }
-	div.b_portfolio_toc .commentlink { float: right; margin-right: 10%; }
-	div.b_portfolio_toc .type_artefact { font-style: italic; }	
-	.b_portfolio_toc .type_map, .b_portfolio_toc .type_page, .b_portfolio_toc .type_struct, .b_portfolio_toc .type_artefact { background-position: center left; background-repeat: no-repeat; padding-left: 20px; } 
+div.b_portfolio_toc {
+	ul { margin: 0; }
+	li { 
+		list-style-type: none; 
+		 a  { font-size: 0.8em; text-decoration: none; }
+	}
+	li.level1 { font-size: 1.2em; margin: 1.2em 0 0.2em 0; border-bottom: 1px solid #ddd; }
+	li.level2 { padding-left: 20px; font-size: 1.1em; border-bottom: 1px dotted #ddd; }
+	li.level3 { padding-left: 40px; }
+	
+	.link { float: right; margin-right: 0px; }
+	.commentlink { float: right; margin-right: 10%; }
+	.type_artefact { font-style: italic; }	
+	
+	.type_map,.type_page,.type_struct,.type_artefact { background-position: center left; background-repeat: no-repeat; padding-left: 20px; } 
+}
 	
 	 a.b_eportfolio_add { background: url(../openolat/images/portfolio/ep_add_icon.png) top left no-repeat; display:block; width:16px; height:16px;}
 	 td a.b_eportfolio_add {  float:right; padding-right:2px; }
 	 a.b_eportfolio_add_again, span.b_eportfolio_add_again { background: url(../openolat/images/portfolio/ep_add_again_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
 	.o_efficiencystatement a.b_eportfolio_add_again {float:right;}
 	 a.b_eportfolio_link { background: url(../openolat/images/portfolio/ep_link_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
-	ul.b_eportfolio_maps { margin: 0; padding: 0; }
-	ul.b_eportfolio_maps li { display: block; float: left; position: relative; width: 195px; height: 320px; padding: 60px 60px 40px 65px; margin: 0.5em; background: url(../openolat/images/portfolio/eportfolio_map_default.png) top left no-repeat; -moz-border-radius: 4px 14px 14px 4px; -webkit-border-radius: 4px 10px 10px 4px; -o-border-radius: 4px 14px 14px 4px; border-radius: 4px 14px 14px 4px; -webkit-box-shadow: 0 1px 3px lightGray; -moz-box-shadow: 0 1px 3px lightGray; -o-box-shadow: 0 1px 3px lightGray; box-shadow: 0 1px 3px lightGray; }
-	ul.b_eportfolio_maps li .b_map_info { position: absolute; bottom: 40px; width: inherit; font-size: 0.9em; }
+	.b_eportfolio_link { background-image: url(../openolat/images/portfolio/ep_link_icon.png);}
+	
+ul.b_eportfolio_maps { 
+	margin: 0; padding: 0; 
+	li { 
+		display: block; 
+		float: left; 
+		position: relative; 
+		width: 195px; 
+		height: 320px; 
+		padding: 60px 60px 40px 65px; 
+		margin: 0.5em; 
+		background: url(../openolat/images/portfolio/eportfolio_map_default.png) top left no-repeat; 
+		@include o-border-radius-all(4px, 14px, 14px, 4px);
+		@include o-box-shadow(0,1px,3px, lightgray);
+		
+		.b_map_info { 
+			position: absolute; bottom: 40px; width: inherit; font-size: 0.9em; 
+			a.b_open_icon { font-size: 1.2em; position: absolute; bottom: 170px; right: -10px; }
+		}
+		
+	}
+}
+
+/* -- changelog in map -- */
+.b_eportfolio_changelog {
+	.b_form {margin-top:20px;margin-bottom:20px;}
+	li{list-style: none;}
+	h5 { margin-top:16px;}
+}
+
+.b_eportfolio_mapowner {
+	font-style:  italic;
+	margin-bottom:8px;	
+}
+
+
 	li.default .b_map_info p { color: #bbb; }
 	li.comic .b_map_info p { color: #88a5c4; }
 	li.leather .b_map_info p { color: #C2A074; }
-	ul.b_eportfolio_maps li .b_map_info a.b_open_icon { font-size: 1.2em; position: absolute; bottom: 170px; right: -10px; }
+	
 	ul.b_eportfolio_maps li.leather { background: url(../openolat/images/portfolio/eportfolio_map_leather.png) top left no-repeat; border: none; }
 	ul.b_eportfolio_maps li.leather a { color: #fad9a4; }
 	ul.b_eportfolio_maps li.comic { background: url(../openolat/images/portfolio/eportfolio_map_comic.png) top left no-repeat; border: none; }
@@ -91,7 +131,10 @@ div.o_ep_struct_editor div.b_subcr {
 	.default div.b_pagination li.b_disabled { padding-bottom: 2px; margin-bottom: 0; background: #f4f4f4; }
 	.default div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
 	.default div.b_pagination li a { padding: 1em; padding: 5px 8px; }
-	.default div.b_eportfolio_page, .default div.b_portfolio_toc, .default div.b_eportfolio_edit { background-image: none; }	
+	.default div.b_pagination li.b_changelog {float:right;}
+	
+	
+	.default div.b_eportfolio_page, .default div.b_portfolio_toc, .default div.b_eportfolio_edit, .default div.b_eportfolio_changelog { background-image: none; }	
 
 	.comic {font-family: 'Comic Sans MS', 'Comic Sans', fantasy;}
 	.b_eportfolio_map.comic { background: #a2c3e8 none; padding: 30px; -webkit-border-top-right-radius: 10px; -moz-border-radius-topright: 10px; border-top-right-radius: 10px; }
@@ -104,9 +147,9 @@ div.o_ep_struct_editor div.b_subcr {
 	.comic div.b_pagination li span, .comic div.b_pagination li a, .comic div.b_pagination li { white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
 	.comic div.b_pagination li.b_disabled { z-index: 101; margin-left: 0; width: 100%; }
 	.comic div.b_pagination li .b_disabled { color: black; font-weight: bold; }
-	.comic div.b_pagination li.b_toc { background-image: url(../openolat/images/portfolio/postit_pink.png); }
+	.comic div.b_pagination li.b_toc, .comic div.b_pagination li.b_changelog { background-image: url(../openolat/images/portfolio/postit_pink.png); }
 	
-	.b_eportfolio_page, .b_portfolio_toc, .b_eportfolio_edit { min-height: 40em; background: #f4f4f4 url(../openolat/images/portfolio/eportfolio_page_corner.png) top right no-repeat; padding: 1em; -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -o-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
+	.b_eportfolio_page, .b_portfolio_toc, .b_eportfolio_edit, .b_eportfolio_changelog { min-height: 40em; background: #f4f4f4 url(../openolat/images/portfolio/eportfolio_page_corner.png) top right no-repeat; padding: 1em; -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -o-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
 	.b_eportfolio_page .b_eportfolio_structure > h5 { border-bottom: 1px solid #ddd; margin-top: 1.2em; }
 	.b_eportfolio_edit {  margin-top: 1.5em; }
 	
@@ -120,9 +163,11 @@ div.o_ep_struct_editor div.b_subcr {
 	.leather div.b_pagination li span, .leather div.b_pagination li a, .leather div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
 	.leather div.b_pagination li.b_disabled { padding: 0; background: #f4f4f4; }
 	.leather div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+	.leather div.b_pagination li.b_changelog {float:right;}
 	.leather div.b_pagination li a { padding: 1em; padding: 5px 8px; }
-	.leather div.b_eportfolio_page, .leather div.b_portfolio_toc, .leather div.b_eportfolio_edit { background-image: none; }	
-	
+	.leather div.b_eportfolio_page, .leather div.b_portfolio_toc, .leather div.b_eportfolio_edit,.leather div.b_eportfolio_changelog { background-image: none; }	
+
+
 	.b_eportfolio.b_artefacts hr.b_ep_filter_spacer { height: 10px; background: url(../openolat/images/portfolio/divider-arrow-down.png) 25px -12px no-repeat; border: none; border-top: 1px solid #ccc; margin: 2em 0 1em;  }
 	.b_eportfolio.b_artefacts .b_ep_content { background: white; padding: 0 1em 1em 1em; margin-top: 1.5em; }
 	.b_eportfolio.b_artefacts .b_ep_content .b_ep_filter { padding: 0; width:80% }

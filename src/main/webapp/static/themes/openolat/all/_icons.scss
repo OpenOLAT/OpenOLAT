@@ -69,7 +69,8 @@ a.b_small_icon:hover {
 .b_edit_icon{ background-image: url('../openolat/images/docs/document--pencil.png'); }
 .b_add_icon { background-image: url('../openolat/images/plus-circle.png'); }
 .b_open_icon { background-image: url('../openolat/images/control/control.png'); }
-	
+.b_star_icon{ background-image: url(../openolat/images/star.png) ;}
+.b_star_small_icon{ background-image: url(../openolat/images/star-small.png) ;}
 .o_fulltext_search_button { background-image: url('../openolat/images/magnifier-zoom.png'); }
 	
 .o_help_icon { background-image: url('../openolat/images/help.png'); }
@@ -83,7 +84,7 @@ a.b_small_icon:hover {
 .o_admin_icon { background-image: url('../openolat/images/wrench-screwdriver.png'); }
 .o_calendar_icon { background-image: url('../openolat/images/calendar.png'); }
 
-
+.o_locked_icon {background-image: url('../openolat/images/locked.png'); }
 
 /** ------- FLAGS ------ **/
 .b_flag_en {background-image: url('../openolat/images/flags/gb.png');} 	

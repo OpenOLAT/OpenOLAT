@@ -28,7 +28,6 @@
 
 @media print {
 
-
 		/** with the noprint class, you can hide any element in printout **/
 		.o_noprint { @include o-ghost();} 
 		  
@@ -36,9 +35,8 @@
 		/* (de) Wechsel der der Schriftgrößen-Maßheinheit zu [pt] - Probleme mit Maßeinheit [px] in Gecko-basierten Browsern vermeiden */
 		body { font-size:10pt; }
 		
-		/* don't print wiki navigation menu */
-		div.o_wiki_wrapper div.b_subcolumns div.b_c20l { display: none; }
-		div.o_wiki_wrapper div.b_subcolumns div.b_c80r div.b_tabbedpane_tabs {display: none;}
+		.b_noti {@include o-ghost();}
+		
 		
 		/* login site background image */
 		#b_main.o_loginscreen { background-image: none; }
@@ -74,6 +72,16 @@
 		
 		/* hide jsMath print warning */
 		#jsMath_PrintWarning {@include o-ghost(); }
+		
+		
+		/*  ---  nice print styles for wiki pages ---- */
+		.o_wiki_wrapper {
+			.b_c20l, .o_wikimod_nav {display:none;}
+			.b_c80r {
+				width:100%;
+				 div.b_tabbedpane_tabs {display: none;}
+			}
+		}
 
 }
 
