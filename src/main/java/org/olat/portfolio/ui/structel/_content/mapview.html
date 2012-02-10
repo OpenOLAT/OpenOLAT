@@ -29,7 +29,9 @@
 		<div style="clear: right;"></div>
 	
 		#if(!$r.available("editor"))
-			$map.description
+			<div class="b_eportfolio_mapdescr">$map.description</div>
+			#if($mapowner!="")<div class="b_eportfolio_mapowner">$r.translate('map.owners',$mapowner)</div>#end
+			
 			<div class="b_clearfix"></div>
 		
 			## show av. artefacts here...
@@ -39,6 +41,8 @@
 		
 			## multiple page(s) contains instances of page-ctrl
 			#if ($r.available("pagesCtrl")) $r.render("pagesCtrl") #end	
+			
+			
 		#else
 		</div> ## end b_map_header
 			$r.render("editor")

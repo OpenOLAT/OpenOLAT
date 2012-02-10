@@ -140,6 +140,10 @@
 	
 	<bean name="blogArtefactHandler" class="org.olat.modules.webFeed.portfolio.BlogArtefactHandler"/>
 	
+	
+	<!--   define notifications handler -->
+	<bean id="org.olat.portfolio.manager.EPNotificationsHandler" class="org.olat.portfolio.manager.EPNotificationsHandler">
+	</bean>
 
 	<!-- add the db-mappings here or in the module-context where your XYArtefactHandler for the appropriate type is. 
 	this allows real decoupling of the ePortfolio-Module from olatcore.

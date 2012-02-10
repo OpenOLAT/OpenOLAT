@@ -45,6 +45,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -141,6 +143,45 @@ public class EPStructureManager extends BasicManager {
 	 */
 	protected List<AbstractArtefact> getArtefacts(PortfolioStructure structure) {
 		return getArtefacts(structure, -1, -1);
+	}
+	
+	/**
+	 * recursively fetches all linked artefacts in the given map.<br />
+	 * ( iterates over all pages in the map, all artefacts on these pages, all
+	 * artefacts in structureElements on these pages)
+	 * 
+	 * FXOLAT-431
+	 * 
+	 * @param map
+	 * @return
+	 */
+	protected List<AbstractArtefact> getAllArtefactsInMap(EPAbstractMap map){
+		List<AbstractArtefact> results = new ArrayList<AbstractArtefact>();
+		
+		List<PortfolioStructure> children = loadStructureChildren(map);
+		for (PortfolioStructure child : children) {
+				// maps have pages as children, this will be true..!
+				if(child instanceof EPPage){
+					results.addAll(getAllArtefactsInStructure(child));
+				}
+		}
+		return results;
+	}
+	
+	/**
+	 * FXOLAT-431
+	 * helper method of  <code>getAllArtefactsInMap</code>
+	 * @param struct
+	 * @return
+	 */
+	private List<AbstractArtefact> getAllArtefactsInStructure(PortfolioStructure struct){
+		List<AbstractArtefact> results = new ArrayList<AbstractArtefact>();
+		results.addAll(getArtefacts(struct));
+		List<PortfolioStructure> children = loadStructureChildren(struct);
+		for (PortfolioStructure child : children) {
+			results.addAll(getAllArtefactsInStructure(child));
+		}
+		return results;
 	}
 	
 	protected List<PortfolioStructureMap> getOpenStructuredMapAfterDeadline() {
@@ -1024,6 +1065,13 @@ public class EPStructureManager extends BasicManager {
 		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
 		commentAndRatingService.init(struct.getOlatResource(), null, new CommentAndRatingDefaultSecurityCallback(null, true, false));
 		commentAndRatingService.deleteAllIgnoringSubPath();
+		
+		
+		// FXOLAT-431 remove subscriptions if the current struct is a map
+		if(struct instanceof EPAbstractMap){
+			SubscriptionContext subsContext = new SubscriptionContext(EPNotificationsHandler.TYPENNAME, struct.getResourceableId(), EPNotificationsHandler.TYPENNAME);
+			NotificationsManager.getInstance().delete(subsContext);
+		}
 		
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);

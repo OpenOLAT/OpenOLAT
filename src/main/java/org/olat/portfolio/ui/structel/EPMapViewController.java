@@ -42,6 +42,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.portfolio.EPLoggingAction;
+import org.olat.portfolio.EPOtherMapsExtension;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -122,6 +123,13 @@ public class EPMapViewController extends BasicController {
 
 	protected void initForm(UserRequest ureq) {
 		mainVc.contextPut("map", map);
+		//FXOLAT-429 :: display the owner of the map (if its not me)
+//		EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
+//		if(secCallback.isOwner())
+//			mainVc.contextPut("mapowner","");
+//		else
+			mainVc.contextPut("mapowner", EPFrontendManager.getAllOwnersAsString(map));
+		
 		mainVc.contextPut("style", ePFMgr.getValidStyleName(map));
 		
 		Boolean editMode = editButton == null ? Boolean.FALSE : (Boolean)editButton.getUserObject();

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Policy;
 import org.olat.core.commons.persistence.DB;
@@ -40,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
@@ -59,6 +61,7 @@ import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -738,6 +741,16 @@ public class EPFrontendManager extends BasicManager {
 	public List<AbstractArtefact> getArtefacts(PortfolioStructure structure) {
 		return structureManager.getArtefacts(structure);
 	}
+
+	/**
+	 * FXOLAT-431
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public List<AbstractArtefact> getAllArtefactsInMap(EPAbstractMap map){
+		return structureManager.getAllArtefactsInMap(map);
+	}
 	
 	/**
 	 * get statistics about how much of the required (min, equal) collect-restrictions have been fulfilled.
@@ -1153,6 +1166,37 @@ public class EPFrontendManager extends BasicManager {
 		}
 		return false;
 	}
+	
+	/**
+	 * returns all Owners of the given map as comma-separated list
+	 * @param map
+	 * @return
+	 */
+	public static String getAllOwnersAsString(PortfolioStructureMap map){
+		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
+		List<String> identNames = new ArrayList<String>();
+		for (Identity identity : ownerIdents) {
+			String fullName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null)+" "+identity.getUser().getProperty(UserConstants.LASTNAME, null);
+			identNames.add(fullName);
+		}
+		return StringHelper.formatAsCSVString(identNames);
+	}
+	
+	/**
+	 * returns the first Owner for the given Map.
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public static String getFirstOwnerAsString(PortfolioStructureMap map){
+		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
+		if(ownerIdents.size() > 0){
+			Identity id = ownerIdents.get(0);
+			return id.getUser().getProperty(UserConstants.FIRSTNAME, null)+" "+id.getUser().getProperty(UserConstants.LASTNAME, null);
+		}
+		return "n/a";
+	}
+	
 
 	// not yet available
 	public void archivePortfolio() {}

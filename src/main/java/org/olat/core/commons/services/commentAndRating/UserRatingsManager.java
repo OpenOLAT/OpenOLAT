@@ -113,6 +113,12 @@ public abstract class UserRatingsManager extends BasicManager {
 	public abstract Long countRatings();
 
 	/**
+	 * 
+	 * @return all ratings 
+	 */
+	public abstract  List<UserRating> getAllRatings();
+	
+	/**
 	 * @return The average of ratings for the configured resource. 0 if no
 	 *         ratings are available.
 	 */

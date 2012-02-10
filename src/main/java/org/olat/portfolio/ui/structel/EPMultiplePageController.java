@@ -35,9 +35,14 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.ui.structel.view.EPChangelogController;
 import org.olat.portfolio.ui.structel.view.EPTOCReadOnlyController;
+import org.olat.test.util.selenium.olatapi.home.EvidencesOfAchievement;
+
+import com.mchange.util.AssertException;
 
 /**
  * Description:<br>
@@ -58,6 +63,13 @@ public class EPMultiplePageController extends BasicController {
 	private final EPSecurityCallback secCallback;
 	private final EPFrontendManager ePFMgr;
 
+	
+	private Link tocLink; // the first tab, link to TOC
+	private Link changelogLink; // the last tab, link to Changelog
+	
+	private static final int PAGENUM_TOC = -1; //pagenum of toc (first tab)
+	private static final int PAGENUM_CL = -2; //pagenum of changelog (last tab)
+	
 	public EPMultiplePageController(UserRequest ureq, WindowControl wControl, List<PortfolioStructure> pageList,
 			EPSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -88,9 +100,13 @@ public class EPMultiplePageController extends BasicController {
 		if (pageList != null && pageList.size() != 0) {
 
 			// create toc link
-			Link tocLink = LinkFactory.createLink("toc", vC, this);
-			tocLink.setUserObject(-1);
+			tocLink = LinkFactory.createLink("toc", vC, this);
+			tocLink.setUserObject(PAGENUM_TOC);
 
+			// create changelog link
+			changelogLink = LinkFactory.createLink("changelog", vC, this);
+			changelogLink.setUserObject(PAGENUM_CL);
+			
 			int i = 1;
 			ArrayList<Link> pageLinkList = new ArrayList<Link>();
 			for (PortfolioStructure page : pageList) {
@@ -105,7 +121,7 @@ public class EPMultiplePageController extends BasicController {
 				i++;
 			}
 			vC.contextPut("pageLinkList", pageLinkList);
-			setAndInitActualPage(ureq, -1, false);
+			setAndInitActualPage(ureq, PAGENUM_TOC, false);
 		}
 	}
 	
@@ -122,19 +138,33 @@ public class EPMultiplePageController extends BasicController {
 
 	private void setAndInitActualPage(UserRequest ureq, int pageNum, boolean withComments) {
 		removeAsListenerAndDispose(pageCtrl);
-		if (pageNum == -1){
+		if (pageNum == PAGENUM_TOC){
 			// this is the toc
 			EPPage page = (EPPage)pageList.get(0);
 			PortfolioStructure map = ePFMgr.loadStructureParent(page);
 			pageCtrl = new EPTOCReadOnlyController(ureq, getWindowControl(), map, secCallback);
 			// disable toc-link
-			enDisableTOC(false);
+			disableLink_TOC(true);
+			disableLINK_LC(false);
+		} else if(pageNum == PAGENUM_CL){
+			EPPage page = (EPPage)pageList.get(0);
+			PortfolioStructure parent = ePFMgr.loadStructureParent(page);
+			if (parent instanceof EPAbstractMap) {
+				EPAbstractMap abstrMap = (EPAbstractMap) parent;
+				pageCtrl = new EPChangelogController(ureq, getWindowControl(), abstrMap);
+				disableLink_TOC(false);
+				disableLINK_LC(true);
+			} else {
+				// huch, why is parent of first page not a epAbstractMap
+				throw new AssertException("parent of first page is expected to be of type EPAbstractMap. Instead was "+parent.getClass().getName() );
+			}
 		} else {
 			EPPage page = (EPPage)pageList.get(pageNum);
 			PortfolioStructure map = ePFMgr.loadStructureParent(page);
 			pageCtrl = new EPPageViewController(ureq, getWindowControl(), map, page, withComments, secCallback);
 			// enable toc-link
-			enDisableTOC(true);
+			disableLink_TOC(false);
+			disableLINK_LC(false);
 		}
 		
 		vC.put("pageCtrl", pageCtrl.getInitialComponent());
@@ -149,10 +179,14 @@ public class EPMultiplePageController extends BasicController {
 		previousPage = pageNum+1;
 	}
 	
-	private void enDisableTOC(boolean enabled){
-		Link tocLink = (Link) vC.getComponent("toc");
-		if (tocLink !=null) tocLink.setEnabled(enabled);
-		vC.contextPut("tocactive", !enabled);
+	private void disableLink_TOC(boolean disable){
+		tocLink.setEnabled(!disable);
+		vC.contextPut("toc_disabled", disable);
+	}
+	
+	private void disableLINK_LC(boolean disable){
+		changelogLink.setEnabled(!disable);
+		vC.contextPut("changelog_disabled", disable);
 	}
 	
 
@@ -160,10 +194,16 @@ public class EPMultiplePageController extends BasicController {
 	protected void event(UserRequest ureq, Component source, @SuppressWarnings("unused") Event event) {
 		if (source instanceof Link) {
 			Link link = (Link) source;
-			int pageNum = (Integer) link.getUserObject();
+			int pageNum = PAGENUM_TOC;
+			try {
+				pageNum = Integer.parseInt(link.getUserObject().toString());
+			} catch (NumberFormatException nfe) {
+				// somehow the link has a invalid pageNum, display the TOC
+			}
+			
 			setAndInitActualPage(ureq, pageNum, false);
 		}
-		
+
 	}
 
 	/**

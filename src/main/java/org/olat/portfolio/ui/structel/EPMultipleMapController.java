@@ -314,13 +314,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 				
 				// show owner on shared maps
 				if (!secCallback.isOwner()){
-					List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
-					List<String> identNames = new ArrayList<String>();
-					for (Identity identity : ownerIdents) {
-						String fullName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null)+" "+identity.getUser().getProperty(UserConstants.LASTNAME, null);
-						identNames.add(fullName);
-					}
-					owners.add(StringHelper.formatAsCSVString(identNames));
+					owners.add(EPFrontendManager.getAllOwnersAsString(map));
 				} else owners.add(null);
 				
 				String artCount = String.valueOf(ePFMgr.countArtefactsInMap(map));

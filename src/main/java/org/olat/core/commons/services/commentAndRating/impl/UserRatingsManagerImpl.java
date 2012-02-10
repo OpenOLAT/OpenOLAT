@@ -128,7 +128,35 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		Long count = (Long) query.list().get(0);
 		return count;
 	}
-
+	
+	/**
+	 * @see org.olat.core.commons.services.commentAndRating.UserRatingsManager#getAllRatings()
+	 */
+	@Override
+	public List<UserRating> getAllRatings(){
+		DBQuery query;
+		if (getOLATResourceableSubPath() == null) {
+			// special query when sub path is null
+			query = DBFactory
+					.getInstance()
+					.createQuery(
+							"select rating from UserRatingImpl as rating where resName=:resname AND resId=:resId AND resSubPath is NULL");
+		} else {
+			query = DBFactory
+					.getInstance()
+					.createQuery(
+							"select rating from UserRatingImpl as rating where resName=:resname AND resId=:resId AND resSubPath=:resSubPath");
+			query.setString("resSubPath", getOLATResourceableSubPath());
+		}
+		query.setString("resname", getOLATResourceable()
+				.getResourceableTypeName());
+		query.setLong("resId", getOLATResourceable().getResourceableId());
+		query.setCacheable(true);
+		//
+		List<UserRating> ratings = query.list();
+		return ratings;
+	}
+	
 	/**
 	 * @see org.olat.core.commons.services.commentAndRating.UserRatingsManager#createRating(org.olat.core.id.Identity, int)
 	 */
