@@ -19,12 +19,19 @@
  */
 package org.olat.portfolio;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.core.id.context.TabContext;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.home.HomeSite;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
@@ -41,21 +48,10 @@ public class EPArtefactPoolExtension {
 
 	public EPArtefactPoolExtension() {
 		
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(AbstractArtefact.class.getSimpleName(), new ContextEntryControllerCreator(){
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(AbstractArtefact.class.getSimpleName(), new DefaultContextEntryControllerCreator(){
 			
 			@Override
-			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-				return null;
-			}
-
-			@Override
-			public String getTabName(ContextEntry ce) {
-				// opens in home-tab
-				return null;
-			}
-
-			@Override
-			public String getSiteClassName(ContextEntry ce) {
+			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 				return HomeSite.class.getName();
 			}
 
@@ -63,7 +59,19 @@ public class EPArtefactPoolExtension {
 			public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 				return true;
 			}
-			
+
+			@Override
+			public TabContext getTabContext(UserRequest ureq, OLATResourceable ores, ContextEntry mainEntry, List<ContextEntry> entries) {
+				Identity identity = ureq.getIdentity();
+
+				OLATResourceable mapsRes = OresHelper.createOLATResourceableType("EPArtefacts");
+				ContextEntry mapsEntry = BusinessControlFactory.getInstance().createContextEntry(mapsRes);
+				List<ContextEntry> rewritedEntries = new ArrayList<ContextEntry>();
+				rewritedEntries.add(mapsEntry);//Menu node
+				rewritedEntries.add(mainEntry);//Map
+				OLATResourceable homeRes = OresHelper.createOLATResourceableInstance("HomeSite", identity.getKey());
+				return new TabContext("", homeRes, rewritedEntries);
+			}
 		});	
 	}
 }

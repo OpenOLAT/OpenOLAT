@@ -115,8 +115,14 @@ public class EPNotificationsHelper {
 					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), urlToSend, structLink
 							.getCreationDate(), "b_ep_page_icon"));
 				} else {
+					String urlToSend = "";
+					if(structLink.getParent() instanceof EPPage) {
+						EPPage childPage = (EPPage) structLink.getParent();
+						String businessPath = rootBusinessPath + "[EPPage:" + childPage.getKey() + "]";
+						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+					}
 					allItems.add(new SubscriptionListItem(translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }),
-							"", structLink.getCreationDate(), "b_ep_struct_icon"));
+							urlToSend, structLink.getCreationDate(), "b_ep_struct_icon"));
 				}
 			}
 		}
@@ -129,8 +135,9 @@ public class EPNotificationsHelper {
 		}
 		for (AbstractArtefact artfc : allAs) {
 			if (artfc.getCollectionDate().after(compareDate)) {
+				String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(artfc.getAuthor()
-						.getUser()) }), "", artfc.getCollectionDate(), "b_eportfolio_link"));
+						.getUser()) }), urlToSend, artfc.getCollectionDate(), "b_eportfolio_link"));
 			}
 		}
 
@@ -172,8 +179,9 @@ public class EPNotificationsHelper {
 		}
 		for (AbstractArtefact artfc : allAs) {
 			if (artfc.getCollectionDate().after(compareDate)) {
+				String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 				allItems.add(new SubscriptionListItem(
-						translator.translate("li.newartefact", new String[] { getFullNameFromUser(artfc.getAuthor()) }), "", artfc
+						translator.translate("li.newartefact", new String[] { getFullNameFromUser(artfc.getAuthor()) }), urlToSend, artfc
 								.getCollectionDate(), "b_eportfolio_link"));
 			}
 		}

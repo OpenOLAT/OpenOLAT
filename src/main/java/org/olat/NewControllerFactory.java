@@ -45,7 +45,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
-import org.olat.core.id.context.ContextEntryControllerCreator2;
+import org.olat.core.id.context.TabContext;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.resource.OresHelper;
@@ -177,12 +177,7 @@ public class NewControllerFactory extends LogDelegator {
 		}
 
 		//fxdiff BAKS-7 Resume function
-		String siteClassName;
-		if(typeHandler instanceof ContextEntryControllerCreator2) {
-			siteClassName = ((ContextEntryControllerCreator2)typeHandler).getSiteClassName(ureq, mainCe);
-		} else {
-			siteClassName = typeHandler.getSiteClassName(mainCe);
-		}
+		String siteClassName = typeHandler.getSiteClassName(mainCe, ureq);
 			
 		// open in existing site
 		if (siteClassName != null) {
@@ -218,23 +213,23 @@ public class NewControllerFactory extends LogDelegator {
 					}
 				}
 			}
-			dts.activateStatic(ureq, siteClassName, viewIdentifyer, entries);
+
+			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
+			dts.activateStatic(ureq, siteClassName, viewIdentifyer, context.getContext());
 		} else {
 			List<ContextEntry> entries = new ArrayList<ContextEntry>();
+			while(bc.hasContextEntry()) {
+				entries.add(bc.popLauncherContextEntry());
+			}
+			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
 			
 			// or create new tab
-			String tabName = typeHandler.getTabName(mainCe);
+			//String tabName = typeHandler.getTabName(mainCe, ureq);
 			// create and add Tab
-			dt = dts.createDTab(ores, re, tabName);
+			dt = dts.createDTab(context.getTabResource(), re, context.getName());
 			if (dt == null) {
-				// tabs are full: TODO
-				// user error message is generated in BaseFullWebappController, nothing
-				// to do here
+				// user error message is generated in BaseFullWebappController, nothing to do here
 			} else {
-				while(bc.hasContextEntry()) {
-					entries.add(bc.popLauncherContextEntry());
-				}
-
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
 				Controller launchC = typeHandler.createController(mainCe, ureq, bwControl);
 				if (launchC == null) {
@@ -244,7 +239,7 @@ public class NewControllerFactory extends LogDelegator {
 
 				dt.setController(launchC);
 				dts.addDTab(dt);
-				dts.activate(ureq, dt, null, entries); // null: do not activate to a certain view
+				dts.activate(ureq, dt, null, context.getContext()); // null: do not activate to a certain view
 			}
 		}
 	}

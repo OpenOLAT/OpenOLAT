@@ -32,6 +32,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.PortfolioModule;
@@ -179,6 +182,22 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
 		fireEvent(ureq, event); // pass to others
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		OLATResourceable ores = entries.get(0).getOLATResourceable();
+		if("AbstractArtefact".equals(ores.getResourceableTypeName())) {
+			Long resId = ores.getResourceableId();
+			for(AbstractArtefact artefact: artefacts) {
+				if(artefact.getKey().equals(resId) || artefact.getResourceableId().equals(resId)) {
+					System.out.println("Match");
+				}
+			}
+		}
+		
 	}
 
 	/**

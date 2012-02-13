@@ -232,6 +232,10 @@ public class EPMapViewController extends BasicController implements Activateable
 		pageCtrl.activate(ureq, entries, state);
 	}
 	
+	public PortfolioStructureMap getMap() {
+		return map;
+	}
+	
 	private EPPage getSelectedPage(PortfolioStructure structure) {
 		PortfolioStructure current = structure;
 		

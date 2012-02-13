@@ -24,7 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.repository.site.RepositorySite;
 
 /**
@@ -34,7 +34,7 @@ import org.olat.repository.site.RepositorySite;
  * Initial Date:  11 fev. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CatalogContextEntryControllerCreator implements ContextEntryControllerCreator {
+public class CatalogContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 	@Override
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
@@ -42,12 +42,12 @@ public class CatalogContextEntryControllerCreator implements ContextEntryControl
 	}
 
 	@Override
-	public String getSiteClassName(ContextEntry ce) {
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		return RepositorySite.class.getName();
 	}
 
 	@Override
-	public String getTabName(ContextEntry ce) {
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 

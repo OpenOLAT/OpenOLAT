@@ -647,6 +647,22 @@ public class TableController extends BasicController {
 	public void setSelectedRowId(final int selectedRowId) {
 		table.setSelectedRowId(selectedRowId);
 	}
+	
+	/**
+	 * Set the page viewed if pageing is enabled
+	 * @param pageNr
+	 */
+	public void setPage(Integer pageNr) {
+		table.updatePageing(pageNr);
+	}
+	
+	/**
+	 * Return the number of items per page if pageing is enable
+	 * @return
+	 */
+	public int getPageSize() {
+		return table.getResultsPerPage();
+	}
 
 	/**
 	 * Sets the sortColumn to a specific colun id. Check if the column can be accessed 

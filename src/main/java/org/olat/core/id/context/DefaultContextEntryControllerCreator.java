@@ -17,54 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.user;
+package org.olat.core.id.context;
 
-import org.olat.admin.site.UserAdminSite;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.core.id.OLATResourceable;
 
 /**
- * Description:<br>
- * This class offer a way to launch the UserAdminSite
  * 
- * <P>
- * Initial Date:  4 sept. 2009 <br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
- * @author srosse
  */
-public class UserAdminContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+public class DefaultContextEntryControllerCreator implements ContextEntryControllerCreator {
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
-	 */
-	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-		// opened as site not tab
-		return UserAdminSite.class.getName();
-	}
-
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
-	 */
-	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 
-	@Override
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+		return null;
+	}
+
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return true;
+	}
+
+	@Override
+	public TabContext getTabContext(UserRequest ureq, OLATResourceable ores, ContextEntry mainEntry, List<ContextEntry> entries) {
+		return new TabContext(getTabName(mainEntry, ureq), ores, entries);
 	}
 }

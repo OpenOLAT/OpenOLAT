@@ -24,7 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.home.HomeSite;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 
@@ -41,7 +41,7 @@ public class EPMyStructuredMapsExtension {
 
 	public EPMyStructuredMapsExtension() {
 
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(EPStructuredMap.class.getSimpleName(), new ContextEntryControllerCreator(){
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(EPStructuredMap.class.getSimpleName(), new DefaultContextEntryControllerCreator(){
 
 			@Override
 			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
@@ -49,13 +49,13 @@ public class EPMyStructuredMapsExtension {
 			}
 
 			@Override
-			public String getTabName(ContextEntry ce) {
+			public String getTabName(ContextEntry ce, UserRequest ureq) {
 				// opens in home-tab
 				return null;
 			}
 
 			@Override
-			public String getSiteClassName(ContextEntry ce) {
+			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 				return HomeSite.class.getName();
 			}
 

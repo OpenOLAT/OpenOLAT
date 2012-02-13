@@ -32,7 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
@@ -67,20 +67,20 @@ public class MailBoxExtension extends BasicManager implements MailContextResolve
 	}
 	
 	public void init() {
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("Inbox", new ContextEntryControllerCreator(){
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("Inbox", new DefaultContextEntryControllerCreator(){
 			@Override
 			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 				return null;
 			}
 
 			@Override
-			public String getTabName(ContextEntry ce) {
+			public String getTabName(ContextEntry ce, UserRequest ureq) {
 				// opens in home-tab
 				return null;
 			}
 
 			@Override
-			public String getSiteClassName(ContextEntry ce) {
+			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 				return HomeSite.class.getName();
 			}
 

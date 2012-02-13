@@ -927,6 +927,15 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	/**
+	 * Load the OLAT resource with the primary of the structure element
+	 * @param key cannot be null
+	 * @return The resource or null if not found
+	 */
+	public OLATResource loadOlatResourceFromByKey(Long key) {
+		return structureManager.loadOlatResourceFromStructureElByKey(key);
+	}
+	
+	/**
 	 * Retrieve the parent of the structure
 	 * @param structure
 	 * @return
@@ -1033,6 +1042,10 @@ public class EPFrontendManager extends BasicManager {
 	
 	public boolean isMapShared(PortfolioStructureMap map) {
 		OLATResource resource = map.getOlatResource();
+		return isMapShared(resource);
+	}
+		
+	public boolean isMapShared(OLATResourceable resource) {
 		List<Policy> policies = securityManager.getPoliciesOfResource(resource, null);
 		for(Policy policy:policies) {
 			if(policy.getPermission().contains(Constants.PERMISSION_READ)) {

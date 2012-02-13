@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -44,11 +43,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.home.HomeSite;
 import org.olat.portfolio.EPLoggingAction;
@@ -480,12 +477,27 @@ public class EPMultipleMapController extends BasicController implements Activate
 	private void activateMap(UserRequest ureq, Long mapKey) {
 		if(mapKey == null) return;
 		
-		// we have a key, find the corresponding map
+		boolean foundTheMap = false;
+		// we have a key, find the corresponding map with the current option (restrcited view or not)
 		for(PortfolioStructureMap map: userMaps) {
 			if(map.getKey().equals(mapKey) || (map.getResourceableId().equals(mapKey))) {
 				activateMap(ureq, map);
 				fireEvent(ureq, new EPMapEvent(EPStructureEvent.SELECT, map));
+				foundTheMap = true;
 				break;
+			}
+		}
+		
+		if(!foundTheMap) {
+			// map not found, switch the option and retry to found the map
+			restrictShareView = !restrictShareView;
+			initOrUpdateMaps(ureq);
+			for(PortfolioStructureMap map: userMaps) {
+				if(map.getKey().equals(mapKey) || (map.getResourceableId().equals(mapKey))) {
+					activateMap(ureq, map);
+					fireEvent(ureq, new EPMapEvent(EPStructureEvent.SELECT, map));
+					break;
+				}
 			}
 		}
 	}

@@ -19,11 +19,46 @@
  */
 package org.olat.core.id.context;
 
-import org.olat.core.gui.UserRequest;
+import java.util.List;
 
-//fxdiff BAKS-7 Resume function
-public interface ContextEntryControllerCreator2 extends ContextEntryControllerCreator {
+import org.olat.core.id.OLATResourceable;
 
+/**
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ */
+public class TabContext {
+	
+	private final String name;
+	private final OLATResourceable resource;
+	private final List<ContextEntry> contextEntries;
+	
+	public TabContext (String name, OLATResourceable resource, List<ContextEntry> contextEntries) {
+		this.name = name;
+		this.resource = resource;
+		this.contextEntries = contextEntries;
+	}
+	
+	/**
+	 * The name of the tab
+	 * @return
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	/**
+	 * The resource which identified the tab
+	 * @return
+	 */
+	public OLATResourceable getTabResource() {
+		return resource;
+	}
 
-	public String getSiteClassName(UserRequest ureq, ContextEntry ce);
+	/**
+	 * 
+	 * @return
+	 */
+	public List<ContextEntry> getContext() {
+		return contextEntries;
+	}
 }

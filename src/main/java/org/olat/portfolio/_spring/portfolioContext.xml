@@ -77,16 +77,10 @@
 	<bean class="org.olat.portfolio.EPArtefactPoolExtension"/>
 	
 	<!-- Portfolio map view in users Home -->
-	<bean class="org.olat.portfolio.EPMyMapsExtension"/>
+	<bean class="org.olat.portfolio.EPMapExtension"/>
 	
 	<!-- Portfolio map view for invitee -->
 	<bean class="org.olat.portfolio.EPMapOnInvitationExtension"/>
-	
-	<!-- Portfolio map view in users Home -->
-	<bean class="org.olat.portfolio.EPMyStructuredMapsExtension"/>
-	
-	<!-- Portfolio map view in users Home -->
-	<bean class="org.olat.portfolio.EPOtherMapsExtension"/>
 
 	<bean name="epArtefactManager" class="org.olat.portfolio.manager.EPArtefactManager">
 		<property name="dbInstance" ref="database"/>

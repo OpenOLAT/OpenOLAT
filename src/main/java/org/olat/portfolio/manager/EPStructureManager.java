@@ -1530,6 +1530,23 @@ public class EPStructureManager extends BasicManager {
 		if (resources.isEmpty()) return null;
 		return resources.get(0);
 	}
+	
+	public OLATResource loadOlatResourceFromStructureElByKey(Long key) {
+		if (key == null) throw new NullPointerException();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select element.olatResource from ").append(EPStructureElement.class.getName()).append(" element")
+			.append(" where element.key=:key or element.olatResource.resId=:key ");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		query.setLong("key", key);
+		
+		@SuppressWarnings("unchecked")
+		List<OLATResource> resources = query.list();
+		// if not found, it is an empty list
+		if (resources.isEmpty()) return null;
+		return resources.get(0);
+	}
 
 /**
  * Create a basic structure element

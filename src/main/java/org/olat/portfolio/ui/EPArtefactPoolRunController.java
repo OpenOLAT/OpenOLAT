@@ -35,6 +35,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.PortfolioModule;
@@ -61,7 +65,7 @@ import org.olat.portfolio.ui.filter.PortfolioFilterEditEvent;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class EPArtefactPoolRunController extends BasicController {
+public class EPArtefactPoolRunController extends BasicController implements Activateable2 {
 
 	private VelocityContainer vC;
 	private EPFrontendManager ePFMgr;
@@ -290,6 +294,15 @@ public class EPArtefactPoolRunController extends BasicController {
 		}
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		if(artCtrl != null) {
+			artCtrl.activate(ureq, entries, state);
+		}
+	}
+
 	private enum Filter {
 		read_only,
 		tags,
