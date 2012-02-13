@@ -41,11 +41,11 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
+import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
 import org.olat.portfolio.model.structel.EPStructureToStructureLink;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
@@ -101,8 +101,11 @@ public class EPNotificationsHelper {
 	 */
 	public List<SubscriptionListItem> getAllSubscrItems_Default(Date compareDate, EPAbstractMap map) {
 
-		/* all items are first put in this list, then sorted, then added to si */
+		/* all items are first put in this list, then sorted, then returned */
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
+
+		String tmp_bPath;
+		String tmp_linkUrl;
 
 		/* all struct to struct links (Pages and structureElements) */
 		List<EPStructureToStructureLink> structLinkCollection = getAllStruct2StructLinks(map);
@@ -110,40 +113,50 @@ public class EPNotificationsHelper {
 			if (structLink.getCreationDate().after(compareDate)) {
 				if (structLink.getChild() instanceof EPPage) {
 					EPPage childPage = (EPPage) structLink.getChild();
-					String businessPath = rootBusinessPath + "[EPPage:" + childPage.getKey() + "]";
-					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), urlToSend, structLink
-							.getCreationDate(), "b_ep_page_icon"));
+					tmp_bPath = rootBusinessPath + "[EPPage:" + childPage.getKey() + "]";
+					tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), tmp_linkUrl,
+							structLink.getCreationDate(), "b_ep_page_icon"));
 				} else {
-					String urlToSend = "";
-					if(structLink.getParent() instanceof EPPage) {
-						EPPage childPage = (EPPage) structLink.getParent();
-						String businessPath = rootBusinessPath + "[EPPage:" + childPage.getKey() + "]";
-						urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+					if (structLink.getParent() instanceof EPPage) {
+						EPPage parentPage = (EPPage) structLink.getParent();
+						tmp_bPath = rootBusinessPath + "[EPPage:" + parentPage.getKey() + "]";
+						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+					} else {
+						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+						allItems.add(new SubscriptionListItem(
+								translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }), tmp_linkUrl, structLink
+										.getCreationDate(), "b_ep_struct_icon"));
 					}
-					allItems.add(new SubscriptionListItem(translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }),
-							urlToSend, structLink.getCreationDate(), "b_ep_struct_icon"));
 				}
 			}
 		}
 
 		/* all artefacts on the maps pages and structElements */
-		List<AbstractArtefact> allAs = ePFMgr.getAllArtefactsInMap(map);
-		if (logger.isDebug()) {
-			logger.debug("getting all artefacts for map " + map.getTitle());
-			logger.debug("got " + allAs.size() + " artefacts...");
-		}
-		for (AbstractArtefact artfc : allAs) {
-			if (artfc.getCollectionDate().after(compareDate)) {
-				String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
-				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(artfc.getAuthor()
-						.getUser()) }), urlToSend, artfc.getCollectionDate(), "b_eportfolio_link"));
+		List<EPStructureToArtefactLink> links = getAllArtefactLinks(map);
+		for (EPStructureToArtefactLink link : links) {
+			if (link.getCreationDate().after(compareDate)) {
+				PortfolioStructure linkParent = link.getStructureElement();
+				Long linkKey = 0L;
+				if (linkParent instanceof EPPage) {
+					linkKey = linkParent.getKey();
+				} else {
+					// it's no page, thus a struct-element, we want to jump to
+					// the page
+					linkKey = linkParent.getRoot().getKey();
+				}
+
+				tmp_bPath = rootBusinessPath + "[EPPage:" + linkKey + "]";
+				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(link.getArtefact()
+						.getAuthor()) }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
 			}
 		}
 
+		/* comments and ratings */
 		allItems.addAll(getCRItemsForMap(compareDate, map));
 
-		/* now sort all listItems and add to si */
+		/* now sort all listItems */
 		Collections.sort(allItems, new SubscriptionListItemComparator());
 		return allItems;
 	}
@@ -163,7 +176,6 @@ public class EPNotificationsHelper {
 	 * 
 	 */
 	public List<SubscriptionListItem> getAllSubscrItems_Structured(Date compareDate, EPStructuredMap map) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
 
 		// at this moment, map is not yet synchronized. check the "parent"
@@ -171,23 +183,34 @@ public class EPNotificationsHelper {
 		PortfolioStructureMap sourceMap = map.getStructuredMapSource();
 		allItems = getAllSubscrItems_Default(compareDate, (EPAbstractMap) sourceMap);
 
+		String tmp_bPath;
+		String tmp_linkUrl;
+
 		// now check artefacts, comments and ratings of this map
-		List<AbstractArtefact> allAs = ePFMgr.getAllArtefactsInMap(map);
-		if (logger.isDebug()) {
-			logger.debug("getting all artefacts for map " + map.getTitle());
-			logger.debug("got " + allAs.size() + " artefacts...");
-		}
-		for (AbstractArtefact artfc : allAs) {
-			if (artfc.getCollectionDate().after(compareDate)) {
-				String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
-				allItems.add(new SubscriptionListItem(
-						translator.translate("li.newartefact", new String[] { getFullNameFromUser(artfc.getAuthor()) }), urlToSend, artfc
-								.getCollectionDate(), "b_eportfolio_link"));
+		List<EPStructureToArtefactLink> links = getAllArtefactLinks(map);
+		for (EPStructureToArtefactLink link : links) {
+			if (link.getCreationDate().after(compareDate)) {
+				PortfolioStructure linkParent = link.getStructureElement();
+				Long linkKey = 0L;
+				if (linkParent instanceof EPPage) {
+					linkKey = linkParent.getKey();
+				} else {
+					// it's no page, thus a struct-element, we want to jump to
+					// the page
+					linkKey = linkParent.getRoot().getKey();
+				}
+
+				tmp_bPath = rootBusinessPath + "[EPPage:" + linkKey + "]";
+				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(link.getArtefact()
+						.getAuthor()) }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
 			}
 		}
+
+		/* the comments and ratings */
 		allItems.addAll(getCRItemsForMap(compareDate, map));
 
-		/* now sort all listItems and add to si */
+		/* now sort all listItems */
 		Collections.sort(allItems, new SubscriptionListItemComparator());
 		return allItems;
 	}
@@ -203,24 +226,32 @@ public class EPNotificationsHelper {
 	 */
 	private List<SubscriptionListItem> getCRItemsForMap(Date compareDate, EPAbstractMap map) {
 		List<SubscriptionListItem> allItemsToAdd = new ArrayList<SubscriptionListItem>();
-		/* comments and ratings */
+
+		String tmp_bPath;
+		String tmp_linkUrl;
+
+		// get all comments and ratings on the map
 		CommentAndRatingService crs = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
 		crs.init(identity, map.getOlatResource(), null, false, false);
 		List<UserComment> comments = crs.getUserCommentsManager().getComments();
 		for (UserComment comment : comments) {
-			if (comment.getCreationDate().after(compareDate))
+			if (comment.getCreationDate().after(compareDate)) {
+				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 				allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newcomment", new String[] { map.getTitle(),
-						getFullNameFromUser(comment.getCreator()) }), "", comment.getCreationDate(), "b_info_icon"));
+						getFullNameFromUser(comment.getCreator()) }), tmp_linkUrl, comment.getCreationDate(), "b_info_icon"));
+			}
 		}
 		List<UserRating> ratings = crs.getUserRatingsManager().getAllRatings();
 		for (UserRating rating : ratings) {
-			if (rating.getCreationDate().after(compareDate))
+			if (rating.getCreationDate().after(compareDate)) {
+				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 				allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newrating", new String[] { map.getTitle(),
-						getFullNameFromUser(rating.getCreator()) }), "", rating.getCreationDate(), "b_star_icon"));
+						getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getCreationDate(), "b_star_icon"));
+			}
 		}
 		crs = null;
 
-		// get all comments on pages of the map
+		// get all comments and ratings on pages of the map
 		List<PortfolioStructure> children = ePFMgr.loadStructureChildren(map);
 		for (PortfolioStructure child : children) {
 			if (child instanceof EPPage) {
@@ -229,19 +260,24 @@ public class EPNotificationsHelper {
 				c_crs.init(identity, map.getOlatResource(), childPage.getKey().toString(), false, false);
 				List<UserComment> c_comments = c_crs.getUserCommentsManager().getComments();
 				for (UserComment comment : c_comments) {
-					if (comment.getCreationDate().after(compareDate))
+					if (comment.getCreationDate().after(compareDate)) {
+						tmp_bPath = rootBusinessPath + "[EPPage:" + comment.getResSubPath() + "]";
+						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
 						allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newcomment", new String[] { child.getTitle(),
-								getFullNameFromUser(comment.getCreator()) }), "", comment.getCreationDate(), "b_info_icon"));
+								getFullNameFromUser(comment.getCreator()) }), tmp_linkUrl, comment.getCreationDate(), "b_info_icon"));
+					}
 				}
 				List<UserRating> c_ratings = c_crs.getUserRatingsManager().getAllRatings();
 				for (UserRating rating : c_ratings) {
-					if (rating.getCreationDate().after(compareDate))
-						allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newrating", new String[] { map.getTitle(),
-								getFullNameFromUser(rating.getCreator()) }), "", rating.getCreationDate(), "b_star_icon"));
+					if (rating.getCreationDate().after(compareDate)) {
+						tmp_bPath = rootBusinessPath + "[EPPage:" + rating.getResSubPath() + "]";
+						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+						allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newrating", new String[] { child.getTitle(),
+								getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getCreationDate(), "b_star_icon"));
+					}
 				}
 			}
 		}
-
 		return allItemsToAdd;
 	}
 
@@ -308,7 +344,55 @@ public class EPNotificationsHelper {
 			if (structLink.getChild() instanceof EPPage)
 				resultList.addAll(getAllStruct2StructLinks((EPPage) structLink.getChild()));
 		}
+		return resultList;
+	}
 
+	/**
+	 * returns a list of StructureToArtefactLinks of the given map.<br />
+	 * The resulting lists contains a Struct2Artefact Link for every artefact on
+	 * the map's pages, as well as one for every artefact on the page's
+	 * struct-elements.
+	 * 
+	 * 
+	 * @param parent
+	 * @return
+	 */
+	private List<EPStructureToArtefactLink> getAllArtefactLinks(EPAbstractMap map) {
+		List<EPStructureToArtefactLink> resultList = new ArrayList<EPStructureToArtefactLink>();
+		List<PortfolioStructure> allChildStructs = getAllStructuresInMap(map);
+
+		for (PortfolioStructure portfolioStructure : allChildStructs) {
+			if (portfolioStructure instanceof EPStructureElement) {
+				resultList.addAll(((EPStructureElement) portfolioStructure).getInternalArtefacts());
+			} else if (portfolioStructure instanceof EPPage) {
+				resultList.addAll(((EPPage) portfolioStructure).getInternalArtefacts());
+			}
+		}
+		return resultList;
+	}
+
+	/**
+	 * returns all <code>PortfolioStructures</code> of the given map.
+	 * assumptions: a map can have pages , pages can have structures. (no more
+	 * levels, i.e. no structures in structures)
+	 * 
+	 * @param map
+	 * @return
+	 */
+	private List<PortfolioStructure> getAllStructuresInMap(EPAbstractMap map) {
+		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		List<PortfolioStructure> resultList = new ArrayList<PortfolioStructure>();
+
+		// all children of the map, these are the pages
+		List<PortfolioStructure> pages = ePFMgr.loadStructureChildren(map);
+		for (PortfolioStructure page : pages) {
+			resultList.add(page);
+			if (page instanceof EPPage) {
+				resultList.addAll(ePFMgr.loadStructureChildren(page));
+			} else {
+				logger.warn("unexpected, child-structure of map was no EPPage..");
+			}
+		}
 		return resultList;
 	}
 

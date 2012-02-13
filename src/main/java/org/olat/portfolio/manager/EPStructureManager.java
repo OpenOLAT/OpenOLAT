@@ -154,7 +154,7 @@ public class EPStructureManager extends BasicManager {
 	 * 
 	 * @param map
 	 * @return
-	 */
+	 
 	protected List<AbstractArtefact> getAllArtefactsInMap(EPAbstractMap map){
 		List<AbstractArtefact> results = new ArrayList<AbstractArtefact>();
 		
@@ -162,27 +162,12 @@ public class EPStructureManager extends BasicManager {
 		for (PortfolioStructure child : children) {
 				// maps have pages as children, this will be true..!
 				if(child instanceof EPPage){
-					results.addAll(getAllArtefactsInStructure(child));
+					results.addAll(getArtefacts(child));
 				}
 		}
 		return results;
 	}
-	
-	/**
-	 * FXOLAT-431
-	 * helper method of  <code>getAllArtefactsInMap</code>
-	 * @param struct
-	 * @return
-	 */
-	private List<AbstractArtefact> getAllArtefactsInStructure(PortfolioStructure struct){
-		List<AbstractArtefact> results = new ArrayList<AbstractArtefact>();
-		results.addAll(getArtefacts(struct));
-		List<PortfolioStructure> children = loadStructureChildren(struct);
-		for (PortfolioStructure child : children) {
-			results.addAll(getAllArtefactsInStructure(child));
-		}
-		return results;
-	}
+	*/
 	
 	protected List<PortfolioStructureMap> getOpenStructuredMapAfterDeadline() {
 		StringBuilder sb = new StringBuilder();

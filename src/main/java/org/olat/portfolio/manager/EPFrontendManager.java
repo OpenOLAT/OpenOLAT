@@ -747,10 +747,11 @@ public class EPFrontendManager extends BasicManager {
 	 * 
 	 * @param map
 	 * @return
-	 */
+	 *
 	public List<AbstractArtefact> getAllArtefactsInMap(EPAbstractMap map){
 		return structureManager.getAllArtefactsInMap(map);
 	}
+	*/
 	
 	/**
 	 * get statistics about how much of the required (min, equal) collect-restrictions have been fulfilled.
