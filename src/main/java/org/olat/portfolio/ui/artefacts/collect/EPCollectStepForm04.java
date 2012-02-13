@@ -49,7 +49,7 @@ import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
 /**
  * Description:<br>
- * controller to select a map as target for an artefact 
+ * controller to select a map as target for an artefact
  * 
  * <P>
  * Initial Date: 28.07.2010 <br>
@@ -65,7 +65,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	private PortfolioStructure selStructure;
 	private AbstractArtefact artefact;
 	private PortfolioStructure oldStructure;
-	
+
 	@SuppressWarnings("unused")
 	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
 			String customLayoutPageName, AbstractArtefact artefact) {
@@ -79,9 +79,9 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		this.artefact = artefact;
 		this.oldStructure = oldStructure;
-		initForm(this.flc, this, ureq);	
+		initForm(this.flc, this, ureq);
 	}
-	
+
 	/**
 	 * @see org.olat.core.gui.control.generic.wizard.StepFormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
@@ -91,12 +91,12 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		List<PortfolioStructure> structs = ePFMgr.getStructureElementsForUser(getIdentity());
-		if (structs != null && structs.size() != 0) { 
+		if (structs != null && structs.size() != 0) {
 			AjaxTreeModel treeModel = buildTreeModel();
 			treeCtr = new TreeController(ureq, getWindowControl(), translate("step4.my.maps"), treeModel, null);
 			treeCtr.setTreeSorting(false, false, false);
 			listenTo(treeCtr);
-		
+
 			// find last used structure and preselect
 			PortfolioStructure lastStruct = ePFMgr.getUsersLastUsedPortfolioStructure(getIdentity());
 			if (lastStruct != null) {
@@ -109,7 +109,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		if (!isUsedInStepWizzard()) {
 			// add form buttons
 			uifactory.addFormSubmitButton("stepform.submit", formLayout);
-		}		
+		}
 	}
 
 	private AjaxTreeModel buildTreeModel() {
@@ -147,7 +147,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 					for (PortfolioStructure portfolioStructure : structs) {
 						// FXOLAT-436 : skip templateMaps that are closed
 						if (portfolioStructure instanceof EPStructuredMap) {
-							if( ((EPStructuredMap) portfolioStructure).getStatus().equals(StructureStatusEnum.CLOSED)){
+							if( ((EPStructuredMap) portfolioStructure).getStatus() != null && ((EPStructuredMap) portfolioStructure).getStatus().equals(StructureStatusEnum.CLOSED)){
 								continue;
 							}
 						}
@@ -183,7 +183,8 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	 * save clicked node to selStructure
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
+	 *      org.olat.core.gui.control.Controller,
+	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
 	protected void event(@SuppressWarnings("unused") UserRequest ureq, Controller source, Event event) {
@@ -200,7 +201,7 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 					selStructure = null;
 					this.flc.setDirty(true);
 				}
-				if (selStructure!=null && selStructure instanceof EPAbstractMap) {
+				if (selStructure != null && selStructure instanceof EPAbstractMap) {
 					showWarning("map.not.choosable");
 					treeCtr.selectPath(null);
 					selStructure = null;
@@ -233,9 +234,10 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 			addToRunContext("selectedStructure", selStructure);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
-			if (!selStructure.getKey().equals(oldStructure.getKey())){
+			if (!selStructure.getKey().equals(oldStructure.getKey())) {
 				ePFMgr.moveArtefactFromStructToStruct(artefact, oldStructure, selStructure);
-				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.CHANGED, selStructure)); // refresh ui
+				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.CHANGED, selStructure)); // refresh
+																											// ui
 			}
 		}
 	}

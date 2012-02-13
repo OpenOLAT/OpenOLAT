@@ -132,7 +132,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 				// sbTitle.append(" (Portfoliovorlage)");
 			}
 		}
-		return new TitleItem(sbTitle.toString(), "o_ep_icon");
+		return new TitleItem(sbTitle.toString(), "o_EPStructuredMapTemplate_icon");
 	}
 
 	@Override

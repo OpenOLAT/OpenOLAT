@@ -118,38 +118,41 @@ public class EPNotificationsHelper {
 					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), tmp_linkUrl,
 							structLink.getCreationDate(), "b_ep_page_icon"));
 				} else {
+					tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 					if (structLink.getParent() instanceof EPPage) {
 						EPPage parentPage = (EPPage) structLink.getParent();
 						tmp_bPath = rootBusinessPath + "[EPPage:" + parentPage.getKey() + "]";
 						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-					} else {
-						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
-						allItems.add(new SubscriptionListItem(
-								translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }), tmp_linkUrl, structLink
-										.getCreationDate(), "b_ep_struct_icon"));
 					}
+
+					allItems.add(new SubscriptionListItem(translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }),
+							tmp_linkUrl, structLink.getCreationDate(), "b_ep_struct_icon"));
+
 				}
 			}
 		}
 
+		Long tmp_LinkKey;
+		String tmp_TargetTitle;
 		/* all artefacts on the maps pages and structElements */
 		List<EPStructureToArtefactLink> links = getAllArtefactLinks(map);
 		for (EPStructureToArtefactLink link : links) {
 			if (link.getCreationDate().after(compareDate)) {
 				PortfolioStructure linkParent = link.getStructureElement();
-				Long linkKey = 0L;
 				if (linkParent instanceof EPPage) {
-					linkKey = linkParent.getKey();
+					tmp_LinkKey = linkParent.getKey();
+					tmp_TargetTitle = linkParent.getTitle();
 				} else {
 					// it's no page, thus a struct-element, we want to jump to
 					// the page
-					linkKey = linkParent.getRoot().getKey();
+					tmp_LinkKey = linkParent.getRoot().getKey();
+					tmp_TargetTitle = linkParent.getRoot().getTitle();
 				}
 
-				tmp_bPath = rootBusinessPath + "[EPPage:" + linkKey + "]";
+				tmp_bPath = rootBusinessPath + "[EPPage:" + tmp_LinkKey + "]";
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
 				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(link.getArtefact()
-						.getAuthor()) }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
+						.getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
 			}
 		}
 
@@ -185,27 +188,32 @@ public class EPNotificationsHelper {
 
 		String tmp_bPath;
 		String tmp_linkUrl;
-
+		Long tmp_linkKey = 0L;
+		String tmp_TargetTitle;
+		
 		// now check artefacts, comments and ratings of this map
 		List<EPStructureToArtefactLink> links = getAllArtefactLinks(map);
 		for (EPStructureToArtefactLink link : links) {
 			if (link.getCreationDate().after(compareDate)) {
 				PortfolioStructure linkParent = link.getStructureElement();
-				Long linkKey = 0L;
+			
 				if (linkParent instanceof EPPage) {
-					linkKey = linkParent.getKey();
+					tmp_linkKey = linkParent.getKey();
+					tmp_TargetTitle = linkParent.getTitle();
 				} else {
 					// it's no page, thus a struct-element, we want to jump to
 					// the page
-					linkKey = linkParent.getRoot().getKey();
+					tmp_linkKey = linkParent.getRoot().getKey();
+					tmp_TargetTitle = linkParent.getRoot().getTitle();
 				}
 
-				tmp_bPath = rootBusinessPath + "[EPPage:" + linkKey + "]";
+				tmp_bPath = rootBusinessPath + "[EPPage:" + tmp_linkKey + "]";
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
 				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(link.getArtefact()
-						.getAuthor()) }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
+						.getAuthor()),link.getArtefact().getTitle(), tmp_TargetTitle  }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
 			}
 		}
+		
 
 		/* the comments and ratings */
 		allItems.addAll(getCRItemsForMap(compareDate, map));

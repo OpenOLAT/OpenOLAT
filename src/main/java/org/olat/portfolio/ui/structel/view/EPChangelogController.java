@@ -78,8 +78,8 @@ public class EPChangelogController extends FormBasicController {
 					+ map.getKey());
 		subsContext = new SubscriptionContext(EPNotificationsHandler.TYPENNAME, map.getResourceableId(), EPNotificationsHandler.TYPENNAME);
 		if (subsContext != null) {
-			String businnessPath = getWindowControl().getBusinessControl().getAsString();
-			PublisherData data = new PublisherData(EPNotificationsHandler.TYPENNAME, null, businnessPath);
+			String businessPath = "[EPDefaultMap:" + map.getKey() + "]";
+			PublisherData data = new PublisherData(EPNotificationsHandler.TYPENNAME, null, businessPath);
 			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
 			listenTo(cSubscriptionCtrl);
 			flc.put("subscription", cSubscriptionCtrl.getInitialComponent());
