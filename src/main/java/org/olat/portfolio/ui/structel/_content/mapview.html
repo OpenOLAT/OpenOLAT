@@ -30,7 +30,7 @@
 	
 		#if(!$r.available("editor"))
 			<div class="b_eportfolio_mapdescr">$map.description</div>
-			#if($mapowner!="")<div class="b_eportfolio_mapowner">$r.translate('map.owners',$mapowner)</div>#end
+			<div class="b_eportfolio_mapowner">$r.translate("map.owners","") $r.render("ownerportrait")</div>
 			
 			<div class="b_clearfix"></div>
 		

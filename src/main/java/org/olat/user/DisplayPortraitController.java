@@ -45,63 +45,108 @@ import org.olat.user.propertyhandlers.GenderPropertyHandler;
 /**
  * Initial Date:  Sept 08, 2005
  *
+ * Displays a Portrait-Image and/or Full Name of a given User (Identity).<br />
+ * the portrait and fullname can be linked to the VCard (which opens in a new browser window / popup)
+ * 
  * @author Alexander Schneider
  * 
- * Comment: 
  */
 public class DisplayPortraitController extends BasicController {
 	
 	private VelocityContainer myContent;
 	private Identity portraitIdent;
 	
+	
 	/**
+	 * most common used constructor<br />
+	 * will display portrait, no username
+	 * 
 	 * @param ureq
 	 * @param wControl
-	 * @param portrait
+	 * @param portraitIdent
+	 *            the identity to display
+	 * @param useLarge
+	 *            if set to true, the portrait-image is displayed as "big"
+	 * @param canLinkToHomePage
+	 *            if set to true, the portrait is linked to the users homepage
 	 */
 	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent, boolean useLarge, boolean canLinkToHomePage) { 
+		this(ureq,wControl,portraitIdent,useLarge,canLinkToHomePage,false,true);
+	}
+	
+	
+	
+	/**
+	 * constructor with more config options<br />
+	 * use this if you want to display the full name of the user (additionally
+	 * or only)
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param portraitIdent
+	 *            the identity to display
+	 * @param useLarge
+	 *            if set to true, the portrait-image is displayed as "big"
+	 * @param canLinkToHomePage
+	 *            if set to true, the portrait is linked to the users homepage
+	 * @param displayUserFullName
+	 *            if set to true, the users full name ("firstname lastname") is
+	 *            displayed as well
+	 * @param displayPortraitImage
+	 *            if set to false, the portrait image will not be displayed
+	 */
+	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent, boolean useLarge, boolean canLinkToHomePage, boolean displayUserFullName, boolean displayPortraitImage ) { 
 		super(ureq, wControl);
 		myContent = createVelocityContainer("displayportrait");
 		myContent.contextPut("canLinkToHomePage", canLinkToHomePage ? Boolean.TRUE : Boolean.FALSE);
 		if (portraitIdent == null) throw new AssertException("identity can not be null!");
 		this.portraitIdent = portraitIdent;
 		
-		ImageComponent ic = null;
-		
-		GenderPropertyHandler genderHander = (GenderPropertyHandler) UserManager.getInstance().getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
-		String gender = "-"; // use as default
-		if (genderHander != null) {
-			gender = genderHander.getInternalValue(portraitIdent.getUser());
-		}
 		
 		MediaResource portrait = null;
-		if (useLarge){
-			portrait = DisplayPortraitManager.getInstance().getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			if (gender.equals("-")) {
-				myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
-			} else if (gender.equals("male")) {
-				myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS);
-			} else if (gender.equals("female")) {
-				myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
+		if(displayPortraitImage){
+			ImageComponent ic = null;
+			
+			GenderPropertyHandler genderHander = (GenderPropertyHandler) UserManager.getInstance().getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
+			String gender = "-"; // use as default
+			if (genderHander != null) {
+				gender = genderHander.getInternalValue(portraitIdent.getUser());
 			}
-		} else {
-			portrait = DisplayPortraitManager.getInstance().getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
-			if (gender.equals("-")) {
-				myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
-			} else if (gender.equals("male")) {
-				myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_SMALL_CSS_CLASS);
-			} else if (gender.equals("female")) {
-				myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_SMALL_CSS_CLASS);
+			
+			if (useLarge){
+				portrait = DisplayPortraitManager.getInstance().getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
+				if (gender.equals("-")) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
+				} else if (gender.equals("male")) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS);
+				} else if (gender.equals("female")) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
+				}
+			} else {
+				portrait = DisplayPortraitManager.getInstance().getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+				if (gender.equals("-")) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
+				} else if (gender.equals("male")) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_SMALL_CSS_CLASS);
+				} else if (gender.equals("female")) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_SMALL_CSS_CLASS);
+				}
 			}
-		}
-		myContent.contextPut("hasPortrait", (portrait != null) ? Boolean.TRUE : Boolean.FALSE);
-		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
-
-		if (portrait != null){
+			
+			if (portrait != null){
 				ic = new ImageComponent("image");
 				ic.setMediaResource(portrait);
 				myContent.put(ic);
+			}
 		}
+		
+		myContent.contextPut("hasPortrait", (portrait != null) ? Boolean.TRUE : Boolean.FALSE);
+		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
+		myContent.contextPut("displayUserFullName", displayUserFullName);
+		myContent.contextPut("firstname", portraitIdent.getUser().getProperty(UserConstants.FIRSTNAME, null));
+		myContent.contextPut("lastname",portraitIdent.getUser().getProperty(UserConstants.LASTNAME, null));
+		
+		
 		putInitialPanel(myContent);
 	}
 

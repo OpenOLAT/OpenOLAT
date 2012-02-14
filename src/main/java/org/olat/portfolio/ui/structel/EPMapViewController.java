@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -58,6 +59,7 @@ import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.portfolio.ui.structel.edit.EPStructureTreeAndDetailsEditController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.user.DisplayPortraitController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -124,14 +126,10 @@ public class EPMapViewController extends BasicController implements Activateable
 
 
 	protected void initForm(UserRequest ureq) {
+		Identity ownerIdentity = EPFrontendManager.getFirstOwnerIdentity(map);
+		DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), ownerIdentity, false,true,true,false);
 		mainVc.contextPut("map", map);
-		//FXOLAT-429 :: display the owner of the map (if its not me)
-//		EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
-//		if(secCallback.isOwner())
-//			mainVc.contextPut("mapowner","");
-//		else
-			mainVc.contextPut("mapowner", EPFrontendManager.getAllOwnersAsString(map));
-		
+		mainVc.put("ownerportrait", portraitCtr.getInitialComponent());
 		mainVc.contextPut("style", ePFMgr.getValidStyleName(map));
 		
 		Boolean editMode = editButton == null ? Boolean.FALSE : (Boolean)editButton.getUserObject();

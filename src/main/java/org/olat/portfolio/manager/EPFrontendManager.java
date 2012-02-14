@@ -1211,7 +1211,22 @@ public class EPFrontendManager extends BasicManager {
 		return "n/a";
 	}
 	
-
+	/**
+	 * returns the first OwnerIdentity for the given Map.
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public static Identity getFirstOwnerIdentity(PortfolioStructureMap map){
+		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
+		if (ownerIdents.size() > 0) {
+			Identity id = ownerIdents.get(0);
+			return id;
+		} else {
+			throw new AssertException("OwnerGroup of given ePortfolioMap (" + map.getResourceableId() + ") is empty!");
+		}
+	}
+	
 	// not yet available
 	public void archivePortfolio() {}
 
