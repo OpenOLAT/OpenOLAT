@@ -26,6 +26,7 @@
 package org.olat.basesecurity;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1002,7 +1003,20 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Identity identity = (Identity) identities.get(0);
 		return identity;
 	}
-	
+
+	@Override
+	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
+		if (identityNames == null || identityNames.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.name in (:names)");
+		
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setParameterList("names", identityNames);
+		return query.list();
+	}
+
 	/**
 	 * 
 	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long)

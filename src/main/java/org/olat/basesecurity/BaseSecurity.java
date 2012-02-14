@@ -25,6 +25,7 @@
 
 package org.olat.basesecurity;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -146,6 +147,17 @@ public interface BaseSecurity {
 	 * @return the identity or null if not found
 	 */
 	public Identity findIdentityByName(String identityName);
+	
+	/**
+	 * Find identities by names. This is an exact match.
+	 * <p>
+	 * Be aware that this method does <b>not</b> check the identities status!
+	 * This method returns identities with any state, also deleted identities!
+	 * 
+	 * @param identityNames
+	 * @return The identities
+	 */
+	public List<Identity> findIdentitiesByName(Collection<String> identityName);
 
 	/**
 	 * find an identity by the key instead of the username. Prefer this method as

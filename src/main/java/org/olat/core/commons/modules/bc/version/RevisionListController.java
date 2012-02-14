@@ -24,9 +24,14 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.gui.UserRequest;
@@ -47,6 +52,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -81,6 +88,7 @@ public class RevisionListController extends BasicController {
 	private TableController revisionListTableCtr;
 	private DialogBoxController confirmDeleteBoxCtr;
 	private final VelocityContainer mainVC;
+	private final boolean isAdmin;
 
 	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile) {
 		this(ureq, wControl, versionedFile, null, null);
@@ -88,6 +96,8 @@ public class RevisionListController extends BasicController {
 
 	public RevisionListController(UserRequest ureq, WindowControl wControl, Versionable versionedFile, String title, String description) {
 		super(ureq, wControl);
+		
+		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		
 		//reload the file with all possible precautions
 		VFSLeaf versionedLeaf = null;
@@ -137,12 +147,7 @@ public class RevisionListController extends BasicController {
 		revisionListTableCtr.addMultiSelectAction("delete", CMD_DELETE);
 		revisionListTableCtr.addMultiSelectAction("cancel", CMD_CANCEL);
 		revisionListTableCtr.setMultiSelect(true);
-		
-		Versions versions = versionedFile.getVersions();
-		List<VFSRevision> revisions = new ArrayList<VFSRevision>(versions.getRevisions());
-		revisions.add(new CurrentRevision(versionedLeaf, versions));
-
-		revisionListTableCtr.setTableDataModel(new RevisionListDataModel(revisions, ureq.getLocale()));
+		loadModel(versionedLeaf);
 		listenTo(revisionListTableCtr);
 
 		mainVC = createVelocityContainer("revisions");
@@ -156,6 +161,26 @@ public class RevisionListController extends BasicController {
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	private void loadModel(VFSLeaf versionedLeaf) {
+		Versions versions = versionedFile.getVersions();
+		List<VFSRevision> revisions = new ArrayList<VFSRevision>(versions.getRevisions());
+		revisions.add(new CurrentRevision(versionedLeaf, versions));
+		
+		Collection<String> names = new HashSet<String>();
+		for(VFSRevision revision:revisions) {
+			if(revision.getAuthor() != null) {
+				names.add(revision.getAuthor());
+			}
+		}
+		
+		Map<String, Identity> mappedIdentities = new HashMap<String, Identity>();
+		for(Identity identity :BaseSecurityManager.getInstance().findIdentitiesByName(names)) {
+			mappedIdentities.put(identity.getName(), identity);
+		}
+
+		revisionListTableCtr.setTableDataModel(new RevisionListDataModel(revisions, mappedIdentities, getLocale()));
 	}
 
 	@Override
@@ -255,9 +280,11 @@ public class RevisionListController extends BasicController {
 		private final DateFormat format;
 		private final List<VFSRevision> versionList;
 		private final Calendar cal = Calendar.getInstance();
+		private final Map<String, Identity> mappedIdentities;
 
-		public RevisionListDataModel(List<VFSRevision> versionList, Locale locale) {
+		public RevisionListDataModel(List<VFSRevision> versionList, Map<String, Identity> mappedIdentities, Locale locale) {
 			this.versionList = versionList;
+			this.mappedIdentities = mappedIdentities;
 			format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		}
 
@@ -275,7 +302,7 @@ public class RevisionListController extends BasicController {
 				case 0:
 					return version.getRevisionNr();
 				case 1:
-					return version.getAuthor();
+					return getFullName(version.getAuthor());
 				case 2: {
 					String comment =  version.getComment();
 					if (StringHelper.containsNonWhitespace(comment)) {
@@ -291,6 +318,26 @@ public class RevisionListController extends BasicController {
 				default:
 					return "";
 			}
+		}
+		
+		private String getFullName(String name) {
+			if(!StringHelper.containsNonWhitespace(name)) {
+				return null;
+			}
+			Identity id = mappedIdentities.get(name);
+			if(id == null) {
+				return null;
+			}
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(id.getUser().getProperty(UserConstants.FIRSTNAME, null))
+			  .append(" ")
+			  .append(id.getUser().getProperty(UserConstants.LASTNAME, null));
+			
+			if(isAdmin) {
+				sb.append(" (").append(name).append(")");
+			}
+			return sb.toString();
 		}
 	}
 	
