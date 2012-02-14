@@ -240,7 +240,6 @@ img.b_emoticons_weird     {background : url(../../openolat/images/emoticons/smil
 img.b_emoticons_wink      {background : url(../../openolat/images/emoticons/smiley-wink.png) no-repeat; width: 18px; height: 18px;}
 img.b_emoticons_worried   {background : url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat; width: 18px; height: 18px;}
 
-
 /** ---------------------- EXT JS PATCHES  ------------------ **/
 /* (are needed here in content.css ,  e.g.  glossary tooltip in iframes...) */
 div.b_ext_elem ol, div.b_ext_elem ul, div.b_ext_elem li {list-style: none; padding: 0; margin: 0}
@@ -249,13 +248,13 @@ div.b_ext_tooltip_wrapper {padding: 1px;}
 .x-window-mc {font-size: 100%;}
 
 /* EXT TREE */
-div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url($ico_minus); background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url($ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url($ico_minus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url($ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../openolat/images/folder.png); }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../openolat/images/folder_open.png); }
-div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../openolat/images/docs/document_plain.png); }
+div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url('../'+$ico_minus); background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url('../'+$ico_plus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url('../'+$ico_minus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url('../'+$ico_plus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../../openolat/images/folder.png); }
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../../openolat/images/folder_open.png); }
+div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../../openolat/images/docs/document_plain.png); }
 div.b_ext_elem .x-tree-selected a.x-tree-node-anchor { border: 1px dotted #444; text-decoration: none; }
 div.b_ext_elem .x-tree-node .x-tree-selected { background-color:#FFC266; }
 	

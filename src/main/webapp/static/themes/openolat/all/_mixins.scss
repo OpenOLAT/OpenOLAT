@@ -55,6 +55,17 @@
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
 }
 
+/* also gradient with two colors but with custom color-stops */
+@mixin o-gradient2stops($col1,$stop1,$col2,$stop2){
+	background: $col1;
+	background: -moz-linear-gradient(top, $col1 $stop1, $col2 $stop2);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop($stop1,$col1), color-stop($stop2,$col2));
+	background: -webkit-linear-gradient(top, $col1 $stop1,$col2 $stop2);
+	background: -o-linear-gradient(top, $col1 $stop1,$col2 $stop2);
+	background: -ms-linear-gradient(top, $col1 $stop1,$col2 $stop2);
+	background: linear-gradient(top, $col1 $stop1,$col2 $stop2);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
+}
 
 @mixin o-gradient-white(){
 	$col1 : #fff;

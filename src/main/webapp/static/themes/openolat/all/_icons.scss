@@ -273,8 +273,10 @@ span.o_notpassed { background: url(../openolat/images/cross.png) no-repeat right
 /* <OLATCE-103> */
 .o_vc_icon { background-image: url('../openolat/images/projection-screen.png')!important }
 /* </OLATCE-103> */
-.o_vitero_icon { background-image: url('../openolat/images/vitero.png')!important }
-.o_ep_icon, .o_EPStructuredMapTemplate_icon { background-image: url('../openolat/images/le_resources/portfolio.png')!important}
+.o_vitero_icon { background-image: url('../openolat/images/vitero.png') !important; }
+.o_ep_icon, { background-image: url('../openolat/images/le_resources/portfolio.png') !important; }
+.o_EPStructuredMapTemplate_icon { background-image: url('../openolat/images/portfolio/briefcase.png')!important; }
+
 .o_infomsg_icon { background-image: url('../openolat/images/information-button.png')!important}
 .o_cmembers_icon { background-image: url('../openolat/images/users.png')!important}
 .fx_members_icon { background-image: url('../openolat/images/users_members.png') !important; } 
