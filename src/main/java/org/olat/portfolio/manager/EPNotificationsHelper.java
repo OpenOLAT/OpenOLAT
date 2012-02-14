@@ -58,8 +58,15 @@ import org.olat.portfolio.ui.structel.view.EPChangelogController;
  * EPNotificationsHelper provides functionality to gather SubscriptionListItems
  * for given Maps.<br />
  * 
+ * 
+ * 
  * FXOLAT-431, FXOLAT-432<br />
  * this also triggered: OO-111
+ * 
+ * 
+ * most of the time, the use of the available methods in EPFrontendmanager
+ * wasn't possible, I always need the "link-creation-time" of a link (e.g.
+ * between artefact and struct-Eement), thus the new methods in this class.
  * 
  * 
  * @author strentini, sergio.trentini@frentix.com, http://www.frentix.com
@@ -151,8 +158,9 @@ public class EPNotificationsHelper {
 
 				tmp_bPath = rootBusinessPath + "[EPPage:" + tmp_LinkKey + "]";
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(link.getArtefact()
-						.getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
+				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] {
+						getFullNameFromUser(link.getArtefact().getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl, link
+						.getCreationDate(), "b_eportfolio_link"));
 			}
 		}
 
@@ -190,13 +198,13 @@ public class EPNotificationsHelper {
 		String tmp_linkUrl;
 		Long tmp_linkKey = 0L;
 		String tmp_TargetTitle;
-		
+
 		// now check artefacts, comments and ratings of this map
 		List<EPStructureToArtefactLink> links = getAllArtefactLinks(map);
 		for (EPStructureToArtefactLink link : links) {
 			if (link.getCreationDate().after(compareDate)) {
 				PortfolioStructure linkParent = link.getStructureElement();
-			
+
 				if (linkParent instanceof EPPage) {
 					tmp_linkKey = linkParent.getKey();
 					tmp_TargetTitle = linkParent.getTitle();
@@ -209,11 +217,11 @@ public class EPNotificationsHelper {
 
 				tmp_bPath = rootBusinessPath + "[EPPage:" + tmp_linkKey + "]";
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] { getFullNameFromUser(link.getArtefact()
-						.getAuthor()),link.getArtefact().getTitle(), tmp_TargetTitle  }), tmp_linkUrl, link.getCreationDate(), "b_eportfolio_link"));
+				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] {
+						getFullNameFromUser(link.getArtefact().getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl, link
+						.getCreationDate(), "b_eportfolio_link"));
 			}
 		}
-		
 
 		/* the comments and ratings */
 		allItems.addAll(getCRItemsForMap(compareDate, map));
@@ -253,6 +261,11 @@ public class EPNotificationsHelper {
 		for (UserRating rating : ratings) {
 			if (rating.getCreationDate().after(compareDate)) {
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+				if (rating.getLastModified() != null) {
+					// there is a modified date, also add this as a listitem
+					allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.changerating", new String[] { map.getTitle(),
+							getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getLastModified(), "b_star_icon"));
+				}
 				allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newrating", new String[] { map.getTitle(),
 						getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getCreationDate(), "b_star_icon"));
 			}
@@ -280,6 +293,11 @@ public class EPNotificationsHelper {
 					if (rating.getCreationDate().after(compareDate)) {
 						tmp_bPath = rootBusinessPath + "[EPPage:" + rating.getResSubPath() + "]";
 						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+						if (rating.getLastModified() != null) {
+							// there is a modified date, also add this as a listitem
+							allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.changerating", new String[] { child.getTitle(),
+									getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getLastModified(), "b_star_icon"));
+						}
 						allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newrating", new String[] { child.getTitle(),
 								getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getCreationDate(), "b_star_icon"));
 					}

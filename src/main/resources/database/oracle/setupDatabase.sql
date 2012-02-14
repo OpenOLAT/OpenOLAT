@@ -699,6 +699,7 @@ CREATE TABLE o_userrating (
   rating_id number(20) NOT NULL,
   version number(11) NOT NULL,
   creationdate date,
+  lastmodified date,
   resname varchar2(50 char) NOT NULL,
   resid number(20) NOT NULL,
   ressubpath varchar2(2048 char),

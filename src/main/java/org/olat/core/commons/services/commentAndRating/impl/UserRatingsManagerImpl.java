@@ -24,6 +24,7 @@
 */
 package org.olat.core.commons.services.commentAndRating.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Hibernate;
@@ -292,6 +293,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		}
 		// Update DB entry
 		rating.setRating(newRatingValue);
+		rating.setLastModified(new Date());
 		DB db = DBFactory.getInstance();
 		db.updateObject(rating);
 		// do logging

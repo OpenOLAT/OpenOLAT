@@ -493,6 +493,7 @@ create table if not exists o_userrating (
 	rating_id bigint not null, 
 	version mediumint unsigned not null, 
 	creationdate datetime, 
+	lastmodified datetime,
 	resname varchar(50) not null, 
 	resid bigint not null, 
 	ressubpath varchar(2048), 

@@ -489,6 +489,7 @@ create table o_userrating (
 	rating_id int8 not null, 
 	version int4 not null, 
 	creationdate timestamp, 
+	lastmodified timestamp,
 	resname varchar(50) not null, 
 	resid int8 not null, 
 	ressubpath varchar(2048), 

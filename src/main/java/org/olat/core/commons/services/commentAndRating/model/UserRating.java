@@ -21,6 +21,7 @@ package org.olat.core.commons.services.commentAndRating.model;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
@@ -33,7 +34,7 @@ import org.olat.core.id.Persistable;
  * 
  * @author gnaegi
  */
-public interface UserRating extends CreateInfo, Persistable {
+public interface UserRating extends CreateInfo, ModifiedInfo, Persistable {
 
 	/**
 	 * @return The OLAT resource type name of the resource which is beeing
