@@ -14,6 +14,7 @@ import org.olat.search.service.SearchServiceFactory;
 /**
  * 
  * Description:<br>
+ * OO-109: bypass the JMS server in no-cluster environment
  * 
  * <P>
  * Initial Date:  6 févr. 2012 <br>

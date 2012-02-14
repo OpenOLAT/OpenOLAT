@@ -201,6 +201,7 @@
 
 	<!-- SEARCH PROXY SIDE CONFIGURATION -->
 	<!-- =============================== -->
+	<!-- OO-109: bypass the JMS server in no-cluster environment ==> use searchClientLocal if singleVM -->	
 	<alias alias="searchClient" name="searchClient${cluster.mode}"/>
 
 	<bean id="searchClientSingleVM" class="org.olat.search.service.searcher.SearchClientLocal"/>
