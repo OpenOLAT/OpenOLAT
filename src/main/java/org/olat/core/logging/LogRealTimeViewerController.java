@@ -138,6 +138,7 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 	 */
 	@Override
 	protected void doDispose() {
+		
 		if (logViewerVC != null) { // don't clean up twice
 			Scheduler scheduler = (Scheduler) CoreSpringFactory.getBean("schedulerFactoryBean");
 			// remove scheduler job first
@@ -157,13 +158,16 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 			} catch (IOException e) {
 				logError("Error while closing log viewer string writer", e);
 			}
-			writer = null;
-			updateLink = null;
-			logViewerVC = null;
+			synchronized(this) {
+				writer = null;
+				updateLink = null;
+				logViewerVC = null;
+			}
 		}
 	}
 
-	private void updateLogViewFromWriter() {
+	//cluster_OK (it only snyc the disposed for logViewerVC)
+	private synchronized void updateLogViewFromWriter() {
 		if(logViewerVC == null) return;
 		
 		StringBuffer sb = writer.getBuffer();
