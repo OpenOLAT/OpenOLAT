@@ -30,11 +30,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.commons.calendar.CalendarUtils;
-
 import net.fortuna.ical4j.model.Recur;
 
-public class KalendarEvent implements Cloneable, Comparable {
+import org.olat.commons.calendar.CalendarUtils;
+
+public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 
 	public static final int CLASS_PRIVATE = 0;
 	public static final int CLASS_X_FREEBUSY = 1;
@@ -57,7 +57,7 @@ public class KalendarEvent implements Cloneable, Comparable {
 	private Date begin, end;
 	private boolean isAllDayEvent;
 	private String location;
-	private List kalendarEventLinks;
+	private List<KalendarEventLink> kalendarEventLinks;
 	private long created, lastModified;
 	private String createdBy;
 	private int classification;
@@ -70,7 +70,7 @@ public class KalendarEvent implements Cloneable, Comparable {
 	private String recurrenceRule;
 	private String recurrenceExc;
 
-	private KalendarEvent() {
+	public KalendarEvent() {
 		// save no-args constructor for XStream
 	}
 	
@@ -88,7 +88,7 @@ public class KalendarEvent implements Cloneable, Comparable {
 		this.begin = begin;
 		this.end = end;
 		this.isAllDayEvent = false;
-		this.kalendarEventLinks = new ArrayList();
+		this.kalendarEventLinks = new ArrayList<KalendarEventLink>();
 	}
 	
 	/**
@@ -104,7 +104,7 @@ public class KalendarEvent implements Cloneable, Comparable {
 		this.begin = begin;
 		this.end = new Date(begin.getTime() + duration);
 		this.isAllDayEvent = false;
-		this.kalendarEventLinks = new ArrayList();
+		this.kalendarEventLinks = new ArrayList<KalendarEventLink>();
 	}
 	
 	/**
@@ -243,14 +243,14 @@ public class KalendarEvent implements Cloneable, Comparable {
 	/**
 	 * @return Returns the uRI.
 	 */
-	public List getKalendarEventLinks() {
+	public List<KalendarEventLink> getKalendarEventLinks() {
 		return kalendarEventLinks;
 	}
 
 	/**
 	 * @param uri The uRI to set.
 	 */
-	public void setKalendarEventLinks(List kalendarEventLinks) {
+	public void setKalendarEventLinks(List<KalendarEventLink> kalendarEventLinks) {
 		this.kalendarEventLinks = kalendarEventLinks;
 	}
 	
@@ -319,7 +319,7 @@ public class KalendarEvent implements Cloneable, Comparable {
 		setRecurrenceExc(excRule);
 	}
 	
-	public int compareTo(Object o1) {
+	public int compareTo(KalendarEvent o1) {
 		if ( !(o1 instanceof KalendarEvent)) {
 			return -1;
 		}
