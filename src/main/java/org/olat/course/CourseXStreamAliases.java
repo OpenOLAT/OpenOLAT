@@ -151,6 +151,6 @@ public class CourseXStreamAliases {
 	}
 	
 	public static XStream getWriteCourseXStream() {
-		return readXstream;
+		return writeXstream;
 	}
 }
