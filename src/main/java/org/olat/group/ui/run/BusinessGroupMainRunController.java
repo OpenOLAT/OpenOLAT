@@ -218,6 +218,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private OLATResourceable assessmentEventOres;
 	//fxdiff VCRP-1,2: access control of resources
 	private Controller accessController;
+	
+	private boolean needActivation;
 
 	/**
 	 * Do not use this constructor! Use the BGControllerFactory instead!
@@ -305,16 +307,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 		AccessResult acResult = acFrontendManager.isAccessible(businessGroup, getIdentity(), false);
 		if(acResult.isAccessible()) {
-			//ok
+			needActivation = false;
 		}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
 			accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
 			listenTo(accessController);
 			mainPanel.setContent(accessController.getInitialComponent());
 			bgTree.setTreeModel(new GenericTreeModel());
+			needActivation = true;
 			return;
 		} else {
 			mainPanel.setContent(new Panel("empty"));
 			bgTree.setTreeModel(new GenericTreeModel());
+			needActivation = true;
 			return;
 		}
 
@@ -531,6 +535,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				bgTree.setTreeModel(buildTreeModel());
 				removeAsListenerAndDispose(accessController);
 				accessController = null;
+				needActivation = false;
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
 				if(StringHelper.containsNonWhitespace(msg)) {
@@ -876,6 +881,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
+		if(needActivation) {
+			return;
+		}
 		ContextEntry ce = entries.remove(0);
 		activate(ureq, ce);
 		if(collabToolCtr instanceof Activateable2) {
