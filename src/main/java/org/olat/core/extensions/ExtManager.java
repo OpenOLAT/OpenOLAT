@@ -169,7 +169,7 @@ public class ExtManager extends LogDelegator {
 				//not configured via spring (order not set)
 				logDebug("Extension-Configuration Warning: Order-value was not set for extension=" + extension + ", set order-value to config positionioning of extension...",null);
 				if(extension instanceof AbstractExtension){
-					((AbstractExtension)extension).setOrder(1000);
+					((AbstractExtension)extension).setOrder(100000);
 				}
 			}
 			if (orderKeys.containsKey(orderKey)) {

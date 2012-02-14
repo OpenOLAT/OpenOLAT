@@ -54,6 +54,7 @@
 	
 	<!-- Portfolio admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7205" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -70,7 +71,6 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="order" value="775" />
 	</bean> 
 	
 	<!-- Portfolio Main View/all my artefacts in users Home -->
