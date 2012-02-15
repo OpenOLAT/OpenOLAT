@@ -51,6 +51,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -84,6 +86,8 @@ import org.olat.restapi.group.LearningGroupWebService;
  */
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
+	
+	private OLog log = Tracing.createLoggerFor(MyForumsWebService.class);
 
 	/**
 	 * Retrieves the forum of a group
@@ -190,18 +194,22 @@ public class MyForumsWebService {
 		for(RepositoryEntry entry:entries) {
 			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
 			if(result.isAccessible()) {
-				final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-				final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
-				new CourseTreeVisitor(course, ienv).visit(new Visitor() {
-					@Override
-					public void visit(INode node) {
-						if(node instanceof FOCourseNode) {
-							FOCourseNode forumNode = (FOCourseNode)node;	
-							ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
-							forumVOs.add(forumVo);
+				try {
+					final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+					final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+					new CourseTreeVisitor(course, ienv).visit(new Visitor() {
+						@Override
+						public void visit(INode node) {
+							if(node instanceof FOCourseNode) {
+								FOCourseNode forumNode = (FOCourseNode)node;	
+								ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
+								forumVOs.add(forumVo);
+							}
 						}
-					}
-				});
+					});
+				} catch (Exception e) {
+					log.error("", e);
+				}
 			}
 		}
 		

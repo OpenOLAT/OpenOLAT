@@ -26,6 +26,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -60,6 +62,8 @@ import org.olat.restapi.support.vo.FolderVO;
  */
 @Path("repo/courses/infos")
 public class CoursesInfosWebService {
+	
+	private OLog log = Tracing.createLoggerFor(CoursesInfosWebService.class);
 	
 	/**
 	 * Get courses informations viewable by the authenticated user
@@ -146,28 +150,32 @@ public class CoursesInfosWebService {
 		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
 		AccessResult result = acManager.isAccessible(entry, identity, false);
 		if(result.isAccessible()) {
-			final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-			final List<FolderVO> folders = new ArrayList<FolderVO>();
-			final List<ForumVO> forums = new ArrayList<ForumVO>();
-			final IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
+			try {
+				final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+				final List<FolderVO> folders = new ArrayList<FolderVO>();
+				final List<ForumVO> forums = new ArrayList<ForumVO>();
+				final IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
 
-			new CourseTreeVisitor(course, ienv).visit(new Visitor() {
-				@Override
-				public void visit(INode node) {
-					if(node instanceof BCCourseNode) {
-						BCCourseNode bcNode = (BCCourseNode)node;
-						folders.add(BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId())));
-					} else if (node instanceof FOCourseNode) {
-						FOCourseNode forumNode = (FOCourseNode)node;
-						forums.add(ForumCourseNodeWebService.createForumVO(course, forumNode, forumNotified));
+				new CourseTreeVisitor(course, ienv).visit(new Visitor() {
+					@Override
+					public void visit(INode node) {
+						if(node instanceof BCCourseNode) {
+							BCCourseNode bcNode = (BCCourseNode)node;
+							folders.add(BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId())));
+						} else if (node instanceof FOCourseNode) {
+							FOCourseNode forumNode = (FOCourseNode)node;
+							forums.add(ForumCourseNodeWebService.createForumVO(course, forumNode, forumNotified));
+						}
 					}
-				}
-			});
-			
-			info.setKey(course.getResourceableId());
-			info.setTitle(course.getCourseTitle());
-			info.setFolders(folders.toArray(new FolderVO[folders.size()]));
-			info.setForums(forums.toArray(new ForumVO[forums.size()]));
+				});
+				
+				info.setKey(course.getResourceableId());
+				info.setTitle(course.getCourseTitle());
+				info.setFolders(folders.toArray(new FolderVO[folders.size()]));
+				info.setForums(forums.toArray(new ForumVO[forums.size()]));
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 		return info;
 	}

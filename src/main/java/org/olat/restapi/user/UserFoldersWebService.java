@@ -54,6 +54,8 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
@@ -91,6 +93,8 @@ import org.olat.restapi.support.vo.FolderVOes;
  */
 @Path("users/{identityKey}/folders")
 public class UserFoldersWebService {
+	
+	private OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
 
 	@Path("personal")
 	public VFSWebservice getFolder(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
@@ -219,19 +223,23 @@ public class UserFoldersWebService {
 		for(RepositoryEntry entry:entries) {
 			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
 			if(result.isAccessible()) {
-				final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-				final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
-				
-				new CourseTreeVisitor(course,  ienv).visit(new Visitor() {
-					@Override
-					public void visit(INode node) {
-						if(node instanceof BCCourseNode) {
-							BCCourseNode bcNode = (BCCourseNode)node;
-							FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
-							folderVOs.add(folder);
+				try {
+					final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+					final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+					
+					new CourseTreeVisitor(course,  ienv).visit(new Visitor() {
+						@Override
+						public void visit(INode node) {
+							if(node instanceof BCCourseNode) {
+								BCCourseNode bcNode = (BCCourseNode)node;
+								FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
+								folderVOs.add(folder);
+							}
 						}
-					}
-				});
+					});
+				} catch (Exception e) {
+					log.error("", e);
+				}
 			}
 		}
 		
