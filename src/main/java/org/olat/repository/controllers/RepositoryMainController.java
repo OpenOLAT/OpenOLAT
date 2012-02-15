@@ -540,10 +540,14 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 						launchEditorDialog = activateYesNoDialog(urequest, null, translate("add.launchedit.msg"), launchEditorDialog);
 						launchEditorDialog.setUserObject(addController.getAddedEntry());
 					}
+					removeAsListenerAndDispose(addController);
+					addController = null;
 					return;
 				}
 			} else if (event.equals(Event.CANCELLED_EVENT)) {
 				cmc.deactivate();
+				removeAsListenerAndDispose(addController);
+				addController = null;
 			} else if (event.equals(Event.FAILED_EVENT)) {
 				getWindowControl().setError(translate("add.failed"));
 				mainPanel.setContent(main);
@@ -659,7 +663,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			}
 		} else if (source == cmc) { //user closes the overlay and not the cancel button -> clean up repo entry
 			if (addController != null) {
-				addController.doDispose();//does the clean up 
+				removeAsListenerAndDispose(addController);//does the clean up 
+				addController = null;
 			}
 			fireEvent(urequest, Event.CANCELLED_EVENT);
 		}
