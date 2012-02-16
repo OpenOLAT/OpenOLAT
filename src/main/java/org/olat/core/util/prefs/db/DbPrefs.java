@@ -31,6 +31,7 @@ package org.olat.core.util.prefs.db;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -132,4 +133,13 @@ public class DbPrefs implements Preferences {
 		return null;
 	}
 
+	
+	public  String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("total of stored kv-pairs: ").append(prefstore.size());
+		for (Entry<String,Object> entry : prefstore.entrySet()) {
+			sb.append("----").append(entry.getKey()).append("=").append(entry.getValue());
+		}
+		return sb.toString();
+	}
 }

@@ -61,6 +61,11 @@ public class UserPropertiesController extends BasicController {
 	private PropTableDataModel tdm;
 	private TableController tableCtr;
 
+	
+	/*
+	 * the identity that is displayed (not the user/admin, that views the properties)
+	 */
+	private Identity displayedIdentity;
 
 	/**
 	 * Administer properties of a user.
@@ -68,10 +73,11 @@ public class UserPropertiesController extends BasicController {
 	 * @param wControl
 	 * @param identity
 	 */
-	public UserPropertiesController(UserRequest ureq, WindowControl wControl, Identity identity) {
+	public UserPropertiesController(UserRequest ureq, WindowControl wControl, Identity displayedIdentity) {
 		super(ureq, wControl);
 		PropertyManager pm = PropertyManager.getInstance();
-		List l = pm.listProperties(identity, null, null, null, null);
+		this.displayedIdentity = displayedIdentity;
+		List l = pm.listProperties(displayedIdentity, null, null, null, null);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(getTranslator().translate("error.no.props.found"));
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
@@ -118,7 +124,7 @@ public class UserPropertiesController extends BasicController {
 				else if (actionid.equals("delete")) {
 					int rowid = te.getRowId();
 					foundProp = (Property) tdm.getObject(rowid);
-					activateYesNoDialog(ureq, "really", "do you really", null);
+					activateYesNoDialog(ureq, translate("propdelete.yesno.title"),translate("propdelete.yesno.text",new String[]{foundProp.getName(),displayedIdentity.getName()}), null);
 				}
 			}
 		}

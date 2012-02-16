@@ -161,7 +161,8 @@ class SpecialPrefsForm extends FormBasicController {
 	public SpecialPrefsForm(final UserRequest ureq, final WindowControl wControl, final Identity changeableIdentity) {
 		super(ureq, wControl);
 		tobeChangedIdentity = changeableIdentity;
-		// OLAT-6429 load GUI prefs from user session for myself and from factory for other users (as user manager)
+		
+		// OLAT-6429 load GUI prefs from user session for myself, load it from factory for other users (as user manager)
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			prefs = ureq.getUserSession().getGuiPreferences();
 		} else {
@@ -208,7 +209,8 @@ class SpecialPrefsForm extends FormBasicController {
 		if (useAjaxCheckbox) {
 			prefs.put(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
 		}
-		prefs.putAndSave(WindowManager.class, "web2a-beta-on", prefsElement.getSelectedKeys().contains("web2a"));
+		prefs.put(WindowManager.class, "web2a-beta-on", prefsElement.getSelectedKeys().contains("web2a"));
+		
 		//fxdiff BAKS-7 Resume function
 		if(resumeElement != null) {
 			prefs.put(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
@@ -219,6 +221,8 @@ class SpecialPrefsForm extends FormBasicController {
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			showInfo("preferences.successful");
 		}
+		
+		// finally, save preferences
 		prefs.save();
 	}
 	
