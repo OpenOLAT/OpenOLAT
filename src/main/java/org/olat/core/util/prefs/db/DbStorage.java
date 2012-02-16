@@ -31,7 +31,6 @@ package org.olat.core.util.prefs.db;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.prefs.Preferences;
@@ -72,7 +71,7 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 					null, props);
 			// also save the properties to db, here (strentini)
 			// fixes the "non-present gui preferences" for new users, or where guiproperties were manually deleted
-			DBFactory.getInstance().saveObject(property);
+			PropertyManager.getInstance().saveProperty(property);
 		}else{
 			property.setTextValue(props);
 			PropertyManager.getInstance().updateProperty(property);
