@@ -117,7 +117,6 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		synchronized(tokenToSessionIds) {//cluster notOK -> need probably a mapping on the DB
 			String sessionId = session.getId();
 			String token = sessionIdToTokens.remove(sessionId);
-			System.out.println("Unbin token: " + token + " -> " + sessionId);
 			if(token != null) {
 				List<String> sessionIds = tokenToSessionIds.get(token);
 				sessionIds.remove(sessionId);
