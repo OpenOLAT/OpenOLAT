@@ -99,7 +99,7 @@ public class Authentication {
 			UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 			//Forge a new security token
 			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
-			String token = securityBean.generateToken(identity);
+			String token = securityBean.generateToken(identity, httpRequest.getSession(true));
 			return Response.ok("<hello identityKey=\"" + identity.getKey() + "\">Hello " + username + "</hello>", MediaType.APPLICATION_XML)
 				.header(RestSecurityHelper.SEC_TOKEN, token).build();
 		}

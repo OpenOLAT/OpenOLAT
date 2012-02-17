@@ -118,7 +118,9 @@
 	<listener>
 		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
 	</listener>
-
+	<listener>
+		<listener-class>org.olat.restapi.security.RestApiSessionListener</listener-class>
+	</listener>
     
     <!-- 4. Servlets -->
     <servlet>
