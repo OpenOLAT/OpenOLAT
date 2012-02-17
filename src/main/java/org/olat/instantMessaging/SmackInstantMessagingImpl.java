@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.jivesoftware.smack.packet.Presence;
@@ -41,7 +40,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -92,7 +90,6 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	private InstantMessagingServerPluginVersion pluginVersion;
 	private AutoCreator actionControllerCreator;
 	private volatile int sessionCount;
-	private long timeOfLastSessionCount;
 	
 	/**
 	 * [spring]
@@ -277,17 +274,8 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	/**
 	 * @see org.olat.instantMessaging.InstantMessaging#countConnectedUsers()
 	 */
+	@Override
 	public int countConnectedUsers() {
-		long now = System.currentTimeMillis();
-		if ((now - timeOfLastSessionCount) > 30000) { //only grab session count every 30s
-			logDebug("Getting session count from IM server");
-			try{
-				TaskExecutorManager.getInstance().runTask(new CountSessionsOnServerTask(sessionCountService, this));
-			} catch(RejectedExecutionException e) {
-				logError("countConnectedUsers: TaskExecutorManager rejected execution of CountSessionsOnServerTask. Cannot update user count", e);
-			}
-			timeOfLastSessionCount = System.currentTimeMillis();
-		}
 		return sessionCount;
 	}
 	
@@ -439,6 +427,10 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	 */
 	public List<ConnectedUsersListEntry> getAllConnectedUsers(Identity currentUser) {
 		return sessionItemsService.getConnectedUsers(currentUser);
+	}
+
+	public InstantMessagingSessionCount getSessionCountService() {
+		return sessionCountService;
 	}
 
 	/**
