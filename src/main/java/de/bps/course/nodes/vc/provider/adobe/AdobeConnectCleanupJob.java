@@ -23,6 +23,7 @@ package de.bps.course.nodes.vc.provider.adobe;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.scheduler.JobWithDB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
@@ -30,7 +31,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import de.bps.course.nodes.VCCourseNode;
 import de.bps.course.nodes.vc.MeetingDate;
@@ -48,7 +48,7 @@ import de.bps.course.nodes.vc.provider.VCProviderFactory;
  * Initial Date:  04.01.2011 <br>
  * @author skoeber
  */
-public class AdobeConnectCleanupJob extends QuartzJobBean {
+public class AdobeConnectCleanupJob extends JobWithDB {
 	
 	private OLog logger = Tracing.createLoggerFor(AdobeConnectCleanupJob.class);
 	
@@ -56,8 +56,9 @@ public class AdobeConnectCleanupJob extends QuartzJobBean {
 	private boolean cleanupMeetings, cleanupModerators;
 	private int daysToKeep;
 
+	
 	@Override
-	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		if(!VCProviderFactory.existsProvider(providerId)) {
 			return;//same as dummy job
 		}
