@@ -25,9 +25,7 @@
 */ 
 package org.olat.core.commons.taskExecutor;
 
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 /**
  * 
@@ -41,7 +39,7 @@ import org.olat.core.manager.BasicManager;
  * @author guido
  */
 public class TaskExecutorManager extends BasicManager {
-	ThreadPoolTaskExecutor taskExecutor;
+	private final ThreadPoolTaskExecutor taskExecutor;
 	
 	private static TaskExecutorManager INSTANCE;
 	
@@ -69,33 +67,12 @@ public class TaskExecutorManager extends BasicManager {
 	public void runTask(final Runnable task) {
 		//wrap call to the task here to catch all errors that are may not catched yet in the task itself
 		//like outOfMemory or other system errors.
-		Runnable safetask = new Runnable(){
-			public void run() {
-				try {
-					task.run();
-					DBFactory.getInstance().commitAndCloseSession();
-				} catch (Throwable e) {
-					DBFactory.getInstance().rollbackAndCloseSession();
-					Tracing.logError("Error while running task in a separate thread.", e, TaskExecutorManager.class);
-				}
-			}
-		};
+		Task safetask = new Task(task);
 		if (taskExecutor != null) {
 			taskExecutor.runTask(safetask);
 		} else {
-			Tracing.logError("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.", TaskExecutorManager.class);
+			logError("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.", null);
 			throw new AssertException("taskExecutor is not initialized");
 		}
 	}
-	
-	/**
-	 * TODO: to be used with GUI where the programmer can start a task and set a message that will appear
-	 * like "your report will be generated and you will get an email if finised"
-	 * or an icon that gets updated when the task is done and the user can go on with his work
-	 * @param task
-	 */
-	public void runTaskWithNotificationWhenFinised(final Runnable task){
-		throw new NoSuchMethodError();
-	}
-	
 }
