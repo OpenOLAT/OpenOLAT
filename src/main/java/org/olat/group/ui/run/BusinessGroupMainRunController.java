@@ -710,8 +710,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				collabToolCtr = collabTools.createChatController(ureq, getWindowControl(), this.businessGroup);
 				chatCtr = collabToolCtr;
 			}
-			
-			mainPanel.setContent(collabToolCtr.getInitialComponent());
+			if(collabToolCtr == null) {
+				showWarning("groupchat.not.available");
+				mainPanel.setContent(new Panel("empty"));
+			} else {
+				mainPanel.setContent(collabToolCtr.getInitialComponent());
+			}
 		} else if (ACTIVITY_MENUSELECT_CALENDAR.equals(cmd)) {
 			addLoggingResourceable(LoggingResourceable.wrap(ORES_TOOLCAL, OlatResourceableType.calendar));
 			

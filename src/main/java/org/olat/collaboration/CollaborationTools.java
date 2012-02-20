@@ -486,6 +486,9 @@ public class CollaborationTools implements Serializable {
 		if (InstantMessagingModule.isEnabled()) {
 			GroupChatManagerController ccmc;
 			ccmc = InstantMessagingModule.getAdapter().getGroupChatManagerController(ureq);
+			if(ccmc == null) {
+				return null;//no chat available
+			}
 			ccmc.createGroupChat(ureq, wControl, ores, grp.getName(), false, false);
 			return ccmc.getGroupChatController(ores);
 		
