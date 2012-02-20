@@ -133,7 +133,7 @@ public class FolderIndexerWorker implements Runnable{
 				String myFilePath = fPath + "/" + leaf.getName();
 				leafResourceContext.setFilePath(myFilePath);
 				//fxdiff FXOLAT-97: high CPU load tracker
-				setInfoFiles(myFilePath, leaf);
+				WorkThreadInformations.setInfoFiles(myFilePath, leaf);
 				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
   			Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
   			if(document != null) {//document wihich are disabled return null
@@ -160,21 +160,7 @@ public class FolderIndexerWorker implements Runnable{
 		}
 	}
 	
-	private void setInfoFiles(String filePath, VFSLeaf leaf) {
-		try {
-			File file = new File(FolderConfig.getCanonicalTmpDir(), "threadInfos");
-			if(!file.exists()) {
-				file.mkdirs();
-			}
-			if(leaf instanceof LocalImpl) {
-				filePath = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
-			}
-			File infoFile = new File(file, Thread.currentThread().getName());
-			FileUtils.save(infoFile, filePath, "UTF-8");
-		} catch (Exception e) {
-			log.error("Cannot write info message about FolderIndexerWorker: " + filePath, e);
-		}
-	}
+
 
 	public void setParentResourceContext(SearchResourceContext newParentResourceContext) {
 		this.parentResourceContext = newParentResourceContext;

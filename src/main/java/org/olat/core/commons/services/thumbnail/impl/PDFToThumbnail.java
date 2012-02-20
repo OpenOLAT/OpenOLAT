@@ -65,6 +65,8 @@ public class PDFToThumbnail implements ThumbnailSPI {
 		PDDocument document = null;
 		try {
 			//fxdiff FXOLAT-97: high CPU load tracker
+
+			WorkThreadInformations.setInfoFiles(null, pdfFile);
 			WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
 			in = pdfFile.getInputStream();
 			document = PDDocument.load(in);

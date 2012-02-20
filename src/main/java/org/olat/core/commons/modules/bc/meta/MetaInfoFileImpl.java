@@ -883,6 +883,13 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		VFSLeaf originLeaf = new LocalFileImpl(originFile);
 		if(thumbnailService != null &&thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
 			try {
+				if(thumbnails.isEmpty()) {
+					//be paranoid
+					cannotGenerateThumbnail = true;
+					write();
+				}
+				log.info("Start thumbnail: " + thumbnailLeaf);
+				
 				FinalSize finalSize = thumbnailService.generateThumbnail(originLeaf, thumbnailLeaf, maxHeight, maxWidth);
 				if(finalSize == null) {
 					return null;
@@ -895,6 +902,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 					thumbnail.setFinalWidth(finalSize.getWidth());
 					thumbnail.setThumbnailFile(thumbnailFile);
 					thumbnails.add(thumbnail);
+					cannotGenerateThumbnail = false;
 					write();
 					log.info("Create thumbnail: " + thumbnailLeaf);
 					if(log.isDebug()) { 
