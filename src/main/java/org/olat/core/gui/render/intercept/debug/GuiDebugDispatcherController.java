@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,7 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.dev.IDE;
 import org.olat.core.gui.dev.Util;
 import org.olat.core.gui.dev.controller.SourceViewController;
 import org.olat.core.gui.render.RenderResult;
@@ -115,17 +113,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 		mainP.setDomReplaceable(false);
 	}
 	
-	
-	/**
-	 * no trailing slash
-	 * @param c
-	 * @return
-	 */
-	private String getFolderRootFor(Controller c) {
-		String cpack = c.getClass().getPackage().getName();
-		String res = WebappHelper.getSourcePath()+"/"+cpack.replace('.','/');
-		return res;
-	}
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,
@@ -140,20 +127,13 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 			String com = ureq.getParameter("com");
 			// ------- open java IDE -------
 			if (com.equals("ojava")) {
-				// open java editor with the given java class source
-				IDE ide = (IDE) CoreSpringFactory.getBean(IDE.class);
-				if (ide != null) {
-					String cl = ureq.getParameter("class");
-					// cl e.g. org.olat.core.MyClass
-					//ide does not work yet, just show sourcecode in new browser window
-					try {
-						ureq.getDispatchResult().setResultingMediaResource(SourceViewController.showjavaSource(cl));
-					} catch (IOException e) {
-						getWindowControl().setError("Could not render java source code. Make sure you have set the source path (olat and olatcore) in the config (olat.properties) and have the source files there available");
-					}
-					//ide.openJavaSource(cl);
-				} else {
-					// no ide configured... todo info msg
+				String cl = ureq.getParameter("class");
+				// cl e.g. org.olat.core.MyClass
+				//ide does not work yet, just show sourcecode in new browser window
+				try {
+					ureq.getDispatchResult().setResultingMediaResource(SourceViewController.showjavaSource(cl));
+				} catch (IOException e) {
+					getWindowControl().setError("Could not render java source code. Make sure you have set the source path (olat and olatcore) in the config (olat.properties) and have the source files there available");
 				}
 			} else	if (com.equals("vc")) {
 				// ------- open velocity container for editing -------
@@ -171,11 +151,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 			} 
 		}
 	}
-
-	
-
-	
-
 
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == vcEditorController) {

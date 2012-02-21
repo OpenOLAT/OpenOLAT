@@ -27,7 +27,6 @@
 package org.olat.core.gui.render.velocity;
 
 import org.olat.core.configuration.Initializable;
-import org.olat.core.helpers.Settings;
 
 /**
  * Initial Date: Apr 29, 2004
@@ -45,15 +44,6 @@ public class VelocityModule implements Initializable {
 	 */
 	private VelocityModule() {
 		// called by spring
-	}
-	
-
-	/**
-	 * @return Returns the cachePages.
-	 */
-	public static boolean isCachePages() {
-		// caching only for productive mode
-		return !Settings.isDebuging();
 	}
 
 	/**

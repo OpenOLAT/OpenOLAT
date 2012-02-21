@@ -1360,11 +1360,6 @@
 					<version>2.8</version>
 					<configuration>
 				        <linkedResources>
-			                <linkedResource>
-		                        <name>static</name>
-		                        <type>2</type>
-		                        <location>${basedir}/src/main/webapp/static</location>
-			                </linkedResource>
 			               	<linkedResource>
 		                        <name>/src/main/java/olat.local.properties</name>
 		                        <type>1</type>

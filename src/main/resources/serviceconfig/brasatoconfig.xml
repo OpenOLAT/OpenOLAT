@@ -103,17 +103,7 @@
 			</bean>
 
 			<bean class="org.olat.core.gui.render.velocity.VelocityModule" depends-on="org.olat.core.helpers.Settings" init-method="init"/>
-		
-			<bean id="org.olat.core.gui.dev.IDE" class="org.olat.core.gui.dev.impl.EclipseIDE"/>
 
-<!--
-	Optional configuration of the column default width given in EM values.
-	Set your custom values if the default values do not fit your layout theme 
-<bean id="org.olat.core.commons.fullWebApp.LayoutMain3ColsConfig" class="org.olat.core.commons.fullWebApp.LayoutMain3ColsConfig">
-	<property name="col1WidthEmDefault" value="14" /> 
-	<property name="col2WidthEmDefault" value="12" /> 
-</bean>
--->
 	
 <!-- base setting (ram only) to be overridden in a config.xml -->
 <bean id="core.preferences.PreferencesStorage" 
