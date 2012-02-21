@@ -104,8 +104,13 @@ public class StaticMediaDispatcher extends LogDelegator implements Dispatcher {
 			return;
 		}
 		// create the file from the path
-		String staticAbsPath = WebappHelper.getContextRoot() + STATIC_DIR_NAME + normalizedRelPath;
-		File staticFile = new File(staticAbsPath);
+		String staticAbsPath;
+		if(Settings.isDebuging() && WebappHelper.getWebappSourcePath() != null) {
+			staticAbsPath = WebappHelper.getWebappSourcePath() + STATIC_DIR_NAME;
+		} else {
+			staticAbsPath = WebappHelper.getContextRoot() + STATIC_DIR_NAME;
+		}
+		File staticFile = new File(staticAbsPath, normalizedRelPath);
 		// only serve if file exists
 		if (!staticFile.exists()) {
 			if (isLogDebugEnabled()) {

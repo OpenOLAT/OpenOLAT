@@ -61,6 +61,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static final OLog log = Tracing.createLoggerFor(WebappHelper.class);
 	private static int nodeId;
 	private static String fullPathToSrc;
+	private static String fullPathToWebappSrc;
 	private static ServletContext servletContext;
 	private static String contextRoot;
 	private static String instanceId;
@@ -192,6 +193,15 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		
 		return fullPathToSrc;
 	}
+	
+	public static String getWebappSourcePath() {
+		File webapp = new File(fullPathToWebappSrc);
+		if(webapp.exists()){
+			return fullPathToWebappSrc;
+		}else{
+			return null;
+		}
+	}
 
 	public static String getBuildOutputFolderRoot() {
 		try {
@@ -216,6 +226,9 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		WebappHelper.fullPathToSrc = fullPathToSrc;
  	}
 
+	public void setFullPathToWebappSrc(String fullPathToWebappSrc) {
+		WebappHelper.fullPathToWebappSrc = fullPathToWebappSrc;
+ 	}
 	
 	/**
 	 * 
