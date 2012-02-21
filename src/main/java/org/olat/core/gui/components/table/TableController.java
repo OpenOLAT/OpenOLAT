@@ -487,6 +487,45 @@ public class TableController extends BasicController {
 	}
 	
 	/**
+	 * Return the object at the visible index (sorted or not, searched or not)
+	 * @param index
+	 * @return
+	 */
+	public Object getSortedObjectAt(int index) {
+		TableDataModel model = getTableDataModel();
+		for(int i=0; i<getRowCount(); i++) {
+			int pos = getSortedRow(i);
+			if(pos == index) {
+				return model.getObject(i);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Return the visible index of the object (sorted or not, searched or not)
+	 * @param obj
+	 * @return
+	 */
+	public int getIndexOfSortedObject(Object obj) {
+		int index = -1;
+		for(int i=getTableDataModel().getRowCount(); i-->0; ) {
+			if(obj.equals(getTableDataModel().getObject(i))) {
+				index = i;
+				break;
+			}
+		}
+
+		for(int i=0; i<getRowCount(); i++) {
+			int currentPos = getSortedRow(i);
+			if(currentPos == index) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	/**
 	 * @return The currently active filter object or <code>null</code> if no
 	 *         filter is applied
 	 */

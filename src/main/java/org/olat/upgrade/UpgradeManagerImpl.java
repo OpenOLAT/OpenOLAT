@@ -37,6 +37,7 @@ import java.util.StringTokenizer;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.StartupException;
+import org.olat.core.util.StringHelper;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -195,7 +196,7 @@ public class UpgradeManagerImpl extends UpgradeManager {
 			//Read File Line By Line
 			while ((strLine = br.readLine()) != null)   {
 				if (strLine.length() > 1 && (!strLine.startsWith("--") && !strLine.startsWith("#"))) {
-						sb.append(strLine.trim());
+					sb.append(strLine.trim()).append(' ');
 				}
 			}
 			
@@ -203,7 +204,12 @@ public class UpgradeManagerImpl extends UpgradeManager {
 			String sql = null;
 				while (tokenizer.hasMoreTokens()) {
 					try {
-						sql = tokenizer.nextToken()+";".toLowerCase();
+						String token = tokenizer.nextToken();
+						if(!StringHelper.containsNonWhitespace(token)) {
+							continue;
+						}
+						
+						sql = token + ";".toLowerCase();
 						if (sql.startsWith("update") || sql.startsWith("delete") || sql.startsWith("alter") || sql.startsWith("insert")) {
 							statement.executeUpdate(sql);
 						} else {

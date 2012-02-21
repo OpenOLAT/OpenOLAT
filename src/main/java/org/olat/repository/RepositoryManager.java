@@ -279,6 +279,30 @@ public class RepositoryManager extends BasicManager {
 		if (key == null) return null;
 		return (RepositoryEntry)DBFactory.getInstance().findObject(RepositoryEntry.class, key);
 	}
+	
+	/**
+	 * Lookup repo entry by key.
+	 * @param the repository entry key (not the olatresourceable key)
+	 * @return Repo entry represented by key or null if no such entry or key is null.
+	 */
+	public RepositoryEntry lookupRepositoryEntry(Long key, boolean strict) {
+		if (key == null) return null;
+		if(strict) {
+			return lookupRepositoryEntry(key);
+		}
+		StringBuilder query = new StringBuilder();
+		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+				 .append(" inner join fetch v.olatResource as ores")
+		     .append(" where v.key = :repoKey");
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setLong("repoKey", key);
+		List<RepositoryEntry> entries = dbQuery.list();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
 
 	/**
 	 * Lookup the repository entry which references the given olat resourceable.
