@@ -3,8 +3,7 @@
 <!-- Copyright (2) 2001 IMS Global Learning Consortium, Inc. -->
 
 <xsd:schema xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" 
-            targetNamespace="http://www.imsglobal.org/xsd/imscp_v1p1" 
-            xmlns:x="http://www.w3.org/XML/1998/namespace" 
+            targetNamespace="http://www.imsglobal.org/xsd/imscp_v1p1"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
             elementFormDefault="unqualified" version="IMS CP 1.1.3">
 
@@ -64,7 +63,7 @@
       <xsd:documentation>Inclusions and Imports</xsd:documentation>
    </xsd:annotation>
 
-   <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="ims_xml.xsd"/>
+   <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/03/xml.xsd"/>
 
    <xsd:annotation>
       <xsd:documentation>Attribute Declarations</xsd:documentation>
@@ -74,7 +73,7 @@
    <!-- ** Attribute Declarations ** -->
    <!-- **************************** -->
    <xsd:attributeGroup name="attr.base">
-      <xsd:attribute ref="x:base" use="optional"/>
+      <xsd:attribute ref="xml:base" use="optional"/>
    </xsd:attributeGroup>
 
    <xsd:attributeGroup name="attr.default">
@@ -260,7 +259,7 @@
       </xsd:sequence>
       <xsd:attributeGroup ref="attr.identifier.req"/>
       <xsd:attributeGroup ref="attr.version"/>
-      <xsd:attribute ref="x:base"/>
+      <xsd:attribute ref="xml:base"/>
       <xsd:anyAttribute namespace="##other" processContents="strict"/>
    </xsd:complexType>
    

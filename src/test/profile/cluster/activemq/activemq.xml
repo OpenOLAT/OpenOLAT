@@ -5,12 +5,12 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
   http://activemq.apache.org/schema/core
-  http://activemq.apache.org/schema/core/activemq-core.xsd
-  ">
-  <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="./target/activemq/data">
+  http://activemq.apache.org/schema/core/activemq-core-5.3.2.xsd">
+  
+  <amq:broker brokerName="localhost" dataDirectory="./target/activemq/data">
     <!-- The transport connectors ActiveMQ will listen to -->
-    <transportConnectors>
-      <transportConnector name="openwire" uri="tcp://0.0.0.0:${test.env.jms.broker.port}"/>
-    </transportConnectors>
-  </broker>
+    <amq:transportConnectors>
+      <amq:transportConnector name="openwire" uri="tcp://0.0.0.0:${test.env.jms.broker.port}"/>
+    </amq:transportConnectors>
+  </amq:broker>
 </beans>
