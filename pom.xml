@@ -2095,7 +2095,7 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			<version>1.6.2</version>
+			<version>1.6.4</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
