@@ -89,11 +89,6 @@ F. If you run into problems with classes or resources not found e.g. "ClassNotFo
    from eclipse to console and back with command like mvn clean, or eclipse clean and such. You will always get 
    a clean and working environment when you do the following: Eclipse clean, create eclipse settings with launch, 
    Server publish resources and restart OLAT.
-   
-G. In some eclipse setups you will get compile errors because of XML/XSLT validation errors. In this case disable all 
-   validators in the project properties (Right click on project -> "Properties" -> "Validators") and set all levels
-   for XSLT to "ignore". After this step restart eclipse and execute 'mvn eclipse:clean eclipse:eclipse' again, 
-   refresh and then clean the project to recompile.
 
 
 Background (optional for further interest)
