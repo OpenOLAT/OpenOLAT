@@ -46,6 +46,7 @@ import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -228,7 +229,12 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		  String exportDirName = getShortTitle()+"_"+Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
 		  VFSContainer destination = wikiExportContainer.createChildContainer(exportDirName);
 			if (destination==null) {
+				exportDirName = VFSManager.rename(wikiExportContainer, exportDirName);
+				destination = wikiExportContainer.createChildContainer(exportDirName);
+			}
+			if (destination==null) {
 				Tracing.logError("archiveNodeData: Could not create destination directory: wikiExportContainer="+wikiExportContainer+", exportDirName="+exportDirName, getClass());
+				return false;
 			}
 			
 		  VFSContainer container = WikiManager.getInstance().getWikiContainer(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
