@@ -49,6 +49,7 @@ body {
 }
 #b_main {
 	background:#fff;
+	min-height:550px; /* min height, should prevent "flashing" of OO sky-banner on slow connections */
 	clear:both;
 	@include o-box-shadow(0,0,14px,#D3D3D3);
 }

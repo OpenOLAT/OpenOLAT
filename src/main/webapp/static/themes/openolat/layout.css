@@ -816,6 +816,8 @@ body#b_body .o_CourseModule_icon_closed {
 
   #b_main {
     background: #fff;
+    min-height: 550px;
+    /* min height, should prevent "flashing" of OO sky-banner on slow connections */
     clear: both;
     moz-box-shadow: 0 0 14px #d3d3d3;
     -ms-box-shadow: 0 0 14px #d3d3d3;
