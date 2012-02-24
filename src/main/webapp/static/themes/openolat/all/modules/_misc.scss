@@ -37,6 +37,11 @@ div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31
 }
 #callout_fx_link input { width:460px;}
 
+#b_footer .fx_footer #b_footer_version {
+	> a { display:block; min-height: 45px; height: 4em; background: transparent url('../../images/frentix/frentix_logo_grey.png') no-repeat left bottom ; }
+	> a:hover { background-image: url('../../images/frentix/frentix_logo.png'); }
+}
+
 /* INFO MESSAGES */
 div.o_infomsgs { 
 		padding-top:5px; 

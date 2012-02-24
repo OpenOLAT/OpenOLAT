@@ -7,7 +7,7 @@
 	/* (en) reset monospaced elements to font size 16px in Gecko browsers */
   	textarea, pre, tt, code { font-family:"Courier New", Courier, monospace;  }	
 	/* Base layout gets standard font size 12px */
-	body { font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; }
+	body { font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; color: #444;}
 
 	/* HEADERS */
 	h1,h2,h3,h4,h5,h6 { font-weight:bold; margin: 0 0 0.25em 0; }
@@ -47,6 +47,16 @@
 
 img.wikiimg { border: 0px;}
 
+a:link,a:visited  {
+	color: #025D8C;
+	text-decoration: none;
+	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif;
+}
+a:hover, a:active, a:focus {
+	text-decoration: underline;
+}
+	
+	
 a.wikiimg {
 	text-decoration: none;
 	color: inherit;

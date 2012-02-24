@@ -98,9 +98,9 @@ dd { margin: 0 0 1em 2em }
 .b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; @include o-border-radius(4px);}
 .b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; @include o-border-radius(4px);}
 div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
-.b_border_box { border: 1px solid #ACAAAA; padding: 1em;}
+.b_border_box { border: 1px solid $basegray_light; padding: 1em;}
 /* font  */
-.b_disabled { color: #ACAAAA; }
+.b_disabled { color: $basegray_light; }
 .b_deleted { text-decoration: line-through; }	
 .b_selected { font-weight: bold; }	
 /* font sizes relative to parent object */
@@ -120,7 +120,6 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 .b_dimmed { @include o-opacity(40); }
 .o_ochre { color: #c8a959; }
 	
-
 
 /* =============================================================================== **/
 	

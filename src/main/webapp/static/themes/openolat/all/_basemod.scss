@@ -49,6 +49,7 @@ body {
 }
 #b_main {
 	background:#fff;
+	min-height:550px; /* min height, should prevent "flashing" of OO sky-banner on slow connections */
 	clear:both;
 	@include o-box-shadow(0,0,14px,#D3D3D3);
 }
@@ -384,6 +385,12 @@ div.b_tree {
 				background-repeat:no-repeat;
 			}
 			
+			/* fix deleted nodes in courseditor (24.02.2012) */
+			&.b_deleted {
+				text-decoration:none;
+				a { text-decoration: line-through; }
+			}
+			
 		} // end li
 		
 		/* link to select the item with icon */
@@ -423,6 +430,8 @@ div.b_tree {
 		padding-top:8px;
 		border-top:1px solid #ddd;
 	}
+	
+	a { color: $basegray_light; }
 	
 	#b_footer_user { 
 		float: left; line-height: 16px;

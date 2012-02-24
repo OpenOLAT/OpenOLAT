@@ -1,5 +1,4 @@
 /** ----------------- BUTTONS  ----------------- **/
-
 .b_button {
 	@include btt-outer;
 	&,span {@include btt-inner;}
@@ -214,7 +213,7 @@ div.b_form {
 		.b_form_disabled { color: #504D4E; }
 		.b_form_element_disabled { color: #9E9C9C; background: #EEEEEE; border: 1px solid #CDCBCB;}
 		/* date and generic chooser icon*/
-		span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px; padding-top:2px;}
+		span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px; padding-top:3px;}
 		a.b_form_groupchooser { background: url(../openolat/images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}
 		a.b_form_genericchooser { background: url(../openolat/images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}	
 	    a.b_form_wikitext { background-repeat: no-repeat; padding-left: 12px; line-height: 1.5em; font-style: italic;}
