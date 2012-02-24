@@ -430,6 +430,8 @@ div.b_tree {
 		border-top:1px solid #ddd;
 	}
 	
+	a { color: $basegray_light; }
+	
 	#b_footer_user { 
 		float: left; line-height: 16px;
 	 	a.b_ajax {background: url(../openolat/images/ajax.png) no-repeat; width: 20px; height: 16px; display: block; float: left; }
