@@ -384,6 +384,12 @@ div.b_tree {
 				background-repeat:no-repeat;
 			}
 			
+			/* fix deleted nodes in courseditor (24.02.2012) */
+			&.b_deleted {
+				text-decoration:none;
+				a { text-decoration: line-through; }
+			}
+			
 		} // end li
 		
 		/* link to select the item with icon */
