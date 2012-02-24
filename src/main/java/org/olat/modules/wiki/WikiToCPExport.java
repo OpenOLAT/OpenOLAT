@@ -148,8 +148,8 @@ public class WikiToCPExport {
 		FileUtils.save(jsFile.getOutputStream(false), jsContent.toString(), "utf-8");
 
 		renderWikiToHtmlFiles(ores, tempFolder);
-		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(tempFolder.getBasefile(), exportPath.getBasefile(), null);
-		tempFolder.delete();
+		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(tempFolder.getBasefile(), exportPath.getBasefile());
+		//tempFolder.delete();
 	}
 
 	private StringBuilder createJsMappingContent(Wiki wiki) {

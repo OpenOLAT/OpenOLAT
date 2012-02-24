@@ -1,38 +1,48 @@
 /**
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
+ * OLAT - Online Learning and Training<br>
+ * http://www.olat.org
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+ * University of Zurich, Switzerland.
+ * <hr>
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * This file has been modified by the OpenOLAT community. Changes are licensed
+ * under the Apache 2.0 license as the original file.
+ */
 
 package org.olat.modules.cp;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.render.velocity.VelocityModule;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -54,29 +64,36 @@ import org.olat.fileresource.FileResourceManager;
 
 public class CPOfflineReadableManager {
 	private static CPOfflineReadableManager instance = new CPOfflineReadableManager();
+
+	OLog logger = Tracing.createLoggerFor(CPOfflineReadableManager.class);
 	
-	private static final String DOCTYPE = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\" \"http://www.w3.org/TR/html4/frameset.dtd\">";
 	private static final String IMSMANIFEST = "imsmanifest.xml";
-
 	public static final String CPOFFLINEMENUMAT = "cp_offline_menu_mat";
-	private static final String OLATICON = "olat_icon.gif";
-	private static final String FAVICON = "favicon.ico";
-	private static final String BRANDING = "provided by OpenOLAT";
-	private static final String MKTREEJS = "mktree.js"; // mattkruseTree ->
-																							// www.mattkruse.com
-	private static final String MKTREECSS = "mktree.css";
-
-	private static final String MENU_FILE = "_MENU_.html";
 	private static final String FRAME_FILE = "_START_.html";
-	private static final String LOGO_FILE = "_LOGO_.html";
-	private static final String FRAME_NAME_MENU = "menu";
 	private static final String FRAME_NAME_CONTENT = "content";
-	private static final String FRAME_NAME_LOGO = "logo";
 
 	private String rootTitle;
 
+	private VelocityEngine velocityEngine;
+
 	private CPOfflineReadableManager() {
-	// private since singleton
+		// private since singleton
+
+		// init velocity engine
+		Properties p = null;
+		try {
+			velocityEngine = new VelocityEngine();
+			p = new Properties();
+			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
+			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
+			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
+			p.setProperty(RuntimeConstants.OUTPUT_ENCODING, VelocityModule.getOutputEncoding());
+			p.setProperty("classpath.resource.loader.cache", Settings.isDebuging() ? "false" : "true");
+			
+			velocityEngine.init(p);
+		} catch (Exception e) {
+			throw new RuntimeException("config error " + p.toString());
+		}
 	}
 
 	/**
@@ -85,27 +102,34 @@ public class CPOfflineReadableManager {
 	public static CPOfflineReadableManager getInstance() {
 		return instance;
 	}
-	
-		/**
-	 * Used for migration purposes
+
+	/**
+	 * "exports" the the given CP (specified by its containing _unzipped_ directory) to a
+	 * zipFile.<br />
+	 * The resulting zip contains a "offline-readable" version of the CP.
+	 * including style-sheets, menu-Tree and OpenOLAT branding
 	 * 
-	 * @param unzippedDir
+	 * @param ores
+	 *            the containing directory
 	 * @param targetZip
-	 * @param cpOfflineMat
+	 *            the resulting zip-filename
 	 */
-	public void makeCPOfflineReadable(File unzippedDir, File targetZip, File cpOfflineMat) {
-		writeOfflineCP(unzippedDir);
-		//assign default mat if not specified
-		if(cpOfflineMat == null) cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + CPOFFLINEMENUMAT);
+	public void makeCPOfflineReadable(File unzippedDir, File targetZip) {
+		writeOfflineCPStartHTMLFile(unzippedDir);
+		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + CPOFFLINEMENUMAT);
 		zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
 	}
 
 	/**
-	 * Adds the folder CPOFFLINEMENUMAT and the two files MENU_FILE and FRAME_FILE
-	 * to the _unzipped_-Folder.
+	 * "exports" the the given CP (specified by its OLATResourceable) to a
+	 * zipFile.<br />
+	 * The resulting zip contains a "offline-readable" version of the CP.
+	 * including style-sheets, menu-Tree and OpenOLAT branding
 	 * 
 	 * @param ores
+	 *            the OLATResourceable (expected to be a CP)
 	 * @param zipName
+	 *            the resulting zip-filename
 	 */
 	public void makeCPOfflineReadable(OLATResourceable ores, String zipName) {
 		String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
@@ -117,76 +141,62 @@ public class CPOfflineReadableManager {
 		File targetZip = new File(repositoryHome + "/" + resId + "/" + zipName);
 		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + CPOFFLINEMENUMAT);
 
-		writeOfflineCP(unzippedDir);
+		writeOfflineCPStartHTMLFile(unzippedDir);
 		zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
 	}
 
 	/**
-	 * writes the MENU_FILE to the _unzipped_-Folder
+	 * generates a html-file (_START_.html) that presents the given cp-content
+	 * (specified by its "_unzipped_"-dir). The resulting file is suitable for
+	 * offline reading of the cp.
+	 * 
 	 * 
 	 * @param unzippedDir
+	 *            the directory that contains the unzipped CP
 	 */
-	private void writeOfflineCP(File unzippedDir) {
+	private void writeOfflineCPStartHTMLFile(File unzippedDir) {
+
+		/* first, we do the menu-tree */
 		File mani = new File(unzippedDir, IMSMANIFEST);
-		String s = createMenuAndFrame(unzippedDir, mani);
-
-		File f = new File(unzippedDir, MENU_FILE);
-		if (f.exists()) {
-			FileUtils.deleteDirsAndFiles(f, false, true);
-		}
-		ExportUtil.writeContentToFile(MENU_FILE, s, unzippedDir, "utf-8");
-	}
-
-	/**
-	 * creates menu from imsmanifest.xml
-	 * 
-	 * @param unzippedDir
-	 * @param mani
-	 * @return
-	 */
-	private String createMenuAndFrame(File unzippedDir, File mani) {
 		LocalFileImpl vfsMani = new LocalFileImpl(mani);
 		CPManifestTreeModel ctm = new CPManifestTreeModel(vfsMani);
 		TreeNode root = ctm.getRootNode();
-		this.rootTitle = root.getTitle();
-		StringBuilder sb = new StringBuilder();
-		sb.append(DOCTYPE);
-		sb.append("<html>\n<head>\n");
-		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
-		sb.append("<title>");
-		sb.append(rootTitle);
-		sb.append("</title>\n");
-		sb.append("<SCRIPT SRC=\"");
-		sb.append(CPOFFLINEMENUMAT);
-		sb.append("/");
-		sb.append(MKTREEJS);
-		sb.append("\" LANGUAGE=\"JavaScript\"></SCRIPT>");
-		sb.append("<LINK REL=\"stylesheet\" HREF=\"");
-		sb.append(CPOFFLINEMENUMAT);
-		sb.append("/");
-		sb.append(MKTREECSS);
-		sb.append("\"></head>\n<body>\n");
-		sb.append("<div>");
-		sb.append("<a href=\"#\" onclick=\"expandTree('tree1'); return false;\">Expand All</a>&nbsp;&nbsp;&nbsp;");
-		sb.append("<a href=\"#\" onclick=\"collapseTree('tree1'); return false;\">Collapse All</a>&nbsp;&nbsp;&nbsp;");
-		sb.append("<ul class=\"mktree\" ID=\"tree1\">");
-		render(root, sb, 0);
-		sb.append("</ul>");
-		sb.append("</div>");
-		sb.append("</body>");
+		// let's take the rootnode title as  page title
+		this.rootTitle = root.getTitle(); 
 
-		writeOfflineHTMLFrameSetFile(unzippedDir);
-		writeOfflineHTMLLogoFrame(unzippedDir);
-
-		return sb.toString();
+		StringBuilder menuTreeSB = new StringBuilder();
+		renderMenuTreeNodeRecursively(root, menuTreeSB, 0);
+		
+		// now put values to velocityContext
+		VelocityContext ctx = new VelocityContext();
+		ctx.put("menutree", menuTreeSB.toString());
+		ctx.put("rootTitle", this.rootTitle);
+		ctx.put("cpoff",CPOFFLINEMENUMAT);
+		
+		StringWriter sw = new StringWriter();
+		try {
+			String template = FileUtils.load(CPOfflineReadableManager.class.getResourceAsStream("_content/cpofflinereadable.html"), "utf-8");
+			boolean evalResult = velocityEngine.evaluate(ctx, sw, "cpexport", template);
+			if (!evalResult)
+				logger.error("Could not evaluate velocity template for CP Export");
+		} catch (IOException e) {
+			logger.error("Error while evaluating velovity template for CP Export",e);
+		}
+		
+		File f = new File(unzippedDir, FRAME_FILE);
+		if (f.exists()) {
+			FileUtils.deleteDirsAndFiles(f, false, true);
+		}
+		ExportUtil.writeContentToFile(FRAME_FILE, sw.toString(), unzippedDir, "utf-8");
 	}
+
 
 	/**
 	 * @param node
 	 * @param sb
 	 * @param indent
 	 */
-	private void render(TreeNode node, StringBuilder sb, int indent) {
+	private void renderMenuTreeNodeRecursively(TreeNode node, StringBuilder sb, int level) {
 		// set content to first accessible child or root node if no children
 		// available
 		// render current node
@@ -223,7 +233,7 @@ public class CPOfflineReadableManager {
 				sb.append("<ul>\n");
 			}
 			TreeNode child = (TreeNode) node.getChildAt(i);
-			render(child, sb, indent + 1);
+			renderMenuTreeNodeRecursively(child, sb, level + 1);
 			b = false;
 		}
 		if (!b) {
@@ -233,98 +243,9 @@ public class CPOfflineReadableManager {
 	}
 
 	/**
-	 * writes the FRAME_FILE to the _unzipped_-Folder
-	 * 
-	 * @param unzippedDir
-	 * @param rootTitle
-	 */
-	private void writeOfflineHTMLFrameSetFile(File unzippedDir) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(DOCTYPE);
-		sb.append("<html>\n<head>\n");
-		sb.append("<link rel=\"icon\" href=\"");
-		sb.append(CPOFFLINEMENUMAT);
-		sb.append("/");
-		sb.append(FAVICON);
-		sb.append("\" type=\"image/x-icon\">");
-		sb.append("<LINK REL=\"stylesheet\" HREF=\"");
-		sb.append(CPOFFLINEMENUMAT);
-		sb.append("/");
-		sb.append(MKTREECSS);
-		sb.append("\">");
-		sb.append("<title>");
-		sb.append(rootTitle);
-		sb.append("</title>\n</head>\n");
-		sb.append("<frameset cols=\"250,*\" frameborder=\"0\" framespacing=\"0\" border=\"0\">");
-
-		sb.append("<frameset rows=\"*,40\" frameborder=\"0\" framespacing=\"0\" border=\"0\">");
-
-		sb.append("<frame src=\"");
-		sb.append(MENU_FILE);
-		sb.append("\" name=\"");
-		sb.append(FRAME_NAME_MENU);
-		sb.append("\">\n");
-
-		sb.append("<frame src=\"");
-		sb.append(LOGO_FILE);
-		sb.append("\" name=\"");
-		sb.append(FRAME_NAME_LOGO);
-		sb.append("\">\n");
-
-		sb.append("</frameset>");
-
-		sb.append("<frame name=\"");
-		sb.append(FRAME_NAME_CONTENT);
-		sb.append("\">\n");
-
-		sb.append("</frameset>\n</html>");
-
-		File f = new File(unzippedDir, FRAME_FILE);
-		if (f.exists()) {
-			FileUtils.deleteDirsAndFiles(f, false, true);
-		}
-		ExportUtil.writeContentToFile(FRAME_FILE, sb.toString(), unzippedDir, "utf-8");
-	}
-
-	/**
-	 * writes the FRAME_FILE to the _unzipped_-Folder
-	 * 
-	 * @param unzippedDir
-	 * @param rootTitle
-	 */
-	private void writeOfflineHTMLLogoFrame(File unzippedDir) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(DOCTYPE);
-		sb.append("<html>\n<head>\n");
-		sb.append("<LINK REL=\"stylesheet\" HREF=\"");
-		sb.append(CPOFFLINEMENUMAT);
-		sb.append("/");
-		sb.append(MKTREECSS);
-		sb.append("\">");
-		sb.append("<title>");
-		sb.append(rootTitle);
-		sb.append("</title>\n</head><body>\n");
-		sb.append("<div id=\"branding\">");
-		sb.append("<a target=\"_blank\" href=\"http://www.openolat.org\"><img id=\"logo\" src=\"");
-		sb.append(CPOFFLINEMENUMAT);
-		sb.append("/");
-		sb.append(OLATICON);
-		sb.append("\" alt=\"OLAT_logo\">");
-		sb.append(BRANDING);
-		sb.append("</div>");
-
-		sb.append("\n</body></html>");
-
-		File f = new File(unzippedDir, LOGO_FILE);
-		if (f.exists()) {
-			FileUtils.deleteDirsAndFiles(f, false, true);
-		}
-		ExportUtil.writeContentToFile(LOGO_FILE, sb.toString(), unzippedDir, "utf-8");
-	}
-
-	/**
-	 * copy the whole CPOFFLINEMENUMAT-Folder (mktree.js, mktree.css and gifs) to
-	 * the _unzipped_-Folder and zip everything that is in the _unzipped_-Folder
+	 * copy the whole CPOFFLINEMENUMAT-Folder (mktree.js, mktree.css and gifs)
+	 * to the _unzipped_-Folder and zip everything that is in the
+	 * _unzipped_-Folder
 	 * 
 	 * @param unzippedDir
 	 * @param targetZip
@@ -337,7 +258,7 @@ public class CPOfflineReadableManager {
 			FileUtils.deleteDirsAndFiles(targetZip, false, true);
 		}
 
-		Set allFiles = new HashSet();
+		Set<String> allFiles = new HashSet<String>();
 		String[] cpFiles = unzippedDir.list();
 		for (int i = 0; i < cpFiles.length; i++) {
 			allFiles.add(cpFiles[i]);
