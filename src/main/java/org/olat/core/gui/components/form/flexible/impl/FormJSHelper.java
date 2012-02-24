@@ -28,6 +28,8 @@ package org.olat.core.gui.components.form.flexible.impl;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.render.StringOutput;
@@ -143,21 +145,8 @@ public class FormJSHelper {
 		// Execute code within an anonymous function (closure) to not leak
 		// variables to global scope (OLAT-5755)
 		sb.append("(function() {");
-		sb.append("var ").append(secureJSVarName(id)).append(" = Ext.get('").append(id).append("'); ");
+		sb.append("var ").append(id).append(" = Ext.get('").append(id).append("'); ");
 		return sb.toString();
-	}
-	
-	/**
-	 * OO-98 : a fix in FormUIFactory changed the id from "null" to
-	 * "something.like.this" for selectionElements (like radio-buttons)
-	 * this led to js-errors because output was:  var o_fisomething.like.this [..]
-	 * now this method ensures that the id does not contain dots 
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public static String secureJSVarName(String id){
-		return id.replace(".", "_");
 	}
 	
 	public static String getJSStart(){
@@ -172,12 +161,12 @@ public class FormJSHelper {
 	}
 	
 	public static String getExtJSVarDeclaration(String id){
-		return "var "+secureJSVarName(id)+" = Ext.get('"+id+"'); ";
+		return "var "+id+" = Ext.get('"+id+"'); ";
 	}
 	
 	public static String getSetFlexiFormDirty(Form form, String id){
 		String result;
-		String prefix = secureJSVarName(id) + ".on('";
+		String prefix = id + ".on('";
 		// examples:
 		// o_fi400.on({'click',setFormDirty,this,{formId:"ofo_100"}});
 		// o_fi400.on({'change',setFormDirty,this,{formId:"ofo_100"}});
@@ -190,7 +179,7 @@ public class FormJSHelper {
 	
 	public static String getSetFlexiFormDirtyForCheckbox(Form form, String id){
 		String result;
-		String prefix = secureJSVarName(id) + ".on('";
+		String prefix = id + ".on('";
 		// examples:
 		// o_fi400.on({'click',setFormDirty,this,{formId:"ofo_100"}});
 		// o_fi400.on({'change',setFormDirty,this,{formId:"ofo_100"}});
