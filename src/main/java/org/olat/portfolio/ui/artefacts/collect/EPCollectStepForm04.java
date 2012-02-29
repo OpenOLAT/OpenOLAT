@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -66,6 +67,11 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	private AbstractArtefact artefact;
 	private PortfolioStructure oldStructure;
 
+	/*
+	 * serves as error-label for invalid tree-node selection
+	 */
+	private StaticTextElement formErrorTextElement;
+	
 	@SuppressWarnings("unused")
 	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
 			String customLayoutPageName, AbstractArtefact artefact) {
@@ -106,6 +112,9 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 			flc.put("treeCtr", treeCtr.getInitialComponent());
 		}
 
+		// OO-133  add a staticTextElement that serves as an error-label
+		formErrorTextElement = uifactory.addStaticTextElement("form.error", "", formLayout);
+		
 		if (!isUsedInStepWizzard()) {
 			// add form buttons
 			uifactory.addFormSubmitButton("stepform.submit", formLayout);
@@ -220,6 +229,24 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		}
 		path.insert(0, "/" + ps.getKey().toString());
 		return path.toString();
+	}
+
+	
+	/**
+	 * http://jira.openolat.org/browse/OO-133
+	 * 
+	 * wee need to check, if selectedStructure element is not null.
+	 * (this happens if user selects root node).
+	 * if it is null, display error-message and return false
+	 * 
+	 */
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		if(selStructure == null){
+			formErrorTextElement.setValue(translate("step4.nomapselected"));
+			return false;
+		}
+		return super.validateFormLogic(ureq);
 	}
 
 	/**
