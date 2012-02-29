@@ -193,10 +193,12 @@
 		vertical-align: middle; 
 		//left-align for IE
 		text-align: left;
+		border: 1px solid #ccc; // wee need that for IE8 , no rgba 
 		border: 1px solid rgba(0,0,0,0.1); 
 		@include o-gradient2( #f5f5f5,#f1f1f1);
 		@include o-transition(all,0.22s, "");
 }
+
 @mixin btt-inner { 
 		color: #444; 
 		font-size:100%;

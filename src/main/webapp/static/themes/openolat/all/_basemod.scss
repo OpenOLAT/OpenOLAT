@@ -225,8 +225,9 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 			}
 			a:hover { text-decoration: none; }
 			
+			
 			@include o-border-radius-all(6px,6px,0,0);
-			background: #fff;
+			background: #f5f5f5; //  for browsers with no rgba
 			background: rgba(255,255,255,0.5);
 			
 			@if $enablebiz == true {
