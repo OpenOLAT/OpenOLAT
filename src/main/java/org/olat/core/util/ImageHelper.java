@@ -232,7 +232,8 @@ public class ImageHelper implements IImageHelper {
 	 * @return
 	 */
 	public static boolean scaleImage(File image, File scaledImage, int maxWidth, int maxHeight) {
-		return scaleImage(image, null, scaledImage, maxWidth, maxHeight);
+		String extension = FileUtils.getFileSuffix(image.getName());
+		return scaleImage(image, extension, scaledImage, maxWidth, maxHeight);
 	}
 	
 	/**
