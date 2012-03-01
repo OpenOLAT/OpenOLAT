@@ -89,9 +89,9 @@ public class ReferenceManager extends BasicManager {
 	 * @param source
 	 * @return List of renerences.
 	 */
-	public List getReferences(OLATResourceable source) {
+	public List<ReferenceImpl> getReferences(OLATResourceable source) {
 		OLATResourceImpl sourceImpl = (OLATResourceImpl)olatResourceManager.findResourceable(source);
-		if (sourceImpl == null) return new ArrayList(0);
+		if (sourceImpl == null) return new ArrayList<ReferenceImpl>(0);
 		
 		return DBFactory.getInstance().find(
 				"select v from org.olat.resource.references.ReferenceImpl as v where v.source = ?",

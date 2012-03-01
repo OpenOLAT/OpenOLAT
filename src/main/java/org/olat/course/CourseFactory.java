@@ -465,7 +465,7 @@ public class CourseFactory extends BasicManager {
 			// copy course folder
 			File fSourceCourseFolder = sourceCourse.getIsolatedCourseFolder().getBasefile();
 			if (fSourceCourseFolder.exists()) FileUtils.copyDirToDir(fSourceCourseFolder, fTargetCourseBasePath, false, "copy course folder");
-
+			
 			// copy folder nodes directories
 			File fSourceFoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
 					+ BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));
@@ -476,11 +476,17 @@ public class CourseFactory extends BasicManager {
 					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
 
+			//make sure the DB connection is available after this point
+			DBFactory.getInstance(false).commitAndCloseSession();
+			
 			// update references
-			List refs = referenceManager.getReferences(sourceCourse);
-			for (Iterator iter = refs.iterator(); iter.hasNext();) {
-				ReferenceImpl ref = (ReferenceImpl) iter.next();
+			List<ReferenceImpl> refs = referenceManager.getReferences(sourceCourse);
+			int count = 0;
+			for (ReferenceImpl ref: refs) {
 				referenceManager.addReference(targetCourse, ref.getTarget(), ref.getUserdata());
+				if(count % 20 == 0) {
+					DBFactory.getInstance(false).intermediateCommit();
+				}
 			}
 			CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
 			CourseGroupManager targetCgm = targetCourse.getCourseEnvironment().getCourseGroupManager();
