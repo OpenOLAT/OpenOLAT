@@ -11,6 +11,7 @@
 			</div>
 		</div>
 	#end
+	
 	#if ($infomsgNode)
 		<div class="o_infomessage_wrapper">
 			<div class="o_infomessage">
@@ -27,6 +28,12 @@
 			$r.translate("login.browserswitch")
 		</div>
 	#end
+	
+	
+	#if ($logincustommsg)
+	 <div class="b_logincustommsg">$logincustommsg</div>
+	#end
+	
 	$r.render("loginComp")
 	
 
