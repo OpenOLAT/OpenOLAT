@@ -114,19 +114,25 @@ public class RepositoryEntryDetailsFormController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		// Check for empty display name
+		
+		boolean allOk = true;
 		if (!StringHelper.containsNonWhitespace(displayName.getValue())) {
 			displayName.setErrorKey("cif.error.displayname.empty", new String[] {});
-			return false;
+			allOk = false;
+		} else if (displayName.hasError()) {
+			allOk = false;
+		} else {
+			displayName.clearError();
 		}
-		displayName.clearError();
 		// Check for empty description
 		if (!StringHelper.containsNonWhitespace(description.getValue())) {
 			description.setErrorKey("cif.error.description.empty", new String[] {});
-			return false;
+			allOk = false;
+		} else {
+			description.clearError();
 		}
-		description.clearError();
 		// Ok, passed all checks
-		return super.validateFormLogic(ureq);
+		return allOk && super.validateFormLogic(ureq);
 	}
 
 	/**
