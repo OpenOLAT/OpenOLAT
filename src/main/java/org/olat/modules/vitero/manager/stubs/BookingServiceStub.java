@@ -44,7 +44,7 @@
         //creating the operations
         org.apache.axis2.description.AxisOperation __operation;
 
-        _operations = new org.apache.axis2.description.AxisOperation[11];
+        _operations = new org.apache.axis2.description.AxisOperation[12];
         
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
@@ -58,10 +58,10 @@
             _operations[0]=__operation;
             
         
-                   __operation = new org.apache.axis2.description.OutInAxisOperation();
+                    __operation = new org.apache.axis2.description.OutOnlyAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByGroupInFuture"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "updateBooking"));
 	    _service.addOperation(__operation);
 	    
 
@@ -73,7 +73,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "createBooking"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByGroupInFuture"));
 	    _service.addOperation(__operation);
 	    
 
@@ -85,7 +85,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByDate"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "createBooking"));
 	    _service.addOperation(__operation);
 	    
 
@@ -97,7 +97,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByUserAndDate"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByDate"));
 	    _service.addOperation(__operation);
 	    
 
@@ -109,7 +109,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByUserInFuture"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByUserAndDate"));
 	    _service.addOperation(__operation);
 	    
 
@@ -121,7 +121,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingTimeById"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByUserInFuture"));
 	    _service.addOperation(__operation);
 	    
 
@@ -133,7 +133,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingById"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingTimeById"));
 	    _service.addOperation(__operation);
 	    
 
@@ -145,7 +145,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "deleteBooking"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingById"));
 	    _service.addOperation(__operation);
 	    
 
@@ -157,7 +157,7 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingByBookingTimeId"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "deleteBooking"));
 	    _service.addOperation(__operation);
 	    
 
@@ -169,13 +169,25 @@
                    __operation = new org.apache.axis2.description.OutInAxisOperation();
                 
 
-            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByGroupAndDate"));
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingByBookingTimeId"));
 	    _service.addOperation(__operation);
 	    
 
 	    
 	    
             _operations[10]=__operation;
+            
+        
+                   __operation = new org.apache.axis2.description.OutInAxisOperation();
+                
+
+            __operation.setName(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking", "getBookingListByGroupAndDate"));
+	    _service.addOperation(__operation);
+	    
+
+	    
+	    
+            _operations[11]=__operation;
             
         
         }
@@ -225,7 +237,7 @@
      */
     public BookingServiceStub(org.apache.axis2.context.ConfigurationContext configurationContext) throws org.apache.axis2.AxisFault {
         
-                    this(configurationContext,"http://192.168.1.54:8080/vitero/services/" );
+                    this(configurationContext,"http://192.168.1.78:8080/vitero/services/" );
                 
     }
 
@@ -234,7 +246,7 @@
      */
     public BookingServiceStub() throws org.apache.axis2.AxisFault {
         
-                    this("http://192.168.1.54:8080/vitero/services/" );
+                    this("http://192.168.1.78:8080/vitero/services/" );
                 
     }
 
@@ -247,12 +259,65 @@
 
 
 
-        
+         
+                
+                /**
+                  * Auto generated method signature
+                  * 
+                  */
+                public void  updateBooking(
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest updateBookingRequest1
+
+                ) throws java.rmi.RemoteException
+                
+                
+                {
+                org.apache.axis2.context.MessageContext _messageContext = null;
+
+                
+                org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[1].getName());
+                _operationClient.getOptions().setAction("\"\"");
+                _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
+
+                
+              
+                  addPropertyToOperationClient(_operationClient,org.apache.axis2.description.WSDL2Constants.ATTR_WHTTP_QUERY_PARAMETER_SEPARATOR,"&");
+              
+                org.apache.axiom.soap.SOAPEnvelope env = null;
+                 _messageContext = new org.apache.axis2.context.MessageContext();
+
+                
+                                                    //Style is Doc.
+                                                    
+                                                                    
+                                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
+                                                                    updateBookingRequest1,
+                                                                    optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                    "updateBooking")));
+                                                                
+
+              //adding SOAP soap_headers
+         _serviceClient.addHeadersToEnvelope(env);
+                // create message context with that soap envelope
+
+            _messageContext.setEnvelope(env);
+
+            // add the message contxt to the operation client
+            _operationClient.addMessageContext(_messageContext);
+
+             _operationClient.execute(true);
+
+           
+              _messageContext.getTransportOut().getSender().cleanup(_messageContext); 
+           
+             return;
+           }
+            
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingListByGroupInFuture
-                     * @param getBookingListByGroupInFutureRequest1
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingListByGroupInFuture
+                     * @param getBookingListByGroupInFutureRequest2
                     
                      */
 
@@ -260,7 +325,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureResponse getBookingListByGroupInFuture(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureRequest getBookingListByGroupInFutureRequest1)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureRequest getBookingListByGroupInFutureRequest2)
                         
 
                     throws java.rmi.RemoteException
@@ -268,7 +333,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[1].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -287,7 +352,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByGroupInFutureRequest1,
+                                                    getBookingListByGroupInFutureRequest2,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByGroupInFuture")));
                                                 
@@ -370,19 +435,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingListByGroupInFuture
-                    * @param getBookingListByGroupInFutureRequest1
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingListByGroupInFuture
+                    * @param getBookingListByGroupInFutureRequest2
                 
                 */
                 public  void startgetBookingListByGroupInFuture(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureRequest getBookingListByGroupInFutureRequest1,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureRequest getBookingListByGroupInFutureRequest2,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[1].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -401,7 +466,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByGroupInFutureRequest1,
+                                                    getBookingListByGroupInFutureRequest2,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByGroupInFuture")));
                                                 
@@ -502,9 +567,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[1].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[2].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[1].setMessageReceiver(
+          _operations[2].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -516,8 +581,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#createBooking
-                     * @param createBookingRequest3
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#createBooking
+                     * @param createBookingRequest4
                     
                      */
 
@@ -525,7 +590,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.CreateBookingResponse createBooking(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.CreateBookingRequest createBookingRequest3)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.CreateBookingRequest createBookingRequest4)
                         
 
                     throws java.rmi.RemoteException
@@ -533,7 +598,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -552,7 +617,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    createBookingRequest3,
+                                                    createBookingRequest4,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "createBooking")));
                                                 
@@ -635,19 +700,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startcreateBooking
-                    * @param createBookingRequest3
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startcreateBooking
+                    * @param createBookingRequest4
                 
                 */
                 public  void startcreateBooking(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.CreateBookingRequest createBookingRequest3,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.CreateBookingRequest createBookingRequest4,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -666,7 +731,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    createBookingRequest3,
+                                                    createBookingRequest4,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "createBooking")));
                                                 
@@ -767,9 +832,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[2].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[3].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[2].setMessageReceiver(
+          _operations[3].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -781,8 +846,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingListByDate
-                     * @param getBookingListByDateRequest5
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingListByDate
+                     * @param getBookingListByDateRequest6
                     
                      */
 
@@ -790,7 +855,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByDateResponse getBookingListByDate(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByDateRequest getBookingListByDateRequest5)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByDateRequest getBookingListByDateRequest6)
                         
 
                     throws java.rmi.RemoteException
@@ -798,7 +863,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -817,7 +882,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByDateRequest5,
+                                                    getBookingListByDateRequest6,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByDate")));
                                                 
@@ -900,19 +965,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingListByDate
-                    * @param getBookingListByDateRequest5
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingListByDate
+                    * @param getBookingListByDateRequest6
                 
                 */
                 public  void startgetBookingListByDate(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByDateRequest getBookingListByDateRequest5,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByDateRequest getBookingListByDateRequest6,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -931,7 +996,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByDateRequest5,
+                                                    getBookingListByDateRequest6,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByDate")));
                                                 
@@ -1032,9 +1097,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[3].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[4].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[3].setMessageReceiver(
+          _operations[4].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -1046,8 +1111,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingListByUserAndDate
-                     * @param getBookingListByUserAndDateRequest7
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingListByUserAndDate
+                     * @param getBookingListByUserAndDateRequest8
                     
                      */
 
@@ -1055,7 +1120,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserAndDateResponse getBookingListByUserAndDate(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserAndDateRequest getBookingListByUserAndDateRequest7)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserAndDateRequest getBookingListByUserAndDateRequest8)
                         
 
                     throws java.rmi.RemoteException
@@ -1063,7 +1128,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1082,7 +1147,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByUserAndDateRequest7,
+                                                    getBookingListByUserAndDateRequest8,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByUserAndDate")));
                                                 
@@ -1165,19 +1230,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingListByUserAndDate
-                    * @param getBookingListByUserAndDateRequest7
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingListByUserAndDate
+                    * @param getBookingListByUserAndDateRequest8
                 
                 */
                 public  void startgetBookingListByUserAndDate(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserAndDateRequest getBookingListByUserAndDateRequest7,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserAndDateRequest getBookingListByUserAndDateRequest8,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1196,7 +1261,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByUserAndDateRequest7,
+                                                    getBookingListByUserAndDateRequest8,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByUserAndDate")));
                                                 
@@ -1297,9 +1362,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[4].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[5].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[4].setMessageReceiver(
+          _operations[5].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -1311,8 +1376,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingListByUserInFuture
-                     * @param getBookingListByUserInFutureRequest9
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingListByUserInFuture
+                     * @param getBookingListByUserInFutureRequest10
                     
                      */
 
@@ -1320,7 +1385,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserInFutureResponse getBookingListByUserInFuture(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserInFutureRequest getBookingListByUserInFutureRequest9)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserInFutureRequest getBookingListByUserInFutureRequest10)
                         
 
                     throws java.rmi.RemoteException
@@ -1328,7 +1393,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1347,7 +1412,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByUserInFutureRequest9,
+                                                    getBookingListByUserInFutureRequest10,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByUserInFuture")));
                                                 
@@ -1430,19 +1495,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingListByUserInFuture
-                    * @param getBookingListByUserInFutureRequest9
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingListByUserInFuture
+                    * @param getBookingListByUserInFutureRequest10
                 
                 */
                 public  void startgetBookingListByUserInFuture(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserInFutureRequest getBookingListByUserInFutureRequest9,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByUserInFutureRequest getBookingListByUserInFutureRequest10,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1461,7 +1526,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByUserInFutureRequest9,
+                                                    getBookingListByUserInFutureRequest10,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByUserInFuture")));
                                                 
@@ -1562,9 +1627,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[5].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[6].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[5].setMessageReceiver(
+          _operations[6].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -1576,8 +1641,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingTimeById
-                     * @param getBookingTimeByIdRequest11
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingTimeById
+                     * @param getBookingTimeByIdRequest12
                     
                      */
 
@@ -1585,7 +1650,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingTimeByIdResponse getBookingTimeById(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingTimeByIdRequest getBookingTimeByIdRequest11)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingTimeByIdRequest getBookingTimeByIdRequest12)
                         
 
                     throws java.rmi.RemoteException
@@ -1593,7 +1658,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1612,7 +1677,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingTimeByIdRequest11,
+                                                    getBookingTimeByIdRequest12,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingTimeById")));
                                                 
@@ -1695,19 +1760,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingTimeById
-                    * @param getBookingTimeByIdRequest11
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingTimeById
+                    * @param getBookingTimeByIdRequest12
                 
                 */
                 public  void startgetBookingTimeById(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingTimeByIdRequest getBookingTimeByIdRequest11,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingTimeByIdRequest getBookingTimeByIdRequest12,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1726,7 +1791,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingTimeByIdRequest11,
+                                                    getBookingTimeByIdRequest12,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingTimeById")));
                                                 
@@ -1827,9 +1892,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[6].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[7].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[6].setMessageReceiver(
+          _operations[7].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -1841,8 +1906,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingById
-                     * @param getBookingByIdRequest13
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingById
+                     * @param getBookingByIdRequest14
                     
                      */
 
@@ -1850,7 +1915,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByIdResponse getBookingById(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByIdRequest getBookingByIdRequest13)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByIdRequest getBookingByIdRequest14)
                         
 
                     throws java.rmi.RemoteException
@@ -1858,7 +1923,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[8].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1877,7 +1942,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingByIdRequest13,
+                                                    getBookingByIdRequest14,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingById")));
                                                 
@@ -1960,19 +2025,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingById
-                    * @param getBookingByIdRequest13
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingById
+                    * @param getBookingByIdRequest14
                 
                 */
                 public  void startgetBookingById(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByIdRequest getBookingByIdRequest13,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByIdRequest getBookingByIdRequest14,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[8].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -1991,7 +2056,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingByIdRequest13,
+                                                    getBookingByIdRequest14,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingById")));
                                                 
@@ -2092,9 +2157,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[7].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[8].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[7].setMessageReceiver(
+          _operations[8].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -2106,8 +2171,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#deleteBooking
-                     * @param deleteBookingRequest15
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#deleteBooking
+                     * @param deleteBookingRequest16
                     
                      */
 
@@ -2115,7 +2180,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.DeleteBookingResponse deleteBooking(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.DeleteBookingRequest deleteBookingRequest15)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.DeleteBookingRequest deleteBookingRequest16)
                         
 
                     throws java.rmi.RemoteException
@@ -2123,7 +2188,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[8].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[9].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -2142,7 +2207,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    deleteBookingRequest15,
+                                                    deleteBookingRequest16,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "deleteBooking")));
                                                 
@@ -2225,19 +2290,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startdeleteBooking
-                    * @param deleteBookingRequest15
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startdeleteBooking
+                    * @param deleteBookingRequest16
                 
                 */
                 public  void startdeleteBooking(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.DeleteBookingRequest deleteBookingRequest15,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.DeleteBookingRequest deleteBookingRequest16,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[8].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[9].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -2256,7 +2321,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    deleteBookingRequest15,
+                                                    deleteBookingRequest16,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "deleteBooking")));
                                                 
@@ -2357,9 +2422,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[8].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[9].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[8].setMessageReceiver(
+          _operations[9].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -2371,8 +2436,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingByBookingTimeId
-                     * @param getBookingByBookingTimeIdRequest17
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingByBookingTimeId
+                     * @param getBookingByBookingTimeIdRequest18
                     
                      */
 
@@ -2380,7 +2445,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByBookingTimeIdResponse getBookingByBookingTimeId(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByBookingTimeIdRequest getBookingByBookingTimeIdRequest17)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByBookingTimeIdRequest getBookingByBookingTimeIdRequest18)
                         
 
                     throws java.rmi.RemoteException
@@ -2388,7 +2453,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[9].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[10].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -2407,7 +2472,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingByBookingTimeIdRequest17,
+                                                    getBookingByBookingTimeIdRequest18,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingByBookingTimeId")));
                                                 
@@ -2490,19 +2555,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingByBookingTimeId
-                    * @param getBookingByBookingTimeIdRequest17
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingByBookingTimeId
+                    * @param getBookingByBookingTimeIdRequest18
                 
                 */
                 public  void startgetBookingByBookingTimeId(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByBookingTimeIdRequest getBookingByBookingTimeIdRequest17,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingByBookingTimeIdRequest getBookingByBookingTimeIdRequest18,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[9].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[10].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -2521,7 +2586,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingByBookingTimeIdRequest17,
+                                                    getBookingByBookingTimeIdRequest18,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingByBookingTimeId")));
                                                 
@@ -2622,9 +2687,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[9].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[10].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[9].setMessageReceiver(
+          _operations[10].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -2636,8 +2701,8 @@
                     /**
                      * Auto generated method signature
                      * 
-                     * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#getBookingListByGroupAndDate
-                     * @param getBookingListByGroupAndDateRequest19
+                     * @see org.olat.modules.vitero.manager.stubs.BookingService#getBookingListByGroupAndDate
+                     * @param getBookingListByGroupAndDateRequest20
                     
                      */
 
@@ -2645,7 +2710,7 @@
 
                             public  org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupAndDateResponse getBookingListByGroupAndDate(
 
-                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupAndDateRequest getBookingListByGroupAndDateRequest19)
+                            org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupAndDateRequest getBookingListByGroupAndDateRequest20)
                         
 
                     throws java.rmi.RemoteException
@@ -2653,7 +2718,7 @@
                     {
               org.apache.axis2.context.MessageContext _messageContext = null;
               try{
-               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[10].getName());
+               org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[11].getName());
               _operationClient.getOptions().setAction("\"\"");
               _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -2672,7 +2737,7 @@
                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByGroupAndDateRequest19,
+                                                    getBookingListByGroupAndDateRequest20,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByGroupAndDate")));
                                                 
@@ -2755,19 +2820,19 @@
                 /**
                 * Auto generated method signature for Asynchronous Invocations
                 * 
-                * @see org.olat.modules.vc.provider.vitero.stubs.BookingService#startgetBookingListByGroupAndDate
-                    * @param getBookingListByGroupAndDateRequest19
+                * @see org.olat.modules.vitero.manager.stubs.BookingService#startgetBookingListByGroupAndDate
+                    * @param getBookingListByGroupAndDateRequest20
                 
                 */
                 public  void startgetBookingListByGroupAndDate(
 
-                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupAndDateRequest getBookingListByGroupAndDateRequest19,
+                 org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupAndDateRequest getBookingListByGroupAndDateRequest20,
 
                   final org.olat.modules.vitero.manager.stubs.BookingServiceCallbackHandler callback)
 
                 throws java.rmi.RemoteException{
 
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[10].getName());
+              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[11].getName());
              _operationClient.getOptions().setAction("\"\"");
              _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
@@ -2786,7 +2851,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    getBookingListByGroupAndDateRequest19,
+                                                    getBookingListByGroupAndDateRequest20,
                                                     optimizeContent(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
                                                     "getBookingListByGroupAndDate")));
                                                 
@@ -2887,9 +2952,9 @@
                         
 
           org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[10].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
+        if ( _operations[11].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
            _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[10].setMessageReceiver(
+          _operations[11].setMessageReceiver(
                     _callbackReceiver);
         }
 
@@ -2929,7 +2994,7 @@
         }
         return false;
     }
-     //http://192.168.1.54:8080/vitero/services/
+     //http://192.168.1.78:8080/vitero/services/
         public static class GetBookingListByGroupInFutureRequest
         implements org.apache.axis2.databinding.ADBBean{
         
@@ -8943,6 +9008,793 @@
         }
            
           
+        public static class UpdateBookingRequest
+        implements org.apache.axis2.databinding.ADBBean{
+        
+                public static final javax.xml.namespace.QName MY_QNAME = new javax.xml.namespace.QName(
+                "http://www.vitero.de/schema/booking",
+                "updateBookingRequest",
+                "ns1");
+
+            
+
+        private static java.lang.String generatePrefix(java.lang.String namespace) {
+            if(namespace.equals("http://www.vitero.de/schema/booking")){
+                return "ns1";
+            }
+            return org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
+        }
+
+        
+
+                        /**
+                        * field for Bookingid
+                        */
+
+                        
+                                    protected int localBookingid ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return int
+                           */
+                           public  int getBookingid(){
+                               return localBookingid;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Bookingid
+                               */
+                               public void setBookingid(int param){
+                            
+                                            this.localBookingid=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for Start
+                        */
+
+                        
+                                    protected java.lang.String localStart ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getStart(){
+                               return localStart;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Start
+                               */
+                               public void setStart(java.lang.String param){
+                            
+                                            this.localStart=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for End
+                        */
+
+                        
+                                    protected java.lang.String localEnd ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getEnd(){
+                               return localEnd;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param End
+                               */
+                               public void setEnd(java.lang.String param){
+                            
+                                            this.localEnd=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for Startbuffer
+                        */
+
+                        
+                                    protected int localStartbuffer ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return int
+                           */
+                           public  int getStartbuffer(){
+                               return localStartbuffer;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Startbuffer
+                               */
+                               public void setStartbuffer(int param){
+                            
+                                            this.localStartbuffer=param;
+                                    
+
+                               }
+                            
+
+                        /**
+                        * field for Endbuffer
+                        */
+
+                        
+                                    protected int localEndbuffer ;
+                                
+
+                           /**
+                           * Auto generated getter method
+                           * @return int
+                           */
+                           public  int getEndbuffer(){
+                               return localEndbuffer;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Endbuffer
+                               */
+                               public void setEndbuffer(int param){
+                            
+                                            this.localEndbuffer=param;
+                                    
+
+                               }
+                            
+
+     /**
+     * isReaderMTOMAware
+     * @return true if the reader supports MTOM
+     */
+   public static boolean isReaderMTOMAware(javax.xml.stream.XMLStreamReader reader) {
+        boolean isReaderMTOMAware = false;
+        
+        try{
+          isReaderMTOMAware = java.lang.Boolean.TRUE.equals(reader.getProperty(org.apache.axiom.om.OMConstants.IS_DATA_HANDLERS_AWARE));
+        }catch(java.lang.IllegalArgumentException e){
+          isReaderMTOMAware = false;
+        }
+        return isReaderMTOMAware;
+   }
+     
+     
+        /**
+        *
+        * @param parentQName
+        * @param factory
+        * @return org.apache.axiom.om.OMElement
+        */
+       public org.apache.axiom.om.OMElement getOMElement (
+               final javax.xml.namespace.QName parentQName,
+               final org.apache.axiom.om.OMFactory factory) throws org.apache.axis2.databinding.ADBException{
+
+
+        
+                org.apache.axiom.om.OMDataSource dataSource =
+                       new org.apache.axis2.databinding.ADBDataSource(this,MY_QNAME){
+
+                 public void serialize(org.apache.axis2.databinding.utils.writer.MTOMAwareXMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+                       UpdateBookingRequest.this.serialize(MY_QNAME,factory,xmlWriter);
+                 }
+               };
+               return new org.apache.axiom.om.impl.llom.OMSourcedElementImpl(
+               MY_QNAME,factory,dataSource);
+            
+       }
+
+         public void serialize(final javax.xml.namespace.QName parentQName,
+                                       final org.apache.axiom.om.OMFactory factory,
+                                       org.apache.axis2.databinding.utils.writer.MTOMAwareXMLStreamWriter xmlWriter)
+                                throws javax.xml.stream.XMLStreamException, org.apache.axis2.databinding.ADBException{
+                           serialize(parentQName,factory,xmlWriter,false);
+         }
+
+         public void serialize(final javax.xml.namespace.QName parentQName,
+                               final org.apache.axiom.om.OMFactory factory,
+                               org.apache.axis2.databinding.utils.writer.MTOMAwareXMLStreamWriter xmlWriter,
+                               boolean serializeType)
+            throws javax.xml.stream.XMLStreamException, org.apache.axis2.databinding.ADBException{
+            
+                
+
+
+                java.lang.String prefix = null;
+                java.lang.String namespace = null;
+                
+
+                    prefix = parentQName.getPrefix();
+                    namespace = parentQName.getNamespaceURI();
+
+                    if ((namespace != null) && (namespace.trim().length() > 0)) {
+                        java.lang.String writerPrefix = xmlWriter.getPrefix(namespace);
+                        if (writerPrefix != null) {
+                            xmlWriter.writeStartElement(namespace, parentQName.getLocalPart());
+                        } else {
+                            if (prefix == null) {
+                                prefix = generatePrefix(namespace);
+                            }
+
+                            xmlWriter.writeStartElement(prefix, parentQName.getLocalPart(), namespace);
+                            xmlWriter.writeNamespace(prefix, namespace);
+                            xmlWriter.setPrefix(prefix, namespace);
+                        }
+                    } else {
+                        xmlWriter.writeStartElement(parentQName.getLocalPart());
+                    }
+                
+                  if (serializeType){
+               
+
+                   java.lang.String namespacePrefix = registerPrefix(xmlWriter,"http://www.vitero.de/schema/booking");
+                   if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)){
+                       writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
+                           namespacePrefix+":updateBookingRequest",
+                           xmlWriter);
+                   } else {
+                       writeAttribute("xsi","http://www.w3.org/2001/XMLSchema-instance","type",
+                           "updateBookingRequest",
+                           xmlWriter);
+                   }
+
+               
+                   }
+               
+                                    namespace = "http://www.vitero.de/schema/booking";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"bookingid", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"bookingid");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("bookingid");
+                                    }
+                                
+                                               if (localBookingid==java.lang.Integer.MIN_VALUE) {
+                                           
+                                                         throw new org.apache.axis2.databinding.ADBException("bookingid cannot be null!!");
+                                                      
+                                               } else {
+                                                    xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localBookingid));
+                                               }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                                    namespace = "http://www.vitero.de/schema/booking";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"start", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"start");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("start");
+                                    }
+                                
+
+                                          if (localStart==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new org.apache.axis2.databinding.ADBException("start cannot be null!!");
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localStart);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                                    namespace = "http://www.vitero.de/schema/booking";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"end", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"end");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("end");
+                                    }
+                                
+
+                                          if (localEnd==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new org.apache.axis2.databinding.ADBException("end cannot be null!!");
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localEnd);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                                    namespace = "http://www.vitero.de/schema/booking";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"startbuffer", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"startbuffer");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("startbuffer");
+                                    }
+                                
+                                               if (localStartbuffer==java.lang.Integer.MIN_VALUE) {
+                                           
+                                                         throw new org.apache.axis2.databinding.ADBException("startbuffer cannot be null!!");
+                                                      
+                                               } else {
+                                                    xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStartbuffer));
+                                               }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                                    namespace = "http://www.vitero.de/schema/booking";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"endbuffer", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"endbuffer");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("endbuffer");
+                                    }
+                                
+                                               if (localEndbuffer==java.lang.Integer.MIN_VALUE) {
+                                           
+                                                         throw new org.apache.axis2.databinding.ADBException("endbuffer cannot be null!!");
+                                                      
+                                               } else {
+                                                    xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEndbuffer));
+                                               }
+                                    
+                                   xmlWriter.writeEndElement();
+                             
+                    xmlWriter.writeEndElement();
+               
+
+        }
+
+         /**
+          * Util method to write an attribute with the ns prefix
+          */
+          private void writeAttribute(java.lang.String prefix,java.lang.String namespace,java.lang.String attName,
+                                      java.lang.String attValue,javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException{
+              if (xmlWriter.getPrefix(namespace) == null) {
+                       xmlWriter.writeNamespace(prefix, namespace);
+                       xmlWriter.setPrefix(prefix, namespace);
+
+              }
+
+              xmlWriter.writeAttribute(namespace,attName,attValue);
+
+         }
+
+        /**
+          * Util method to write an attribute without the ns prefix
+          */
+          private void writeAttribute(java.lang.String namespace,java.lang.String attName,
+                                      java.lang.String attValue,javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException{
+                if (namespace.equals(""))
+              {
+                  xmlWriter.writeAttribute(attName,attValue);
+              }
+              else
+              {
+                  registerPrefix(xmlWriter, namespace);
+                  xmlWriter.writeAttribute(namespace,attName,attValue);
+              }
+          }
+
+
+           /**
+             * Util method to write an attribute without the ns prefix
+             */
+            private void writeQNameAttribute(java.lang.String namespace, java.lang.String attName,
+                                             javax.xml.namespace.QName qname, javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+
+                java.lang.String attributeNamespace = qname.getNamespaceURI();
+                java.lang.String attributePrefix = xmlWriter.getPrefix(attributeNamespace);
+                if (attributePrefix == null) {
+                    attributePrefix = registerPrefix(xmlWriter, attributeNamespace);
+                }
+                java.lang.String attributeValue;
+                if (attributePrefix.trim().length() > 0) {
+                    attributeValue = attributePrefix + ":" + qname.getLocalPart();
+                } else {
+                    attributeValue = qname.getLocalPart();
+                }
+
+                if (namespace.equals("")) {
+                    xmlWriter.writeAttribute(attName, attributeValue);
+                } else {
+                    registerPrefix(xmlWriter, namespace);
+                    xmlWriter.writeAttribute(namespace, attName, attributeValue);
+                }
+            }
+        /**
+         *  method to handle Qnames
+         */
+
+        private void writeQName(javax.xml.namespace.QName qname,
+                                javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+            java.lang.String namespaceURI = qname.getNamespaceURI();
+            if (namespaceURI != null) {
+                java.lang.String prefix = xmlWriter.getPrefix(namespaceURI);
+                if (prefix == null) {
+                    prefix = generatePrefix(namespaceURI);
+                    xmlWriter.writeNamespace(prefix, namespaceURI);
+                    xmlWriter.setPrefix(prefix,namespaceURI);
+                }
+
+                if (prefix.trim().length() > 0){
+                    xmlWriter.writeCharacters(prefix + ":" + org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
+                } else {
+                    // i.e this is the default namespace
+                    xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
+                }
+
+            } else {
+                xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qname));
+            }
+        }
+
+        private void writeQNames(javax.xml.namespace.QName[] qnames,
+                                 javax.xml.stream.XMLStreamWriter xmlWriter) throws javax.xml.stream.XMLStreamException {
+
+            if (qnames != null) {
+                // we have to store this data until last moment since it is not possible to write any
+                // namespace data after writing the charactor data
+                java.lang.StringBuffer stringToWrite = new java.lang.StringBuffer();
+                java.lang.String namespaceURI = null;
+                java.lang.String prefix = null;
+
+                for (int i = 0; i < qnames.length; i++) {
+                    if (i > 0) {
+                        stringToWrite.append(" ");
+                    }
+                    namespaceURI = qnames[i].getNamespaceURI();
+                    if (namespaceURI != null) {
+                        prefix = xmlWriter.getPrefix(namespaceURI);
+                        if ((prefix == null) || (prefix.length() == 0)) {
+                            prefix = generatePrefix(namespaceURI);
+                            xmlWriter.writeNamespace(prefix, namespaceURI);
+                            xmlWriter.setPrefix(prefix,namespaceURI);
+                        }
+
+                        if (prefix.trim().length() > 0){
+                            stringToWrite.append(prefix).append(":").append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
+                        } else {
+                            stringToWrite.append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
+                        }
+                    } else {
+                        stringToWrite.append(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(qnames[i]));
+                    }
+                }
+                xmlWriter.writeCharacters(stringToWrite.toString());
+            }
+
+        }
+
+
+         /**
+         * Register a namespace prefix
+         */
+         private java.lang.String registerPrefix(javax.xml.stream.XMLStreamWriter xmlWriter, java.lang.String namespace) throws javax.xml.stream.XMLStreamException {
+                java.lang.String prefix = xmlWriter.getPrefix(namespace);
+
+                if (prefix == null) {
+                    prefix = generatePrefix(namespace);
+
+                    while (xmlWriter.getNamespaceContext().getNamespaceURI(prefix) != null) {
+                        prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
+                    }
+
+                    xmlWriter.writeNamespace(prefix, namespace);
+                    xmlWriter.setPrefix(prefix, namespace);
+                }
+
+                return prefix;
+            }
+
+
+  
+        /**
+        * databinding method to get an XML representation of this object
+        *
+        */
+        public javax.xml.stream.XMLStreamReader getPullParser(javax.xml.namespace.QName qName)
+                    throws org.apache.axis2.databinding.ADBException{
+
+
+        
+                 java.util.ArrayList elementList = new java.util.ArrayList();
+                 java.util.ArrayList attribList = new java.util.ArrayList();
+
+                
+                                      elementList.add(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                      "bookingid"));
+                                 
+                                elementList.add(
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localBookingid));
+                            
+                                      elementList.add(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                      "start"));
+                                 
+                                        if (localStart != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStart));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("start cannot be null!!");
+                                        }
+                                    
+                                      elementList.add(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                      "end"));
+                                 
+                                        if (localEnd != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEnd));
+                                        } else {
+                                           throw new org.apache.axis2.databinding.ADBException("end cannot be null!!");
+                                        }
+                                    
+                                      elementList.add(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                      "startbuffer"));
+                                 
+                                elementList.add(
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStartbuffer));
+                            
+                                      elementList.add(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                      "endbuffer"));
+                                 
+                                elementList.add(
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEndbuffer));
+                            
+
+                return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
+            
+            
+
+        }
+
+  
+
+     /**
+      *  Factory class that keeps the parse method
+      */
+    public static class Factory{
+
+        
+        
+
+        /**
+        * static method to create the object
+        * Precondition:  If this object is an element, the current or next start element starts this object and any intervening reader events are ignorable
+        *                If this object is not an element, it is a complex type and the reader is at the event just after the outer start element
+        * Postcondition: If this object is an element, the reader is positioned at its end element
+        *                If this object is a complex type, the reader is positioned at the end element of its outer element
+        */
+        public static UpdateBookingRequest parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            UpdateBookingRequest object =
+                new UpdateBookingRequest();
+
+            int event;
+            java.lang.String nillableValue = null;
+            java.lang.String prefix ="";
+            java.lang.String namespaceuri ="";
+            try {
+                
+                while (!reader.isStartElement() && !reader.isEndElement())
+                    reader.next();
+
+                
+                if (reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance","type")!=null){
+                  java.lang.String fullTypeName = reader.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance",
+                        "type");
+                  if (fullTypeName!=null){
+                    java.lang.String nsPrefix = null;
+                    if (fullTypeName.indexOf(":") > -1){
+                        nsPrefix = fullTypeName.substring(0,fullTypeName.indexOf(":"));
+                    }
+                    nsPrefix = nsPrefix==null?"":nsPrefix;
+
+                    java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
+                    
+                            if (!"updateBookingRequest".equals(type)){
+                                //find namespace for the prefix
+                                java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
+                                return (UpdateBookingRequest)ExtensionMapper.getTypeObject(
+                                     nsUri,type,reader);
+                              }
+                        
+
+                  }
+                
+
+                }
+
+                
+
+                
+                // Note all attributes that were handled. Used to differ normal attributes
+                // from anyAttributes.
+                java.util.Vector handledAttributes = new java.util.Vector();
+                
+
+                 
+                    
+                    reader.next();
+                   
+                while(!reader.isEndElement()) {
+                    if (reader.isStartElement() ){
+                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://www.vitero.de/schema/booking","bookingid").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setBookingid(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToInt(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                        else
+                                    
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://www.vitero.de/schema/booking","start").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setStart(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                        else
+                                    
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://www.vitero.de/schema/booking","end").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setEnd(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                        else
+                                    
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://www.vitero.de/schema/booking","startbuffer").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setStartbuffer(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToInt(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                        else
+                                    
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://www.vitero.de/schema/booking","endbuffer").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setEndbuffer(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToInt(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                             else{
+                                        // A start element we are not expecting indicates an invalid parameter was passed
+                                        throw new org.apache.axis2.databinding.ADBException("Unexpected subelement " + reader.getLocalName());
+                             }
+                          
+                             } else {
+                                reader.next();
+                             }  
+                           }  // end of while loop
+                        
+
+
+
+            } catch (javax.xml.stream.XMLStreamException e) {
+                throw new java.lang.Exception(e);
+            }
+
+            return object;
+        }
+
+        }//end of factory class
+
+        
+
+        }
+           
+          
         public static class GetBookingListByUserAndDateRequest
         implements org.apache.axis2.databinding.ADBBean{
         
@@ -12921,6 +13773,51 @@
                                }
                             
 
+                        /**
+                        * field for Customerid
+                        */
+
+                        
+                                    protected int localCustomerid ;
+                                
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localCustomeridTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return int
+                           */
+                           public  int getCustomerid(){
+                               return localCustomerid;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Customerid
+                               */
+                               public void setCustomerid(int param){
+                            
+                                       // setting primitive attribute tracker to true
+                                       
+                                               if (param==java.lang.Integer.MIN_VALUE) {
+                                           localCustomeridTracker = false;
+                                              
+                                       } else {
+                                          localCustomeridTracker = true;
+                                       }
+                                   
+                                            this.localCustomerid=param;
+                                    
+
+                               }
+                            
+
      /**
      * isReaderMTOMAware
      * @return true if the reader supports MTOM
@@ -13119,6 +14016,35 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
+                             } if (localCustomeridTracker){
+                                    namespace = "http://www.vitero.de/schema/booking";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = generatePrefix(namespace);
+
+                                            xmlWriter.writeStartElement(prefix,"customerid", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"customerid");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("customerid");
+                                    }
+                                
+                                               if (localCustomerid==java.lang.Integer.MIN_VALUE) {
+                                           
+                                                         throw new org.apache.axis2.databinding.ADBException("customerid cannot be null!!");
+                                                      
+                                               } else {
+                                                    xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCustomerid));
+                                               }
+                                    
+                                   xmlWriter.writeEndElement();
                              }
                     xmlWriter.writeEndElement();
                
@@ -13308,7 +14234,13 @@
                                         } else {
                                            throw new org.apache.axis2.databinding.ADBException("timezone cannot be null!!");
                                         }
-                                    }
+                                    } if (localCustomeridTracker){
+                                      elementList.add(new javax.xml.namespace.QName("http://www.vitero.de/schema/booking",
+                                                                      "customerid"));
+                                 
+                                elementList.add(
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCustomerid));
+                            }
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
             
@@ -13419,6 +14351,19 @@
                                     
                                               object.setTimezone(
                                                     org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                                
+                                        else
+                                    
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://www.vitero.de/schema/booking","customerid").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setCustomerid(
+                                                    org.apache.axis2.databinding.utils.ConverterUtil.convertToInt(content));
                                               
                                         reader.next();
                                     
@@ -22953,6 +23898,20 @@
 
             }
         
+            private  org.apache.axiom.om.OMElement  toOM(org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest param, boolean optimizeContent)
+            throws org.apache.axis2.AxisFault {
+
+            
+                        try{
+                             return param.getOMElement(org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest.MY_QNAME,
+                                          org.apache.axiom.om.OMAbstractFactory.getOMFactory());
+                        } catch(org.apache.axis2.databinding.ADBException e){
+                            throw org.apache.axis2.AxisFault.makeFault(e);
+                        }
+                    
+
+            }
+        
             private  org.apache.axiom.om.OMElement  toOM(org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureRequest param, boolean optimizeContent)
             throws org.apache.axis2.AxisFault {
 
@@ -23234,6 +24193,27 @@
             }
         
                                     
+                                        private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest param, boolean optimizeContent)
+                                        throws org.apache.axis2.AxisFault{
+
+                                             
+                                                    try{
+
+                                                            org.apache.axiom.soap.SOAPEnvelope emptyEnvelope = factory.getDefaultEnvelope();
+                                                            emptyEnvelope.getBody().addChild(param.getOMElement(org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest.MY_QNAME,factory));
+                                                            return emptyEnvelope;
+                                                        } catch(org.apache.axis2.databinding.ADBException e){
+                                                            throw org.apache.axis2.AxisFault.makeFault(e);
+                                                        }
+                                                
+
+                                        }
+                                
+                             
+                             /* methods to provide back word compatibility */
+
+                             
+                                    
                                         private  org.apache.axiom.soap.SOAPEnvelope toEnvelope(org.apache.axiom.soap.SOAPFactory factory, org.olat.modules.vitero.manager.stubs.BookingServiceStub.GetBookingListByGroupInFutureRequest param, boolean optimizeContent)
                                         throws org.apache.axis2.AxisFault{
 
@@ -23463,6 +24443,13 @@
                 if (org.olat.modules.vitero.manager.stubs.BookingServiceStub.SuccessResponse.class.equals(type)){
                 
                            return org.olat.modules.vitero.manager.stubs.BookingServiceStub.SuccessResponse.Factory.parse(param.getXMLStreamReaderWithoutCaching());
+                    
+
+                }
+           
+                if (org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest.class.equals(type)){
+                
+                           return org.olat.modules.vitero.manager.stubs.BookingServiceStub.UpdateBookingRequest.Factory.parse(param.getXMLStreamReaderWithoutCaching());
                     
 
                 }

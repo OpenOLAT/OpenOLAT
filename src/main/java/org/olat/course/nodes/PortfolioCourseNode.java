@@ -28,8 +28,12 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -116,8 +120,18 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		PortfolioCourseNodeRunController portfolioCtrl = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, ne, this);
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, portfolioCtrl, this, "o_ep_icon");
+		Controller controller;
+		// OO-136 : do not allow guests to access portfolio task
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isGuestOnly()) {
+			Translator trans =  Util.createPackageTranslator(PortfolioCourseNode.class, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else {
+			controller = new PortfolioCourseNodeRunController(ureq, wControl, userCourseEnv, ne, this);
+		}
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ep_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

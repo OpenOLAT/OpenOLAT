@@ -85,7 +85,6 @@ public class ViteroBookingEditController extends FormBasicController {
 		List<Integer> sizes;
 		try {
 			sizes = viteroManager.getLicencedRoomSizes();
-			
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 			sizes = Collections.emptyList();
@@ -141,7 +140,7 @@ public class ViteroBookingEditController extends FormBasicController {
 		
 		//room size
 		roomSizeEl = uifactory.addDropdownSingleselect("booking.roomSize", formLayout, roomSizes, roomSizes, null);
-		if(booking.getRoomSize() > 0) {
+		if(booking.getRoomSize() > 0 && isRoomSizeAvailable(booking.getRoomSize())) {
 			roomSizeEl.select(Integer.toString(booking.getRoomSize()), true);
 		}
 		roomSizeEl.setEnabled(editable);
@@ -155,6 +154,16 @@ public class ViteroBookingEditController extends FormBasicController {
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("ok", buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+	}
+	
+	private boolean isRoomSizeAvailable(int roomSize) {
+		String roomSizeStr = Integer.toString(booking.getRoomSize());
+		for(int i=roomSizes.length; i-->0; ) {
+			if(roomSizes[i].equals(roomSizeStr)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override

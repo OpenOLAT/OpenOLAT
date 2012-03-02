@@ -255,6 +255,13 @@
                 </bean>
                 -->
         </property>
+		<property name="userDisplayNameCreator">
+				<!-- Implementation to display "firstname lastname" 
+                <bean id="org.olat.user.UserDisplayNameCreator" class="org.olat.user.UserDisplayNameCreator" />
+				-->
+                <!-- Implementation to display "lastname, firstname" -->
+                <bean id="org.olat.user.UserDisplayNameCreator" class="org.olat.user.UserDisplayNameCreatorLastnameFirst" />
+        </property>
 </bean>
 
 <bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager">

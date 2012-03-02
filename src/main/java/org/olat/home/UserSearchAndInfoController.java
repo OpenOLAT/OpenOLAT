@@ -40,6 +40,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.user.HomePageConfigManager;
 import org.olat.user.HomePageConfigManagerImpl;
 import org.olat.user.UserInfoMainController;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -78,7 +79,8 @@ public class UserSearchAndInfoController extends BasicController {
 					DTab dt = dts.getDTab(ores);
 					if (dt == null) {
 						// does not yet exist -> create and add
-						dt = dts.createDTab(ores, null, chosenIdentity.getName());
+						String name = UserManager.getInstance().getUserDisplayName(chosenIdentity.getUser());
+						dt = dts.createDTab(ores, null, name);
 						if (dt == null) return;
 						UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), chosenIdentity);
 						dt.setController(uimc);

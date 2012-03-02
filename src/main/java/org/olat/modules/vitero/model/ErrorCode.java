@@ -31,12 +31,15 @@ package org.olat.modules.vitero.model;
 public enum ErrorCode {
 	remoteException(-2, "error.remoteException"),
 	unkown(-1, "error.unkown"),
+	unsufficientRights(4, "error.unkown"),
 	userDoesntExist(53, "error.userDoesntExist"),
+	customerDoesntExist(101,"error.customerDoesntExist"),
 	userNotAttachedToCustomer(103, "error.userNotAttachedToCustomer"),
 	groupDoesntExist(151, "error.groupDoesntExist"),
 	userNotAssignedToGroup(153, "error.userNotAssignedToGroup"),
 	invalidAttribut(303, "error.invalidAttribut"),//invalid attribute or ids <= 0
 	invalidTimezone(304, "error.invalidTimezone"),
+	noAdministrationPro(307, "error.noAdministrationPro"),
 	bookingCollision(501, "error.bookingCollision"),
 	moduleCollision(502, "error.moduleCollision"),
 	bookingInPast(505, "error.bookingInPast"),

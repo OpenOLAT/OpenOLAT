@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.olat.admin.sysinfo.InfoMessageManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -207,6 +208,12 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		String infomsgNode = mrg.getInfoMessageNodeOnly();
 		if (infomsgNode != null && infomsgNode.length() > 0)
 			contentBorn.contextPut("infomsgNode", infomsgNode);
+		
+		
+		// add additional login intro message for custom content
+		String customMsg = translate("login.custommsg");
+		if(!StringUtils.isBlank(customMsg))
+			contentBorn.contextPut("logincustommsg",customMsg);
 		
 		return contentBorn;
 	}

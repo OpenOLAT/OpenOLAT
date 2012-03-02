@@ -58,7 +58,6 @@ import org.olat.modules.vitero.manager.stubs.BookingServiceStub;
 import org.olat.modules.vitero.manager.stubs.BookingServiceStub.Booking;
 import org.olat.modules.vitero.manager.stubs.BookingServiceStub.Bookinglist;
 import org.olat.modules.vitero.manager.stubs.BookingServiceStub.Bookingtype;
-import org.olat.modules.vitero.manager.stubs.CustomerServiceStub;
 import org.olat.modules.vitero.manager.stubs.GroupServiceStub;
 import org.olat.modules.vitero.manager.stubs.GroupServiceStub.Completegrouptype;
 import org.olat.modules.vitero.manager.stubs.LicenceServiceStub;
@@ -73,7 +72,6 @@ import org.olat.modules.vitero.manager.stubs.UserServiceStub.Usertype;
 import org.olat.modules.vitero.model.ErrorCode;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.modules.vitero.model.ViteroBooking;
-import org.olat.modules.vitero.model.ViteroCustomer;
 import org.olat.modules.vitero.model.ViteroGroup;
 import org.olat.modules.vitero.model.ViteroGroupRoles;
 import org.olat.modules.vitero.model.ViteroStatus;
@@ -142,6 +140,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 			dateRequest.setStart(format(start));
 			dateRequest.setEnd(format(end));
 			dateRequest.setTimezone(viteroModule.getTimeZoneId());
+			dateRequest.setCustomerid(viteroModule.getCustomerId());
 			BookingServiceStub.GetBookingListByDateResponse response = bookingWs.getBookingListByDate(dateRequest);
 			
 			BookingServiceStub.Bookinglist bookingList = response.getGetBookingListByDateResponse();
@@ -182,49 +181,6 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		String url = getStartPoint(sessionCode);
 		return url;
 	}
-	
-	public List<ViteroCustomer> getCustomers() 
-	throws VmsNotAvailableException {
-		try {
-			CustomerServiceStub customerWs = getCustomerWebService();
-			CustomerServiceStub.GetCustomerListRequest listRequest = new CustomerServiceStub.GetCustomerListRequest();
-			listRequest.setGetCustomerListRequest(new EmptyOMElement());
-			CustomerServiceStub.GetCustomerListResponse response = customerWs.getCustomerList(listRequest);
-			CustomerServiceStub.Customertype[] customerTypes = response.getCustomer();
-			return convert(customerTypes);
-		} catch (AxisFault f) {
-			ErrorCode code = handleAxisFault(f);
-			switch(code) {
-				default: logAxisError("Cannot get the list of customers.", f);
-			}
-			return Collections.emptyList();
-		} catch (RemoteException e) {
-			logError("Cannot get the list of customers.", e);
-			return Collections.emptyList();
-		}
-	}
-	
-	public List<ViteroCustomer> getCustomers(String url, String login, String password) 
-			throws VmsNotAvailableException {
-				try {
-					CustomerServiceStub customerWs = new CustomerServiceStub(url + "/services");
-					SecurityHeader.addAdminSecurityHeader(login, password, customerWs);
-					CustomerServiceStub.GetCustomerListRequest listRequest = new CustomerServiceStub.GetCustomerListRequest();
-					listRequest.setGetCustomerListRequest(new EmptyOMElement());
-					CustomerServiceStub.GetCustomerListResponse response = customerWs.getCustomerList(listRequest);
-					CustomerServiceStub.Customertype[] customerTypes = response.getCustomer();
-					return convert(customerTypes);
-				} catch (AxisFault f) {
-					ErrorCode code = handleAxisFault(f);
-					switch(code) {
-						default: logAxisError("Cannot get the list of customers.", f);
-					}
-					return Collections.emptyList();
-				} catch (RemoteException e) {
-					logError("Cannot get the list of customers.", e);
-					return Collections.emptyList();
-				}
-			}
 	
 	/**
 	 * Create a session code with a one hour expiration date
@@ -1045,7 +1001,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	throws VmsNotAvailableException {
 		int userId = getVmsUserId(identity, false);
 		if(userId > 0) {
-			Booking[] bookings = getBookingInFutureByCustomerId(userId);
+			Booking[] bookings = getBookingInFutureByUserId(userId);
 			return convert(bookings);
 		}
 		return Collections.emptyList();
@@ -1075,7 +1031,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		return bookings;
 	}
 	
-	protected Booking[] getBookingInFutureByCustomerId(int userId)
+	protected Booking[] getBookingInFutureByUserId(int userId)
 	throws VmsNotAvailableException {
 		try {
 			BookingServiceStub bookingWs = getBookingWebService();
@@ -1141,22 +1097,21 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	public boolean checkConnection(String url, String login, String password, int customerId)
 	throws VmsNotAvailableException {
 		try {
-			CustomerServiceStub customerWs = new CustomerServiceStub(url + "/services");
-			SecurityHeader.addAdminSecurityHeader(login, password, customerWs);
+			LicenceServiceStub licenceWs = new LicenceServiceStub(url + "/services");
+			SecurityHeader.addAdminSecurityHeader(login, password, licenceWs);
 			
-			CustomerServiceStub.GetCustomerRequest cRequest = new CustomerServiceStub.GetCustomerRequest();
-			CustomerServiceStub.Customerid id = new CustomerServiceStub.Customerid();
-			id.setCustomerid(customerId);
-			cRequest.setGetCustomerRequest(id);
-			CustomerServiceStub.GetCustomerResponse response = customerWs.getCustomer(cRequest);
-			if(response == null) return false;
-			CustomerServiceStub.Customer customer = response.getGetCustomerResponse();
-			if(customer == null) return false;
-			CustomerServiceStub.Customertype customerType = customer.getCustomer();
-			if(customerType == null) return false;
-			return customerType.getId() > -1;
+			LicenceServiceStub.GetModulesForCustomerRequest licenceRequest = new LicenceServiceStub.GetModulesForCustomerRequest();
+			licenceRequest.setCustomerid(viteroModule.getCustomerId());
+			
+			LicenceServiceStub.GetModulesForCustomerResponse response = licenceWs.getModulesForCustomer(licenceRequest);
+			LicenceServiceStub.Modulestype modules = response.getGetModulesForCustomerResponse();
+			LicenceServiceStub.Modules_type0 modulesType = modules.getModules();
+			return modulesType != null;
 		} catch(AxisFault f) {
-			handleAxisFault(f);
+			ErrorCode code = handleAxisFault(f);
+			switch(code) {
+				case unsufficientRights: logError("Unsufficient rights", f); break;
+			}
 			return false;
 		} catch (Exception e) {
 			logWarn("Error checking connection", e);
@@ -1236,23 +1191,6 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		return vg;
 	}
 	
-	private final List<ViteroCustomer> convert(CustomerServiceStub.Customertype[] customerTypes) {
-		List<ViteroCustomer> customers = new ArrayList<ViteroCustomer>();
-		if(customerTypes != null) {
-			for(CustomerServiceStub.Customertype customerType: customerTypes) {
-				customers.add(convert(customerType));
-			}
-		}
-		return customers;
-	}
-	
-	private final ViteroCustomer convert(CustomerServiceStub.Customertype customerType) {
-		ViteroCustomer customer = new ViteroCustomer();
-		customer.setCustomerId(customerType.getId());
-		customer.setName(customerType.getDisplayname());
-		return customer;
-	}
-	
 	private final List<ViteroUser> convert(Usertype[] userTypes) {
 		List<ViteroUser> vUsers = new ArrayList<ViteroUser>();
 		if(userTypes != null) {
@@ -1329,13 +1267,6 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		BookingServiceStub bookingWs = new BookingServiceStub(getVmsEndPoint());
 		SecurityHeader.addAdminSecurityHeader(viteroModule, bookingWs);
 		return bookingWs;
-	}
-	
-	private final  CustomerServiceStub getCustomerWebService() 
-	throws AxisFault {
-		CustomerServiceStub customerWs = new CustomerServiceStub(getVmsEndPoint());
-		SecurityHeader.addAdminSecurityHeader(viteroModule, customerWs);
-		return customerWs;
 	}
 	
 	private final LicenceServiceStub getLicenceWebService()

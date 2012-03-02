@@ -1,4 +1,7 @@
 /** ----------------- BUTTONS  ----------------- **/
+
+button { border:none; }
+
 .b_button {
 	@include btt-outer;
 	&,span {@include btt-inner;}
@@ -10,11 +13,11 @@
 		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
 	}
 	&:focus {
-		border-color:$basecolor;
+		border:1px solid $basecolor;
 	}
 	&:active {
 		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
+		border:1px solid $basecolor;
 	}
 	
 	&.b_button_preferred {
@@ -25,6 +28,16 @@
 	}
 }
 
+/**
+	 * fix button hover for IE8  ::   notice: for <= IE7, there is patches.css !
+	 * @bugfix
+	 * @affected   IE6, IE7, IE8
+	 * @css-for    all browsers
+	 * @valid      no!
+*/	 
+.b_button:focus, .b_button:hover {
+	border: 1px solid #aaa\9;
+} 
 
 /* dirty button (form with unsaved values ) */
 .b_button_dirty {

@@ -1170,7 +1170,9 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (group.getAutoCloseRanksEnabled() != null) {
 			newGroup.autoCloseRanks = group.getAutoCloseRanksEnabled();
 		}
-		newGroup.description = Collections.singletonList(group.getDescription());
+		if(StringHelper.containsNonWhitespace(group.getDescription())) {
+			newGroup.description = Collections.singletonList(group.getDescription());
+		}
 		// collab tools
 
 		CollabTools toolsConfig = new CollabTools();

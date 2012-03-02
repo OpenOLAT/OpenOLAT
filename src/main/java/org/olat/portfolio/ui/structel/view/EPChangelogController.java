@@ -121,7 +121,7 @@ public class EPChangelogController extends FormBasicController {
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
 		// get subscriptionListItems according to map type
 		if (map instanceof EPDefaultMap || map instanceof EPStructuredMapTemplate) {
-			allItems = helper.getAllSubscrItems_Default(compareDate, (EPDefaultMap) map);
+			allItems = helper.getAllSubscrItems_Default(compareDate, map);
 		} else if (map instanceof EPStructuredMap) {
 			allItems = helper.getAllSubscrItems_Structured(compareDate, (EPStructuredMap) map);
 		}

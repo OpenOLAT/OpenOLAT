@@ -21,7 +21,6 @@ package org.olat.modules.vitero.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.CoreSpringFactory;
@@ -43,9 +42,6 @@ import org.olat.modules.vitero.ViteroModule;
 import org.olat.modules.vitero.ViteroTimezoneIDs;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
-import org.olat.modules.vitero.model.ViteroCustomer;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 
@@ -65,56 +61,21 @@ public class ViteroConfigurationController extends FormBasicController {
 	private TextElement urlEl;
 	private TextElement loginEl;
 	private TextElement passwordEl;
+	private TextElement customerEl;
 	private MultipleSelectionElement viteroEnabled;
 	private SingleSelection timeZoneEl;
 
-	private SingleSelection customersEl;
-
 	private static final String[] enabledKeys = new String[]{"on"};
 	private String[] enabledValues;
-	private String[] customerKeys;
-	private String[] customerValues;
 	
 	public ViteroConfigurationController(UserRequest ureq, WindowControl wControl, ViteroModule viteroModule) {
 		super(ureq, wControl, "adminconfig");
 		
 		this.viteroModule = viteroModule;
 		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
-		
 		enabledValues = new String[]{translate("enabled")};
-		
-		if(viteroModule.isEnabled()) {
-			loadCustomers(false);
-		} else {
-			customerKeys = new String[0];
-			customerValues = new String[0];
-		}
-		
+
 		initForm(ureq);
-	}
-	
-	private void loadCustomers(boolean fromEditor) {
-		try {
-			List<ViteroCustomer> customers;
-			if(fromEditor) {
-				String url = urlEl.getValue();
-				String login = loginEl.getValue();
-				String password = passwordEl.getValue();
-				customers = viteroManager.getCustomers(url, login, password);
-			} else {
-				customers = viteroManager.getCustomers();
-			}
-			customerKeys = new String[customers.size()];
-			customerValues = new String[customers.size()];
-			int i=0;
-			for(ViteroCustomer customer:customers) {
-				customerKeys[i] = Integer.toString(customer.getCustomerId());
-				customerValues[i++] = customer.getName();
-			}
-		} catch (VmsNotAvailableException e) {
-			customerKeys = new String[0];
-			customerValues = new String[0];
-		}
 	}
 
 	@Override
@@ -157,12 +118,9 @@ public class ViteroConfigurationController extends FormBasicController {
 			loginEl = uifactory.addTextElement("vitero-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = viteroModule.getAdminPassword();
 			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, password, moduleFlc);
-			String customerId = Integer.toString(viteroModule.getCustomerId());
-
-			customersEl = uifactory.addDropdownSingleselect("option.customerId", moduleFlc, customerKeys, customerValues, null);
-			if(StringHelper.containsNonWhitespace(customerId) && Arrays.asList(customerKeys).contains(customerId)) {
-				customersEl.select(customerId, true);
-			}
+			int customerId = viteroModule.getCustomerId();
+			String customer = customerId > 0 ? Integer.toString(customerId) : null;
+			customerEl = uifactory.addTextElement("option.customerId", "option.customerId", 32, customer, moduleFlc);
 
 			//buttons save - check
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -189,9 +147,8 @@ public class ViteroConfigurationController extends FormBasicController {
 			String password = passwordEl.getValue();
 			viteroModule.setAdminPassword(password);
 			
-			String customerId = customersEl.getSelectedKey();
+			String customerId = customerEl.getValue();
 			viteroModule.setCustomerId(Integer.parseInt(customerId));
-			
 			if(timeZoneEl.isOneSelected()) {
 				String timeZoneId = timeZoneEl.getSelectedKey();
 				viteroModule.setTimeZoneId(timeZoneId);
@@ -212,22 +169,31 @@ public class ViteroConfigurationController extends FormBasicController {
 		//validate only if the module is enabled
 		if(viteroModule.isEnabled()) {
 			allOk &= validateURL();
-			customersEl.clearError();
-			if(customersEl.isOneSelected()) {
+			customerEl.clearError();
+			String customerIdStr = customerEl.getValue();
+			if(!StringHelper.containsNonWhitespace(customerIdStr)) {
+				customerEl.setErrorKey("error.customer.invalid", null);
+				allOk = false;
+			} else {
+				int customerId = -1;
 				try {
-					String customerId = customersEl.getSelectedKey();
-					Integer.parseInt(customerId);
+					customerId = Integer.parseInt(customerIdStr);
 				} catch(Exception e) {
-					customersEl.setErrorKey("error.customer.invalid", null);
+					customerEl.setErrorKey("error.customer.invalid", null);
 					allOk = false;
 				}
-			} else {
-				if(customersEl.getSize() == 0) {
-					loadCustomers(true);
-					customersEl.setKeysAndValues(customerKeys, customerValues, null);
+				
+				if(customerId > 0) {
+					try {
+						boolean ok = viteroManager.checkConnection(urlEl.getValue(), loginEl.getValue(), passwordEl.getValue(), customerId);
+						if(!ok) {
+							customerEl.setErrorKey("error.customerDoesntExist", null);
+							allOk = false;
+						}
+					} catch (VmsNotAvailableException e) {
+						showError(VmsNotAvailableException.I18N_KEY);
+					}
 				}
-				customersEl.setErrorKey("form.legende.mandatory", null);
-				allOk = false;
 			}
 		}
 		
@@ -275,11 +241,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			viteroModule.setEnabled(enabled);
 		} else if(source == checkLink) {
 			if(validateURL()) {
-				boolean ok = checkConnection(ureq);
-				if(ok && customersEl.getSize() == 0) {
-					loadCustomers(true);
-					customersEl.setKeysAndValues(customerKeys, customerValues, null);
-				}
+				checkConnection(ureq);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -289,12 +251,12 @@ public class ViteroConfigurationController extends FormBasicController {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
 		String password = passwordEl.getValue();
-		String customerId = customersEl.isOneSelected() ? customersEl.getSelectedKey() : "";
+		String customerIdObj = customerEl.getValue();
 
 		try {
-			boolean ok = viteroManager.checkConnection(url, login, password, Integer.parseInt(customerId));
+			int customerId = Integer.parseInt(customerIdObj);
+			boolean ok = viteroManager.checkConnection(url, login, password, customerId);
 			if(ok) {
-				loadCustomers(true);
 				showInfo("check.ok");
 			} else {
 				showError("check.nok");

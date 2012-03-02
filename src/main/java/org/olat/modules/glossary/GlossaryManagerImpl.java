@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
@@ -171,6 +172,8 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		String exportFileName = repoEntry.getDisplayname() + ".zip";
+		// OO-135 check for special / illegal chars in filename
+		exportFileName = StringHelper.transformDisplayNameToFileSystemName(exportFileName);
 		File fExportZIP = new File(FolderConfig.getCanonicalTmpDir() + "/" + exportFileName);
 		VFSContainer glossaryRoot = getGlossaryRootFolder(res);
 		ZipUtil.zip(glossaryRoot.getItems(), new LocalFileImpl(fExportZIP), false);

@@ -241,4 +241,12 @@ public abstract class UserManager extends BasicManager {
 		this.userPropertiesConfig = userPropertiesConfig;
 	}
 
+	/**
+	 * Returns the users displayable name, e.g. "Firstname Lastname"
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public abstract String getUserDisplayName(User user);
+	
 }
