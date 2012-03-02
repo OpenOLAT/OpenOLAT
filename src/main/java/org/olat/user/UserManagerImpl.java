@@ -54,7 +54,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class UserManagerImpl extends UserManager {
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
-	
+  private UserDisplayNameCreator userDisplayNameCreator;
+  
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
 	 * correct user manager
@@ -338,6 +339,22 @@ public class UserManagerImpl extends UserManager {
 		// persist changes
 		updateUser(user);
 		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
+	}
+
+	/**
+	 * @see org.olat.user.UserManager#getUserCharset(org.olat.core.id.User)
+	 */
+	public String getUserDisplayName(User user) {
+		if (this.userDisplayNameCreator == null) return "";
+		return this.userDisplayNameCreator.getUserDisplayName(user);
+	}
+
+	/**
+	 * Sping setter method
+	 * @param userDisplayNameCreator the userDisplayNameCreator to set
+	 */
+	public void setUserDisplayNameCreator(UserDisplayNameCreator userDisplayNameCreator) {
+		this.userDisplayNameCreator = userDisplayNameCreator;
 	}
 
 }
