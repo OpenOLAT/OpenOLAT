@@ -326,7 +326,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	}
 	
 	public void setItemValidatorProvider(ItemValidatorProvider itemValidatorProvider){
-		checkForCustomItemValidator = true;
+		checkForCustomItemValidator = (itemValidatorProvider != null);
 		this.itemValidatorProvider = itemValidatorProvider;
 	}
 	
