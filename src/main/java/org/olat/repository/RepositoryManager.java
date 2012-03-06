@@ -36,6 +36,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.bookmark.BookmarkManager;
@@ -63,6 +64,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.context.BGContext;
+import org.olat.group.context.BGContext2Resource;
+import org.olat.group.context.BGContextImpl;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.repository.async.BackgroundTaskQueueManager;
 import org.olat.repository.async.IncrementDownloadCounterBackgroundTask;
@@ -75,6 +78,7 @@ import org.olat.repository.controllers.RepositoryEntryImageController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -303,6 +307,23 @@ public class RepositoryManager extends BasicManager {
 		}
 		return entries.get(0);
 	}
+	
+	public List<RepositoryEntry> lookupRepositoryEntries(List<Long> keys) {
+		if (keys == null || keys.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder query = new StringBuilder();
+		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+				 .append(" inner join fetch v.olatResource as ores")
+		     .append(" where v.key in (:repoKey)");
+		
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
+		dbQuery.setParameterList("repoKey", keys);
+		@SuppressWarnings("unchecked")
+		List<RepositoryEntry> entries = dbQuery.list();
+		return entries;
+	}
 
 	/**
 	 * Lookup the repository entry which references the given olat resourceable.
@@ -483,6 +504,51 @@ public class RepositoryManager extends BasicManager {
 		task.waitForDone();
 	}
 	
+	
+	/**
+	 * Return the course where the identity is owner or a group of type RightGroup as the
+	 * Editor right set for the identity.
+	 * @param displayName
+	 * @return
+	 */
+	public List<RepositoryEntry> queryByEditor(Identity editor, String... resourceTypes) {
+		StringBuilder query = new StringBuilder(1000);
+		query.append("select distinct(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		     .append(" inner join v.olatResource as reResource ")
+		     .append(" where v.access > 0 ")
+		     .append(" and ((")
+		     .append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity.key=:editorKey)")
+		     .append(" ) or (")
+		     .append("  reResource in (select context2res.resource from ").append(BGContext2Resource.class.getName()).append(" as context2res, ")
+		     .append("    ").append(BGContextImpl.class.getName()).append("  as context,")
+		     .append("    ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
+				 .append("    ").append(PolicyImpl.class.getName()).append(" as poi,")
+				 .append("    ").append(OLATResourceImpl.class.getName()).append(" as ori")
+				 .append("     where sgmsi.identity.key = :editorKey and sgmsi.securityGroup = poi.securityGroup")
+				 .append("     and poi.permission = 'bgr.editor' and poi.olatResource = ori")
+				 .append("     and (ori.resId = context.key) and ori.resName = 'org.olat.group.context.BGContextImpl'")
+				 .append("     and context2res.groupContext=context")
+		     .append("  )")
+		     .append(" ))");
+		
+		if(resourceTypes != null && resourceTypes.length > 0) {
+			query.append(" and reResource.resName in (:resnames)");
+		}
+		
+		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
+		dbquery.setLong("editorKey", editor.getKey());
+		if(resourceTypes != null && resourceTypes.length > 0) {
+			List<String> resNames = new ArrayList<String>();
+			for(String resourceType:resourceTypes) {
+				resNames.add(resourceType);
+			}
+			dbquery.setParameterList("resnames", resNames);
+		}
+		dbquery.setCacheable(true);
+		List<RepositoryEntry> entries = dbquery.list();
+		return entries;
+	}
+	
 	/**
 	 * Count by type, limit by role accessability.
 	 * @param restrictedType
@@ -614,11 +680,11 @@ public class RepositoryManager extends BasicManager {
 	 * @param limitType
 	 * @return Results
 	 */
-	public List queryByOwner(Identity identity, String limitType) {
+	public List<RepositoryEntry> queryByOwner(Identity identity, String limitType) {
 		return queryByOwner( identity, new String[]{limitType});
 	}
 
-	public List queryByOwner(Identity identity, String[] limitTypes) {
+	public List<RepositoryEntry> queryByOwner(Identity identity, String[] limitTypes) {
 		if (identity == null) throw new AssertException("identity can not be null!");
 		StringBuffer query = new StringBuffer(400);
 		query.append("select v from" + " org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res,"
@@ -638,7 +704,9 @@ public class RepositoryManager extends BasicManager {
 		}
 		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
 		dbquery.setEntity("identity", identity);
-		return dbquery.list();
+		@SuppressWarnings("unchecked")
+		List<RepositoryEntry> entries = dbquery.list();
+		return entries;
 	}
 
 	/**

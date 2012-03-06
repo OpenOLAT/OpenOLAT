@@ -257,6 +257,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if(maxResults > 0) {
 			dbq.setMaxResults(maxResults);
 		}
+		dbq.setCacheable(true);
 		List<BusinessGroup> groups = dbq.list();
 		return groups;
 	}

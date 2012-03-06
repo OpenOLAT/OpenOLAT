@@ -33,15 +33,17 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.MergeSource;
-import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSItem;
 
 public class WebDAVProviderFactory {
+	
+	private OLog log = Tracing.createLoggerFor(WebDAVProviderFactory.class);
 
 	private static final WebDAVProviderFactory INSTANCE = new WebDAVProviderFactory();
-	private static Map webdavProviders;
+	private static Map<String, WebDAVProvider> webdavProviders;
 	
 	private WebDAVProviderFactory() {
 		// singleton
@@ -55,9 +57,9 @@ public class WebDAVProviderFactory {
 	 */
 	public VFSItem getMountableRoot(Identity identity) {
 		MergeSource vfsRoot = new MergeSource(null, "webdavroot");
-		for (Iterator iter = webdavProviders.keySet().iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = webdavProviders.keySet().iterator(); iter.hasNext();) {
 			WebDAVProvider provider = (WebDAVProvider)webdavProviders.get(iter.next());
-			vfsRoot.addContainer(new NamedContainerImpl(provider.getMountPoint(), provider.getContainer(identity)));
+			vfsRoot.addContainer(new WebDAVProviderNamedContainer(identity, provider));
 		}
 		return vfsRoot;
 	}
@@ -66,12 +68,11 @@ public class WebDAVProviderFactory {
 	 * Set the list of webdav providers.
 	 * @param webdavProviders
 	 */
-	public void setWebdavProviderList(List webdavProviders) {
+	public void setWebdavProviderList(List<WebDAVProvider> webdavProviders) {
 		if (webdavProviders == null)
 			throw new AssertException("null value for webdavProviders not allowed.");
 		
-		for (Iterator iter = webdavProviders.iterator(); iter.hasNext();) {
-			WebDAVProvider provider = (WebDAVProvider) iter.next();
+		for (WebDAVProvider provider : webdavProviders) {
 			addWebdavProvider(provider);
 		}
 	}
@@ -81,10 +82,10 @@ public class WebDAVProviderFactory {
 	 * @param provider
 	 */
 	public void addWebdavProvider(WebDAVProvider provider) {
-		if (webdavProviders == null) webdavProviders = new HashMap();
+		if (webdavProviders == null) webdavProviders = new HashMap<String, WebDAVProvider>();
 		if (webdavProviders.containsKey(provider.getMountPoint()))
 			throw new AssertException("May not add two providers with the same mount point.");
 		webdavProviders.put(provider.getMountPoint(), provider);
-		Tracing.logInfo("Adding webdav mountpoint '" + provider.getMountPoint() + "'.", WebDAVProviderFactory.class);
+		log.info("Adding webdav mountpoint '" + provider.getMountPoint() + "'.");
 	}
 }

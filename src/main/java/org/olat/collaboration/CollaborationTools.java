@@ -209,7 +209,7 @@ public class CollaborationTools implements Serializable {
 	private final static String KEY_NEWS = "news";
 	private final static String KEY_CALENDAR_ACCESS = "cal";
 	//fxdiff VCRP-8: collaboration tools folder access control
-	private final static String KEY_FOLDER_ACCESS = "folder";
+	public final static String KEY_FOLDER_ACCESS = "folder";
 
 	//o_clusterOK by guido
 	Hashtable<String, Boolean> cacheToolStates;

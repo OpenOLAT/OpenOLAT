@@ -38,6 +38,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -162,7 +163,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// grab any shared folder that is configured
 		OlatRootFolderImpl sharedFolder = null;
 		String sfSoftkey = getCourseConfig().getSharedFolderSoftkey();
-		if (sfSoftkey != null) {
+		if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
 			RepositoryManager rm = RepositoryManager.getInstance();
 			RepositoryEntry re = rm.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
 			if (re != null) {

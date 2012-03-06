@@ -42,10 +42,11 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
 public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 
+	private final String relPath;
 	private Quota sharedFolderQuota;
 
 	public SharedFolderSecurityCallback(String relPath) {
-		initSharedFolderQuota(relPath);
+		this.relPath = relPath;
 	}
 
 	/**
@@ -93,6 +94,9 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 	 * @return boolean
 	 */
 	public Quota getQuota() {
+		if(sharedFolderQuota == null) {
+			initSharedFolderQuota(relPath);
+		}
 		return sharedFolderQuota;
 	}
 
