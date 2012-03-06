@@ -387,6 +387,40 @@ public class AuthHelper {
 		return ident;
 	}
 
+	
+	/**
+	 * does a logout of a REST session and returns true on successful logout. <br />
+	 * Given UserRequest must belong to a REST UserSession. Otherwise no logout
+	 * is perfomed (and false returned).<br />
+	 * 
+	 * 
+	 * @param ureq
+	 *            the UserRequest
+	 * @return returns true if RESTUserSession is successfully logged out
+	 */
+	public static boolean doRESTLogout(UserRequest ureq) {
+		UserSession usess = ureq.getUserSession();
+
+		// only do a logout if it is really a REST session
+		// we check both sessionInfo-Object for isREST() and sessionAttributes
+		// as well (both are set in doHeadlessLogin(), so I check both here
+		Map<String, String> sessionAttributes = usess.getIdentityEnvironment().getAttributes();
+		if (usess.getSessionInfo().isREST() && sessionAttributes.containsKey("isrest") && sessionAttributes.get("isrest").equals("true")) {
+			HttpSession session = ureq.getHttpReq().getSession(false);
+			if (session != null) {
+				try {
+					session.invalidate();
+					deleteShibsessionCookie(ureq);
+					return true;
+				} catch (IllegalStateException ise) {
+					return false;
+					// thrown when session already invalidated. fine. ignore.
+				}
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * This is a convenience method to log out. IMPORTANT: This method initiates a
 	 * redirect and RETURN. Make sure you return the call hierarchy gracefully.
