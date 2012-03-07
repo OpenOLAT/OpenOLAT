@@ -609,10 +609,12 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		List<Identity> usersList = secMgr.getIdentitiesOfSecurityGroups(secGroups);
 
-		ICourse course = CourseFactory.loadCourse(ores);
-		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
-		List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
-		usersList.addAll(assessedRsers);
+		if(callback.mayViewAllUsersAssessments()) {
+			ICourse course = CourseFactory.loadCourse(ores);
+			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
+			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(usersList);
+			usersList.addAll(assessedRsers);
+		}
 		return usersList;
 	}
 
