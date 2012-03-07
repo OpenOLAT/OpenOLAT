@@ -50,6 +50,8 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	forum, 
 	/** this represents a (Forum) Message **/
 	forumMessage,
+	/** this represents a (Info) Message **/
+	infoMessage,
 	
 	/** this represents a I(MS)Q(TI) TEST **/
 	iq,
