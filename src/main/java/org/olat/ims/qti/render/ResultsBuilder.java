@@ -93,14 +93,15 @@ public class ResultsBuilder {
 		// add items (not qti standard, but nice to display original questions ->
 		// put it into extensions)
 		//extension_result.
-		int sectioncnt = ac.getSectionContextCount();
-		for (int i = 0; i < sectioncnt; i++) {
-			SectionContext sc = ac.getSectionContext(i);
-			int itemcnt = sc.getItemContextCount();
-			for (int j = 0; j < itemcnt; j++) {
-				ItemContext it = sc.getItemContext(j);
-				Element el_item = it.getEl_item();
-				extension_result.add(el_item);
+		for (int i = 0; i < ac.getSectionContextCount(); i++) {
+			SectionContext sectionCtx = ac.getSectionContext(i);
+			for (int j = 0; j < sectionCtx.getItemContextCount(); j++) {
+				Element el_item = sectionCtx.getItemContext(j).getEl_item();
+				// OO-148  
+				// on some occasions this did throw an IllegalAddException
+				// because el_item had already a parent.
+				if(el_item.getParent() != null)
+					extension_result.add(el_item);
 			}
 		}
 
