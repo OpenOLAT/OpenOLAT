@@ -126,5 +126,22 @@ body.b_full_screen {
 }
 div#b_preview_wrapper div#b_preview_wrapper_message { float:right; padding-left:16px; width:100px; }
 
-	
+	/* SCORM */
+div.o_scorm {}
+div.o_scorm a.b_link_close { padding-right:20px; }
+div.o_scorm div.o_scorm_navigation { float: right; display: inline; padding: 3px; background: #272727 url(../images/brasato/resizer_bg.gif) repeat-x center; border: 1px solid #504D4E; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;}
+div.o_scorm div.o_scorm_navigation a { margin: 0 2px; }
+div.o_scorm div.o_scorm_navigation a.o_scorm_previous_icon{ background-image: url(../openolat/images/brasato/move_left.png); }
+div.o_scorm div.o_scorm_navigation a.o_scorm_previous_icon:hover{ background-image: url(../images/brasato/move_left_over.png); }
+div.o_scorm div.o_scorm_navigation a.o_scorm_next_icon{	background-image: url(../images/brasato/move_right.png); }
+div.o_scorm div.o_scorm_navigation a.o_scorm_next_icon:hover{	background-image: url(../images/brasato/move_right_over.png); }
+div.o_scorm div.o_scorm_navigation a.hover { background-color: none;}
+div.o_scorm div.o_scorm_content { }
+div.o_scorm div.o_scorm_content iframe { }
+/* menu icon decorators */
+.o_scorm_completed { top: 6px; left: 6px; background-image: url(../images/olat/scorm/completed.png); }
+.o_scorm_failed { top: 6px; left: 6px ! important; background-image: url(../images/olat/scorm/failed.png); }
+.o_scorm_incomplete { top: 6px; left: 6px; background-image: url(../images/olat/scorm/incomplete.png); }
+.o_scorm_not_attempted { top: 6px; left: 6px; background-image: url(../images/olat/scorm/not_attempted.png); }
+.o_scorm_passed { top: 6px; left: 6px; background-image: url(../images/olat/scorm/passed.png); }
 	

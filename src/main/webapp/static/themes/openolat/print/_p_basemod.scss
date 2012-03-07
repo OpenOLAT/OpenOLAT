@@ -30,6 +30,8 @@
 
 		/** with the noprint class, you can hide any element in printout **/
 		.o_noprint { @include o-ghost();} 
+		 
+		#b_toplink { @include o-ghost();} 
 		  
 		/* (en) change font size unit to [pt] - avoiding problems with [px] unit in Gecko based browsers  */
 		/* (de) Wechsel der der Schriftgrößen-Maßheinheit zu [pt] - Probleme mit Maßeinheit [px] in Gecko-basierten Browsern vermeiden */
@@ -46,7 +48,7 @@
 		#b_main.o_editor { background-image: none; }
 		
 		/* remove box-shadow if any */
-		#b_main {@include o-box-shadow(0,0,0,transparent); border:none;} 
+		#b_main {@include o-box-shadow-none(); border:none;} 
 		
 		/* no borders, no margin, no padding */
 		body,#b_page_margins,#b_page,#b_main,#b_page_wrapper  {margin:0;padding:0;border:0;}
@@ -82,7 +84,6 @@
 				 div.b_tabbedpane_tabs {display: none;}
 			}
 		}
-
 }
 
 

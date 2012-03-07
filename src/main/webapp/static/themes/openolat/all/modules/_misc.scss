@@ -229,7 +229,94 @@ div.error-box {
 	}
 }
 
+
+
+/** -------------- TAGGING ---------------- **/
+/* tagging */
+.b_tag_list { background: url(../openolat/images/tag-label-yellow.png) 0px 3px no-repeat !important; }
+.b_tag_icon { background-image: url(../openolat/images/tag-label-yellow.png); }
 	
+	
+div.b_tags {
+	margin: 2em 0; 
+	div { padding: 0.5em 0 0 20px; }
+	span.b_tag { font-size: 80%; padding: 5px 2px 5px 2px;line-height:3em; white-space: nowrap;}
+}
+	
+	
+/* TextboxList  */
+*:first-child + html div.holder { padding-bottom: 2px; }
+* html div.holder { padding-bottom: 2px; } /* ie7 and below */
+.textbox-outer	{ 
+	list-style-type: none; 
+	margin-left: 0em;
+}
+
+/* autocompleter bitbox (item) holder */
+a.bit-box, span.b_tag { -moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; border: 1px solid #CAD8F3; background: #DEE7F8; padding: 1px 5px 2px; padding-right: 15px; position: relative; }
+div.holder { 
+	font-size:80%;
+	min-width: 200px; width: auto; margin: 0; overflow: hidden; height: auto !important; height: 1%; padding: 0px 0px 0; cursor: text;
+	a { float: left; margin: 0 5px 4px 0; }
+	a.bit { text-decoration: none; color: black; }
+	a.bit:active,  a.bit:focus { outline: none; }
+	a.bit-box-focus { border-color: #598BEC; background: #598BEC; color: #fff; }
+	a.bit-input .maininput { border: 1px solid $basegray_ultra_light;  } 
+	a.bit-input input { 
+		width: 100px; 
+		margin: 0; 
+		border: none; 
+		background: white; 
+		outline: 0; 
+		padding: 3px 0 2px;/* no left/right padding here please */ 
+		
+		&.smallinput { width: 20px; }
+	} 
+	
+	a.bit-hover { background: #BBCEF1; border: 1px solid #6D95E0; }
+	a.bit-box-focus { background: #598BEC; color: #fff; }
+	a.bit-box {
+		a.closebutton { position: absolute; right: 0; top: 5px	; display: block; width: 7px; height: 7px; font-size: 1px; background: url('../openolat/images/tag_x.gif'); }
+		a.closebutton:hover { background-position: 7px; }
+		a.closebutton:active { outline: none }
+	}
+	a.bit-box-focus a.closebutton,  a.bit-box-focus a.closebutton:hover { background-position: bottom; }
+}
+
+
+/* Autocompleter for textboxlist */
+ol.textbox-outer { margin: 0; padding: 0;}
+.textboxlist-auto { 
+	position: absolute; 
+	width: 300px; 
+	overflow: visible;
+	display: none;   // hide at first, will be shown by JS on user input
+	background: #eee;
+	z-index: 2;  // has to be "on top " of e.g.  the taglist in "add artefact wizard"
+	
+	.default { padding: 5px 7px; border: 1px solid #ccc; border-width: 0 1px 1px; }
+	ul { 
+		display: none; margin: 0; padding: 0; 
+		overflow: auto; 
+		li { padding: 5px 12px; z-index: 1000; cursor: pointer; margin: 0; list-style-type: none; border: 1px solid #ccc; border-width: 0 1px 1px; }
+		li.loading-indicator { padding-left: 30px; background-position: 5px center; cursor: defat; font-size: 100.01% ! important; line-height: 1.5em; }
+		li.more-indicator { cursor: defat; font-style: italic; }
+		li em { font-weight: bold; font-style: normal; background: #ccc; }
+		li.auto-focus { background: #4173CC; color: #fff; }
+		li.auto-focus em { background: none; }
+	}
+}
+input.inputMessage { color: #AAA; font-size: 11px; }
+
+.b_wizard {
+	.textbox-outer { 
+		background: url(../openolat/images/tag-label-yellow.png) top left no-repeat;
+		li { margin-left:18px; } 
+	}
+	.textboxlist-auto ul li { margin-left:0;}
+	div.holder a.bit-input input { background: #f8f8f8; padding: 0.4em; }
+}
+
 /* classes to use in course layout generator to have previews in dropdown elements */
 /* note: this does not work in chrome (jan2012, chrome 16.0.) */
 .clgen_font_arial { font-family: arial,helvetica; }

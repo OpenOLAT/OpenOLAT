@@ -1,0 +1,232 @@
+
+
+
+
+/** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
+#b_nav_main {
+	float: left;
+	
+	@if $enablebiz == true {
+		margin-top:-27px;
+	}
+	
+	ul {
+		padding-left:40px;
+		margin:0;
+		//@include o-box-shadow(0,0,14px,#D3D3D3);
+		
+		li { 
+			float:left;
+			position:relative;
+			list-style: none;
+			margin:0px;
+			padding: 4px 3px 4px 12px;
+			margin-right:2px;
+			
+			@if $enablebiz == true {
+				border:1px solid #ddd;
+				border-bottom:none;
+			}
+			
+			a {
+				/* "bloat" the links (better for touch) */
+				padding: 4px 12px 4px 3px; 
+			}
+			a:hover { text-decoration: none; }
+			
+			
+			@include o-border-radius-all(6px,6px,0,0);
+			background: #f5f5f5; //  for browsers with no rgba
+			background: rgba(255,255,255,0.5);
+			
+			@if $enablebiz == true {
+				background: rgba(255,255,255,0.7);
+			}
+			
+			/* -- SITES ( home, users, groups, etc. ) -- */
+			&.b_nav_site { 
+	
+				//active sites
+				&.b_nav_active,&:hover,&.b_exception {
+					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
+					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
+					background:#fff;
+				}
+				&.b_nav_active a {
+				}
+			
+				/** sites icons **/
+				> div {
+					padding-left: 16px;
+					background-repeat: no-repeat;
+					background-position: 0% 50%;		
+					background-image: url('../openolat/images/application.png');		
+				}
+				
+				&.o_site_home > div { background-image: url('../openolat/images/home.png'); }
+				&.o_site_admin > div { background-image: url('../openolat/images/wrench-screwdriver.png'); }
+				&.o_site_useradmin > div { background-image: url('../openolat/images/user_conf.png'); }
+				&.o_site_groupsmanagement > div { background-image: url('../openolat/images/users_conf.png'); }
+				&.o_site_repository > div { background-image: url('../openolat/images/books-stack.png'); }
+				&.o_site_groups > div { background-image: url('../openolat/images/users.png'); }
+				&.o_site_coaching > div { background-image: url('../openolat/images/eye.png'); }
+				&.site_demo_icon > div { background-image: url('../openolat/images/information-white.png');  }
+				&.f_site_library > div { background-image: url('../openolat/images/library.png'); } 
+				&.fx_members >  div { background-image: url('../openolat/images/users_members.png'); } 
+				&.o_site_guidemo div { background-image: url('../openolat/images/light-bulb.png') }
+				&.b_resource_GroupInfoMainController div { background-image: url(../openolat/images/users.png) }
+	
+			}
+			
+			/* -- TABS ( courses, wiki, etc.) -- */
+			&.b_nav_tab {
+				margin-right:4px;
+				a.b_nav_tab_close { 
+					position: absolute; top: 3px; right: 4px;	width: 13px; height: 13px; line-height: 0;	padding: 0; margin: 0; 
+					background: transparent url(../openolat/images/cross_small_trimmed_grey.png) no-repeat right top;
+				}
+				
+				//active tabs
+				&.b_nav_active,&:hover {
+					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
+					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
+					background:#fff;
+				}
+				&.b_nav_active a {
+				}
+			}
+			
+			/* -- THE SPACER -- */
+			&#b_nav_spacer {
+				background:none;
+				border:none;
+				width:20px;
+				height:1px;
+				padding:0;
+			}
+			
+		}//end li
+	}//end ul
+}
+	
+	
+	
+	
+/** ----------------- SUB NAVIGATION (TREE) ----------------- **/
+
+/* note:  the markup will be the one from OLATpro, has to be merged yet */
+div.b_tree {
+	font-size: 100%;
+	padding: 0;
+	
+	ul { 
+		position: relative;
+		padding: 0;
+		margin: 0 0 0 1em;
+		list-style: none; 
+		white-space: nowrap;
+		
+		li {
+			position:relative;
+			background:transparent;
+			margin-left:0;
+			padding-left:0;
+			line-height:1.7em;
+			
+			// a tree element with icon
+			a.b_tree_icon {padding-left: 20px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}	
+			
+			a {
+				color:$basegray;
+			}
+			a.b_tree_l1 {
+				padding-left:16px;
+			}
+			
+			.b_tree_oc_l1 {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				z-index: 9;
+			}
+
+
+			/* selected, hovered, active <a> tag */
+			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
+			a.b_tree_selected,a:active { color: $basecolor; background-color: transparent; text-decoration:none; }	
+			li a.b_tree_selected_parents,a.b_tree_l0,strong { color: $basecolor; font-weight: bold; }
+			
+			
+			/*  icon positioning */
+			.b_tree_oc_l1  { position:absolute; top:0px; left:1px; z-index:9; }
+			.b_tree_oc_l2  { position:absolute; top:0px; left:11px; z-index:9; }
+			.b_tree_oc_l3  { position:absolute; top:0px; left:21px; z-index:9; }
+			.b_tree_oc_l4  { position:absolute; top:0px; left:31px; z-index:9; }
+			.b_tree_oc_l5  { position:absolute; top:0px; left:41px; z-index:9; }
+			.b_tree_oc_l6  { position:absolute; top:0px; left:51px; z-index:9; }
+			.b_tree_oc_l7  { position:absolute; top:0px; left:61px; z-index:9; }
+			.b_tree_oc_l8  { position:absolute; top:0px; left:71px; z-index:9; }
+			.b_tree_oc_l9  { position:absolute; top:0px; left:81px; z-index:9; }
+			.b_tree_oc_l10 { position:absolute; top:0px; left:91px; z-index:9; }
+			.b_tree_oc_l11 { position:absolute; top:0px; left:101px; z-index:9; }	
+			
+			
+			a.b_tree_l0  { padding-left: 5px; }
+			a.b_tree_l1  { padding-left: 15px; }
+			a.b_tree_l2  { padding-left: 25px; }
+			a.b_tree_l3  { padding-left: 35px; }
+			a.b_tree_l4  { padding-left: 45px; }
+			a.b_tree_l5  { padding-left: 55px; }
+			a.b_tree_l6  { padding-left: 65px; }
+			a.b_tree_l7  { padding-left: 75px; }
+			a.b_tree_l8  { padding-left: 85px; }
+			a.b_tree_l9  { padding-left: 95px; }
+			a.b_tree_l10 { padding-left: 105px; }
+			a.b_tree_l11 { padding-left: 115px; }
+			
+			
+			/*   decorators in tree (e.g. course-editor ) */
+			span.b_tree_icon_decorator {
+				width: 12px;
+				height: 12px;
+				float: right;
+				display: inline;
+				position: static;
+				background-repeat:no-repeat;
+			}
+			
+			/* fix deleted nodes in courseditor (24.02.2012) */
+			&.b_deleted {
+				text-decoration:none;
+				a { text-decoration: line-through; }
+			}
+			
+		} // end li
+		
+		/* link to select the item with icon */
+		$treeicon_spread_px: 6px;
+		
+		&.b_tree_l0  a.b_tree_icon { padding-left:$treeicon_spread_px+20px;  background-position:$treeicon-spread_px+2px 50%; }
+		&.b_tree_l1  a.b_tree_icon { padding-left:$treeicon_spread_px+30px;  background-position:$treeicon-spread_px+12px 50%; }
+		&.b_tree_l2  a.b_tree_icon { padding-left:$treeicon_spread_px+40px;  background-position:$treeicon-spread_px+22px 50%; }
+		&.b_tree_l3  a.b_tree_icon { padding-left:$treeicon_spread_px+50px;  background-position:$treeicon-spread_px+32px 50%; }
+		&.b_tree_l4  a.b_tree_icon { padding-left:$treeicon_spread_px+60px;  background-position:$treeicon-spread_px+42px 50%; }
+		&.b_tree_l5  a.b_tree_icon { padding-left:$treeicon_spread_px+70px;  background-position:$treeicon-spread_px+52px 50%; }
+		&.b_tree_l6  a.b_tree_icon { padding-left:$treeicon_spread_px+80px; background-position:$treeicon-spread_px+62px 50%; }
+		&.b_tree_l7  a.b_tree_icon { padding-left:$treeicon_spread_px+90px; background-position:$treeicon-spread_px+72px 50%; }
+		&.b_tree_l8  a.b_tree_icon { padding-left:$treeicon_spread_px+100px; background-position:$treeicon-spread_px+82px 50%; }
+		&.b_tree_l9  a.b_tree_icon { padding-left:$treeicon_spread_px+110px; background-position:$treeicon-spread_px+92px 50%; }
+		&.b_tree_l10 a.b_tree_icon { padding-left:$treeicon_spread_px+120px; background-position:$treeicon-spread_px+102px 50%; }
+		&.b_tree_l11 a.b_tree_icon { padding-left:$treeicon_spread_px+130px; background-position:$treeicon-spread_px+112px 50%; }
+	
+	}// end ul
+	
+	
+	/* the open/close node icons */
+	a.b_tree_level_close span { background: url('../openolat/images/toggle-small.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_open span { background: url('../openolat/images/toggle-small-expand.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
+	
+}// end b_tree
+	
+	
