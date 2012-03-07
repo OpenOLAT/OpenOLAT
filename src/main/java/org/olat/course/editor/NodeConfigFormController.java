@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -180,6 +179,8 @@ public class NodeConfigFormController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(shortTitle.getValue())) {
 			// the short title is mandatory
 			shortTitle.setErrorKey("nodeConfigForm.menumust", new String[] {});
+			shortTitleOk = false;
+		} else if (shortTitle.hasError()) {
 			shortTitleOk = false;
 		}
 		if (shortTitleOk && super.validateFormLogic(ureq)) {
