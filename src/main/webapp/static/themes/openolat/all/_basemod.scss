@@ -338,7 +338,10 @@ div.b_ext_elem {
 .b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
 .b_center { text-align:center; margin: 0.5em auto }
 /* CLEAR container: additonal to b_floatbox */
-.b_floatscrollbox { overflow-x: auto; overflow-y: hidden;}
+.b_floatscrollbox { 
+	overflow-x: auto;  // this must stay on "auto", change to "hidden" and the everything goes to hell
+	overflow-y: hidden;
+}
 .b_overflowscrollbox { overflow: auto;}
 
 
