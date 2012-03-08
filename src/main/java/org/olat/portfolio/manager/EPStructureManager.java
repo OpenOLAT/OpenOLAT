@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.hibernate.ObjectNotFoundException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.NamedGroupImpl;
@@ -647,7 +648,7 @@ public class EPStructureManager extends BasicManager {
 	protected Integer[] getRestrictionStatistics(PortfolioStructure structure) {
 		if (structure instanceof EPStructureElement) {
 			EPStructureElement structEl = (EPStructureElement) structure;
-			structEl = (EPStructureElement) loadPortfolioStructureByKey(structEl.getKey());
+			structEl = (EPStructureElement) reloadPortfolioStructure(structEl);
 			final List<CollectRestriction> restrictions = structEl.getCollectRestrictions();
 
 			if (restrictions != null && !restrictions.isEmpty()) {
@@ -1516,9 +1517,23 @@ public class EPStructureManager extends BasicManager {
 		return resources.get(0);
 	}
 	
+	/**
+	 * Reload an object
+	 * @param structure
+	 * @return The reloaded object or null if not found
+	 */
+	public PortfolioStructure reloadPortfolioStructure(PortfolioStructure structure) {
+		if (structure == null) throw new NullPointerException();
+		try {
+			return (PortfolioStructure)dbInstance.loadObject(EPStructureElement.class, structure.getKey());
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+	
 	public OLATResource loadOlatResourceFromStructureElByKey(Long key) {
 		if (key == null) throw new NullPointerException();
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select element.olatResource from ").append(EPStructureElement.class.getName()).append(" element")
 			.append(" where element.key=:key or element.olatResource.resId=:key ");

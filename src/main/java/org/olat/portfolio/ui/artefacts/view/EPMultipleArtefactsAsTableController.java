@@ -229,7 +229,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 				} else if (CMD_CHOOSE.equals(action)){
 					fireEvent(ureq, new EPArtefactChoosenEvent(artefact));
 				} else if (CMD_UNLINK.equals(action)){
-					struct = ePFMgr.loadPortfolioStructureByKey(struct.getKey());
+					struct = ePFMgr.reloadPortfolioStructure(struct);
 					ePFMgr.removeArtefactFromStructure(artefact, struct);
 					artefactListTblCtrl.modelChanged();
 					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, struct));
