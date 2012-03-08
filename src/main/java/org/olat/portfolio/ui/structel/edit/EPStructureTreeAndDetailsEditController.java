@@ -125,7 +125,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 		if (source == mapStyle){
 			if (!mapStyle.getSelectedKey().equals(mapStyle.getUserObject())){
 				String newStyle = mapStyle.getSelectedKey();
-				rootStructure = ePFMgr.loadPortfolioStructureByKey(rootStructure.getKey());
+				rootStructure = ePFMgr.reloadPortfolioStructure(rootStructure);
 				((EPStructureElement)rootStructure).setStyle(newStyle);
 				ePFMgr.savePortfolioStructure(rootStructure);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -136,7 +136,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 	private void initOrUpdateToc(UserRequest ureq) {
 		removeAsListenerAndDispose(tocCtrl);
 		// with new links (pages, sub-elements or artefacts) to map, map gets a new version, therefore needs a refresh!
-		rootStructure = ePFMgr.loadPortfolioStructureByKey(rootStructure.getKey());
+		rootStructure = ePFMgr.reloadPortfolioStructure(rootStructure);
 		tocCtrl = new EPTOCController(ureq, getWindowControl(), selectedStructure, rootStructure, secCallback);
 		listenTo(tocCtrl);
 		flc.put("tocCtrl", tocCtrl.getInitialComponent());
@@ -192,7 +192,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 				tocCtrl.refreshTree(rootStructure); 
 			} else if (event instanceof EPStructureChangeEvent && event.getCommand().equals(EPStructureChangeEvent.ADDED)) {
 				// always reload to be on the save side!
-				selectedStructure = ePFMgr.loadPortfolioStructureByKey(((EPStructureChangeEvent)event).getPortfolioStructure().getKey());
+				selectedStructure = ePFMgr.reloadPortfolioStructure(((EPStructureChangeEvent)event).getPortfolioStructure());
 				initOrUpdateToc(ureq);
 				initOrUpdateDetailsEditor(ureq);				
 			}	else if (event.equals(Event.CHANGED_EVENT)){
@@ -210,7 +210,7 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 			if(EPStructureEvent.CHANGE.equals(structureEvent.getCommand())) {
 				PortfolioStructure structure = structureEvent.getStructure();
 				if(rootStructure.equals(structure)) {
-					rootStructure = ePFMgr.loadPortfolioStructureByKey(rootStructure.getKey());
+					rootStructure = ePFMgr.reloadPortfolioStructure(rootStructure);
 				}
 				// refresh the tree on changes!
 				tocCtrl.update(ureq, structure);

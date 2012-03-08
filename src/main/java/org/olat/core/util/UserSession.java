@@ -353,6 +353,16 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			}
 		}
 	}
+	
+	public void removeFromHistory(BusinessControl businessControl) {
+		String businessPath = businessControl.getAsString();
+		for(Iterator<HistoryPoint> it=history.iterator(); it.hasNext(); ) {
+			String path = it.next().getBusinessPath();
+			if(path.startsWith(businessPath)) {
+				it.remove();
+			}
+		}
+	}
 
 	/**
 	 * @see javax.servlet.http.HttpSessionBindingListener#valueBound(javax.servlet.http.HttpSessionBindingEvent)

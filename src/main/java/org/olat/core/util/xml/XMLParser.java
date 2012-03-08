@@ -70,6 +70,7 @@ public class XMLParser {
 			reader.setEntityResolver(er);
 			reader.setValidation(validateXML);
 			document = reader.read(in, "");
+			document.normalize();
 		} catch (Exception e) {
 			throw new OLATRuntimeException(XMLParser.class, "Exception reading XML", e);
 		}

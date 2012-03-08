@@ -31,6 +31,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.activity.CourseLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -92,6 +96,10 @@ public class InfoEditController extends FormBasicController {
 		messageToEdit.setModificationDate(new Date());
 		messageToEdit.setModifier(getIdentity());
 		infoFrontendManager.sendInfoMessage(messageToEdit, null, null, null);
+		
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_UPDATED, getClass(),
+				LoggingResourceable.wrap(messageToEdit.getOLATResourceable(), OlatResourceableType.infoMessage));
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

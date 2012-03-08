@@ -188,237 +188,10 @@ div.b_iframe_wrapper iframe { width:100%; position:relative; top: 0; left:0; bor
 		} 
 	}
 }
-
-
-
-
-
-/** ----------------- MAIN NAVIGATION ( TABS ) ----------------- **/
-#b_nav_main {
-	float: left;
 	
-	@if $enablebiz == true {
-		margin-top:-27px;
-	}
-	
-	ul {
-		padding-left:40px;
-		margin:0;
-		//@include o-box-shadow(0,0,14px,#D3D3D3);
-		
-		li { 
-			float:left;
-			position:relative;
-			list-style: none;
-			margin:0px;
-			padding: 4px 3px 4px 12px;
-			margin-right:2px;
-			
-			@if $enablebiz == true {
-				border:1px solid #ddd;
-				border-bottom:none;
-			}
-			
-			a {
-				/* "bloat" the links (better for touch) */
-				padding: 4px 12px 4px 3px; 
-			}
-			a:hover { text-decoration: none; }
-			
-			
-			@include o-border-radius-all(6px,6px,0,0);
-			background: #f5f5f5; //  for browsers with no rgba
-			background: rgba(255,255,255,0.5);
-			
-			@if $enablebiz == true {
-				background: rgba(255,255,255,0.7);
-			}
-			
-			/* -- SITES ( home, users, groups, etc. ) -- */
-			&.b_nav_site { 
-	
-				//active sites
-				&.b_nav_active,&:hover,&.b_exception {
-					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
-					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
-					background:#fff;
-				}
-				&.b_nav_active a {
-				}
-			
-				/** sites icons **/
-				> div {
-					padding-left: 16px;
-					background-repeat: no-repeat;
-					background-position: 0% 50%;		
-					background-image: url('../openolat/images/application.png');		
-				}
-				
-				&.o_site_home > div { background-image: url('../openolat/images/home.png'); }
-				&.o_site_admin > div { background-image: url('../openolat/images/wrench-screwdriver.png'); }
-				&.o_site_useradmin > div { background-image: url('../openolat/images/user_conf.png'); }
-				&.o_site_groupsmanagement > div { background-image: url('../openolat/images/users_conf.png'); }
-				&.o_site_repository > div { background-image: url('../openolat/images/books-stack.png'); }
-				&.o_site_groups > div { background-image: url('../openolat/images/users.png'); }
-				&.o_site_coaching > div { background-image: url('../openolat/images/eye.png'); }
-				&.site_demo_icon > div { background-image: url('../openolat/images/information-white.png');  }
-				&.f_site_library > div { background-image: url('../openolat/images/library.png'); } 
-				&.fx_members >  div { background-image: url('../openolat/images/users_members.png'); } 
-				&.o_site_guidemo div { background-image: url('../openolat/images/light-bulb.png') }
-				&.b_resource_GroupInfoMainController div { background-image: url(../openolat/images/users.png) }
-	
-			}
-			
-			/* -- TABS ( courses, wiki, etc.) -- */
-			&.b_nav_tab {
-				margin-right:4px;
-				a.b_nav_tab_close { 
-					position: absolute; top: 3px; right: 4px;	width: 13px; height: 13px; line-height: 0;	padding: 0; margin: 0; 
-					background: transparent url(../openolat/images/cross_small_trimmed_grey.png) no-repeat right top;
-				}
-				
-				//active tabs
-				&.b_nav_active,&:hover {
-					a.b_nav_tab_close { background-image: url(../openolat/images/cross_small_trimmed_blue.png); }
-					@include o-box-shadow(0, -4px,8px -1px, #d3d3d3);
-					background:#fff;
-				}
-				&.b_nav_active a {
-				}
-			}
-			
-			/* -- THE SPACER -- */
-			&#b_nav_spacer {
-				background:none;
-				border:none;
-				width:20px;
-				height:1px;
-				padding:0;
-			}
-			
-		}//end li
-	}//end ul
-}
-	
-	
-	
-
-/** ----------------- SUB NAVIGATION (TREE) ----------------- **/
-
-/* note:  the markup will be the one from OLATpro, has to be merged yet */
-div.b_tree {
-	font-size: 100%;
-	padding: 0;
-	
-	ul { 
-		position: relative;
-		padding: 0;
-		margin: 0 0 0 1em;
-		list-style: none; 
-		white-space: nowrap;
-		
-		li {
-			position:relative;
-			background:transparent;
-			margin-left:0;
-			padding-left:0;
-			line-height:1.7em;
-			
-			// a tree element with icon
-			a.b_tree_icon {padding-left: 20px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}	
-			
-			a {
-				color:$basegray;
-			}
-			a.b_tree_l1 {
-				padding-left:16px;
-			}
-			
-			.b_tree_oc_l1 {
-				position: absolute;
-				top: 0px;
-				left: 0px;
-				z-index: 9;
-			}
-
-
-			/* selected, hovered, active <a> tag */
-			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
-			a.b_tree_selected,a:active { color: $basecolor; background-color: transparent; text-decoration:none; }	
-			li a.b_tree_selected_parents,a.b_tree_l0,strong { color: $basecolor; font-weight: bold; }
-			
-			
-			/*  icon positioning */
-			.b_tree_oc_l1  { position:absolute; top:0px; left:1px; z-index:9; }
-			.b_tree_oc_l2  { position:absolute; top:0px; left:11px; z-index:9; }
-			.b_tree_oc_l3  { position:absolute; top:0px; left:21px; z-index:9; }
-			.b_tree_oc_l4  { position:absolute; top:0px; left:31px; z-index:9; }
-			.b_tree_oc_l5  { position:absolute; top:0px; left:41px; z-index:9; }
-			.b_tree_oc_l6  { position:absolute; top:0px; left:51px; z-index:9; }
-			.b_tree_oc_l7  { position:absolute; top:0px; left:61px; z-index:9; }
-			.b_tree_oc_l8  { position:absolute; top:0px; left:71px; z-index:9; }
-			.b_tree_oc_l9  { position:absolute; top:0px; left:81px; z-index:9; }
-			.b_tree_oc_l10 { position:absolute; top:0px; left:91px; z-index:9; }
-			.b_tree_oc_l11 { position:absolute; top:0px; left:101px; z-index:9; }	
-			
-			
-			a.b_tree_l0  { padding-left: 5px; }
-			a.b_tree_l1  { padding-left: 15px; }
-			a.b_tree_l2  { padding-left: 25px; }
-			a.b_tree_l3  { padding-left: 35px; }
-			a.b_tree_l4  { padding-left: 45px; }
-			a.b_tree_l5  { padding-left: 55px; }
-			a.b_tree_l6  { padding-left: 65px; }
-			a.b_tree_l7  { padding-left: 75px; }
-			a.b_tree_l8  { padding-left: 85px; }
-			a.b_tree_l9  { padding-left: 95px; }
-			a.b_tree_l10 { padding-left: 105px; }
-			a.b_tree_l11 { padding-left: 115px; }
-			
-			
-			/*   decorators in tree (e.g. course-editor ) */
-			span.b_tree_icon_decorator {
-				width: 12px;
-				height: 12px;
-				float: right;
-				display: inline;
-				position: static;
-				background-repeat:no-repeat;
-			}
-			
-			/* fix deleted nodes in courseditor (24.02.2012) */
-			&.b_deleted {
-				text-decoration:none;
-				a { text-decoration: line-through; }
-			}
-			
-		} // end li
-		
-		/* link to select the item with icon */
-		$treeicon_spread_px: 6px;
-		
-		&.b_tree_l0  a.b_tree_icon { padding-left:$treeicon_spread_px+20px;  background-position:$treeicon-spread_px+2px 50%; }
-		&.b_tree_l1  a.b_tree_icon { padding-left:$treeicon_spread_px+30px;  background-position:$treeicon-spread_px+12px 50%; }
-		&.b_tree_l2  a.b_tree_icon { padding-left:$treeicon_spread_px+40px;  background-position:$treeicon-spread_px+22px 50%; }
-		&.b_tree_l3  a.b_tree_icon { padding-left:$treeicon_spread_px+50px;  background-position:$treeicon-spread_px+32px 50%; }
-		&.b_tree_l4  a.b_tree_icon { padding-left:$treeicon_spread_px+60px;  background-position:$treeicon-spread_px+42px 50%; }
-		&.b_tree_l5  a.b_tree_icon { padding-left:$treeicon_spread_px+70px;  background-position:$treeicon-spread_px+52px 50%; }
-		&.b_tree_l6  a.b_tree_icon { padding-left:$treeicon_spread_px+80px; background-position:$treeicon-spread_px+62px 50%; }
-		&.b_tree_l7  a.b_tree_icon { padding-left:$treeicon_spread_px+90px; background-position:$treeicon-spread_px+72px 50%; }
-		&.b_tree_l8  a.b_tree_icon { padding-left:$treeicon_spread_px+100px; background-position:$treeicon-spread_px+82px 50%; }
-		&.b_tree_l9  a.b_tree_icon { padding-left:$treeicon_spread_px+110px; background-position:$treeicon-spread_px+92px 50%; }
-		&.b_tree_l10 a.b_tree_icon { padding-left:$treeicon_spread_px+120px; background-position:$treeicon-spread_px+102px 50%; }
-		&.b_tree_l11 a.b_tree_icon { padding-left:$treeicon_spread_px+130px; background-position:$treeicon-spread_px+112px 50%; }
-	
-	}// end ul
-	
-	
-	/* the open/close node icons */
-	a.b_tree_level_close span { background: url('../openolat/images/toggle-small.png') no-repeat 0% 50%; padding-right:8px;}
-	a.b_tree_level_open span { background: url('../openolat/images/toggle-small-expand.png') no-repeat 0% 50%; padding-right:8px;}
-	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
-	
-}// end b_tree
+/**  I moved main navigation and sub-navigation (tree) to separate file, 
+but had to include here, don't want to change all layout.scss **/
+@import "nav";
 
 
 /** ----------------- FOOTER ----------------- **/
@@ -438,8 +211,11 @@ div.b_tree {
 		float: left; line-height: 16px;
 	 	a.b_ajax {background: url(../openolat/images/ajax.png) no-repeat; width: 20px; height: 16px; display: block; float: left; }
 	}
-	#b_footer_version {float: right; display: block;}
-	#b_footer_powered { text-align: center; width: auto; background: none;  a { display: inline; } }
+	#b_footer_version { float: right; display: block; }
+	#b_footer_powered { 
+		text-align: center; width: auto; background: none;  
+		a { display: inline; } 
+	}
 }
 
 
@@ -461,10 +237,10 @@ div.b_breadcumb_path {
 	padding: 0; margin: 0; float:left; display: inline;
 	ul { 
 		padding: 0; margin: 0; list-style: none; float:left;  display: inline; 
-		li { padding: 0 7px 0 14px; margin: 0; list-style: none; float:left;  display: inline; background: url(../openolat/images/breadcrumb-separator.png) no-repeat left center;}
-		li.b_first { background: url(../openolat/images/home.png) no-repeat top left; padding-left: 25px;}
+		li { padding: 0 7px 0 14px; margin: 0; list-style: none; float:left;  display: inline; background: url(../openolat/images/breadcrumb-separator.png) no-repeat left center; }
+		li.b_first { background: url(../openolat/images/home.png) no-repeat top left; padding-left: 25px; }
 		li a { color: #464444; }
-		li span.b_disabled { color: #000; padding: 0 10px 0 0; margin: 0;}
+		li span.b_disabled { color: #000; padding: 0 10px 0 0; margin: 0; }
 	}
 }
 div.b_breadcumb_content { clear: both;  margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;}
@@ -487,16 +263,14 @@ h3.b_titled_wrapper span { padding-right: 4em; font-style: italic;}
 h4.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 h5.b_titled_wrapper span { padding-right: 3em; font-style: italic;}
 
-
 /* OPEN / CLOSE BOX TOGGLER */
 a.b_togglebox_closed {background: url($ico_plus) no-repeat 0 50%; padding: 1px 0 1px 18px; vertical-align: middle;}
 a.b_togglebox_opened {background: url($ico_minus) no-repeat 0 50%; padding: 1px 0 1px 18px; vertical-align: middle;}
 
-
 div.b_titled_wrapper {
 	div.b_togglebox div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
 	//a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; }
-	//a.b_togglebox_closed {display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left;  @include o-opacity(60); }
+	//a.b_togglebox_closed { display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left;  @include o-opacity(60); }
 	
 	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
 	a.b_togglebox_hide span { }
@@ -548,104 +322,14 @@ div.o_catalog {
 }/* end div.o_catalog */
 
 div.b_ext_elem {
-	.x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_icon, .x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_icon  { background-image: url(../openolat/images/folder_small.png); }
-}
-div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_noaccess_icon,
-div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_icon { background-image: url(../openolat/folder_open.png); }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
-div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_entry_icon { background-image: url(../openolat/images/le_resources/book-open-text-image.png); }
+	.x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_icon, 
+	.x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_icon  { background-image: url(../openolat/images/folder_small.png); }
 	
-	
-
-/*
-	div.o_catalog div.o_catalog_nav { font-size: 95%; padding: 0 0 0 20px; border-bottom: 1px solid #eee; background: url(../images/olat/folder_open.png) 0 50% no-repeat;}
-	div.o_catalog div.o_catalog_links {margin-top: 1em; padding-top: 1em; border-top: 1px solid #eee;}
-    div.o_catalog div.o_catalog_title { display: none; }
-	div.o_catalog 
-	div.o_catalog 
-	div.o_catalog div.o_catalog_itemlist  
-	div.o_catalog div.o_catalog_itemlist 
-   
-    div.o_catalog div.o_catalog_link { margin: 1em 0 1em 0;}
-    div.o_catalog div.o_catalog_link_title { background: #D6D7E0; line-height: 1.5em; padding: 0 0 0 0.5em; margin: 2em 0 0 0;}
-	
-	div.b_table_wrapper.o_catalog_categories_table table { background: none; }
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr { background: transparent; }	
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr.b_table_odd { background: transparent; }
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr td { border: 0 ! important; font-size: 90%}
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr td.b_last_child { text-align: right;}
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr td.b_first_child { text-align: left;}
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr:hover,
-	div.b_table_wrapper.o_catalog_categories_table table tbody tr:focus { background: #c4d0dc;}	
-    
-   */
-	
-/** -------------- TAGGING ---------------- **/
-/* tagging */
-	.b_tag_list { background: url(../openolat/images/tag-label-yellow.png) 0px 3px no-repeat !important; }
-	.b_tag_icon { background-image: url(../openolat/images/tag-label-yellow.png); }
-	
-	
-	div.b_tags {
-		margin: 2em 0; 
-		div { padding: 0.5em 0 0 20px; }
-		span.b_tag { font-size: 80%; padding: 5px 2px 5px 2px;line-height:3em; white-space: nowrap;}
-	}
-	
-	div.o_ep_toc_editor div.b_subcl{ min-height: 35em;  }
-	div.o_ep_struct_editor div.b_subcr{ min-height: 35em; background: #FFF; padding-right: 1em; overflow-x: auto; }
-	div.b_struct_edit_btn { float: right; display:inline; }
-	div.b_struct_submit_assess_btn { float: right; display: inline; }
-	
-	/* TextboxList  */
-	*:first-child+html div.holder { padding-bottom: 2px; }
-	* html div.holder { padding-bottom: 2px; } /* ie7 and below */
-	.textbox-outer	{ list-style-type: none; margin-left: 0em; }
-	div.holder { font-size: 80%; }
-	.textboxlist-auto { position: absolute; width: 300px; overflow: show; }	
-
-	/* autocompleter bitbox (item) holder */
-	a.bit-box, span.b_tag { -moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; border: 1px solid #CAD8F3; background: #DEE7F8; padding: 1px 5px 2px; padding-right: 15px; position: relative; }
-	div.holder { 
-		min-width: 200px; width: auto; margin: 0; overflow: hidden; height: auto !important; height: 1%; padding: 0px 0px 0; cursor: text;
-		a { float: left; margin: 0 5px 4px 0; }
-		a.bit { text-decoration: none; color: black; }
-		a.bit:active,  a.bit:focus { outline: none; }
-		a.bit-box-focus { border-color: #598BEC; background: #598BEC; color: #fff; }
-		a.bit-input .maininput {  } 
-		a.bit-input input { width: 100px; margin: 0; border: none; background: white; outline: 0; padding: 3px 0 2px; } /* no left/right padding here please */
-		a.bit-input input.smallinput { width: 20px; }
-		a.bit-hover { background: #BBCEF1; border: 1px solid #6D95E0; }
-		a.bit-box-focus { background: #598BEC; color: #fff; }
-		a.bit-box a.closebutton { position: absolute; right: 0; top: 5px	; display: block; width: 7px; height: 7px; font-size: 1px; background: url('../openolat/images/tag_x.gif'); }
-		a.bit-box a.closebutton:hover { background-position: 7px; }
-		a.bit-box a.closebutton:active { outline: none }
-		a.bit-box-focus a.closebutton,  a.bit-box-focus a.closebutton:hover { background-position: bottom; }
-	}
-	
-	.b_wizard {
-		.textbox-outer { background: url(../openolat/images/tag-label-yellow.png) top left no-repeat;
-		li {margin-left:18px;} }
-		div.holder a.bit-input input { background: #f8f8f8; padding: 0.4em; }
-	}
-
-	/* Autocompleter for textboxlist */
-	ol.textbox-outer { margin: 0; padding: 0;}
-	.textboxlist-auto { 
-		display: none; background: #eee;
-		.default { padding: 5px 7px; border: 1px solid #ccc; border-width: 0 1px 1px; }
-		ul { 
-			display: none; margin: 0; padding: 0; overflow: auto; 
-			li { padding: 5px 12px; z-index: 1000; cursor: pointer; margin: 0; list-style-type: none; border: 1px solid #ccc; border-width: 0 1px 1px; }
-			li.loading-indicator { padding-left: 30px; background-position: 5px center; cursor: defat; font-size: 100.01% ! important; line-height: 1.5em; }
-			li.more-indicator { cursor: defat; font-style: italic; }
-			li em { font-weight: bold; font-style: normal; background: #ccc; }
-			li.auto-focus { background: #4173CC; color: #fff; }
-			li.auto-focus em { background: none; }
-		}
-	}
-	input.inputMessage { color: #AAA; font-size: 11px; }
+	.x-tree-node-collapsed .x-tree-node-icon.o_catalog_cat_noaccess_icon,
+	.x-tree-node-leaf .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
+	.x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_icon { background-image: url(../openolat/folder_open.png); }
+	.x-tree-node-expanded .x-tree-node-icon.o_catalog_cat_noaccess_icon { background-image: url(../openolat/images/locked.png); }
+	.x-tree-node-leaf .x-tree-node-icon.o_catalog_entry_icon { background-image: url(../openolat/images/le_resources/book-open-text-image.png); }
 }
 
 
@@ -654,5 +338,11 @@ div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon.o_catalog_entry_icon { backgr
 .b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
 .b_center { text-align:center; margin: 0.5em auto }
 /* CLEAR container: additonal to b_floatbox */
-.b_floatscrollbox { overflow-x: auto; overflow-y: hidden;}
+.b_floatscrollbox { 
+	overflow-x: auto;  // this must stay on "auto", change to "hidden" and the everything goes to hell
+	overflow-y: hidden;
+}
 .b_overflowscrollbox { overflow: auto;}
+
+
+}/* end @media all */

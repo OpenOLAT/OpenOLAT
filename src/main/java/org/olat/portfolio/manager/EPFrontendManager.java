@@ -61,7 +61,6 @@ import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -919,12 +918,23 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	/**
-	 * Load a portfolio structure by its primary key
+	 * Load a portfolio structure by its primary key. DON'T USE THIS METHOD
+	 * TO RELOAD AN OBJECT. If you want do this, use the method
+	 * reloadPortfolioStructure(PortfolioStructure structure)
 	 * @param key cannot be null
 	 * @return The structure element or null if not found
 	 */
 	public PortfolioStructure loadPortfolioStructureByKey(Long key){
 		return structureManager.loadPortfolioStructureByKey(key);
+	}
+	
+	/**
+	 * Reload a portfolio structure
+	 * @param structure cannot be null
+	 * @return The reloaded structure element
+	 */
+	public PortfolioStructure reloadPortfolioStructure(PortfolioStructure structure){
+		return structureManager.reloadPortfolioStructure(structure);
 	}
 	
 	/**

@@ -20,6 +20,13 @@ div.o_ep_struct_editor div.b_subcr {
 	@include o_gradient2(#f6f6f6,#ebebeb);
 }
 	
+	
+	div.o_ep_toc_editor div.b_subcl{ min-height: 35em;  }
+	div.o_ep_struct_editor div.b_subcr{ min-height: 35em; background: #FFF; padding-right: 1em; overflow-x: auto; }
+	div.b_struct_edit_btn { float: right; display:inline; }
+	div.b_struct_submit_assess_btn { float: right; display: inline; }
+	
+	
 	.b_artefact div.b_actions { margin-top: 2em;}
 	.b_artefact div.b_desc { font-style: italic; margin: 1em 0; }
 	.b_ep_artAttribLink { background-image: url(../openolat/images/table_gear.png); }

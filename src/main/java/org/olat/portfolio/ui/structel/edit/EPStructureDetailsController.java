@@ -295,7 +295,7 @@ public class EPStructureDetailsController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(final UserRequest ureq) {
-		editStructure = ePFMgr.loadPortfolioStructureByKey(editStructure.getKey());
+		editStructure = ePFMgr.reloadPortfolioStructure(editStructure);
 		editStructure.setTitle(titleEl.getValue());
 		editStructure.setDescription(descriptionEl.getValue());
 		editStructure.setArtefactRepresentationMode(viewRadio.getSelectedKey());

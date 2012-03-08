@@ -38,8 +38,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -76,13 +74,13 @@ public class RegistrationController extends BasicController {
 
 	private VelocityContainer myContent;	
 	private Panel regarea;
-	private WizardInfoController wic;
-	private DisclaimerController dclController;
-	private RegistrationManager rm = RegistrationManager.getInstance();
-	private EmailSendingForm ef;
-	private RegistrationForm2 rf2;
-	private LanguageChooserController lc;
-	private String regKey;
+	private WizardInfoController wizInfoController;
+	private DisclaimerController disclaimerController;
+	private RegistrationManager registrationManager = RegistrationManager.getInstance();
+	private EmailSendingForm emailSendForm;
+	private RegistrationForm2 registrationForm;
+	private LanguageChooserController langChooserController;
+	private String uniqueRegistrationKey;
 	private TemporaryKeyImpl tempKey;
 
 	/**
@@ -109,19 +107,19 @@ public class RegistrationController extends BasicController {
 		
 		//construct content
 		myContent = createVelocityContainer("reg");
-		wic = new WizardInfoController(ureq, 5);
-		listenTo(wic);
-		myContent.put("regwizard", wic.getInitialComponent());
+		wizInfoController = new WizardInfoController(ureq, 5);
+		listenTo(wizInfoController);
+		myContent.put("regwizard", wizInfoController.getInitialComponent());
 		regarea = new Panel("regarea");
 		myContent.put("regarea", regarea);
-		regKey = ureq.getHttpReq().getParameter("key");
-		if (regKey == null || regKey.equals("")) {
+		uniqueRegistrationKey = ureq.getHttpReq().getParameter("key");
+		if (uniqueRegistrationKey == null || uniqueRegistrationKey.equals("")) {
 			// no temporary key is given, we assume step 1. If this is the case, we
 			// render in a modal dialog, no need to add the 3cols layout controller
 			// wrapper
 			//fxdiff FXOLAT-113: business path in DMZ
 			if(I18nModule.getEnabledLanguageKeys().size() == 1) {
-				wic.setCurStep(2);
+				wizInfoController.setCurStep(2);
 				createEmailForm(ureq);
 			} else {
 				createLanguageForm(ureq, wControl);
@@ -129,20 +127,20 @@ public class RegistrationController extends BasicController {
 			putInitialPanel(myContent);
 		} else {
 			// we check if given key is a valid temporary key
-			tempKey = rm.loadTemporaryKeyByRegistrationKey(regKey);
+			tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(uniqueRegistrationKey);
 			// if key is not valid we redirect to first page
 			if (tempKey == null) {
 				// error, there should be an entry
 				showError("regkey.missingentry");
 				//fxdiff FXOLAT-113: business path in DMZ
 				if(I18nModule.getEnabledLanguageKeys().size() == 1) {
-					wic.setCurStep(2);
+					wizInfoController.setCurStep(2);
 					createEmailForm(ureq);
 				} else {
 					createLanguageForm(ureq, wControl);
 				}
 			} else {
-				wic.setCurStep(3);
+				wizInfoController.setCurStep(3);
 				myContent.contextPut("pwdhelp", translate("pwdhelp"));
 				myContent.contextPut("loginhelp", translate("loginhelp"));
 				myContent.contextPut("text", translate("step3.reg.text"));
@@ -194,29 +192,29 @@ public class RegistrationController extends BasicController {
 	}
 	
 	private void createRegForm2(UserRequest ureq, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
-		rf2 = new RegistrationForm2(ureq, getWindowControl(), I18nManager.getInstance().getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
-		listenTo(rf2);
-		regarea.setContent(rf2.getInitialComponent());
+		registrationForm = new RegistrationForm2(ureq, getWindowControl(), I18nManager.getInstance().getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
+		listenTo(registrationForm);
+		regarea.setContent(registrationForm.getInitialComponent());
 	}
 	
 	private void createLanguageForm(UserRequest ureq, WindowControl wControl) {
-		removeAsListenerAndDispose(lc);
-		lc = new LanguageChooserController(ureq, wControl, true);
-		listenTo(lc);
+		removeAsListenerAndDispose(langChooserController);
+		langChooserController = new LanguageChooserController(ureq, wControl, true);
+		listenTo(langChooserController);
 		myContent.contextPut("text", translate("select.language.description"));
-		regarea.setContent(lc.getInitialComponent());
+		regarea.setContent(langChooserController.getInitialComponent());
 	}
 
 	/**
 	 * just needed for creating EmailForm
 	 */
 	private void createEmailForm(UserRequest ureq) {
-		removeAsListenerAndDispose(ef);
-		ef = new EmailSendingForm(ureq, getWindowControl());
-		listenTo(ef);
+		removeAsListenerAndDispose(emailSendForm);
+		emailSendForm = new EmailSendingForm(ureq, getWindowControl());
+		listenTo(emailSendForm);
 		
 		myContent.contextPut("text", translate("step1.reg.text"));
-		regarea.setContent(ef.getInitialComponent());
+		regarea.setContent(emailSendForm.getInitialComponent());
 	}
 
 	/**
@@ -230,14 +228,14 @@ public class RegistrationController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == ef) {
+		if (source == emailSendForm) {
 			if (event == Event.DONE_EVENT) { // form
 				// validation
 				// was ok
-				wic.setCurStep(2);
+				wizInfoController.setCurStep(2);
 				// Email requested for tempkey
 				//save the fields somewhere
-				String email = ef.getEmailAddress();
+				String email = emailSendForm.getEmailAddress();
 				myContent.contextPut("email", email);
 				myContent.contextPut("text", translate("step2.reg.text", email));
 				//ef.setVisible(false);
@@ -253,8 +251,8 @@ public class RegistrationController extends BasicController {
 				String serverpath = Settings.getServerContextPathURI();
 				boolean isMailSent = false;
 				if (!foundUser) {
-					TemporaryKey tk = rm.loadTemporaryKeyByEmail(email);
-					if (tk == null) tk = rm.createTemporaryKeyByEmail(email, ip, rm.REGISTRATION);
+					TemporaryKey tk = registrationManager.loadTemporaryKeyByEmail(email);
+					if (tk == null) tk = registrationManager.createTemporaryKeyByEmail(email, ip, registrationManager.REGISTRATION);
 					myContent.contextPut("regKey", tk.getRegistrationKey());
 					body = getTranslator().translate("reg.body",
 							new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) })
@@ -285,9 +283,9 @@ public class RegistrationController extends BasicController {
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
-		} else if (source == lc) {
+		} else if (source == langChooserController) {
 			if (event == Event.DONE_EVENT) {
-				wic.setCurStep(2);
+				wizInfoController.setCurStep(2);
 				createEmailForm(ureq);
 				ureq.getUserSession().removeEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
 			} else if (event == Event.CANCELLED_EVENT) {
@@ -297,10 +295,10 @@ public class RegistrationController extends BasicController {
 				setLocale(lcev.getNewLocale(), true);
 				myContent.contextPut("text", translate("select.language.description"));
 			}
-		} else if (source == rf2) {
+		} else if (source == registrationForm) {
 			// Userdata entered
 			if (event == Event.DONE_EVENT) {
-				String lang = rf2.getLangKey();
+				String lang = registrationForm.getLangKey();
 				// change language if different then current language
 				if (! lang.equals(I18nManager.getInstance().getLocaleKey(ureq.getLocale()))) {
 					Locale loc = I18nManager.getInstance().getLocaleOrDefault(lang);
@@ -309,46 +307,25 @@ public class RegistrationController extends BasicController {
 				}
 
 				
-				wic.setCurStep(4);
+				wizInfoController.setCurStep(4);
 				myContent.contextPut("pwdhelp", "");
 				myContent.contextPut("loginhelp", "");
 				myContent.contextPut("text", translate("step4.reg.text"));
 				
-				removeAsListenerAndDispose(dclController);
-				dclController = new DisclaimerController(ureq, getWindowControl());
-				listenTo(dclController);
+				removeAsListenerAndDispose(disclaimerController);
+				disclaimerController = new DisclaimerController(ureq, getWindowControl());
+				listenTo(disclaimerController);
 				
-				regarea.setContent(dclController.getInitialComponent());
+				regarea.setContent(disclaimerController.getInitialComponent());
 			} else if (event == Event.CANCELLED_EVENT) {
 				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
 			}
-		} else if (source == dclController) {
+		} else if (source == disclaimerController) {
 			if (event == Event.DONE_EVENT) {
-				// OO-92
-				// disclaimer done -> now display all entered information (as table, see http://jira.openolat.org/browse/OO-92)
-				// this is step 5
-				wic.setCurStep(5);
-				
-				// hide the text we don't need anymore 
-				myContent.contextPut("pwdhelp", "");
-				myContent.contextPut("loginhelp", "");
-				myContent.contextPut("text", "");
-				
 				// finalize the registration by creating the user
 				User persitedUser = createNewUserAfterRegistration();
-				
-				// show last screen
-				VelocityContainer finishVC = createVelocityContainer("finish");
-				
-				List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
-				finishVC.contextPut("userPropertyHandlers", userPropertyHandlers);
-				finishVC.contextPut("user", persitedUser);
-				finishVC.contextPut("locale", getLocale());
-				finishVC.contextPut("username", rf2.getLogin());
-				finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[] {"notused",rf2.getLogin() }));
-				finishVC.contextPut("loginhref", WebappHelper.getServletContextPath());
-				
-				regarea.setContent(finishVC);
+				// display step5
+				displayFinalStep(persitedUser);
 			} else if (event == Event.CANCELLED_EVENT) {
 				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
 			}
@@ -358,6 +335,39 @@ public class RegistrationController extends BasicController {
 
 	/**
 	 * OO-92
+	 * 
+	 * displays the final step of the registration process. (step5)<br />
+	 * see also _content/finish.html
+	 * 
+	 * @param user
+	 *            The newly created User from which to display information
+	 * 
+	 */
+	private void displayFinalStep(User user){
+		// set wizard step to 5
+		wizInfoController.setCurStep(5);
+		
+		// hide the text we don't need anymore 
+		myContent.contextPut("pwdhelp", "");
+		myContent.contextPut("loginhelp", "");
+		myContent.contextPut("text", "");
+		
+		// show last screen
+		VelocityContainer finishVC = createVelocityContainer("finish");
+		
+		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+		finishVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		finishVC.contextPut("user", user);
+		finishVC.contextPut("locale", getLocale());
+		finishVC.contextPut("username", registrationForm.getLogin());
+		finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[] {registrationForm.getLogin() }));
+		finishVC.contextPut("loginhref", WebappHelper.getServletContextPath());
+		
+		regarea.setContent(finishVC);
+	}
+	
+	/**
+	 * OO-92
 	 * this will finally create the user, set all it's userproperties
 	 * 
 	 * @return User the newly created, persisted User Object
@@ -365,16 +375,16 @@ public class RegistrationController extends BasicController {
 	private User createNewUserAfterRegistration() {
 		// create user with mandatory fields from registration-form
 		UserManager um = UserManager.getInstance();
-		User volatileUser = um.createUser(rf2.getFirstName(), rf2.getLastName(), tempKey.getEmailAddress());
+		User volatileUser = um.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), tempKey.getEmailAddress());
 		// set user configured language
 		Preferences preferences = volatileUser.getPreferences();
 
-		preferences.setLanguage(rf2.getLangKey());
+		preferences.setLanguage(registrationForm.getLangKey());
 		volatileUser.setPreferences(preferences);
 		// create an identity with the given username / pwd and the user object
-		String login = rf2.getLogin();
-		String pwd = rf2.getPassword();
-		Identity persistedIdentity = rm.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
+		String login = registrationForm.getLogin();
+		String pwd = registrationForm.getPassword();
+		Identity persistedIdentity = registrationManager.createNewUserAndIdentityFromTemporaryKey(login, pwd, volatileUser, tempKey);
 		if (persistedIdentity == null) {
 			showError("user.notregistered");
 			return null;
@@ -383,7 +393,7 @@ public class RegistrationController extends BasicController {
 			List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 			User persistedUser = persistedIdentity.getUser();
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-				FormItem fi = rf2.getPropFormItem(userPropertyHandler.getName());
+				FormItem fi = registrationForm.getPropFormItem(userPropertyHandler.getName());
 				userPropertyHandler.updateUserFromFormItem(persistedUser, fi);
 			}
 			// persist changes in db
@@ -391,7 +401,7 @@ public class RegistrationController extends BasicController {
 			// send notification mail to sys admin
 			String notiEmail = RegistrationModule.getRegistrationNotificationEmail();
 			if (notiEmail != null) {
-				rm.sendNewUserNotificationMessage(notiEmail, persistedIdentity);
+				registrationManager.sendNewUserNotificationMessage(notiEmail, persistedIdentity);
 			}
 
 			// tell system that this user did accept the disclaimer

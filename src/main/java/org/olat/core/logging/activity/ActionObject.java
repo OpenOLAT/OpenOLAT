@@ -61,6 +61,7 @@ public enum ActionObject {
 	grouparea,
 	groupareaempty,
 	help,
+	infomessage,
 	layout,
 	login,
 	logout,

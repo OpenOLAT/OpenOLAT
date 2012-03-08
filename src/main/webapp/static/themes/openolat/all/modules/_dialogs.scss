@@ -40,10 +40,6 @@ div.b_modal_overlay {
 /* modal overlay color */
 div.b_modal_overlay, div.ext-el-mask { background: #000; @include o-opacity(25);} 
 
-.b_floatscrollbox {
-	overflow-x: hidden;
-	overflow-y: hidden;
-}
 
 div.b_window {
 	text-align: left;
