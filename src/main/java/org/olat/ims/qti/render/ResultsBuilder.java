@@ -96,12 +96,12 @@ public class ResultsBuilder {
 		for (int i = 0; i < ac.getSectionContextCount(); i++) {
 			SectionContext sectionCtx = ac.getSectionContext(i);
 			for (int j = 0; j < sectionCtx.getItemContextCount(); j++) {
-				Element el_item = sectionCtx.getItemContext(j).getEl_item();
 				// OO-148  
 				// on some occasions this did throw an IllegalAddException
-				// because el_item had already a parent.
-				if(el_item.getParent() != null)
-					extension_result.add(el_item);
+				// because el_item had already a parent. 
+				// make a clone for adding to extension_result
+				Element el_item = (Element) sectionCtx.getItemContext(j).getEl_item().clone();
+				extension_result.add(el_item);
 			}
 		}
 
