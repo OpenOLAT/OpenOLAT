@@ -209,6 +209,11 @@ public class BusinessControlFactory {
 	public void addToHistory(UserRequest ureq, HistoryPoint historyPoint) {
 		ureq.getUserSession().addToHistory(ureq, historyPoint);
 	}
+	
+	public void removeFromHistory(UserRequest ureq, WindowControl wControl) {
+		if(wControl == null || wControl.getBusinessControl() == null) return;
+		ureq.getUserSession().removeFromHistory(wControl.getBusinessControl());
+	}
 
 	public WindowControl createBusinessWindowControl(BusinessControl businessControl, WindowControl origWControl) {
 		WindowControl wc = new StackedBusinessWindowControl(origWControl, businessControl);

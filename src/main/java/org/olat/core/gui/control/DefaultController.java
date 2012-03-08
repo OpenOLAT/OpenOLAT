@@ -474,6 +474,10 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	protected WindowControl addToHistory(UserRequest ureq, OLATResourceable ores, StateEntry stateEntry, WindowControl wControl, boolean addToHistory) {
 		return BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, stateEntry, wControl, addToHistory);
 	}
+	
+	protected void removeHistory(UserRequest ureq) {
+		BusinessControlFactory.getInstance().removeFromHistory(ureq, getWindowControl());
+	}
 
 	/**
 	 * 

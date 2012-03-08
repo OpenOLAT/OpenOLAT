@@ -515,6 +515,7 @@ public class IQRunController extends BasicController implements GenericEventList
 				} else {
 					getWindowControl().pop();
 				}	
+				removeHistory(urequest);
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
 				addToHistory(urequest, ores, null);
 				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) && !assessmentStopped ) {
