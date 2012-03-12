@@ -534,7 +534,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		}
 	}
 	
-	public class EMailIdentity implements Identity {
+	private class EMailIdentity implements Identity {
 		private final String email;
 		private final User user;
 		
@@ -588,7 +588,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		public void setName(String name) {/**/}
 	}
 	
-	public class EMailUser implements User {
+	private class EMailUser implements User {
 		private final EMailPreferences prefs = new EMailPreferences();
 		private Map<String, String> data = new HashMap<String, String>();
 		
@@ -637,7 +637,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		}
 	}
 	
-	public class EMailPreferences implements Preferences {
+	private class EMailPreferences implements Preferences {
 		@Override
 		public String getLanguage() {
 			return getLocale().getLanguage();

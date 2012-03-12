@@ -22,7 +22,6 @@ package org.olat.modules.scorm.archiver;
 import java.io.File;
 import java.util.List;
 
-import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;

@@ -553,6 +553,12 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 				mainPanel.setContent(main);
 			}
 		} else if (source == searchController) {
+			// FXOLAT-398  searchControlle.getSelectedEntry can be null, catch that to prevent NPE
+			RepositoryEntry selEntry =  searchController.getSelectedEntry();
+			if(selEntry == null){
+				showWarning("repositoryentry.not.existing");
+				return;
+			}
 			RepositoryEntry selectedEntry = RepositoryManager.getInstance().lookupRepositoryEntry(searchController.getSelectedEntry().getKey());
 			if (selectedEntry == null) {
 				showWarning("warn.entry.meantimedeleted");

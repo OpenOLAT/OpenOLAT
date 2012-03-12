@@ -491,15 +491,11 @@ public class TableController extends BasicController {
 	 * @param index
 	 * @return
 	 */
-	public Object getSortedObjectAt(int index) {
+	public Object getSortedObjectAt(int sortedRow) {
+		int row = table.getSortedRow(sortedRow);
 		TableDataModel model = getTableDataModel();
-		for(int i=0; i<getRowCount(); i++) {
-			int pos = getSortedRow(i);
-			if(pos == index) {
-				return model.getObject(i);
-			}
-		}
-		return null;
+		Object obj = model.getObject(row);
+		return obj;
 	}
 	
 	/**

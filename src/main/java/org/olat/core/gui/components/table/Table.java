@@ -126,7 +126,7 @@ public class Table extends Component implements Comparator {
 	private TableDataModel tableDataModel;
 	// DO NOT REFERENCE filteredTableDataModel directly, use always getFilteredTableDataModel() because lazy init!
 	private TableDataModel filteredTableDataModel;
-	private List sorter;
+	private List<Integer> sorter;
 
 	private int sortColumn = 0;
 	private ColumnDescriptor currentSortingCd;
@@ -234,8 +234,19 @@ public class Table extends Component implements Comparator {
 	 * @return integer representing the row id after sorting
 	 */
 	public int getSortedRow(final int originalRow) {
-		Integer i = (Integer) sorter.get(originalRow);
+		Integer i = sorter.get(originalRow);
 		return i.intValue();
+	}
+	
+	public int getOriginalIndex(final int sortedRow) {
+		int count = 0;
+		for(Integer row:sorter) {
+			if(row.intValue() == sortedRow) {
+				return count;
+			}
+			count++;
+		}
+		return -1;
 	}
 
 	/**
