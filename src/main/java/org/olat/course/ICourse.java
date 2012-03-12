@@ -47,17 +47,6 @@ public interface ICourse extends OLATResourceable {
 	 * Name of folder within course root directory where nodes export their data.
 	 */
 	public static final String EXPORTED_DATA_FOLDERNAME = "export";
-	
-	/**
-	 * property name for the initial launch date will be set only the first
-	 * time the users launch the course.
-	 */
-	public static final String PROPERTY_INITIAL_LAUNCH_DATE = "initialCourseLaunchDate";
-	/**
-	 * property name for the recent launch date will be changed every time the
-	 * user start the course.
-	 */
-	public static final String PROPERTY_RECENT_LAUNCH_DATE = "recentCourseLaunchDate";
 
 	/**
 	 * @return The course run structure

@@ -49,6 +49,8 @@
 				<value>org/olat/repository/MetaDataElement.hbm.xml</value>
 				<value>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</value>
 				<value>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</value>
+				<value>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</value>
+				<value>org/olat/course/assessment/model/UserCourseInfosImpl.hbm.xml</value>
 				<value>org/olat/modules/fo/ForumImpl.hbm.xml</value>
 				<value>org/olat/modules/fo/MessageImpl.hbm.xml</value>
 				<value>org/olat/modules/fo/ReadMessage.hbm.xml</value>

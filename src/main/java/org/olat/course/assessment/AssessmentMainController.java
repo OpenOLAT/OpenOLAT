@@ -26,7 +26,6 @@
 package org.olat.course.assessment;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +37,7 @@ import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.ShortName;
@@ -82,13 +82,13 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.OnlyGroupConditionInterpreter;
@@ -103,7 +103,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.context.BGContextTableModel;
-import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -302,8 +301,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			// select user
 			assessedIdentityWrapper = AssessmentHelper.wrapIdentity(focusOnIdentity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);
 			
-			UserCourseEnvironment chooseUserCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();		
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, chooseUserCourseEnv, course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, assessedIdentityWrapper.getIdentity(), course, true);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		}
@@ -566,7 +564,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 						if(initialLaunchDates.containsKey(identityKeyFromEvent)) {
 							initialLaunchDate = initialLaunchDates.get(identityKeyFromEvent);
 						} else {
-							initialLaunchDate = AssessmentHelper.getInitialLaunchDate(wrappedIdFromModel.getUserCourseEnvironment());
+							UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+							initialLaunchDate = userCourseInformationsManager.getInitialLaunchDate(ores.getResourceableId(),  wrappedIdFromModel.getIdentity());
 						}
 						wrappedIdFromModel = AssessmentHelper.wrapIdentity(wrappedIdFromModel.getUserCourseEnvironment(), initialLaunchDate, currentCourseNode);
 						wrappers.add(wrappedIdFromModel);
@@ -644,9 +643,8 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 */
 	private void initIdentityEditController(UserRequest ureq, ICourse course) {
 		if (currentCourseNode == null) {
-			UserCourseEnvironment chooseUserCourseEnv = assessedIdentityWrapper.getUserCourseEnvironment();
 			removeAsListenerAndDispose(identityAssessmentController);
-			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, chooseUserCourseEnv, course, true);
+			identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, assessedIdentityWrapper.getIdentity(), course, true);
 			listenTo(identityAssessmentController);
 			setContent(identityAssessmentController.getInitialComponent());
 		} else {
@@ -1153,21 +1151,10 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			long start = 0;
 			boolean logDebug = log.isDebug();
 			if(logDebug) start = System.currentTimeMillis();
-			course.getCourseEnvironment().getAssessmentManager().preloadCache();
-			// 2) preload controller local user environment cache
-			start = System.currentTimeMillis();
 			List<Identity> identities = getAllAssessableIdentities();
-			
-			CourseNode node = course.getCourseEnvironment().getRunStructure().getRootNode();
-			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
-			List<Property> firstTime = pm.findCourseNodeProperties(node, identities, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
-			Calendar cal = Calendar.getInstance();
-			for(Property property:firstTime) {
-				if (StringHelper.containsNonWhitespace(property.getStringValue()) && property.getIdentity() != null) {
-					cal.setTimeInMillis(Long.parseLong(property.getStringValue()));
-					initialLaunchDates.put(property.getIdentity().getKey(), cal.getTime());
-				}
-			}
+
+			UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+			initialLaunchDates.putAll(mgr.getInitialLaunchDates(course.getResourceableId(), identities));
 			
 			for (Identity identity : identities) {
 				AssessmentHelper.wrapIdentity(identity, localUserCourseEnvironmentCache, initialLaunchDates, course, null);

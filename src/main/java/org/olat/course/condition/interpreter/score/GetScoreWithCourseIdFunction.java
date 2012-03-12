@@ -25,8 +25,8 @@
 
 package org.olat.course.condition.interpreter.score;
 
-import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
 import org.olat.course.editor.CourseEditorEnv;
@@ -88,12 +88,12 @@ public class GetScoreWithCourseIdFunction extends AbstractFunction {
 		 */
 
 		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-		EfficiencyStatement es = esm.getUserEfficiencyStatement(courseRepoEntryKey, getUserCourseEnv().getIdentityEnvironment().getIdentity());
+		UserEfficiencyStatement es = esm.getUserEfficiencyStatementLight(courseRepoEntryKey, getUserCourseEnv().getIdentityEnvironment().getIdentity());
 		if (es == null) return defaultValue();
-		Double score = esm.getScore(childId, es);
+		Float score = es.getScore();
 		if (score == null) return defaultValue();
 		// finally check existing value
-		return score;
+		return new Double(score.doubleValue());
 		
 	}
 

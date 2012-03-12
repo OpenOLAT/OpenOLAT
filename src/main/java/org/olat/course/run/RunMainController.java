@@ -35,6 +35,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.bookmark.AddAndEditBookmarkController;
 import org.olat.bookmark.BookmarkManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -93,10 +94,11 @@ import org.olat.course.archiver.IArchiverCallback;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentUIFactory;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
-import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementController;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
+import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.editor.PublishEvent;
@@ -104,7 +106,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.groupsandrights.ui.CourseGroupManagementMainController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
@@ -122,7 +123,6 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
-import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
@@ -446,24 +446,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void setLaunchDates(final Identity identity) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(identity), new SyncerExecutor(){
 			public void execute() {
-				CourseNode rootNode = course.getRunStructure().getRootNode();
-				//log launch date
-				String nowString = Long.toString(course.getCourseEnvironment().getCurrentTimeMillis());
-				CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-				Property initialLaunchProperty = cpm.findCourseNodeProperty(rootNode, identity, null, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
-				if(initialLaunchProperty == null) {
-					initialLaunchProperty = cpm.createCourseNodePropertyInstance(rootNode, identity, null, ICourse.PROPERTY_INITIAL_LAUNCH_DATE, null, null, nowString, null);
-					cpm.saveProperty(initialLaunchProperty);
-				}
-				
-				Property recentLaunchProperty = cpm.findCourseNodeProperty(rootNode, identity, null, ICourse.PROPERTY_RECENT_LAUNCH_DATE);
-				if (recentLaunchProperty == null) {
-					recentLaunchProperty = cpm.createCourseNodePropertyInstance(rootNode, identity, null, ICourse.PROPERTY_RECENT_LAUNCH_DATE, null, null, nowString, null);
-					cpm.saveProperty(recentLaunchProperty);
-				} else {
-					recentLaunchProperty.setStringValue(nowString);
-					cpm.updateProperty(recentLaunchProperty);
-				}
+				UserCourseInformationsManager efficiencyStatementManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+				efficiencyStatementManager.updateUserCourseInformations(uce.getCourseEnvironment().getCourseResourceableId(), getIdentity());
 			}
 		});
 	}
@@ -1245,7 +1229,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			myTool.addPopUpLink("efficiencystatement", translate("command.efficiencystatement"), "command.efficiencystatement", null,
 					"750", "800", false);
 			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-			EfficiencyStatement es = esm.getUserEfficiencyStatement(courseRepositoryEntry.getKey(), identity);
+			UserEfficiencyStatement es = esm.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
 			if (es == null) {
 				myTool.setEnabled("command.efficiencystatement", false);
 			}

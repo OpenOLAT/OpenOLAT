@@ -26,9 +26,7 @@
 package org.olat.course.archiver;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,6 +34,7 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -48,17 +47,16 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -129,24 +127,12 @@ public class ScoreAccountingHelper {
 
 		// preload user properties cache
 		CourseEnvironment courseEnvironment = course.getCourseEnvironment();
-		AssessmentManager assessmentManager = courseEnvironment.getAssessmentManager();
-		assessmentManager.preloadCache();
 		
 		boolean firstIteration = true;
 		int rowNumber = 1;
 
-		CourseNode node = courseEnvironment.getRunStructure().getRootNode();
-		CoursePropertyManager pm = courseEnvironment.getCoursePropertyManager();
-		List<Property> firstTime = pm.findCourseNodeProperties(node, identities, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
-		Map<Identity,Date> firstTimes = new HashMap<Identity,Date>((identities.size() * 2) + 1);
-		Calendar cal = Calendar.getInstance();
-		for(Property property:firstTime) {
-			if (StringHelper.containsNonWhitespace(property.getStringValue())) {
-				cal.setTimeInMillis(Long.parseLong(property.getStringValue()));
-				firstTimes.put(property.getIdentity(), cal.getTime());
-			}
-		}
-		
+		UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+		Map<Long,Date> firstTimes = mgr.getInitialLaunchDates(courseEnvironment.getCourseResourceableId(), identities);
 		Formatter formatter = Formatter.getInstance(locale);
 
 		for (Identity identity:identities) {
@@ -158,8 +144,8 @@ public class ScoreAccountingHelper {
 			tableContent.append("\t");
 
 			String initialLaunchDate = "";
-			if(firstTimes.containsKey(identity)) {
-				initialLaunchDate = formatter.formatDateAndTime(firstTimes.get(identity));
+			if(firstTimes.containsKey(identity.getKey())) {
+				initialLaunchDate = formatter.formatDateAndTime(firstTimes.get(identity.getKey()));
 			}
 			tableContent.append(initialLaunchDate).append("\t");
 

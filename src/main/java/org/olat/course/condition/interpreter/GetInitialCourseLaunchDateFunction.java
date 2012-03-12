@@ -20,13 +20,11 @@
 
 package org.olat.course.condition.interpreter;
 
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.assessment.UserCourseInformations;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.editor.CourseEditorEnv;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.properties.Property;
 
 /**
  * 
@@ -61,14 +59,10 @@ public class GetInitialCourseLaunchDateFunction extends AbstractFunction {
 		}
 
 		//the real function evaluation which is used during run time
-		CourseNode node = getUserCourseEnv().getCourseEnvironment().getRunStructure().getRootNode();
-		CoursePropertyManager pm = getUserCourseEnv().getCourseEnvironment().getCoursePropertyManager();
-		Identity identity = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-
-		Property firstTime = pm.findCourseNodeProperty(node, identity, null, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
-		if (firstTime != null) {
-			String firstTimeMillis = firstTime.getStringValue();
-			return Double.valueOf(firstTimeMillis);
+		UserCourseInformationsManager mgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+		UserCourseInformations infos = mgr.getUserCourseInformations(getUserCourseEnv().getCourseEnvironment().getCourseResourceableId(), getUserCourseEnv().getIdentityEnvironment().getIdentity());
+		if (infos != null) {
+			return Double.valueOf(infos.getInitialLaunch().getTime());
 		} else {
 			// what to do in case of no date available??? -> return date in the future
 			return new Double(Double.POSITIVE_INFINITY);

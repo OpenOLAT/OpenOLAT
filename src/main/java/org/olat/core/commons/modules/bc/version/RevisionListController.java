@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.gui.UserRequest;
@@ -52,8 +53,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -175,8 +174,8 @@ public class RevisionListController extends BasicController {
 			}
 		}
 		
-		Map<String, Identity> mappedIdentities = new HashMap<String, Identity>();
-		for(Identity identity :BaseSecurityManager.getInstance().findIdentitiesByName(names)) {
+		Map<String, IdentityShort> mappedIdentities = new HashMap<String, IdentityShort>();
+		for(IdentityShort identity :BaseSecurityManager.getInstance().findShortIdentitiesByName(names)) {
 			mappedIdentities.put(identity.getName(), identity);
 		}
 
@@ -280,9 +279,9 @@ public class RevisionListController extends BasicController {
 		private final DateFormat format;
 		private final List<VFSRevision> versionList;
 		private final Calendar cal = Calendar.getInstance();
-		private final Map<String, Identity> mappedIdentities;
+		private final Map<String, IdentityShort> mappedIdentities;
 
-		public RevisionListDataModel(List<VFSRevision> versionList, Map<String, Identity> mappedIdentities, Locale locale) {
+		public RevisionListDataModel(List<VFSRevision> versionList, Map<String, IdentityShort> mappedIdentities, Locale locale) {
 			this.versionList = versionList;
 			this.mappedIdentities = mappedIdentities;
 			format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
@@ -324,15 +323,15 @@ public class RevisionListController extends BasicController {
 			if(!StringHelper.containsNonWhitespace(name)) {
 				return null;
 			}
-			Identity id = mappedIdentities.get(name);
+			IdentityShort id = mappedIdentities.get(name);
 			if(id == null) {
 				return null;
 			}
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append(id.getUser().getProperty(UserConstants.FIRSTNAME, null))
+			sb.append(id.getFirstName())
 			  .append(" ")
-			  .append(id.getUser().getProperty(UserConstants.LASTNAME, null));
+			  .append(id.getLastName());
 			
 			if(isAdmin) {
 				sb.append(" (").append(name).append(")");

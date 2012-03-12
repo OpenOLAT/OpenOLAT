@@ -25,9 +25,11 @@
 
 package org.olat.course.assessment;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -39,12 +41,22 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.co.ContactFormController;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -65,14 +77,18 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	private VelocityContainer userDataVC;
 	private static final String usageIdentifyer = EfficiencyStatementController.class.getCanonicalName();
 	
-	private EfficiencyStatement efficiencyStatement;
+	private final EfficiencyStatement efficiencyStatement;
+	private final Identity statementOwner;
+	private final Long businessGroupKey;
 	
 	//to collect the eff.Statement as artefact
-	private Link collectArtefactLink;
+	private Link collectArtefactLink, homeLink, courseLink, groupLink, contactLink;
 	private PortfolioModule portfolioModule;
 	// the collect-artefact-wizard
-	private Controller ePFCollCtrl; 
-
+	private Controller ePFCollCtrl;
+	//contact
+	private ContactFormController contactCtrl;
+	private CloseableModalController cmc;
 	/**
 	 * Constructor
 	 * @param wControl
@@ -84,32 +100,60 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	}
 	
 	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), efficiencyStatement);
+		this(wControl, ureq, ureq.getIdentity(), null, efficiencyStatement, true);
 	}
 	
-	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner, EfficiencyStatement efficiencyStatement) {
+	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
+			BusinessGroup businessGroup, EfficiencyStatement efficiencyStatement, boolean mainLayout) {
 		super(ureq, wControl);
-
-		//either the efficiency statement or the error message, that no data is available goes to the content area
-		final Component content;
-		if (efficiencyStatement != null) {
-			this.efficiencyStatement = efficiencyStatement;
-			
-			//extract efficiency statement data
-			//fallback translation for user properties 
-			setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));		
-			userDataVC = createVelocityContainer("efficiencystatement");
+		
+		this.businessGroupKey = businessGroup == null ? null : businessGroup.getKey();
+		this.statementOwner = statementOwner;
+		this.efficiencyStatement = efficiencyStatement;
+		init(ureq, statementOwner, businessGroup, true);
+	}
+		
+	private void init(UserRequest ureq, Identity statementOwner, BusinessGroup group, boolean mainLayout) { 
+		//extract efficiency statement data
+		//fallback translation for user properties 
+		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));		
+		userDataVC = createVelocityContainer("efficiencystatement");
+		if(efficiencyStatement != null) {
 			userDataVC.contextPut("courseTitle", efficiencyStatement.getCourseTitle() + " (" + efficiencyStatement.getCourseRepoEntryKey().toString() + ")");
-			userDataVC.contextPut("user", statementOwner.getUser());			
-			userDataVC.contextPut("username", statementOwner.getName());
+			
+			courseLink = LinkFactory.createButton("course.link", userDataVC, this);
+			courseLink.setCustomEnabledLinkCSS("b_link_course");
+			userDataVC.put("course.link", courseLink);
 			userDataVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));
+		}
+		
+		userDataVC.contextPut("user", statementOwner.getUser());			
+		userDataVC.contextPut("username", statementOwner.getName());
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());	
+		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		userDataVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+
+		if(!getIdentity().equals(statementOwner)) {
+			homeLink = LinkFactory.createButton("home.link", userDataVC, this);
+			homeLink.setCustomEnabledLinkCSS("b_link_to_home");
+			userDataVC.put("home.link", homeLink);
 			
-			Roles roles = ureq.getUserSession().getRoles();
-			boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());	
-			List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-			userDataVC.contextPut("userPropertyHandlers", userPropertyHandlers);
-			
-			Controller identityAssessmentCtr = new IdentityAssessmentOverviewController(ureq, wControl, efficiencyStatement.getAssessmentNodes());
+			contactLink = LinkFactory.createButton("contact.link", userDataVC, this);
+			contactLink.setCustomEnabledLinkCSS("b_link_mail");
+			userDataVC.put("contact.link", contactLink);
+		}
+
+		if(group != null) {
+			userDataVC.contextPut("groupName", group.getName());
+			groupLink = LinkFactory.createButton("group.link", userDataVC, this);
+			groupLink.setCustomEnabledLinkCSS("b_link_group");
+			userDataVC.put("group.link", groupLink);
+		}
+		
+		if (efficiencyStatement != null) {
+			Controller identityAssessmentCtr = new IdentityAssessmentOverviewController(ureq, getWindowControl(), efficiencyStatement.getAssessmentNodes());
 			listenTo(identityAssessmentCtr);//dispose it when this one is disposed
 			userDataVC.put("assessmentOverviewTable", identityAssessmentCtr.getInitialComponent());
 			
@@ -122,20 +166,24 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 					collectArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
 				}
 			}
-			
-			content = userDataVC;
 		} else {
 			//message, that no data is available. This may happen in the case the "open efficiency" link is available, while in the meantime an author
 			//disabled the efficiency statement.
 			String text = translate("efficiencystatement.nodata");
-			Controller messageCtr = MessageUIFactory.createErrorMessage(ureq, wControl, null, text);
+			Controller messageCtr = MessageUIFactory.createSimpleMessage(ureq, getWindowControl(), text);
 			listenTo(messageCtr);//gets disposed as this controller gets disposed.
-			content = messageCtr.getInitialComponent();
+			userDataVC.put("assessmentOverviewTable",  messageCtr.getInitialComponent());
 		}
+		
+		
 		//Content goes to a 3 cols layout without left and right column
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, content, null);
-		listenTo(layoutCtr);
-		putInitialPanel(layoutCtr.getInitialComponent());
+		if(mainLayout) {
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, userDataVC, null);
+			listenTo(layoutCtr);
+			putInitialPanel(layoutCtr.getInitialComponent());
+		} else {
+			putInitialPanel(userDataVC);
+		}	
 	}
 	
 	/**
@@ -145,8 +193,74 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source.equals(collectArtefactLink)){
 			popupArtefactCollector(ureq);
+		} else if (source == homeLink) {
+			openHome(ureq);
+		} else if (source == courseLink) {
+			openCourse(ureq);
+		} else if (source == groupLink) {
+			openGroup(ureq);
+		} else if (source == contactLink) {
+			contact(ureq);
 		}
-		
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		 if (source == cmc) {
+				removeAsListenerAndDispose(cmc);
+				removeAsListenerAndDispose(contactCtrl);
+				cmc = null;
+				contactCtrl = null;
+			} else if (source == contactCtrl) {
+				cmc.deactivate();
+				removeAsListenerAndDispose(cmc);
+				removeAsListenerAndDispose(contactCtrl);
+				cmc = null;
+				contactCtrl = null;
+			}
+	}
+
+	private void contact(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+
+		ContactMessage cmsg = new ContactMessage(getIdentity());
+		ContactList contactList = new ContactList("to");
+		contactList.add(statementOwner);
+		cmsg.addEmailTo(contactList);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, true, false, false, cmsg);
+		listenTo(contactCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void openGroup(UserRequest ureq) {
+		List<ContextEntry> ces = new ArrayList<ContextEntry>(1);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroup", businessGroupKey);
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
+
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
+	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
+	}
+	
+	private void openCourse(UserRequest ureq) {
+		List<ContextEntry> ces = new ArrayList<ContextEntry>(1);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", efficiencyStatement.getCourseRepoEntryKey());
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
+
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
+	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
+	}
+	
+	private void openHome(UserRequest ureq) {
+		List<ContextEntry> ces = new ArrayList<ContextEntry>(1);
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(statementOwner));
+
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
+	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 
 	/**

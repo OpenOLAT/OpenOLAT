@@ -26,10 +26,10 @@
 package org.olat.course.assessment;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 
 /**
  * Description:<br>
@@ -44,7 +44,7 @@ public class EfficiencyStatementsListModel extends DefaultTableDataModel {
 	/**
 	 * @param list of efficiencyStatements
 	 */
-	public EfficiencyStatementsListModel(List efficiencyStatements) {
+	public EfficiencyStatementsListModel(List<UserEfficiencyStatementLight> efficiencyStatements) {
 		super(efficiencyStatements);
 	}
 
@@ -59,16 +59,15 @@ public class EfficiencyStatementsListModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		EfficiencyStatement efficiencyStatement = getEfficiencyStatementAt(row);
-		List nodeData = efficiencyStatement.getAssessmentNodes();
-		Map rootNode = (Map) nodeData.get(0);
+		UserEfficiencyStatementLight efficiencyStatement = getEfficiencyStatementAt(row);
 		switch (col) {
 			case 0:
-				return StringEscapeUtils.escapeHtml(efficiencyStatement.getCourseTitle());
+				return StringEscapeUtils.escapeHtml(efficiencyStatement.getShortTitle());
 			case 1:
-				return rootNode.get(AssessmentHelper.KEY_SCORE);
+				Float score = efficiencyStatement.getScore();
+				return AssessmentHelper.getRoundedScore(score);
 			case 2:
-				return rootNode.get(AssessmentHelper.KEY_PASSED);
+				return efficiencyStatement.getPassed();
 			default:
 				return "ERROR";
 		}
@@ -78,7 +77,7 @@ public class EfficiencyStatementsListModel extends DefaultTableDataModel {
 	 * @param row
 	 * @return the efficiencyStatement at the given row
 	 */
-	public EfficiencyStatement getEfficiencyStatementAt(int row) {
-		return (EfficiencyStatement) objects.get(row);
+	public UserEfficiencyStatementLight getEfficiencyStatementAt(int row) {
+		return (UserEfficiencyStatementLight) objects.get(row);
 	}
 }

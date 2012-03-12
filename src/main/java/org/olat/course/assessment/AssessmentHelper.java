@@ -27,8 +27,8 @@ package org.olat.course.assessment;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,14 +50,12 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.properties.Property;
 
 /**
  * Description:<br>
@@ -144,21 +142,6 @@ public class AssessmentHelper {
 		AssessedIdentityWrapper aiw = new AssessedIdentityWrapper(uce, attempts, details, initialLaunchDate, lastModified);
 		return aiw;
 	}
-	
-	public static Date getInitialLaunchDate(UserCourseEnvironment uce) {
-		CourseNode node = uce.getCourseEnvironment().getRunStructure().getRootNode();
-		CoursePropertyManager pm = uce.getCourseEnvironment().getCoursePropertyManager();
-		Identity identity = uce.getIdentityEnvironment().getIdentity();
-		Property firstTime = pm.findCourseNodeProperty(node, identity, null, ICourse.PROPERTY_INITIAL_LAUNCH_DATE);
-		
-		Date initialLaunchDate = null;
-		if (firstTime != null && StringHelper.containsNonWhitespace(firstTime.getStringValue())) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(Long.parseLong(firstTime.getStringValue()));
-			initialLaunchDate = cal.getTime();
-		}
-		return initialLaunchDate;
-	}
 
 	/**
 	 * Create a user course environment for the given user and course. After
@@ -168,7 +151,7 @@ public class AssessmentHelper {
 	 * @param course
 	 * @return Initialized user course environment
 	 */
-	static UserCourseEnvironment createAndInitUserCourseEnvironment(Identity identity, ICourse course) {
+	public static UserCourseEnvironment createAndInitUserCourseEnvironment(Identity identity, ICourse course) {
 		// create an identenv with no roles, no attributes, no locale
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(identity);
@@ -269,6 +252,20 @@ public class AssessmentHelper {
 		}
 		//return Formatter.roundToString(score.floatValue(), 3);
 	}
+	
+	public static Float getRoundedScore(String score) {
+		if (!StringHelper.containsNonWhitespace(score)) return null;
+
+		//cluster_OK the formatter is not multi-thread and costly to create
+		synchronized(scoreFormat) {
+			try {
+				return new Float(scoreFormat.parse(score).floatValue());
+			} catch (ParseException e) {
+				log.error("", e);
+				return null;
+			}
+		}
+	}
 
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_IDENTIFYER = "identifyer";
@@ -285,6 +282,9 @@ public class AssessmentHelper {
 	//fxdiff VCRP-4: assessment overview with max score
 	public static final String KEY_MIN = "minScore";
 	public static final String KEY_MAX = "maxScore";
+	public static final String KEY_TOTAL_NODES = "totalNodes";
+	public static final String KEY_ATTEMPTED_NODES = "attemptedNodes";
+	public static final String KEY_PASSED_NODES = "attemptedNodes";
 	
 
 	

@@ -25,8 +25,8 @@
 
 package org.olat.course.condition.interpreter.score;
 
-import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -89,9 +89,9 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 		 * the real function evaluation which is used during run time
 		 */
 		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-		EfficiencyStatement es = esm.getUserEfficiencyStatement(courseRepoEntryKey, getUserCourseEnv().getIdentityEnvironment().getIdentity());
+		UserEfficiencyStatement es = esm.getUserEfficiencyStatementLight(courseRepoEntryKey, getUserCourseEnv().getIdentityEnvironment().getIdentity());
 		if (es == null) return defaultValue();
-		Boolean passed = esm.getPassed(childId, es);
+		Boolean passed = es.getPassed();
 		if (passed == null) return defaultValue();
 		// finally check existing value
 		return (passed.booleanValue() ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE);

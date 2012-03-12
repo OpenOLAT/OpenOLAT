@@ -891,12 +891,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (secGroups == null || secGroups.isEmpty()) {
 			return Collections.emptyList();
 		}
-		
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.basesecurity.IdentityShort(sgmsi.identity.key, sgmsi.identity.name) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-			.append(" where sgmsi.securityGroup in (:secGroups)");
-		
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		sb.append("select id from ").append(IdentityShort.class.getName()).append(" as id ")
+			.append(" where id.key in (")
+			.append("   select sgmsi.identity.key from  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+			.append("   where sgmsi.securityGroup in (:secGroups)")
+			.append(" )");
+
+		DBQuery query = DBFactory.getInstance().createQuery(sb	.toString());
 		query.setParameterList("secGroups", secGroups);
 		List<IdentityShort> idents = query.list();
 		return idents;
@@ -1005,12 +1008,12 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 
 	@Override
-	public List<Identity> findIdentitiesByName(Collection<String> identityNames) {
+	public List<IdentityShort> findShortIdentitiesByName(Collection<String> identityNames) {
 		if (identityNames == null || identityNames.isEmpty()) {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.name in (:names)");
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.name in (:names)");
 		
 		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
 		query.setParameterList("names", identityNames);

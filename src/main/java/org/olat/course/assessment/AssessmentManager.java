@@ -57,11 +57,6 @@ public interface AssessmentManager {
 	public static final String COMMENT = "COMMENT";
 	public static final String COACH_COMMENT = "COACH_COMMENT";
 	public static final String ASSESSMENT_ID = "ASSESSMENT_ID";
-	
-	/**
-	 * Load all persisted assessment data of a course into a local cache if such a cache is available
-	 */
-	public void preloadCache();
 
 	/**
 	 * Load all persisted assessment data into a local cache if such a cache is available

@@ -19,6 +19,10 @@
  */
 package org.olat.basesecurity;
 
+import java.util.Date;
+
+import org.olat.core.commons.persistence.PersistentObject;
+
 /**
  * 
  * Description:<br>
@@ -29,24 +33,98 @@ package org.olat.basesecurity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 //fxdiff: FXOLAT-219 decrease the load for synching groups
-public class IdentityShort {
+public class IdentityShort extends PersistentObject {
+
+	private static final long serialVersionUID = -9039644291427632379L;
 	
-	private final Long key;
-	private final String name;
+	private Long userKey;
 	
-	public IdentityShort(Long key, String name) {
-		this.key = key;
-		this.name = name;
+	private String name;
+	private Date lastLogin;
+	private int status;
+	private String firstName;
+	private String lastName;
+	private String email;
+
+	public IdentityShort() {
+		//
+	}
+	
+	public Long getUserKey() {
+		return userKey;
 	}
 
-	public Long getKey() {
-		return key;
+	public void setUserKey(Long userKey) {
+		this.userKey = userKey;
 	}
 
 	public String getName() {
 		return name;
 	}
-	
-	
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Date getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(Date lastLogin) {
+		this.lastLogin = lastLogin;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	@Override
+	public String toString() {
+		return "IdentityShort[name=" + name + "], " + super.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 3482601 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityShort) {
+			IdentityShort id = (IdentityShort)obj;
+			return getKey() != null && getKey().equals(id.getKey());
+		}
+		return false;
+	}
 }

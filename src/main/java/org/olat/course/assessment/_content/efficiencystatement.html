@@ -15,33 +15,67 @@ Ext.onReady(function(){
 	#end
 	<h3 class="b_with_small_icon_left o_efficiencystatement_icon">$r.translate("efficiencystatement.title")</h3>
 	
-	<table class="b_table">
-		<tr>
-			<td><label>$r.translate("course")</label></td>
-			<td>$courseTitle</td>
-		</tr>		
-		<tr>
-			<td><label>$r.translate("username")</label></td>
-			<td>$username</td>
-		</tr>
-		
-		#foreach( $propertyHandler in $userPropertyHandlers )		
-		    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")		
-			<tr>
-				<td>
-					<label>$r.translate($propertyHandler.i18nFormElementLabelKey())</label>
-				</td>
-				<td>$propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
-			</tr>				
-			#end
-		#end		
-					
-		<tr>
-			<td><label>$r.translate("date")</label></td>
-			<td>$date</td>
-		</tr>
-	</table>
-	
+	<div class="b_clearfix">
+		<div class="b_c50l">
+			<table class="b_table">
+				<tr>
+					<td><label>$r.translate("username")</label></td>
+					<td>$username</td>
+					<td>
+						#if($r.available("home.link"))
+							$r.render("home.link")
+						#end
+						
+						#if($r.available("contact.link"))
+							$r.render("contact.link")
+						#end
+					</td>
+				</tr>
+				#foreach( $propertyHandler in $userPropertyHandlers )		
+				    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")		
+					<tr>
+						<td>
+							<label>$r.translate($propertyHandler.i18nFormElementLabelKey())</label>
+						</td>
+						<td>
+							#if($propertyHandler.name == "email")
+								$propertyHandler.getUserProperty($user, $locale)
+							#else
+								$propertyHandler.getUserPropertyAsHTML($user, $locale)
+							#end
+						</td>
+					</tr>				
+					#end
+				#end
+			</table>
+		</div>
+		<div class="b_c50r">
+			<table class="b_table">
+				#if($groupName)
+					<tr>
+						<td><label>$r.translate("group")</label></td>
+						<td>$groupName</td>
+						#if($r.available("group.link"))
+							<td>$r.render("group.link")</td>
+						#end
+					</tr>
+				#end
+				#if($courseTitle)
+					<tr>
+						<td><label>$r.translate("course")</label></td>
+						<td>$courseTitle</td>
+						#if($r.available("course.link"))
+							<td>$r.render("course.link")</td>
+						#end
+					</tr>
+					<tr>
+						<td><label>$r.translate("date")</label></td>
+						<td>$date</td>
+					</tr>
+				#end
+			</table>
+		</div>
+	</div>
 	<p>
 		$r.render("assessmentOverviewTable")
 	</p>
