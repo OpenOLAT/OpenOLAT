@@ -75,6 +75,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private int notLongerLength;
 	protected int displaySize;
 	protected int maxlength = -1; //default no maxlength restriction
+	protected boolean checkVisibleLength = false;
 	private String notLongerThanErrorKey;
 	private String checkForOtherValue;
 	private String otherValueErrorKey;
@@ -204,7 +205,10 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		this.maxlength = maxLength;
 	}
 
-	
+	public void setCheckVisibleLength(boolean checkVisibleLength) {
+		this.checkVisibleLength = checkVisibleLength;
+	}
+
 	/**
 	 * @param errorKey
 	 * @return
@@ -245,7 +249,11 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private boolean notLongerThan(){
 		boolean lengthError = false;
 		try {
-			if (value.length() > notLongerLength || value.getBytes("UTF-8").length > notLongerLength) {
+			if(checkVisibleLength) {
+				if (value.length() > notLongerLength) {
+					lengthError = true;
+				}
+			} else if (value.length() > notLongerLength || value.getBytes("UTF-8").length > notLongerLength) {
 				lengthError = true;
 			} 
 		} catch (UnsupportedEncodingException e) {

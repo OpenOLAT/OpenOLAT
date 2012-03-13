@@ -145,6 +145,7 @@ public class NodeConfigFormController extends FormBasicController {
 		// add the short title text input element
 		shortTitle = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", SHORT_TITLE_MAX_LENGTH, (menuTitle == null ? "": menuTitle), formLayout);
 		shortTitle.setMandatory(true);
+		shortTitle.setCheckVisibleLength(true);
 		
 		// add the title input text element
 		title = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, (displayTitle==null? "": displayTitle), formLayout);
