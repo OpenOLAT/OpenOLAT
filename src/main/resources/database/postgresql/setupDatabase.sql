@@ -911,28 +911,33 @@ create table o_as_eff_statement (
    lastmodified timestamp,
    creationdate timestamp,
    passed boolean,
-   score decimal,
+   score int8,
+   total_nodes int8,
+   attempted_nodes int8,
+   passed_nodes int8,
    course_title varchar(255),
    course_short_title varchar(128),
    course_repo_key int8,
    statement_xml text,
    fk_identity int8,
    fk_resource_id int8,
+   unique(fk_identity, fk_resource_id),
    primary key (id)
 );
 
 -- user to course informations (was property initial and recent launch dates)
 create table o_as_user_course_infos (
-   id bigint not null,
+   id int8 not null,
    version int4 not null,
    creationdate timestamp,
    lastmodified timestamp,
    initiallaunchdate timestamp,
    recentlaunchdate timestamp,
-   visit int4,
+   visit int8,
    timespend int8,
    fk_identity int8,
    fk_resource_id int8,
+   unique(fk_identity, fk_resource_id),
    primary key (id)
 );
 
@@ -949,7 +954,7 @@ create view o_bs_identity_short_v as (
       p_email.propvalue as email
    from o_bs_identity as ident
    inner join o_user as us on (ident.fk_user_id = us.user_id)
-   left join o_userproperty as P_firstname on (us.user_id = p_firstname.fk_user_id and p_firstname.propName = 'firstName')
+   left join o_userproperty as p_firstname on (us.user_id = p_firstname.fk_user_id and p_firstname.propName = 'firstName')
    left join o_userproperty as p_lastname on (us.user_id = p_lastname.fk_user_id and p_lastname.propName = 'lastName')
    left join o_userproperty as p_email on (us.user_id = p_email.fk_user_id and p_email.propName = 'email')
 );
@@ -1129,8 +1134,6 @@ alter table o_ac_transaction add constraint trans_method_ctx foreign key (fk_met
 
 alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
-create index eff_statement_ident_key_idx on o_as_eff_statement (fk_resource_id);
-
 alter table o_as_user_course_infos add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 

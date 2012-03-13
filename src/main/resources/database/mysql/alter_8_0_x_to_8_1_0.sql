@@ -36,6 +36,7 @@ create table if not exists o_as_eff_statement (
    fk_resource_id bigint,
    primary key (id)
 );
+alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_eff_statement add unique eff_statement_id_cstr (fk_identity, fk_resource_id), add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 
@@ -53,6 +54,7 @@ create table o_as_user_course_infos (
    fk_resource_id bigint,
    primary key (id)
 );
+alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_user_course_infos add index user_course_infos_id_cstr (fk_identity), add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add index user_course_infos_res_cstr (fk_resource_id), add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);

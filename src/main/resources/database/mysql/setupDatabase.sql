@@ -1042,6 +1042,8 @@ alter table o_ac_order ENGINE = InnoDB;
 alter table o_ac_order_part ENGINE = InnoDB;
 alter table o_ac_order_line ENGINE = InnoDB;
 alter table o_ac_transaction ENGINE = InnoDB;
+alter table o_as_eff_statement ENGINE = InnoDB;
+alter table o_as_user_course_infos ENGINE = InnoDB;
 
 
 create index  resid_idx on o_property (resourcetypeid);
@@ -1193,13 +1195,12 @@ alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) re
 
 alter table o_bs_invitation add constraint FKF26C8375236F27X foreign key (fk_secgroup) references o_bs_secgroup (id);
 
-alter table o_as_eff_statement add index eff_statement_id_cstr (fk_identity), add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_eff_statement add unique eff_statement_id_cstr (fk_identity, fk_resource_id), add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
-create index eff_statement_resource_idx on o_as_eff_statement (fk_resource_id);
 
 alter table o_as_user_course_infos add index user_course_infos_id_cstr (fk_identity), add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_user_course_infos add index user_course_infos_res_cstr (fk_resource_id), add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
-
+alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
 
 insert into hibernate_unique_key values ( 0 );
 
