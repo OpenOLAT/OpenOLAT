@@ -164,6 +164,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 					RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey, false);
 					if(re != null) {
 						efficiencyProperty.setResource(re.getOlatResource());
+						efficiencyProperty.setCourseRepoKey(re.getKey());
 					}
 					
 					fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);

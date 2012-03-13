@@ -141,6 +141,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 		statement.setStatementXml(property.getTextValue());
 		if(re != null) {
 			statement.setResource(re.getOlatResource());
+			statement.setCourseRepoKey(re.getKey());
 		}
 
 		EfficiencyStatement s = (EfficiencyStatement)XStreamHelper.createXStreamInstance().fromXML(property.getTextValue());
