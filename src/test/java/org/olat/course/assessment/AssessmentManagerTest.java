@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -87,8 +88,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		try {
 			log.info("setUp start ------------------------");
 			
-			tutor = JunitTestHelper.createAndPersistIdentityAsUser("junit_tutor");
-			student = JunitTestHelper.createAndPersistIdentityAsUser("junit_student");
+			tutor = JunitTestHelper.createAndPersistIdentityAsUser("junit_tutor_" + UUID.randomUUID().toString().replace("-", ""));
+			student = JunitTestHelper.createAndPersistIdentityAsUser("junit_student_" + UUID.randomUUID().toString().replace("-", ""));
 			
       //import "Demo course" into the bcroot_junittest
 			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
