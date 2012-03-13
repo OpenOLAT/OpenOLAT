@@ -347,7 +347,7 @@ public class RepositoryEditPropertiesController extends BasicController {
 					if(changedCourseConfig.isEfficencyStatementEnabled()) {
             // first create the efficiencies, send event to agency (all courses add link)
 						List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
-						EfficiencyStatementManager.getInstance().updateEfficiencyStatements(course, identitiesWithData, false);							
+						EfficiencyStatementManager.getInstance().updateEfficiencyStatements(course, identitiesWithData);							
 					} else {
             // delete really the efficiencies of the users.
 						RepositoryEntry courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);

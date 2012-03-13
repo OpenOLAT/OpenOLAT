@@ -124,7 +124,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(
 				OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId), false);
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		updateUserEfficiencyStatement(userCourseEnv, re.getKey(), course, true);
+		updateUserEfficiencyStatement(userCourseEnv, re.getKey(), course);
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param repoEntryKey
 	 * @param checkForExistingProperty
 	 */
-	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final Long repoEntryKey, ICourse course, final boolean checkForExistingProperty) {
+	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final Long repoEntryKey, ICourse course) {
     //	o_clusterOK: by ld
 		CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		// write only when enabled for this course
@@ -151,10 +151,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			efficiencyStatement.setDisplayableUserInfo(user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null) + " (" + identity.getName() + ")");
 			efficiencyStatement.setLastUpdated(System.currentTimeMillis());
 							
-			UserEfficiencyStatementImpl efficiencyProperty = null;
-			if (checkForExistingProperty) {
-				efficiencyProperty = getUserEfficiencyStatementFull(repoEntryKey, identity);
-			}
+			UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntryKey, identity);
 			if (assessmentNodes != null) {				
 				if (efficiencyProperty == null) {
 					// create new
@@ -532,7 +529,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param checkForExistingRecord true: check if efficiency statement for this user exist;
 	 * false: always create new one (be careful with this one!)
 	 */	
-	public void updateEfficiencyStatements(OLATResourceable ores, List<Identity> identities, final boolean checkForExistingProperty) {
+	public void updateEfficiencyStatements(OLATResourceable ores, List<Identity> identities) {
 		if (identities.size() > 0) {
 			final ICourse course = CourseFactory.loadCourse(ores);
 			logAudit("Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
@@ -553,7 +550,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 					public void execute() {					
 						// create temporary user course env
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						updateUserEfficiencyStatement(uce, re.getKey(), course, checkForExistingProperty);
+						updateUserEfficiencyStatement(uce, re.getKey(), course);
 						}
 					});
 				if (Thread.interrupted()) break;

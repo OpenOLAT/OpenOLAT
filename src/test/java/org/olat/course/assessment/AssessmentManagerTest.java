@@ -210,8 +210,6 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		List <Identity> identitiyList = new ArrayList<Identity> ();
 		identitiyList.add(student);
 		
-		boolean checkForExistingProperty = false;
-		
 		Long courseResId = course.getCourseEnvironment().getCourseResourceableId(); 
 		RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(
 				OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId), false);
@@ -221,7 +219,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		
 		EfficiencyStatementManager efficiencyStatementManager = EfficiencyStatementManager.getInstance();
 		//force the storing of the efficiencyStatement - this is usually done only at Learnresource/modify properties/Efficiency statement (ON)
-		efficiencyStatementManager.updateEfficiencyStatements(course, identitiyList, checkForExistingProperty);
+		efficiencyStatementManager.updateEfficiencyStatements(course, identitiyList);
 		DBFactory.getInstance().closeSession();
 						
 		//archive the efficiencyStatement into a temporary dir
