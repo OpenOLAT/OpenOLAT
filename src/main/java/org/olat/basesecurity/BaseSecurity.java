@@ -158,6 +158,17 @@ public interface BaseSecurity {
 	 * @return The identities
 	 */
 	public List<IdentityShort> findShortIdentitiesByName(Collection<String> identityName);
+	
+	/**
+	 * Find identities by keys. This is an exact match.
+	 * <p>
+	 * Be aware that this method does <b>not</b> check the identities status!
+	 * This method returns identities with any state, also deleted identities!
+	 * 
+	 * @param identityNames
+	 * @return The identities
+	 */
+	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityName);
 
 	/**
 	 * find an identity by the key instead of the username. Prefer this method as

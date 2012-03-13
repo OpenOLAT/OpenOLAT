@@ -178,9 +178,9 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 						createUserCourseInformation(prop);
 					}
 					
-					if(count % 25 == 0) {
+					if(count++ % 25 == 0) {
 						dbInstance.commitAndCloseSession();
-						log.info("Convert lanch dates property: " + count);
+						log.info("Convert launch dates properties: " + count);
 					}
 				}
 				uhd.setBooleanDataValue(TASK_LAUNCH_DATES, true);
