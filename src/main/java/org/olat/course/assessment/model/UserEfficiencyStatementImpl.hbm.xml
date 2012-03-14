@@ -59,7 +59,7 @@
 	<property name="attemptedNodes" column="attempted_nodes" type="int" />
 	<property name="passedNodes" column="passed_nodes" type="int" />
 	
-	<property name="shortTitle" column="course_short_title" length="128"  type="string" />
+	<property name="shortTitle" column="course_short_title" type="string" />
 	<property name="courseRepoKey" column="course_repo_key" type="long" />
 	
 	<many-to-one name="resource"

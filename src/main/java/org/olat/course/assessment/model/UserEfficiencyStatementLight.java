@@ -28,6 +28,10 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.resource.OLATResource;
 
 /**
+ * Description:
+ * This mapping of the efficiency statement table don't contains some attributes as the whole XML
+ * and the long title... The mapping is also NOT mutable.
+ * 
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
