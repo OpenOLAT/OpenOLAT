@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -40,7 +39,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
@@ -76,7 +75,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * Initial Date:  11.08.2005 <br>
  * @author gnaegi
  */
-public class EfficiencyStatementController extends MainLayoutBasicController {
+public class EfficiencyStatementController extends BasicController {
 	
 	private VelocityContainer userDataVC;
 	private static final String usageIdentifyer = EfficiencyStatementController.class.getCanonicalName();
@@ -102,7 +101,7 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	 * @param courseId
 	 */
 	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), null, null, efficiencyStatement, false, true);
+		this(wControl, ureq, ureq.getIdentity(), null, null, efficiencyStatement, false);
 	}
 	
 	/**
@@ -114,11 +113,11 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Long courseRepoEntryKey) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, RepositoryManager.getInstance().lookupRepositoryEntry(courseRepoEntryKey, false),
-				EfficiencyStatementManager.getInstance().getUserEfficiencyStatement(courseRepoEntryKey, ureq.getIdentity()), false, true);
+				EfficiencyStatementManager.getInstance().getUserEfficiencyStatement(courseRepoEntryKey, ureq.getIdentity()), false);
 	}
 	
 	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
-			BusinessGroup businessGroup, RepositoryEntry courseRepo, EfficiencyStatement efficiencyStatement, boolean links, boolean mainLayout) {
+			BusinessGroup businessGroup, RepositoryEntry courseRepo, EfficiencyStatement efficiencyStatement, boolean links) {
 		super(ureq, wControl);
 		
 		this.courseRepoKey = courseRepo == null ? (efficiencyStatement == null ? null : efficiencyStatement.getCourseRepoEntryKey()) : courseRepo.getKey();
@@ -135,10 +134,10 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 		this.businessGroupKey = businessGroup == null ? null : businessGroup.getKey();
 		this.statementOwner = statementOwner;
 		this.efficiencyStatement = efficiencyStatement;
-		init(ureq, statementOwner, courseRepo, businessGroup, links, true);
+		init(ureq, statementOwner, courseRepo, businessGroup, links);
 	}
 		
-	private void init(UserRequest ureq, Identity statementOwner, RepositoryEntry courseRepo, BusinessGroup group, boolean links, boolean mainLayout) { 
+	private void init(UserRequest ureq, Identity statementOwner, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
 		//extract efficiency statement data
 		//fallback translation for user properties 
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));		
@@ -205,16 +204,7 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 			listenTo(messageCtr);//gets disposed as this controller gets disposed.
 			userDataVC.put("assessmentOverviewTable",  messageCtr.getInitialComponent());
 		}
-		
-		
-		//Content goes to a 3 cols layout without left and right column
-		if(mainLayout) {
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, userDataVC, null);
-			listenTo(layoutCtr);
-			putInitialPanel(layoutCtr.getInitialComponent());
-		} else {
-			putInitialPanel(userDataVC);
-		}	
+		putInitialPanel(userDataVC);
 	}
 	
 	/**

@@ -21,6 +21,7 @@
 package org.olat.course.assessment.portfolio;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -82,7 +83,8 @@ public class EfficiencyStatementArtefactHandler extends EPAbstractHandler<Effici
 		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		String statementXml = ePFMgr.getArtefactFullTextContent(artefact);
 		EfficiencyStatement statement = (EfficiencyStatement)myXStream.fromXML(statementXml); 
-		return new EfficiencyStatementController(wControl, ureq, statement);
+		EfficiencyStatementController efficiencyCtrl = new EfficiencyStatementController(wControl, ureq, statement);
+		return new LayoutMain3ColsController(ureq, wControl, null, null, efficiencyCtrl.getInitialComponent(), null);
 	}
 
 	@Override

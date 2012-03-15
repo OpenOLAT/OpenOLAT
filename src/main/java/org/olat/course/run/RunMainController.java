@@ -894,8 +894,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
 					EfficiencyStatementController efficiencyStatementController = new EfficiencyStatementController(lwControl, lureq, courseRepositoryEntry.getKey());
-					efficiencyStatementController.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
-					return efficiencyStatementController;
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), null, null, efficiencyStatementController.getInitialComponent(), null);
+					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
+					return layoutCtr;
 				}					
 			};
 			//wrap the content controller into a full header layout
