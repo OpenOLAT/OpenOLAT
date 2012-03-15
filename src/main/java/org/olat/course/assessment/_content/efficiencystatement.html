@@ -51,15 +51,6 @@ Ext.onReady(function(){
 		</div>
 		<div class="b_c50r">
 			<table class="b_table">
-				#if($groupName)
-					<tr>
-						<td><label>$r.translate("group")</label></td>
-						<td>$groupName</td>
-						#if($r.available("group.link"))
-							<td>$r.render("group.link")</td>
-						#end
-					</tr>
-				#end
 				#if($courseTitle)
 					<tr>
 						<td><label>$r.translate("course")</label></td>
@@ -68,9 +59,20 @@ Ext.onReady(function(){
 							<td>$r.render("course.link")</td>
 						#end
 					</tr>
+				#end
+				#if($date)
 					<tr>
 						<td><label>$r.translate("date")</label></td>
 						<td>$date</td>
+					</tr>
+				#end
+				#if($groupName)
+					<tr>
+						<td><label>$r.translate("group")</label></td>
+						<td>$groupName</td>
+						#if($r.available("group.link"))
+							<td>$r.render("group.link")</td>
+						#end
 					</tr>
 				#end
 			</table>

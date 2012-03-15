@@ -26,6 +26,7 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -167,7 +168,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 				identityKeys.add(identity.getKey());
 			}
 			query.setParameterList("identityKeys", identityKeys);
-			query.setLong("resourceKey", courseResourceId);
+			query.setLong("resId", courseResourceId);
 			@SuppressWarnings("unchecked")
 			List<Object[]> infoList = query.list();
 			Map<Long,Date> dateMap = new HashMap<Long,Date>();
@@ -179,7 +180,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			return dateMap;
 		} catch (Exception e) {
 			logError("Cannot retrieve course informations for: " + courseResourceId, e);
-			return null;
+			return Collections.emptyMap();
 		}
 	}
 }

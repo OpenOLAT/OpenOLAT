@@ -54,6 +54,8 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.co.ContactFormController;
@@ -61,6 +63,8 @@ import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -80,6 +84,7 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	private final EfficiencyStatement efficiencyStatement;
 	private final Identity statementOwner;
 	private final Long businessGroupKey;
+	private final Long courseRepoKey;
 	
 	//to collect the eff.Statement as artefact
 	private Link collectArtefactLink, homeLink, courseLink, groupLink, contactLink;
@@ -89,42 +94,66 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	//contact
 	private ContactFormController contactCtrl;
 	private CloseableModalController cmc;
+	
 	/**
-	 * Constructor
+	 * The constructor shows the efficiency statement given as parameter for the current user
 	 * @param wControl
 	 * @param ureq
 	 * @param courseId
 	 */
-	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Long courseRepoEntryKey) {
-		this(wControl, ureq, EfficiencyStatementManager.getInstance().getUserEfficiencyStatement(courseRepoEntryKey, ureq.getIdentity()));
+	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
+		this(wControl, ureq, ureq.getIdentity(), null, null, efficiencyStatement, false, true);
 	}
 	
-	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), null, efficiencyStatement, true);
+	/**
+	 * This constructor show the efficiency statement for the course repository key and the current user
+	 * @param wControl
+	 * @param ureq
+	 * @param courseRepoEntryKey
+	 */
+	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Long courseRepoEntryKey) {
+		this(wControl, ureq, 
+				ureq.getIdentity(), null, RepositoryManager.getInstance().lookupRepositoryEntry(courseRepoEntryKey, false),
+				EfficiencyStatementManager.getInstance().getUserEfficiencyStatement(courseRepoEntryKey, ureq.getIdentity()), false, true);
 	}
 	
 	public EfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
-			BusinessGroup businessGroup, EfficiencyStatement efficiencyStatement, boolean mainLayout) {
+			BusinessGroup businessGroup, RepositoryEntry courseRepo, EfficiencyStatement efficiencyStatement, boolean links, boolean mainLayout) {
 		super(ureq, wControl);
 		
+		this.courseRepoKey = courseRepo == null ? (efficiencyStatement == null ? null : efficiencyStatement.getCourseRepoEntryKey()) : courseRepo.getKey();
+		if(courseRepo == null && courseRepoKey != null) {
+			courseRepo = RepositoryManager.getInstance().lookupRepositoryEntry(courseRepoKey, false);
+		}
+		if(businessGroup == null && courseRepo != null) {
+			ICourse course = CourseFactory.loadCourse(courseRepo.getOlatResource());
+			List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getParticipatingLearningGroupsFromAllContexts(statementOwner);
+			if(groups.size() > 0) {
+				businessGroup = groups.get(0);
+			}
+		}
 		this.businessGroupKey = businessGroup == null ? null : businessGroup.getKey();
 		this.statementOwner = statementOwner;
 		this.efficiencyStatement = efficiencyStatement;
-		init(ureq, statementOwner, businessGroup, true);
+		init(ureq, statementOwner, courseRepo, businessGroup, links, true);
 	}
 		
-	private void init(UserRequest ureq, Identity statementOwner, BusinessGroup group, boolean mainLayout) { 
+	private void init(UserRequest ureq, Identity statementOwner, RepositoryEntry courseRepo, BusinessGroup group, boolean links, boolean mainLayout) { 
 		//extract efficiency statement data
 		//fallback translation for user properties 
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));		
 		userDataVC = createVelocityContainer("efficiencystatement");
 		if(efficiencyStatement != null) {
-			userDataVC.contextPut("courseTitle", efficiencyStatement.getCourseTitle() + " (" + efficiencyStatement.getCourseRepoEntryKey().toString() + ")");
-			
+			userDataVC.contextPut("courseTitle", efficiencyStatement.getCourseTitle());
+			userDataVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));
+		} else if(courseRepo != null) {
+			userDataVC.contextPut("courseTitle", courseRepo.getDisplayname());
+		}
+		
+		if(courseRepoKey != null && links) {
 			courseLink = LinkFactory.createButton("course.link", userDataVC, this);
 			courseLink.setCustomEnabledLinkCSS("b_link_course");
 			userDataVC.put("course.link", courseLink);
-			userDataVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));
 		}
 		
 		userDataVC.contextPut("user", statementOwner.getUser());			
@@ -135,7 +164,7 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		userDataVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 
-		if(!getIdentity().equals(statementOwner)) {
+		if(!getIdentity().equals(statementOwner) && links) {
 			homeLink = LinkFactory.createButton("home.link", userDataVC, this);
 			homeLink.setCustomEnabledLinkCSS("b_link_to_home");
 			userDataVC.put("home.link", homeLink);
@@ -147,9 +176,11 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 
 		if(group != null) {
 			userDataVC.contextPut("groupName", group.getName());
-			groupLink = LinkFactory.createButton("group.link", userDataVC, this);
-			groupLink.setCustomEnabledLinkCSS("b_link_group");
-			userDataVC.put("group.link", groupLink);
+			if(links) {
+				groupLink = LinkFactory.createButton("group.link", userDataVC, this);
+				groupLink.setCustomEnabledLinkCSS("b_link_group");
+				userDataVC.put("group.link", groupLink);
+			}
 		}
 		
 		if (efficiencyStatement != null) {
@@ -246,7 +277,7 @@ public class EfficiencyStatementController extends MainLayoutBasicController {
 	
 	private void openCourse(UserRequest ureq) {
 		List<ContextEntry> ces = new ArrayList<ContextEntry>(1);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", efficiencyStatement.getCourseRepoEntryKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", courseRepoKey);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
 
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);

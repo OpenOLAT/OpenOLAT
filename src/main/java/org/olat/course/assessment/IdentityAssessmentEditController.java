@@ -88,12 +88,12 @@ public class IdentityAssessmentEditController extends BasicController {
 	 */
 	public IdentityAssessmentEditController(WindowControl wControl, UserRequest ureq, 
 			Identity assessedIdentity, ICourse course, boolean mayEdit) {
-		this(wControl, ureq, assessedIdentity, course, mayEdit, false); 
+		this(wControl, ureq, assessedIdentity, course, mayEdit, true); 
 	}
 		
 	public IdentityAssessmentEditController(WindowControl wControl, UserRequest ureq, 
 			Identity assessedIdentity, ICourse course, boolean mayEdit, boolean headers) {
-		
+
 		super(ureq, wControl);
 		this.mayEdit = mayEdit;
 		this.main = new Panel("main");
