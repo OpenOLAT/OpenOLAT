@@ -7,7 +7,7 @@
 [mysqld]
 default-storage_engine 						= innodb
 transaction-isolation                      	= READ-COMMITTED
-default-character-set                      	= latin1
+default-character-set                      	= utf-8
 max_connections 							= 300
 
 innodb_data_file_path 						= c:\ibdata\ibdata1:1000M;c:\ibdata\ibdata2:1000M
