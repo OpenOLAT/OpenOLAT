@@ -1,6 +1,6 @@
 /* ePortfolio 
 *
-*  note:  this file needs a lot of sass beautifying and cleaning..
+*  note:  this file needs further sass beautifying and cleaning..
 */
 
 div.b_struct_edit_btn { float: right; display: inline;}
@@ -100,10 +100,23 @@ ul.b_eportfolio_maps {
 	div {display:inline;}
 }
 
+/* different map styles  */
+/* default, leather and comic were standard (OLATpro 7.2) */
+/* green / blue / red etc. were added 2011 for ZAG */
+
+@import "../../epmapstyles/epmapstyles.scss";
+
+
 	li.default .b_map_info p { color: #bbb; }
 	li.comic .b_map_info p { color: #88a5c4; }
 	li.leather .b_map_info p { color: #C2A074; }
 	
+	.b_map_page { text-align:center; clear:left;}
+	.b_map_page_all{text-align:center;}
+	.b_map_page > span { padding-right:3px;}
+	.b_map_page a.b_map_page_forward {background: url(../openolat/images/arrow_right.png) no-repeat center right; padding-right: 16px;}
+	
+	/* the styles for the multi-map view (closed maps displayed in grid) */
 	ul.b_eportfolio_maps li.leather { background: url(../openolat/images/portfolio/eportfolio_map_leather.png) top left no-repeat; border: none; }
 	ul.b_eportfolio_maps li.leather a { color: #fad9a4; }
 	ul.b_eportfolio_maps li.comic { background: url(../openolat/images/portfolio/eportfolio_map_comic.png) top left no-repeat; border: none; }
@@ -129,52 +142,12 @@ ul.b_eportfolio_maps {
 	.b_eportfolio_map .b_eportfolio_comment_link { float: right; display:inline; margin-right:5px; }
 	
 	.b_ep_tag_cloud { padding: 1em 0 1em 0; border-bottom: 1px solid #ccc; }
-	
-	.default div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
-	.default div.b_pagination { float: none; position: static; width: 100%; }
-	.default div.b_pagination ul { margin: 0; }
-	.default div.b_pagination li { float: left; display: inline; width: auto; margin: 2px 2px 2px 0; padding: 0; background: #FAFAFA; -webkit-border-radius: 7px 7px 0 0; -moz-border-radius: 7px 7px 0 0; -o-border-radius: 7px 7px 0 0; border-radius: 7px 7px 0 0; }
-	.default div.b_pagination li span, .default div.b_pagination li a, .default  div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.default div.b_pagination li.b_disabled { padding-bottom: 2px; margin-bottom: 0; background: #f4f4f4; }
-	.default div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
-	.default div.b_pagination li a { padding: 1em; padding: 5px 8px; }
-	.default div.b_pagination li.b_changelog {float:right;}
-	
-	
-	.default div.b_eportfolio_page, .default div.b_portfolio_toc, .default div.b_eportfolio_edit, .default div.b_eportfolio_changelog { background-image: none; }	
-
-	.comic {font-family: 'Comic Sans MS', 'Comic Sans', fantasy;}
-	.b_eportfolio_map.comic { background: #a2c3e8 none; padding: 30px; -webkit-border-top-right-radius: 10px; -moz-border-radius-topright: 10px; border-top-right-radius: 10px; }
-	.comic div.b_pagination { position: absolute; right: 0; width: 16%; max-height: 100%; overflow-x: hidden; overflow-y: auto; z-index: 100; }
-	.comic .b_ep_relative > div:last-child { position: relative; }
-	.comic div.b_ep_actualpage { width: 85%; margin-top: 1em; }
-	.comic div.b_pagination ul { margin-top: 30px; margin-left: 0px; z-index: 1; }
-	.comic div.b_pagination li  { width: 87%; background: url(../openolat/images/portfolio/postit.png) center right; padding: 0; margin-bottom: 1em; margin-left: 8%; list-style-type: none; }
-	.comic div.b_pagination li span.b_disabled, .comic div.b_pagination li a span { display: block; padding: 20px 15px 20px 10px; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.comic div.b_pagination li span, .comic div.b_pagination li a, .comic div.b_pagination li { white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.comic div.b_pagination li.b_disabled { z-index: 101; margin-left: 0; width: 100%; }
-	.comic div.b_pagination li .b_disabled { color: black; font-weight: bold; }
-	.comic div.b_pagination li.b_toc, .comic div.b_pagination li.b_changelog { background-image: url(../openolat/images/portfolio/postit_pink.png); }
-	
 	.b_eportfolio_page, .b_portfolio_toc, .b_eportfolio_edit, .b_eportfolio_changelog { min-height: 40em; background: #f4f4f4 url(../openolat/images/portfolio/eportfolio_page_corner.png) top right no-repeat; padding: 1em; -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -o-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
 	.b_eportfolio_page .b_eportfolio_structure > h5 { border-bottom: 1px solid #ddd; margin-top: 1.2em; }
 	.b_eportfolio_edit {  margin-top: 1.5em; }
 	
-	.leather {font-family: Palatino, Georgia, serif;}
-	.b_eportfolio_map.leather { background: url(../openolat/images/portfolio/light-leather-tile.jpg); }
-	.leather div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
-	.leather .b_map_header h4, .leather .b_map_header p, .leather .b_map_header a.b_eportfolio_add_link, .leather .b_map_header a.b_eportfolio_comment_link { color: white; }
-	.leather div.b_pagination { float: none; position: static; width: 100%; }
-	.leather div.b_pagination ul { margin: 0; }
-	.leather div.b_pagination li { float: left; display: inline; width: auto; margin: 0 2px 0 0; padding: 0; background: #ddd; -webkit-border-radius: 7px 7px 0 0; -moz-border-radius: 7px 7px 0 0; -o-border-radius: 7px 7px 0 0; border-radius: 7px 7px 0 0; }
-	.leather div.b_pagination li span, .leather div.b_pagination li a, .leather div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.leather div.b_pagination li.b_disabled { padding: 0; background: #f4f4f4; }
-	.leather div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
-	.leather div.b_pagination li.b_changelog {float:right;}
-	.leather div.b_pagination li a { padding: 1em; padding: 5px 8px; }
-	.leather div.b_eportfolio_page, .leather div.b_portfolio_toc, .leather div.b_eportfolio_edit,.leather div.b_eportfolio_changelog { background-image: none; }	
-
-
+	
+	
 	.b_eportfolio.b_artefacts hr.b_ep_filter_spacer { height: 10px; background: url(../openolat/images/portfolio/divider-arrow-down.png) 25px -12px no-repeat; border: none; border-top: 1px solid #ccc; margin: 2em 0 1em;  }
 	.b_eportfolio.b_artefacts .b_ep_content { background: white; padding: 0 1em 1em 1em; margin-top: 1.5em; }
 	.b_eportfolio.b_artefacts .b_ep_content .b_ep_filter { padding: 0; width:80% }
@@ -194,7 +167,8 @@ ul.b_eportfolio_maps {
 	.b_ep_struct_icon.b_eportfolio_add_link { background-image: url(../openolat/images/portfolio/ep_struct_add.png) ! important; }
 	.type_artefact { background-image: url(../openolat/images/le_resources/portfolio.png) ! important; }
 	
-div.b_eportfolio_collect_restriction { 
+	
+	div.b_eportfolio_collect_restriction { 
 	margin-top:5px;
 	
 	div.b_eportfolio_collect_restriction_el { float:left; margin-right:5px; }
@@ -247,3 +221,112 @@ div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content .b_
 	.b_eportfolio_share_policy_wrapper.policytype_allusers .b_eportfolio_share_policy { background-image: url(../openolat/images/users.png); }
 	
 	div.b_ep_inline div input, div.b_ep_inline div span, div.b_ep_inline div select { float: left; margin-right:5px; padding-right:5px; }
+	
+	
+/*  ========= the different custom map styles ========= */
+
+/* DEFAULT */
+.default  {
+	 div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
+	 div.b_pagination { 
+	 	float: none; position: static; width: 100%; 
+	 	ul { margin: 0; }
+	 	li { 
+	 		float: left; 
+	 		display: inline; 
+	 		width: auto; 
+	 		margin: 2px 2px 2px 0; 
+	 		padding: 0; 
+	 		background: #FAFAFA; 
+	 		@include o-border-radius-all(7px,7px,0,0);
+	 		a { padding: 1em; padding: 5px 8px; }
+	 		&,span,a {
+	 			display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis;
+	 		} 
+	 		&.b_disabled { padding-bottom: 2px; margin-bottom: 0; background: #f4f4f4; }	
+	 		.b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+	 		
+	 		&.b_changelog {float:right;}
+ 		}
+	 }
+	
+	div.b_eportfolio_page, div.b_portfolio_toc,  div.b_eportfolio_edit, div.b_eportfolio_changelog { background-image: none; }	
+}
+
+/* COMIC */
+.b_eportfolio_map.comic { background: #a2c3e8 none; padding: 30px;  @include o-border-radius-all(0,10px,0,0); }
+.comic {
+	font-family: 'Comic Sans MS', 'Comic Sans', fantasy;
+	div.b_pagination { position: absolute; right: 0; width: 16%; max-height: 100%; overflow-x: hidden; overflow-y: auto; z-index: 100; }
+	.b_ep_relative > div:last-child { position: relative; }
+	div.b_ep_actualpage { width: 85%; margin-top: 1em; }
+	div.b_pagination {
+		ul { margin-top: 30px; margin-left: 0px; z-index: 1; } 
+		li  { 
+			width: 87%; 
+			background: url(../openolat/images/portfolio/postit.png) center right; 
+			padding: 0; 
+			margin-bottom: 1em; 
+			margin-left: 8%; 
+			list-style-type: none;
+			
+			 span.b_disabled, a span { 
+			 	display: block; 
+			 	padding: 20px 15px 20px 10px; 
+			 	white-space: nowrap; 
+			 	overflow: hidden; 
+			 	text-overflow:ellipsis; 
+			 	-o-text-overflow:ellipsis; 
+			 }
+			 &,span,a {
+			 	white-space: nowrap; 
+			 	overflow: hidden; 
+			 	text-overflow:ellipsis; 
+			 	-o-text-overflow:ellipsis;
+			 }
+			 &.b_disabled { z-index: 101; margin-left: 0; width: 100%; }
+			 .b_disabled { color: black; font-weight: bold; }
+			 
+			 &.b_toc,&.b_changelog { background-image: url(../openolat/images/portfolio/postit_pink.png); }
+		}
+	}
+}
+	
+/* LEATHER */
+.b_eportfolio_map.leather { background: url(../openolat/images/portfolio/light-leather-tile.jpg); }
+.leather {
+	font-family: Palatino, Georgia, serif;
+	div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
+	.b_map_header {
+		h4,p,a.b_eportfolio_add_link,a.b_eportfolio_comment_link { color: white; }
+	}
+	.b_eportfolio_mapowner { color:#fff;}
+	
+	div.b_pagination { 
+		float: none; position: static; width: 100%; 
+		ul { margin: 0; }
+		li { 
+			float: left; 
+			display: inline; 
+			width: auto; 
+			margin: 0 2px 0 0; 
+			padding: 0; 
+			background: #ddd; 
+			@include o-border-radius-all(7px,7px,0,0);
+			
+			a { padding: 1em; padding: 5px 8px; }
+			
+			&,span,a {
+				display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; 
+			}
+			&.b_disabled { padding: 0; background: #f4f4f4; }
+			.b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+			&.b_changelog {float:right;}
+		}
+	}
+	
+	div.b_eportfolio_page, div.b_portfolio_toc, div.b_eportfolio_edit, div.b_eportfolio_changelog { background-image: none; }	
+}
+
+	
+
