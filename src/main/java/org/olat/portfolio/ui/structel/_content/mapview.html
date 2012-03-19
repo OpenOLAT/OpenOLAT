@@ -30,8 +30,9 @@
 	
 		#if(!$r.available("editor"))
 			<div class="b_eportfolio_mapdescr">$map.description</div>
-			<div class="b_eportfolio_mapowner">$r.translate("map.owners","") $r.render("ownerportrait")</div>
-			
+			#if($r.available("ownerportrait"))
+				<div class="b_eportfolio_mapowner">$r.translate("map.owners","") $r.render("ownerportrait")</div>
+			#end
 			<div class="b_clearfix"></div>
 		
 			## show av. artefacts here...

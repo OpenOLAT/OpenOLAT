@@ -1197,6 +1197,9 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public static String getAllOwnersAsString(PortfolioStructureMap map){
+		if(map.getOwnerGroup() == null) {
+			return null;
+		}
 		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
 		List<String> identNames = new ArrayList<String>();
 		for (Identity identity : ownerIdents) {
@@ -1213,6 +1216,9 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public static String getFirstOwnerAsString(PortfolioStructureMap map){
+		if(map.getOwnerGroup() == null) {
+			return "n/a";
+		}
 		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
 		if(ownerIdents.size() > 0){
 			Identity id = ownerIdents.get(0);
@@ -1228,13 +1234,15 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public static Identity getFirstOwnerIdentity(PortfolioStructureMap map){
+		if(map.getOwnerGroup() == null) {
+			return null;
+		}
 		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
 		if (ownerIdents.size() > 0) {
 			Identity id = ownerIdents.get(0);
 			return id;
-		} else {
-			throw new AssertException("OwnerGroup of given ePortfolioMap (" + map.getResourceableId() + ") is empty!");
 		}
+		return null;
 	}
 	
 	// not yet available
