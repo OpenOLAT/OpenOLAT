@@ -104,10 +104,8 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			setOfferPublicMapList("true".equals(offerPublicSetting));
 		}
 		
-		boolean stepRef = getBooleanPropertyValue("wizard.step.reflexion");
-		setReflexionStepEnabled(stepRef);
-		boolean stepCopy = getBooleanPropertyValue("wizard.step.copyright");
-		setCopyrightStepEnabled(stepCopy);	
+		this.isReflexionStepEnabled = getBooleanPropertyValue("wizard.step.reflexion");
+		this.isCopyrightStepEnabled = getBooleanPropertyValue("wizard.step.copyright");
 		
 		logInfo("ePortfolio is enabled: " + Boolean.toString(enabled));
 	}
@@ -150,10 +148,8 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			}
 		}
 		
-		boolean stepRef = getBooleanConfigParameter("wizard.step.reflexion", true);
-		setReflexionStepEnabled(stepRef);
-		boolean stepCopy = getBooleanConfigParameter("wizard.step.copyright", true);
-		setCopyrightStepEnabled(stepCopy);
+		this.isReflexionStepEnabled = getBooleanConfigParameter("wizard.step.reflexion", true);
+		this.isCopyrightStepEnabled = getBooleanConfigParameter("wizard.step.copyright", true);
 		
 		setOfferPublicMapList(getBooleanConfigParameter("portfolio.offer.public.map.list", true));
 	}
