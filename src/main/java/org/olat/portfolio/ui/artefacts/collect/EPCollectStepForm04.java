@@ -61,18 +61,12 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 
 	private static final String NO_MAP_CHOOSEN = "noMapChoosen";
 	private static final String ROOT_NODE_IDENTIFIER = "root";
-	private TreeController treeCtr;
+	private TreeController mapsTreeController;
 	EPFrontendManager ePFMgr;
-	private PortfolioStructure selStructure;
+	private PortfolioStructure selectedPortfolioStructure;
 	private AbstractArtefact artefact;
 	private PortfolioStructure oldStructure;
 
-	/*
-	 * serves as error-label for invalid tree-node selection
-	 */
-	private StaticTextElement formErrorTextElement;
-	
-	@SuppressWarnings("unused")
 	public EPCollectStepForm04(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout,
 			String customLayoutPageName, AbstractArtefact artefact) {
 		super(ureq, wControl, rootForm, runContext, layout, "step04selectmap");
@@ -92,28 +86,24 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	 * @see org.olat.core.gui.control.generic.wizard.StepFormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		List<PortfolioStructure> structs = ePFMgr.getStructureElementsForUser(getIdentity());
 		if (structs != null && structs.size() != 0) {
 			AjaxTreeModel treeModel = buildTreeModel();
-			treeCtr = new TreeController(ureq, getWindowControl(), translate("step4.my.maps"), treeModel, null);
-			treeCtr.setTreeSorting(false, false, false);
-			listenTo(treeCtr);
+			mapsTreeController = new TreeController(ureq, getWindowControl(), translate("step4.my.maps"), treeModel, null);
+			mapsTreeController.setTreeSorting(false, false, false);
+			listenTo(mapsTreeController);
 
 			// find last used structure and preselect
 			PortfolioStructure lastStruct = ePFMgr.getUsersLastUsedPortfolioStructure(getIdentity());
 			if (lastStruct != null) {
-				treeCtr.selectPath("/" + ROOT_NODE_IDENTIFIER + getPath(lastStruct));
-				selStructure = lastStruct;
+				mapsTreeController.selectPath("/" + ROOT_NODE_IDENTIFIER + getPath(lastStruct));
+				selectedPortfolioStructure = lastStruct;
 			}
-			flc.put("treeCtr", treeCtr.getInitialComponent());
+			flc.put("treeCtr", mapsTreeController.getInitialComponent());
 		}
-
-		// OO-133  add a staticTextElement that serves as an error-label
-		formErrorTextElement = uifactory.addStaticTextElement("form.error", "", formLayout);
 		
 		if (!isUsedInStepWizzard()) {
 			// add form buttons
@@ -196,24 +186,25 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	protected void event(@SuppressWarnings("unused") UserRequest ureq, Controller source, Event event) {
-		if (source == treeCtr) {
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == mapsTreeController) {
 			if (event instanceof TreeNodeClickedEvent) {
 				TreeNodeClickedEvent clickedEvent = (TreeNodeClickedEvent) event;
-				String selNode = clickedEvent.getNodeId();
-				if (!selNode.equals(ROOT_NODE_IDENTIFIER) && !selNode.equals(NO_MAP_CHOOSEN)) {
-					selStructure = ePFMgr.loadPortfolioStructureByKey(new Long(selNode));
-				} else if (selNode.equals(NO_MAP_CHOOSEN)) {
-					selStructure = null;
+				String selectedNodeID = clickedEvent.getNodeId();
+				if (!selectedNodeID.equals(ROOT_NODE_IDENTIFIER) && !selectedNodeID.equals(NO_MAP_CHOOSEN)) {
+					selectedPortfolioStructure = ePFMgr.loadPortfolioStructureByKey(new Long(selectedNodeID));
+				} else if (selectedNodeID.equals(NO_MAP_CHOOSEN)) {
+					selectedPortfolioStructure = null;
 				} else {
-					treeCtr.selectPath(null);
-					selStructure = null;
+					mapsTreeController.selectPath(null);
+					selectedPortfolioStructure = null;
 					this.flc.setDirty(true);
 				}
-				if (selStructure != null && selStructure instanceof EPAbstractMap) {
+				
+				if (selectedPortfolioStructure != null && selectedPortfolioStructure instanceof EPAbstractMap) {
 					showWarning("map.not.choosable");
-					treeCtr.selectPath(null);
-					selStructure = null;
+					mapsTreeController.selectPath(null);
+					selectedPortfolioStructure = null;
 					this.flc.setDirty(true);
 				}
 			}
@@ -231,40 +222,23 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 		return path.toString();
 	}
 
-	
-	/**
-	 * http://jira.openolat.org/browse/OO-133
-	 * 
-	 * wee need to check, if selectedStructure element is not null.
-	 * (this happens if user selects root node).
-	 * if it is null, display error-message and return false
-	 * 
-	 */
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		if(selStructure == null){
-			formErrorTextElement.setValue(translate("step4.nomapselected"));
-			return false;
-		}
-		return super.validateFormLogic(ureq);
-	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.wizard.StepFormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (selStructure != null) {
-			ePFMgr.setUsersLastUsedPortfolioStructure(getIdentity(), selStructure);
+		if (selectedPortfolioStructure != null) {
+			ePFMgr.setUsersLastUsedPortfolioStructure(getIdentity(), selectedPortfolioStructure);
 		}
 		if (isUsedInStepWizzard()) {
-			addToRunContext("selectedStructure", selStructure);
+			addToRunContext("selectedStructure", selectedPortfolioStructure);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
-			if (!selStructure.getKey().equals(oldStructure.getKey())) {
-				ePFMgr.moveArtefactFromStructToStruct(artefact, oldStructure, selStructure);
-				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.CHANGED, selStructure)); // refresh
-																											// ui
+			if (selectedPortfolioStructure != null && !selectedPortfolioStructure.getKey().equals(oldStructure.getKey())) {
+				ePFMgr.moveArtefactFromStructToStruct(artefact, oldStructure, selectedPortfolioStructure);
+				// refresh ui
+				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.CHANGED, selectedPortfolioStructure));
 			}
 		}
 	}
