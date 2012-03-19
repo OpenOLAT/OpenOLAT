@@ -88,50 +88,30 @@ public class WikisWebService {
 	public Response getWikis(@Context HttpServletRequest httpRequest) {
 
 		try {
-			// the repo-Wikis (the "normal" wikis)
-			Roles roles = getRoles(httpRequest);
-			Identity identity = getIdentity(httpRequest);
-			RepositoryManager rm = RepositoryManager.getInstance();
-			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, new String[] { WikiResource.TYPE_NAME });
-			List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
-
-			// the group wikis
-			List<BusinessGroup> groups = findAccessibleGroupsWithWikis(RestSecurityHelper.getIdentity(httpRequest));
-
-			// patch 'em together
-			WikiVOes voes = new WikiVOes();
+			List<RepositoryEntry> res = getAccessibleWikiRepositoryEntries(httpRequest);
 			WikiVO[] wks_repo = toArrayOfVOes_repoentry(res);
-			WikiVO[] wks_grp = toArrayOfVOes_group(groups);
-
-			voes.setWikis((WikiVO[]) ArrayUtils.addAll(wks_repo, wks_grp));
+			WikiVOes voes = new WikiVOes();
+			voes.setWikis( wks_repo);
 			return Response.ok(voes).build();
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}
 
 	}
-
+	
 	/**
-	 * gets a list of all groups that have the wiki enabled AND where current
-	 * REST user is attendee or owner
+	 * returns all accessiblewikiRepositoryEntries of type wiki
 	 * 
-	 * @param identity
+	 * @param httpRequest
 	 * @return
 	 */
-	private List<BusinessGroup> findAccessibleGroupsWithWikis(Identity identity) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<BusinessGroup> groups = bgm.findBusinessGroupsAttendedBy(null, identity, null);
-		groups.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
-		List<BusinessGroup> filteredGroups = new ArrayList<BusinessGroup>();
-
-		// check for every group, if it has a wiki
-		for (BusinessGroup businessGroup : groups) {
-			CollaborationTools ctsm = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-			if (ctsm.isToolEnabled(CollaborationTools.TOOL_WIKI)) {
-				filteredGroups.add(businessGroup);
-			}
-		}
-		return filteredGroups;
+	private static List<RepositoryEntry> getAccessibleWikiRepositoryEntries(HttpServletRequest httpRequest){
+		Roles roles = getRoles(httpRequest);
+		Identity identity = getIdentity(httpRequest);
+		RepositoryManager rm = RepositoryManager.getInstance();
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, new String[] { WikiResource.TYPE_NAME });
+		List<RepositoryEntry> res = rm.genericANDQueryWithRolesRestriction(params, 0, -1, true);
+		return res;
 	}
 
 	private static WikiVO[] toArrayOfVOes_repoentry(List<RepositoryEntry> entries) {
@@ -143,14 +123,6 @@ public class WikisWebService {
 		return wikiVOs;
 	}
 
-	private static WikiVO[] toArrayOfVOes_group(List<BusinessGroup> groups) {
-		int i = 0;
-		WikiVO[] wikiVOs = new WikiVO[groups.size()];
-		for (BusinessGroup group : groups) {
-			wikiVOs[i++] = wikivoFromGroup(group);
-		}
-		return wikiVOs;
-	}
 
 	private static WikiVO wikivoFromRepoEntry(RepositoryEntry entry) {
 		WikiVO wiki = new WikiVO();
@@ -161,12 +133,4 @@ public class WikisWebService {
 		return wiki;
 	}
 
-	private static WikiVO wikivoFromGroup(BusinessGroup group) {
-		WikiVO wiki = new WikiVO();
-		wiki.setGroupWiki(true);
-		wiki.setTitle(group.getName());
-		wiki.setKey(group.getResourceableId());
-		wiki.setSoftkey("n/a");
-		return wiki;
-	}
 }

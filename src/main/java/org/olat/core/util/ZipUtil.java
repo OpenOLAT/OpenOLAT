@@ -340,6 +340,7 @@ public class ZipUtil {
 	/**
 	 * Add the set of files residing in root to the ZIP file named target.
 	 * Files in subfolders will be compressed too.
+	 * if target already exists, this will abort and return false.
 	 * 
 	 * @param files		Filenames to add to ZIP, relative to root
 	 * @param root		Base path.
