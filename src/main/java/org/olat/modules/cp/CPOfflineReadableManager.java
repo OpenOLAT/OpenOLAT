@@ -67,9 +67,9 @@ public class CPOfflineReadableManager {
 
 	OLog logger = Tracing.createLoggerFor(CPOfflineReadableManager.class);
 	
-	private static final String IMSMANIFEST = "imsmanifest.xml";
-	public static final String CPOFFLINEMENUMAT = "cp_offline_menu_mat";
-	private static final String FRAME_FILE = "_START_.html";
+	private static final String DIRNAME_CPOFFLINEMENUMAT = "cp_offline_menu_mat";
+	private static final String FILENAME_START = "_START_.html";
+	private static final String FILENAME_IMSMANIFEST = "imsmanifest.xml";
 	private static final String FRAME_NAME_CONTENT = "content";
 
 	private String rootTitle;
@@ -116,7 +116,7 @@ public class CPOfflineReadableManager {
 	 */
 	public void makeCPOfflineReadable(File unzippedDir, File targetZip) {
 		writeOfflineCPStartHTMLFile(unzippedDir);
-		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + CPOFFLINEMENUMAT);
+		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
 		zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
 	}
 
@@ -139,7 +139,7 @@ public class CPOfflineReadableManager {
 
 		File unzippedDir = new File(repositoryHome + "/" + relPath);
 		File targetZip = new File(repositoryHome + "/" + resId + "/" + zipName);
-		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + CPOFFLINEMENUMAT);
+		File cpOfflineMat = new File(WebappHelper.getContextRoot() + "/static/" + DIRNAME_CPOFFLINEMENUMAT);
 
 		writeOfflineCPStartHTMLFile(unzippedDir);
 		zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
@@ -157,7 +157,7 @@ public class CPOfflineReadableManager {
 	private void writeOfflineCPStartHTMLFile(File unzippedDir) {
 
 		/* first, we do the menu-tree */
-		File mani = new File(unzippedDir, IMSMANIFEST);
+		File mani = new File(unzippedDir, FILENAME_IMSMANIFEST);
 		LocalFileImpl vfsMani = new LocalFileImpl(mani);
 		CPManifestTreeModel ctm = new CPManifestTreeModel(vfsMani);
 		TreeNode root = ctm.getRootNode();
@@ -171,7 +171,7 @@ public class CPOfflineReadableManager {
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("menutree", menuTreeSB.toString());
 		ctx.put("rootTitle", this.rootTitle);
-		ctx.put("cpoff",CPOFFLINEMENUMAT);
+		ctx.put("cpoff",DIRNAME_CPOFFLINEMENUMAT);
 		
 		StringWriter sw = new StringWriter();
 		try {
@@ -183,11 +183,11 @@ public class CPOfflineReadableManager {
 			logger.error("Error while evaluating velovity template for CP Export",e);
 		}
 		
-		File f = new File(unzippedDir, FRAME_FILE);
+		File f = new File(unzippedDir, FILENAME_START);
 		if (f.exists()) {
 			FileUtils.deleteDirsAndFiles(f, false, true);
 		}
-		ExportUtil.writeContentToFile(FRAME_FILE, sw.toString(), unzippedDir, "utf-8");
+		ExportUtil.writeContentToFile(FILENAME_START, sw.toString(), unzippedDir, "utf-8");
 	}
 
 
@@ -252,19 +252,26 @@ public class CPOfflineReadableManager {
 	 * @param cpOfflineMat
 	 */
 	private void zipOfflineReadableCP(File unzippedDir, File targetZip, File cpOfflineMat) {
+		// copy the offlineMat to unzippedDir
 		FileUtils.copyDirToDir(cpOfflineMat, unzippedDir, "copy for offline readable cp");
-
+		
 		if (targetZip.exists()) {
 			FileUtils.deleteDirsAndFiles(targetZip, false, true);
+		} else {
+			// ZipUtil.zip expects the target-file's parent directory to exist!
+			targetZip.getParentFile().mkdirs();
 		}
 
-		Set<String> allFiles = new HashSet<String>();
+		Set<String> allFilesInUnzippedDir = new HashSet<String>();
 		String[] cpFiles = unzippedDir.list();
 		for (int i = 0; i < cpFiles.length; i++) {
-			allFiles.add(cpFiles[i]);
+			allFilesInUnzippedDir.add(cpFiles[i]);
 		}
-		ZipUtil.zip(allFiles, unzippedDir, targetZip, true);
+		boolean zipResult = ZipUtil.zip(allFilesInUnzippedDir, unzippedDir, targetZip, true);
 
+		if(!targetZip.exists()){
+			logger.warn("targetZip does not exists after zipping. zip-result is: "+ zipResult);
+		}
 	}
 
 }

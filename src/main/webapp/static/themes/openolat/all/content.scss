@@ -65,8 +65,11 @@ a img {
 	outline: none;	
 }
 
+/* special links */
 a.b_link_extern { background: transparent url('../../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
-.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
+
 
 /* TEXT FORMATTING */
 cite, blockquote { font-style:italic }

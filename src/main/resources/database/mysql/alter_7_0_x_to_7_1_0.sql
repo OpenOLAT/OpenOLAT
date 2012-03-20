@@ -179,5 +179,5 @@ alter table o_info_message add constraint FKF85553465A4FA5DC foreign key (fk_aut
 create index imsg_modifier_idx on o_info_message (fk_modifier_id);
 alter table o_info_message add constraint FKF85553465A4FA5EF foreign key (fk_modifier_id) references o_bs_identity (id);
 
---projectbroker.project.title was too short for title with äöü
+-- projectbroker.project.title was too short for title with äöü
 alter table o_projectbroker_project modify title varchar(150);

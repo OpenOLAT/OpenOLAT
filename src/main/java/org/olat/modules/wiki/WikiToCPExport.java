@@ -43,11 +43,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -76,6 +79,8 @@ public class WikiToCPExport {
 	private Translator trans;
 	private JFlexParser parser;
 
+	private static OLog logger = Tracing.createLoggerFor(WikiToCPExport.class);
+	
 	/**
 	 * 
 	 * @param ores   the repositoryEntry of the wiki.  this can also be the business-group, if the wiki is in a group
@@ -149,17 +154,17 @@ public class WikiToCPExport {
 
 		renderWikiToHtmlFiles(ores, tempFolder);
 		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(tempFolder.getBasefile(), exportPath.getBasefile());
-		//tempFolder.delete();
+		tempFolder.delete();
 	}
 
 	private StringBuilder createJsMappingContent(Wiki wiki) {
 		StringBuilder sb = new StringBuilder();
-		List pages = wiki.getPagesByDate();
+		List<WikiPage> pages = wiki.getPagesByDate();
 
 		// create javascript assoz. array
 		sb.append("var mappings = new Array();\n");
-		for (final Iterator iter = pages.iterator(); iter.hasNext();) {
-			final WikiPage page = (WikiPage) iter.next();
+		for (final Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
+			final WikiPage page = iter.next();
 			sb.append("mappings[\"").append(page.getPageName().replace("&", "%26").toLowerCase(Locale.ENGLISH)).append("\"] = ");
 			sb.append("\"").append(page.getPageId()).append(".html\"\n");
 		}
@@ -182,10 +187,9 @@ public class WikiToCPExport {
 	}
 
 	private void copyMediaFiles(OlatRootFolderImpl mediaFolder, VFSContainer tempFolder) {
-		List images = mediaFolder.getItems();
-		for (Iterator iter = images.iterator(); iter.hasNext();) {
-			VFSLeaf image = (VFSLeaf) iter.next();
-			tempFolder.copyFrom(image);
+		List<VFSItem> images = mediaFolder.getItems();
+		for (Iterator<VFSItem> iter = images.iterator(); iter.hasNext();) {
+			tempFolder.copyFrom( iter.next());
 		}
 	}
 
@@ -338,9 +342,9 @@ public class WikiToCPExport {
 		// href="einleitung.html">
 		// <file href="einleitung.html" />
 		// </resource>
-		List pageNames = wiki.getPagesByDate();
-		for (Iterator iter = pageNames.iterator(); iter.hasNext();) {
-			WikiPage page = (WikiPage) iter.next();
+		List<WikiPage> pageNames = wiki.getPagesByDate();
+		for (Iterator<WikiPage> iter = pageNames.iterator(); iter.hasNext();) {
+			WikiPage page = iter.next();
 			sb.append("<resource identifier=\"res_").append(page.getPageId()).append("\" type=\"text/html\" ").append("href=\"");
 			sb.append(page.getPageId()).append(".html\">");
 			sb.append("<file href=\"").append(page.getPageId()).append(".html\" />");
@@ -348,12 +352,22 @@ public class WikiToCPExport {
 		}
 	}
 
-	private void renderWikiToHtmlFiles(OLATResourceable ores, VFSContainer tempFolder) {
+	/**
+	 * renders the given wiki (specified by its ores) as HTML files to the given VFSContainer (tempFolder).
+	 * 
+	 * @param wikiOres
+	 * @param tempFolder
+	 */
+	private void renderWikiToHtmlFiles(OLATResourceable wikiOres, VFSContainer tempFolder) {
 		WikiManager wikiManager = WikiManager.getInstance();
-		Wiki wiki = wikiManager.getOrLoadWiki(ores);
-		List pages = wiki.getAllPagesWithContent(true);
-		for (Iterator iter = pages.iterator(); iter.hasNext();) {
-			WikiPage page = (WikiPage) iter.next();
+		Wiki wiki = wikiManager.getOrLoadWiki(wikiOres);
+		List<WikiPage> pages = wiki.getAllPagesWithContent(true);
+		if (logger.isDebug()) {
+			logger.debug("rendering wiki from ores " + wikiOres.getResourceableId() + " to tempFolder '" + tempFolder.getName()
+					+ "'.  we have a total of " + pages.size() + " pages...");
+		}
+		for (Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
+			WikiPage page = iter.next();
 			StringBuilder sb = new StringBuilder();
 			sb.append("<html>");
 			sb.append("<head>\n");
@@ -366,22 +380,35 @@ public class WikiToCPExport {
 
 			sb.append("</head>\n");
 			sb.append("<body>\n");
-			sb.append("<h3>");
-			if (page.getPageName().equals(WikiPage.WIKI_A2Z_PAGE)) sb.append(trans.translate("navigation.a-z"));
-			else if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) sb.append(trans.translate("navigation.menu"));
-			else sb.append(page.getPageName());
-			sb.append("</h3>");
+			sb.append("<h3>").append(getTranslatedWikiPageName(page)).append("</h3>");
 			sb.append("<hr><div id=\"olat-wiki\">");
 			VFSLeaf file = tempFolder.createChildLeaf(page.getPageId() + ".html");
 			try {
 				ParserDocument doc = parser.parseHTML(page.getContent());
 				sb.append(doc.getContent());
 			} catch (Exception e) {
-				throw new OLATRuntimeException("error while parsing from wiki to cp. ores:" + ores.getResourceableId(), e);
+				throw new OLATRuntimeException("error while parsing from wiki to CP. ores:" + wikiOres.getResourceableId(), e);
 			}
 			sb.append("</div></body></html>");
 			FileUtils.save(file.getOutputStream(false), sb.toString(), "utf-8");
 		}
 
+	}
+	
+	/**
+	 * returns the translated wikiPage-name if given page is special (A-Z or the
+	 * wiki Menu). Otherwise returns the title of the given wiki page
+	 * 
+	 * @param page
+	 * @return
+	 */
+	private String getTranslatedWikiPageName(WikiPage page){
+		if (page.getPageName().equals(WikiPage.WIKI_A2Z_PAGE)) {
+			return trans.translate("navigation.a-z");
+		} else if (page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) {
+			return trans.translate("navigation.menu");
+		} else {
+			return page.getPageName();
+		}
 	}
 }

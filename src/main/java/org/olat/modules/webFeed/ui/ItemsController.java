@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.commons.controllers.navigation.NavigationEvent;
@@ -310,10 +311,15 @@ public class ItemsController extends BasicController {
 	 */
 	private void createItemLink(Item item) {
 		String guid = item.getGuid();
-		Link itemLink = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more", Link.LINK, vcItems, this);
-		itemLink.setCustomEnabledLinkCSS("b_link_forward");
-		itemLink.setUserObject(item);
-		itemLinks.add(itemLink);
+		Link itemLink_more = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more", Link.LINK, vcItems, this);
+		itemLink_more.setCustomEnabledLinkCSS("b_link_forward");
+		itemLink_more.setUserObject(item);
+		
+		Link itemLink_title = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid, StringEscapeUtils.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
+		itemLink_title.setUserObject(item);
+		
+		itemLinks.add(itemLink_title);
+		itemLinks.add(itemLink_more);
 	}
 
 	/**
