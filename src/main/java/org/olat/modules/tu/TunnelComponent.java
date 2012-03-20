@@ -43,7 +43,6 @@ import org.olat.core.gui.media.AsyncMediaResponsible;
 import org.olat.core.gui.media.HttpRequestMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
@@ -101,7 +100,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 		}
 		loc = ureq.getLocale();
 		
-		fetchFirstResource(ureq.getIdentity());	
+		fetchFirstResource(ureq);	
 }
 
 	/**
@@ -112,7 +111,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 	}
 
 	
-	private void fetchFirstResource(Identity ident) {
+	private void fetchFirstResource(UserRequest ureq) {
 
 		TURequest tureq = new TURequest(); //config, ureq);
 		tureq.setContentType(null); // not used
@@ -126,19 +125,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 				tureq.setUri("/"+startUri);
 			}
 		}
-
-		//if (allowedToSendPersonalHeaders) {
-		String userName = ident.getName();
-		User u = ident.getUser();
-		String lastName = u.getProperty(UserConstants.LASTNAME, loc);
-		String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
-		String email = u.getProperty(UserConstants.EMAIL, loc);
-		
-		tureq.setEmail(email);
-		tureq.setFirstName(firstName);
-		tureq.setLastName(lastName);
-		tureq.setUserName(userName);
-		//}
+		fillTURequestWithUserInfo(tureq,ureq);
 
 		HttpMethod meth = fetch(tureq, httpClientInstance);
 		if (meth == null) {
@@ -179,6 +166,28 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 			}
 		}
 	}
+	
+	/**
+	 * fills the given TURequest with userInformation such as lastName,
+	 * firstName, email, ipAddress
+	 * 
+	 * @param tuRequest
+	 * @param userRequest
+	 */
+	private void fillTURequestWithUserInfo(TURequest tuRequest, UserRequest userRequest){
+		String userName = userRequest.getIdentity().getName();
+		User u = userRequest.getIdentity().getUser();
+		String lastName = u.getProperty(UserConstants.LASTNAME, loc);
+		String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
+		String email = u.getProperty(UserConstants.EMAIL, loc);
+		String userIPAdress = userRequest.getUserSession().getSessionInfo().getFromIP();
+		
+		tuRequest.setEmail(email);
+		tuRequest.setFirstName(firstName);
+		tuRequest.setLastName(lastName);
+		tuRequest.setUserName(userName);
+		tuRequest.setUserIPAddress(userIPAdress);
+	}
 
 	
 	/**
@@ -198,17 +207,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 
 		TURequest tureq = new TURequest(config, ureq);
 
-		//if (allowedToSendPersonalHeaders) {
-		String userName = ureq.getIdentity().getName();
-		User u = ureq.getIdentity().getUser();
-		String lastName = u.getProperty(UserConstants.LASTNAME, loc);
-		String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
-		String email = u.getProperty(UserConstants.EMAIL, loc);
-		tureq.setEmail(email);
-		tureq.setFirstName(firstName);
-		tureq.setLastName(lastName);
-		tureq.setUserName(userName);
-		//}
+		fillTURequestWithUserInfo(tureq,ureq);
 
 		HttpMethod meth = fetch(tureq, httpClientInstance);
 		if (meth == null) {
@@ -303,6 +302,7 @@ public class TunnelComponent extends Component implements AsyncMediaResponsible 
 		meth.addRequestHeader("X-OLAT-LASTNAME", tuReq.getLastName());
 		meth.addRequestHeader("X-OLAT-FIRSTNAME", tuReq.getFirstName());
 		meth.addRequestHeader("X-OLAT-EMAIL", tuReq.getEmail());
+		meth.addRequestHeader("X-OLAT-USERIP", tuReq.getUserIPAddress());
 
 		try {
 			client.executeMethod(meth);
