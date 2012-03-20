@@ -38,7 +38,7 @@
 			<p class="o_item_info">
 				$info
 				#if ($feed.isExternal() && $item.getExternalLink())
-					<a href="$!item.getExternalLink()" target="_blank" class="b_with_tiny_icon_left b_ext_tiny_link"><span>$r.translate("feed.item.original")</span></a>
+					<br /><a href="$!item.getExternalLink()" target="_blank" class="b_link_extern"><span>$r.translate("feed.item.original")</span></a>
 				#end
 			</p>
 		#end
