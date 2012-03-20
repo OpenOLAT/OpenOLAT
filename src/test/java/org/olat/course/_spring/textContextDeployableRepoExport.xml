@@ -21,7 +21,6 @@
 
 <bean id="textfile" class="org.olat.course.DeployableCourseExport">
 	<property name="courseUrl" value="http://www.olat.org/website/en/html/index.html" />
-	<property name="helpCourse" value="true" />
 	<property name="access" value="4" />
 	<property name="identifier" value="my identifier" />
 </bean>
