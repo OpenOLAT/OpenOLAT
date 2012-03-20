@@ -25,6 +25,7 @@
 package org.olat.gui.control;
 
 import org.olat.core.commons.chiefcontrollers.LanguageChooserController;
+import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -41,6 +42,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 
 public class OlatDmzTopNavController extends BasicController{
 	
+	private static final Boolean contextHelpEnabled = Boolean.valueOf(ContextHelpModule.isContextHelpEnabled());
 	private Link impressumLink;
 	private VelocityContainer topNavVC;
 	private LanguageChooserController languageChooserC;
@@ -62,6 +64,9 @@ public class OlatDmzTopNavController extends BasicController{
 			impressumLink.setAjaxEnabled(false);
 			impressumLink.setTarget("_blank");
 		}
+		
+		// help on login page
+		topNavVC.contextPut("isContextHelpEnabled", contextHelpEnabled);
 
 		//choosing language 
 		languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");

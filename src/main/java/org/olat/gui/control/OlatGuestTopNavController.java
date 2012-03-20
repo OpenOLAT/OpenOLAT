@@ -41,6 +41,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 
 /**
  * Description:<br>
@@ -74,10 +75,13 @@ public class OlatGuestTopNavController extends BasicController {
 		}
 		
 		// the help link
-		helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
-		helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
-		helpLink.setTooltip("topnav.help.alt", false);
-		helpLink.setTarget("_help");
+		if (CourseModule.isHelpCourseEnabled()) {
+			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
+			helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
+			helpLink.setTooltip("topnav.help.alt", false);
+			helpLink.setTarget("_help");
+		}
+		
 		loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
 		loginLink.setTooltip("topnav.login.alt", false);
 

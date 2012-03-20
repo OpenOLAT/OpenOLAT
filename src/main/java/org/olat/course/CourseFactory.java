@@ -69,6 +69,7 @@ import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ObjectCloner;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -772,7 +773,7 @@ public class CourseFactory extends BasicManager {
 		String helpCourseSoftKey = CourseModule.getHelpCourseSoftKey();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry entry = null;
-		if (helpCourseSoftKey != null) {
+		if (StringHelper.containsNonWhitespace(helpCourseSoftKey)) {
 			entry = rm.lookupRepositoryEntryBySoftkey(helpCourseSoftKey, false);
 		}
 		if (entry == null) {

@@ -25,7 +25,6 @@
 package org.olat.course;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +51,6 @@ public class TestDeployableRepositoryExport extends AbstractJUnit4SpringContextT
 	public void testZipDownloadNormalCase() {
 		DeployableCourseExport bean = (DeployableCourseExport) applicationContext.getBean("normalzip");
 		assertNotNull(bean);
-		assertFalse(bean.isHelpCourse());
 		assertEquals(bean.getAccess(),4);
 		assertEquals(bean.getVersion(),Float.valueOf(1));
 		

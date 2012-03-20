@@ -50,6 +50,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -99,7 +100,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		}
 		//
 		// the help link
-		if(!isInvitee) {
+		if(!isInvitee && CourseModule.isHelpCourseEnabled()) {
 			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
 			helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
 			helpLink.setTooltip("topnav.help.alt", false);
