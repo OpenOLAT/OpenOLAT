@@ -58,7 +58,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	public static final String DUMMY_MALE_BIG_CSS_CLASS = "o_portrait_dummy_male_big";
 	public static final String DUMMY_MALE_SMALL_CSS_CLASS = "o_portrait_dummy_male_small";
 	
-	// If you change the following widths, don't forget to change them in olat.css as well.
+	// If you change the following widths, don't forget to change them in basemod.scss as well.
 	public static final int WIDTH_PORTRAIT_BIG = 100;  // 4-8 kbytes (jpeg)
 	public static final int WIDTH_PORTRAIT_SMALL = 50; // 2-4
 	

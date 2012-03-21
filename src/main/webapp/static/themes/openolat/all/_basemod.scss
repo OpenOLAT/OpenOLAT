@@ -269,14 +269,17 @@ a.b_togglebox_opened {background: url($ico_minus) no-repeat 0 50%; padding: 1px 
 
 div.b_titled_wrapper {
 	div.b_togglebox div.b_togglebox_content { background:transparent; border:0px; padding:0px; }
-	//a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; }
-	//a.b_togglebox_closed { display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left;  @include o-opacity(60); }
-	
-	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
-	a.b_togglebox_hide span { }
-	a.b_togglebox_hide:hover { text-decoration:underline; }
 }
 
+div.b_titled_wrapper_desc {
+	
+	a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px;  position:absolute; top:2px; left:5px; background: url(../openolat/images/information-white.png) no-repeat 0 50%; }
+	a.b_togglebox_closed { display:block; width:20px; height:20px; background: url(../openolat/images/information-white.png) no-repeat top left;  @include o-opacity(60); }
+	
+	div.b_togglebox div.b_togglebox_content { position:relative; margin-bottom:1em; }
+	a.b_togglebox_hide span { position:absolute; bottom:0; right:0; padding:0 6px 3px 0; }
+	a.b_togglebox_hide:hover { text-decoration:underline; }
+}
 
 
 /* Needed for IE6 */
