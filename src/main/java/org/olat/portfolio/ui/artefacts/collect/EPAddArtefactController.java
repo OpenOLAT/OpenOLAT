@@ -150,16 +150,18 @@ public class EPAddArtefactController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == collectStepsCtrl && event == Event.CANCELLED_EVENT) {
-			if(vfsTemp != null) {
-				vfsTemp.delete();
-				vfsTemp = null;
-			}
+			disposeTempDir();
 			getWindowControl().pop();
 			removeAsListenerAndDispose(collectStepsCtrl);
 		}
 		if (source == collectStepsCtrl && event == Event.CHANGED_EVENT) {
 			getWindowControl().pop();
 			removeAsListenerAndDispose(collectStepsCtrl);
+			
+			// manually dispose temp vfsContainer here :: FXOLAT-386 
+			// this EPAddArtefactController gets disposed "too late" 
+			//(vfsTemp can change inbetween, so only the last one get's deleted)
+			disposeTempDir();
 			showInfo("collect.success.text.artefact");
 			fireEvent(ureq, Event.DONE_EVENT);
 		} 
@@ -231,13 +233,22 @@ public class EPAddArtefactController extends BasicController {
 	}
 
 	/**
+	 * FXOLAT-386
+	 * disposed the temp vfsContainer from a file Artefact upload
+	 */
+	private void disposeTempDir(){
+		if(vfsTemp != null ) {
+			vfsTemp.delete();
+			vfsTemp = null;
+		}
+	}
+	
+	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
 	@Override
 	protected void doDispose() {
-		if (vfsTemp != null) {
-			vfsTemp.delete();
-		}
+		disposeTempDir();
 	}
 
 }
