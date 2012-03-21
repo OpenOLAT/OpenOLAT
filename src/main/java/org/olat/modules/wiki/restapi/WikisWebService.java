@@ -22,36 +22,26 @@ package org.olat.modules.wiki.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.olat.collaboration.CollaborationTools;
-import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.fileresource.types.WikiResource;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.modules.wiki.restapi.vo.WikiVO;
 import org.olat.modules.wiki.restapi.vo.WikiVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchRepositoryEntryParameters;
-import org.olat.restapi.security.RestSecurityHelper;
 
 /**
  * 
@@ -76,7 +66,7 @@ public class WikisWebService {
 	}
 
 	/**
-	 * get list of wikis
+	 * get list of repo-entry wikis. Group-Wikis are not listed!
 	 * 
 	 * @param start
 	 * @param limit

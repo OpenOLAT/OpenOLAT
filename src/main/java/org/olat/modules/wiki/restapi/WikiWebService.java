@@ -19,9 +19,6 @@
  */
 package org.olat.modules.wiki.restapi;
 
-import java.io.File;
-import java.util.Locale;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -32,24 +29,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
-import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.Util;
-import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.fileresource.types.WikiResource;
-import org.olat.modules.fo.restapi.ForumWebService;
-import org.olat.modules.wiki.WikiMainController;
-import org.olat.modules.wiki.WikiToCPExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 
@@ -62,7 +46,6 @@ import org.olat.restapi.security.RestSecurityHelper;
  * 
  */
 public class WikiWebService {
-	private static final OLog log = Tracing.createLoggerFor(ForumWebService.class);
 
 	/**
 	 * will export the specified wiki (which must be a repo-entry-wiki) to a CP
@@ -80,14 +63,31 @@ public class WikiWebService {
 	public Response exportWiki(@PathParam("wikiKey") String wikiKey, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		if (wikiKey == null)
 			return Response.serverError().status(Status.BAD_REQUEST).build();
-		
+
 		try {
-			RepositoryEntry re = getExportableWikiRepoEntryByAnyKey(wikiKey);
-			return serveWiki(re, request, response);
+			return getWikiEntryAndServe(wikiKey,request,response);
 		} catch (Exception e) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 
+	}
+
+	/**
+	 * 
+	 * @param wikiKey
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	private Response getWikiEntryAndServe(String wikiKey, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		RepositoryEntry wikiEntry = getExportableWikiRepoEntryByAnyKey(wikiKey);
+		if (isRESTUserAllowedToExportWiki(wikiEntry, request)) {
+			RepositoryManager.getInstance().incrementDownloadCounter(wikiEntry);
+			return WikiWebServiceHelper.serve(wikiEntry.getOlatResource(), request, response);
+		} else {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 	}
 
 	/**
@@ -136,58 +136,18 @@ public class WikiWebService {
 	}
 
 	/**
+	 * check access of current REST user to the given wikiRepoEntry. Current
+	 * REST user must be the owner of the repoEntry or an OpenOLAT author
 	 * 
 	 * @param wikiEntry
 	 * @param request
-	 * @param response
 	 * @return
 	 */
-	private Response serveWiki(RepositoryEntry wikiEntry, HttpServletRequest request, HttpServletResponse response) {
+	private boolean isRESTUserAllowedToExportWiki(RepositoryEntry wikiEntry, HttpServletRequest request) {
 		Identity ident = RestSecurityHelper.getIdentity(request);
-
-		// check if current REST user is allowed to export the wiki resource
 		boolean isAuthor = RestSecurityHelper.isAuthor(request);
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ident, wikiEntry);
-		if (!(isAuthor | isOwner)) {
-			// current REST user is neither author nor owner -> do not allow
-			// export
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		// count download
-		RepositoryManager.getInstance().incrementDownloadCounter(wikiEntry);
-		return serve(wikiEntry, ident, request, response);
-	}
-
-	/**
-	 * finally exports the ores and serves the zip file
-	 * 
-	 * @param ores
-	 * @param ident
-	 * @param request
-	 * @param response
-	 * @return
-	 */
-	private Response serve(RepositoryEntry repoEntry, Identity ident, HttpServletRequest request, HttpServletResponse response) {
-
-		// get the underlying OLAT resource
-		OLATResource wikiResource = repoEntry.getOlatResource();
-		Translator translator = Util.createPackageTranslator(WikiMainController.class, new Locale(ident.getUser().getPreferences().getLanguage()));
-		WikiToCPExport exportUtil = new WikiToCPExport(wikiResource, ident, translator);
-		LocalFileImpl tmpExport = new OlatRootFileImpl("/tmp/" + ident.getKey() + "-" + wikiResource.getResourceableId() + "-restexport.zip", null);
-		exportUtil.archiveWikiToCP(tmpExport);
-
-		// export is done, serve the file
-		File baseFile = tmpExport.getBasefile();
-		if (baseFile.exists() && baseFile.canRead()) {
-			// make mediaResource
-			MediaResource cpMediaResource = new CleanupAfterDeliveryFileMediaResource(baseFile);
-			// use servletUtil, so file gets deleted afterwards
-			ServletUtil.serveResource(request, response, cpMediaResource);
-			return Response.ok().build();
-		} else {
-			log.warn("Exported wiki to " + baseFile.getAbsolutePath() + " but now it's not readable for serving to client...");
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
+		return isAuthor || isOwner;
 	}
 
 }

@@ -83,7 +83,7 @@ public class WikiToCPExport {
 	
 	/**
 	 * 
-	 * @param ores   the repositoryEntry of the wiki.  this can also be the business-group, if the wiki is in a group
+	 * @param ores   the repositoryEntry of the wiki OR the businessGroup, if the wiki is in a group
 	 * @param ident
 	 * @param trans
 	 */

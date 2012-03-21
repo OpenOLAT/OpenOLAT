@@ -71,6 +71,7 @@ import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
+import org.olat.modules.wiki.restapi.GroupWikiWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupInfoVO;
@@ -350,6 +351,35 @@ public class LearningGroupWebService {
 		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
 		rootContainer.setLocalSecurityCallback(secCallback);
 		return new VFSWebservice(rootContainer);
+	}
+	
+	
+	/**
+	 * Return the Forum web service
+	 * @param groupKey The key of the group
+	 * @param request The HTTP Request
+	 * @return
+	 */
+	@Path("{groupKey}/wiki")
+	public GroupWikiWebService getWiki(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		if(bg == null) {
+			return null;
+		}
+		
+		if(!isGroupManager(request)) {
+			Identity identity = RestSecurityHelper.getIdentity(request);
+			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+				return null;
+			}
+		}
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		if(collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI)) {
+			return new GroupWikiWebService(bg);
+		}
+		return null;
 	}
 	
 	/**
