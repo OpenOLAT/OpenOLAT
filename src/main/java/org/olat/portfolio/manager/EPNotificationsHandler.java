@@ -62,8 +62,9 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		Publisher p = subscriber.getPublisher();
 		EPAbstractMap amap = EPNotificationsHelper.findMapOfAnyType(p.getResId());
 
-		if (amap != null) {
+		if (amap != null && compareDate != null) {
 			// only do that if a map was found.
+			// OO-191 only do if compareDate is not null. 
 
 			// init the helper;
 			String businessPath = "[EPDefaultMap:" + amap.getKey() + "]";
