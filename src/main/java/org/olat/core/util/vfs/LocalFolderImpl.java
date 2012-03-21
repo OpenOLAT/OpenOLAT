@@ -235,6 +235,9 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	 * @see org.olat.core.util.vfs.VFSItem#delete()
 	 */
 	public VFSStatus delete() {
+		if(!getBasefile().exists()){
+			return VFSConstants.YES;  // already non-existent
+		}
 		// we must empty the folders and subfolders first
 		for (Iterator<VFSItem> it_chd = getItems().iterator(); it_chd.hasNext();) {
 			it_chd.next().delete(); // TODO status
