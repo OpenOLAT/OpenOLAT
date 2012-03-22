@@ -146,7 +146,8 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		this.inlineEditingComponent = inlineEditingComponent;
 	}
 	
-	protected boolean isInlineEditingElement(){
+	@Override
+	public boolean isInlineEditingElement(){
 		return isInlineEditingElement;
 	}
 	

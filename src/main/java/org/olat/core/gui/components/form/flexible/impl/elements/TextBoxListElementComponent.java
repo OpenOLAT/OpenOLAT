@@ -28,7 +28,7 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * Description:<br>
- * TODO: rhaag Class Description for TextBoxListElementComponent
+ * the concrete class of TextBoxListComponent. 
  * 
  * <P>
  * Initial Date:  27.08.2010 <br>
@@ -36,7 +36,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class TextBoxListElementComponent extends TextBoxListComponent  {
 
-	private ComponentRenderer RENDERER = new TextBoxListRenderer(true);
+	private ComponentRenderer RENDERER = new TextBoxListRenderer();
 	private TextBoxListElementImpl element;
 	
 	public TextBoxListElementComponent(TextBoxListElementImpl element, String name, String inputHint, Map<String, String> initialItems, Translator translator) {

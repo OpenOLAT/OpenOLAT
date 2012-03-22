@@ -193,7 +193,7 @@ public class EPArtefactViewController extends FormBasicController {
 		if (viewOnlyMode || artefactInClosedMap) tblE.setEnabled(false);
 		else {
 			flc.contextPut("tagclass", "b_tag_list");
-			tblE.addActionListener(this, FormEvent.ONCHANGE);
+			//tblE.addActionListener(this, FormEvent.ONCHANGE);
 			Map<String, String> allUsersTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
 			tblE.setAutoCompleteContent(allUsersTags);
 		}
@@ -275,7 +275,7 @@ public class EPArtefactViewController extends FormBasicController {
 	private String createLinkToArtefactSource(UserRequest ureq, String businessPath){
 		BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
 		List<ContextEntry> ceList = bCF.createCEListFromString(businessPath);
-		boolean valid = NewControllerFactory.getInstance().validateCEWithContextControllerCreator(ureq, getWindowControl(), ceList.get(0));
+		boolean valid = (ceList.size() > 0) && NewControllerFactory.getInstance().validateCEWithContextControllerCreator(ureq, getWindowControl(), ceList.get(0));
 		String busLink = bCF.getAsURIString(ceList, true); 
 		if (valid && StringHelper.containsNonWhitespace(busLink)){
 			return "<a href=\"" + busLink + "\">" + translate("artefact.open.source") + "</a>";
@@ -301,6 +301,9 @@ public class EPArtefactViewController extends FormBasicController {
 			popupReflexionCallout(ureq);
 		} else if (source == descriptionBtn){
 			popupDescriptionCallout(ureq);
+		} else if(source == tblE){
+			List<String> actualTags = tblE.getValueList();
+			ePFMgr.setArtefactTags(getIdentity(), artefact, actualTags);
 		}
 	}
 	
@@ -378,8 +381,6 @@ public class EPArtefactViewController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		List<String> actualTags = tblE.getValueList();
-		ePFMgr.setArtefactTags(getIdentity(), artefact, actualTags);
 		String newTitle = title.getValue();
 		artefact.setTitle(newTitle);
 		ePFMgr.updateArtefact(artefact);

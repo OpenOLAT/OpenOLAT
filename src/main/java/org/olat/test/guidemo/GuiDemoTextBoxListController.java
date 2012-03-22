@@ -25,12 +25,18 @@ import java.util.TreeMap;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementComponent;
+import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
 import org.olat.core.gui.components.textboxlist.ResultMapProvider;
-import org.olat.core.gui.components.textboxlist.TextBoxListComponent;
 import org.olat.core.gui.components.textboxlist.TextBoxListEvent;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * Description:<br>
@@ -41,40 +47,16 @@ import org.olat.core.gui.control.controller.BasicController;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class GuiDemoTextBoxListController extends BasicController {
+public class GuiDemoTextBoxListController extends FormBasicController {
 
-	private TextBoxListComponent tblC;
+	private TextBoxListElement textBoxListEl;
+	private TextBoxListElement textBoxListEl2;
+	private TextBoxListElement textBoxListEl3;
+	private TextBoxListElement textBoxListEl4;
 
 	public GuiDemoTextBoxListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-
-		
-		
-		Map<String, String> initialItems = new TreeMap<String, String>();
-		initialItems.put("123 Demo", "demo");
-		initialItems.put("try to delete me", "delete");
-		tblC = new TextBoxListComponent("testTextbox", "textboxlist.hint", initialItems, getTranslator());
-		ResultMapProvider provider = new ResultMapProvider() {
-			@Override
-			public void getAutoCompleteContent(String searchValue, Map<String, String> resMap) {
-				// put some dummy values as result. For real-world do your search-magic here!
-				resMap.put("Hausvermietung" + searchValue, "10");
-				resMap.put("Clown" + searchValue, "4");
-				resMap.put("Suche nach: " + searchValue, "3");
-			}
-		};
-		tblC.setMapperProvider(provider);
-		// if no provider is needed (maybe only a small autocomplete-map) you could provide them directly
-//		Map<String, Integer> autoCompleteContent = new HashMap<String, Integer>();
-//		autoCompleteContent.put("Hausvermietung", 10);
-//		autoCompleteContent.put("Clown", 4);
-//		autoCompleteContent.put("Versicherung", 3);
-//		tblC.setAutoCompleteContent(autoCompleteContent);
-
-//		tblC.setEnabled(false);
-		tblC.addListener(this);
-
-		putInitialPanel(tblC);
+		super(ureq, wControl, "guidemo-textboxlist");
+		initForm(ureq);
 	}
 
 	/**
@@ -83,16 +65,16 @@ public class GuiDemoTextBoxListController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	@SuppressWarnings("unused")
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (event instanceof TextBoxListEvent) {
-			TextBoxListEvent tblEv = (TextBoxListEvent) event;
-			List<String> all = tblEv.getAllItems();
-			List<String> newItems = tblEv.getNewOnly();
-			getWindowControl().setInfo(
-					"the following items were submitted: " + all.toString() + "    some where even added: " + newItems.toString());
-		}
+	public void event(UserRequest ureq, Component source, Event event) {
+		super.event(ureq, source, event);
+	}
 
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source instanceof TextBoxListElementImpl) {
+			List<String> all = ((TextBoxListElement) source).getValueList();
+			getWindowControl().setInfo("the following items were submitted: " + all.toString());
+		}
 	}
 
 	/**
@@ -100,8 +82,50 @@ public class GuiDemoTextBoxListController extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		// nothing to dispose
+	}
 
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// the first showcase
+		Map<String, String> initialItems = new TreeMap<String, String>();
+		initialItems.put("Demo", "demo");
+		initialItems.put("You can delete me!", "delete");
+		textBoxListEl = uifactory.addTextBoxListElement("testTextbox", null, "textboxlist.hint", initialItems, formLayout, getTranslator());
+		ResultMapProvider provider = new ResultMapProvider() {
+			@Override
+			public void getAutoCompleteContent(String searchValue, Map<String, String> resMap) {
+				// put some dummy values as result. For real-world do your
+				// search-magic here!
+				resMap.put("Haus", "haus");
+				resMap.put("Clown", "clown");
+				resMap.put("Dog", "dog");
+			}
+		};
+		textBoxListEl.setMapperProvider(provider);
+		textBoxListEl.setAllowDuplicates(false);
+		textBoxListEl.setAllowNewValues(false);
+
+		// the second showcase
+		textBoxListEl2 = uifactory.addTextBoxListElement("testTextbox2", null, "textboxlist.hint", null, formLayout, getTranslator());
+		textBoxListEl2.setAllowDuplicates(true);
+		textBoxListEl2.setAllowNewValues(true);
+
+		// the third showcase
+		textBoxListEl3 = uifactory.addTextBoxListElement("testTextbox3", null, "textboxlist.hint", null, formLayout, getTranslator());
+		textBoxListEl3.setAllowDuplicates(false);
+		textBoxListEl3.setAllowNewValues(true);
+
+		// the fourth showcase
+		textBoxListEl4 = uifactory.addTextBoxListElement("testTextbox4", null, "textboxlist.hint", null, formLayout, getTranslator());
+		textBoxListEl4.setAllowDuplicates(true);
+		textBoxListEl4.setAllowNewValues(true);
+		textBoxListEl4.setMapperProvider(provider);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		// nothing to do here
 	}
 
 }

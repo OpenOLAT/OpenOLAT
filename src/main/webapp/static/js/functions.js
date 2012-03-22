@@ -840,11 +840,13 @@ function showerror(e) {
 // is defined by the triggered component.
 function o_ffEvent (formNam, dispIdField, dispId, eventIdField, eventInt){
 	//set hidden fields and submit form
-	var dispIdEl = document.getElementById(dispIdField);
-	var defDispId = dispIdEl.value;
+	var dispIdEl, defDispId,eventIdEl,defEventId;
+	
+	dispIdEl = document.getElementById(dispIdField);
+	defDispId = dispIdEl.value;
 	dispIdEl.value=dispId;
-	var eventIdEl = document.getElementById(eventIdField);
-	var defEventId = eventIdEl.value;
+	eventIdEl = document.getElementById(eventIdField);
+	defEventId = eventIdEl.value;
 	eventIdEl.value=eventInt;
 	// manually execute onsubmit method - calling submit itself does not trigger onsubmit event!
 	if (document.forms[formNam].onsubmit()) {

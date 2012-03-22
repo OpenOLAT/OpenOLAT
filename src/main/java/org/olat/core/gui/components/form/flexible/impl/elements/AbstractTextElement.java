@@ -52,7 +52,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	}
 	
 	protected AbstractTextElement(String name, boolean asInlineEditingElement) {
-		this(null, name, false);
+		this(name, name, asInlineEditingElement);
 	}
 
 	/**
