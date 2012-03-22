@@ -55,11 +55,6 @@ public class WikiVO {
 
 	}
 
-	/**
-	 * for groupWikis, this is true, for "normal" repository-Wikis this is false
-	 */
-	private boolean isGroupWiki;
-
 	public Long getKey() {
 		return key;
 	}
@@ -70,10 +65,6 @@ public class WikiVO {
 
 	public String getTitle() {
 		return title;
-	}
-
-	public boolean isGroupWiki() {
-		return isGroupWiki;
 	}
 
 	public void setKey(Long key) {
@@ -88,15 +79,10 @@ public class WikiVO {
 		this.title = title;
 	}
 
-	public void setGroupWiki(boolean isGroupWiki) {
-		this.isGroupWiki = isGroupWiki;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("WikiVO[key=").append(key).append(":title=").append(title);
-		sb.append(":isGroupWiki=").append(isGroupWiki);
 		sb.append("]");
 		return sb.toString();
 	}

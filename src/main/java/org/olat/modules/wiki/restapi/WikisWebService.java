@@ -116,7 +116,6 @@ public class WikisWebService {
 
 	private static WikiVO wikivoFromRepoEntry(RepositoryEntry entry) {
 		WikiVO wiki = new WikiVO();
-		wiki.setGroupWiki(false);
 		wiki.setTitle(entry.getDisplayname());
 		wiki.setKey(entry.getResourceableId());
 		wiki.setSoftkey(entry.getSoftkey());
