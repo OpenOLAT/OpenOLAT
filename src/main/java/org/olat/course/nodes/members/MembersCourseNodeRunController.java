@@ -308,7 +308,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	}
 	
 	protected void openHomePage(Identity member, UserRequest ureq) {
-		String url = "[Identity:" + member.getKey() + "]";
+		String url = "[HomePage:" + member.getKey() + "]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 	  NewControllerFactory.getInstance().launch(ureq, bwControl);

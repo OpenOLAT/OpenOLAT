@@ -27,9 +27,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.home.HomeSite;
 
 /**
  * <h3>Description:</h3>
@@ -41,8 +41,8 @@ import org.olat.home.HomeSite;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class IdentityContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
-	private static final OLog log = Tracing.createLoggerFor(IdentityContextEntryControllerCreator.class);
+public class HomePageContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+	private static final OLog log = Tracing.createLoggerFor(HomePageContextEntryControllerCreator.class);
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
@@ -57,12 +57,7 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-		Long resId = ce.getOLATResourceable().getResourceableId();
-		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
-			return HomeSite.class.getName();
-		}
 		return null;
 	}
 
@@ -88,16 +83,46 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 			log.error("Can not load identity with key::" + key);
 			return null;
 		}
+		StateEntry state = ce.getTransientState();
+		if(state instanceof HomePageStateEntry) {
+			HomePageStateEntry homeState = (HomePageStateEntry)state;
+			if(homeState.same(key)) {
+				return homeState.getIdentity();
+			}
+		}
+		
 		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(key);
 		if (identity == null) {
 			log.error("Can not load identity with key::" + key);
 		}
+		ce.setTransientState(new HomePageStateEntry(identity));
 		return identity;
 	}
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		Identity identity = extractIdentity(ce);
-		return identity!=null;
+		return identity != null;
+	}
+	
+	private class HomePageStateEntry implements StateEntry {
+		private final Identity identity;
+		
+		public HomePageStateEntry(Identity identity) {
+			this.identity = identity;
+		}
+		
+		public boolean same(Long key) {
+			return identity != null && identity.getKey().equals(key);
+		}
+		
+		public Identity getIdentity() {
+			return identity;
+		}
+
+		@Override
+		public HomePageStateEntry clone()  {
+			return new HomePageStateEntry(identity);
+		}
 	}
 }

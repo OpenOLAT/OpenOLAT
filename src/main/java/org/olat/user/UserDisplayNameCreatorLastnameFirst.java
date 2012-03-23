@@ -19,8 +19,6 @@
 **/
 package org.olat.user;
 
-import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 
 /**
  * <h3>Description:</h3> This bean implements an alternative method to display
@@ -43,14 +41,11 @@ public class UserDisplayNameCreatorLastnameFirst extends UserDisplayNameCreator{
 	/**
 	 * Returns the users displayable name, e.g. "Firstname Lastname"
 	 * 
-	 * @param user
+	 * @param first The first name
+	 * @param last The last name
 	 * @return
 	 */
-	public String getUserDisplayName(User user) {
-		if (user == null) return "unknown user";
-		// use first and lastname for display purpose
-		String first = user.getProperty(UserConstants.FIRSTNAME, null);
-		String last = user.getProperty(UserConstants.LASTNAME, null);
+	protected String getDisplayName(String first, String last) {
 		// expect null values to make it robust against NPE and remove whitespace
 		String combined = "";
 		if (last != null) {
@@ -66,5 +61,4 @@ public class UserDisplayNameCreatorLastnameFirst extends UserDisplayNameCreator{
 		if (combined.length() == 0) combined = "unknown user";
 		return combined;
 	}
-
 }

@@ -19,6 +19,7 @@
 **/
 package org.olat.user;
 
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 
@@ -50,11 +51,18 @@ public class UserDisplayNameCreator {
 		// use first and lastname for display purpose
 		String first = user.getProperty(UserConstants.FIRSTNAME, null);
 		String last = user.getProperty(UserConstants.LASTNAME, null);
+		return getDisplayName(first, last);
+	}
+
+	public String getUserDisplayName(IdentityShort identity) {
+		return getDisplayName(identity.getFirstName(), identity.getLastName());
+	}
+	
+	protected String getDisplayName(String firstName, String lastName) {
 		// expect null values to make it robust agains NPE and remove whitespace
-		String combined = (first == null? "" : first) + " " + (last == null? "" : last);
+		String combined = (firstName == null? "" : firstName) + " " + (lastName == null? "" : lastName);
 		combined = combined.trim();
 		if (combined.length() == 0) combined = "unknown user";
 		return combined;
 	}
-
 }
