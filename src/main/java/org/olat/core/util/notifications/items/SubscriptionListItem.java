@@ -44,7 +44,8 @@ public class SubscriptionListItem {
 	private final String description;
 	private final String descriptionTooltip;
 	private final String iconCssClass;
-
+	private Object userObject;
+	
 	public SubscriptionListItem(String desc, String url, Date dateInfo, String iconCssClass) {
 		this(desc, null, url, dateInfo, iconCssClass);
 	}
@@ -67,6 +68,14 @@ public class SubscriptionListItem {
 
 	public String getDescription() {
 		return description;
+	}
+
+	public Object getUserObject() {
+		return this.userObject;
+	}
+
+	public void setUserObject(Object usrObj) {
+		this.userObject = usrObj;
 	}
 	
 	public String getDescriptionTooltip() {

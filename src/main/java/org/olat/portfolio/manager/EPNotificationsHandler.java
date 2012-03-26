@@ -59,32 +59,27 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 
-		Publisher p = subscriber.getPublisher();
-		EPAbstractMap amap = EPNotificationsHelper.findMapOfAnyType(p.getResId());
+		Publisher publisher = subscriber.getPublisher();
+		EPAbstractMap amap = EPNotificationsHelper.findMapOfAnyType(publisher.getResId());
 
-		if (amap != null && compareDate != null) {
-			// only do that if a map was found.
-			// OO-191 only do if compareDate is not null. 
+		if (isInkoveValid(amap, compareDate, publisher)) {
 
 			// init the helper;
-			String businessPath = "[EPDefaultMap:" + amap.getKey() + "]";
-			EPNotificationsHelper helper = new EPNotificationsHelper(businessPath, locale, subscriber.getIdentity());
+			String rootBusinessPath = "[EPDefaultMap:" + amap.getKey() + "]";
+			EPNotificationsHelper helper = new EPNotificationsHelper(rootBusinessPath, locale, subscriber.getIdentity());
 
-			// gather all changes for the current map
-			if (NotificationsManager.getInstance().isPublisherValid(p)) {
-				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItem(amap), null);
+			si = new SubscriptionInfo(subscriber.getKey(), publisher.getType(), getTitleItemForMap(amap), null);
 
-				List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
-				// get subscriptionListItems according to map type
-				if (amap instanceof EPDefaultMap || amap instanceof EPStructuredMapTemplate) {
-					allItems = helper.getAllSubscrItems_Default(compareDate, amap);
-				} else if (amap instanceof EPStructuredMap) {
-					allItems = helper.getAllSubscrItems_Structured(compareDate, (EPStructuredMap) amap);
-				}
+			List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
+			// get subscriptionListItems according to map type
+			if (amap instanceof EPDefaultMap || amap instanceof EPStructuredMapTemplate) {
+				allItems = helper.getAllSubscrItemsForDefaulMap(compareDate, amap);
+			} else if (amap instanceof EPStructuredMap) {
+				allItems = helper.getAllSubscrItemsForStructuredMap(compareDate, (EPStructuredMap) amap);
+			}
 
-				for (SubscriptionListItem item : allItems) {
-					si.addSubscriptionListItem(item);
-				}
+			for (SubscriptionListItem item : allItems) {
+				si.addSubscriptionListItem(item);
 			}
 		}
 
@@ -96,21 +91,27 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		return si;
 	}
 
+	private boolean isInkoveValid(EPAbstractMap map, Date compareDate, Publisher publisher) {
+		// only do that if a map was found.
+		// OO-191 only do if compareDate is not null.
+		return (map != null && compareDate != null && NotificationsManager.getInstance().isPublisherValid(publisher));
+	}
+
 	/**
 	 * returns a TitleItem instance for the given Publisher p If you already
 	 * have a reference to the map, use
-	 * <code>getTitleItem(EPAbstractMap amap)</code>
+	 * <code>getTitleItemForMap(EPAbstractMap amap)</code>
 	 * 
 	 * @param p
 	 * @return
 	 */
-	private TitleItem getTitleItem(Publisher p) {
+	private TitleItem getTitleItemForPublisher(Publisher p) {
 		Long resId = p.getResId();
 		if (logger.isDebug())
 			logger.debug("loading map with resourceableid: " + resId);
 
 		EPAbstractMap map = EPNotificationsHelper.findMapOfAnyType(resId);
-		return getTitleItem(map);
+		return getTitleItemForMap(map);
 	}
 
 	/**
@@ -119,7 +120,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	 * @param amap
 	 * @return
 	 */
-	private TitleItem getTitleItem(EPAbstractMap amap) {
+	private TitleItem getTitleItemForMap(EPAbstractMap amap) {
 		StringBuilder sbTitle = new StringBuilder();
 		if (amap != null) {
 			sbTitle.append(amap.getTitle());
@@ -138,7 +139,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
-		TitleItem title = getTitleItem(subscriber.getPublisher());
+		TitleItem title = getTitleItemForPublisher(subscriber.getPublisher());
 		return title.getInfoContent("text/plain");
 	}
 

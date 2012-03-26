@@ -106,7 +106,7 @@ public class EPNotificationsHelper {
 	 *            the EPDefaultMap or
 	 * 
 	 */
-	public List<SubscriptionListItem> getAllSubscrItems_Default(Date compareDate, EPAbstractMap map) {
+	public List<SubscriptionListItem> getAllSubscrItemsForDefaulMap(Date compareDate, EPAbstractMap map) {
 
 		/* all items are first put in this list, then sorted, then returned */
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
@@ -122,19 +122,25 @@ public class EPNotificationsHelper {
 					EPPage childPage = (EPPage) structLink.getChild();
 					tmp_bPath = rootBusinessPath + "[EPPage:" + childPage.getKey() + "]";
 					tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-					allItems.add(new SubscriptionListItem(translator.translate("li.newpage", new String[] { childPage.getTitle() }), tmp_linkUrl,
-							structLink.getCreationDate(), "b_ep_page_icon"));
+					SubscriptionListItem newItem = new SubscriptionListItem(
+							translator.translate("li.newpage", new String[] { childPage.getTitle() }), tmp_linkUrl, structLink.getCreationDate(),
+							"b_ep_page_icon");
+					newItem.setUserObject(childPage.getKey());
+					allItems.add(newItem);
 				} else {
-					tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+					Long pageKey = null;
 					if (structLink.getParent() instanceof EPPage) {
 						EPPage parentPage = (EPPage) structLink.getParent();
-						tmp_bPath = rootBusinessPath + "[EPPage:" + parentPage.getKey() + "]";
+						pageKey = parentPage.getKey();
+						tmp_bPath = rootBusinessPath + "[EPPage:" + pageKey + "]";
 						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
+					} else {
+						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 					}
-
-					allItems.add(new SubscriptionListItem(translator.translate("li.newstruct", new String[] { structLink.getChild().getTitle() }),
-							tmp_linkUrl, structLink.getCreationDate(), "b_ep_struct_icon"));
-
+					SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.newstruct", new String[] { structLink.getChild()
+							.getTitle() }), tmp_linkUrl, structLink.getCreationDate(), "b_ep_struct_icon");
+					newItem.setUserObject(pageKey);
+					allItems.add(newItem);
 				}
 			}
 		}
@@ -158,9 +164,11 @@ public class EPNotificationsHelper {
 
 				tmp_bPath = rootBusinessPath + "[EPPage:" + tmp_LinkKey + "]";
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] {
-						getFullNameFromUser(link.getArtefact().getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl, link
-						.getCreationDate(), "b_eportfolio_link"));
+				SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.newartefact", new String[] {
+						getFullNameFromUser(link.getArtefact().getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl,
+						link.getCreationDate(), "b_eportfolio_link");
+				newItem.setUserObject(tmp_LinkKey);
+				allItems.add(newItem);
 			}
 		}
 
@@ -186,13 +194,13 @@ public class EPNotificationsHelper {
 	 *            the EPStructuredMap
 	 * 
 	 */
-	public List<SubscriptionListItem> getAllSubscrItems_Structured(Date compareDate, EPStructuredMap map) {
+	public List<SubscriptionListItem> getAllSubscrItemsForStructuredMap(Date compareDate, EPStructuredMap map) {
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
 
 		// at this moment, map is not yet synchronized. check the "parent"
 		// templateMap for map/structure changes
 		PortfolioStructureMap sourceMap = map.getStructuredMapSource();
-		allItems = getAllSubscrItems_Default(compareDate, (EPAbstractMap) sourceMap);
+		allItems = getAllSubscrItemsForDefaulMap(compareDate, (EPAbstractMap) sourceMap);
 
 		String tmp_bPath;
 		String tmp_linkUrl;
@@ -217,9 +225,11 @@ public class EPNotificationsHelper {
 
 				tmp_bPath = rootBusinessPath + "[EPPage:" + tmp_linkKey + "]";
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-				allItems.add(new SubscriptionListItem(translator.translate("li.newartefact", new String[] {
-						getFullNameFromUser(link.getArtefact().getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl, link
-						.getCreationDate(), "b_eportfolio_link"));
+				SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.newartefact", new String[] {
+						getFullNameFromUser(link.getArtefact().getAuthor()), link.getArtefact().getTitle(), tmp_TargetTitle }), tmp_linkUrl,
+						link.getCreationDate(), "b_eportfolio_link");
+				newItem.setUserObject(tmp_linkKey);
+				allItems.add(newItem);
 			}
 		}
 
@@ -253,8 +263,9 @@ public class EPNotificationsHelper {
 		for (UserComment comment : comments) {
 			if (comment.getCreationDate().after(compareDate)) {
 				tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
-				allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newcomment", new String[] { map.getTitle(),
-						getFullNameFromUser(comment.getCreator()) }), tmp_linkUrl, comment.getCreationDate(), "b_info_icon"));
+				SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.newcomment", new String[] { map.getTitle(),
+						getFullNameFromUser(comment.getCreator()) }), tmp_linkUrl, comment.getCreationDate(), "b_info_icon");
+				allItemsToAdd.add(newItem);
 			}
 		}
 		List<UserRating> ratings = crs.getUserRatingsManager().getAllRatings();
@@ -284,8 +295,10 @@ public class EPNotificationsHelper {
 					if (comment.getCreationDate().after(compareDate)) {
 						tmp_bPath = rootBusinessPath + "[EPPage:" + comment.getResSubPath() + "]";
 						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
-						allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newcomment", new String[] { child.getTitle(),
-								getFullNameFromUser(comment.getCreator()) }), tmp_linkUrl, comment.getCreationDate(), "b_info_icon"));
+						SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.newcomment", new String[] {
+								child.getTitle(), getFullNameFromUser(comment.getCreator()) }), tmp_linkUrl, comment.getCreationDate(), "b_info_icon");
+						newItem.setUserObject(comment.getResSubPath());
+						allItemsToAdd.add(newItem);
 					}
 				}
 				List<UserRating> c_ratings = c_crs.getUserRatingsManager().getAllRatings();
@@ -294,12 +307,18 @@ public class EPNotificationsHelper {
 						tmp_bPath = rootBusinessPath + "[EPPage:" + rating.getResSubPath() + "]";
 						tmp_linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(tmp_bPath);
 						if (rating.getLastModified() != null) {
-							// there is a modified date, also add this as a listitem
-							allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.changerating", new String[] { child.getTitle(),
-									getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getLastModified(), "b_star_icon"));
+							// there is a modified date, also add this as a
+							// listitem
+							SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.changerating",
+									new String[] { child.getTitle(), getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl,
+									rating.getLastModified(), "b_star_icon");
+							newItem.setUserObject(rating.getResSubPath());
+							allItemsToAdd.add(newItem);
 						}
-						allItemsToAdd.add(new SubscriptionListItem(translator.translate("li.newrating", new String[] { child.getTitle(),
-								getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getCreationDate(), "b_star_icon"));
+						SubscriptionListItem newItem = new SubscriptionListItem(translator.translate("li.newrating", new String[] { child.getTitle(),
+								getFullNameFromUser(rating.getCreator()) }), tmp_linkUrl, rating.getCreationDate(), "b_star_icon");
+						newItem.setUserObject(rating.getResSubPath());
+						allItemsToAdd.add(newItem);
 					}
 				}
 			}

@@ -27,12 +27,15 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.SubscriptionContext;
@@ -43,6 +46,8 @@ import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
+import org.olat.portfolio.ui.structel.EPMapKeyEvent;
+import org.olat.portfolio.ui.structel.EPStructureEvent;
 
 /**
  * 
@@ -70,7 +75,7 @@ public class EPChangelogController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		flc.contextPut("locale", getLocale());
+		// flc.contextPut("locale", getLocale());
 
 		/* the subscription context + component */
 		if (logger.isDebug())
@@ -103,7 +108,29 @@ public class EPChangelogController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateChooser && !dateChooser.hasError()) {
 			updateChangelogDisplay(ureq);
+		} else if (source instanceof FormLink) {
+			fireEvent(ureq, new EPMapKeyEvent(EPStructureEvent.SELECT, getKeyFromFormLink((FormLink) source)));
 		}
+	}
+
+	/**
+	 * gets the userObject from the given FormLink and tries to parse it as
+	 * Long. returns 0L if userObject cannot be parsed to Long
+	 * 
+	 * @param link
+	 * @return
+	 */
+	private Long getKeyFromFormLink(FormLink link) {
+		Long mapKeyFromLink = 0L;
+		try {
+			Object userObject = link.getUserObject();
+			if (userObject != null) {
+				mapKeyFromLink = Long.parseLong(userObject.toString());
+			}
+		} catch (NumberFormatException e) {
+			// key is not Long, ignore and return 0
+		}
+		return mapKeyFromLink;
 	}
 
 	/**
@@ -121,17 +148,42 @@ public class EPChangelogController extends FormBasicController {
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
 		// get subscriptionListItems according to map type
 		if (map instanceof EPDefaultMap || map instanceof EPStructuredMapTemplate) {
-			allItems = helper.getAllSubscrItems_Default(compareDate, map);
+			allItems = helper.getAllSubscrItemsForDefaulMap(compareDate, map);
 		} else if (map instanceof EPStructuredMap) {
-			allItems = helper.getAllSubscrItems_Structured(compareDate, (EPStructuredMap) map);
+			allItems = helper.getAllSubscrItemsForStructuredMap(compareDate, (EPStructuredMap) map);
 		}
 
-		flc.contextPut("subscriptionListItems", allItems);
+		List<SubscriptionItemBundle> bundles = getItemBundlesForSubscriptionItems(allItems);
+		flc.contextPut("subscriptionItems", bundles);
+	}
+
+	/**
+	 * 
+	 * @param subscriptionItems
+	 * @return
+	 */
+	private List<SubscriptionItemBundle> getItemBundlesForSubscriptionItems(List<SubscriptionListItem> subscriptionItems) {
+		List<SubscriptionItemBundle> bundles = new ArrayList<EPChangelogController.SubscriptionItemBundle>();
+		Formatter f = Formatter.getInstance(getTranslator().getLocale());
+
+		for (int i = 0; i < subscriptionItems.size(); i++) {
+			SubscriptionListItem listItem = subscriptionItems.get(i);
+			SubscriptionItemBundle bundle = new SubscriptionItemBundle();
+			bundle.setDateString(f.formatDate(listItem.getDate()));
+			String linkName = "subscrIL_" + i;
+			bundle.setLinkName(linkName);
+			String text = listItem.getDescription();
+			FormLink link = uifactory.addFormLink(linkName, text, null, flc, Link.NONTRANSLATED);
+			link.setUserObject(listItem.getUserObject());
+			bundle.setCssClass(listItem.getIconCssClass());
+			bundles.add(bundle);
+		}
+		return bundles;
 	}
 
 	@Override
 	protected void doDispose() {
-		//cSubscriptionCtrl gets disposed	
+		// cSubscriptionCtrl gets disposed
 	}
 
 	@Override
@@ -139,4 +191,42 @@ public class EPChangelogController extends FormBasicController {
 		// nothing to do
 	}
 
+	/**
+	 * 
+	 * @author strentini
+	 * 
+	 */
+	public class SubscriptionItemBundle {
+		private String linkName;
+		private String dateString;
+		private String cssClass;
+
+		public void setDateString(String dateString) {
+			this.dateString = dateString;
+		}
+
+		public String getDateString() {
+			return dateString;
+		}
+
+		public void setLinkName(String linkName) {
+			this.linkName = linkName;
+		}
+
+		public String getLinkName() {
+			return linkName;
+		}
+
+		public void setCssClass(String cssClass) {
+			this.cssClass = cssClass;
+		}
+
+		public String getCssClass() {
+			return cssClass;
+		}
+	}
+
+	public void refreshNewsList(UserRequest ureq) {
+		updateChangelogDisplay(ureq);
+	}
 }

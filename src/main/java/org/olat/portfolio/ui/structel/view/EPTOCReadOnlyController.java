@@ -46,13 +46,19 @@ import org.olat.portfolio.ui.structel.EPStructureEvent;
  * presents a static TOC with links to elements
  * 
  * <P>
- * Initial Date:  25.10.2010 <br>
+ * Initial Date: 25.10.2010 <br>
+ * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPTOCReadOnlyController extends BasicController {
 
-	private static final String CONST_FOR_VC_STYLE_STRUCT = "struct"; // used to style in velocity
-	private static final String CONST_FOR_VC_STYLE_PAGE = "page"; 		// used to style in velocity
+	private static final String CONST_FOR_VC_STYLE_STRUCT = "struct"; // used to
+																		// style
+																		// in
+																		// velocity
+	private static final String CONST_FOR_VC_STYLE_PAGE = "page"; // used to
+																	// style in
+																	// velocity
 	private static final String LINK_CMD_OPEN_ARTEFACT = "oArtefact";
 	private static final String LINK_CMD_OPEN_STRUCT = "oStruct";
 	private static final String LINK_CMD_OPEN_COMMENTS = "oComments";
@@ -65,150 +71,155 @@ public class EPTOCReadOnlyController extends BasicController {
 	private EPSecurityCallback secCallback;
 	private Link artOnOffLink;
 
+	private boolean displayArtefactsInTOC = false;
+
 	public EPTOCReadOnlyController(UserRequest ureq, WindowControl wControl, PortfolioStructure map, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
-		vC = createVelocityContainer("toc");
 		this.map = map;
 		this.secCallback = secCallback;
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		boolean withArtefacts = false;
-		
+
 		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
 		commentAndRatingService.init(getIdentity(), map.getOlatResource(), null, false, ureq.getUserSession().getRoles().isGuestOnly());
 		commentCounts = commentAndRatingService.getUserCommentsManager().countCommentsWithSubPath();
 
-		init(ureq, withArtefacts);
-		
-		putInitialPanel(vC);		
-	}
-
-	private void init(UserRequest ureq, boolean withArtefacts) {
+		vC = createVelocityContainer("toc");
 		// have a toggle to show with/without artefacts
 		artOnOffLink = LinkFactory.createButtonSmall("artOnOffLink", vC, this);
-		artOnOffLink.setCustomDisplayText(translate("artOnOffLink." + !withArtefacts));
-		artOnOffLink.setUserObject(withArtefacts);
+		artOnOffLink.setCustomDisplayText(translate("artOnOffLink." + !displayArtefactsInTOC));
+		putInitialPanel(vC);
+		refreshTOC(ureq);
+	}
 
+	public void refreshTOC(UserRequest ureq) {
 		// do recursively
-		int level = 0;		
+		int level = 0;
 		List<TOCElement> tocList = new ArrayList<TOCElement>();
-		buildTOCModel(map, tocList, level, withArtefacts);	
-		
-		vC.contextPut("tocList", tocList);	
-		
-		if(secCallback.canCommentAndRate()) {
-			removeAsListenerAndDispose(commentsAndRatingCtr);	
+		buildTOCModel(map, tocList, level);
+
+		vC.contextPut("tocList", tocList);
+
+		if (secCallback.canCommentAndRate()) {
+			removeAsListenerAndDispose(commentsAndRatingCtr);
 			commentsAndRatingCtr = commentAndRatingService.createUserCommentsAndRatingControllerExpandable(ureq, getWindowControl());
 			listenTo(commentsAndRatingCtr);
 			vC.put("commentCtrl", commentsAndRatingCtr.getInitialComponent());
 		}
+
 	}
 
 	/**
-	 * builds the tocList recursively containing artefacts, pages and struct-Elements
+	 * builds the tocList recursively containing artefacts, pages and
+	 * struct-Elements
+	 * 
 	 * @param pStruct
-	 * @param tocList list with TOCElement's to use in velocity
+	 * @param tocList
+	 *            list with TOCElement's to use in velocity
 	 * @param level
-	 * @param withArtefacts set false, to skip artefacts
+	 * @param withArtefacts
+	 *            set false, to skip artefacts
 	 */
-	private void buildTOCModel(PortfolioStructure pStruct, List<TOCElement> tocList, int level, boolean withArtefacts) {
+	private void buildTOCModel(PortfolioStructure pStruct, List<TOCElement> tocList, int level) {
 		level++;
-		
-		
-		if (withArtefacts){
+
+		if (displayArtefactsInTOC) {
 			List<AbstractArtefact> artList = ePFMgr.getArtefacts(pStruct);
 			if (artList != null && artList.size() != 0) {
 				for (AbstractArtefact artefact : artList) {
 					String key = String.valueOf(artefact.getKey());
 					String title = artefact.getTitle();
-					
+
 					Link iconLink = LinkFactory.createCustomLink("arte_" + key, LINK_CMD_OPEN_ARTEFACT, "", Link.NONTRANSLATED, vC, this);
 					iconLink.setCustomEnabledLinkCSS("b_small_icon b_open_icon");
 					iconLink.setUserObject(pStruct);
-					
+
 					Link titleLink = LinkFactory.createCustomLink("arte_t_" + key, LINK_CMD_OPEN_ARTEFACT, title, Link.NONTRANSLATED, vC, this);
 					titleLink.setUserObject(pStruct);
-					
+
 					TOCElement actualTOCEl = new TOCElement(level, "artefact", titleLink, iconLink, null, null);
 					tocList.add(actualTOCEl);
-				}			
+				}
 			}
 		}
-		
+
 		List<PortfolioStructure> childs = ePFMgr.loadStructureChildren(pStruct);
-		if (childs != null && childs.size() != 0) { 
+		if (childs != null && childs.size() != 0) {
 			for (PortfolioStructure portfolioStructure : childs) {
 				String type = "";
-				if (portfolioStructure instanceof EPPage){
+				if (portfolioStructure instanceof EPPage) {
 					type = CONST_FOR_VC_STYLE_PAGE;
 				} else {
 					// a structure element
 					type = CONST_FOR_VC_STYLE_STRUCT;
 				}
-				
+
 				String key = String.valueOf(portfolioStructure.getKey());
 				String title = portfolioStructure.getTitle();
 
 				Link iconLink = LinkFactory.createCustomLink("portstruct" + key, LINK_CMD_OPEN_STRUCT, "", Link.NONTRANSLATED, vC, this);
 				iconLink.setCustomEnabledLinkCSS("b_small_icon b_open_icon");
 				iconLink.setUserObject(portfolioStructure);
-				
+
 				Link titleLink = LinkFactory.createCustomLink("portstruct_t_" + key, LINK_CMD_OPEN_STRUCT, title, Link.NONTRANSLATED, vC, this);
 				titleLink.setUserObject(portfolioStructure);
-				
+
 				Link commentLink = null;
 				if (portfolioStructure instanceof EPPage && secCallback.canCommentAndRate()) {
 					UserCommentsCount comments = getUserCommentsCount(portfolioStructure);
 					String count = comments == null ? "0" : comments.getCount().toString();
-					String label = translate("commentLink", new String[]{count});
+					String label = translate("commentLink", new String[] { count });
 					commentLink = LinkFactory.createCustomLink("commentLink" + key, LINK_CMD_OPEN_COMMENTS, label, Link.NONTRANSLATED, vC, this);
 					commentLink.setCustomEnabledLinkCSS("b_comments");
 					commentLink.setUserObject(portfolioStructure);
 				}
-				
+
 				// prefetch children to keep reference on them
 				List<TOCElement> tocChildList = new ArrayList<TOCElement>();
-				buildTOCModel(portfolioStructure, tocChildList, level, withArtefacts);
+				buildTOCModel(portfolioStructure, tocChildList, level);
 				TOCElement actualTOCEl = new TOCElement(level, type, titleLink, iconLink, commentLink, tocChildList);
 				tocList.add(actualTOCEl);
 
-				if (tocChildList.size() != 0){
+				if (tocChildList.size() != 0) {
 					tocList.addAll(tocChildList);
 				}
 			}
 		}
 	}
-	
+
 	protected UserCommentsCount getUserCommentsCount(PortfolioStructure portfolioStructure) {
-		if(commentCounts == null || commentCounts.isEmpty()) return null;
-		
+		if (commentCounts == null || commentCounts.isEmpty())
+			return null;
+
 		String keyStr = portfolioStructure.getKey().toString();
-		for(UserCommentsCount commentCount:commentCounts) {
-			if(keyStr.equals(commentCount.getSubPath())) {
+		for (UserCommentsCount commentCount : commentCounts) {
+			if (keyStr.equals(commentCount.getSubPath())) {
 				return commentCount;
 			}
 		}
 		return null;
 	}
-	
+
 	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
+	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
+	 *      org.olat.core.gui.components.Component,
+	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == artOnOffLink) {
-			artOnOffLink.setCustomDisplayText(translate("artOnOffLink." + !(Boolean) artOnOffLink.getUserObject()));
-			init(ureq, !(Boolean) artOnOffLink.getUserObject());
-		} else if (source instanceof Link){
+			displayArtefactsInTOC = !displayArtefactsInTOC;
+			artOnOffLink.setCustomDisplayText(translate("artOnOffLink." + !displayArtefactsInTOC));
+			refreshTOC(ureq);
+		} else if (source instanceof Link) {
 			// could be a TOC-Link
 			Link link = (Link) source;
 			String cmd = link.getCommand();
 			PortfolioStructure parentStruct = (PortfolioStructure) link.getUserObject();
-			if (cmd.equals(LINK_CMD_OPEN_STRUCT)){
+			if (cmd.equals(LINK_CMD_OPEN_STRUCT)) {
 				fireEvent(ureq, new EPStructureEvent(EPStructureEvent.SELECT, parentStruct));
-			} else if (cmd.equals(LINK_CMD_OPEN_ARTEFACT)){
-				//open the parent structure 
-				fireEvent(ureq, new EPStructureEvent(EPStructureEvent.SELECT, parentStruct));				
+			} else if (cmd.equals(LINK_CMD_OPEN_ARTEFACT)) {
+				// open the parent structure
+				fireEvent(ureq, new EPStructureEvent(EPStructureEvent.SELECT, parentStruct));
 			} else if (cmd.equals(LINK_CMD_OPEN_COMMENTS)) {
 				fireEvent(ureq, new EPStructureEvent(EPStructureEvent.SELECT_WITH_COMMENTS, parentStruct));
 			}
