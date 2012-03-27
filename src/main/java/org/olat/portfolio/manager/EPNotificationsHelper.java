@@ -34,7 +34,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -43,6 +42,7 @@ import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
@@ -52,6 +52,7 @@ import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.structel.view.EPChangelogController;
+import org.olat.user.UserManagerImpl;
 
 /**
  * 
@@ -92,6 +93,64 @@ public class EPNotificationsHelper {
 		this.rootBusinessPath = rootBusinessPath;
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 	}
+	
+	/**
+	 * 
+	 * @param compareDate
+	 * @param map
+	 * @return
+	 */
+	public List<SubscriptionListItem> getAllSubscrItemsDefault(Date compareDate, EPMapShort map) {
+		EPNotificationManager mgr = CoreSpringFactory.getImpl(EPNotificationManager.class);
+		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
+		List<Long> mapKeys = Collections.singletonList(map.getKey());
+		//structure elements
+		List<SubscriptionListItem> notis1 = mgr.getPageSubscriptionListItem(map.getKey(), rootBusinessPath, compareDate, translator);	
+		allItems.addAll(notis1);
+		//artefacts
+		List<SubscriptionListItem> notis2 = mgr.getArtefactNotifications(mapKeys, rootBusinessPath, compareDate, translator);
+		allItems.addAll(notis2);
+		//ratings
+		List<SubscriptionListItem> notis3 = mgr.getRatingNotifications(mapKeys, rootBusinessPath, compareDate, translator);
+		allItems.addAll(notis3);
+		//comments
+		List<SubscriptionListItem> notis4 = mgr.getCommentNotifications(mapKeys, rootBusinessPath, compareDate, translator);
+		allItems.addAll(notis4);
+
+		//sort
+		Collections.sort(allItems, new SubscriptionListItemComparator());
+		return allItems;
+	}
+	
+	public List<SubscriptionListItem> getAllSubscrItemsStructured(Date compareDate, EPMapShort map) {
+		EPNotificationManager mgr = CoreSpringFactory.getImpl(EPNotificationManager.class);
+		// at this moment, map is not yet synchronized. check the "parent"
+		// templateMap for map/structure changes
+	
+		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
+
+		//structure elements
+		List<SubscriptionListItem> notis1 = mgr.getPageSubscriptionListItem(map.getSourceMapKey(), rootBusinessPath, compareDate, translator);	
+		allItems.addAll(notis1);
+		
+		List<Long> mapKeys = new ArrayList<Long>();
+		mapKeys.add(map.getKey());
+		mapKeys.add(map.getSourceMapKey());
+		
+		//artefacts
+		List<SubscriptionListItem> notis2 = mgr.getArtefactNotifications(mapKeys, rootBusinessPath, compareDate, translator);
+		allItems.addAll(notis2);
+		//ratings
+		List<SubscriptionListItem> notis3 = mgr.getRatingNotifications(mapKeys, rootBusinessPath, compareDate, translator);
+		allItems.addAll(notis3);
+		//comments
+		List<SubscriptionListItem> notis4 = mgr.getCommentNotifications(mapKeys, rootBusinessPath, compareDate, translator);
+		allItems.addAll(notis4);
+
+		//sort
+		Collections.sort(allItems, new SubscriptionListItemComparator());
+		return allItems;
+	}
 
 	/**
 	 * returns a Collection of SubscriptionListItems for the given EPDefaultMap
@@ -106,7 +165,7 @@ public class EPNotificationsHelper {
 	 *            the EPDefaultMap or
 	 * 
 	 */
-	public List<SubscriptionListItem> getAllSubscrItemsForDefaulMap(Date compareDate, EPAbstractMap map) {
+	private List<SubscriptionListItem> getAllSubscrItemsForDefaulMap(Date compareDate, EPAbstractMap map) {
 
 		/* all items are first put in this list, then sorted, then returned */
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
@@ -194,7 +253,7 @@ public class EPNotificationsHelper {
 	 *            the EPStructuredMap
 	 * 
 	 */
-	public List<SubscriptionListItem> getAllSubscrItemsForStructuredMap(Date compareDate, EPStructuredMap map) {
+	private List<SubscriptionListItem> getAllSubscrItemsForStructuredMap(Date compareDate, EPStructuredMap map) {
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
 
 		// at this moment, map is not yet synchronized. check the "parent"
@@ -333,7 +392,7 @@ public class EPNotificationsHelper {
 	 * @param resourceableId
 	 * @return
 	 */
-	protected static EPAbstractMap findMapOfAnyType(Long resourceableId) {
+	private static EPAbstractMap findMapOfAnyType(Long resourceableId) {
 		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		Class<?>[] mapTypes = new Class<?>[] { EPDefaultMap.class, EPStructuredMap.class, EPStructuredMapTemplate.class };
 
@@ -358,8 +417,8 @@ public class EPNotificationsHelper {
 	 * @param user
 	 * @return
 	 */
-	public static String getFullNameFromUser(User user) {
-		return user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
+	private static String getFullNameFromUser(User user) {
+		return UserManagerImpl.getInstance().getUserDisplayName(user);
 	}
 
 	/**
@@ -369,7 +428,7 @@ public class EPNotificationsHelper {
 	 * @param identity
 	 * @return
 	 */
-	public static String getFullNameFromUser(Identity identity) {
+	private static String getFullNameFromUser(Identity identity) {
 		return getFullNameFromUser(identity.getUser());
 	}
 

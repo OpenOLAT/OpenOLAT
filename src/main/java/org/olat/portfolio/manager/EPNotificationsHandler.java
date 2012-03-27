@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.notifications.NotificationsHandler;
@@ -33,10 +34,8 @@ import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
 import org.olat.core.util.notifications.items.TitleItem;
-import org.olat.portfolio.model.structel.EPAbstractMap;
-import org.olat.portfolio.model.structel.EPDefaultMap;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPStructuredMap;
-import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 
 /**
  * 
@@ -60,22 +59,24 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		SubscriptionInfo si = null;
 
 		Publisher publisher = subscriber.getPublisher();
-		EPAbstractMap amap = EPNotificationsHelper.findMapOfAnyType(publisher.getResId());
+		EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		EPMapShort amap = epMgr.loadMapShortByResourceId(publisher.getResId());
 
 		if (isInkoveValid(amap, compareDate, publisher)) {
 
 			// init the helper;
 			String rootBusinessPath = "[EPDefaultMap:" + amap.getKey() + "]";
 			EPNotificationsHelper helper = new EPNotificationsHelper(rootBusinessPath, locale, subscriber.getIdentity());
+			String resName = amap.getOlatResource().getResourceableTypeName();
 
 			si = new SubscriptionInfo(subscriber.getKey(), publisher.getType(), getTitleItemForMap(amap), null);
 
 			List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
 			// get subscriptionListItems according to map type
-			if (amap instanceof EPDefaultMap || amap instanceof EPStructuredMapTemplate) {
-				allItems = helper.getAllSubscrItemsForDefaulMap(compareDate, amap);
-			} else if (amap instanceof EPStructuredMap) {
-				allItems = helper.getAllSubscrItemsForStructuredMap(compareDate, (EPStructuredMap) amap);
+			if ("EPDefaultMap".equals(resName) || "EPStructuredMapTemplate".equals(resName)) {
+				allItems = helper.getAllSubscrItemsDefault(compareDate, amap);
+			} else if ("EPStructuredMap".equals(resName)) {
+				allItems = helper.getAllSubscrItemsStructured(compareDate, amap);
 			}
 
 			for (SubscriptionListItem item : allItems) {
@@ -91,7 +92,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		return si;
 	}
 
-	private boolean isInkoveValid(EPAbstractMap map, Date compareDate, Publisher publisher) {
+	private boolean isInkoveValid(EPMapShort map, Date compareDate, Publisher publisher) {
 		// only do that if a map was found.
 		// OO-191 only do if compareDate is not null.
 		return (map != null && compareDate != null && NotificationsManager.getInstance().isPublisherValid(publisher));
@@ -110,7 +111,8 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		if (logger.isDebug())
 			logger.debug("loading map with resourceableid: " + resId);
 
-		EPAbstractMap map = EPNotificationsHelper.findMapOfAnyType(resId);
+		EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		EPMapShort map = epMgr.loadMapShortByResourceId(resId);
 		return getTitleItemForMap(map);
 	}
 
@@ -120,19 +122,13 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	 * @param amap
 	 * @return
 	 */
-	private TitleItem getTitleItemForMap(EPAbstractMap amap) {
+	private TitleItem getTitleItemForMap(EPMapShort amap) {
 		StringBuilder sbTitle = new StringBuilder();
 		if (amap != null) {
 			sbTitle.append(amap.getTitle());
-			sbTitle.append(" <span class=\"o_ep_notif_owner\">(").append(EPFrontendManager.getFirstOwnerAsString(amap));
+			EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+			sbTitle.append(" <span class=\"o_ep_notif_owner\">(").append(epMgr.getFirstOwnerAsString(amap));
 			sbTitle.append(")</span> ");
-			if (amap instanceof EPDefaultMap) {
-				// title is ok as it is
-			} else if (amap instanceof EPStructuredMap) {
-				// title += " (Portfolioaufgabe)";
-			} else if (amap instanceof EPStructuredMapTemplate) {
-				// sbTitle.append(" (Portfoliovorlage)");
-			}
 		}
 		return new TitleItem(sbTitle.toString(), "o_EPStructuredMapTemplate_icon");
 	}

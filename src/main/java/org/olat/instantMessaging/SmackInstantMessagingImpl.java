@@ -285,7 +285,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		secGroups.add(group.getOwnerGroup());
 		secGroups.add(group.getPartipiciantGroup());
-		List<IdentityShort> users = securityManager.getIdentitiesShortOfSecurityGroups(secGroups);
+		List<IdentityShort> users = securityManager.getIdentitiesShortOfSecurityGroups(secGroups, 0, -1);
 
 		int counter = 0;
 		List<String> usernames = new ArrayList<String>();

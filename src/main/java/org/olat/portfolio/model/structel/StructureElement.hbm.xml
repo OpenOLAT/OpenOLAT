@@ -145,4 +145,26 @@
   		fetch="join" cascade="none"/>
   </class>
   
+  <class name="org.olat.portfolio.model.structel.EPMapShort" table="o_ep_struct_el" mutable="false">
+    <id name="key" column="structure_id" type="long" unsaved-value="null">
+      <generator class="hilo"/>
+    </id>
+    
+    <property name="sourceMapKey" column="fk_map_source_id" type="long"/>
+
+	<many-to-one name="ownerGroup"
+                 column="fk_ownergroup"
+                 class="org.olat.basesecurity.SecurityGroupImpl" 
+                 outer-join="true"   
+                 unique="true" 
+                 cascade="none"/>
+
+    <many-to-one name="olatResource"
+                 column="fk_olatresource"
+                 class="org.olat.resource.OLATResourceImpl" 
+                 outer-join="true"   
+                 unique="true" 
+                 cascade="none"/>
+  </class>
+  
 </hibernate-mapping>

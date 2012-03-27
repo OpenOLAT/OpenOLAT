@@ -887,7 +887,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 	@Override
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups) {
+	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups, int firstResult, int maxResults) {
 		if (secGroups == null || secGroups.isEmpty()) {
 			return Collections.emptyList();
 		}

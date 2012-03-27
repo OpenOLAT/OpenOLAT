@@ -1,0 +1,216 @@
+package org.olat.portfolio.manager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.notifications.items.SubscriptionListItem;
+import org.olat.portfolio.model.notification.EPArtefactNotification;
+import org.olat.portfolio.model.notification.EPCommentNotification;
+import org.olat.portfolio.model.notification.EPNotification;
+import org.olat.portfolio.model.notification.EPRatingNotification;
+import org.olat.portfolio.model.notification.EPStructureElementNotification;
+import org.olat.user.UserManager;
+
+
+
+public class EPNotificationManager {
+
+	private DB dbInstance;
+	private UserManager userManager;
+	
+	/**
+	 * [used by Spring]
+	 * @param db
+	 */
+	public void setDbInstance(DB db) {
+		this.dbInstance = db;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param userManager
+	 */
+	public void setUserManager(UserManager userManager) {
+		this.userManager = userManager;
+	}
+
+	public List<SubscriptionListItem> getPageSubscriptionListItem(Long mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
+		List<EPStructureElementNotification> notifications = getPageNotifications(mapKey, compareDate);
+		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+		for (EPNotification notification : notifications) {
+			SubscriptionListItem item = null;	
+			String[] title = new String[] { notification.getTitle() };
+			if ("page".equals(notification.getType())) {
+				String bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+				item = new SubscriptionListItem(translator.translate("li.newpage", title), linkUrl, notification.getCreationDate(), "b_ep_page_icon");
+				item.setUserObject(notification.getPageKey());
+			} else {
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+				if (notification.getPageKey() != null) {
+					String bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
+					linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+				}
+				item = new SubscriptionListItem(translator.translate("li.newstruct", title), linkUrl, notification.getCreationDate(), "b_ep_struct_icon");
+				item.setUserObject(notification.getPageKey());
+			}
+			if(item != null) {
+				items.add(item);
+			}
+		}
+		return items;
+	}
+	
+	public List<SubscriptionListItem> getArtefactNotifications(List<Long> mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
+		List<EPArtefactNotification> links = getArtefactNotifications(mapKey, compareDate);
+		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+		for (EPArtefactNotification link : links) {
+			Long pageKey =  link.getPageKey();
+			String targetTitle= link.getStructureTitle();
+			String[] title = new String[] {
+					userManager.getUserDisplayName(link.getAuthor()),
+					link.getArtefactTitle(),
+					targetTitle
+			};
+
+			String bPath = rootBusinessPath + "[EPPage:" + pageKey + "]";
+			String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+			SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newartefact", title), linkUrl, link.getCreationDate(), "b_eportfolio_link");
+			item.setUserObject(pageKey);
+			items.add(item);
+		}
+		return items;
+	}
+	
+	public List<SubscriptionListItem> getRatingNotifications(List<Long> mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
+		List<EPRatingNotification> ratings = getRatingNotifications(mapKey, compareDate);
+		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+
+		for (EPRatingNotification rating : ratings) {
+			if(rating.getPageKey() == null) {
+				String[] title = new String[] { rating.getMapTitle(), userManager.getUserDisplayName(rating.getAuthor()) };
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+				if (rating.getLastModified() != null) {
+					// there is a modified date, also add this as a listitem
+					items.add(new SubscriptionListItem(translator.translate("li.changerating", title), linkUrl, rating.getLastModified(), "b_star_icon"));
+				}
+				items.add(new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rating.getCreationDate(), "b_star_icon"));
+			} else {
+				String bPath = rootBusinessPath + "[EPPage:" + rating.getPageKey() + "]";
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+				String[] title = new String[] { rating.getTitle(), userManager.getUserDisplayName(rating.getAuthor()) };
+				if (rating.getLastModified() != null) {
+					// there is a modified date, also add this as a listitem
+					SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.changerating", title ), linkUrl, rating.getLastModified(), "b_star_icon");
+					item.setUserObject(rating.getPageKey());
+					items.add(item);
+				}
+				SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rating.getCreationDate(), "b_star_icon");
+				item.setUserObject(rating.getPageKey());
+				items.add(item);
+			}
+		}
+		return items;
+	}
+	
+	public List<SubscriptionListItem> getCommentNotifications(List<Long> mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
+		List<EPCommentNotification> comments = getCommentNotifications(mapKey, compareDate);
+		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+
+		for (EPCommentNotification comment : comments) {
+			SubscriptionListItem item;
+			if(comment.getPageKey() == null) {
+				String[] title = new String[] { comment.getMapTitle(), userManager.getUserDisplayName(comment.getAuthor()) };
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
+				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, comment.getCreationDate(), "b_info_icon");
+			} else {
+				String bPath = rootBusinessPath + "[EPPage:" + comment.getPageKey() + "]";
+				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+				String[] title = new String[] { comment.getTitle(), userManager.getUserDisplayName(comment.getAuthor()) };
+				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, comment.getCreationDate(), "b_info_icon");
+				item.setUserObject(comment.getPageKey());
+			}
+			items.add(item);
+		}
+
+		return items;
+	}
+	
+	private List<EPStructureElementNotification> getPageNotifications(Long mapKey, Date compareDate) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select notification from ").append(EPStructureElementNotification.class.getName()).append(" as notification");
+		sb.append(" where notification.creationDate>=:currentDate and (notification.key=:mapKey or notification.rootMapKey=:mapKey)");
+		
+		DBQuery query =	dbInstance.createQuery(sb.toString());
+		query.setDate("currentDate", compareDate);
+		query.setLong("mapKey", mapKey);
+		
+		@SuppressWarnings("unchecked")
+		List<EPStructureElementNotification> notifications = query.list();
+		return notifications;
+	}
+
+	private List<EPArtefactNotification> getArtefactNotifications(List<Long> mapKey, Date compareDate) {
+		if(mapKey == null || mapKey.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select notification from ").append(EPArtefactNotification.class.getName()).append(" as notification")
+	    .append(" inner join fetch notification.author")
+		  .append(" where notification.creationDate>=:currentDate and (notification.key in (:mapKey) or notification.rootMapKey in (:mapKey))");
+		
+		DBQuery query =	dbInstance.createQuery(sb.toString());
+		query.setDate("currentDate", compareDate);
+		query.setParameterList("mapKey", mapKey);
+		
+		@SuppressWarnings("unchecked")
+		List<EPArtefactNotification> notifications = query.list();
+		return notifications;
+	}
+	
+	private List<EPRatingNotification> getRatingNotifications(List<Long> mapKey, Date compareDate) {
+		if(mapKey == null || mapKey.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select notification from ").append(EPRatingNotification.class.getName()).append(" as notification")
+		  .append(" inner join fetch notification.author")
+		  .append(" where notification.creationDate>=:currentDate and notification.mapKey in (:mapKey)");
+		
+		DBQuery query =	dbInstance.createQuery(sb.toString());
+		query.setDate("currentDate", compareDate);
+		query.setParameterList("mapKey", mapKey);
+		
+		@SuppressWarnings("unchecked")
+		List<EPRatingNotification> notifications = query.list();
+		return notifications;
+	}
+
+	private List<EPCommentNotification> getCommentNotifications(List<Long> mapKey, Date compareDate) {
+		if(mapKey == null || mapKey.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select notification from ").append(EPCommentNotification.class.getName()).append(" as notification")
+	    .append(" inner join fetch notification.author")
+		  .append(" where notification.creationDate>=:currentDate and notification.mapKey in (:mapKey)");
+		
+		DBQuery query =	dbInstance.createQuery(sb.toString());
+		query.setDate("currentDate", compareDate);
+		query.setParameterList("mapKey", mapKey);
+		
+		@SuppressWarnings("unchecked")
+		List<EPCommentNotification> notifications = query.list();
+		return notifications;
+	}
+
+}

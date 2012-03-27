@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,10 +41,12 @@ import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.notifications.items.SubscriptionListItem;
+import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPNotificationsHandler;
 import org.olat.portfolio.manager.EPNotificationsHelper;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.ui.structel.EPMapKeyEvent;
@@ -65,9 +68,12 @@ public class EPChangelogController extends FormBasicController {
 	private SubscriptionContext subsContext;
 	private EPAbstractMap map;
 	private DateChooser dateChooser;
+	private final EPFrontendManager ePFMgr;
 
 	public EPChangelogController(UserRequest ureq, WindowControl wControl, EPAbstractMap map) {
 		super(ureq, wControl, "changelog");
+		
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 
 		this.map = map;
 		initForm(ureq);
@@ -144,13 +150,13 @@ public class EPChangelogController extends FormBasicController {
 
 		// get the date from the dateChooser component
 		Date compareDate = dateChooser.getDate();
-
+		EPMapShort mapShort = ePFMgr.loadMapShortByResourceId(map.getOlatResource().getResourceableId());
 		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
 		// get subscriptionListItems according to map type
 		if (map instanceof EPDefaultMap || map instanceof EPStructuredMapTemplate) {
-			allItems = helper.getAllSubscrItemsForDefaulMap(compareDate, map);
+			allItems = helper.getAllSubscrItemsDefault(compareDate, mapShort);
 		} else if (map instanceof EPStructuredMap) {
-			allItems = helper.getAllSubscrItemsForStructuredMap(compareDate, (EPStructuredMap) map);
+			allItems = helper.getAllSubscrItemsStructured(compareDate, mapShort);
 		}
 
 		List<SubscriptionItemBundle> bundles = getItemBundlesForSubscriptionItems(allItems);

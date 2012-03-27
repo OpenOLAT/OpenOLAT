@@ -126,7 +126,7 @@ public class EPMapViewController extends BasicController implements Activateable
 
 
 	protected void initForm(UserRequest ureq) {
-		Identity ownerIdentity = EPFrontendManager.getFirstOwnerIdentity(map);
+		Identity ownerIdentity = ePFMgr.getFirstOwnerIdentity(map);
 		if(ownerIdentity != null) {
 			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), ownerIdentity, false,true,true,false);
 			mainVc.put("ownerportrait", portraitCtr.getInitialComponent());

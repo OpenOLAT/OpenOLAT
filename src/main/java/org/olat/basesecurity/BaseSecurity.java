@@ -98,6 +98,7 @@ public interface BaseSecurity {
 	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup);
 	
 	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup, int firstResult, int maxResults);
+	
 	/**
 	 * Return the primary key of
 	 * @param secGroups
@@ -106,7 +107,7 @@ public interface BaseSecurity {
 	public List<Identity> getIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups);
 
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups);
+	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups, int firstResult, int maxResults);
 
 	/**
 	 * @param secGroup

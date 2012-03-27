@@ -30,7 +30,9 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.search.AbstractOlatDocument;
 import org.olat.core.commons.services.search.ResultDocument;
@@ -41,7 +43,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
@@ -61,6 +62,7 @@ import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -71,6 +73,7 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.indexer.identity.PortfolioArtefactIndexer;
 import org.olat.search.service.searcher.SearchClient;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -96,6 +99,8 @@ public class EPFrontendManager extends BasicManager {
 	private SearchClient searchClient;
 	private final EPSettingsManager settingsManager; 
 	private final EPPolicyManager policyManager;
+	private final EPNotificationManager notificationManager;
+	private final UserManager userManager;
 	private PortfolioModule portfolioModule;
 
 	/**
@@ -103,7 +108,8 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public EPFrontendManager(EPArtefactManager artefactManager, EPStructureManager structureManager, EPSettingsManager settingsManager,
 			EPPolicyManager policyManager, CoordinatorManager coordinatorManager, BaseSecurity securityManager, TaggingManager taggingManager,
-			DB dbInstance, AssessmentNotificationsHandler assessmentNotificationsHandler) {
+			DB dbInstance, AssessmentNotificationsHandler assessmentNotificationsHandler, EPNotificationManager notificationManager,
+			UserManager userManager) {
 		this.artefactManager = artefactManager;
 		this.structureManager = structureManager;
 		this.securityManager = securityManager;
@@ -113,6 +119,8 @@ public class EPFrontendManager extends BasicManager {
 		this.dbInstance = dbInstance;
 		this.settingsManager = settingsManager;
 		this.policyManager = policyManager;
+		this.notificationManager = notificationManager;
+		this.userManager = userManager;
 	}
 	
 	
@@ -918,6 +926,15 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	/**
+	 * Load a protfolio structure by its resourceable id
+	 * @param ores
+	 * @return
+	 */
+	public EPMapShort loadMapShortByResourceId(Long resId) {
+		return structureManager.loadMapShortByResourceId(resId);
+	}
+	
+	/**
 	 * Load a portfolio structure by its primary key. DON'T USE THIS METHOD
 	 * TO RELOAD AN OBJECT. If you want do this, use the method
 	 * reloadPortfolioStructure(PortfolioStructure structure)
@@ -1196,14 +1213,15 @@ public class EPFrontendManager extends BasicManager {
 	 * @param map
 	 * @return
 	 */
-	public static String getAllOwnersAsString(PortfolioStructureMap map){
+	public String getAllOwnersAsString(PortfolioStructureMap map){
 		if(map.getOwnerGroup() == null) {
 			return null;
 		}
-		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
+		List<SecurityGroup> ownerGroups = Collections.singletonList(map.getOwnerGroup());
+		List<IdentityShort> ownerIdents = securityManager.getIdentitiesShortOfSecurityGroups(ownerGroups, 0, -1);
 		List<String> identNames = new ArrayList<String>();
-		for (Identity identity : ownerIdents) {
-			String fullName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null)+" "+identity.getUser().getProperty(UserConstants.LASTNAME, null);
+		for (IdentityShort identity : ownerIdents) {
+			String fullName = identity.getFirstName() + " " + identity.getLastName();
 			identNames.add(fullName);
 		}
 		return StringHelper.formatAsCSVString(identNames);
@@ -1215,14 +1233,27 @@ public class EPFrontendManager extends BasicManager {
 	 * @param map
 	 * @return
 	 */
-	public static String getFirstOwnerAsString(PortfolioStructureMap map){
+	public String getFirstOwnerAsString(PortfolioStructureMap map){
 		if(map.getOwnerGroup() == null) {
 			return "n/a";
 		}
-		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
+		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
 		if(ownerIdents.size() > 0){
 			Identity id = ownerIdents.get(0);
-			return id.getUser().getProperty(UserConstants.FIRSTNAME, null)+" "+id.getUser().getProperty(UserConstants.LASTNAME, null);
+			return userManager.getUserDisplayName(id.getUser());
+		}
+		return "n/a";
+	}
+	
+	public String getFirstOwnerAsString(EPMapShort map){
+		if(map.getOwnerGroup() == null) {
+			return "n/a";
+		}
+		List<SecurityGroup> secGroups = Collections.singletonList(map.getOwnerGroup());
+		List<IdentityShort> ownerIdents = securityManager.getIdentitiesShortOfSecurityGroups(secGroups, 0, 1);
+		if(ownerIdents.size() > 0){
+			IdentityShort id = ownerIdents.get(0);
+			return userManager.getUserDisplayName(id);
 		}
 		return "n/a";
 	}
@@ -1233,11 +1264,11 @@ public class EPFrontendManager extends BasicManager {
 	 * @param map
 	 * @return
 	 */
-	public static Identity getFirstOwnerIdentity(PortfolioStructureMap map){
+	public Identity getFirstOwnerIdentity(PortfolioStructureMap map){
 		if(map.getOwnerGroup() == null) {
 			return null;
 		}
-		List<Identity> ownerIdents = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(map.getOwnerGroup());
+		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
 		if (ownerIdents.size() > 0) {
 			Identity id = ownerIdents.get(0);
 			return id;

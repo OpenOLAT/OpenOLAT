@@ -55,6 +55,7 @@ import org.olat.portfolio.model.restriction.CollectRestriction;
 import org.olat.portfolio.model.restriction.RestrictionsConstants;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
@@ -1489,6 +1490,26 @@ public class EPStructureManager extends BasicManager {
 		
 		@SuppressWarnings("unchecked")
 		List<PortfolioStructure> resources = query.list();
+		// if not found, it is an empty list
+		if (resources.isEmpty()) return null;
+		return resources.get(0);
+	}
+	
+	/**
+	 * @param olatResourceable cannot be null
+	 * @return The structure element or null if not found
+	 */
+	public EPMapShort loadMapShortByResourceId(Long resourceableId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select element from ").append(EPMapShort.class.getName()).append(" element")
+		  .append(" inner join fetch element.olatResource resource")
+			.append(" where resource.resId=:resourceId and resource.resName in ('EPDefaultMap','EPStructuredMap','EPStructuredMapTemplate')");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		query.setLong("resourceId", resourceableId);
+		
+		@SuppressWarnings("unchecked")
+		List<EPMapShort> resources = query.list();
 		// if not found, it is an empty list
 		if (resources.isEmpty()) return null;
 		return resources.get(0);

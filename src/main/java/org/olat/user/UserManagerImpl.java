@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -342,9 +343,19 @@ public class UserManagerImpl extends UserManager {
 	}
 
 	/**
-	 * @see org.olat.user.UserManager#getUserCharset(org.olat.core.id.User)
+	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.User)
 	 */
+	@Override
 	public String getUserDisplayName(User user) {
+		if (this.userDisplayNameCreator == null) return "";
+		return this.userDisplayNameCreator.getUserDisplayName(user);
+	}
+	
+	/**
+	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.IdentityShort)
+	 */
+	@Override
+	public String getUserDisplayName(IdentityShort user) {
 		if (this.userDisplayNameCreator == null) return "";
 		return this.userDisplayNameCreator.getUserDisplayName(user);
 	}
