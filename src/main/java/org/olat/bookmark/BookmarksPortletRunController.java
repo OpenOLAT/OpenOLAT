@@ -28,9 +28,11 @@ package org.olat.bookmark;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.ControllerFactory;
@@ -85,6 +87,8 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	private final OLATResourceable eventBusAllIdentitiesOres;
 	private final OLATResourceable eventBusThisIdentityOres;
 	private final Locale locale;
+	
+	private final RepositoryManager repositoryManager;
 			
 	/**
 	 * Constructor
@@ -97,6 +101,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 		this.sortingTermsList.add(SortingCriteria.TYPE_SORTING);
 		this.sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);
 		this.sortingTermsList.add(SortingCriteria.DATE_SORTING);
+		this.repositoryManager = RepositoryManager.getInstance();
 		
 		this.bookmarksVC = this.createVelocityContainer("bookmarksPortlet");
 		showAllLink = LinkFactory.createLink("bookmarksPortlet.showAll", bookmarksVC, this);
@@ -139,7 +144,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
 		BookmarkManager mb = BookmarkManager.getInstance();
-		List bookmarkList = mb.findBookmarksByIdentity(identity);
+		List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(identity);
 		return convertBookmarkToPortletEntryList(bookmarkList);
 	}
 	
@@ -150,9 +155,20 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 */
 	private List<PortletEntry> convertBookmarkToPortletEntryList(List<Bookmark> items) {
 		List<PortletEntry> convertedList = new ArrayList<PortletEntry>();
-		Iterator<Bookmark> listIterator = items.iterator();
-		while(listIterator.hasNext()) {
-			convertedList.add(new BookmarkPortletEntry(listIterator.next()));
+		
+		List<Long> reKeys = new ArrayList<Long>();
+		for(Bookmark bookmark:items) {
+			reKeys.add(bookmark.getOlatreskey());
+		}
+		List<RepositoryEntry> repositoryEntries = repositoryManager.lookupRepositoryEntries(reKeys);
+		Map<Long,RepositoryEntry> keyToRepositoryEntryMap = new HashMap<Long,RepositoryEntry>();
+		for(RepositoryEntry repositoryEntry:repositoryEntries) {
+			keyToRepositoryEntryMap.put(repositoryEntry.getKey(), repositoryEntry);
+		}
+
+		for(Bookmark bookmark:items) {
+			RepositoryEntry repositoryEntry = keyToRepositoryEntryMap.get(bookmark.getOlatreskey());
+			convertedList.add(new BookmarkPortletEntry(bookmark, repositoryEntry));
 		}
 		return convertedList;
 	}
@@ -168,7 +184,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			BookmarkManager mb = BookmarkManager.getInstance();
-			List bookmarkList = mb.findBookmarksByIdentity(identity);
+			List<Bookmark> bookmarkList = mb.findBookmarksByIdentity(identity);
 			
 			bookmarkList = getSortedList(bookmarkList, sortingCriteria );
 			
@@ -318,11 +334,11 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 		}
 		
 		public Object getValueAt(int row, int col) {
-			PortletEntry entry = getObject(row);
-			Bookmark bookmark = (Bookmark)  entry.getValue();
+			BookmarkPortletEntry entry = (BookmarkPortletEntry)getObject(row);
+			Bookmark bookmark = entry.getValue();
 			switch (col) {
 			case 0:
-				String name = getBookmarkTitle(bookmark);
+				String name = getBookmarkTitle(bookmark, entry.getEntry());
 				name = StringEscapeUtils.escapeHtml(name).toString();
 				return name;
 			case 1:
@@ -341,10 +357,9 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 		 * Get displayname of a bookmark entry. If bookmark entry a RepositoryEntry 
 		 * and is this RepositoryEntry closed then add a prefix to the title.
 		 */
-		private String getBookmarkTitle(Bookmark bookmark) {
+		private String getBookmarkTitle(Bookmark bookmark, RepositoryEntry repositoryEntry) {
 			String title = bookmark.getTitle();
-			RepositoryEntry repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(bookmark.getOlatreskey());
-			if (repositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()) {
+			if (repositoryEntry != null && repositoryManager.createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()) {
 				PackageTranslator pT = new PackageTranslator(RepositoryEntryStatus.class.getPackage().getName(), locale);
 				title = "[" + pT.translate("title.prefix.closed") + "] ".concat(title);
 			}
@@ -408,12 +423,14 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
 	 * Initial Date:  10.12.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	class BookmarkPortletEntry implements PortletEntry {
-  	private Bookmark value;
-  	private Long key;
+	class BookmarkPortletEntry implements PortletEntry<Bookmark> {
+  	private final Bookmark bookmark;
+  	private final RepositoryEntry entry;
+  	private final Long key;
   	
-  	public BookmarkPortletEntry(Bookmark bookmark) {
-  		value = bookmark;
+  	public BookmarkPortletEntry(Bookmark bookmark, RepositoryEntry entry) {
+  		this.bookmark = bookmark;
+  		this.entry = entry;
   		key = bookmark.getKey();
   	}
   	
@@ -422,7 +439,11 @@ public class BookmarksPortletRunController extends AbstractPortletRunController 
   	}
   	
   	public Bookmark getValue() {
-  		return value;
+  		return bookmark;
+  	}
+  	
+  	public RepositoryEntry getEntry() {
+  		return entry;
   	}
   }
 		
