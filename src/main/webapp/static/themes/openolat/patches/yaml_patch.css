@@ -44,6 +44,16 @@
 		width/**/:/**/ .1em; /* only IE 6.0 */		
 		min-width: 1em; /* IE 7 bugfix: force hasLayout=true */
 	}
+	
+	/**
+	*  apply newer clearfix
+	*  (in yaml there is height:1% to activate hasLayout in IE6 and IE7)
+	*  we want the newer "hack" from http://perishablepress.com/new-clearfix-hack/
+	*/
+	.b_clearfix {
+		height:auto;
+		zoom:1;
+	}
 }
 
 
