@@ -83,9 +83,6 @@ public class MSEditFormController extends FormBasicController {
 	/** The keys for true / false dropdowns. */
 	private String[] trueFalseKeys;
 
-	/** The keys for yes/no dropdowns. */
-	private String[] yesNoValues;
-
 	/** The keys for manual/automatic scoring dropdown. */
 	private String[] passedTypeValues;
 
@@ -101,7 +98,6 @@ public class MSEditFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.modConfig = modConfig;
 		this.trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
-		this.yesNoValues = new String[] { translate("form.yes"), translate("form.no") };
 
 		this.passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
 		initForm(ureq);
@@ -242,8 +238,12 @@ public class MSEditFormController extends FormBasicController {
 	private void update(UserRequest ureq) {
 		minVal.setVisible(scoreGranted.isSelected(0));
 		maxVal.setVisible(scoreGranted.isSelected(0));
+		minVal.setMandatory(minVal.isVisible());
+		maxVal.setMandatory(maxVal.isVisible());
+		
 		displayType.setVisible(displayPassed.isSelected(0));
 		cutVal.setVisible(displayType.isVisible() && displayType.isSelected(0));
+		cutVal.setMandatory(cutVal.isVisible());
 		validateFormLogic(ureq);
 	}
 	
