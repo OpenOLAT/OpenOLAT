@@ -265,13 +265,20 @@ public class LTIRunController extends BasicController {
 	 * @return
 	 */
 	private String setRoles(Roles roles) {
-		StringBuilder rolesStr = new StringBuilder("Learner");
-		if (roles.isAuthor()) rolesStr.append(",").append("Instructor");
-		if (roles.isOLATAdmin()) rolesStr.append(",").append("Administrator");
+		StringBuilder rolesStr;
 		if (roles.isGuestOnly()) {
-			rolesStr = new StringBuilder();
-			rolesStr.append("Guest");
+			rolesStr = new StringBuilder("Guest");
+		} else {
+			rolesStr = new StringBuilder("Learner");
+			boolean coach = courseEnv.getCourseGroupManager().isIdentityCourseCoach(getIdentity());
+			if (coach) {
+				rolesStr.append(",").append("Instructor");
+			}
+			if (roles.isOLATAdmin()) {
+				rolesStr.append(",").append("Administrator");
+			}
 		}
+		
 		return rolesStr.toString();
 	}
 	
