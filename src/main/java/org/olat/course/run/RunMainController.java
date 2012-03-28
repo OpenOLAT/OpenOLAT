@@ -961,11 +961,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 
 	private Activateable launchAssessmentTool(UserRequest ureq, String viewIdentifier) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentTool");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
-
 			Activateable assessmentToolCtr = 
-				AssessmentUIFactory.createAssessmentMainController(ureq, getWindowControl(), course, new FullAccessAssessmentCallback());
+				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course, new FullAccessAssessmentCallback());
 			assessmentToolCtr.activate(ureq, viewIdentifier);
 			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
@@ -974,7 +977,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
-			Activateable assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, getWindowControl(), course,
+			Activateable assessmentToolCtr = AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course,
 					new CoachingGroupAccessAssessmentCallback());
 			assessmentToolCtr.activate(ureq, viewIdentifier);
 			currentToolCtr = assessmentToolCtr;

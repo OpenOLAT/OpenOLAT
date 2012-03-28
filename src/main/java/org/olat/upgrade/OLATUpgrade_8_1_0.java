@@ -28,8 +28,10 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
+import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementManager;
@@ -37,6 +39,7 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManagerImpl;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
+import org.olat.notifications.PublisherImpl;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -64,6 +67,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 	
 	private static final String PROPERTY_INITIAL_LAUNCH_DATE = "initialCourseLaunchDate";
 	private static final String PROPERTY_RECENT_LAUNCH_DATE = "recentCourseLaunchDate";
+	private static final String ASSESSMENT_PUBLISHER = "assessmentPublisher";
 	
 	@Autowired
 	private DB dbInstance;
@@ -101,11 +105,41 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 		
 		upgradeEfficiencyStatements(upgradeManager, uhd);
 		upgradeLaunchDates(upgradeManager, uhd);
+		upgradeAssessmentPublisher(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(true);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		log.audit("Finished OLATUpgrade_8_1_0 successfully!");
 		return true;
+	}
+	
+	private void upgradeAssessmentPublisher(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		if (!uhd.getBooleanDataValue(ASSESSMENT_PUBLISHER)) {
+
+			int count = 0;
+			List<Publisher> publishers = getAssessmentPublishers();
+			for(Publisher publisher:publishers) {
+				String businessPath = publisher.getBusinessPath();
+				if(businessPath != null && businessPath.startsWith("[RepositoryEntry:") && !businessPath.endsWith("[assessmentTool:0]")) {
+					publisher.setBusinessPath(businessPath + "[assessmentTool:0]");
+					dbInstance.updateObject(publisher);
+				}
+				if(count++ % 20 == 0) {
+					dbInstance.intermediateCommit();
+				}
+			}
+			uhd.setBooleanDataValue(ASSESSMENT_PUBLISHER, true);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+	}
+	
+	private List<Publisher> getAssessmentPublishers() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select pub from ").append(PublisherImpl.class.getName()).append(" pub where pub.resName='AssessmentManager' and type='AssessmentManager'");
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		@SuppressWarnings("unchecked")
+		List<Publisher> res = query.list();
+		return res;
 	}
 	
 	private void upgradeEfficiencyStatements(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
