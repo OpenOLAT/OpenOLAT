@@ -85,5 +85,9 @@ public class IQComponent extends Component {
 	public boolean provideMemoField () {
 		return provideMemoField;
 	}
-
+	
+	@Override
+	public boolean isHighlyDynamicalCmp() {
+		return true;
+	}
 }

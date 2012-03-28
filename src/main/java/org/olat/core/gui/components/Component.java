@@ -413,6 +413,10 @@ public abstract class Component {
 	public Container getParent(){
 		return this.parent;
 	}
+	
+	public boolean isHighlyDynamicalCmp() {
+		return false;
+	}
 		
 	/**
 	 * to be used by Window.java to detect browser back in ajax-mode
