@@ -127,8 +127,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 		if (amap != null) {
 			sbTitle.append(amap.getTitle());
 			EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-			sbTitle.append(" <span class=\"o_ep_notif_owner\">(").append(epMgr.getFirstOwnerAsString(amap));
-			sbTitle.append(")</span> ");
+			sbTitle.append(" (").append(epMgr.getFirstOwnerAsString(amap)).append(")");
 		}
 		return new TitleItem(sbTitle.toString(), "o_EPStructuredMapTemplate_icon");
 	}

@@ -151,6 +151,7 @@
     </id>
     
     <property name="sourceMapKey" column="fk_map_source_id" type="long"/>
+	<property name="title" column="title" type="string"/>
 
 	<many-to-one name="ownerGroup"
                  column="fk_ownergroup"
