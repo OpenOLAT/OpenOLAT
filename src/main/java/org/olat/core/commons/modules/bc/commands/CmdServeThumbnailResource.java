@@ -56,7 +56,7 @@ public class CmdServeThumbnailResource implements FolderCommand {
 		VFSLeaf vfsfile = (VFSLeaf)folderComponent.getRootContainer().resolve(path);
 		if(vfsfile instanceof MetaTagged) {
 			MetaInfo info = ((MetaTagged)vfsfile).getMetaInfo();
-			if(info != null) {
+			if(info != null && info.isThumbnailAvailable()) {
 				VFSLeaf thumbnail = info.getThumbnail(200, 200);
 				if(thumbnail != null) {
 					mr = new VFSMediaResource(thumbnail);

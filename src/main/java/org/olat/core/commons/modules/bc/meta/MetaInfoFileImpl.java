@@ -894,7 +894,6 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 				if(finalSize == null) {
 					return null;
 				} else {
-					
 					Thumbnail thumbnail = new Thumbnail();
 					thumbnail.setMaxHeight(maxHeight);
 					thumbnail.setMaxWidth(maxWidth);
