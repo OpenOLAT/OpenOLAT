@@ -279,9 +279,10 @@ function b_changeLinkTargets() {
 		var anchor = anchors[i];
 		if (anchor.getAttribute('href')) {
 			var target = anchor.getAttribute('target');
-					
-			if (anchor.getAttribute("href").indexOf("/auth/repo/go?rid=") != -1) {
+			var href = anchor.getAttribute("href");
+			if (href.indexOf("/auth/repo/go?rid=") != -1 || href.indexOf("/url/RepositoryEntry/") != -1 || href.indexOf("/url/BusinessGroup/") != -1) {
 				// absolute links to repository entries have to by opened in the parent frame
+				// /auth/repo/ is legacy format, /url/RepositoryEntry/ is new format
 				anchor.target = "_parent";
 			} else if (target != 'undefined' && (target == '_top' || target == '_parent')) {
 				// fix broken legacy links that try to open content in top window
