@@ -274,7 +274,8 @@ public class LTIRunController extends BasicController {
 			if (coach) {
 				rolesStr.append(",").append("Instructor");
 			}
-			if (roles.isOLATAdmin()) {
+			boolean admin = courseEnv.getCourseGroupManager().isIdentityCourseAdministrator(getIdentity());
+			if (roles.isOLATAdmin() || admin) {
 				rolesStr.append(",").append("Administrator");
 			}
 		}
