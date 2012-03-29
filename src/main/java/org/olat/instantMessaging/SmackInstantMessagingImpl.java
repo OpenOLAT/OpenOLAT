@@ -50,9 +50,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.LogDelegator;
-import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.SearchBusinessGroupParams;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
@@ -63,9 +63,6 @@ import org.olat.instantMessaging.syncservice.InstantMessagingSessionCount;
 import org.olat.instantMessaging.syncservice.InstantMessagingSessionItems;
 import org.olat.instantMessaging.syncservice.RemoteAccountCreation;
 import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -332,27 +329,16 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		}
 		logInfo("Starting synchronisation of LearningGroups with IM server");
 		long start = System.currentTimeMillis();
-		
-		RepositoryManager rm = RepositoryManager.getInstance();
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		//pull as admin
-		Roles roles = new Roles(true, true, true, true, false, true, false);
-		List<RepositoryEntry> allCourses = rm.queryByTypeLimitAccess(null, CourseModule.getCourseTypeName(), roles);
 		boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
-		Set<Long> checkedIdentities = new HashSet<Long>();
-
-		Set<BGContext> allContexts = new HashSet<BGContext>();
-		for (RepositoryEntry entry: allCourses) {
-			OLATResource courseResource = entry.getOlatResource();
-			allContexts.addAll(contextManager.findBGContextsForResource(courseResource, BusinessGroup.TYPE_LEARNINGROUP, true, true));
-		}
-		DBFactory.getInstance().intermediateCommit();
 
 		int counter = 0;
 		int GROUP_BATCH_SIZE = 50;
 		List<BusinessGroup> groups;
+		Set<Long> checkedIdentities = new HashSet<Long>();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
 		do {
-			groups = contextManager.getGroupsOfBGContext(allContexts, counter, GROUP_BATCH_SIZE);
+			groups = BusinessGroupManagerImpl.getInstance().findBusinessGroups(params, null, false, false, null, counter, GROUP_BATCH_SIZE);
 			for (BusinessGroup group:groups) {
 				if (!syncLearn) {
 					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
