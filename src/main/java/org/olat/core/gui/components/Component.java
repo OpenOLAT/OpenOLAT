@@ -414,7 +414,12 @@ public abstract class Component {
 		return this.parent;
 	}
 	
-	public boolean isHighlyDynamicalCmp() {
+	/**
+	 * Return true if the component is changed without dirty marking. It's a special case which
+	 * for special components which provide a protection against back button usage.
+	 * @return
+	 */
+	public boolean isSilentlyDynamicalCmp() {
 		return false;
 	}
 		

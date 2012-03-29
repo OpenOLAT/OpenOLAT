@@ -321,7 +321,7 @@ public class Window extends Container {
 						if (validForDispatching) {
 							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);  // FIXME:fj:c enable time stats for ajax-mode
 							didDispatch = dispatchResult.isDispatch();
-							incTimestamp = dispatchResult.isHighDynamical();
+							incTimestamp = dispatchResult.isIncTimestamp();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
 								Tracing.logDebug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent, Window.class);
@@ -586,7 +586,7 @@ public class Window extends Container {
 			if (dispatch) {
 				DispatchResult dispatchResult = doDispatchToComponent(ureq, debugMsg);
 				boolean didDispatch = dispatchResult.isDispatch();
-				incTimestamp = dispatchResult.isHighDynamical();
+				incTimestamp = dispatchResult.isIncTimestamp();
 				if (isDebugLog) {
 					long dstop = System.currentTimeMillis();
 					long diff = dstop - dstart;
@@ -1109,7 +1109,7 @@ public class Window extends Container {
 		if (!target.isVisible()) { throw new OLATRuntimeException(Window.class, "target with name: '" + target.getComponentName()
 				+ "', was invisible, but called to dispatch", null); }
 		boolean toDispatch = true; //TODO:fj:c is foundpath needed for something else than the enabled-check. if no -> one boolean is enough
-		boolean highDynamical = false;
+		boolean incTimestamp = false;
 		for (Iterator<Component> iter = foundPath.iterator(); iter.hasNext();) {
 			Component curComp = iter.next();
 			if (!curComp.isEnabled()) {
@@ -1128,7 +1128,7 @@ public class Window extends Container {
 		
 			List<Component> ancestors = ComponentHelper.findAncestorsOrSelfByID(getContentPane(), target);
 			for(Component ancestor:ancestors) {
-				highDynamical |= ancestor.isHighlyDynamicalCmp();
+				incTimestamp |= ancestor.isSilentlyDynamicalCmp();
 				//System.out.println("Ancestor -> " + ancestor.getComponentName() + " :: " + ancestor);
 			}
 			//System.out.println("Target -> " + highDynamical + " :: " + target);
@@ -1185,7 +1185,7 @@ public class Window extends Container {
 			// in case we do not reach the next line because of an exception in dispatch(), we clear the value in the exceptionwindowcontroller's error handling			
 			latestDispatchedComp = null; 
 		}
-		return new DispatchResult(toDispatch, highDynamical);
+		return new DispatchResult(toDispatch, incTimestamp);
 	}
 	
 	private List<Component> findComponentsWithChildName(final String childName, Component searchRoot) {
@@ -1275,19 +1275,19 @@ public class Window extends Container {
 
 class DispatchResult {
 	private final boolean dispatch;
-	private final boolean highDynamical;
+	private final boolean incTimestamp;
 	
-	public DispatchResult(boolean dispatch, boolean highDynamical) {
+	public DispatchResult(boolean dispatch, boolean incTimestamp) {
 		this.dispatch = dispatch;
-		this.highDynamical = highDynamical;
+		this.incTimestamp = incTimestamp;
 	}
 
 	public boolean isDispatch() {
 		return dispatch;
 	}
 
-	public boolean isHighDynamical() {
-		return highDynamical;
+	public boolean isIncTimestamp() {
+		return incTimestamp;
 	}
 }
 
