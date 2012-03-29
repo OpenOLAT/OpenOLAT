@@ -340,43 +340,40 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		List<RepositoryEntry> allCourses = rm.queryByTypeLimitAccess(null, CourseModule.getCourseTypeName(), roles);
 		boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
 		Set<Long> checkedIdentities = new HashSet<Long>();
-		
-		int counter = 0;
+
+		Set<BGContext> allContexts = new HashSet<BGContext>();
 		for (RepositoryEntry entry: allCourses) {
 			OLATResource courseResource = entry.getOlatResource();
-			List<BGContext> contexts = contextManager.findBGContextsForResource(courseResource, BusinessGroup.TYPE_LEARNINGROUP, true, true);
-			
-			List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-			for (BGContext bgContext:contexts) {
-				groups.addAll(contextManager.getGroupsOfBGContext(bgContext));
-			}
-	
-			for (BusinessGroup group:groups) {
-					boolean isLearn = group.getType().equals(BusinessGroup.TYPE_LEARNINGROUP);
-					if (isLearn && !syncLearn) {
-						String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
-						if (deleteRosterGroup(groupID)) {
-							logInfo("deleted unwanted group: "+group.getResourceableTypeName()+" "+groupID, null);
-						}
-					} else if (!synchonizeBuddyRoster(group, checkedIdentities)) {
-						logError("couldn't sync group: "+group.getResourceableTypeName(), null);
-					}
-					counter++;
-					if (counter%6==0) {
-						DBFactory.getInstance(false).intermediateCommit();
-					}
-					
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-			}
-				
-			if (counter%6==0) {
-				DBFactory.getInstance(false).intermediateCommit();
-			}
+			allContexts.addAll(contextManager.findBGContextsForResource(courseResource, BusinessGroup.TYPE_LEARNINGROUP, true, true));
 		}
+		DBFactory.getInstance().intermediateCommit();
+
+		int counter = 0;
+		int GROUP_BATCH_SIZE = 50;
+		List<BusinessGroup> groups;
+		do {
+			groups = contextManager.getGroupsOfBGContext(allContexts, counter, GROUP_BATCH_SIZE);
+			for (BusinessGroup group:groups) {
+				if (!syncLearn) {
+					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
+					if (deleteRosterGroup(groupID)) {
+						logInfo("deleted unwanted group: "+group.getResourceableTypeName()+" "+groupID, null);
+					}
+				} else if (!synchonizeBuddyRoster(group, checkedIdentities)) {
+					logError("couldn't sync group: "+group.getResourceableTypeName(), null);
+				}
+				if (counter++ % 6 == 0) {
+					DBFactory.getInstance(false).intermediateCommit();
+				}
+
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					logError("", e);
+				}
+			}
+		} while(groups.size() == GROUP_BATCH_SIZE);
+
 		logInfo("Ended synchronisation of LearningGroups with IM server: Synched "+counter+" groups in " + (System.currentTimeMillis() - start) + " (ms)");
 		return true;
 	}

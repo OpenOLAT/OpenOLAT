@@ -102,6 +102,15 @@ public interface BGContextManager {
 	 * @return A list containing business group contexts
 	 */
 	public abstract List<BusinessGroup> getGroupsOfBGContext(BGContext bgContext);
+	
+	/**
+	 * Find all groups from a list of group contexts
+	 * 
+	 * @param bgContext the business group context or null to find groups that are
+	 *          not within a business group context (e.b. buddygroups)
+	 * @return A list containing business group contexts
+	 */
+	public abstract List<BusinessGroup> getGroupsOfBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults);
 
 	/**
 	 * Count the number of groups within a business group context
@@ -243,7 +252,7 @@ public interface BGContextManager {
 	 * @param nonDefaultContexts true: find non-default contexts
 	 * @return A list of business group contexts
 	 */
-	public abstract List findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts,
+	public abstract List<BGContext> findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts,
 			boolean nonDefaultContexts);
 
 	/**
