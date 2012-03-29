@@ -12,17 +12,24 @@
 	
 <script type="text/javascript">
 /* <![CDATA[ */
-	if(o_info.objectMap.containsKey('o_streePanel$treeId')) {
-		var tree = o_info.objectMap.get('o_streePanel$treeId');
-		tree.on('beforeclick', function() {
-			if(o_info.linkbusy) return;
-			if(o2c == 0 || confirm(o_info.dirty_form)) {
-				return;
-			} else {
-				return false;
-			}
-		});
-	};
+ 
+             
+	/**
+	*
+	*/
+	function CPEditorBeforeTreeNodeClick(event) {
+
+		if(o_info.linkbusy) {
+			return false;
+		}
+		var dorequest = (o2c == 0 || confirm(o_info.dirty_form));
+		if (dorequest){
+			return true;
+		}
+
+		return false;
+	} 
+	
 /* ]]> */
 </script>
 </div>

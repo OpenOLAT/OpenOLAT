@@ -378,6 +378,19 @@ public class TreeController extends BasicController {
 		if (beforeCompleteCallback != null)
 			mainVC.contextPut("beforeCompleteCallback", beforeCompleteCallback);
 	}
+	
+	/**
+	 * 
+	 * 
+	 * @param beforeNodeClickCallback
+	 *            Javascript method used as callback before a node is clicked .
+	 *            Define the method right here in the string with
+	 *            function(event){}. return false in your callback method to
+	 *            cancel the "click" and not trigger the click event on the node
+	 */
+	public void setBeforeNodeClickCallback(String beforeNodeClickCallback) {
+		mainVC.contextPut("beforeNodeClickCallback", beforeNodeClickCallback);
+	}
 
 	/**
 	 * Select a certain node in the tree by the node path. When the tree is
