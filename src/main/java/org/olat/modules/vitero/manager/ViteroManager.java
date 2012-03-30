@@ -497,9 +497,8 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	protected boolean storePortrait(Identity identity, int userId)
 	throws VmsNotAvailableException {
 		try {
-			File portraitDir = DisplayPortraitManager.getInstance().getPortraitDir(identity);
-			File portrait = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			if(portrait.exists()) {
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+			if(portrait != null && portrait.exists()) {
 				MtomServiceStub mtomWs = getMtomWebService();
 				
 				MtomServiceStub.StoreAvatarRequest request = new MtomServiceStub.StoreAvatarRequest();

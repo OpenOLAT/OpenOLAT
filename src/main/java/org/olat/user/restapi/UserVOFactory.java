@@ -103,9 +103,8 @@ public class UserVOFactory {
 		userVO.setEmail(user.getProperty(UserConstants.EMAIL, null));
 		
 		if(withPortrait) {
-			File portraitDir = DisplayPortraitManager.getInstance().getPortraitDir(identity);
-			File portrait = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
-			if(portrait.exists()) {
+			File portrait = DisplayPortraitManager.getInstance().getSmallPortrait(identity);
+			if(portrait != null && portrait.exists()) {
 				try {
 					InputStream input = new FileInputStream(portrait);
 					byte[] datas = IOUtils.toByteArray(input);

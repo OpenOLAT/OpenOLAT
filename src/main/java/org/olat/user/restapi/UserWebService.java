@@ -65,7 +65,6 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -76,10 +75,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.image.Size;
 import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.DisplayPortraitManager;
@@ -325,9 +322,8 @@ public class UserWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			
-			File portraitDir = DisplayPortraitManager.getInstance().getPortraitDir(identity);
-			File portrait = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			if(!portrait.exists()) {
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+			if(portrait == null || !portrait.exists()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
@@ -372,16 +368,7 @@ public class UserWebService {
 			
 			File tmpFile = getTmpFile(filename);
 			FileUtils.save(file, tmpFile);
-
-			DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
-			File uploadDir = dps.getPortraitDir(identity);
-			File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
-			ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
-			Size size = imageHelper.scaleImage(tmpFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
-			if(size != null){
-				size = imageHelper.scaleImage(tmpFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
-			}
+			DisplayPortraitManager.getInstance().setPortrait(tmpFile, identity);
 			tmpFile.delete();
 			return Response.ok().build();
 		} catch (Throwable e) {
@@ -405,20 +392,11 @@ public class UserWebService {
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
-			}else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
+			} else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		
-			DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
-			File uploadDir = dps.getPortraitDir(identity);
-			File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			if(pBigFile.exists()) {
-				pBigFile.delete();
-			}
-			File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
-			if(pSmallFile.exists()) {
-				pSmallFile.delete();
-			}
+			DisplayPortraitManager.getInstance().deletePortrait(identity);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

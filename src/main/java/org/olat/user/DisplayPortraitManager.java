@@ -28,13 +28,16 @@ package org.olat.user;
 import java.io.File;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.ImageHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.image.Size;
 
 /**
  * Description: <br>
@@ -48,8 +51,8 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 
 	private static DisplayPortraitManager singleton;
 	
-	public static final String PORTRAIT_BIG_FILENAME = "portrait_big.jpg";
-	public static final String PORTRAIT_SMALL_FILENAME = "portrait_small.jpg";
+	private static final String PORTRAIT_BIG_FILENAME = "portrait_big";
+	private static final String PORTRAIT_SMALL_FILENAME = "portrait_small";
 	// The following class names refer to CSS class names in olat.css 
 	public static final String DUMMY_BIG_CSS_CLASS = "o_portrait_dummy";
 	public static final String DUMMY_SMALL_CSS_CLASS = "o_portrait_dummy_small";
@@ -78,19 +81,66 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	public static DisplayPortraitManager getInstance() {
 		return singleton;
 	}
+
+	public MediaResource getSmallPortraitResource(Identity identity) {
+		return getPortraitResource(identity, PORTRAIT_SMALL_FILENAME);
+	}
+	
+	public MediaResource getBigPortraitResource(Identity identity) {
+		return getPortraitResource(identity, PORTRAIT_BIG_FILENAME);
+	}
 	
 	/**
 	 * 
 	 * @param identity
 	 * @return imageResource portrait
 	 */
-	public MediaResource getPortrait(Identity identity, String portraitName){
+	private MediaResource getPortraitResource(Identity identity, String portraitName) {
 		MediaResource imageResource = null;
-		File imgFile = new File(getPortraitDir(identity), portraitName);
-		if (imgFile.exists()){
+		File imgFile = getPortraitFile(identity, portraitName);
+		if (imgFile != null && imgFile.exists()){
 			imageResource = new FileMediaResource(imgFile);	
 		}
 		return imageResource;
+	}
+	
+	public File getSmallPortrait(Identity identity) {
+		return getPortraitFile(identity, PORTRAIT_SMALL_FILENAME);
+	}
+	
+	public File getBigPortrait(Identity identity) {
+		return getPortraitFile(identity, PORTRAIT_BIG_FILENAME);
+	}
+
+	private File getPortraitFile(Identity identity, String prefix) {
+		File portraitDir = getPortraitDir(identity);
+		if(portraitDir != null) {
+			for(File file:portraitDir.listFiles()) {
+				if(file.getName().startsWith(prefix)) {
+					return file;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public void setPortrait(File file, Identity identity) {
+		String extension = FileUtils.getFileSuffix(file.getName());
+		if(!StringHelper.containsNonWhitespace(extension)) {
+			extension = "png";
+		}
+		File portraitDir = getPortraitDir(identity);
+		File pBigFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME + "." + extension);
+		File pSmallFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME + "." + extension);
+		ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+		Size size = imageHelper.scaleImage(file, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
+		if(size != null){
+			size = imageHelper.scaleImage(file, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
+		}
+	}
+	
+	public void deletePortrait(Identity identity) {
+		FileUtils.deleteDirsAndFiles(getPortraitDir(identity), true, true);
 	}
 	
 	/**
@@ -125,8 +175,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		FileUtils.deleteDirsAndFiles(getPortraitDir(identity), true, true);
-		Tracing.logDebug("Homepage-config file deleted for identity=" + identity, this.getClass());
+		deletePortrait(identity);
+		logDebug("Homepage-config file deleted for identity=" + identity);
 	}
-
 }

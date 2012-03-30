@@ -114,7 +114,7 @@ public class DisplayPortraitController extends BasicController {
 			}
 			
 			if (useLarge){
-				portrait = DisplayPortraitManager.getInstance().getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
+				portrait = DisplayPortraitManager.getInstance().getBigPortraitResource(portraitIdent);
 				if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
 				} else if (gender.equals("male")) {
@@ -123,7 +123,7 @@ public class DisplayPortraitController extends BasicController {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS);
 				}
 			} else {
-				portrait = DisplayPortraitManager.getInstance().getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+				portrait = DisplayPortraitManager.getInstance().getSmallPortraitResource(portraitIdent);
 				if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
 				} else if (gender.equals("male")) {

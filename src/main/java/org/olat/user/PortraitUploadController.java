@@ -28,7 +28,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
@@ -43,8 +42,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -75,6 +72,7 @@ public class PortraitUploadController extends BasicController {
 	private File newFile = null;
 	private int limitKB; // max UL limit
 	
+	private final DisplayPortraitManager dps;
 		
 	/**
 	 * Display upload form to upload a file to the given currentPath.
@@ -85,7 +83,7 @@ public class PortraitUploadController extends BasicController {
 	 */
 	public PortraitUploadController(UserRequest ureq, WindowControl wControl, Identity portraitIdent, long limitKB) {
 		super(ureq, wControl);
-		DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
+		dps = DisplayPortraitManager.getInstance();
 		this.portraitIdent = portraitIdent;
 		this.uploadDir = dps.getPortraitDir(portraitIdent);
 		this.limitKB = (int) limitKB;
@@ -93,7 +91,7 @@ public class PortraitUploadController extends BasicController {
 		folderContainer = createVelocityContainer("portraitupload");
 		deleteButton = LinkFactory.createButtonSmall("command.delete", this.folderContainer, this);
 		
-		MediaResource mr = dps.getPortrait(portraitIdent, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+		MediaResource mr = dps.getSmallPortraitResource(portraitIdent);
 		if (mr != null) folderContainer.contextPut("hasPortrait", Boolean.TRUE);
 		else folderContainer.contextPut("hasPortrait", Boolean.FALSE);
 		
@@ -140,14 +138,7 @@ public class PortraitUploadController extends BasicController {
 				if (!newFile.exists()) {
 					showError("Failed");
 				} else {
-					// Scale uploaded image
-					ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
-					File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-					File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);				
-					Size size = imageHelper.scaleImage(newFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
-					if(size != null){
-						imageHelper.scaleImage(newFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
-					}
+					dps.setPortrait(newFile, portraitIdent);
 					// Cleanup original file
 					newFile.delete();
 					// And finish workflow
