@@ -125,11 +125,21 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	}
 	
 	public void setPortrait(File file, Identity identity) {
+		//first remove old ones
+		File portraitDir = getPortraitDir(identity);
+		if(portraitDir != null) {
+			for(File currentPortrait:portraitDir.listFiles()) {
+				if(currentPortrait.equals(file)) {
+					continue;
+				}
+				currentPortrait.delete();
+			}
+		}
+		
 		String extension = FileUtils.getFileSuffix(file.getName());
 		if(!StringHelper.containsNonWhitespace(extension)) {
 			extension = "png";
 		}
-		File portraitDir = getPortraitDir(identity);
 		File pBigFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME + "." + extension);
 		File pSmallFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME + "." + extension);
 		ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
