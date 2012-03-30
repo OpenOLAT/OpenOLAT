@@ -159,6 +159,29 @@
     	</property>
     </bean>
 
+
+	<!-- LDAP admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.ldapcfg" init-method="initExtensionPoints">
+		<property name="order" value="7214" />
+		<property name="enabled" value="${ldap.enable}" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.ldap.ui.LDAPAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="ldapadmin" />
+		<property name="i18nActionKey" value="admin.menu.ldap"/>
+		<property name="i18nDescriptionKey" value="admin.menu.ldap.desc"/>
+		<property name="translationPackage" value="org.olat.ldap.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+	</bean> 
+	
+	
 	<!-- The LDAP manager. If you provide your own, you must implement the org.olat.ldap.LDAPLoginManager interface -->
 	<bean id="org.olat.ldap.LDAPLoginManager" class="org.olat.ldap.LDAPLoginManagerImpl">
 			<constructor-arg index="0" ref="coordinatorManager"/>

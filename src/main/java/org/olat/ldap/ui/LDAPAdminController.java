@@ -80,7 +80,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private Link syncOneUserLink;
 	private Link removeFallBackAuthsLink;
 
-	protected LDAPAdminController(UserRequest ureq, WindowControl control) {
+	public LDAPAdminController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		
 		ldapLoginManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);

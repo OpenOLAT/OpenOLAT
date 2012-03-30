@@ -909,11 +909,7 @@
 			</property>
 			<property name="order" value="35" />
 		</bean>
-		
-		<bean class="org.olat.ldap.ui.LDAPAdminExtension">
-			<property name="order" value="36" />
-		</bean>
-
+		 
 		<!-- portfolioContext.xml : property name="order" value="37" -->
 				
 	<!-- template for extension of type GenericActionExtension
