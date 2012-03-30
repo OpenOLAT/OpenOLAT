@@ -53,7 +53,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.IImageHelper;
+import org.olat.core.util.ImageHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -286,7 +286,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		if (height > maxHeight || width > maxWidth){
 			// scale image
 			try {
-				IImageHelper helper = CourseLayoutHelper.getImageHelperToUse();
+				ImageHelper helper = CourseLayoutHelper.getImageHelperToUse();
 				String extension = FileUtils.getFileSuffix(logoUpl.getUploadFileName());
 				helper.scaleImage(image, extension, targetFile, maxWidth, maxHeight);
 			} catch (Exception e) {

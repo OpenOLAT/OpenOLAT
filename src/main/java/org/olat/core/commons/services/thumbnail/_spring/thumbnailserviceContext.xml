@@ -5,8 +5,12 @@
 	<bean id="thumbnailService" class="org.olat.core.commons.services.thumbnail.impl.ThumbnailServiceImpl">	
 		<property name="thumbnailSPIes">
 			<list>
-				<bean class="org.olat.core.commons.services.thumbnail.impl.ImageToThumbnail"/>
-				<bean class="org.olat.core.commons.services.thumbnail.impl.PDFToThumbnail"/>
+				<bean class="org.olat.core.commons.services.thumbnail.impl.ImageToThumbnail">
+					<property name="imageHelper" ref="imageHelper"/>
+				</bean>
+				<bean class="org.olat.core.commons.services.thumbnail.impl.PDFToThumbnail">
+					<property name="imageHelper" ref="imageHelper"/>
+				</bean>
 			</list>
 		</property>
 	</bean>

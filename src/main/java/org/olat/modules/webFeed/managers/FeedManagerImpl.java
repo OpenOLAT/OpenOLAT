@@ -104,6 +104,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 	private Coordinator coordinator;
 	private OLATResourceManager resourceManager;
 	private FileResourceManager fileResourceManager;
+	private ImageHelper imageHelper;
 	
 	private final XStream xstream;
 	
@@ -128,6 +129,14 @@ public abstract class FeedManagerImpl extends FeedManager {
 		this.coordinator = coordinatorManager.getCoordinator();
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param imageHelper
+	 */
+	public void setImageHelper(ImageHelper imageHelper) {
+		this.imageHelper = imageHelper;
+	}
+
 	/**
 	 * 
 	 * @param repositoryManager
@@ -1250,7 +1259,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 			VFSLeaf imageLeaf = image.moveUploadFileTo(getFeedMediaContainer(feed));
 			// Resize to same dimension box as with repo meta image
 			VFSLeaf tmp = getFeedMediaContainer(feed).createChildLeaf("" + CodeHelper.getRAMUniqueID());
-			ImageHelper.scaleImage(imageLeaf, tmp, PICTUREWIDTH,PICTUREWIDTH);
+			imageHelper.scaleImage(imageLeaf, tmp, PICTUREWIDTH,PICTUREWIDTH);
 			imageLeaf.delete();
 			imageLeaf = tmp;
 			// Make file system save

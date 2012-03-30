@@ -65,6 +65,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -78,6 +79,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.image.Size;
 import org.olat.restapi.group.MyGroupWebService;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.DisplayPortraitManager;
@@ -374,10 +376,11 @@ public class UserWebService {
 			DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
 			File uploadDir = dps.getPortraitDir(identity);
 			File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);				
-			boolean ok = ImageHelper.scaleImage(tmpFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
-			if(ok){
-				ok = ImageHelper.scaleImage(tmpFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
+			File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+			ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+			Size size = imageHelper.scaleImage(tmpFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
+			if(size != null){
+				size = imageHelper.scaleImage(tmpFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
 			}
 			tmpFile.delete();
 			return Response.ok().build();

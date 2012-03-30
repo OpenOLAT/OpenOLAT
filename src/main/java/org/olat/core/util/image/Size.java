@@ -17,25 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util;
+package org.olat.core.util.image;
 
-import java.io.File;
+public class Size {
+	private final int width;
+	private final int height;
+	private final boolean changed;
+	
+	public Size(int width, int height, boolean changed) {
+		this.width = width;
+		this.height = height;
+		this.changed = changed;
+	}
 
-import org.olat.core.util.ImageHelper.Size;
-import org.olat.core.util.vfs.VFSLeaf;
+	public int getWidth() {
+		if(width <= 0) {
+			return 1;
+		}
+		return width;
+	}
 
-/**
- * Description:<br>
- * yet a dummy interface for ImageHelper to allow later replacement (i.e.
- * ImageMagick) by config
- * 
- * <P>
- * Initial Date: 04.02.2011 <br>
- * 
- * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
- */
-public interface IImageHelper {
-
-	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight);
-
+	public int getHeight() {
+		if(height <= 0) {
+			return 1;
+		}
+		return height;
+	}
+	
+	public boolean isChanged() {
+		return changed;
+	}
 }

@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
@@ -43,6 +44,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
+import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -139,11 +141,12 @@ public class PortraitUploadController extends BasicController {
 					showError("Failed");
 				} else {
 					// Scale uploaded image
+					ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
 					File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
 					File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);				
-					boolean ok = ImageHelper.scaleImage(newFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
-					if(ok){
-						ok = ImageHelper.scaleImage(newFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
+					Size size = imageHelper.scaleImage(newFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
+					if(size != null){
+						imageHelper.scaleImage(newFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
 					}
 					// Cleanup original file
 					newFile.delete();

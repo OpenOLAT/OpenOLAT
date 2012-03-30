@@ -17,28 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util;
+package org.olat.core.util.image;
 
 import java.io.File;
 
-import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
- * Description:<br>
- * yet a dummy interface for ImageHelper to allow later replacement (i.e.
- * ImageMagick) by config
+ * The interface needed to implement a image helper service.
  * 
- * <P>
- * Initial Date: 04.02.2011 <br>
  * 
- * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface ImageHelper {
+public interface ImageHelperSPI {
 	
+	/**
+	 * Make a thumbnail from the first page of the PDF
+	 * @param pdfFile
+	 * @param thumbnailFile
+	 * @param maxWidth
+	 * @param maxHeight
+	 * @return
+	 */
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight);
 
-	
+
 	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight);
 	
 	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight);
@@ -46,4 +49,5 @@ public interface ImageHelper {
 	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight);
 
 	public Size scaleImage(File image, String imgExt, VFSLeaf scaledImage, int maxWidth, int maxHeight);
+	
 }

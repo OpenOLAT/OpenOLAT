@@ -15,6 +15,7 @@
 	<!-- repositoryManager is set by setter as we mock it for testing. 
 	-> To mock managers it is often more practical to have setters than constr. args! -->
 	<property name="repositoryManager" ref="repositoryManager" />
+	<property name="imageHelper" ref="imageHelper" />
 	
 	<lookup-method name="getCommentAndRatingService" bean="commentAndRatingService" />
 </bean>
