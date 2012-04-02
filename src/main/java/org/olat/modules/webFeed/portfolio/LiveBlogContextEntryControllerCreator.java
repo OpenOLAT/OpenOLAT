@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
@@ -53,7 +53,7 @@ public class LiveBlogContextEntryControllerCreator  {
 
 	public LiveBlogContextEntryControllerCreator(final FeedManager feedManager) {
 		
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("LiveBlog", new ContextEntryControllerCreator(){
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("LiveBlog", new DefaultContextEntryControllerCreator(){
 			
 			@Override
 			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
@@ -67,14 +67,14 @@ public class LiveBlogContextEntryControllerCreator  {
 			}
 
 			@Override
-			public String getTabName(ContextEntry ce) {
+			public String getTabName(ContextEntry ce, UserRequest ureq) {
 				OLATResourceable ores = ce.getOLATResourceable();
 				Feed feed = feedManager.getFeed(ores);
 				return feed.getTitle();
 			}
 
 			@Override
-			public String getSiteClassName(ContextEntry ce) {
+			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 				return null;
 			}
 

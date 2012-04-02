@@ -202,7 +202,7 @@ public class VFSManager extends BasicManager {
 	public static VFSContainer findInheritingSecurityCallbackContainer(VFSItem vfsItem) {
 		if (vfsItem == null) return null;
 		// first resolve delegates of any NamedContainers to get the actual container (might be a MergeSource)
-		if (vfsItem instanceof NamedContainerImpl) return findInheritingSecurityCallbackContainer(((NamedContainerImpl)vfsItem).delegate);
+		if (vfsItem instanceof NamedContainerImpl) return findInheritingSecurityCallbackContainer(((NamedContainerImpl)vfsItem).getDelegate());
 		// special treatment for MergeSource
 		if (vfsItem instanceof MergeSource) {
 			MergeSource mergeSource = (MergeSource)vfsItem;
@@ -234,7 +234,7 @@ public class VFSManager extends BasicManager {
 		if (callback != null && callback.getQuota() != null) return callback.getQuota();
 		
 		// extract delegate if this is a NamedContainer instance...
-		if (container instanceof NamedContainerImpl) container = ((NamedContainerImpl)container).delegate;
+		if (container instanceof NamedContainerImpl) container = ((NamedContainerImpl)container).getDelegate();
 		
 		// check if this is a MergeSource with a root write container
 		if (container instanceof MergeSource) {
@@ -302,7 +302,7 @@ public class VFSManager extends BasicManager {
 		String realPath = null;
 		LocalFolderImpl localFolder = null;
 		if (container instanceof NamedContainerImpl)  {
-			container = ((NamedContainerImpl)container).delegate;
+			container = ((NamedContainerImpl)container).getDelegate();
 		}
 		if (container instanceof MergeSource) {
 			container = ((MergeSource)container).getRootWriteContainer();
@@ -584,7 +584,7 @@ public class VFSManager extends BasicManager {
 	 */
 	public static boolean exists(VFSItem item) {
 		if (item instanceof NamedContainerImpl)  {
-			item = ((NamedContainerImpl)item).delegate;
+			item = ((NamedContainerImpl)item).getDelegate();
 		}
 		if (item instanceof MergeSource) {
 			MergeSource source = (MergeSource)item;

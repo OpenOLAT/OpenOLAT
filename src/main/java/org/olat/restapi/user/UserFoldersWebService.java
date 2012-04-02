@@ -21,14 +21,15 @@ package org.olat.restapi.user;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -45,13 +46,11 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -60,7 +59,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
-import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -69,13 +67,8 @@ import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.bc.FolderNodeCallback;
-import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.nodes.bc.BCWebService;
+import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -101,8 +94,8 @@ import org.olat.restapi.support.vo.FolderVOes;
 @Path("users/{identityKey}/folders")
 public class UserFoldersWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
-	
+	private OLog log = Tracing.createLoggerFor(UserFoldersWebService.class);
+
 	@Path("personal")
 	public VFSWebservice getFolder(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity identity = getIdentity(request);
@@ -162,40 +155,7 @@ public class UserFoldersWebService {
 	@Path("course/{courseKey}/{courseNodeId}")
 	public VFSWebservice getCourseFolder(@PathParam("courseKey") Long courseKey, @PathParam("courseNodeId") String courseNodeId,
 			@Context HttpServletRequest request) {
-
-		if(courseNodeId == null) {
-			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-		} else if (courseKey != null) {
-			ICourse course = loadCourse(courseKey);
-			if(course == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			}
-			CourseNode node =course.getEditorTreeModel().getCourseNode(courseNodeId);
-			if(node == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			} else if(!(node instanceof BCCourseNode)) {
-				throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
-			}
-			
-			BCCourseNode bcNode = (BCCourseNode)node;
-			UserRequest ureq = getUserRequest(request);
-			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-			boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-			
-			UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-			NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-			if(mayAccessWholeTreeUp) {
-				OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
-				VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, isOlatAdmin, isGuestOnly, null);
-				container.setLocalSecurityCallback(secCallback);
-				return new VFSWebservice(container);
-			} else {
-				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-			}
-		}
-		return null;
+		return new BCWebService().getVFSWebService(courseKey, courseNodeId, request);
 	}
 	
 	/**
@@ -214,7 +174,7 @@ public class UserFoldersWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getForums(@PathParam("identityKey") Long identityKey,
+	public Response getFolders(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		
 		Roles roles;
@@ -232,8 +192,8 @@ public class UserFoldersWebService {
 			roles = getRoles(httpRequest);
 		}
 
-		Map<Long,Long> groupNotified = new HashMap<Long,Long>();
-		Map<Long,Long> courseNotified = new HashMap<Long,Long>();
+		final Map<Long,Long> groupNotified = new HashMap<Long,Long>();
+		final Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("FolderModule");
@@ -245,12 +205,15 @@ public class UserFoldersWebService {
 					groupNotified.put(groupKey, sub.getPublisher().getResId());
 				} else if("CourseModule".equals(resName)) {
 					Long courseKey = sub.getPublisher().getResId();
-					courseNotified.put(courseKey, sub.getPublisher().getResId());
+					if(!courseNotified.containsKey(courseKey)) {
+						courseNotified.put(courseKey,new HashSet<String>());
+					}
+					courseNotified.get(courseKey).add(sub.getPublisher().getSubidentifier());
 				}
 			}
 		}
 
-		List<FolderVO> folderVOs = new ArrayList<FolderVO>();
+		final List<FolderVO> folderVOs = new ArrayList<FolderVO>();
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		ACFrontendManager acManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
@@ -260,48 +223,22 @@ public class UserFoldersWebService {
 		for(RepositoryEntry entry:entries) {
 			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
 			if(result.isAccessible()) {
-				ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-				CourseNode rootNode = course.getRunStructure().getRootNode();
-				
-				//collect the forums
-				final List<BCCourseNode> bcNodes = new ArrayList<BCCourseNode>();
-				TreeVisitor treeVisitor = new TreeVisitor(new Visitor() {
-					@Override
-					public void visit(INode node) {
-						if(node instanceof BCCourseNode) {
-							bcNodes.add((BCCourseNode)node);
-						}
-					}
-				}, rootNode, false);
-				treeVisitor.visitAll();
-				
-				//check the access
-				if(!bcNodes.isEmpty()) {
-					IdentityEnvironment ienv = new IdentityEnvironment();
-					ienv.setIdentity(retrievedUser);
-					ienv.setRoles(roles);
-					UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-
-					TreeEvaluation treeEval = new TreeEvaluation();
-					rootNode.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+				try {
+					final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+					final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
 					
-					for(BCCourseNode bcNode:bcNodes) {
-						TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(bcNode);
-						if (newCalledTreeNode != null) {
-							NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-							boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
-							if(mayAccessWholeTreeUp) {
-
-								FolderVO folderVo = new FolderVO();
-								folderVo.setName(course.getCourseTitle());
-								folderVo.setDetailsName(bcNode.getShortTitle());
-								folderVo.setSubscribed(courseNotified.containsKey(bcNode.getIdent()));
-								folderVo.setCourseKey(course.getResourceableId());
-								folderVo.setCourseNodeId(bcNode.getIdent());
-								folderVOs.add(folderVo);
+					new CourseTreeVisitor(course,  ienv).visit(new Visitor() {
+						@Override
+						public void visit(INode node) {
+							if(node instanceof BCCourseNode) {
+								BCCourseNode bcNode = (BCCourseNode)node;
+								FolderVO folder = BCWebService.createFolderVO(ienv, course, bcNode, courseNotified.get(course.getResourceableId()));
+								folderVOs.add(folder);
 							}
 						}
-					}
+					});
+				} catch (Exception e) {
+					log.error("", e);
 				}
 			}
 		}
@@ -313,10 +250,18 @@ public class UserFoldersWebService {
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
 		for(BusinessGroup group:groups) {
+			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+			VFSContainer container = tools.getSecuredFolder(group, null, retrievedUser, false);
+
 			FolderVO folderVo = new FolderVO();
 			folderVo.setName(group.getName());
 			folderVo.setGroupKey(group.getKey());
 			folderVo.setSubscribed(groupNotified.containsKey(group.getKey()));
+			folderVo.setRead(container.getLocalSecurityCallback().canRead());
+			folderVo.setList(container.getLocalSecurityCallback().canList());
+			folderVo.setWrite(container.getLocalSecurityCallback().canWrite());
+			folderVo.setDelete(container.getLocalSecurityCallback().canDelete());
+
 			folderVOs.add(folderVo);
 		}
 
@@ -324,15 +269,5 @@ public class UserFoldersWebService {
 		voes.setFolders(folderVOs.toArray(new FolderVO[folderVOs.size()]));
 		voes.setTotalCount(folderVOs.size());
 		return Response.ok(voes).build();
-	}
-	
-	private ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
 	}
 }

@@ -34,6 +34,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -601,11 +602,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		// wrap as transatcion: do everything or nothing
 
 		// 1. do copy learning group contexts
+		int count = 0;
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		List origLgC = originalCourseGroupManager.getLearningGroupContexts();
-		Iterator iter = origLgC.iterator();
-		while (iter.hasNext()) {
-			BGContext origContext = (BGContext) iter.next();
+		List<BGContext> origLgC = originalCourseGroupManager.getLearningGroupContexts();
+		for (BGContext origContext:origLgC) {
 			if (origContext.isDefaultContext()) {
 				// we found default context, copy this one
 				String learningGroupContextName = CourseGroupManager.DEFAULT_NAME_LC_PREFIX + courseTitle;
@@ -617,12 +617,14 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 				contextManager.addBGContextToResource(origContext, courseResource);
 				// no need to add it to list of contexts, already done by addBGContextToResource				
 			}
+			if(count++ % 2 == 0) {
+				DBFactory.getInstance().intermediateCommit();
+			}
 		}
+		
 		// 2. do copy right group contexts
-		List origRgC = originalCourseGroupManager.getRightGroupContexts();
-		iter = origRgC.iterator();
-		while (iter.hasNext()) {
-			BGContext origContext = (BGContext) iter.next();
+		List<BGContext> origRgC = originalCourseGroupManager.getRightGroupContexts();
+		for (BGContext origContext:origRgC) {
 			if (origContext.isDefaultContext()) {
 				// we found default context, copy this one
 				String rightGroupContextName = CourseGroupManager.DEFAULT_NAME_RC_PREFIX + courseTitle;
@@ -633,6 +635,9 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 				// reference
 				contextManager.addBGContextToResource(origContext, courseResource);
 				// no need to add it to list of contexts, already done by addBGContextToResource
+			}
+			if(count++ % 2 == 0) {
+				DBFactory.getInstance().intermediateCommit();
 			}
 		}
 	}

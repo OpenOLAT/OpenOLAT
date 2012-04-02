@@ -19,8 +19,9 @@
  */
 package org.olat.course.nodes.en;
 
-import static org.olat.restapi.security.RestSecurityHelper.*;
-import static org.olat.restapi.support.ObjectFactory.*;
+import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
+import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
+import static org.olat.restapi.support.ObjectFactory.get;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
+import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.support.vo.GroupVO;
 
 /**
@@ -161,7 +163,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 		if(!isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, httpRequest)) {

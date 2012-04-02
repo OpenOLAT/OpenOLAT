@@ -4,9 +4,11 @@
 		$r.render("topnav.impressum")
 	</li>
 #end
+#if($r.available("topnav.help"))
 	<li id="o_topnav_help">
 		$r.render("topnav.help")
 	</li>
+#end
 	<li id="o_topnav_login">
 		$r.render("topnav.login")
 	</li>

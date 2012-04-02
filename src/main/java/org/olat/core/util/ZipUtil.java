@@ -41,9 +41,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
-import net.sf.jazzlib.ZipEntry;
-import net.sf.jazzlib.ZipInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
@@ -340,6 +340,7 @@ public class ZipUtil {
 	/**
 	 * Add the set of files residing in root to the ZIP file named target.
 	 * Files in subfolders will be compressed too.
+	 * if target already exists, this will abort and return false.
 	 * 
 	 * @param files		Filenames to add to ZIP, relative to root
 	 * @param root		Base path.
@@ -393,7 +394,7 @@ public class ZipUtil {
 		
 		long s = System.currentTimeMillis();
 		
-		java.util.zip.ZipOutputStream zipOut = new java.util.zip.ZipOutputStream(new java.io.BufferedOutputStream(out, FileUtils.BSIZE));
+		ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE));
 		
 		if (vfsFiles.size() == 0) {
 			try {
@@ -420,7 +421,7 @@ public class ZipUtil {
 		return success;
 	}
 	
-	private static boolean addToZip(VFSItem vfsItem, String currentPath, java.util.zip.ZipOutputStream out) {
+	private static boolean addToZip(VFSItem vfsItem, String currentPath, ZipOutputStream out) {
 
 		boolean success = true;
 		InputStream in = null;
@@ -428,12 +429,13 @@ public class ZipUtil {
 		byte[] buffer = new byte[FileUtils.BSIZE];
 
 		try {
+			// The separator / is the separator defined by the ZIP standard
 			String itemName = currentPath.length() == 0 ?
-					vfsItem.getName() : currentPath + File.separator + vfsItem.getName();
+					vfsItem.getName() : currentPath + "/" + vfsItem.getName();
 					
 			if (vfsItem instanceof VFSContainer) {
 				
-				out.putNextEntry(new java.util.zip.ZipEntry(itemName+File.separator));
+				out.putNextEntry(new ZipEntry(itemName + "/"));
 				out.closeEntry();
 				
 				List<VFSItem> items = ((VFSContainer)vfsItem).getItems();
@@ -446,7 +448,7 @@ public class ZipUtil {
 				
 			} else {
 				
-				out.putNextEntry(new java.util.zip.ZipEntry(itemName));
+				out.putNextEntry(new ZipEntry(itemName));
 				in = ((VFSLeaf)vfsItem).getInputStream();
 				
 				int c;
@@ -530,16 +532,14 @@ public class ZipUtil {
 
 		byte[] buffer = new byte[FileUtils.BSIZE];
 
-		java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream (
-				new BufferedInputStream(is)
-		);
+		ZipInputStream zis = new ZipInputStream (new BufferedInputStream(is));
 
-		java.util.zip.ZipEntry entry;
+		ZipEntry entry;
 		
 		try {
 			while ((entry = zis.getNextEntry()) != null) {
 
-				File of = new File(outdir +File.separator +entry.getName());
+				File of = new File(outdir, entry.getName());
 
 				if (entry.isDirectory()) {
 					of.mkdirs();

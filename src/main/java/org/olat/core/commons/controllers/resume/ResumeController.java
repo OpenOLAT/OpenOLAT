@@ -27,6 +27,7 @@ import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -60,6 +61,9 @@ public class ResumeController extends FormBasicController implements SupportsAft
 	//the cancel button ("Nein")
 	private FormLink bttNo;
 	
+	private String[] askagain_keys = new String[]{"askagain_k"};
+	private MultipleSelectionElement askagainCheckbox;
+	
 	public ResumeController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		initForm(ureq);
@@ -67,6 +71,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		askagainCheckbox = uifactory.addCheckboxesHorizontal("askagain",null, formLayout, askagain_keys,  new String[]{translate("askagain.label")}, null);
+		
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -141,6 +147,13 @@ public class ResumeController extends FormBasicController implements SupportsAft
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		// check if checkbox (dont askagain) is checked
+		if(askagainCheckbox.isSelected(0)){
+			Preferences	prefs = ureq.getUserSession().getGuiPreferences();
+			prefs.put(WindowManager.class, "resume-prefs","auto");
+			prefs.save();
+		}
+				
 		fireEvent (ureq, Event.DONE_EVENT);
 		
 		HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
@@ -158,6 +171,12 @@ public class ResumeController extends FormBasicController implements SupportsAft
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		// check if checkbox (dont askagain) is checked
+		if(askagainCheckbox.isSelected(0)){
+			Preferences	prefs = ureq.getUserSession().getGuiPreferences();
+			prefs.put(WindowManager.class, "resume-prefs","none");
+			prefs.save();
+		}
 		fireEvent (ureq, Event.CANCELLED_EVENT);
 	}
 }

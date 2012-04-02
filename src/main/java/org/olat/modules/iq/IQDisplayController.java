@@ -344,6 +344,11 @@ public class IQDisplayController extends DefaultController implements Activateab
 		return ready;
 	}
 	
+	public boolean isClosed() {
+		if(qticomp == null) return true;
+		AssessmentInstance ai = qticomp.getAssessmentInstance();
+		return ai.isClosed();
+	}	
 
 	private void updateQuestionProgressDisplay (AssessmentInstance ai) {
 		

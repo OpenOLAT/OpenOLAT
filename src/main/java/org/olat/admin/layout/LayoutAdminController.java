@@ -86,6 +86,7 @@ public class LayoutAdminController extends FormBasicController {
 		File themesDir = new File(staticAbsPath);
 		if(!themesDir.exists()){
 			logWarn("Themes dir not found: "+staticAbsPath, null);
+			return new String[0];
 		}
 		File[] themes = themesDir.listFiles(new ThemesFileNameFilter());
 		

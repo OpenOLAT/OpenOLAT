@@ -24,8 +24,17 @@ div.b_selectiontree {
 }
 
 
-
-
+/* --- MODULES: SINGLEPAGE ---- */
+a.b_preview { background-image: url(../openolat/images/docs/document_preview.png); background-repeat: no-repeat; background-position: left; padding: 2px 0 2px 20px;}
+fieldset a.b_preview, div.b_tabbedpane_wrapper a.b_preview { position: absolute;}
+	
+div.b_module_singlepage_wrapper a.b_content_edit {position:absolute; top:0; right:20px; display: inline; background: url(../openolat/images/docs/document--pencil.png) no-repeat top left; width: 16px; height: 16px; margin: 3px; }
+div.b_module_singlepage_wrapper a.b_content_download { position:absolute; top:0; z-index:10; background: url(../openolat/images/docs/document_download.png) no-repeat top left; padding-left: 20px; margin-top:3px; min-height:19px; height:19px; }
+div.b_titled_wrapper div.b_module_singlepage_wrapper a.b_content_download { position:relative; padding-bottom:3px;}
+div.b_titled_wrapper div.b_module_singlepage_wrapper div.b_iframe_wrapper { margin-top:3px; }
+/* CONTENT POPUP */
+#b_content_popup {float: right; background: url(../openolat/images/applications.png) no-repeat top left; width: 16px; height: 16px; margin: 3px;}
+	
 /** ------------------ COURSE EDITOR --------------- **/
 #o_course_editor_errorbox {
 	font-size: 90%;
@@ -109,13 +118,38 @@ body.b_full_screen {
 		margin: 5px; border:1px solid #ddd; padding:0; 
 		@include o-border-radius(5px);
 		@include o-box-shadow(0,1px,2px,lightGrey);
-	 	background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; 
-	 	
+	 	// old legacy olat: background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; 
+	 	@include o-gradient-white();
 	 	div.b_preview_link { border:none; }
 	 	div.b_preview_link div.b_preview_wrapper_loading { background:transparent url(../openolat/images/ajax-loader.gif) no-repeat top left; }
 	}
 }
 div#b_preview_wrapper div#b_preview_wrapper_message { float:right; padding-left:16px; width:100px; }
 
-	
+	/* SCORM */
+div.o_scorm {}
+div.o_scorm a.b_link_close { padding-right:20px; }
+div.o_scorm div.o_scorm_navigation { 
+	float: right; 
+	display: inline; 
+	padding: 3px;
+	// old, legacy, olat: background: #272727 url(../images/brasato/resizer_bg.gif) repeat-x center;
+	@include o-gradient-glassy(#fefefe,#e3e3e3,#cfcfcf,#f3f3f3); 
+	border: 1px solid #504D4E;
+	@include o-border-radius(3px);
+	margin:0.2em;
+}
+div.o_scorm div.o_scorm_navigation a { margin: 0 2px; }
+div.o_scorm div.o_scorm_navigation a.o_scorm_previous_icon{ background-image: url(../openolat/images/arrow_left_big.png); }
+div.o_scorm div.o_scorm_navigation a.o_scorm_next_icon{	background-image: url(../openolat/images/arrow_right_big.png); }
+div.o_scorm div.o_scorm_navigation a.hover { background-color: none;}
+div.o_scorm div.o_scorm_content { }
+div.o_scorm div.o_scorm_content iframe { }
+/* menu icon decorators */
+.o_scorm_completed,.o_scorm_passed { top: 6px; left: 6px; background-image: url("../openolat/images/decorator/deco_ok.png"); }
+.o_scorm_failed { top: 6px; left: 6px ! important; background-image: url("../openolat/images/decorator/deco_error.png"); }
+.o_scorm_incomplete { top: 6px; left: 6px; background-image: url("../openolat/images/decorator/deco_warn.png"); }
+.o_scorm_not_attempted { top: 6px; left: 6px; background-image: none; }
+
+
 	

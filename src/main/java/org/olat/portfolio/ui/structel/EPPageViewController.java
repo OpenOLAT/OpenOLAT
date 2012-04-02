@@ -152,7 +152,7 @@ public class EPPageViewController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
 		if (event instanceof EPStructureChangeEvent){
-			this.page = (EPPage) ePFMgr.loadPortfolioStructureByKey(page.getKey());
+			this.page = (EPPage) ePFMgr.reloadPortfolioStructure(page);
 			init(ureq);
 		}
 	}

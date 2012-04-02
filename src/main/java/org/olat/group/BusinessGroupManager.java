@@ -111,7 +111,7 @@ public interface BusinessGroupManager {
 	 *          applied
 	 * @return list of BuddyGroups, may be an empty list.
 	 */
-	public List findBusinessGroupsAttendedBy(String type, Identity identity, BGContext bgContext);
+	public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identity, BGContext bgContext);
 
 	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext);
 	

@@ -25,6 +25,7 @@
 
 package org.olat.basesecurity;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -97,6 +98,7 @@ public interface BaseSecurity {
 	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup);
 	
 	public List<Identity> getIdentitiesOfSecurityGroup(SecurityGroup secGroup, int firstResult, int maxResults);
+	
 	/**
 	 * Return the primary key of
 	 * @param secGroups
@@ -105,7 +107,7 @@ public interface BaseSecurity {
 	public List<Identity> getIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups);
 
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups);
+	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups, int firstResult, int maxResults);
 
 	/**
 	 * @param secGroup
@@ -146,6 +148,28 @@ public interface BaseSecurity {
 	 * @return the identity or null if not found
 	 */
 	public Identity findIdentityByName(String identityName);
+	
+	/**
+	 * Find identities by names. This is an exact match.
+	 * <p>
+	 * Be aware that this method does <b>not</b> check the identities status!
+	 * This method returns identities with any state, also deleted identities!
+	 * 
+	 * @param identityNames
+	 * @return The identities
+	 */
+	public List<IdentityShort> findShortIdentitiesByName(Collection<String> identityName);
+	
+	/**
+	 * Find identities by keys. This is an exact match.
+	 * <p>
+	 * Be aware that this method does <b>not</b> check the identities status!
+	 * This method returns identities with any state, also deleted identities!
+	 * 
+	 * @param identityNames
+	 * @return The identities
+	 */
+	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityName);
 
 	/**
 	 * find an identity by the key instead of the username. Prefer this method as

@@ -489,6 +489,7 @@ create table o_userrating (
 	rating_id int8 not null, 
 	version int4 not null, 
 	creationdate timestamp, 
+	lastmodified timestamp,
 	resname varchar(50) not null, 
 	resid int8 not null, 
 	ressubpath varchar(2048), 
@@ -903,6 +904,149 @@ create table o_mark (
   primary key (mark_id)
 );
 
+-- efficiency statments
+create table o_as_eff_statement (
+   id int8 not null,
+   version int4 not null,
+   lastmodified timestamp,
+   creationdate timestamp,
+   passed boolean,
+   score float4,
+   total_nodes int4,
+   attempted_nodes int4,
+   passed_nodes int4,
+   course_title varchar(255),
+   course_short_title varchar(128),
+   course_repo_key int8,
+   statement_xml text,
+   fk_identity int8,
+   fk_resource_id int8,
+   unique(fk_identity, fk_resource_id),
+   primary key (id)
+);
+
+-- user to course informations (was property initial and recent launch dates)
+create table o_as_user_course_infos (
+   id int8 not null,
+   version int4 not null,
+   creationdate timestamp,
+   lastmodified timestamp,
+   initiallaunchdate timestamp,
+   recentlaunchdate timestamp,
+   visit int4,
+   timespend int8,
+   fk_identity int8,
+   fk_resource_id int8,
+   unique(fk_identity, fk_resource_id),
+   primary key (id)
+);
+
+-- user view
+create view o_bs_identity_short_v as (
+   select
+      ident.id as id_id,
+      ident.name as id_name,
+      ident.lastlogin as id_lastlogin,
+      ident.status as id_status,
+      us.user_id as us_id,
+      p_firstname.propvalue as first_name,
+      p_lastname.propvalue as last_name,
+      p_email.propvalue as email
+   from o_bs_identity as ident
+   inner join o_user as us on (ident.fk_user_id = us.user_id)
+   left join o_userproperty as p_firstname on (us.user_id = p_firstname.fk_user_id and p_firstname.propName = 'firstName')
+   left join o_userproperty as p_lastname on (us.user_id = p_lastname.fk_user_id and p_lastname.propName = 'lastName')
+   left join o_userproperty as p_email on (us.user_id = p_email.fk_user_id and p_email.propName = 'email')
+);
+
+-- assessment results
+-- help view
+create view o_gp_contextresource_2_group_v as (
+   select
+      cg_bg2resource.groupcontextresource_id as groupcontextresource_id,
+      cg_bgcontext.groupcontext_id as groupcontext_id,
+      cg_bgroup.group_id as group_id,
+      cg_bg2resource.oresource_id as oresource_id,
+      cg_bgcontext.grouptype as grouptype,
+      cg_bgcontext.defaultcontext as defaultcontext,
+      cg_bgroup.groupname as groupname,
+      cg_bgroup.fk_ownergroup as fk_ownergroup,
+      cg_bgroup.fk_partipiciantgroup as fk_partipiciantgroup,
+      cg_bgroup.fk_waitinggroup as fk_waitinggroup
+   from o_gp_bgcontextresource_rel as cg_bg2resource
+   inner join o_gp_bgcontext as cg_bgcontext on (cg_bg2resource.groupcontext_fk = cg_bgcontext.groupcontext_id)
+   inner join o_gp_business as cg_bgroup on (cg_bg2resource.groupcontext_fk = cg_bgroup.groupcontext_fk)
+);
+
+-- eportfolio views
+create or replace view o_ep_notifications_struct_v as (
+   select
+      struct.structure_id as struct_id,
+      struct.structure_type as struct_type,
+      struct.title as struct_title,
+      struct.fk_struct_root_id as struct_root_id,
+      struct.fk_struct_root_map_id as struct_root_map_id,
+      (case when struct.structure_type = 'page' then struct.structure_id else parent_struct.structure_id end) as page_key,
+      struct_link.creationdate as creation_date
+   from o_ep_struct_el as struct
+   inner join o_ep_struct_struct_link as struct_link on (struct_link.fk_struct_child_id = struct.structure_id)
+   inner join o_ep_struct_el as parent_struct on (struct_link.fk_struct_parent_id = parent_struct.structure_id)
+   where struct.structure_type = 'page' or parent_struct.structure_type = 'page'
+);
+
+create or replace view o_ep_notifications_art_v as (
+   select
+      artefact.artefact_id as artefact_id,
+      artefact_link.link_id as link_id,
+      artefact.title as artefact_title,
+      (case when struct.structure_type = 'page' then struct.title else root_struct.title end ) as struct_title,
+      struct.structure_type as struct_type,
+      struct.structure_id as struct_id,
+      root_struct.structure_id as struct_root_id,
+      root_struct.structure_type as struct_root_type,
+      struct.fk_struct_root_map_id as struct_root_map_id,
+      (case when struct.structure_type = 'page' then struct.structure_id else root_struct.structure_id end ) as page_key,
+      artefact_link.fk_auth_id as author_id,
+      artefact_link.creationdate as creation_date
+   from o_ep_struct_el as struct
+   inner join o_ep_struct_artefact_link as artefact_link on (artefact_link.fk_struct_id = struct.structure_id)
+   inner join o_ep_artefact as artefact on (artefact_link.fk_artefact_id = artefact.artefact_id)
+   left join o_ep_struct_el as root_struct on (struct.fk_struct_root_id = root_struct.structure_id)
+);
+
+create or replace view o_ep_notifications_rating_v as (
+   select
+      urating.rating_id as rating_id,
+      map.structure_id as map_id,
+      map.title as map_title,
+      cast(urating.ressubpath as int8) as page_key,
+      page.title as page_title,
+      urating.creator_id as author_id,
+      urating.creationdate as creation_date,
+      urating.lastmodified as last_modified 
+   from o_userrating as urating
+   inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
+   inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
+   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(urating.ressubpath as integer))
+);
+
+create or replace view o_ep_notifications_comment_v as (
+   select
+      ucomment.comment_id as comment_id,
+      map.structure_id as map_id,
+      map.title as map_title,
+      cast(ucomment.ressubpath as int8) as page_key,
+      page.title as page_title,
+      ucomment.creator_id as author_id,
+      ucomment.creationdate as creation_date
+   from o_usercomment as ucomment
+   inner join o_olatresource as comment_resource on (comment_resource.resid = ucomment.resid and comment_resource.resname = ucomment.resname)
+   inner join o_ep_struct_el as map on (map.fk_olatresource = comment_resource.resource_id)
+   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(ucomment.ressubpath as integer))
+);
+
+
+
 create index userrating_id_idx on o_userrating (resid);
 create index userrating_name_idx on o_userrating (resname);
 create index userrating_subpath_idx on o_userrating (ressubpath);
@@ -1056,6 +1200,11 @@ alter table o_ac_order_line add constraint ord_item_offer_ctx foreign key (fk_of
 alter table o_ac_transaction add constraint trans_ord_ctx foreign key (fk_order_id) references o_ac_order (order_id);
 alter table o_ac_transaction add constraint trans_ord_part_ctx foreign key (fk_order_part_id) references o_ac_order_part (order_part_id);
 alter table o_ac_transaction add constraint trans_method_ctx foreign key (fk_method_id) references o_ac_method (method_id);
+
+alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
+create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
+alter table o_as_user_course_infos add constraint user_course_infos_id_cstr foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 
 
 insert into hibernate_unique_key values ( 0 );

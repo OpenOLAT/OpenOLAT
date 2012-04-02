@@ -51,6 +51,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -647,12 +648,13 @@ public class WeeklyCalendarComponentRenderer implements ComponentRenderer {
 	}
 	
 	private void renderEventLinks(KalendarEvent event, StringOutput sb) {
-		List kalendarEventLinks = event.getKalendarEventLinks();
+		List<KalendarEventLink> kalendarEventLinks = event.getKalendarEventLinks();
 		
-		if (kalendarEventLinks != null) {
+		if (kalendarEventLinks != null && !kalendarEventLinks.isEmpty()) {
 			sb.append("<div class=\"o_cal_links\">");
-			for (Iterator iter = kalendarEventLinks.iterator(); iter.hasNext();) {
-				KalendarEventLink link = (KalendarEventLink) iter.next();
+			
+			String rootUri = Settings.getServerContextPathURI();
+			for (KalendarEventLink link: kalendarEventLinks) {
 				sb.append("<br /><b>");				
 				//fxdiff
 				String uri = link.getURI();
@@ -661,8 +663,12 @@ public class WeeklyCalendarComponentRenderer implements ComponentRenderer {
 					String displayName = link.getDisplayName();
 					iconCssClass = CSSHelper.createFiletypeIconCssClassFor(displayName);
 				}
-				
-				if(uri.contains("://")) {
+
+				if(uri.startsWith(rootUri)) {
+					//intern link with absolute URL
+					renderInternLink(link, iconCssClass, sb);
+				} else if(uri.contains("://")) {
+					//extern link with absolute URL
 					sb.append("<a href=\"").append(uri).append("\" title=\"").append(StringEscapeUtils.escapeHtml(link.getDisplayName())).append("\" ");
 					
 					if (StringHelper.containsNonWhitespace(iconCssClass)) {
@@ -670,17 +676,23 @@ public class WeeklyCalendarComponentRenderer implements ComponentRenderer {
 					}
 					sb.append(" target=\"_blank\">").append(link.getDisplayName()).append("</a>");
 				} else {
-					sb.append("<a href=\"javascript:top.o_openUriInMainWindow('").append(uri).append("')\" title=\"").append(StringEscapeUtils.escapeHtml(link.getDisplayName())).append("\" ");
-					if (StringHelper.containsNonWhitespace(iconCssClass)) {
-						sb.append("class=\"b_with_small_icon_left ").append(iconCssClass).append("\"");
-					}
-					sb.append(" onclick=\"return o2cl();\">").append(link.getDisplayName()).append("</a>");
+					//link with relative URL
+					renderInternLink(link, iconCssClass, sb);
 				} 
 				sb.append("</b>");
 			}
 			sb.append("</div>");
 		}
 	}
+	
+	private void renderInternLink(KalendarEventLink link, String iconCssClass, StringOutput sb) {
+		sb.append("<a href=\"javascript:top.o_openUriInMainWindow('").append(link.getURI()).append("')\" title=\"").append(StringEscapeUtils.escapeHtml(link.getDisplayName())).append("\" ");
+		if (StringHelper.containsNonWhitespace(iconCssClass)) {
+			sb.append("class=\"b_with_small_icon_left ").append(iconCssClass).append("\"");
+		}
+		sb.append(" onclick=\"return o2cl();\">").append(link.getDisplayName()).append("</a>");
+	}
+	
 	private void renderWeekHeader(int year, int weekOfYear, boolean enableAddEvent, StringOutput sb, URLBuilder ubu, Locale locale) {
 		Calendar cal = CalendarUtils.getStartOfWeekCalendar(year, weekOfYear, locale);
 		Calendar calNow = CalendarUtils.createCalendarInstance(locale);

@@ -67,6 +67,7 @@ import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -85,7 +86,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(CalendarManager.class));
 		
 		List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq, windowControl);
-		List importedCalendars = getListOfImportedCalendarWrappers(ureq);
+		List<KalendarRenderWrapper> importedCalendars = getListOfImportedCalendarWrappers(ureq);
 		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars, importedCalendars, WeeklyCalendarController.CALLER_HOME, false);
 		listenTo(calendarController);
 		
@@ -132,9 +133,13 @@ public class HomeCalendarController extends BasicController implements Activatea
 		
 		// get group calendars
 		BusinessGroupManager bgManager = BusinessGroupManagerImpl.getInstance();
-		List<BusinessGroup> ownerGroups = bgManager.findBusinessGroupsOwnedBy(null, ureq.getIdentity(), null);
+
+		SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams();
+		groupParams.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP, BusinessGroup.TYPE_RIGHTGROUP);
+		groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
+		List<BusinessGroup> ownerGroups = bgManager.findBusinessGroups(groupParams, ureq.getIdentity(), true, false, null, 0, -1);
 		addCalendars(ureq, ownerGroups, true, calendars);
-		List<BusinessGroup> attendedGroups = bgManager.findBusinessGroupsAttendedBy(null, ureq.getIdentity(), null);
+		List<BusinessGroup> attendedGroups = bgManager.findBusinessGroups(groupParams, ureq.getIdentity(), false, true, null, 0, -1);
 		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
 			BusinessGroup ownerGroup = ownerGroupsIterator.next();
 			if (attendedGroups.contains(ownerGroup))
@@ -196,7 +201,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 		return calendars;
 	}
 	
-	public static List getListOfImportedCalendarWrappers(UserRequest ureq) {
+	public static List<KalendarRenderWrapper> getListOfImportedCalendarWrappers(UserRequest ureq) {
 		ImportCalendarManager.reloadUrlImportedCalendars(ureq);
 		return ImportCalendarManager.getImportedCalendarsForIdentity(ureq);
 	}
@@ -234,7 +239,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof KalendarModifiedEvent) {
 			List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq, getWindowControl());
-			List importedCalendars = getListOfImportedCalendarWrappers(ureq);
+			List<KalendarRenderWrapper> importedCalendars = getListOfImportedCalendarWrappers(ureq);
 			calendarController.setCalendars(calendars, importedCalendars);
 		}
 	}

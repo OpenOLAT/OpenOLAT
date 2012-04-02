@@ -25,15 +25,12 @@
 
 package org.olat.repository.controllers;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
@@ -51,6 +48,7 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ImageHelper;
+import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
@@ -147,11 +145,12 @@ public class RepositoryEntryImageController extends BasicController {
 				} else {
 					// Scale uploaded image
 					File pBigFile = new File(uploadDir, getImageFilename(repositoryEntry));
-					boolean ok = ImageHelper.scaleImage(newFile, pBigFile, PICTUREWIDTH,PICTUREWIDTH);
+					ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+					Size size = imageHelper.scaleImage(newFile, pBigFile, PICTUREWIDTH, PICTUREWIDTH);
 					// Cleanup original file
 					newFile.delete();
 					// And finish workflow
-					if (ok) {			
+					if (size != null) {			
 						fireEvent(ureq, Event.DONE_EVENT);
 					} else {
 						showError("NoImage");

@@ -4,7 +4,7 @@
 		$r.render("owners")
 	#end
 	#if($hasCoaches)
-		<h4>$r.translate("members.coaches") #if($hasCoaches) $r.render("coaches-email") #end</h4>
+		<h4>$r.translate("members.coaches") #if($r.available("coaches-email")) $r.render("coaches-email") #end</h4>
 		$r.render("coaches")
 	#end
 	<h4>$r.translate("members.participants") #if($hasParticipants && $r.available("participants-email")) $r.render("participants-email") #end</h4>

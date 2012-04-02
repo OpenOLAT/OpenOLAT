@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
@@ -218,7 +219,7 @@ public class EPArtefactManager extends BasicManager {
 		if (userTmp == null){
 			userTmp = ((VFSContainer) tmpI).createChildContainer(ident.getName());
 		}
-		String idFolder = String.valueOf(((System.currentTimeMillis() % 1000l)) * 100);
+		String idFolder = UUID.randomUUID().toString();
 		VFSContainer thisTmp = ((VFSContainer) userTmp).createChildContainer(idFolder);
 		return thisTmp;
 	}

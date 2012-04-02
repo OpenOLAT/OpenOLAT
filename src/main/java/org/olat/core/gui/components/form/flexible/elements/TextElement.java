@@ -145,4 +145,11 @@ public interface TextElement extends FormItem{
 	 */
 	public void setMaxLength(int maxLength);
 	
+	/**
+	 * Check the visible length of the text (can be used for datas saved in XML file
+	 * but not for DB)
+	 * @param checkVisibleLength
+	 */
+	public void setCheckVisibleLength(boolean checkVisibleLength);
+	
 }

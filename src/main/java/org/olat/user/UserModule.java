@@ -188,6 +188,8 @@ public class UserModule extends AbstractOLATModule {
 		// Add controller factory extension point to launch user profile controller
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(Identity.class.getSimpleName(),
 				new IdentityContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("HomePage",
+				new HomePageContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
 				new UserAdminContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(UserAdminSite.class.getSimpleName(),

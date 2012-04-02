@@ -26,6 +26,7 @@
 package org.olat.basesecurity;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -886,15 +887,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 	@Override
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups) {
+	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups, int firstResult, int maxResults) {
 		if (secGroups == null || secGroups.isEmpty()) {
 			return Collections.emptyList();
 		}
-		
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.basesecurity.IdentityShort(sgmsi.identity.key, sgmsi.identity.name) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-			.append(" where sgmsi.securityGroup in (:secGroups)");
-		
+		sb.append("select id from ").append(IdentityShort.class.getName()).append(" as id ")
+		.append(" where id.key in (")
+		.append("   select sgmsi.identity.key from  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		.append("   where sgmsi.securityGroup in (:secGroups)")
+		.append(" )");
+
 		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
 		query.setParameterList("secGroups", secGroups);
 		List<IdentityShort> idents = query.list();
@@ -1002,7 +1006,33 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Identity identity = (Identity) identities.get(0);
 		return identity;
 	}
+
+	@Override
+	public List<IdentityShort> findShortIdentitiesByName(Collection<String> identityNames) {
+		if (identityNames == null || identityNames.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.name in (:names)");
+		
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setParameterList("names", identityNames);
+		return query.list();
+	}
 	
+	@Override
+	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityKeys) {
+		if (identityKeys == null || identityKeys.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityShort.class.getName()).append(" as ident where ident.key in (:keys)");
+		
+		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
+		query.setParameterList("keys", identityKeys);
+		return query.list();
+	}
+
 	/**
 	 * 
 	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long)
@@ -1030,7 +1060,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	@Override
 	public IdentityShort loadIdentityShortByKey(Long identityKey) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.basesecurity.IdentityShort(identity.key, identity.name) from ").append(IdentityImpl.class.getName()).append(" as identity ")
+		sb.append("select identity from ").append(IdentityShort.class.getName()).append(" as identity ")
 			.append(" where identity.key=:identityKey");
 		
 		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());

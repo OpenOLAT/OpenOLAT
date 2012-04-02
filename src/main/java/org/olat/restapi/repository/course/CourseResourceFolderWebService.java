@@ -43,9 +43,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
@@ -60,7 +60,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.LinkVO;
@@ -280,7 +279,7 @@ public class CourseResourceFolderWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -349,7 +348,7 @@ public class CourseResourceFolderWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -404,16 +403,6 @@ public class CourseResourceFolderWebService {
 		}
 		
 		return Response.ok(links).build();
-	}
-	
-	private ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
 	}
 	
 	public enum FolderType {

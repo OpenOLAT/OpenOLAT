@@ -15,7 +15,7 @@
 
 	<!--  the sysinfo  menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-			<property name="order" value="1" />
+			<property name="order" value="7100" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.sysinfo.SysinfoController"/>
@@ -34,7 +34,7 @@
 
 	<!--  the "systemconfig" parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-			<property name="order" value="2" />
+			<property name="order" value="7200" />
 			<property name="navigationKey" value="sysconfig" />
 			<property name="nodeIdentifierIfParent" value="sysconfigParent" />
 			<property name="translationPackage" value="org.olat.admin" />
@@ -48,7 +48,7 @@
 	</bean>	 
 	<!--  the layout ("Darstellung")  menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-			<property name="order" value="771" />
+			<property name="order" value="7201" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.layout.LayoutAdminController"/>
@@ -67,7 +67,7 @@
 	</bean>
 	<!--  the i18n ("sprachen") menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
-		<property name="order" value="772" />
+		<property name="order" value="7202" />
 		<property name="navigationKey" value="i18n" />
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
@@ -87,7 +87,7 @@
 	</bean>
 	<!--  the quota menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
-		<property name="order" value="773" />
+		<property name="order" value="7203" />
 		<property name="navigationKey" value="quota" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -106,7 +106,7 @@
 	</bean>
 	<!--  the version ("versionisierung") menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
-		<property name="order" value="774" />
+		<property name="order" value="7204" />
 		<property name="navigationKey" value="versioning" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -126,7 +126,7 @@
 	
 	<!-- the REST API menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="778" />
+		<property name="order" value="7206" />
 		<property name="navigationKey" value="restapi" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -145,6 +145,7 @@
 	</bean>			
 	<!--  the spring-extensions ("Software Module") menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7207" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.extensions.ExtensionsAdminController"/>
@@ -160,12 +161,11 @@
 				</list>
 			</property>
 			<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
-			<property name="order" value="779" />
 	</bean>	
 
 	<!--  the ("einrichten")  menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-	<property name="order" value="3" />
+	<property name="order" value="7211" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.configuration.SetupPropertiesController"/>
@@ -179,6 +179,7 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 	</bean>
 			
 		
@@ -187,6 +188,7 @@
 		
 
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7500" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.properties.AdvancedPropertiesController"/>
@@ -201,10 +203,10 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="5" />
 		</bean>	
 		
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7210" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.instantMessaging.InstantMessagingAdminController"/>
@@ -219,13 +221,14 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="6" />
 			<property name="enabled" value="${instantMessaging.enable}"/>
+			<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
 		</bean>	
 
 
 	<!-- SYSADMIN customizing parent node -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7400" />
 			<!--  <property name="actionController" value="">	
 			
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -242,11 +245,11 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="5" />
 		</bean>	
 	
 	<!-- "Sprachanpassungswerkzeug" -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7401" />
 			<property name="actionController">
 				<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 					<property name="factoryName" value="org.olat.core.util.i18n.ui.I18nUIFactory"/>
@@ -263,11 +266,11 @@
 				</list>
 			</property>
 			<property name="parentTreeNodeIdentifier" value="sysAdminMenueNodeCustomizing" />
-			<property name="order" value="51" />
 		</bean>
 		
 		
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7402" />
 			<property name="actionController">
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.registration.SystemRegistrationAdminController"/>
@@ -283,13 +286,13 @@
 				</list>
 			</property>
 			<property name="parentTreeNodeIdentifier" value="sysAdminMenueNodeCustomizing" />
-			<property name="order" value="52" />
 		</bean>	
 		
 		
 		
 <!-- SYSADMIN maintenance parent node -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7300" />
 			<property name="nodeIdentifierIfParent" value="sysAdminMenueNodeMaintenance" />
 			<property name="navigationKey" value="sysadmin" />
 			<property name="i18nActionKey" value="menu.parent.maintenance"/>
@@ -300,11 +303,11 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="4" />
 		</bean>		
 		
 		<!--  statistics -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7301" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.statistics.StatisticsAdminController"/>
@@ -320,10 +323,10 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="41" />
 		</bean>	
 	<!--  search admin ("volltextsuche")   -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7302" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.search.SearchAdminController"/>
@@ -339,11 +342,11 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="42" />
 		</bean>	
 		
 		<!--  ("benachrichtigungen") -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7303" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.notifications.NotificationsEmailAdminController"/>
@@ -359,11 +362,11 @@
 					<value>org.olat.admin.SystemAdminMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="43" />
 		</bean>	
 		
 		<!--  user  bulk-pw change  ("OLAT password") -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="7304" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.admin.user.bulkChange.UserBulkChangePasswordController"/>
@@ -378,7 +381,6 @@
 				</list>
 			</property>
 			<property name="parentTreeNodeIdentifier" value="sysAdminMenueNodeMaintenance" />
-			<property name="order" value="46" />
 		</bean>		
 
 
@@ -391,6 +393,7 @@
 		
 		<!--  the first bean here is the description page which you get when you open the statistics tool -->
 		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="order" value="3" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 					<property name="className" value="org.olat.course.statistic.StatisticMainDescription"/>
@@ -403,7 +406,6 @@
 					<value>org.olat.course.statistic.StatisticMainController</value>		
 				</list>
 			</property>
-			<property name="order" value="3" />
 		</bean>
 		
 		<bean class="org.olat.course.statistic.StatisticActionExtension" init-method="initExtensionPoints" id="dailyextension">
@@ -907,11 +909,7 @@
 			</property>
 			<property name="order" value="35" />
 		</bean>
-		
-		<bean class="org.olat.ldap.ui.LDAPAdminExtension">
-			<property name="order" value="36" />
-		</bean>
-
+		 
 		<!-- portfolioContext.xml : property name="order" value="37" -->
 				
 	<!-- template for extension of type GenericActionExtension

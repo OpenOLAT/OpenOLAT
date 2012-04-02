@@ -112,8 +112,6 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 		// OLAT-6439 truncate to allowed database limit
 		this.description = PersistenceHelper.truncateStringDbSave(description, 2024, true);
 	}
-	
-	
 
 	@Override
 	public String getShortenedDescription() {

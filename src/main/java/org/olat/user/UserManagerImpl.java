@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -54,7 +55,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class UserManagerImpl extends UserManager {
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
-	
+  private UserDisplayNameCreator userDisplayNameCreator;
+  
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
 	 * correct user manager
@@ -338,6 +340,32 @@ public class UserManagerImpl extends UserManager {
 		// persist changes
 		updateUser(user);
 		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
+	}
+
+	/**
+	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.User)
+	 */
+	@Override
+	public String getUserDisplayName(User user) {
+		if (this.userDisplayNameCreator == null) return "";
+		return this.userDisplayNameCreator.getUserDisplayName(user);
+	}
+	
+	/**
+	 * @see org.olat.user.UserManager#getUserDisplayName(org.olat.core.id.IdentityShort)
+	 */
+	@Override
+	public String getUserDisplayName(IdentityShort user) {
+		if (this.userDisplayNameCreator == null) return "";
+		return this.userDisplayNameCreator.getUserDisplayName(user);
+	}
+
+	/**
+	 * Sping setter method
+	 * @param userDisplayNameCreator the userDisplayNameCreator to set
+	 */
+	public void setUserDisplayNameCreator(UserDisplayNameCreator userDisplayNameCreator) {
+		this.userDisplayNameCreator = userDisplayNameCreator;
 	}
 
 }

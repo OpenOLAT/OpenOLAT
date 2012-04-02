@@ -118,7 +118,7 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="order" value="302" />
+		<property name="order" value="7600" />
 	</bean>
 
 </beans>

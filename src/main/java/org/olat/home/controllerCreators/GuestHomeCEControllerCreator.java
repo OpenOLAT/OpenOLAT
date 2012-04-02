@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.home.HomeSite;
 
 /**
@@ -35,7 +35,7 @@ import org.olat.home.HomeSite;
  * Initial Date:  15 juil. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class GuestHomeCEControllerCreator  implements ContextEntryControllerCreator {
+public class GuestHomeCEControllerCreator extends DefaultContextEntryControllerCreator {
 
 	public GuestHomeCEControllerCreator() {
 
@@ -45,11 +45,11 @@ public class GuestHomeCEControllerCreator  implements ContextEntryControllerCrea
 		return null;
 	}
 
-	public String getSiteClassName(ContextEntry ce) {
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		return HomeSite.class.getName();
 	}
 
-	public String getTabName(ContextEntry ce) {
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 

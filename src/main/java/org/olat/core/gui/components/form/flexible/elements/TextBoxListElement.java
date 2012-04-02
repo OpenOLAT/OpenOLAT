@@ -21,27 +21,80 @@ package org.olat.core.gui.components.form.flexible.elements;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.textboxlist.ResultMapProvider;
 
 /**
  * Description:<br>
- * TODO: rhaag Class Description for TextBoxListElement
+ * This interface wraps the TextBoxListElementComponent as a FormItem.
  * 
  * <P>
- * Initial Date:  27.08.2010 <br>
+ * Initial Date: 27.08.2010 <br>
+ * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public interface TextBoxListElement extends FormItem {
 
 	public String getValue();
-	
+
 	public List<String> getValueList();
 
-	public void setAutoCompleteContent(List<String> tagL);
+	public void setAutoCompleteContent(Set<String> autoCompletionValues);
 
-	public void setNoFormSubmit(boolean noFormSubmit);
+	public void setMapperProvider(ResultMapProvider provider);
 
-	public void setAutoCompleteContent(Map<String, String> tagM);
+	public void setAutoCompleteContent(Map<String, String> autoCompletionValues);
 
+	
+	/**
+	 * set the maximal number of results that should be shown by the
+	 * auto-completion list
+	 * 
+	 * @param maxResults
+	 */
+	public void setMaxResults(int maxResults);
+		
+	/**
+	 * configures the behaviour on user input (item added, item deleted).
+	 * 
+	 * @param preventFormSubmit
+	 *            If set to true, containing form will be submitted on user
+	 *            input
+	 */
+	public void doFormSubmitOnInput(boolean doFormSubmit);
+
+	/**
+	 * 
+	 * @return true if this TextBoxListElement is configured to submit the
+	 *         containing form on userinput.
+	 */
+	public boolean doFormSubmitOnInput();
+
+	/**
+	 * @return Returns the allowDuplicates.
+	 */
+	public boolean isAllowDuplicates();
+
+	/**
+	 * @param allowDuplicates
+	 *            if set to false (default) duplicates will be filtered
+	 *            automatically
+	 */
+	public void setAllowDuplicates(boolean allowDuplicates);
+
+	/**
+	 * 
+	 * @return returns true if this textBoxListElement is allowed to add new
+	 *         values (values, that are not in autocompletion set)
+	 */
+	public boolean isAllowNewValues();
+
+	/**
+	 * configures if this textBoxListElement is allowed to add new values
+	 * 
+	 * @param allowNewValues
+	 */
+	public void setAllowNewValues(boolean allowNewValues);
 }

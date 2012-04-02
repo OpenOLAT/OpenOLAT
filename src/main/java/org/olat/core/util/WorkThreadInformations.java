@@ -20,10 +20,17 @@
 
 package org.olat.core.util;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -35,6 +42,8 @@ import java.util.Map;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class WorkThreadInformations {
+	
+	private static OLog log = Tracing.createLoggerFor(WorkThreadInformations.class);
 	
 	private static final Map<String,String> works = new HashMap<String,String>();
 	
@@ -61,6 +70,22 @@ public class WorkThreadInformations {
 			if(!threadNames.contains(threadNameIt.next())) {
 				threadNameIt.remove();
 			}
+		}
+	}
+	
+	public static void setInfoFiles(String filePath, VFSLeaf leaf) {
+		try {
+			File file = new File(FolderConfig.getCanonicalTmpDir(), "threadInfos");
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			if(leaf instanceof LocalImpl) {
+				filePath = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
+			}
+			File infoFile = new File(file, Thread.currentThread().getName());
+			FileUtils.save(infoFile, filePath, "UTF-8");
+		} catch (Exception e) {
+			log.error("Cannot write info message about FolderIndexerWorker: " + filePath, e);
 		}
 	}
 }

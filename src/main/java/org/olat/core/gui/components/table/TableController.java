@@ -477,6 +477,50 @@ public class TableController extends BasicController {
 			}
 		} 
 	}
+	
+	public int getRowCount() {
+		return table.getRowCount();
+	}
+	
+	public int getSortedRow(int originalRow) {
+		return table.getSortedRow(originalRow);
+	}
+	
+	/**
+	 * Return the object at the visible index (sorted or not, searched or not)
+	 * @param index
+	 * @return
+	 */
+	public Object getSortedObjectAt(int sortedRow) {
+		int row = table.getSortedRow(sortedRow);
+		TableDataModel model = getTableDataModel();
+		Object obj = model.getObject(row);
+		return obj;
+	}
+	
+	/**
+	 * Return the visible index of the object (sorted or not, searched or not)
+	 * @param obj
+	 * @return
+	 */
+	public int getIndexOfSortedObject(Object obj) {
+		int index = -1;
+		for(int i=getTableDataModel().getRowCount(); i-->0; ) {
+			if(obj.equals(getTableDataModel().getObject(i))) {
+				index = i;
+				break;
+			}
+		}
+
+		for(int i=0; i<getRowCount(); i++) {
+			int currentPos = getSortedRow(i);
+			if(currentPos == index) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	/**
 	 * @return The currently active filter object or <code>null</code> if no
 	 *         filter is applied
@@ -637,6 +681,22 @@ public class TableController extends BasicController {
 	 */
 	public void setSelectedRowId(final int selectedRowId) {
 		table.setSelectedRowId(selectedRowId);
+	}
+	
+	/**
+	 * Set the page viewed if pageing is enabled
+	 * @param pageNr
+	 */
+	public void setPage(Integer pageNr) {
+		table.updatePageing(pageNr);
+	}
+	
+	/**
+	 * Return the number of items per page if pageing is enable
+	 * @return
+	 */
+	public int getPageSize() {
+		return table.getResultsPerPage();
 	}
 
 	/**

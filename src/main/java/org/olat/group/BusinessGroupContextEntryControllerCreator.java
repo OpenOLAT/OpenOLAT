@@ -27,7 +27,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -44,7 +44,7 @@ import org.olat.resource.accesscontrol.manager.ACFrontendManager;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class BusinessGroupContextEntryControllerCreator implements ContextEntryControllerCreator {
+public class BusinessGroupContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
@@ -71,19 +71,13 @@ public class BusinessGroupContextEntryControllerCreator implements ContextEntryC
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
-	public String getTabName(ContextEntry ce) {
+	@Override
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		OLATResourceable ores = ce.getOLATResourceable();
 		Long gKey = ores.getResourceableId();
 		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
 		BusinessGroup bgroup = bman.loadBusinessGroup(gKey, true);
 		return bgroup.getName();
-	}
-
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
-	 */
-	public String getSiteClassName(ContextEntry ce) {
-		return null;
 	}
 
 	@Override

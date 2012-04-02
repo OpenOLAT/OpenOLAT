@@ -28,8 +28,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.search.AbstractOlatDocument;
 import org.olat.core.commons.services.search.ResultDocument;
@@ -59,6 +62,7 @@ import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -68,7 +72,8 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.indexer.identity.PortfolioArtefactIndexer;
-import org.olat.search.service.searcher.SearchClientProxy;
+import org.olat.search.service.searcher.SearchClient;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -91,9 +96,11 @@ public class EPFrontendManager extends BasicManager {
 	private final TaggingManager taggingManager;
 	private final AssessmentNotificationsHandler assessmentNotificationsHandler;
 	private final DB dbInstance;
-	private SearchClientProxy searchClient;
+	private SearchClient searchClient;
 	private final EPSettingsManager settingsManager; 
 	private final EPPolicyManager policyManager;
+	private final EPNotificationManager notificationManager;
+	private final UserManager userManager;
 	private PortfolioModule portfolioModule;
 
 	/**
@@ -101,7 +108,8 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public EPFrontendManager(EPArtefactManager artefactManager, EPStructureManager structureManager, EPSettingsManager settingsManager,
 			EPPolicyManager policyManager, CoordinatorManager coordinatorManager, BaseSecurity securityManager, TaggingManager taggingManager,
-			DB dbInstance, AssessmentNotificationsHandler assessmentNotificationsHandler) {
+			DB dbInstance, AssessmentNotificationsHandler assessmentNotificationsHandler, EPNotificationManager notificationManager,
+			UserManager userManager) {
 		this.artefactManager = artefactManager;
 		this.structureManager = structureManager;
 		this.securityManager = securityManager;
@@ -111,6 +119,8 @@ public class EPFrontendManager extends BasicManager {
 		this.dbInstance = dbInstance;
 		this.settingsManager = settingsManager;
 		this.policyManager = policyManager;
+		this.notificationManager = notificationManager;
+		this.userManager = userManager;
 	}
 	
 	
@@ -118,7 +128,7 @@ public class EPFrontendManager extends BasicManager {
 	 * [used by Spring]
 	 * @param searchClient
 	 */
-	public void setSearchClient(SearchClientProxy searchClient) {
+	public void setSearchClient(SearchClient searchClient) {
 		this.searchClient = searchClient;
 	}
 
@@ -738,6 +748,17 @@ public class EPFrontendManager extends BasicManager {
 	public List<AbstractArtefact> getArtefacts(PortfolioStructure structure) {
 		return structureManager.getArtefacts(structure);
 	}
+
+	/**
+	 * FXOLAT-431
+	 * 
+	 * @param map
+	 * @return
+	 *
+	public List<AbstractArtefact> getAllArtefactsInMap(EPAbstractMap map){
+		return structureManager.getAllArtefactsInMap(map);
+	}
+	*/
 	
 	/**
 	 * get statistics about how much of the required (min, equal) collect-restrictions have been fulfilled.
@@ -905,12 +926,41 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	/**
-	 * Load a portfolio structure by its primary key
+	 * Load a protfolio structure by its resourceable id
+	 * @param ores
+	 * @return
+	 */
+	public EPMapShort loadMapShortByResourceId(Long resId) {
+		return structureManager.loadMapShortByResourceId(resId);
+	}
+	
+	/**
+	 * Load a portfolio structure by its primary key. DON'T USE THIS METHOD
+	 * TO RELOAD AN OBJECT. If you want do this, use the method
+	 * reloadPortfolioStructure(PortfolioStructure structure)
 	 * @param key cannot be null
 	 * @return The structure element or null if not found
 	 */
 	public PortfolioStructure loadPortfolioStructureByKey(Long key){
 		return structureManager.loadPortfolioStructureByKey(key);
+	}
+	
+	/**
+	 * Reload a portfolio structure
+	 * @param structure cannot be null
+	 * @return The reloaded structure element
+	 */
+	public PortfolioStructure reloadPortfolioStructure(PortfolioStructure structure){
+		return structureManager.reloadPortfolioStructure(structure);
+	}
+	
+	/**
+	 * Load the OLAT resource with the primary of the structure element
+	 * @param key cannot be null
+	 * @return The resource or null if not found
+	 */
+	public OLATResource loadOlatResourceFromByKey(Long key) {
+		return structureManager.loadOlatResourceFromStructureElByKey(key);
 	}
 	
 	/**
@@ -1020,6 +1070,10 @@ public class EPFrontendManager extends BasicManager {
 	
 	public boolean isMapShared(PortfolioStructureMap map) {
 		OLATResource resource = map.getOlatResource();
+		return isMapShared(resource);
+	}
+		
+	public boolean isMapShared(OLATResourceable resource) {
 		List<Policy> policies = securityManager.getPoliciesOfResource(resource, null);
 		for(Policy policy:policies) {
 			if(policy.getPermission().contains(Constants.PERMISSION_READ)) {
@@ -1153,7 +1207,75 @@ public class EPFrontendManager extends BasicManager {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * returns all Owners of the given map as comma-separated list
+	 * @param map
+	 * @return
+	 */
+	public String getAllOwnersAsString(PortfolioStructureMap map){
+		if(map.getOwnerGroup() == null) {
+			return null;
+		}
+		List<SecurityGroup> ownerGroups = Collections.singletonList(map.getOwnerGroup());
+		List<IdentityShort> ownerIdents = securityManager.getIdentitiesShortOfSecurityGroups(ownerGroups, 0, -1);
+		List<String> identNames = new ArrayList<String>();
+		for (IdentityShort identity : ownerIdents) {
+			String fullName = identity.getFirstName() + " " + identity.getLastName();
+			identNames.add(fullName);
+		}
+		return StringHelper.formatAsCSVString(identNames);
+	}
+	
+	/**
+	 * returns the first Owner for the given Map.
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public String getFirstOwnerAsString(PortfolioStructureMap map){
+		if(map.getOwnerGroup() == null) {
+			return "n/a";
+		}
+		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
+		if(ownerIdents.size() > 0){
+			Identity id = ownerIdents.get(0);
+			return userManager.getUserDisplayName(id.getUser());
+		}
+		return "n/a";
+	}
+	
+	public String getFirstOwnerAsString(EPMapShort map){
+		if(map.getOwnerGroup() == null) {
+			return "n/a";
+		}
+		List<SecurityGroup> secGroups = Collections.singletonList(map.getOwnerGroup());
+		List<IdentityShort> ownerIdents = securityManager.getIdentitiesShortOfSecurityGroups(secGroups, 0, 1);
+		if(ownerIdents.size() > 0){
+			IdentityShort id = ownerIdents.get(0);
+			return userManager.getUserDisplayName(id);
+		}
+		return "n/a";
+	}
+	
+	/**
+	 * returns the first OwnerIdentity for the given Map.
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public Identity getFirstOwnerIdentity(PortfolioStructureMap map){
+		if(map.getOwnerGroup() == null) {
+			return null;
+		}
+		List<Identity> ownerIdents = securityManager.getIdentitiesOfSecurityGroup(map.getOwnerGroup(), 0, 1);
+		if (ownerIdents.size() > 0) {
+			Identity id = ownerIdents.get(0);
+			return id;
+		}
+		return null;
+	}
+	
 	// not yet available
 	public void archivePortfolio() {}
 

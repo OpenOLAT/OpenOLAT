@@ -10,6 +10,8 @@ depends-on="instantMessagingModule" >
 	<constructor-arg ref="coordinatorManager" />
 </bean>
 
+<bean id="collaborationManager" class="org.olat.collaboration.CollaborationManagerImpl"/>
+
 <!-- TODO: add im property enabled here -->
 
 </beans>

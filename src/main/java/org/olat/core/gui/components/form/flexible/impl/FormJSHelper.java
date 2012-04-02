@@ -28,6 +28,8 @@ package org.olat.core.gui.components.form.flexible.impl;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.render.StringOutput;

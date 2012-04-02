@@ -393,7 +393,10 @@ public class IQRunController extends BasicController implements GenericEventList
 			if(returnController instanceof IQDisplayController){
 				displayController = (IQDisplayController)returnController;
 				listenTo(displayController);
-				if (displayController.isReady()) {
+				if(displayController.isClosed()) {
+					//do nothing
+					System.out.println();
+				} else  if (displayController.isReady()) {
 					// in case displayController was unable to initialize, a message was set by displayController
 					// this is the case if no more attempts or security check was unsuccessfull
 					displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, displayController.getInitialComponent(), null);
@@ -421,6 +424,8 @@ public class IQRunController extends BasicController implements GenericEventList
 						singleUserEventCenter.fireEventToListenersOf(new AssessmentEvent(AssessmentEvent.TYPE.STARTED, ureq.getUserSession()), assessmentEventOres);						
 					}
 				}//endif isReady
+			
+				
 			}else{
 				// -> qti file was locked -> show info message
 				// user must click again on course node to activate
@@ -510,6 +515,7 @@ public class IQRunController extends BasicController implements GenericEventList
 				} else {
 					getWindowControl().pop();
 				}	
+				removeHistory(urequest);
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
 				addToHistory(urequest, ores, null);
 				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) && !assessmentStopped ) {

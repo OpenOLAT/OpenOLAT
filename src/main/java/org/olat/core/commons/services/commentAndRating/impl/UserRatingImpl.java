@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.commentAndRating.impl;
 
+import java.util.Date;
+
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
@@ -40,6 +42,8 @@ public class UserRatingImpl extends PersistentObject implements UserRating {
 	
 	private Identity creator;
 	private Integer rating;
+	
+	private Date modifiedDate;
 
 	/**
 	 * Default constructor for hibernate, don't use this!
@@ -138,6 +142,16 @@ public class UserRatingImpl extends PersistentObject implements UserRating {
 	 */
 	public void setRating(Integer ratingValue) {
 		this.rating = ratingValue;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return modifiedDate;
+	}
+
+	@Override
+	public void setLastModified(Date date) {
+		modifiedDate = date;
 	}
 
 }

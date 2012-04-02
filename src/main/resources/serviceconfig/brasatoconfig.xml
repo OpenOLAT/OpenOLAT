@@ -9,6 +9,7 @@
 			<bean id ="org.olat.core.util.WebappHelper" class="org.olat.core.util.WebappHelper"  init-method="init" destroy-method="destroy">
 				<!-- relative path from the webapp directory to the source directory (only relavant for development/debuging mode) -->
 				<property name="fullPathToSrc" value="${project.build.home.directory}/src/main/java" />
+				<property name="fullPathToWebappSrc" value="${project.build.home.directory}/src/main/webapp" />
 				<property name="instanceId" value="${instance.id}"/>
 				<property name="nodeId" value="${node.id}"/>
 				<property name="userDataRoot" value="${userdata.dir}"/>
@@ -76,7 +77,7 @@
 					<list>
 						<value>.*WebKit/5[01].*</value> 		<!-- older than safari 3.0 -->
 						<value>.*MSIE [2345].*</value>			<!-- older than IE 6.0 -->
-						<value>.*Firefox/[1].*</value>			<!-- older than FF 2.0  -->
+						<value>.*Firefox/1\..</value>			<!-- older than FF 2.0  -->
 						<value>.*Opera/[45678].*</value>		<!-- older than Opera 9 -->
 						<value>.*Gecko/200[0123456].*</value>	<!-- Gecko engine older than 2006  -->
 						<value>.*Lynx.*</value>					<!-- Lynx console browser (no js) -->
@@ -103,17 +104,7 @@
 			</bean>
 
 			<bean class="org.olat.core.gui.render.velocity.VelocityModule" depends-on="org.olat.core.helpers.Settings" init-method="init"/>
-		
-			<bean id="org.olat.core.gui.dev.IDE" class="org.olat.core.gui.dev.impl.EclipseIDE"/>
 
-<!--
-	Optional configuration of the column default width given in EM values.
-	Set your custom values if the default values do not fit your layout theme 
-<bean id="org.olat.core.commons.fullWebApp.LayoutMain3ColsConfig" class="org.olat.core.commons.fullWebApp.LayoutMain3ColsConfig">
-	<property name="col1WidthEmDefault" value="14" /> 
-	<property name="col2WidthEmDefault" value="12" /> 
-</bean>
--->
 	
 <!-- base setting (ram only) to be overridden in a config.xml -->
 <bean id="core.preferences.PreferencesStorage" 

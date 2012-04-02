@@ -53,8 +53,6 @@ public class DeployableCourseExport {
 	private Float version;
 	private String identifier;
 	private boolean redeploy = false;
-	//default for a demo course is false
-	private boolean helpCourse = false;
 	OLog log = Tracing.createLoggerFor(this.getClass());
 	private File file;
 	
@@ -96,14 +94,6 @@ public class DeployableCourseExport {
 		this.access = access;
 	}
 
-	public boolean isHelpCourse() {
-		return helpCourse;
-	}
-
-	public void setHelpCourse(boolean helpCourse) {
-		this.helpCourse = helpCourse;
-	}
-	
 	private File downloadZipFromUrl(URL url) {
 		try {
 			log.info("Downloading demo course file: "+url);

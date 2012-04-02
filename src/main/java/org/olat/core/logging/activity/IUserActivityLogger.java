@@ -29,6 +29,7 @@ package org.olat.core.logging.activity;
 import java.util.List;
 
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.UserSession;
 
@@ -63,6 +64,12 @@ import org.olat.core.util.UserSession;
  * @author gnaegi, Stefan
  */
 public interface IUserActivityLogger {
+	
+	/**
+	 * Return the identity which is logged
+	 * @return
+	 */
+	public Identity getLoggedIdentity();
 
 	/**
 	 * Stores a new log entry with the available information to the logging table.

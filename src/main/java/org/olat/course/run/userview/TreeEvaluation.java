@@ -37,7 +37,7 @@ import org.olat.course.nodes.CourseNode;
  *
  */
 public class TreeEvaluation {
-	private Map courseToTree = new HashMap();  // keys: coursenodes; values: treenodes
+	private Map<CourseNode,TreeNode> courseToTree = new HashMap<CourseNode,TreeNode>();  // keys: coursenodes; values: treenodes
 
 	public void cacheCourseToTreeNode(CourseNode cn, TreeNode tn) {
 		courseToTree.put(cn, tn);
@@ -50,7 +50,7 @@ public class TreeEvaluation {
 	 * @return null if the coursenode has no corresponding treenode in the newly built treemodel anymore (e.g. when the precondition evaluation changed so that the coursenode became invisible), or the TreeNode otherwise.
 	 */
 	public TreeNode getCorrespondingTreeNode(CourseNode cn) {
-		return (TreeNode) courseToTree.get(cn);
+		return courseToTree.get(cn);
 	}
 
 	

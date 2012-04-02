@@ -29,10 +29,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
+import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
@@ -55,12 +53,8 @@ import org.olat.course.editor.PublishEvent;
  * @author patrickb
  */
 public class AssessmentModule implements Initializable, Destroyable, GenericEventListener {
-	private static int DEFAULT_POOLSIZE = 3;
-	/*
-	 * worker pool for updating effciency statements
-	 */
-	private ExecutorService updateESPool;
-	private List upcomingWork;
+
+	private List<Long> upcomingWork;
 	private CourseModule courseModule;
 	
 	/**
@@ -74,12 +68,7 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
 	 */
 	public void init() {
-		/*
-		 * init Worker pool
-		 */
-		ThreadFactory4UpdateEfficiencyWorker th4uew = new ThreadFactory4UpdateEfficiencyWorker();
-		updateESPool = Executors.newFixedThreadPool(DEFAULT_POOLSIZE, th4uew);
-		upcomingWork = new ArrayList();
+		upcomingWork = new ArrayList<Long>();
 		/*
 		 * always last step, register for course events
 		 */
@@ -101,8 +90,6 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 		/*
 		 * no other code before here!
 		 */
-		//wait for all work being done
-		updateESPool.shutdown();
 		//check that working queue is empty
 		if(upcomingWork.size()>0){
 			//hanging work!!
@@ -137,7 +124,7 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 				if (recalc) {
 					ICourse pubCourse = CourseFactory.loadCourse(pe.getPublishedCourseResId());
 					UpdateEfficiencyStatementsWorker worker = new UpdateEfficiencyStatementsWorker(pubCourse);
-					updateESPool.execute(worker);
+					TaskExecutorManager.getInstance().runTask(worker);
 				}
 			}
 		}
@@ -180,21 +167,4 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 		}
 		return;
 	}
-	
-	
-	public class ThreadFactory4UpdateEfficiencyWorker implements ThreadFactory{
-
-		/**
-		 * @see edu.emory.mathcs.backport.java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
-		 */
-		public Thread newThread(Runnable r) {
-			Thread th = new Thread(r);
-			th.setName("UpdateEfficiencyStatements");
-			//kill this thread if OLAT is no longer active
-			th.setDaemon(true);
-			return th;
-		}
-		
-	}
-
 }

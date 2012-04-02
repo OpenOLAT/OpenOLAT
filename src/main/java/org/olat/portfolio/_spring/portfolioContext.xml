@@ -54,6 +54,7 @@
 	
 	<!-- Portfolio admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7205" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -70,23 +71,16 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="order" value="775" />
 	</bean> 
 	
 	<!-- Portfolio Main View/all my artefacts in users Home -->
 	<bean class="org.olat.portfolio.EPArtefactPoolExtension"/>
 	
 	<!-- Portfolio map view in users Home -->
-	<bean class="org.olat.portfolio.EPMyMapsExtension"/>
+	<bean class="org.olat.portfolio.EPMapExtension"/>
 	
 	<!-- Portfolio map view for invitee -->
 	<bean class="org.olat.portfolio.EPMapOnInvitationExtension"/>
-	
-	<!-- Portfolio map view in users Home -->
-	<bean class="org.olat.portfolio.EPMyStructuredMapsExtension"/>
-	
-	<!-- Portfolio map view in users Home -->
-	<bean class="org.olat.portfolio.EPOtherMapsExtension"/>
 
 	<bean name="epArtefactManager" class="org.olat.portfolio.manager.EPArtefactManager">
 		<property name="dbInstance" ref="database"/>
@@ -107,6 +101,12 @@
 		<constructor-arg index="0" ref="baseSecurityManager" />
 		<constructor-arg index="1" ref="businessGroupManager" />
 	</bean>
+	
+		<!--   define notifications handler -->
+	<bean id="epNotificationManager" class="org.olat.portfolio.manager.EPNotificationManager">
+		<property name="dbInstance" ref="database"/>
+		<property name="userManager" ref="userManager"/>
+	</bean>
 
 	<bean name="epFrontendManager" class="org.olat.portfolio.manager.EPFrontendManager">
 		<constructor-arg index="0" ref="epArtefactManager" />
@@ -118,6 +118,8 @@
 		<constructor-arg index="6" ref="taggingManager" />
 		<constructor-arg index="7" ref="database" />
 		<constructor-arg index="8" ref="org.olat.course.assessment.AssessmentNotificationsHandler" />
+		<constructor-arg index="9" ref="epNotificationManager" />
+		<constructor-arg index="10" ref="userManager" />
 		<property name="searchClient" ref="searchClient"/>
 		<property name="portfolioModule" ref="portfolioModule"/>
 	</bean>
@@ -140,6 +142,10 @@
 	
 	<bean name="blogArtefactHandler" class="org.olat.modules.webFeed.portfolio.BlogArtefactHandler"/>
 	
+	
+	<!--   define notifications handler -->
+	<bean id="org.olat.portfolio.manager.EPNotificationsHandler" class="org.olat.portfolio.manager.EPNotificationsHandler">
+	</bean>
 
 	<!-- add the db-mappings here or in the module-context where your XYArtefactHandler for the appropriate type is. 
 	this allows real decoupling of the ePortfolio-Module from olatcore.
@@ -154,6 +160,7 @@
 				<value>org/olat/modules/webFeed/portfolio/LiveBlogArtefact.hbm.xml</value>
 				<value>org/olat/course/assessment/portfolio/EfficiencyStatementArtefact.hbm.xml</value>
 				<value>org/olat/portfolio/model/structel/StructureElement.hbm.xml</value>
+				<value>org/olat/portfolio/model/notification/Notifications.hbm.xml</value>
 				<value>org/olat/portfolio/model/restriction/CollectRestriction.hbm.xml</value>
 			</list>
 		</property>
@@ -212,6 +219,7 @@
 	<!--  the "my artefacts" menu -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="home.menupoint.ep.pool" init-method="initExtensionPoints" >
 		<property name="order" value="301" />
+		<property name="navigationKey" value="EPArtefacts" />
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -233,7 +241,7 @@
 	<!--  the "my maps" menu -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="home.menupoint.ep.maps" init-method="initExtensionPoints" >
 		<property name="order" value="302" />
-		<property name="navigationKey" value="EPMap" />
+		<property name="navigationKey" value="EPMaps" />
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -255,7 +263,7 @@
 	<!--  the "my portfolioaufgaben" menu -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="home.menupoint.ep.structuredmaps" init-method="initExtensionPoints" >
 		<property name="order" value="303" />
-		<property name="navigationKey" value="EPStructuredMap" />
+		<property name="navigationKey" value="EPStructuredMaps" />
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.portfolio.EPUIFactory"/>
@@ -283,7 +291,7 @@
 				<property name="factoryMethod" value="createPortfolioMapsFromOthersController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="EPSharedMap" />
+		<property name="navigationKey" value="EPSharedMaps" />
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
 		<property name="translationPackage" value="org.olat.portfolio.ui" />
 		<property name="i18nActionKey" value="othermaps.menu.title"/>

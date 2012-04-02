@@ -1,9 +1,49 @@
-/* Put this inside a @media qualifier so Netscape 4 ignores it */
-@media screen { 
+@charset "UTF-8";
+
+/* base layout rules */
+    html {height:100%;}
+	html * { font-size: 100.01%; margin:0; padding:0; } 
+	/* (en) reset monospaced elements to font size 16px in Gecko browsers */
+  	textarea, pre, tt, code { font-family:"Courier New", Courier, monospace;  }	
+	/* Base layout gets standard font size 12px */
+	body { 
+		font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; color: #444;
+		background: #ECECEC url('sky.png') repeat-x 0 88px; 
+		height:100%;
+	}
+
+	#page_margins {
+		width:1200px; 
+		margin:0 auto; 
+		height:100%;
+		box-sizing:border-box;
+	}
+	#main {
+		background:#fff;
+		/* some css3 juice */
+		moz-box-shadow: 0 0 14px #d3d3d3;
+		-ms-box-shadow: 0 0 14px #d3d3d3;
+		-o-box-shadow: 0 0 14px #d3d3d3;
+		-webkit-box-shadow: 0 0 14px #d3d3d3;
+		box-shadow: 0 0 14px #d3d3d3;
+		min-height:500px;
+		height:90%;
+		border-left:1px solid #ccc; 
+		border-right:1px solid #ccc;
+		padding:20px; 
+	}
+	#menu { 
+		width:250px; float:left;
+	}
+	#content {margin-left:250px; position:relative;}
+	#content iframe {width:100%; height:100%; border:none; border: 1px solid #ccc;}
+
+	#footer { padding:20px; text-align:center; }
+
 	/* Turn off list bullets */
 	ul.mktree  li { list-style: none; padding-left: 0px; }
 	/* Control how "spaced out" the tree is */
-	ul.mktree { margin-left: -10px; padding-left: 6px; }
+	ul.mktree { margin-top: 12px;}
 	ul.mktree ul , ul.mktree li { margin-left:4px; padding-left: 0px; }
 	/* Provide space for our own "bullet" inside the LI */
 	ul.mktree  li           .bullet { padding-left: 15px; }
@@ -14,53 +54,13 @@
 	/* Sublists are visible or not based on class of parent LI */
 	ul.mktree  li.liOpen    ul { display: block; }
 	ul.mktree  li.liClosed  ul { display: none; }
-	/* Format menu items differently depending on what level of the tree they are in */
-	ul.mktree  li { font-size: 12pt; }
-	ul.mktree  li ul li { font-size: 12pt; }
-	ul.mktree  li ul li ul li { font-size: 10pt; }
-}
 
-body{
-	color: black;
-	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
-	font-size: 8pt;
-	margin-left: 10px;
-	margin-top: 10px;
-}
 
-#branding {
-	position:absolute;
-	bottom:5px;
-	left:10px;
-}
-
-#logo{
-	vertical-align:middle;
-	margin-right: 5px;
-}
-
-a:link {
-	color: #636394;
-	text-decoration: none;
-	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
-}
-a:visited {
-	color: #636394;
-	text-decoration: none;
-	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
-}
-a:hover {
-	color: #666699;
-	text-decoration: underline;
-	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
-}
-a:active {
-	color: #636394;
-	text-decoration: none;
-	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
-}
-a:focus {
-	color: #666699;
-	text-decoration: underline;
-	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif,  SunSans-Regular;
-}
+	a:link,a:visited  {
+		color: #025D8C;
+		text-decoration: none;
+		font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif;
+	}
+	a:hover, a:active, a:focus {
+		text-decoration: underline;
+	}

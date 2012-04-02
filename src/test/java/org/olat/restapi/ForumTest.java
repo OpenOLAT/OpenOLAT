@@ -39,6 +39,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.core.MediaType;
@@ -56,6 +57,8 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
@@ -76,12 +79,16 @@ import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ForumTest extends OlatJerseyTestCase {
 	
 	private static Forum forum;
 	private static Message m1, m2, m3, m4 ,m5;
 	private static Identity id1;
+	
+	@Autowired
+	private ForumManager forumManager;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -248,15 +255,39 @@ public class ForumTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetAttachment() throws IOException, URISyntaxException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		
+		//set a attachment
+
+		VFSContainer container = forumManager.getMessageContainer(m1.getForum().getKey(), m1.getKey());
+		InputStream portraitIn = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
+		assertNotNull(portraitIn);
+		VFSLeaf attachment = container.createChildLeaf(UUID.randomUUID().toString().replace("-", "") + ".jpg");
+		FileUtils.bcopy(portraitIn, attachment.getOutputStream(false), "");
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
 		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString()).path("attachments").build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		InputStream body = method.getResponseBodyAsStream();
-		List<FileVO> files = parseFileArray(body);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<FileVO> files = parseFileArray(response.getEntity().getContent());
 		assertNotNull(files);
+		
+		FileVO attachmentVO = null;
+		for(FileVO file:files) {
+			if(attachment.getName().equals(file.getTitle())) {
+				attachmentVO = file;
+			}
+		}
+		
+		assertNotNull(attachmentVO);
+		
+		URI downloadURI = new URI(attachmentVO.getHref());
+		HttpGet download = conn.createGet(downloadURI, MediaType.APPLICATION_JSON, true);
+		HttpResponse downloadResponse = conn.execute(download);
+		assertEquals(200, downloadResponse.getStatusLine().getStatusCode());
+		String contentType = downloadResponse.getEntity().getContentType().getValue();
+		assertEquals("image/jpeg", contentType);
 	}
 	
 	@Test

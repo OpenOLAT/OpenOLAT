@@ -74,12 +74,10 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.core.util.vfs.version.VersionsManager;
-
-import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
-import com.oreilly.servlet.multipart.FileRenamePolicy;
 
 /**
  * <h3>Description</h3>
@@ -300,7 +298,8 @@ public class FileUploadController extends FormBasicController {
 					&& resizeEl.isSelected(0)) {
 				String extension = FileUtils.getFileSuffix(fileName);
 				File imageScaled = new File(uploadedFile.getParentFile(), "scaled_" + uploadedFile.getName() + "." + extension);
-				if(ImageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280)) {
+				ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+				if(imageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280, 1280) != null) {
 					//problem happen, special GIF's (see bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6358674)
 					//don't try to scale if not all ok 
 					uploadedFile = imageScaled;
@@ -312,21 +311,27 @@ public class FileUploadController extends FormBasicController {
 			if (existingVFSItem == null) {
 				// save file and finish
 				newFile = uploadVFSContainer.createChildLeaf(fileName);
-				InputStream in = null;
-				OutputStream out = null;
-				boolean success = true;
 				
-				try {
-					
-					in = new FileInputStream(uploadedFile);
-					out = newFile.getOutputStream(false);
-					FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
-					uploadedFile.delete();
-					
-				} catch (IOException e) {
-					FileUtils.closeSafely(in);
-					FileUtils.closeSafely(out);
+				boolean success = true;
+				if(newFile == null) {
+					// FXOLAT-409 somehow "createChildLeaf" did not succeed...
+					// if so, there is alread a error-msg in log (vfsContainer.createChildLeaf)
 					success = false;
+				} else {
+					InputStream in = null;
+					OutputStream out = null;
+					try {
+						in = new FileInputStream(uploadedFile);
+						out = newFile.getOutputStream(false);
+						FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
+						uploadedFile.delete();
+						
+					} catch (IOException e) {
+						success = false;
+					} finally {
+						FileUtils.closeSafely(in);
+						FileUtils.closeSafely(out);
+					}
 				}
 				
 				if (success) {
@@ -343,16 +348,14 @@ public class FileUploadController extends FormBasicController {
 				// file already exists... upload anyway with new filename and
 				// in the folder manager status.
 				// rename file and ask user what to do
-				FileRenamePolicy frp = new DefaultFileRenamePolicy();
 				if ( ! (existingVFSItem instanceof LocalImpl)) {
 					throw new AssertException("Can only LocalImpl VFS items, don't know what to do with file of type::" + existingVFSItem.getClass().getCanonicalName());
 				}
-				File existingFile = ((LocalImpl)existingVFSItem).getBasefile();
-				File tmpOrigFilename = new File(existingFile.getAbsolutePath());
-				String renamedFilename = frp.rename(tmpOrigFilename).getName();
-				newFile = (VFSLeaf) uploadVFSContainer.resolve(renamedFilename);
+
+				String renamedFilename = VFSManager.rename(uploadVFSContainer, existingVFSItem.getName());
+				newFile = uploadVFSContainer.createChildLeaf(renamedFilename);
+
 				// Copy content to tmp file
-				
 				InputStream in = null;
 				BufferedOutputStream out = null;
 				boolean success = false;
@@ -608,20 +611,38 @@ public class FileUploadController extends FormBasicController {
 			// ... and notify listeners.
 			finishUpload(ureq);
 			
+		} else if (source == revisionListDialogBox) {
+			removeAsListenerAndDispose(revisionListCtr);
+			revisionListCtr = null;
+			removeAsListenerAndDispose(revisionListDialogBox);
+			revisionListDialogBox = null;
+			
+			//remove the file
+			newFile.delete();
+			VersionsManager.getInstance().delete(newFile, true);
 		} else if (source == revisionListCtr) {
 			if(FolderCommandStatus.STATUS_CANCELED == revisionListCtr.getStatus()) {
 
 				revisionListDialogBox.deactivate();
+				removeAsListenerAndDispose(revisionListDialogBox);
+				revisionListDialogBox = null;
 
 				//don't want to delete revisions, clean the temporary file
-				newFile.delete();
-				VersionsManager.getInstance().delete(newFile, true);
-				fireEvent(ureq, Event.CANCELLED_EVENT);
+				if(newFile != null) {
+					newFile.delete();
+					VersionsManager.getInstance().delete(newFile, true);
+				}
 			} else {
 				if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
 
 					revisionListDialogBox.deactivate();
-	
+					removeAsListenerAndDispose(revisionListDialogBox);
+					revisionListDialogBox = null;
+					
+					if(existingVFSItem.getParentContainer() != null) {
+						existingVFSItem = existingVFSItem.getParentContainer().resolve(existingVFSItem.getName());
+					}
+					
 					Versionable versionable = (Versionable)existingVFSItem;
 					Versions versions = versionable.getVersions();
 					int maxNumOfRevisions = FolderConfig.versionsAllowed(null);

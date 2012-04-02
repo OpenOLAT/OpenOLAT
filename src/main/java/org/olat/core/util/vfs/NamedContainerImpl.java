@@ -42,7 +42,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  */
 public class NamedContainerImpl extends AbstractVirtualContainer {
 
-	final VFSContainer delegate;
+	private VFSContainer delegate;
 
 	/**
 	 * @param name
@@ -57,40 +57,44 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 		return delegate;
 	}
 	
+	protected void setDelegate(VFSContainer delegate) {
+		this.delegate = delegate;
+	}
+	
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getParent()
 	 */
 	public VFSContainer getParentContainer() {
-		return delegate.getParentContainer();
+		return getDelegate().getParentContainer();
 	}
 	
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#setParentContainer(org.olat.core.util.vfs.VFSContainer)
 	 */
 	public void setParentContainer(VFSContainer parentContainer) {
-		delegate.setParentContainer(parentContainer);
+		getDelegate().setParentContainer(parentContainer);
 	}
 	
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
 	 */
-	public List getItems() {
+	public List<VFSItem> getItems() {
 		//FIXME:fj:b add as listener to "change ownergroup" event, so that the access may be denied, if ownergroup of repoitem has changed.
-		return delegate.getItems();
+		return getDelegate().getItems();
 	}
 	
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
 	 */
-	public List getItems(VFSItemFilter filter) {
-		return delegate.getItems(filter);
+	public List<VFSItem> getItems(VFSItemFilter filter) {
+		return getDelegate().getItems(filter);
 	}
 	
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#copyFrom(org.olat.core.util.vfs.VFSItem)
 	 */
 	public VFSStatus copyFrom(VFSItem source) {
-		return delegate.copyFrom(source);
+		return getDelegate().copyFrom(source);
 	}
 
 
@@ -98,14 +102,14 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	 * @see org.olat.core.util.vfs.VFSContainer#canWrite()
 	 */
 	public VFSStatus canWrite() {
-		return delegate.canWrite();
+		return getDelegate().canWrite();
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#canCopy()
 	 */
 	public VFSStatus canCopy() {
-		return delegate.canCopy();
+		return getDelegate().canCopy();
 	}
 
 	/**
@@ -120,14 +124,14 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	 * @see org.olat.core.util.vfs.VFSItem#delete()
 	 */
 	public VFSStatus delete() {
-		return delegate.delete();
+		return getDelegate().delete();
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getLastModified()
 	 */
 	public long getLastModified() {
-		return delegate.getLastModified();
+		return getDelegate().getLastModified();
 	}
 
 	/**
@@ -145,63 +149,63 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	public VFSItem resolve(String path) {
 		path = VFSManager.sanitizePath(path);
 		if (path.equals("/")) return this;
-		return delegate.resolve(path);
+		return getDelegate().resolve(path);
 	}
 	
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
 	 */
 	public VFSContainer createChildContainer(String name) {
-		return delegate.createChildContainer(name);
+		return getDelegate().createChildContainer(name);
 	}
 	
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
 	 */
 	public VFSLeaf createChildLeaf(String name) {
-		return delegate.createChildLeaf(name);
+		return getDelegate().createChildLeaf(name);
 	}
 	
 	/**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "NamedContainer "+getName()+ "-> "+delegate.toString();
+		return "NamedContainer "+getName()+ "-> "+getDelegate().toString();
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getLocalSecurityCallback()
 	 */
 	public VFSSecurityCallback getLocalSecurityCallback() {
-		return delegate.getLocalSecurityCallback();
+		return getDelegate().getLocalSecurityCallback();
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#setLocalSecurityCallback(org.olat.core.util.vfs.callbacks.VFSSecurityCallback)
 	 */
 	public void setLocalSecurityCallback(VFSSecurityCallback secCallback) {
-		delegate.setLocalSecurityCallback(secCallback);
+		getDelegate().setLocalSecurityCallback(secCallback);
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#isSame(org.olat.core.util.vfs.VFSItem)
 	 */
 	public boolean isSame(VFSItem vfsItem) {
-		return delegate.isSame(vfsItem);
+		return getDelegate().isSame(vfsItem);
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#setDefaultItemFilter(org.olat.core.util.vfs.filters.VFSItemFilter)
 	 */
 	public void setDefaultItemFilter(VFSItemFilter defaultFilter) {
-		delegate.setDefaultItemFilter(defaultFilter);
+		getDelegate().setDefaultItemFilter(defaultFilter);
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getDefaultItemFilter()
 	 */
 	public VFSItemFilter getDefaultItemFilter() {
-		return delegate.getDefaultItemFilter();
+		return getDelegate().getDefaultItemFilter();
 	}
 
 }

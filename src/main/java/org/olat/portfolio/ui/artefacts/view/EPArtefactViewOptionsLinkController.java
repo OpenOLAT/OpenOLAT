@@ -76,7 +76,6 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 	public EPArtefactViewOptionsLinkController(final UserRequest ureq, final WindowControl wControl, final AbstractArtefact artefact,
 			final EPSecurityCallback secCallback, final PortfolioStructure struct){
 		super(ureq,wControl);
-		System.out.println("instantiate new EPArtefactViewOptionsLinkController "+this.toString());				
 		this.artefact = artefact;
 		this.struct = struct;
 		this.secCallback = secCallback;

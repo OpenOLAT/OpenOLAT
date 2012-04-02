@@ -1,6 +1,6 @@
 /* ePortfolio 
 *
-*  note:  this file needs a lot of sass beautifying and cleaning..
+*  note:  this file needs further sass beautifying and cleaning..
 */
 
 div.b_struct_edit_btn { float: right; display: inline;}
@@ -20,6 +20,13 @@ div.o_ep_struct_editor div.b_subcr {
 	@include o_gradient2(#f6f6f6,#ebebeb);
 }
 	
+	
+	div.o_ep_toc_editor div.b_subcl{ min-height: 35em;  }
+	div.o_ep_struct_editor div.b_subcr{ min-height: 35em; background: #FFF; padding-right: 1em; overflow-x: auto; }
+	div.b_struct_edit_btn { float: right; display:inline; }
+	div.b_struct_submit_assess_btn { float: right; display: inline; }
+	
+	
 	.b_artefact div.b_actions { margin-top: 2em;}
 	.b_artefact div.b_desc { font-style: italic; margin: 1em 0; }
 	.b_ep_artAttribLink { background-image: url(../openolat/images/table_gear.png); }
@@ -34,29 +41,82 @@ div.o_ep_struct_editor div.b_subcr {
 	a.b_ep_options { background: url(../openolat/images/gear.png) top left no-repeat; width:16px; height:16px; display: block;}
 	.b_ep_liveblog_icon { background-image: url(../openolat/images/portfolio/ep_liveblog_icon.png); }
 	
-	div.b_portfolio_toc ul { margin: 0; }
-	div.b_portfolio_toc li { list-style-type: none; }
-	div.b_portfolio_toc li.level1 { font-size: 1.2em; margin: 1.2em 0 0.2em 0; border-bottom: 1px solid #ddd; }
-	div.b_portfolio_toc li.level2 { padding-left: 20px; font-size: 1.1em; border-bottom: 1px dotted #ddd; }
-	div.b_portfolio_toc li.level3 { padding-left: 40px; }
-	div.b_portfolio_toc li a  { font-size: 0.8em; text-decoration: none; }
-	div.b_portfolio_toc .link { float: right; margin-right: 0px; }
-	div.b_portfolio_toc .commentlink { float: right; margin-right: 10%; }
-	div.b_portfolio_toc .type_artefact { font-style: italic; }	
-	.b_portfolio_toc .type_map, .b_portfolio_toc .type_page, .b_portfolio_toc .type_struct, .b_portfolio_toc .type_artefact { background-position: center left; background-repeat: no-repeat; padding-left: 20px; } 
+div.b_portfolio_toc {
+	ul { margin: 0; }
+	li { 
+		list-style-type: none; 
+		 a  { font-size: 0.8em; text-decoration: none; }
+	}
+	li.level1 { font-size: 1.2em; margin: 1.2em 0 0.2em 0; border-bottom: 1px solid #ddd; }
+	li.level2 { padding-left: 20px; font-size: 1.1em; border-bottom: 1px dotted #ddd; }
+	li.level3 { padding-left: 40px; }
+	
+	.link { float: right; margin-right: 0px; }
+	.commentlink { float: right; margin-right: 10%; }
+	.type_artefact { font-style: italic; }	
+	
+	.type_map,.type_page,.type_struct,.type_artefact { background-position: center left; background-repeat: no-repeat; padding-left: 20px; } 
+}
 	
 	 a.b_eportfolio_add { background: url(../openolat/images/portfolio/ep_add_icon.png) top left no-repeat; display:block; width:16px; height:16px;}
 	 td a.b_eportfolio_add {  float:right; padding-right:2px; }
 	 a.b_eportfolio_add_again, span.b_eportfolio_add_again { background: url(../openolat/images/portfolio/ep_add_again_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
 	.o_efficiencystatement a.b_eportfolio_add_again {float:right;}
 	 a.b_eportfolio_link { background: url(../openolat/images/portfolio/ep_link_icon.png) top left no-repeat; display:block; width:16px; height:16px; }
-	ul.b_eportfolio_maps { margin: 0; padding: 0; }
-	ul.b_eportfolio_maps li { display: block; float: left; position: relative; width: 195px; height: 320px; padding: 60px 60px 40px 65px; margin: 0.5em; background: url(../openolat/images/portfolio/eportfolio_map_default.png) top left no-repeat; -moz-border-radius: 4px 14px 14px 4px; -webkit-border-radius: 4px 10px 10px 4px; -o-border-radius: 4px 14px 14px 4px; border-radius: 4px 14px 14px 4px; -webkit-box-shadow: 0 1px 3px lightGray; -moz-box-shadow: 0 1px 3px lightGray; -o-box-shadow: 0 1px 3px lightGray; box-shadow: 0 1px 3px lightGray; }
-	ul.b_eportfolio_maps li .b_map_info { position: absolute; bottom: 40px; width: inherit; font-size: 0.9em; }
+	.b_eportfolio_link { background-image: url(../openolat/images/portfolio/ep_link_icon.png);}
+	
+ul.b_eportfolio_maps { 
+	margin: 0; padding: 0; 
+	li { 
+		display: block; 
+		float: left; 
+		position: relative; 
+		width: 195px; 
+		height: 320px; 
+		padding: 60px 60px 40px 65px; 
+		margin: 0.5em; 
+		background: url(../openolat/images/portfolio/eportfolio_map_default.png) top left no-repeat; 
+		@include o-border-radius-all(4px, 14px, 14px, 4px);
+		@include o-box-shadow(0,1px,3px, lightgray);
+		
+		.b_map_info { 
+			position: absolute; bottom: 40px; width: inherit; font-size: 0.9em; 
+			a.b_open_icon { font-size: 1.2em; position: absolute; bottom: 170px; right: -10px; }
+		}
+		
+	}
+}
+
+/* -- changelog in map -- */
+.b_eportfolio_changelog {
+	.b_form {margin-top:20px;margin-bottom:20px;}
+	li{list-style: none;}
+	h5 { margin-top:16px;}
+}
+
+.b_eportfolio_mapowner {
+	font-style:  italic;
+	margin-bottom:8px;	
+	div {display:inline;}
+}
+
+/* different map styles  */
+/* default, leather and comic were standard (OLATpro 7.2) */
+/* green / blue / red etc. were added 2011 for ZAG */
+
+@import "../../epmapstyles/epmapstyles.scss";
+
+
 	li.default .b_map_info p { color: #bbb; }
 	li.comic .b_map_info p { color: #88a5c4; }
 	li.leather .b_map_info p { color: #C2A074; }
-	ul.b_eportfolio_maps li .b_map_info a.b_open_icon { font-size: 1.2em; position: absolute; bottom: 170px; right: -10px; }
+	
+	.b_map_page { text-align:center; clear:left;}
+	.b_map_page_all{text-align:center;}
+	.b_map_page > span { padding-right:3px;}
+	.b_map_page a.b_map_page_forward {background: url(../openolat/images/arrow_right.png) no-repeat center right; padding-right: 16px;}
+	
+	/* the styles for the multi-map view (closed maps displayed in grid) */
 	ul.b_eportfolio_maps li.leather { background: url(../openolat/images/portfolio/eportfolio_map_leather.png) top left no-repeat; border: none; }
 	ul.b_eportfolio_maps li.leather a { color: #fad9a4; }
 	ul.b_eportfolio_maps li.comic { background: url(../openolat/images/portfolio/eportfolio_map_comic.png) top left no-repeat; border: none; }
@@ -82,46 +142,11 @@ div.o_ep_struct_editor div.b_subcr {
 	.b_eportfolio_map .b_eportfolio_comment_link { float: right; display:inline; margin-right:5px; }
 	
 	.b_ep_tag_cloud { padding: 1em 0 1em 0; border-bottom: 1px solid #ccc; }
-	
-	.default div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
-	.default div.b_pagination { float: none; position: static; width: 100%; }
-	.default div.b_pagination ul { margin: 0; }
-	.default div.b_pagination li { float: left; display: inline; width: auto; margin: 2px 2px 2px 0; padding: 0; background: #FAFAFA; -webkit-border-radius: 7px 7px 0 0; -moz-border-radius: 7px 7px 0 0; -o-border-radius: 7px 7px 0 0; border-radius: 7px 7px 0 0; }
-	.default div.b_pagination li span, .default div.b_pagination li a, .default  div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.default div.b_pagination li.b_disabled { padding-bottom: 2px; margin-bottom: 0; background: #f4f4f4; }
-	.default div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
-	.default div.b_pagination li a { padding: 1em; padding: 5px 8px; }
-	.default div.b_eportfolio_page, .default div.b_portfolio_toc, .default div.b_eportfolio_edit { background-image: none; }	
-
-	.comic {font-family: 'Comic Sans MS', 'Comic Sans', fantasy;}
-	.b_eportfolio_map.comic { background: #a2c3e8 none; padding: 30px; -webkit-border-top-right-radius: 10px; -moz-border-radius-topright: 10px; border-top-right-radius: 10px; }
-	.comic div.b_pagination { position: absolute; right: 0; width: 16%; max-height: 100%; overflow-x: hidden; overflow-y: auto; z-index: 100; }
-	.comic .b_ep_relative > div:last-child { position: relative; }
-	.comic div.b_ep_actualpage { width: 85%; margin-top: 1em; }
-	.comic div.b_pagination ul { margin-top: 30px; margin-left: 0px; z-index: 1; }
-	.comic div.b_pagination li  { width: 87%; background: url(../openolat/images/portfolio/postit.png) center right; padding: 0; margin-bottom: 1em; margin-left: 8%; list-style-type: none; }
-	.comic div.b_pagination li span.b_disabled, .comic div.b_pagination li a span { display: block; padding: 20px 15px 20px 10px; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.comic div.b_pagination li span, .comic div.b_pagination li a, .comic div.b_pagination li { white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.comic div.b_pagination li.b_disabled { z-index: 101; margin-left: 0; width: 100%; }
-	.comic div.b_pagination li .b_disabled { color: black; font-weight: bold; }
-	.comic div.b_pagination li.b_toc { background-image: url(../openolat/images/portfolio/postit_pink.png); }
-	
-	.b_eportfolio_page, .b_portfolio_toc, .b_eportfolio_edit { min-height: 40em; background: #f4f4f4 url(../openolat/images/portfolio/eportfolio_page_corner.png) top right no-repeat; padding: 1em; -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -o-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
+	.b_eportfolio_page, .b_portfolio_toc, .b_eportfolio_edit, .b_eportfolio_changelog { min-height: 40em; background: #f4f4f4 url(../openolat/images/portfolio/eportfolio_page_corner.png) top right no-repeat; padding: 1em; -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); -o-box-shadow: 0px 2px 5px rgba(0,0,0,0.2); box-shadow: 0px 2px 5px rgba(0,0,0,0.2); }
 	.b_eportfolio_page .b_eportfolio_structure > h5 { border-bottom: 1px solid #ddd; margin-top: 1.2em; }
 	.b_eportfolio_edit {  margin-top: 1.5em; }
 	
-	.leather {font-family: Palatino, Georgia, serif;}
-	.b_eportfolio_map.leather { background: url(../openolat/images/portfolio/light-leather-tile.jpg); }
-	.leather div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
-	.leather .b_map_header h4, .leather .b_map_header p, .leather .b_map_header a.b_eportfolio_add_link, .leather .b_map_header a.b_eportfolio_comment_link { color: white; }
-	.leather div.b_pagination { float: none; position: static; width: 100%; }
-	.leather div.b_pagination ul { margin: 0; }
-	.leather div.b_pagination li { float: left; display: inline; width: auto; margin: 0 2px 0 0; padding: 0; background: #ddd; -webkit-border-radius: 7px 7px 0 0; -moz-border-radius: 7px 7px 0 0; -o-border-radius: 7px 7px 0 0; border-radius: 7px 7px 0 0; }
-	.leather div.b_pagination li span, .leather div.b_pagination li a, .leather div.b_pagination li { display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; }
-	.leather div.b_pagination li.b_disabled { padding: 0; background: #f4f4f4; }
-	.leather div.b_pagination li .b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
-	.leather div.b_pagination li a { padding: 1em; padding: 5px 8px; }
-	.leather div.b_eportfolio_page, .leather div.b_portfolio_toc, .leather div.b_eportfolio_edit { background-image: none; }	
+	
 	
 	.b_eportfolio.b_artefacts hr.b_ep_filter_spacer { height: 10px; background: url(../openolat/images/portfolio/divider-arrow-down.png) 25px -12px no-repeat; border: none; border-top: 1px solid #ccc; margin: 2em 0 1em;  }
 	.b_eportfolio.b_artefacts .b_ep_content { background: white; padding: 0 1em 1em 1em; margin-top: 1.5em; }
@@ -142,7 +167,8 @@ div.o_ep_struct_editor div.b_subcr {
 	.b_ep_struct_icon.b_eportfolio_add_link { background-image: url(../openolat/images/portfolio/ep_struct_add.png) ! important; }
 	.type_artefact { background-image: url(../openolat/images/le_resources/portfolio.png) ! important; }
 	
-div.b_eportfolio_collect_restriction { 
+	
+	div.b_eportfolio_collect_restriction { 
 	margin-top:5px;
 	
 	div.b_eportfolio_collect_restriction_el { float:left; margin-right:5px; }
@@ -152,24 +178,26 @@ div.b_eportfolio_collect_restriction {
 		a:hover { text-decoration:none }
 	}
 }
+
 	
 div.b_eportfolio_restriction_wrapper {
-	a.b_togglebox_opened { z-index:10; display:block; width:9px; height:9px; padding:0; margin-left:12px; }
-	a.b_togglebox_closed { display:block; width:9px; height:9px; padding:0; margin-left:12px; }
+	a.b_togglebox_opened { z-index:10; display:block; width:20px; height:20px; padding:0; margin-left:12px; }
+	a.b_togglebox_closed { display:block; width:20px; height:20px; padding:0; margin-left:12px; }
 	p { padding:0 0 0 15px; margin:0; }
 	div.b_togglebox div.b_togglebox_content { padding:3px 3px 3px 3px; margin:0; border:1px solid red; background-image:none; background-color:transparent; @include o-border-radius(3px); }
 }
-	
-  div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../openolat/images/decorator/deco_warn.png) no-repeat 3px 2px !important; }
-  div.b_eportfolio_restriction_passed div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #F0F0F0 !important; background:#FCFCFC url(../openolat/images/decorator/deco_ok.png) no-repeat 3px 2px !important; }
-  div.b_eportfolio_restriction_error div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_warn.png) no-repeat top left !important; }
-  div.b_eportfolio_restriction_passed div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_ok.png) no-repeat top left !important; }
-  div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content .b_togglebox_hide { display:none; }
+		
+/* restriction info on a map */
+div.b_eportfolio_restriction_error div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #FF9900 !important; background:#FFF5CC url(../openolat/images/decorator/deco_warn.png) no-repeat 3px 7px !important; }
+div.b_eportfolio_restriction_passed div.b_tooglebox_opened div.b_togglebox_content { border:1px solid #F0F0F0 !important; background:#FCFCFC url(../openolat/images/decorator/deco_ok.png) no-repeat 3px 7px !important; }
+div.b_eportfolio_restriction_error div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_warn.png) no-repeat  3px 5px !important; }
+div.b_eportfolio_restriction_passed div.b_togglebox_closed { background:transparent url(../openolat/images/decorator/deco_ok.png) no-repeat  3px 5px !important; }
+div.b_eportfolio_restriction_wrapper div.b_togglebox div.b_togglebox_content .b_togglebox_hide { display:none; }
  
-	.b_eportfolio_deadline_callout { width:300px; }
-	.b_ep_multiartefacts .b_c50l { clear: both; }
-	.b_eportfolio_fulltextsearch { float:left; }
-	.b_eportfolio_fulltextsearch div.b_form div.b_form_element_wrapper.b_form_horizontal { }
+.b_eportfolio_deadline_callout { width:300px; }
+.b_ep_multiartefacts .b_c50l { clear: both; }
+.b_eportfolio_fulltextsearch { float:left; }
+.b_eportfolio_fulltextsearch div.b_form div.b_form_element_wrapper.b_form_horizontal { }
 	
 .b_eportfolio_share_policy_wrapper { 
 	margin: 5px; border: 1px solid #ddd; padding: 1em; 
@@ -193,3 +221,112 @@ div.b_eportfolio_restriction_wrapper {
 	.b_eportfolio_share_policy_wrapper.policytype_allusers .b_eportfolio_share_policy { background-image: url(../openolat/images/users.png); }
 	
 	div.b_ep_inline div input, div.b_ep_inline div span, div.b_ep_inline div select { float: left; margin-right:5px; padding-right:5px; }
+	
+	
+/*  ========= the different custom map styles ========= */
+
+/* DEFAULT */
+.default  {
+	 div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
+	 div.b_pagination { 
+	 	float: none; position: static; width: 100%; 
+	 	ul { margin: 0; }
+	 	li { 
+	 		float: left; 
+	 		display: inline; 
+	 		width: auto; 
+	 		margin: 2px 2px 2px 0; 
+	 		padding: 0; 
+	 		background: #FAFAFA; 
+	 		@include o-border-radius-all(7px,7px,0,0);
+	 		a { padding: 1em; padding: 5px 8px; }
+	 		&,span,a {
+	 			display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis;
+	 		} 
+	 		&.b_disabled { padding-bottom: 2px; margin-bottom: 0; background: #f4f4f4; }	
+	 		.b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+	 		
+	 		&.b_changelog {float:right;}
+ 		}
+	 }
+	
+	div.b_eportfolio_page, div.b_portfolio_toc,  div.b_eportfolio_edit, div.b_eportfolio_changelog { background-image: none; }	
+}
+
+/* COMIC */
+.b_eportfolio_map.comic { background: #a2c3e8 none; padding: 30px;  @include o-border-radius-all(0,10px,0,0); }
+.comic {
+	font-family: 'Comic Sans MS', 'Comic Sans', fantasy;
+	div.b_pagination { position: absolute; right: 0; width: 16%; max-height: 100%; overflow-x: hidden; overflow-y: auto; z-index: 100; }
+	.b_ep_relative > div:last-child { position: relative; }
+	div.b_ep_actualpage { width: 85%; margin-top: 1em; }
+	div.b_pagination {
+		ul { margin-top: 30px; margin-left: 0px; z-index: 1; } 
+		li  { 
+			width: 87%; 
+			background: url(../openolat/images/portfolio/postit.png) center right; 
+			padding: 0; 
+			margin-bottom: 1em; 
+			margin-left: 8%; 
+			list-style-type: none;
+			
+			 span.b_disabled, a span { 
+			 	display: block; 
+			 	padding: 20px 15px 20px 10px; 
+			 	white-space: nowrap; 
+			 	overflow: hidden; 
+			 	text-overflow:ellipsis; 
+			 	-o-text-overflow:ellipsis; 
+			 }
+			 &,span,a {
+			 	white-space: nowrap; 
+			 	overflow: hidden; 
+			 	text-overflow:ellipsis; 
+			 	-o-text-overflow:ellipsis;
+			 }
+			 &.b_disabled { z-index: 101; margin-left: 0; width: 100%; }
+			 .b_disabled { color: black; font-weight: bold; }
+			 
+			 &.b_toc,&.b_changelog { background-image: url(../openolat/images/portfolio/postit_pink.png); }
+		}
+	}
+}
+	
+/* LEATHER */
+.b_eportfolio_map.leather { background: url(../openolat/images/portfolio/light-leather-tile.jpg); }
+.leather {
+	font-family: Palatino, Georgia, serif;
+	div.b_ep_actualpage { width: 100%; margin-top: 0; clear: both; }
+	.b_map_header {
+		h4,p,a.b_eportfolio_add_link,a.b_eportfolio_comment_link { color: white; }
+	}
+	.b_eportfolio_mapowner { color:#fff;}
+	
+	div.b_pagination { 
+		float: none; position: static; width: 100%; 
+		ul { margin: 0; }
+		li { 
+			float: left; 
+			display: inline; 
+			width: auto; 
+			margin: 0 2px 0 0; 
+			padding: 0; 
+			background: #ddd; 
+			@include o-border-radius-all(7px,7px,0,0);
+			
+			a { padding: 1em; padding: 5px 8px; }
+			
+			&,span,a {
+				display: block; white-space: nowrap; overflow: hidden; text-overflow:ellipsis; -o-text-overflow:ellipsis; 
+			}
+			&.b_disabled { padding: 0; background: #f4f4f4; }
+			.b_disabled { color: black; font-weight: normal; padding: 5px 8px; }
+			&.b_changelog {float:right;}
+		}
+	}
+	
+	div.b_eportfolio_page, div.b_portfolio_toc, div.b_eportfolio_edit, div.b_eportfolio_changelog { background-image: none; }	
+}
+
+	
+

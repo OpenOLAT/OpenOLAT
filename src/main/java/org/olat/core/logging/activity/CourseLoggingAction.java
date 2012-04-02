@@ -86,6 +86,21 @@ public class CourseLoggingAction extends BaseLoggingAction {
 		setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
 				OlatResourceableType.node, StringResourceableType.checklist, StringResourceableType.checkpoint));
 	
+	public static final ILoggingAction INFO_MESSAGE_CREATED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.create, ActionVerb.add, ActionObject.infomessage).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, OlatResourceableType.infoMessage));
+	
+	public static final ILoggingAction INFO_MESSAGE_UPDATED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.infomessage).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, OlatResourceableType.infoMessage));
+	
+	public static final ILoggingAction INFO_MESSAGE_DELETED = 
+			new CourseLoggingAction(ActionType.statistic, CrudAction.delete, ActionVerb.remove, ActionObject.infomessage).
+			setTypeList(new ResourceableTypeList().addMandatory(OlatResourceableType.course, 
+					OlatResourceableType.node, OlatResourceableType.infoMessage));
+	
 	public static final ILoggingAction COURSE_ENTERING = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.retrieve, ActionVerb.launch, ActionObject.course).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(StringResourceableType.targetIdentity));

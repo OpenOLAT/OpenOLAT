@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.logging.OLATRuntimeException;
@@ -395,7 +396,7 @@ public class QTIExportFormatterCSVType3 extends QTIExportFormatter{
   }
   
   private String escape(String s){
-  	return s.replaceAll(emb, esc+emb);
+  	return s.replaceAll(emb, Matcher.quoteReplacement(esc)+emb);
   }
   
   @SuppressWarnings("unchecked")

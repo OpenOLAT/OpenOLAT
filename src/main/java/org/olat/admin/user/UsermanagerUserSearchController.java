@@ -817,6 +817,11 @@ class UsermanagerUserSearchForm extends FormBasicController {
 			FormItem fi = userPropertyHandler.addFormItem(
 					getLocale(), null, getClass().getCanonicalName(), false, formLayout
 			);
+			// OO-155: Do not validate items, this is a search form!
+			if (fi instanceof TextElement) {
+				TextElement textElement = (TextElement) fi;
+				textElement.setItemValidatorProvider(null);
+			}
 			
 			fi.setTranslator(tr);
 			items.put(fi.getName(), fi);

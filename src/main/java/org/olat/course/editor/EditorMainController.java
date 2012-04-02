@@ -36,7 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderRunController;
@@ -185,6 +184,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private ToolController toolC;
 	private MoveCopySubtreeController moveCopyController;
 	private InsertNodeController insertNodeController;
+	private FolderRunController folderController;
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	
@@ -504,12 +504,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event.getCommand().equals(BGContextEvent.RESOURCE_ADDED)) {
-			System.out.println("emc:have to inform tabs");
-			Iterator it = tabbedNodeConfig.getComponents().keySet().iterator();
-			while (it.hasNext()) {
-				Component c = tabbedNodeConfig.getComponents().get(it.next());
-				System.out.println(c.getComponentName());
-			}
 			return;
 		}
 
@@ -520,11 +514,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			if (event.getCommand().startsWith(TB_ACTION)) {
 				String cnAlias = event.getCommand().substring(TB_ACTION.length());
 				if (cnAlias == null) throw new AssertException("Received event from ButtonController which is not registered with the toolbox.");
+				removeAsListenerAndDispose(insertNodeController);
+				removeAsListenerAndDispose(cmc);
 				
 				Codepoint.codepoint(EditorMainController.class, "startInsertNode");
 				insertNodeController = new InsertNodeController(ureq, getWindowControl(), course, cnAlias);				
 				listenTo(insertNodeController);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), insertNodeController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
+				listenTo(cmc);
 				cmc.activate();
 			} else if (event.getCommand().equals(CMD_DELNODE)) {
 				TreeNode tn = menuTree.getSelectedNode();
@@ -550,11 +547,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					showError(NLS_MOVECOPYNODE_ERROR_ROOTNODE);
 					return;
 				}
+				removeAsListenerAndDispose(moveCopyController);
+				removeAsListenerAndDispose(cmc);
 				
 				CourseEditorTreeNode cetn = cetm.getCourseEditorNodeById(tn.getIdent());
 				moveCopyController = new MoveCopySubtreeController(ureq, getWindowControl(), course, cetn, event.getCommand().equals(CMD_COPYNODE));				
-				this.listenTo(moveCopyController);
+				listenTo(moveCopyController);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), moveCopyController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
+				listenTo(cmc);
 				cmc.activate();
 			}
 			
@@ -644,12 +644,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// Folder for course with custom link model to jump to course nodes
 				VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-				FolderRunController bcrun = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
-				bcrun.addLoggingResourceable(LoggingResourceable.wrap(course));
-				Component folderComponent = bcrun.getInitialComponent();
-				CloseableModalController clc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE),
-						folderComponent);
-				clc.activate();
+				folderController = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
+				folderController.addLoggingResourceable(LoggingResourceable.wrap(course));
+				listenTo(folderController);
+				cmc = new CloseableModalController(getWindowControl(), translate(NLS_COURSEFOLDER_CLOSE), folderController.getInitialComponent());
+				listenTo(cmc);
+				cmc.activate();
 				
 			} else if (event.getCommand().equals(CMD_MULTI_SP)) {
 				removeAsListenerAndDispose(multiSPChooserCtr);
@@ -698,7 +698,21 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			if (event == Event.DONE_EVENT) {
 				// no need to deactivate preview controller, already done internally
 				removeAsListenerAndDispose(previewController);
+				previewController = null;
 			}
+			
+		} else if (source == cmc || source == folderController) {
+			//aggressive clean-up
+			removeAsListenerAndDispose(multiSPChooserCtr);
+			removeAsListenerAndDispose(moveCopyController);
+			removeAsListenerAndDispose(insertNodeController);
+			removeAsListenerAndDispose(folderController);
+			removeAsListenerAndDispose(cmc);
+			moveCopyController = null;
+			insertNodeController = null;
+			multiSPChooserCtr = null;
+			folderController = null;
+			cmc = null;
 		} else if (source == moveCopyController) {	
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {					
@@ -721,6 +735,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				// user canceled						
 			}
 			
+			//aggressive clean-up
+			removeAsListenerAndDispose(moveCopyController);
+			removeAsListenerAndDispose(cmc);
+			moveCopyController = null;
+			cmc = null;
 		} else if (source == insertNodeController) {     			
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
@@ -745,7 +764,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 			// in all cases:
 			removeAsListenerAndDispose(insertNodeController);
-
+			removeAsListenerAndDispose(cmc);
+			insertNodeController = null;
+			cmc = null;
 		} else if (source == deleteDialogController){
 			removeAsListenerAndDispose(deleteDialogController);
 			deleteDialogController = null;
@@ -784,6 +805,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			cmc.deactivate();
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(multiSPChooserCtr);
+			cmc = null;
 
 			if(event == Event.CHANGED_EVENT) {
 				menuTree.setDirty(true);

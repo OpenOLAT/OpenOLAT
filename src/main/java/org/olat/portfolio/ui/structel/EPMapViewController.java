@@ -31,10 +31,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -55,6 +59,7 @@ import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.portfolio.ui.structel.edit.EPStructureTreeAndDetailsEditController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.user.DisplayPortraitController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -66,7 +71,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class EPMapViewController extends BasicController {
+public class EPMapViewController extends BasicController implements Activateable2 {
 	
 	private PortfolioStructureMap map;
 	private final EPFrontendManager ePFMgr;
@@ -121,6 +126,12 @@ public class EPMapViewController extends BasicController {
 
 
 	protected void initForm(UserRequest ureq) {
+		Identity ownerIdentity = ePFMgr.getFirstOwnerIdentity(map);
+		if(ownerIdentity != null) {
+			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), ownerIdentity, false,true,true,false);
+			mainVc.put("ownerportrait", portraitCtr.getInitialComponent());
+		}
+		
 		mainVc.contextPut("map", map);
 		mainVc.contextPut("style", ePFMgr.getValidStyleName(map));
 		
@@ -201,6 +212,7 @@ public class EPMapViewController extends BasicController {
 					EPPage page = getSelectedPage(currentEditedStructure);
 					if(page != null) {
 						pageCtrl.selectPage(ureq, page);
+						addToHistory(ureq, page, null);
 					}
 				}
 			}
@@ -213,6 +225,16 @@ public class EPMapViewController extends BasicController {
 				showWarning("map.cannot.submit.nomore.coursenode");
 			}
 		} 
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		pageCtrl.activate(ureq, entries, state);
+	}
+	
+	public PortfolioStructureMap getMap() {
+		return map;
 	}
 	
 	private EPPage getSelectedPage(PortfolioStructure structure) {

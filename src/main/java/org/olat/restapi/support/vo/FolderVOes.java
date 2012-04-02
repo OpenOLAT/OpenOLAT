@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FolderVOes {
 
 	@XmlElementWrapper(name="folders")
-	@XmlElement(name="folders")
+	@XmlElement(name="folder")
 	private FolderVO[] folders;
 	@XmlAttribute(name="totalCount")
 	private int totalCount;

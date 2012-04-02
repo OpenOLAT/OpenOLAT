@@ -64,6 +64,18 @@ div.o_podcast_peekview div.o_feed_peekview_item a.o_feed_item_icon {background-i
 	@include o-border-radius(5px);
 }
 
+.o_post-readmorelinks {
+	margin-top:1em;
+	list-style: none;
+	&,li{
+		margin-left:0;
+		padding-left:0;
+	}
+}
+.o_post-editlinks {
+}
+
+
 
 
 #o_feed .o_blog_posts .o_draft { padding: 0.8em; background-color: #fcf7ac; border: 1px solid #fddc55; }

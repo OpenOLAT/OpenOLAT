@@ -23,9 +23,15 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.gui.UserRequest;
@@ -46,6 +52,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSRevisionMediaResource;
@@ -83,10 +90,14 @@ public class DeletedFileListController extends BasicController {
 	private TableController deletedFilesListTableCtr;
 	private DialogBoxController dialogCtr;
 
+	private boolean isAdmin;
+	
 	public DeletedFileListController(UserRequest ureq, WindowControl wControl, VFSContainer container) {
 		super(ureq, wControl);
 		this.container = container;
 		deletedFiles = VersionsManager.getInstance().getDeletedFiles(container);
+		
+		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 
 		TableGuiConfiguration summaryTableConfig = new TableGuiConfiguration();
 		summaryTableConfig.setDownloadOffered(false);
@@ -113,13 +124,33 @@ public class DeletedFileListController extends BasicController {
 
 		deletedFilesListTableCtr.addMultiSelectAction("cancel", CMD_CANCEL);
 		deletedFilesListTableCtr.setMultiSelect(true);
-
-		deletedFilesListTableCtr.setTableDataModel(new DeletedFileListDataModel(deletedFiles, ureq.getLocale()));
+		loadModel(ureq);
 		listenTo(deletedFilesListTableCtr);
 
 		mainVC = createVelocityContainer("deleted_files");
 		mainVC.put("deletedFileList", deletedFilesListTableCtr.getInitialComponent());
 		putInitialPanel(mainVC);
+	}
+	
+	private void loadModel(UserRequest ureq) {
+		Collection<String> names = new HashSet<String>();
+		for(Versions deletedFile:deletedFiles) {
+			if(deletedFile.getCreator() != null) {
+				names.add(deletedFile.getCreator());
+			}
+			VFSRevision lastRevision = getLastRevision(deletedFile);
+			if(lastRevision != null && lastRevision.getAuthor() != null) {
+				names.add(lastRevision.getAuthor());
+			}
+		}
+		
+		Map<String, IdentityShort> mappedIdentities = new HashMap<String, IdentityShort>();
+		for(IdentityShort identity :BaseSecurityManager.getInstance().findShortIdentitiesByName(names)) {
+			mappedIdentities.put(identity.getName(), identity);
+		}
+
+		DeletedFileListDataModel model = new DeletedFileListDataModel(deletedFiles, mappedIdentities, ureq.getLocale());
+		deletedFilesListTableCtr.setTableDataModel(model);
 	}
 
 	@Override
@@ -244,9 +275,11 @@ public class DeletedFileListController extends BasicController {
 		private final DateFormat format;
 		private final List<Versions> versionList;
 		private final Calendar cal = Calendar.getInstance();
+		private final Map<String, IdentityShort> mappedIdentities;
 
-		public DeletedFileListDataModel(List<Versions> versionList, Locale locale) {
+		public DeletedFileListDataModel(List<Versions> versionList, Map<String, IdentityShort> mappedIdentities, Locale locale) {
 			this.versionList = versionList;
+			this.mappedIdentities = mappedIdentities;
 			format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		}
 
@@ -266,10 +299,10 @@ public class DeletedFileListController extends BasicController {
 					return lastRevision == null ? null : lastRevision.getName();
 				}
 				case 1:
-					return versioned.getCreator();
+					return getFullName(versioned.getCreator());
 				case 2: {
 					VFSRevision lastRevision = getLastRevision(versioned);
-					return lastRevision == null ? null : lastRevision.getAuthor();
+					return lastRevision == null ? null : getFullName(lastRevision.getAuthor());
 				}
 				case 3: {
 					VFSRevision lastRevision = getLastRevision(versioned);
@@ -280,6 +313,26 @@ public class DeletedFileListController extends BasicController {
 				default:
 					return "";
 			}
+		}
+		
+		private String getFullName(String name) {
+			if(!StringHelper.containsNonWhitespace(name)) {
+				return null;
+			}
+			IdentityShort id = mappedIdentities.get(name);
+			if(id == null) {
+				return null;
+			}
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(id.getFirstName())
+			  .append(" ")
+			  .append(id.getLastName());
+			
+			if(isAdmin) {
+				sb.append(" (").append(name).append(")");
+			}
+			return sb.toString();
 		}
 	}
 }

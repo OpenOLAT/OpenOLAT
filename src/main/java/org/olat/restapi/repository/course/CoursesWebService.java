@@ -151,7 +151,7 @@ public class CoursesWebService {
 		int count=0;
 		for (RepositoryEntry repoEntry : repoEntries) {
 			try {
-				ICourse course = CourseFactory.loadCourse(repoEntry.getOlatResource().getResourceableId());
+				ICourse course = CourseWebService.loadCourse(repoEntry.getOlatResource().getResourceableId());
 				voList.add(ObjectFactory.get(repoEntry, course));
 				if(count % 33 == 0) {
 					DBFactory.getInstance().commitAndCloseSession();
@@ -254,22 +254,21 @@ public class CoursesWebService {
 	
 	/**
 	 * Create an empty course with some defaults settings
-	 * @param identity
-	 * @param name
-	 * @param longTitle
-	 * @param courseConfigVO
+	 * @param initialAuthor Author
+	 * @param shortTitle Title of the course
+	 * @param longTitle Long title of the course
+	 * @param courseConfigVO Can be null
 	 * @return
 	 */
-	public static ICourse createEmptyCourse(Identity identity, String name, String longTitle, CourseConfigVO courseConfigVO) {
-		String shortTitle = name;
-		String learningObjectives = name + " (Example of creating a new course)";
+	public static ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
+		String learningObjectives = shortTitle + " (Example of creating a new course)";
 
 		try {
 			// create the course resource
 			OLATResourceable oresable = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 
 			// create a repository entry
-			RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(identity.getName());
+			RepositoryEntry addedEntry = RepositoryManager.getInstance().createRepositoryEntryInstance(initialAuthor.getName());
 			addedEntry.setCanDownload(false);
 			addedEntry.setCanLaunch(true);
 			addedEntry.setDisplayname(shortTitle);
@@ -289,7 +288,7 @@ public class CoursesWebService {
 			// initialize course group management
 			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 			cgm.createCourseGroupmanagement(course.getResourceableId().toString());
-			prepareSecurityGroup(identity, addedEntry);
+			prepareSecurityGroup(initialAuthor, addedEntry);
 			return prepareCourse(addedEntry, courseConfigVO);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);

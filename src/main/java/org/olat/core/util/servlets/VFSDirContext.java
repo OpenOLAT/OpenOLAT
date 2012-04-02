@@ -62,6 +62,8 @@ import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoHelper;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.notifications.NotificationsManager;
@@ -86,8 +88,8 @@ import org.olat.core.util.vfs.version.VersionsManager;
 
 public class VFSDirContext extends BaseDirContext {
 
-	//private static org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(VFSDirContext.class);
-
+	private OLog log = Tracing.createLoggerFor(VFSDirContext.class);
+	
 	// -------------------------------------------------------------- Constants
 
 	/**
@@ -707,7 +709,10 @@ public class VFSDirContext extends BaseDirContext {
 				if (withQuotaCheck) {
 					// re-calculate quota and check
 					quotaLeft = quotaLeft - len;
-					if (quotaLeft < 0) throw new NamingException("Quota exceeded.");
+					if (quotaLeft < 0) {
+						log.info("Quota exceeded: " + file);
+						throw new NamingException("Quota exceeded.");
+					}
 				}
 				os.write(buffer, 0, len);
 			}

@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>7.1.2.0-SNAPSHOT</version>
+	<version>8.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>http://www.openolat.org</url>
@@ -1360,11 +1360,6 @@
 					<version>2.8</version>
 					<configuration>
 				        <linkedResources>
-			                <linkedResource>
-		                        <name>static</name>
-		                        <type>2</type>
-		                        <location>${basedir}/src/main/webapp/static</location>
-			                </linkedResource>
 			               	<linkedResource>
 		                        <name>/src/main/java/olat.local.properties</name>
 		                        <type>1</type>
@@ -1790,12 +1785,12 @@
 		<dependency>
 			<groupId>org.igniterealtime.smack</groupId>
 			<artifactId>smack</artifactId>
-			<version>3.2.1</version>
+			<version>3.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.igniterealtime.smack</groupId>
 			<artifactId>smackx</artifactId>
-			<version>3.2.1</version>
+			<version>3.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -2100,7 +2095,7 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			<version>1.6.2</version>
+			<version>1.6.4</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>

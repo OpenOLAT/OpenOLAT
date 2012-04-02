@@ -34,7 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.portfolio.EPLoggingAction;
@@ -42,8 +42,6 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
-import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm03;
-import org.olat.portfolio.ui.artefacts.collect.EPReflexionChangeEvent;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -79,10 +77,8 @@ public class EPAddElementsController extends BasicController {
 		}
 	};
 	private final Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
-	private CloseableModalWindowWrapperController artefactBox;
+	private CloseableModalController artefactBox;
 	private Controller artefactPoolCtrl;
-	private Controller artReflexionCtrl;
-	private CloseableModalWindowWrapperController reflexionBox;
 	private Link linkArtefactLink;
 	private String activeType;
 
@@ -111,7 +107,7 @@ public class EPAddElementsController extends BasicController {
 	 *      org.olat.core.gui.control.Event)
 	 */
 	@Override
-	protected void event(UserRequest ureq, Component source, @SuppressWarnings("unused") Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == linkArtefactLink) {
 			popUpAddArtefactBox(ureq);
 		} else if (source == addStructLink) {
@@ -156,17 +152,9 @@ public class EPAddElementsController extends BasicController {
 				} else {
 					showError("restrictions.not.conform");
 				}
-				// TODO: epf: RH: improvement let user choose in settings, if reflexion
-				// should be presented right after adding
-				// popUpAdaptReflexionBox(ureq, choosenArtefact);
 				fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, portfolioStructure));
 			}
 
-		} else if (source == artReflexionCtrl && event instanceof EPReflexionChangeEvent) {
-			EPReflexionChangeEvent refEv = (EPReflexionChangeEvent) event;
-			ePFMgr.setReflexionForArtefactToStructureLink(refEv.getRefArtefact(), portfolioStructure, refEv.getReflexion());
-			reflexionBox.deactivate();
-			fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, portfolioStructure));
 		}
 	}
 
@@ -199,25 +187,10 @@ public class EPAddElementsController extends BasicController {
 			artefactPoolCtrl = new EPArtefactPoolRunController(ureq, getWindowControl(), true);
 			listenTo(artefactPoolCtrl);
 		}
-		String title = translate("choose.artefact.title");
-		artefactBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, artefactPoolCtrl.getInitialComponent(),
-				"addArtefact" + portfolioStructure.getKey());
+		artefactBox = new CloseableModalController(getWindowControl(),"close",artefactPoolCtrl.getInitialComponent(),true, translate("choose.artefact.title"));
+		
 		listenTo(artefactBox);
 		artefactBox.activate();
-	}
-
-	// TODO: epf: RH: improvement to let user see reflexion right after adding
-	private void popUpAdaptReflexionBox(UserRequest ureq, AbstractArtefact artefact) {
-		if (artReflexionCtrl == null) {
-			artReflexionCtrl = new EPCollectStepForm03(ureq, getWindowControl(), artefact);
-			listenTo(artReflexionCtrl);
-		}
-		String title = translate("change.reflexion");
-		reflexionBox = new CloseableModalWindowWrapperController(ureq, getWindowControl(), title, artReflexionCtrl.getInitialComponent(),
-				"reflexionFor" + artefact.getKey());
-		reflexionBox.setInitialWindowSize(600, 400);
-		listenTo(reflexionBox);
-		reflexionBox.activate();
 	}
 
 	/**

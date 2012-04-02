@@ -281,7 +281,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	/**
 	 * Do search for all resources that the user can reference either because he 
 	 * is the owner of the resource or because he has author rights and the resource
-	 * is set to at least BA in the BARG settings and the resource has the flat
+	 * is set to at least BA in the BARG settings and the resource has the flag
 	 * 'canReference' set to true.
 	 * @param owner The current identity
 	 * @param limitType The search limitation a specific type
@@ -291,6 +291,15 @@ public class RepositorySearchController extends BasicController implements Activ
 		doSearchForReferencableResourcesLimitType(owner, limitType.equals("")?null:new String[] {limitType}, roles);
 	}
 
+	/**
+	 * Do search for all resources that the user can reference either because he 
+	 * is the owner of the resource or because he has author rights and the resource
+	 * is set to at least BA in the BARG settings and the resource has the flag
+	 * 'canReference' set to true.
+	 * @param owner The current identity
+	 * @param limitTypes List of Types to limit the search
+	 * @param roles The users roles
+	 */
 	public void doSearchForReferencableResourcesLimitType(Identity owner, String[] limitTypes, Roles roles) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<String> restrictedTypes = new ArrayList<String>();

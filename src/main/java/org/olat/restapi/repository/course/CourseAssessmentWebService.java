@@ -139,7 +139,7 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -195,7 +195,7 @@ public class CourseAssessmentWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			ICourse course = CourseFactory.loadCourse(courseId);
+			ICourse course = CourseWebService.loadCourse(courseId);
 			if(course == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
@@ -241,7 +241,7 @@ public class CourseAssessmentWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, httpRequest)) {
@@ -322,7 +322,7 @@ public class CourseAssessmentWebService {
 			userCourseEnvironment.getScoreAccounting().evaluateAll();
 
 			if (node instanceof IQTESTCourseNode) {
-				importTestItems(courseResourceableId, nodeKey, requestIdentity, resultsVO);
+				importTestItems(course, nodeKey, requestIdentity, resultsVO);
 			} else {
 				AssessableCourseNode assessableNode = (AssessableCourseNode) node;
 				ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, new Long(nodeKey));//not directly pass this key
@@ -338,13 +338,11 @@ public class CourseAssessmentWebService {
 	
 
 
-	private void importTestItems(Long courseResourceableId, String nodeKey, Identity identity, AssessableResultsVO resultsVO) {
+	private void importTestItems(ICourse course, String nodeKey, Identity identity, AssessableResultsVO resultsVO) {
 		try {
-
 			IQManager iqManager = IQManager.getInstance();
 
 			// load the course and the course node
-			ICourse course = CourseFactory.loadCourse(courseResourceableId);
 			CourseNode courseNode = getParentNode(course, nodeKey);
 			ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
 
@@ -498,7 +496,7 @@ public class CourseAssessmentWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
-			ICourse course = CourseFactory.loadCourse(courseId);
+			ICourse course = CourseWebService.loadCourse(courseId);
 			if(course == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}

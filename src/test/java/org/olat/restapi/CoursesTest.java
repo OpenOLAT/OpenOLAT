@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -42,6 +43,8 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
@@ -55,6 +58,7 @@ import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.OlatJerseyTestCase;
@@ -147,6 +151,21 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(re);
 		assertNotNull(re.getOlatResource());
 		assertNotNull(re.getOwnerGroup());
+	}
+	
+	@Test
+	public void testGetCourseInfos() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		boolean loggedIN = conn.login("administrator", "openolat");
+		assertTrue(loggedIN);
+
+		URI uri = conn.getContextURI().path("repo").path("courses").path("infos").build();
+
+		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(get);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseInfoVOes infos = conn.parse(response, CourseInfoVOes.class);
+		assertNotNull(infos);
 	}
 	
 	protected List<CourseVO> parseCourseArray(String body) {

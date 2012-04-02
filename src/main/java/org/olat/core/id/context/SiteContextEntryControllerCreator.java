@@ -34,7 +34,7 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SiteContextEntryControllerCreator implements ContextEntryControllerCreator {
+public class SiteContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 	private final Class<? extends SiteInstance> site;
 	
 	public SiteContextEntryControllerCreator(Class<? extends SiteInstance> site) {
@@ -45,11 +45,13 @@ public class SiteContextEntryControllerCreator implements ContextEntryController
 		return null;
 	}
 
-	public String getSiteClassName(ContextEntry ce) {
+	@Override
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		return site.getName();
 	}
 
-	public String getTabName(ContextEntry ce) {
+	@Override
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 

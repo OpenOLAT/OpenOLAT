@@ -33,6 +33,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,10 +47,13 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.PublisherData;
@@ -72,6 +80,8 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	private static Identity userSubscriberId;
 	private static Identity userAndForumSubscriberId;
 	
+	private static Forum forum;
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -92,14 +102,14 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		
 		//create a forum
 		ForumManager fm = ForumManager.getInstance();
-		Forum forum = ForumManager.getInstance().addAForum();
+		forum = ForumManager.getInstance().addAForum();
 		Message m1 = fm.createMessage();
 		m1.setTitle("Thread-1");
 		m1.setBody("Body of Thread-1");
 		fm.addTopMessage(userSubscriberId, forum, m1);
 		
 		//subscribe
-		SubscriptionContext forumSubContext = new SubscriptionContext("NotificationRestCourse", new Long(12356), "676");
+		SubscriptionContext forumSubContext = new SubscriptionContext("NotificationRestCourse", forum.getKey(), "2387");
 		PublisherData forumPdata = new PublisherData(OresHelper.calculateTypeName(Forum.class), forum.getKey().toString(), "");
 		if(!notifManager.isSubscribed(userAndForumSubscriberId, forumSubContext)) {
 			notifManager.subscribe(userAndForumSubscriberId, forumSubContext, forumPdata);
@@ -109,6 +119,8 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		//generate one notification
 		String randomLogin = UUID.randomUUID().toString().replace("-", "");
 		JunitTestHelper.createAndPersistIdentityAsUser(randomLogin);
+		
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 	
 	
@@ -159,23 +171,27 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetUserForumNotifications() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-notifications-test-2", "A6B7C8");
+	public void testGetUserForumNotifications() throws HttpException, URISyntaxException, IOException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
 		
-		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications");
-		GetMethod method = createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
-		List<SubscriptionInfoVO> infos = parseUserArray(body);
-		method.releaseConnection();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.HOUR, -2);
+		String date = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.S").format(cal.getTime());
+
+		URI uri = conn.getContextURI().path("notifications").queryParam("date", date).build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<SubscriptionInfoVO> infos = parseUserArray(response);
 		assertNotNull(infos);
-		assertEquals(2, infos.size());
+		assertTrue(2 <= infos.size());
 	}
 	
 	@Test
 	public void testGetUserForumNotificationsByType() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-notifications-test-2", "A6B7C8");
+		HttpClient c = loginWithCookie(userAndForumSubscriberId.getName(), "A6B7C8");
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
 		GetMethod method = createGet(request.build(), MediaType.APPLICATION_JSON, true);
@@ -185,7 +201,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		List<SubscriptionInfoVO> infos = parseUserArray(body);
 		method.releaseConnection();
 		assertNotNull(infos);
-		assertEquals(1, infos.size());
+		assertTrue(1 <= infos.size());
 		
 		SubscriptionInfoVO infoVO = infos.get(0);
 		assertNotNull(infoVO);
@@ -209,6 +225,11 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		method.releaseConnection();
 		assertNotNull(infos);
 		assertTrue(infos.isEmpty());
+	}
+	
+	protected List<SubscriptionInfoVO> parseUserArray(HttpResponse response) throws IOException {
+		InputStream body = response.getEntity().getContent();
+		return parseUserArray(body);
 	}
 	
 	protected List<SubscriptionInfoVO> parseUserArray(InputStream body) {

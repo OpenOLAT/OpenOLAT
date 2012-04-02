@@ -28,9 +28,12 @@
 */
 package org.olat.core.id.context;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * Description:<br>
@@ -62,23 +65,13 @@ public interface ContextEntryControllerCreator {
 	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl);
 
 	/**
-	 * The name of the dynamic tab if such a tab should be created or NULL if
-	 * opened as Site
-	 * 
-	 * @param ce
-	 * @return Return tab name for certain context entry or NULL if the target is
-	 *         the opeing of an existing site
-	 */
-	public String getTabName(ContextEntry ce);
-
-	/**
 	 * The class name of the site that must be activated or NULL if opened as dTab
 	 * 
 	 * @param ce
 	 * @return Return the class name that is used to activate an existing site or
 	 *         NULL if the target is a new dtab
 	 */
-	public String getSiteClassName(ContextEntry ce);
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq);
 	
 	/**
 	 * 
@@ -88,4 +81,12 @@ public interface ContextEntryControllerCreator {
 	 * @return true, if this contextentry can be launched
 	 */
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl);
+	
+	/**
+	 * Allow to rewrite the business path
+	 * @param ureq
+	 * @param entries
+	 * @return
+	 */
+	public TabContext getTabContext(UserRequest ureq, OLATResourceable ores, ContextEntry mainEntry,  List<ContextEntry> entries);
 }

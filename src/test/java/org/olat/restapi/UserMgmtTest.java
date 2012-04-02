@@ -869,9 +869,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//check if big and small portraits exist
 		DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
-		File uploadDir = dps.getPortraitDir(id1);
-		assertTrue(new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME).exists());
-		assertTrue(new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME).exists());
+		File bigPortrait = dps.getBigPortrait(id1);
+		assertNotNull(bigPortrait);
+		assertTrue(bigPortrait.exists());
+		assertTrue(bigPortrait.exists());
 		
 		//check get portrait
 		String getRequest = "/users/" + id1.getKey() + "/portrait";
@@ -888,7 +889,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		assertEquals(-1, b);//up to end of file
 		assertTrue(count > 1000);//enough bytes
-		File bigPortrait = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
+		bigPortrait = dps.getBigPortrait(id1);
+		assertNotNull(bigPortrait);
 		assertEquals(count, bigPortrait.length());
 
 		//check get portrait as Base64
@@ -905,7 +907,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(datas);
 		assertTrue(datas.length > 0);
 		
-		File smallPortrait = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+		File smallPortrait = dps.getSmallPortrait(id1);
+		assertNotNull(smallPortrait);
 		assertEquals(datas.length, smallPortrait.length());
 		
 		try {

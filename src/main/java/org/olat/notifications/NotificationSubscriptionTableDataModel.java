@@ -90,6 +90,9 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel {
 				return containerTypeTrans;
 			case 2:
 				NotificationsHandler handler = NotificationsManager.getInstance().getNotificationsHandler(pub);
+				if(handler == null){
+					return "";
+				}
 				String title = handler.createTitleInfo(sub, getLocale());
 				if(title == null) {
 					return "";

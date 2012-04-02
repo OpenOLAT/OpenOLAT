@@ -36,6 +36,7 @@ body {
 	color:#444;
 }
 
+*:focus,*:active { outline:none; }
 
 #b_header #b_topnav,#b_nav_main, div.b_tree { font-family: $headerfont; }
 
@@ -59,8 +60,16 @@ a:hover {
 	color:$basecolor;
 }
 
+a img {
+	border: none;
+	outline: none;	
+}
+
+/* special links */
 a.b_link_extern { background: transparent url('../../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
-.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
+
 
 /* TEXT FORMATTING */
 cite, blockquote { font-style:italic }
@@ -98,9 +107,9 @@ dd { margin: 0 0 1em 2em }
 .b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; @include o-border-radius(4px);}
 .b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; @include o-border-radius(4px);}
 div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
-.b_border_box { border: 1px solid #ACAAAA; padding: 1em;}
+.b_border_box { border: 1px solid $basegray_light; padding: 1em;}
 /* font  */
-.b_disabled { color: #ACAAAA; }
+.b_disabled { color: $basegray_light; }
 .b_deleted { text-decoration: line-through; }	
 .b_selected { font-weight: bold; }	
 /* font sizes relative to parent object */
@@ -120,7 +129,6 @@ blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: blac
 .b_dimmed { @include o-opacity(40); }
 .o_ochre { color: #c8a959; }
 	
-
 
 /* =============================================================================== **/
 	
@@ -240,7 +248,6 @@ img.b_emoticons_weird     {background : url(../../openolat/images/emoticons/smil
 img.b_emoticons_wink      {background : url(../../openolat/images/emoticons/smiley-wink.png) no-repeat; width: 18px; height: 18px;}
 img.b_emoticons_worried   {background : url(../../openolat/images/emoticons/smiley-roll-blue.png) no-repeat; width: 18px; height: 18px;}
 
-
 /** ---------------------- EXT JS PATCHES  ------------------ **/
 /* (are needed here in content.css ,  e.g.  glossary tooltip in iframes...) */
 div.b_ext_elem ol, div.b_ext_elem ul, div.b_ext_elem li {list-style: none; padding: 0; margin: 0}
@@ -249,13 +256,13 @@ div.b_ext_tooltip_wrapper {padding: 1px;}
 .x-window-mc {font-size: 100%;}
 
 /* EXT TREE */
-div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url($ico_minus); background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url($ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url($ico_minus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url($ico_plus);background-position: 50% 50%;}
-div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../openolat/images/folder.png); }
-div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../openolat/images/folder_open.png); }
-div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../openolat/images/docs/document_plain.png); }
+div.b_ext_elem .x-tree-lines .x-tree-elbow-minus {background-image: url('../'+$ico_minus); background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-plus {background-image: url('../'+$ico_plus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-minus {background-image: url('../'+$ico_minus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-lines .x-tree-elbow-end-plus {background-image: url('../'+$ico_plus);background-position: 50% 50%;}
+div.b_ext_elem .x-tree-node-collapsed .x-tree-node-icon { background-image: url(../../openolat/images/folder.png); }
+div.b_ext_elem .x-tree-node-expanded .x-tree-node-icon { background-image: url(../../openolat/images/folder_open.png); }
+div.b_ext_elem .x-tree-node-leaf .x-tree-node-icon { background-image: url(../../openolat/images/docs/document_plain.png); }
 div.b_ext_elem .x-tree-selected a.x-tree-node-anchor { border: 1px dotted #444; text-decoration: none; }
 div.b_ext_elem .x-tree-node .x-tree-selected { background-color:#FFC266; }
 	

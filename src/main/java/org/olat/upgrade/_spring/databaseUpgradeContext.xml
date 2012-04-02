@@ -31,6 +31,14 @@
 					<constructor-arg index="0" value="OLAT_8.0.0" />
 					<property name="alterDbStatements" value="alter_7_1_x_to_8_0_0.sql" />
 				</bean>
+				<bean id="database_upgrade_8_0_2" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_8.0.2" />
+					<property name="alterDbStatements" value="alter_8_0_x_to_8_0_2.sql" />
+				</bean>
+				<bean id="database_upgrade_8_1_0" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_8.1.0" />
+					<property name="alterDbStatements" value="alter_8_0_x_to_8_1_0.sql" />
+				</bean>
 			</list>
 		</property>
 	</bean>

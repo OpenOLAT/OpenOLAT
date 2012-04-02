@@ -25,21 +25,14 @@
 
 package org.olat.modules.sharedfolder;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.servlets.WebDAVProvider;
-import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.fileresource.types.SharedFolderFileResource;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * 
@@ -49,7 +42,11 @@ import org.olat.repository.RepositoryManager;
  */
 public class SharedFolderWebDAVProvider extends LogDelegator implements WebDAVProvider {
 	private static List<String> publiclyReadableFolders;
-	private static final VFSSecurityCallback readOnlyCallback = new ReadOnlyCallback();
+	protected static final VFSSecurityCallback readOnlyCallback = new ReadOnlyCallback();
+	
+	public SharedFolderWebDAVProvider() {
+		//
+	}
 
 	/**
 	 * Spring setter.
@@ -91,80 +88,6 @@ public class SharedFolderWebDAVProvider extends LogDelegator implements WebDAVPr
 	 * @see org.olat.commons.servlets.util.WebDAVProvider#getContainer(org.olat.core.id.Identity)
 	 */
 	public VFSContainer getContainer(Identity identity) {
-		MergeSource rootContainer = new MergeSource(null, "root");
-
-		SharedFolderManager sfm = SharedFolderManager.getInstance();
-		RepositoryManager repoManager = RepositoryManager.getInstance();
-		List<RepositoryEntry> ownerEntries = (List<RepositoryEntry>) repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
-		for (RepositoryEntry repoEntry : ownerEntries) {
-			rootContainer.addContainer(sfm.getNamedSharedFolder(repoEntry));
-		}
-
-		// see /olat3/webapp/WEB-INF/olat_extensions.xml
-		if (publiclyReadableFolders != null && publiclyReadableFolders.size() > 0) {
-			// Temporarily save added entries. This is needed to make sure not to add
-			// an
-			// entry twice.
-			List<RepositoryEntry> addedEntries = new ArrayList<RepositoryEntry>(ownerEntries);
-			//
-			String firstItem = publiclyReadableFolders.get(0);
-			// If the first value in the list is '*', list all resource folders.
-			if (firstItem != null && firstItem.equals("*")) {
-				// fake role that represents normally logged in user
-				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
-				//fxdiff VCRP-1,2: access control of resources
-				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, SharedFolderFileResource.TYPE_NAME,
-						registeredUserRole);
-				for (RepositoryEntry entry : allEntries) {
-					addReadonlyFolder(rootContainer, entry, sfm, addedEntries);
-				}
-			} else {
-				// only list the specified folders
-				for (String folder : publiclyReadableFolders) {
-					try {
-						Long repoKey = Long.parseLong(folder);
-						RepositoryEntry entry = repoManager.lookupRepositoryEntry(repoKey);
-						if (entry != null) {
-							if (entry.getAccess() >= RepositoryEntry.ACC_USERS || (entry.getAccess() == RepositoryEntry.ACC_OWNERS && entry.isMembersOnly())) {
-								// add folder (which is a repo entry) to root container if not
-								// present
-								addReadonlyFolder(rootContainer, entry, sfm, addedEntries);
-							} else {
-								logWarn("Access denied on entry::" + entry.getKey(), null);
-							}
-						} else {
-							logWarn("The repsitoryEntryId::" + folder + " does not exist.", null);
-						}
-					} catch (NumberFormatException e) {
-						// Invalid id name
-						logWarn("The list item::" + folder + " of publiclyReadableFolders is invalid. Should be repsitoryEntryId or '*'.", e);
-					}
-				}
-			}
-		}
-		return rootContainer;
+		return new SharedFolderWebDAVMergeSource(identity, publiclyReadableFolders);
 	}
-
-	// If there is a bean property 'publiclyReadableFolders' do the following:
-
-	/**
-	 * Outsourced helper method for adding an entry to the root container.
-	 * 
-	 * @param rootContainer
-	 * @param sfm
-	 * @param ownerEntries
-	 * @param entry
-	 */
-	private void addReadonlyFolder(MergeSource rootContainer, RepositoryEntry entry, SharedFolderManager sfm,
-			List<RepositoryEntry> addedEntries) {
-		//
-		if (addedEntries == null || !PersistenceHelper.listContainsObjectByKey(addedEntries, entry)) {
-			// add the entry (readonly)
-			VFSContainer folder = sfm.getNamedSharedFolder(entry);
-			folder.setLocalSecurityCallback(readOnlyCallback);
-			rootContainer.addContainer(folder);
-			addedEntries.add(entry);
-		}
-	}
-
 }

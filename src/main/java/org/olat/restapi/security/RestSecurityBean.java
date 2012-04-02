@@ -34,15 +34,14 @@ import org.olat.core.id.Identity;
  */
 public interface RestSecurityBean {
 	
-	public String generateToken(Identity identity);
+	public String generateToken(Identity identity, HttpSession session);
 	
 	public boolean isTokenRegistrated(String token);
 	
 	public Identity getIdentity(String token);
 	
 	/**
-	 * Bind a token with the session
-	 * @param token
+	 * Bind the token to the specified session
 	 * @param session
 	 */
 	public void bindTokenToSession(String token, HttpSession session);

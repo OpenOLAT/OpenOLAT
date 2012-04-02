@@ -156,4 +156,21 @@ public class BGContextImpl extends PersistentObject implements BGContext {
 	public void setDefaultContext(boolean defaultContext) {
 		this.defaultContext = defaultContext;
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 836785 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof BGContext) {
+			BGContext ctx = (BGContext)obj;
+			return equalsByPersistableKey(ctx);
+		}
+		return false;
+	}
 }

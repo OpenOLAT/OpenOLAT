@@ -53,6 +53,11 @@ public class IdentityEnvironment extends LogDelegator implements Serializable {
 	public IdentityEnvironment() {
 	// defaults all to null
 	}
+	
+	public IdentityEnvironment(Identity identity, Roles roles) {
+		this.identity = identity;
+		this.roles = roles;
+	}
 
 	/**
 	 * @param attributes

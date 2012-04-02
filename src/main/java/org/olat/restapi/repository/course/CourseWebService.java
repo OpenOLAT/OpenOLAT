@@ -24,8 +24,6 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthorEditor;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +40,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -55,22 +52,16 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.control.WindowBackOffice;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.xml.XStreamHelper;
@@ -78,16 +69,14 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.editor.PublishProcess;
-import org.olat.course.editor.StatusDescription;
-import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.course.tree.PublishTreeModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
@@ -170,63 +159,12 @@ public class CourseWebService {
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		publishCourse(course, ureq.getIdentity(), locale);
+		CourseFactory.publishCourse(course, ureq.getIdentity(), locale);
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
 	
-	/**
-	 * Publish a course
-	 * 
-	 * @param course
-	 * @param identity
-	 * @param locale
-	 */
-	private void publishCourse(ICourse course, Identity identity, Locale locale) {
-		try {
-			 CourseEditorTreeModel cetm = course.getEditorTreeModel();
-			 PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, locale);
-			 PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
 
-			 int newAccess = RepositoryEntry.ACC_USERS;
-			 //access rule -> all users can the see course
-			 //RepositoryEntry.ACC_OWNERS
-			 //only owners can the see course
-			 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
-			 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
-			 //fxdiff VCRP-1,2: access control of resources
-			 publishProcess.changeGeneralAccess(null, newAccess, false);
-			 
-			 if (publishTreeModel.hasPublishableChanges()) {
-				 List<String>nodeToPublish = new ArrayList<String>();
-				 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
-
-			 	publishProcess.createPublishSetFor(nodeToPublish);
-			 	StatusDescription[] status = publishProcess.testPublishSet(locale);
-			 	//publish not possible when there are errors
-			 	for(int i = 0; i < status.length; i++) {
-			 		if(status[i].isError()) return;
-			 	}
-			 }
-
-			 course = CourseFactory.openCourseEditSession(course.getResourceableId());
-			 publishProcess.applyPublishSet(identity, locale);
-			 CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		} catch (Throwable e) {
-			throw new WebApplicationException(e);
-		}
-	}
-	
-	private void visitPublishModel(TreeNode node, PublishTreeModel publishTreeModel, Collection<String> nodeToPublish) {
-		int numOfChildren = node.getChildCount();
-		for (int i = 0; i < numOfChildren; i++) {
-			INode child = node.getChildAt(i);
-			if (child instanceof TreeNode) {
-				nodeToPublish.add(child.getIdent());
-				visitPublishModel((TreeNode) child, publishTreeModel, nodeToPublish);
-			}
-		}
-	}
 
 	/**
 	 * Get the metadatas of the course by id
@@ -240,10 +178,12 @@ public class CourseWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response findById(@PathParam("courseId") Long courseId) {
+	public Response findById(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
 		ICourse course = loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!isCourseAccessible(course, false, httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
@@ -708,7 +648,22 @@ public class CourseWebService {
 		return ores;
 	}
 	
-	private ICourse loadCourse(Long courseId) {
+	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
+		if(authorRightsMandatory && !isAuthor(request)) {
+			return false;
+		}
+
+		Identity identity = getIdentity(request);
+		RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		ACFrontendManager acManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		AccessResult result = acManager.isAccessible(entry, identity, false);
+		if(result.isAccessible()) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static ICourse loadCourse(Long courseId) {
 		try {
 			ICourse course = CourseFactory.loadCourse(courseId);
 			return course;

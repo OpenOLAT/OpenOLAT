@@ -299,6 +299,7 @@ public class ClientManagerImpl extends BasicManager implements ClientManager {
 		if (client != null) {
 				listeners.remove(username);
 				client.closeConnection(false);
+				client.setGroupChatManager(null);
 				clients.remove(username);
 		}
 	}

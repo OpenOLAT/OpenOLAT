@@ -329,7 +329,9 @@ public abstract class FormBasicController extends BasicController {
 				FormItem fiSrc = fe.getFormItemSource();
 				// check for InlineElments
 				if(fiSrc instanceof InlineElement){
-					this.flc.setDirty(true);
+					if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137
+						this.flc.setDirty(true);
+					}
 				}
 				//
 				formInnerEvent(ureq, fiSrc, fe);

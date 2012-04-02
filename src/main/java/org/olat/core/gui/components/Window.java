@@ -129,7 +129,7 @@ public class Window extends Container {
 	private String latestTimestamp;
 	private AsyncMediaResponsible asyncMediaResponsible;
 	private String instanceId;
-	private final int timestamp = 1; // used to find out when a user has called
+	private int timestamp = 1; // used to find out when a user has called
 	// back/forward/reload in the browser and to detect
 	// asyncmedia resources
 	
@@ -220,7 +220,7 @@ public class Window extends Container {
 	public void dispatchRequest(UserRequest ureq, boolean renderOnly) {
 		final HttpServletRequest request = ureq.getHttpReq();
 		final HttpServletResponse response = ureq.getHttpResp();
-		final String timestampID = "1";//ureq.getTimestampID();
+		final String timestampID = ureq.getTimestampID() == null ? "1" : ureq.getTimestampID();
 		final String componentID = ureq.getComponentID();
 
 		// case windowId timestamp componentId
@@ -259,7 +259,7 @@ public class Window extends Container {
 		
 		// increase the timestamp, but not if we are in loadperformancemode: then all url's have 
 		// to work independant of previous ones -> when no increase: timestamp is always the same here
-		boolean incTimestamp = !GUIInterna.isLoadPerformanceMode();
+		boolean incTimestamp = false;//!GUIInterna.isLoadPerformanceMode();
 		
 		MediaResource mr = null;
 		final boolean isDebugLog = Tracing.isDebugEnabled(Window.class);
@@ -319,7 +319,9 @@ public class Window extends Container {
 						// 3.) return to sender...
 						boolean didDispatch = false;
 						if (validForDispatching) {
-							didDispatch = doDispatchToComponent(ureq, null);  // FIXME:fj:c enable time stats for ajax-mode
+							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);  // FIXME:fj:c enable time stats for ajax-mode
+							didDispatch = dispatchResult.isDispatch();
+							incTimestamp = dispatchResult.isIncTimestamp();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
 								Tracing.logDebug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent, Window.class);
@@ -582,7 +584,9 @@ public class Window extends Container {
 			}
 			
 			if (dispatch) {
-				boolean didDispatch = doDispatchToComponent(ureq, debugMsg);
+				DispatchResult dispatchResult = doDispatchToComponent(ureq, debugMsg);
+				boolean didDispatch = dispatchResult.isDispatch();
+				incTimestamp = dispatchResult.isIncTimestamp();
 				if (isDebugLog) {
 					long dstop = System.currentTimeMillis();
 					long diff = dstop - dstart;
@@ -681,7 +685,10 @@ public class Window extends Container {
 					String result;
 					synchronized(render_mutex) { //o_clusterOK by:fj
 						// render now
-						//TODO state-less if (incTimestamp) timestamp++;
+						//TODO state-less 
+						if (incTimestamp) {
+							timestamp++;
+						}
 						final String newTimestamp = String.valueOf(timestamp);
 						// add the businesscontrol path for bookmarking:
 						// each url has a part in it (the so called business path), which, in case of an invalid url or invalidated
@@ -1033,9 +1040,9 @@ public class Window extends Container {
 	 *         otherwise (reasons: no component found with given id, or component
 	 *         disabled)
 	 */
-	private boolean doDispatchToComponent(UserRequest ureq, StringBuilder debugMsg) {
+	private DispatchResult doDispatchToComponent(UserRequest ureq, StringBuilder debugMsg) {
 		String s_compID = ureq.getComponentID();
-		if (s_compID == null) return false; //throw new AssertException("no component id found in req:" + ureq.toString());
+		if (s_compID == null) return new DispatchResult(false, false); //throw new AssertException("no component id found in req:" + ureq.toString());
 		
 		
 		Component target;
@@ -1092,7 +1099,7 @@ public class Window extends Container {
 		if (target == null) {
 			// there was a component id given, but no matching target could be found
 			fireEvent(ureq, COMPONENTNOTFOUND);
-			return false;
+			return new DispatchResult(false, false);
 			// do not dispatch; which means just rerender later; good if
 			// the
 			// gui tree was changed by another thread in the meantime.
@@ -1102,8 +1109,9 @@ public class Window extends Container {
 		if (!target.isVisible()) { throw new OLATRuntimeException(Window.class, "target with name: '" + target.getComponentName()
 				+ "', was invisible, but called to dispatch", null); }
 		boolean toDispatch = true; //TODO:fj:c is foundpath needed for something else than the enabled-check. if no -> one boolean is enough
-		for (Iterator iter = foundPath.iterator(); iter.hasNext();) {
-			Component curComp = (Component) iter.next();
+		boolean incTimestamp = false;
+		for (Iterator<Component> iter = foundPath.iterator(); iter.hasNext();) {
+			Component curComp = iter.next();
 			if (!curComp.isEnabled()) {
 				toDispatch = false;
 				break;
@@ -1117,7 +1125,14 @@ public class Window extends Container {
 			// dispatch
 			wbackofficeImpl.fireCycleEvent(Window.ABOUT_TO_DISPATCH);
 			target.dispatchRequest(ureq);
-			
+		
+			List<Component> ancestors = ComponentHelper.findAncestorsOrSelfByID(getContentPane(), target);
+			for(Component ancestor:ancestors) {
+				incTimestamp |= ancestor.isSilentlyDynamicalCmp();
+				//System.out.println("Ancestor -> " + ancestor.getComponentName() + " :: " + ancestor);
+			}
+			//System.out.println("Target -> " + highDynamical + " :: " + target);
+
 			// after dispatching, commit (docu)
 			DBFactory.getInstance().commit();
 			
@@ -1170,7 +1185,7 @@ public class Window extends Container {
 			// in case we do not reach the next line because of an exception in dispatch(), we clear the value in the exceptionwindowcontroller's error handling			
 			latestDispatchedComp = null; 
 		}
-		return toDispatch;
+		return new DispatchResult(toDispatch, incTimestamp);
 	}
 	
 	private List<Component> findComponentsWithChildName(final String childName, Component searchRoot) {
@@ -1256,6 +1271,24 @@ public class Window extends Container {
 		return tmp;
 	}
 
+}
+
+class DispatchResult {
+	private final boolean dispatch;
+	private final boolean incTimestamp;
+	
+	public DispatchResult(boolean dispatch, boolean incTimestamp) {
+		this.dispatch = dispatch;
+		this.incTimestamp = incTimestamp;
+	}
+
+	public boolean isDispatch() {
+		return dispatch;
+	}
+
+	public boolean isIncTimestamp() {
+		return incTimestamp;
+	}
 }
 
 class ValidatingVisitor implements ComponentVisitor {

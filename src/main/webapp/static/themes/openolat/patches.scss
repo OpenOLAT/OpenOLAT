@@ -7,3 +7,7 @@
 @import url(patches/yaml_patch.css);
 
 
+
+.b_button:focus, .b_button:hover {
+	border: 1px solid #aaa;
+} 

@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE xsl:stylesheet [
 <!ENTITY nbsp "&#160;">
-<!ENTITY head_ass_ovw "$t.translate("head.ass.ovw")">
-<!ENTITY head_ass_details "$t.translate("head.ass.details")">
-<!ENTITY head_ass_summary "$t.translate("head.ass.summary")">
-<!ENTITY head_score "$t.translate("head.score")">
-<!ENTITY ass_user "$t.translate("ass.user")">
-<!ENTITY ass_inst "$t.translate("ass.inst")">
-<!ENTITY ass_identifier "$t.translate("ass.identifier")">
-<!ENTITY ass_title "$t.translate("ass.title")">
-<!ENTITY num_av "$t.translate("num.av")">
-<!ENTITY num_pres "$t.translate("num.pres")">
-<!ENTITY num_tried "$t.translate("num.tried")">
-<!ENTITY score_val "$t.translate("score.val")">
-<!ENTITY score_min "$t.translate("score.min")">
-<!ENTITY score_max "$t.translate("score.max")">
-<!ENTITY score_cut "$t.translate("score.cut")">
-<!ENTITY ans_min "$t.translate("ans.min")">
-<!ENTITY ans_max "$t.translate("ans.max")">
-<!ENTITY ans_correct "$t.translate("ans.correct")">
-<!ENTITY ans_your "$t.translate("ans.your")">
-<!ENTITY ans_plus "$t.translate("ans.plus")">
-<!ENTITY ans_minus "$t.translate("ans.minus")">
-<!ENTITY date "$t.translate("date")">
-<!ENTITY time "$t.translate("time")">
-<!ENTITY dur "$t.translate("dur")">
-<!ENTITY days "$t.translate("days")">
-<!ENTITY hours "$t.translate("hours")">
-<!ENTITY mins "$t.translate("mins")">
-<!ENTITY secs "$t.translate("secs")">
-<!ENTITY sec "$t.translate("sec")">
+<!ENTITY head_ass_ovw "$t.translate('head.ass.ovw')">
+<!ENTITY head_ass_details "$t.translate('head.ass.details')">
+<!ENTITY head_ass_summary "$t.translate('head.ass.summary')">
+<!ENTITY head_score "$t.translate('head.score')">
+<!ENTITY ass_user "$t.translate('ass.user')">
+<!ENTITY ass_inst "$t.translate('ass.inst')">
+<!ENTITY ass_identifier "$t.translate('ass.identifier')">
+<!ENTITY ass_title "$t.translate('ass.title')">
+<!ENTITY num_av "$t.translate('num.av')">
+<!ENTITY num_pres "$t.translate('num.pres')">
+<!ENTITY num_tried "$t.translate('num.tried')">
+<!ENTITY score_val "$t.translate('score.val')">
+<!ENTITY score_min "$t.translate('score.min')">
+<!ENTITY score_max "$t.translate('score.max')">
+<!ENTITY score_cut "$t.translate('score.cut')">
+<!ENTITY ans_min "$t.translate('ans.min')">
+<!ENTITY ans_max "$t.translate('ans.max')">
+<!ENTITY ans_correct "$t.translate('ans.correct')">
+<!ENTITY ans_your "$t.translate('ans.your')">
+<!ENTITY ans_plus "$t.translate('ans.plus')">
+<!ENTITY ans_minus "$t.translate('ans.minus')">
+<!ENTITY date "$t.translate('date')">
+<!ENTITY time "$t.translate('time')">
+<!ENTITY dur "$t.translate('dur')">
+<!ENTITY days "$t.translate('days')">
+<!ENTITY hours "$t.translate('hours')">
+<!ENTITY mins "$t.translate('mins')">
+<!ENTITY secs "$t.translate('secs')">
+<!ENTITY sec "$t.translate('sec')">
 ]>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" indent="yes" encoding="iso-8859-1" standalone="yes"/>
@@ -497,7 +497,9 @@ border-collapse: collapse;
 	<xsl:template match="varlt">KLEINER&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
 	<xsl:template match="vargt">GROESSER&nbsp;<xsl:value-of select="."/>&nbsp;<xsl:apply-templates/></xsl:template>
 	<xsl:template match="vareq">&nbsp;<xsl:apply-templates/></xsl:template>
+	<!-- 
 	<xsl:template match="varequal">&nbsp;<xsl:value-of select="." disable-output-escaping="yes"/><xsl:apply-templates/></xsl:template>
+	-->
 	<xsl:template match="not">NICHT&nbsp;<xsl:apply-templates/></xsl:template>
 	
 	<xsl:template match="and"><xsl:apply-templates/></xsl:template>

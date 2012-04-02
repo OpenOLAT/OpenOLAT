@@ -24,7 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 
 /**
  * Description:<br>
@@ -35,7 +35,7 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
  *
  * @author srosse
  */
-public class UserAdminContextEntryControllerCreator implements ContextEntryControllerCreator {
+public class UserAdminContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
@@ -49,7 +49,8 @@ public class UserAdminContextEntryControllerCreator implements ContextEntryContr
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
 	 */
-	public String getSiteClassName(ContextEntry ce) {
+	@Override
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		// opened as site not tab
 		return UserAdminSite.class.getName();
 	}
@@ -57,7 +58,8 @@ public class UserAdminContextEntryControllerCreator implements ContextEntryContr
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
-	public String getTabName(ContextEntry ce) {
+	@Override
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 

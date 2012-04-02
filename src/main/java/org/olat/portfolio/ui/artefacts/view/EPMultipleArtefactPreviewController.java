@@ -40,6 +40,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
@@ -226,6 +229,27 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 			artAttribCalloutCtr = null;
 		} 
 
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		OLATResourceable ores = entries.get(0).getOLATResourceable();
+		if("AbstractArtefact".equals(ores.getResourceableTypeName())) {
+			Long resId = ores.getResourceableId();
+			
+			int index = 0;
+			for(AbstractArtefact artefact: artefactsFullList) {
+				if(artefact.getKey().equals(resId) || artefact.getResourceableId().equals(resId)) {
+					int rest = (index % artefactsPerPage);
+					int page = (index - rest) / artefactsPerPage;
+					preparePaging(ureq, page + 1);
+					break;
+				}
+				index++;
+			}
+		}
 	}
 
 	private Map<String, Boolean> getArtefactAttributeDisplayConfig(Identity ident) {

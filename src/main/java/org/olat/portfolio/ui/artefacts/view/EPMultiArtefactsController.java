@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
@@ -34,7 +35,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * Initial Date:  16.11.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public interface EPMultiArtefactsController extends Controller {
+public interface EPMultiArtefactsController extends Controller, Activateable2 {
 
 	/**
 	 * signal the controller to refresh its childs or artefact-representations

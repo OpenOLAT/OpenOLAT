@@ -146,6 +146,12 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			projectTitle.setErrorKey("form.error.project.title.is.empty", null);
 			return false;
 		}
+		
+		// http://jira.openolat.org/browse/OO-131  check for too long filename
+		if (attachmentFileName.getUploadFileName() != null && attachmentFileName.getUploadFileName().length() > 99) {
+			attachmentFileName.setErrorKey("form.error.project.filenametoolong", null);
+			return false;
+		}
 		return true;
 	}
 

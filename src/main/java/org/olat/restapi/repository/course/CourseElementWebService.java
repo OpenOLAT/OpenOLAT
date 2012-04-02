@@ -51,11 +51,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
-import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractFeedCourseNode;
-import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -128,7 +126,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
@@ -450,110 +448,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			@QueryParam("filename") String filename, @QueryParam("path") String path, @Context HttpServletRequest request) {	
 		SinglePageCustomConfig config = new SinglePageCustomConfig(path, filename);
 		return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
-	}
-	
-	/**
-	 * This updates a Folder Element onto a given course.
-   * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The folder node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
-	 * @param courseId The course resourceable's id
-	 * @param nodeId The node's id of this folder
-	 * @param shortTitle The node short title
-	 * @param longTitle The node long title
-	 * @param objectives The node learning objectives
-	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param downloadExpertRules The rules to download files (optional)
-	 * @param uploadExpertRules The rules to upload files (optional)
-	 * @param request The HTTP request
-	 * @return The persisted folder element (fully populated)
-	 */
-	@POST
-	@Path("folder/{nodeId}")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	//fxdiff FXOLAT-122: course management
-	public Response updateFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("downloadExpertRules") String downloadExpertRules,
-			@FormParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
-		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
-	}
-	
-	/**
-	 * This attaches a Folder Element onto a given course. The element will be
-	 * inserted underneath the supplied parentNodeId.
-   * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The folder node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
-	 * @param courseId The course resourceable's id
-	 * @param parentNodeId The node's id which will be the parent of this folder
-	 * @param position The node's position relative to its sibling nodes (optional)
-	 * @param shortTitle The node short title
-	 * @param longTitle The node long title
-	 * @param objectives The node learning objectives
-	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param downloadExpertRules The rules to download files (optional)
-	 * @param uploadExpertRules The rules to upload files (optional)
-	 * @param request The HTTP request
-	 * @return The persisted folder element (fully populated)
-	 */
-	@POST
-	@Path("folder")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachFolderPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("downloadExpertRules") String downloadExpertRules,
-			@FormParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
-		return attachFolder(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, downloadExpertRules, uploadExpertRules, request);
-	}
-
-	/**
-	 * This attaches a Folder Element onto a given course. The element will be
-	 * inserted underneath the supplied parentNodeId.
-   * @response.representation.mediaType application/x-www-form-urlencoded
-	 * @response.representation.200.qname {http://www.example.com}courseNodeVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The folder node metadatas
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSENODEVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or parentNode not found
-	 * @param courseId The course resourceable id
-	 * @param parentNodeId The node's id which will be the parent of this folder
-	 * @param position The node's position relative to its sibling nodes (optional)
-	 * @param shortTitle The node short title
-	 * @param longTitle The node long title
-	 * @param objectives The node learning objectives
-	 * @param visibilityExpertRules The rules to view the node (optional)
-	 * @param downloadExpertRules The rules to download files (optional)
-	 * @param uploadExpertRules The rules to upload files (optional)
-	 * @param request The HTTP request
-	 * @return The persisted folder element (fully populated)
-	 */
-	@PUT
-	@Path("folder")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachFolder(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("downloadExpertRules") String downloadExpertRules,
-			@QueryParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
-		
-		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
-		return attach(courseId, parentNodeId, "bc", position, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
 	}
 	
 	/**
@@ -1405,7 +1299,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response attachTaskFile(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("filename") @DefaultValue("task") String filename, @FormParam("file") InputStream file,
 			@Context HttpServletRequest request) {
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode node = getParentNode(course, nodeId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -1615,10 +1509,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("task/{nodeId}/configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
+	public Response getTaskConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@Context HttpServletRequest httpRequest) {
+		if(!isAuthor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 		
 		TaskConfigVO config = new TaskConfigVO();
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode courseNode = (TACourseNode) getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
@@ -1783,10 +1681,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@GET
 	@Path("survey/{nodeId}/configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
-		
+	public Response getSurveyConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
+			@Context HttpServletRequest httpRequest) {
+		if(!isAuthor(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
 		SurveyConfigVO config = new SurveyConfigVO();
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
 		//build configuration with fallback to default values
@@ -1949,7 +1851,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	public Response getTestConfiguration(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId) {
 		
 		TestConfigVO config = new TestConfigVO();
-		ICourse course = loadCourse(courseId);
+		ICourse course = CourseWebService.loadCourse(courseId);
 		CourseNode courseNode = getParentNode(course, nodeId);
 		//build configuration with fallback to default values
 		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
@@ -2056,37 +1958,6 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 				moduleConfig.set(AbstractFeedCourseNode.CONFIG_KEY_REPOSITORY_SOFTKEY, blogRepoEntry.getSoftkey());
 			}
 		}
-	}
-	
-	public class FolderCustomConfig implements CustomConfigDelegate {
-		private final String downloadExpertRules;
-		private final String uploadExpertRules;
-		
-		public FolderCustomConfig(String downloadExpertRules, String uploadExpertRules) {
-			this.downloadExpertRules = downloadExpertRules;
-			this.uploadExpertRules = uploadExpertRules;
-		}
-
-		@Override
-		public boolean isValid() {
-			return true;
-		}
-
-		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			BCCourseNode bcCourseNode = (BCCourseNode)newNode;
-			
-			if(StringHelper.containsNonWhitespace(downloadExpertRules)) {
-				Condition downloadCond = createExpertCondition("downloaders", downloadExpertRules);
-				bcCourseNode.setPreConditionDownloaders(downloadCond);
-			}
-
-			if(StringHelper.containsNonWhitespace(uploadExpertRules)) {
-				Condition uploadCond = createExpertCondition("uploaders", uploadExpertRules);
-				//fxdiff: RESTAPI bug fix
-				bcCourseNode.setPreConditionUploaders(uploadCond);
-			}
-		}	
 	}
 	
 	public class TaskFullConfig implements FullConfigDelegate {

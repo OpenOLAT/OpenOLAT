@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.hibernate.ObjectNotFoundException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.NamedGroupImpl;
@@ -45,6 +46,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.notifications.NotificationsManager;
+import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -52,6 +55,7 @@ import org.olat.portfolio.model.restriction.CollectRestriction;
 import org.olat.portfolio.model.restriction.RestrictionsConstants;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPDefaultMap;
+import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
@@ -142,6 +146,30 @@ public class EPStructureManager extends BasicManager {
 	protected List<AbstractArtefact> getArtefacts(PortfolioStructure structure) {
 		return getArtefacts(structure, -1, -1);
 	}
+	
+	/**
+	 * recursively fetches all linked artefacts in the given map.<br />
+	 * ( iterates over all pages in the map, all artefacts on these pages, all
+	 * artefacts in structureElements on these pages)
+	 * 
+	 * FXOLAT-431
+	 * 
+	 * @param map
+	 * @return
+	 
+	protected List<AbstractArtefact> getAllArtefactsInMap(EPAbstractMap map){
+		List<AbstractArtefact> results = new ArrayList<AbstractArtefact>();
+		
+		List<PortfolioStructure> children = loadStructureChildren(map);
+		for (PortfolioStructure child : children) {
+				// maps have pages as children, this will be true..!
+				if(child instanceof EPPage){
+					results.addAll(getArtefacts(child));
+				}
+		}
+		return results;
+	}
+	*/
 	
 	protected List<PortfolioStructureMap> getOpenStructuredMapAfterDeadline() {
 		StringBuilder sb = new StringBuilder();
@@ -621,7 +649,7 @@ public class EPStructureManager extends BasicManager {
 	protected Integer[] getRestrictionStatistics(PortfolioStructure structure) {
 		if (structure instanceof EPStructureElement) {
 			EPStructureElement structEl = (EPStructureElement) structure;
-			structEl = (EPStructureElement) loadPortfolioStructureByKey(structEl.getKey());
+			structEl = (EPStructureElement) reloadPortfolioStructure(structEl);
 			final List<CollectRestriction> restrictions = structEl.getCollectRestrictions();
 
 			if (restrictions != null && !restrictions.isEmpty()) {
@@ -1024,6 +1052,13 @@ public class EPStructureManager extends BasicManager {
 		commentAndRatingService = (CommentAndRatingService) CoreSpringFactory.getBean(CommentAndRatingService.class);
 		commentAndRatingService.init(struct.getOlatResource(), null, new CommentAndRatingDefaultSecurityCallback(null, true, false));
 		commentAndRatingService.deleteAllIgnoringSubPath();
+		
+		
+		// FXOLAT-431 remove subscriptions if the current struct is a map
+		if(struct instanceof EPAbstractMap){
+			SubscriptionContext subsContext = new SubscriptionContext(EPNotificationsHandler.TYPENNAME, struct.getResourceableId(), EPNotificationsHandler.TYPENNAME);
+			NotificationsManager.getInstance().delete(subsContext);
+		}
 		
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
@@ -1461,6 +1496,26 @@ public class EPStructureManager extends BasicManager {
 	}
 	
 	/**
+	 * @param olatResourceable cannot be null
+	 * @return The structure element or null if not found
+	 */
+	public EPMapShort loadMapShortByResourceId(Long resourceableId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select element from ").append(EPMapShort.class.getName()).append(" element")
+		  .append(" inner join fetch element.olatResource resource")
+			.append(" where resource.resId=:resourceId and resource.resName in ('EPDefaultMap','EPStructuredMap','EPStructuredMapTemplate')");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		query.setLong("resourceId", resourceableId);
+		
+		@SuppressWarnings("unchecked")
+		List<EPMapShort> resources = query.list();
+		// if not found, it is an empty list
+		if (resources.isEmpty()) return null;
+		return resources.get(0);
+	}
+	
+	/**
 	 * Load a portfolio structure by its primary key
 	 * @param key cannot be null
 	 * @return The structure element or null if not found
@@ -1478,6 +1533,37 @@ public class EPStructureManager extends BasicManager {
 		
 		@SuppressWarnings("unchecked")
 		List<PortfolioStructure> resources = query.list();
+		// if not found, it is an empty list
+		if (resources.isEmpty()) return null;
+		return resources.get(0);
+	}
+	
+	/**
+	 * Reload an object
+	 * @param structure
+	 * @return The reloaded object or null if not found
+	 */
+	public PortfolioStructure reloadPortfolioStructure(PortfolioStructure structure) {
+		if (structure == null) throw new NullPointerException();
+		try {
+			return (PortfolioStructure)dbInstance.loadObject(EPStructureElement.class, structure.getKey());
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+	
+	public OLATResource loadOlatResourceFromStructureElByKey(Long key) {
+		if (key == null) throw new NullPointerException();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select element.olatResource from ").append(EPStructureElement.class.getName()).append(" element")
+			.append(" where element.key=:key or element.olatResource.resId=:key ");
+		
+		DBQuery query = dbInstance.createQuery(sb.toString());
+		query.setLong("key", key);
+		
+		@SuppressWarnings("unchecked")
+		List<OLATResource> resources = query.list();
 		// if not found, it is an empty list
 		if (resources.isEmpty()) return null;
 		return resources.get(0);

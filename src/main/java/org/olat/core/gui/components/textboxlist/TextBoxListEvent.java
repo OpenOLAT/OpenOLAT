@@ -25,10 +25,9 @@ import org.olat.core.gui.control.Event;
 
 /**
  * Description:<br>
- * Event sent by TextBoxListComponent if changes occured or submitted.
+ * Event sent by TextBoxListComponent if changes occurred or submitted.
  *  
  * contains a list with all Elements -> getAllItems() 
- * another list keeps all added records (which were added manually, means not from autocompletion list) -> getNewOnly()
  * 
  * <P>
  * Initial Date: 23.07.2010 <br>
@@ -39,12 +38,10 @@ public class TextBoxListEvent extends Event {
 
 	private static final String TEXTBOXLISTCHANGE = "textboxlistchange";
 	private List<String> allItems;
-	private List<String> newOnly;
 
-	public TextBoxListEvent(List<String> allItems, List<String> newOnly) {
+	public TextBoxListEvent(List<String> allItems) {
 		super(TEXTBOXLISTCHANGE);
 		this.allItems = allItems;
-		this.newOnly = newOnly;
 	}
 
 	/**
@@ -52,12 +49,5 @@ public class TextBoxListEvent extends Event {
 	 */
 	public List<String> getAllItems() {
 		return allItems;
-	}
-
-	/**
-	 * @return Returns all added records (which were added manually, means not from autocompletion list)
-	 */
-	public List<String> getNewOnly() {
-		return newOnly;
 	}
 }

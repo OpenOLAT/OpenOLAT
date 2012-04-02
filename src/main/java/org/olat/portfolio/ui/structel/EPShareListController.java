@@ -118,12 +118,11 @@ public class EPShareListController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addPolicyButton = uifactory.addFormLink("map.share.add.policy", flc, Link.BUTTON);
 		
-		updateUI();
+		initPolicyUI();
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("ok_cancel", getTranslator());
 		buttonLayout.setRootForm(mainForm);
@@ -140,7 +139,10 @@ public class EPShareListController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		// process all form-input fields and update data-model
 		secureListBox();
+		
 		String genericError = null ;
 		
 		for (PolicyWrapper policyWrapper : policyWrappers) {
@@ -200,7 +202,9 @@ public class EPShareListController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		// process all form-input fields and update data-model (the policyWrappers)
 		secureListBox();
+		
 		List<EPMapPolicy> mapPolicies = new ArrayList<EPMapPolicy>();
 		for(PolicyWrapper wrapper:policyWrappers) {
 			mapPolicies.add(wrapper.getMapPolicy());
@@ -218,16 +222,17 @@ public class EPShareListController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		// process all form-input fields and update data-model
 		secureListBox();
+		
 		// dont allow any manipulation as long as errors exist!! else some wrong
 		// policy might be persisted. check with validateFormLogic()
 		if (source == addPolicyButton) {
 			if (validateFormLogic(ureq)) {
 				addPolicyWrapper(null);
-				updateUI();
+				initPolicyUI();
 			}
 		} else if (source instanceof FormLink && source.getUserObject() instanceof PolicyWrapper) {
 			FormLink link = (FormLink) source;
@@ -235,15 +240,15 @@ public class EPShareListController extends FormBasicController {
 			if (link.getName().startsWith("map.share.policy.add")) {
 				if (validateFormLogic(ureq)) {
 					addPolicyWrapper(wrapper);
-					updateUI();
+					initPolicyUI();
 				}
 			} else if (link.getName().startsWith("map.share.policy.delete")) {
 				removePolicyWrapper(wrapper);
-				updateUI();
+				initPolicyUI();
 			} else if (link.getName().startsWith("map.share.policy.invite")) {
 				if (validateFormLogic(ureq)) {
 					sendInvitation(ureq, wrapper);
-					updateUI();
+					initPolicyUI();
 				}
 			}
 		} else if (source instanceof SingleSelection && source.getUserObject() instanceof PolicyWrapper) {
@@ -253,11 +258,16 @@ public class EPShareListController extends FormBasicController {
 				PolicyWrapper wrapper = (PolicyWrapper) selection.getUserObject();
 				changeType(wrapper, type);
 			}
-			updateUI();
-		}
+			initPolicyUI();
+		} 
 	}
 
-	// send a link to the map to permitted users by email
+	/**
+	 * sends a link to the map to permitted users by email
+	 * 
+	 * @param ureq
+	 * @param wrapper
+	 */
 	private void sendInvitation(UserRequest ureq, PolicyWrapper wrapper){
 		EPMapPolicy.Type shareType = wrapper.getType();
 		List<Identity> identitiesToMail = new ArrayList<Identity>();
@@ -325,13 +335,22 @@ public class EPShareListController extends FormBasicController {
 		}
 	}
 	
+	/**
+	 * loops over all PolicyWrappers and updates the datamodel according to the
+	 * current form-values
+	 */
 	protected void secureListBox() {
+		if(isLogDebugEnabled())
+			logDebug(" 'securing' ListBox -->  updating policyWrappers with field values...",null);
+			
 		for(PolicyWrapper policyWrapper:policyWrappers) {
 			TextBoxListElement userList = policyWrapper.getUserListBox();
 			if(userList != null) {
 				List<String> values = userList.getValueList();
 				List<Identity> identities = new ArrayList<Identity>();
 				for(String value:values) {
+					// check again, if there actually is an identity for the
+					// current username
 					Identity id = getIdentityByLogin(value);
 					if(id != null) {
 						identities.add(id);
@@ -367,7 +386,13 @@ public class EPShareListController extends FormBasicController {
 		}
 	}
 
-	protected void updateUI() {
+	
+	/**
+	 * creates the custom formLayoutContainer and adds a form-component for every
+	 * PolicyWrapper, according to its type.
+	 * 
+	 */
+	protected void initPolicyUI() {
 		String template = Util.getPackageVelocityRoot(this.getClass()) + "/sharePolicy.html";
 
 		for(PolicyWrapper policyWrapper:policyWrappers) {
@@ -391,25 +416,22 @@ public class EPShareListController extends FormBasicController {
 					case user:
 						Map<String,String> initialUsers = policyWrapper.getIdentitiesValue();
 						TextBoxListElement userListBox = uifactory.addTextBoxListElement("map.share.with." + cmpName, "map.share.to.user", "map.share.to.user.hint", initialUsers, container, getTranslator());
-						userListBox.setNoFormSubmit(true);
-						userListBox.addActionListener(this, FormEvent.ONCHANGE);
 						userListBox.setUserObject(policyWrapper);
-						((TextBoxListComponent)userListBox.getComponent()).setMapperProvider(new UserMapperProvider());
-						((TextBoxListComponent)userListBox.getComponent()).setAllowNewValues(false);
-						((TextBoxListComponent)userListBox.getComponent()).setAllowDuplicates(false);
-						((TextBoxListComponent)userListBox.getComponent()).setMaxResults(15);
+						userListBox.setMapperProvider(new UserMapperProvider());
+						userListBox.setAllowNewValues(false);
+						userListBox.setAllowDuplicates(false);
+						userListBox.setMaxResults(15);
+						
 						policyWrapper.setUserListBox(userListBox);
 						break;
 					case group:
 						Map<String,String> initialGroups = policyWrapper.getGroupsValues();
 						TextBoxListElement groupListBox = uifactory.addTextBoxListElement("map.share.with." + cmpName, "map.share.to.group", "map.share.to.group.hint", initialGroups, container, getTranslator());
-						groupListBox.setNoFormSubmit(true);
-						groupListBox.addActionListener(this, FormEvent.ONCHANGE);
 						groupListBox.setUserObject(policyWrapper);
-						((TextBoxListComponent)groupListBox.getComponent()).setMapperProvider(new GroupMapperProvider());
-						((TextBoxListComponent)groupListBox.getComponent()).setAllowNewValues(false);
-						((TextBoxListComponent)groupListBox.getComponent()).setAllowDuplicates(false);
-						((TextBoxListComponent)groupListBox.getComponent()).setMaxResults(15);
+						groupListBox.setMapperProvider(new GroupMapperProvider());
+						groupListBox.setAllowNewValues(false);
+						groupListBox.setAllowDuplicates(false);
+						groupListBox.setMaxResults(15);
 						policyWrapper.setGroupListBox(groupListBox);
 						break;
 					case invitation:

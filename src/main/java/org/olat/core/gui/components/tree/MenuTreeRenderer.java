@@ -77,9 +77,9 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		MenuTree tree = (MenuTree) source;
 		
-		INode selNode = tree.getSelectedNode();
 		TreeNode root = tree.getTreeModel().getRootNode();
 		if (root == null) return; // tree is completely empty
+		INode selNode = tree.getSelectedNode();
 		Collection<String> openNodeIds = tree.getOpenNodeIds();
 
 		if (tree.isExpandServerOnly()) { 

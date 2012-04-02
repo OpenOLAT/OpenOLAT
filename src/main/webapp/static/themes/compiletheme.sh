@@ -11,7 +11,6 @@ sass --version
 
 sass --style $style --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile .
 
-
-
 echo "done"
+
 

@@ -24,7 +24,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 
 /**
  * <h3>Description:</h3>
@@ -36,7 +36,7 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class RepositoryContextEntryControllerCreator implements ContextEntryControllerCreator {
+public class RepositoryContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
@@ -56,7 +56,8 @@ public class RepositoryContextEntryControllerCreator implements ContextEntryCont
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
-	public String getTabName(ContextEntry ce) {
+	@Override
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		OLATResourceable ores = ce.getOLATResourceable();
 
 		RepositoryManager repom = RepositoryManager.getInstance();
@@ -67,7 +68,8 @@ public class RepositoryContextEntryControllerCreator implements ContextEntryCont
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
 	 */
-	public String getSiteClassName(ContextEntry ce) {
+	@Override
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 

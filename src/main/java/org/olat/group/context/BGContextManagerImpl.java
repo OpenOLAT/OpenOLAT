@@ -43,7 +43,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
@@ -51,13 +50,13 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGAreaManagerImpl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 
 /**
@@ -196,6 +195,7 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	/**
 	 * @see org.olat.group.context.BGContextManager#getGroupsOfBGContext(org.olat.group.context.BGContext)
 	 */
+	@Override
 	public List<BusinessGroup> getGroupsOfBGContext(BGContext bgContext) {
 		DB db = DBFactory.getInstance();
 		DBQuery query;
@@ -208,6 +208,30 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 			query.setEntity("context", bgContext);
 		}
 		return (List<BusinessGroup>) query.list();
+	}
+	
+	@Override
+	public List<BusinessGroup> getGroupsOfBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults) {
+		if(bgContexts == null || bgContexts.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		DB db = DBFactory.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bg from ").append(BusinessGroupImpl.class.getName()).append(" bg")
+		  .append("  where bg.groupContext.key in (:contextKeys)");
+			
+		DBQuery query = db.createQuery(sb.toString());
+		List<Long> contextKeys = new ArrayList<Long>(bgContexts.size());
+		for(BGContext bgContext:bgContexts) {
+			contextKeys.add(bgContext.getKey());
+		}
+		query.setParameterList("contextKeys", contextKeys);
+		query.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.list();
 	}
 
 	/**
@@ -497,7 +521,7 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	/**
 	 * @see org.olat.group.context.BGContextManager#findOLATResourcesForBGContext(org.olat.group.context.BGContext)
 	 */
-	public List findOLATResourcesForBGContext(BGContext bgContext) {
+	public List<OLATResource> findOLATResourcesForBGContext(BGContext bgContext) {
 		DB db = DBFactory.getInstance();
 		String q = " select bgcr.resource from org.olat.group.context.BGContext2Resource as bgcr where bgcr.groupContext = :context";
 		DBQuery query = db.createQuery(q);

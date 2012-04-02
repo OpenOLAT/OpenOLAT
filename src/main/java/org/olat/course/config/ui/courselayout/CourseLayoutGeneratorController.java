@@ -22,6 +22,8 @@ package org.olat.course.config.ui.courselayout;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +53,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.IImageHelper;
+import org.olat.core.util.ImageHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -284,19 +286,27 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		if (height > maxHeight || width > maxWidth){
 			// scale image
 			try {
-				IImageHelper helper = CourseLayoutHelper.getImageHelperToUse();
-				helper.scaleImage(new FileInputStream(image), targetFile, maxWidth, maxHeight);
-			} catch (FileNotFoundException e) {
+				ImageHelper helper = CourseLayoutHelper.getImageHelperToUse();
+				String extension = FileUtils.getFileSuffix(logoUpl.getUploadFileName());
+				helper.scaleImage(image, extension, targetFile, maxWidth, maxHeight);
+			} catch (Exception e) {
 				logError("could not find to be scaled image", e);
 				return false;
 			}
 		} else {
 			// only persist without scaling
+			InputStream in = null;
+			OutputStream out = null;
 			try {
-				FileUtils.copy(new FileInputStream(image), targetFile.getOutputStream(false));
+				in = new FileInputStream(image);
+				out = targetFile.getOutputStream(false);
+				FileUtils.copy(in, out);
 			} catch (FileNotFoundException e) {
 				logError("Problem reading uploaded image to copy", e);
 				return false;
+			} finally {
+				FileUtils.closeSafely(in);
+				FileUtils.closeSafely(out);
 			}
 		}
 		return true;

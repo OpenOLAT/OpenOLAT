@@ -44,7 +44,7 @@ public class TURequest {
 	private Map parameterMap;
 	private String contentType;
 	
-	private String userName, lastName, firstName, email;
+	private String userName, lastName, firstName, email, userIPAddress;
 	
 	/**
 	 * 
@@ -189,4 +189,14 @@ public class TURequest {
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
+
+	public String getUserIPAddress() {
+		return this.userIPAddress;
+	}
+	
+	public void setUserIPAddress(String address){
+		this.userIPAddress = address;
+	}
+	
+	
 }

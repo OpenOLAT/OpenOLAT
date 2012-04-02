@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpSession;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 
@@ -41,14 +42,15 @@ import org.olat.core.util.StringHelper;
  */
 public class RestSecurityBeanImpl implements RestSecurityBean {
 
-	private Map<String,Identity> tokenToIdentity = new HashMap<String,Identity>();
+	private Map<String,Long> tokenToIdentity = new HashMap<String,Long>();
 	private Map<String,List<String>> tokenToSessionIds = new HashMap<String,List<String>>();
 	private Map<String,String> sessionIdToTokens = new HashMap<String,String>();
 	
 	@Override
-	public String generateToken(Identity identity) {
+	public String generateToken(Identity identity, HttpSession session) {
 		String token = UUID.randomUUID().toString();
-		tokenToIdentity.put(token, identity);
+		tokenToIdentity.put(token, identity.getKey());
+		bindTokenToSession(token, session);
 		return token;
 	}
 
@@ -65,23 +67,35 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 	
 	@Override
 	public Identity getIdentity(String token) {
-		if(!StringHelper.containsNonWhitespace(token)) return null;
-		return tokenToIdentity.get(token);
+		if(!StringHelper.containsNonWhitespace(token)) {
+			return null;
+		}
+		Long identityKey = tokenToIdentity.get(token);
+		if(identityKey == null) {
+			return null;
+		}
+		return BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 	}
 
 	@Override
 	public void bindTokenToSession(String token, HttpSession session) {
-		if(!StringHelper.containsNonWhitespace(token)) return;
+		if(!StringHelper.containsNonWhitespace(token) || session == null) {
+			return;
+		}
 		
+		String sessionId = session.getId();
 		synchronized(tokenToSessionIds) {//cluster notOK -> need probably a mapping on the DB
-			List<String> sessionIds;
 			if(!tokenToSessionIds.containsKey(token)) {
-				sessionIds = new ArrayList<String>();
+				List<String> sessionIds = new ArrayList<String>();
+				sessionIds.add(session.getId());
 				tokenToSessionIds.put(token, sessionIds);
 			} else {
-				sessionIds = tokenToSessionIds.get(token);
+				List<String> sessionIds = tokenToSessionIds.get(token);
+				if(!sessionIds.contains(sessionId)) {
+					sessionIds.add(session.getId());
+				}
 			}
-			sessionIds.add(session.getId());
+			sessionIdToTokens.put(sessionId, token);
 		}
 	}
 	
@@ -100,13 +114,16 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 
 	@Override
 	public void unbindTokenToSession(HttpSession session) {
-		
 		synchronized(tokenToSessionIds) {//cluster notOK -> need probably a mapping on the DB
-			String token = sessionIdToTokens.get(session.getId());
-			List<String> sessionIds = tokenToSessionIds.get(token);
-			sessionIds.remove(session.getId());
-			if(sessionIds.isEmpty()) {
-				tokenToIdentity.remove(token);
+			String sessionId = session.getId();
+			String token = sessionIdToTokens.remove(sessionId);
+			if(token != null) {
+				List<String> sessionIds = tokenToSessionIds.get(token);
+				sessionIds.remove(sessionId);
+				if(sessionIds.isEmpty()) {
+					tokenToIdentity.remove(token);
+					tokenToSessionIds.remove(token);
+				}
 			}
 		}
 	}

@@ -75,8 +75,8 @@ public class InstantMessagingClient extends LogDelegator {
 	private String statusMsg = " ";
 	// the jabber id like username@olat.ch
 	private final String jabberServer;
-	protected List subscribedUsers = new ArrayList();
-	private static final String OLATBUDDIES = "OLAT-Buddies";
+	private final List<String> subscribedUsers = new ArrayList<String>();
+	protected static final String OLATBUDDIES = "OLAT-Buddies";
 	protected boolean collaborationDisabled = false;
 	private boolean isConnected;
 	private boolean showOfflineBuddies = false;
@@ -203,36 +203,8 @@ public class InstantMessagingClient extends LogDelegator {
 	public void addSubscriptionListener() {
 		PacketFilter filter = new PacketTypeFilter(Presence.class);
 		connection.createPacketCollector(filter);
-		PacketListener myListener = new PacketListener() {
-			public void processPacket(Packet packet) {
-				Presence presence = (Presence) packet;
-				if (presence.getType() == Presence.Type.subscribe) {
-					Presence response = new Presence(Presence.Type.subscribe);
-					response.setTo(presence.getFrom());
-					// System.out.println("subscribed to: "+presence.getFrom());
-					connection.sendPacket(response);
-					// ask also for subscription
-					if (!subscribedUsers.contains(presence.getFrom())) {
-						response = null;
-						response = new Presence(Presence.Type.subscribe);
-						response.setTo(presence.getFrom());
-						connection.sendPacket(response);
-						// update the roster with the new user
-						RosterPacket rosterPacket = new RosterPacket();
-						rosterPacket.setType(IQ.Type.SET);
-						RosterPacket.Item item = new RosterPacket.Item(presence.getFrom(), parseName(presence.getFrom()));
-						item.addGroupName(OLATBUDDIES);
-						item.setItemType(RosterPacket.ItemType.both);
-						// item.setItemStatus(RosterPacket.ItemStatus.fromString());
-						rosterPacket.addRosterItem(item);
-						connection.sendPacket(rosterPacket);
-					}
-				}
-				if (presence.getType() == Presence.Type.subscribe) {
-					subscribedUsers.add(presence.getFrom());
-				}
-			}
-		};
+		
+		PacketListener myListener = new InstantMessagingPresenceListener(connection, subscribedUsers);
 		connection.addPacketListener(myListener, filter);
 	}
 
@@ -307,18 +279,8 @@ public class InstantMessagingClient extends LogDelegator {
 		// XMPPConnListener.connectionClosed() event which would result in
 		// in a cyclic call of this close method.
 		isConnected = false;
-		final XMPPConnection connectionToClose = connection;
-		Runnable connectionCloseRunnable = new Runnable() {
-			public void run() {
-				try {
-					if (connectionToClose != null && connectionToClose.isConnected()){
-						connectionToClose.disconnect();
-					}
-				} catch (RuntimeException e) {
-					logWarn("Error while trying to close instant messaging connection", e);
-				}
-			}
-		};
+		//groupChatManagerCtrl = null;
+		Runnable connectionCloseRunnable = new CloseConnectionTask(connection);
 		if (closeSynchronously) {
 			connectionCloseRunnable.run();
 		} else {
@@ -372,7 +334,7 @@ public class InstantMessagingClient extends LogDelegator {
 	 * @param xmppAddress jabber jid like guido@swissjabber.org
 	 * @return returns just the name "guido" without the rest
 	 */
-	protected String parseName(String xmppAddress) {
+	protected static String parseName(String xmppAddress) {
 		if (xmppAddress == null) return null;
 		int atIndex = xmppAddress.indexOf("@");
 		if (atIndex <= 0) return "";

@@ -31,6 +31,7 @@ import java.util.Locale;
 
 import org.olat.ControllerFactory;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -59,6 +60,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
@@ -83,7 +85,7 @@ public class EfficiencyStatementsListController extends BasicController {
 	private TableController tableCtr;
 	private EfficiencyStatementsListModel efficiencyStatementsListModel;
 	private DialogBoxController confirmDeleteCtr;
-	private EfficiencyStatement efficiencyStatement;
+	private UserEfficiencyStatementLight efficiencyStatement;
 	private Controller ePFCollCtrl;
 	private PortfolioModule portfolioModule;
 	
@@ -115,7 +117,7 @@ public class EfficiencyStatementsListController extends BasicController {
 		listenTo(tableCtr);
 		
 		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-		List<EfficiencyStatement> efficiencyStatementsList = esm.findEfficiencyStatements(ureq.getIdentity());
+		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(ureq.getIdentity());
 		efficiencyStatementsListModel = new EfficiencyStatementsListModel(efficiencyStatementsList);
 		tableCtr.setTableDataModel(efficiencyStatementsListModel);
 
@@ -143,7 +145,8 @@ public class EfficiencyStatementsListController extends BasicController {
 					// will not be disposed on course run dispose, popus up as new browserwindow
 					ControllerCreator ctrlCreator = new ControllerCreator() {
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							return new EfficiencyStatementController(lwControl, lureq, efficiencyStatement.getCourseRepoEntryKey());
+							EfficiencyStatementController efficiencyCtrl = new EfficiencyStatementController(lwControl, lureq, efficiencyStatement.getCourseRepoKey());
+							return new LayoutMain3ColsController(lureq, getWindowControl(), null, null, efficiencyCtrl.getInitialComponent(), null);
 						}					
 					};
 					//wrap the content controller into a full header layout
@@ -154,7 +157,7 @@ public class EfficiencyStatementsListController extends BasicController {
 					//
 				} else if (actionid.equals(CMD_LAUNCH_COURSE)) {
 					RepositoryManager rm = RepositoryManager.getInstance();
-					RepositoryEntry re = rm.lookupRepositoryEntry(efficiencyStatement.getCourseRepoEntryKey());
+					RepositoryEntry re = rm.lookupRepositoryEntry(efficiencyStatement.getCourseRepoKey(), false);
 					if (re == null) {
 						showWarning("efficiencyStatements.course.noexists");
 					} else if (!rm.isAllowedToLaunch(ureq, re)) {
@@ -167,7 +170,7 @@ public class EfficiencyStatementsListController extends BasicController {
 						if (dt == null) {
 							// does not yet exist -> create and add
 							//fxdiff BAKS-7 Resume function
-							dt = dts.createDTab(ores, re, efficiencyStatement.getCourseTitle());
+							dt = dts.createDTab(ores, re, efficiencyStatement.getShortTitle());
 							if (dt == null) return;
 							Controller launchController = ControllerFactory.createLaunchController(ores, null, ureq, dt.getWindowControl(), true);
 							dt.setController(launchController);
@@ -178,7 +181,7 @@ public class EfficiencyStatementsListController extends BasicController {
 					}
 				} else if (actionid.equals(CMD_DELETE)) {					
 					// show confirmation dialog
-					confirmDeleteCtr = activateYesNoDialog(ureq, null, translate("efficiencyStatements.delete.confirm", efficiencyStatement.getCourseTitle()), confirmDeleteCtr);
+					confirmDeleteCtr = activateYesNoDialog(ureq, null, translate("efficiencyStatements.delete.confirm", efficiencyStatement.getShortTitle()), confirmDeleteCtr);
 					return;
 				} else if (actionid.equals(CMD_ARTEFACT)) {
 					popupArtefactCollector(ureq);
@@ -188,7 +191,7 @@ public class EfficiencyStatementsListController extends BasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				// delete efficiency statement manager
 				EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-				esm.deleteEfficiencyStatement(ureq.getIdentity(), efficiencyStatement);
+				esm.deleteEfficiencyStatement(efficiencyStatement);
 				efficiencyStatementsListModel.getObjects().remove(efficiencyStatement);
 				efficiencyStatement = null;
 				tableCtr.modelChanged();
@@ -204,8 +207,9 @@ public class EfficiencyStatementsListController extends BasicController {
 			artefact.setAuthor(getIdentity());//only author can create artefact
 			//no business path becouse we cannot launch an efficiency statement
 			artefact.setCollectionDate(new Date());
-			artefact.setTitle(translate("artefact.title", new String[]{efficiencyStatement.getCourseTitle()}));
-			artHandler.prefillArtefactAccordingToSource(artefact, efficiencyStatement);
+			artefact.setTitle(translate("artefact.title", new String[]{efficiencyStatement.getShortTitle()}));
+			EfficiencyStatement fullStatement = EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByKey(efficiencyStatement.getKey());
+			artHandler.prefillArtefactAccordingToSource(artefact, fullStatement);
 			ePFCollCtrl = new ArtefactWizzardStepsController(ureq, getWindowControl(), artefact, (VFSContainer)null);
 			listenTo(ePFCollCtrl);
 		}

@@ -94,7 +94,9 @@ public class CPTreeController extends BasicController {
 		treeModel = cpMgm.getTreeDataModel(cp);
 		treeCtr = new TreeController(ureq, control, rootTitle, treeModel, null);
 		treeCtr.setTreeInlineEditing(true, null, null);
-
+		// hook into beforeclick event see treeView.html
+		treeCtr.setBeforeNodeClickCallback("function(event){ return CPEditorBeforeTreeNodeClick(event);}");
+		
 		// do not sort jsTree (structure is given by manifest)
 		treeCtr.setTreeSorting(false, false, false);
 		listenTo(treeCtr);

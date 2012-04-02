@@ -519,8 +519,8 @@ public class ForumController extends BasicController implements GenericEventList
 				  	showInfo("header.cannotsavemessage");
 				  }
 				}
-			//show thread view after all kind of operations
-			showThreadView(ureq, currentMsg, null);
+				//show thread view after all kind of operations
+				showThreadView(ureq, currentMsg, null);
 			
 			//editor was canceled
 			} else if (event == Event.CANCELLED_EVENT) {
@@ -531,7 +531,8 @@ public class ForumController extends BasicController implements GenericEventList
 					showThreadView(ureq, currentMsg, null);
 				}
 			}
-			
+			removeAsListenerAndDispose(msgEditCtr);
+			msgEditCtr = null;
 		} else if (source == viewSwitchCtr){
 			if (event == Event.CHANGED_EVENT){
 				//viewmode has been switched, so change view:

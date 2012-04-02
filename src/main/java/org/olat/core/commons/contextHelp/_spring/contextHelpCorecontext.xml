@@ -46,10 +46,9 @@
         <property name="arguments">
         			    <value>
 		                    <!-- global on/off of context help -->
-							contextHelpEnabled=true
-							<!-- allow users to rate entries in the help (helpfull, not helpfull) -->
-							ratingEnabled=true
-							<!-- TODO: this setting does not work at the moment, need refactoring towards configOnOff interface. gs -->
+							contextHelpEnabled=${help.context.enabled}
+							<!-- allow users to rate entries in the help (helpful, not helpful) -->
+							ratingEnabled=${help.context.rating.enabled}
 	                    </value>
           </property>
 </bean>

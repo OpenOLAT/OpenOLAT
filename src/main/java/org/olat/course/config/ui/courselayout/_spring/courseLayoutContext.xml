@@ -34,7 +34,5 @@
 			</list>
 		</property>
 	</bean>
-	
-	<bean id="imageHelper" class="org.olat.core.util.ImageHelper" />
 
 </beans>

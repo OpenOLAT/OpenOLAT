@@ -32,10 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -167,10 +168,25 @@ public class QuotaManagerImpl extends QuotaManager {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
 		}
-		PropertyManager pm = PropertyManager.getInstance();
-		Property p = pm.findProperty(null, null, quotaResource, QUOTA_CATEGORY, path);
-		if (p == null) return null;
-		else return parseQuota(p);
+		
+		StringBuilder query = new StringBuilder();
+		query.append("select prop.name, prop.stringValue from ").append(Property.class.getName()).append(" as prop where ")
+		     .append(" prop.category='").append(QUOTA_CATEGORY).append("'")
+		     .append(" and prop.resourceTypeName='").append(quotaResource.getResourceableTypeName()).append("'")
+		     .append(" and prop.resourceTypeId=").append(quotaResource.getResourceableId())
+		     .append(" and prop.name=:name")
+		     .append(" and prop.identity is null and prop.grp is null");
+		
+		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
+		dbquery.setString("name", path);
+		dbquery.setCacheable(true);
+		@SuppressWarnings("unchecked")
+		List<Object[]> props = dbquery.list();
+		if(props.isEmpty()) {
+			return null;
+		}
+		Object[] p = props.get(0);
+		return parseQuota((String)p[0], (String)p[1]);
 	}
 
 	/**
@@ -243,13 +259,23 @@ public class QuotaManagerImpl extends QuotaManager {
 	 */
 	private Quota parseQuota(Property p) {
 		String s = p.getStringValue();
+		return parseQuota(p.getName(), s);
+	}
+	
+	/**
+	 * 
+	 * @param name Path of the quota
+	 * @param s
+	 * @return Parsed quota object.
+	 */
+	private Quota parseQuota(String name, String s) {
 		int delim = s.indexOf(':');
 		if (delim == -1) return null;
 		Quota q = null;
 		try {
 			Long quotaKB = new Long(s.substring(0, delim));
 			Long ulLimitKB = new Long(s.substring(delim + 1));
-			q = createQuota(p.getName(), quotaKB, ulLimitKB);
+			q = createQuota(name, quotaKB, ulLimitKB);
 		} catch (NumberFormatException e) {
 			// will return null if quota parsing failed
 		}
@@ -283,9 +309,11 @@ public class QuotaManagerImpl extends QuotaManager {
 	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, String relPath) {
 		Quota quota = getCustomQuota(relPath);
 		if (quota == null) { // no custom quota
-			if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)) { return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
+			if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)) {
+				return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
 			}
-			if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) { return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
+			if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) {
+				return createQuota(relPath, getDefaultQuotaPowerUsers().getQuotaKB(), getDefaultQuotaPowerUsers().getUlLimitKB());
 			}
 			return createQuota(relPath, getDefaultQuotaUsers().getQuotaKB(), getDefaultQuotaUsers().getUlLimitKB());
 		}

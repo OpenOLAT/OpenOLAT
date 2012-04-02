@@ -108,6 +108,21 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		beanNamesCalledFromSource.add(beanName);
 		return o;
 	}
+	
+	/**
+	 * @param interfaceImpl
+	 *            The bean name to check for. Be sure the bean does exist,
+	 *            otherwise an NoSuchBeanDefinitionException will be thrown
+	 * @return The bean
+	 */
+	public static <T> T getImpl(Class<T> interfaceClass) {
+		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+		Map<String, T> m = context.getBeansOfType(interfaceClass);
+		if (m.size() == 1)  {
+			return m.values().iterator().next();
+		}
+		throw new OLATRuntimeException("found " + m.size() + " bean for: "+ interfaceClass +". Calling this method should only find one bean!", null);
+	}
 
 	/**
 	 * @param beanName

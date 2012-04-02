@@ -715,6 +715,8 @@ public class SecureWebdavServlet
 
             // Stack of the objects one level below
             Stack stackBelow = new Stack();
+            
+            int count = 0;
 
             while ((!stack.isEmpty()) && (depth >= 0)) {
 
@@ -777,7 +779,10 @@ public class SecureWebdavServlet
                 }
 
                 generatedXML.sendData();
-
+                //fast every iteration make 1 call to the database
+                if(count++ % 50 == 0) {
+                	DBFactory.getInstance().intermediateCommit();
+                }
             }
         }
 

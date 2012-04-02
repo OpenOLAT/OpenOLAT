@@ -26,6 +26,8 @@
 package org.olat.course;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,10 +50,10 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -67,12 +69,12 @@ import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ObjectCloner;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.cache.n.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
@@ -83,7 +85,6 @@ import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -91,8 +92,11 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.editor.PublishProcess;
+import org.olat.course.editor.StatusDescription;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -105,6 +109,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.AsyncExportManager;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.course.tree.PublishTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
@@ -138,7 +143,6 @@ public class CourseFactory extends BasicManager {
 
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
   //this is the lock that must be aquired at course editing, copy course, export course, configure course.
-	private static LockResult lockEntry;
 	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new HashMap<Long,PersistingCourseImpl>();
 	private static OLog log = Tracing.createLoggerFor(CourseFactory.class);
 	private static RepositoryManager repositoryManager;
@@ -154,11 +158,11 @@ public class CourseFactory extends BasicManager {
 	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager, OLATResourceManager olatResourceManager, 
 			BaseSecurity securityManager, ReferenceManager referenceManager, GlossaryManager glossaryManager) {
 		loadedCourses = coordinatorManager.getCoordinator().getCacher().getOrCreateCache(CourseFactory.class, "courses");
-		this.repositoryManager = repositoryManager;
-		this.olatResourceManager = olatResourceManager;
-		this.securityManager = securityManager;
-		this.referenceManager = referenceManager;
-		this.glossaryManager = glossaryManager;
+		CourseFactory.repositoryManager = repositoryManager;
+		CourseFactory.olatResourceManager = olatResourceManager;
+		CourseFactory.securityManager = securityManager;
+		CourseFactory.referenceManager = referenceManager;
+		CourseFactory.glossaryManager = glossaryManager;
 	}
 	
 	/**
@@ -462,7 +466,7 @@ public class CourseFactory extends BasicManager {
 			// copy course folder
 			File fSourceCourseFolder = sourceCourse.getIsolatedCourseFolder().getBasefile();
 			if (fSourceCourseFolder.exists()) FileUtils.copyDirToDir(fSourceCourseFolder, fTargetCourseBasePath, false, "copy course folder");
-
+			
 			// copy folder nodes directories
 			File fSourceFoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
 					+ BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));
@@ -473,11 +477,17 @@ public class CourseFactory extends BasicManager {
 					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
 
+			//make sure the DB connection is available after this point
+			DBFactory.getInstance(false).commitAndCloseSession();
+			
 			// update references
-			List refs = referenceManager.getReferences(sourceCourse);
-			for (Iterator iter = refs.iterator(); iter.hasNext();) {
-				ReferenceImpl ref = (ReferenceImpl) iter.next();
+			List<ReferenceImpl> refs = referenceManager.getReferences(sourceCourse);
+			int count = 0;
+			for (ReferenceImpl ref: refs) {
 				referenceManager.addReference(targetCourse, ref.getTarget(), ref.getUserdata());
+				if(count % 20 == 0) {
+					DBFactory.getInstance(false).intermediateCommit();
+				}
 			}
 			CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
 			CourseGroupManager targetCgm = targetCourse.getCourseEnvironment().getCourseGroupManager();
@@ -702,6 +712,43 @@ public class CourseFactory extends BasicManager {
 	}
 	
 	/**
+	 * Publish the course with some standard options
+	 * @param course
+	 * @param locale
+	 * @param identity
+	 */
+	public static void publishCourse(ICourse course, Identity identity, Locale locale) {
+		 CourseEditorTreeModel cetm = course.getEditorTreeModel();
+		 PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, locale);
+		 PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
+
+		 int newAccess = RepositoryEntry.ACC_USERS;
+		 //access rule -> all users can the see course
+		 //RepositoryEntry.ACC_OWNERS
+		 //only owners can the see course
+		 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
+		 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
+		 //fxdiff VCRP-1,2: access control of resources
+		 publishProcess.changeGeneralAccess(null, newAccess, false);
+		 
+		 if (publishTreeModel.hasPublishableChanges()) {
+			 List<String>nodeToPublish = new ArrayList<String>();
+			 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
+
+			 publishProcess.createPublishSetFor(nodeToPublish);
+			 StatusDescription[] status = publishProcess.testPublishSet(locale);
+			 //publish not possible when there are errors
+			 for(int i = 0; i < status.length; i++) {
+				 if(status[i].isError()) return;
+			 }
+		 }
+
+		 course = CourseFactory.openCourseEditSession(course.getResourceableId());
+		 publishProcess.applyPublishSet(identity, locale);
+		 closeCourseEditSession(course.getResourceableId(), true);
+	}
+	
+	/**
 	 * Get a details form for a given course resourceable
 	 * 
 	 * @param res
@@ -726,7 +773,7 @@ public class CourseFactory extends BasicManager {
 		String helpCourseSoftKey = CourseModule.getHelpCourseSoftKey();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry entry = null;
-		if (helpCourseSoftKey != null) {
+		if (StringHelper.containsNonWhitespace(helpCourseSoftKey)) {
 			entry = rm.lookupRepositoryEntryBySoftkey(helpCourseSoftKey, false);
 		}
 		if (entry == null) {
@@ -778,8 +825,8 @@ public class CourseFactory extends BasicManager {
 	 */
 	public static void archiveCourse(Identity archiveOnBehalfOf, ICourse course, String charset, Locale locale, File exportDirectory, boolean isOLATAdmin, boolean... oresRights) {
 		// archive course results overview
-		List users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-		List nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
+		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
+		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 		
 		String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
 		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "xls");
@@ -1086,7 +1133,17 @@ public class CourseFactory extends BasicManager {
 		  //System.out.println("removeCourseEditSession for course: " + resourceableId);
 		}
 	}
-
+	
+	private static void visitPublishModel(TreeNode node, PublishTreeModel publishTreeModel, Collection<String> nodeToPublish) {
+		int numOfChildren = node.getChildCount();
+		for (int i = 0; i < numOfChildren; i++) {
+			INode child = node.getChildAt(i);
+			if (child instanceof TreeNode) {
+				nodeToPublish.add(child.getIdent());
+				visitPublishModel((TreeNode) child, publishTreeModel, nodeToPublish);
+			}
+		}
+	}
 }
 
 

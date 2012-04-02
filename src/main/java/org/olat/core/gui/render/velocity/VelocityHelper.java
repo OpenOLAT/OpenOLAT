@@ -87,28 +87,22 @@ public class VelocityHelper extends LogDelegator {
 				p.setProperty(RuntimeConstants.RESOURCE_LOADER, "file, classpath");					
 				// config for file lookup from webapp classpath
 				p.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
-				// uncomment to compress html template files (not gzip, but rather leave away unneeded tabs, spaces, etc. v0.5)
-				//p.setProperty("file.resource.loader.class", "org.olat.core.gui.render.velocity.CompressingFileResourceLoader");				
 				p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, WebappHelper.getSourcePath());
 				p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "false");								
 				p.setProperty("file.resource.loader.modificationCheckInterval", "3");
 			} else {
 				p.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+				p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
 			}
 			
-			// for jars: use the classpathloader
+			//for jars: use the classpathloader
 			p.setProperty("classpath.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 			// caching is on normally
-			p.setProperty("classpath.resource.loader.cache", VelocityModule.isCachePages() ? "true" : "false");
-			// cache default size is set to have no limits, see
-			// http://velocity.apache.org/engine/releases/velocity-1.5/apidocs/org/apache/velocity/runtime/resource/ResourceCacheImpl.html#ResourceCacheImpl()
-			//p.setProperty("resource.manager.cache.size", -1 + "");
+			p.setProperty("classpath.resource.loader.cache", Settings.isDebuging() ? "false" : "true");
 			
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_LOGWHENFOUND, "false");
 			p.setProperty(RuntimeConstants.VM_LIBRARY, "velocity/olat_velocimacros.vm");
-			
-			p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, VelocityModule.isCachePages() ? "true" : "false");
-			p.setProperty(RuntimeConstants.VM_LIBRARY_AUTORELOAD, VelocityModule.isCachePages() ? "true" : "false");
+			p.setProperty(RuntimeConstants.VM_LIBRARY_AUTORELOAD, "false");
 			ve.init(p);
 		} catch (Exception e) {
 			throw new RuntimeException("config error " + p.toString());

@@ -130,6 +130,16 @@
 	    <property name="startDelay" value="${instantMessaging.sync.learning.groups.start.delay}" />
 	</bean>
 	
+	<bean id="countUserOnlineTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="countUserOnlineJob" />
+		<property name="cronExpression" value="*/30 * * * * ?" />
+		<property name="startDelay" value="40000" />
+	</bean>
+	
+	<bean id="countUserOnlineJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass" value="org.olat.instantMessaging.CountSessionsOnServerJob" />
+	</bean>
+	
 	<bean id="org.olat.instantMessaging.sync.learning.groups" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
 	  <property name="jobClass" value="org.olat.instantMessaging.InstantMessagingJob"/>
 	</bean>

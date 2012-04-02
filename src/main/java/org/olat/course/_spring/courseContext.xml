@@ -41,11 +41,11 @@
 			</bean>
 			<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
 			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/examples/OLAT-Help/7.1-SNAPSHOT/OLAT-Help-7.1-SNAPSHOT.zip" />
+				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.0/OpenOLAT-Help-8.0.zip" />
 				<property name="identifier" value="OLAT Hilfe" />
 				<property name="access" value="4" />
-				<property name="version" value="7.1" />
-				<property name="helpCourse" value="true" />
+				<property name="version" value="8.0" />
+				<property name="redeploy" value="true" />
 				<!-- 
 					Url to the course which should be used as help course. The specified course will be used 
 					in all languages.
@@ -108,6 +108,12 @@
 		<!-- whether the toolbox should display the current participant count or not -->
 		displayParticipantsCount=${course.display.participants.count}
 
+		<!-- Show or hide the help course in the top navigation -->		
+		helpCourseEnabled = ${help.course.enabled}
+
+		<!-- The soft-key of the repository entry of the help course, empty to disable help course -->
+		helpCourseSoftKey = ${help.course.softkey}
+		
 		</value>
 	</property>
 </bean>

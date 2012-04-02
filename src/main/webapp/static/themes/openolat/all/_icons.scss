@@ -69,7 +69,8 @@ a.b_small_icon:hover {
 .b_edit_icon{ background-image: url('../openolat/images/docs/document--pencil.png'); }
 .b_add_icon { background-image: url('../openolat/images/plus-circle.png'); }
 .b_open_icon { background-image: url('../openolat/images/control/control.png'); }
-	
+.b_star_icon{ background-image: url(../openolat/images/star.png) ;}
+.b_star_small_icon{ background-image: url(../openolat/images/star-small.png) ;}
 .o_fulltext_search_button { background-image: url('../openolat/images/magnifier-zoom.png'); }
 	
 .o_help_icon { background-image: url('../openolat/images/help.png'); }
@@ -83,7 +84,7 @@ a.b_small_icon:hover {
 .o_admin_icon { background-image: url('../openolat/images/wrench-screwdriver.png'); }
 .o_calendar_icon { background-image: url('../openolat/images/calendar.png'); }
 
-
+.o_locked_icon {background-image: url('../openolat/images/locked.png'); }
 
 /** ------- FLAGS ------ **/
 .b_flag_en {background-image: url('../openolat/images/flags/gb.png');} 	
@@ -234,7 +235,16 @@ li a.b_toolbox_copy, .b_copy_icon { background-image: url('../openolat/images/do
 .o_midwarn{	top: 8px; left: -2px; background-image: url('../openolat/images/decorator/deco_warn.png');}
 .o_midpub{ top: -2px; left: 9px; background-image: url('../openolat/images/decorator/deco_ok.png'); }	
 	
-	
+/* ---  assessment and efficiency statement eff -- */
+span.o_passed { background: url(../openolat/images/tick.png) no-repeat right 50%; padding: 0 25px 0 0; color: #009900; }
+span.o_notpassed { background: url(../openolat/images/cross.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+.o_efficiencystatement_icon { background-image: url(../openolat/images/seal.png);}
+
+span.o_green_led { background: url(../openolat/images/green_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+span.o_yellow_led { background: url(../openolat/images/yellow_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+span.o_red_led { background: url(../openolat/images/red_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+span.o_black_led { background: url(../openolat/images/black_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+
 /* --------- course building block icons ------------------- */
 .o_bc_icon { background-image: url('../openolat/images/folder.png') ! important; }
 .o_co_icon { background-image: url('../openolat/images/mail.png')!important}
@@ -267,8 +277,10 @@ li a.b_toolbox_copy, .b_copy_icon { background-image: url('../openolat/images/do
 /* <OLATCE-103> */
 .o_vc_icon { background-image: url('../openolat/images/projection-screen.png')!important }
 /* </OLATCE-103> */
-.o_vitero_icon { background-image: url('../openolat/images/vitero.png')!important }
-.o_ep_icon, .o_EPStructuredMapTemplate_icon { background-image: url('../openolat/images/le_resources/portfolio.png')!important}
+.o_vitero_icon { background-image: url('../openolat/images/vitero.png') !important; }
+.o_ep_icon, { background-image: url('../openolat/images/le_resources/portfolio.png') !important; }
+.o_EPStructuredMapTemplate_icon { background-image: url('../openolat/images/portfolio/briefcase.png')!important; }
+
 .o_infomsg_icon { background-image: url('../openolat/images/information-button.png')!important}
 .o_cmembers_icon { background-image: url('../openolat/images/users.png')!important}
 .fx_members_icon { background-image: url('../openolat/images/users_members.png') !important; } 

@@ -75,9 +75,15 @@ instance.id=myopenolat
 ########################################################################
 
 # for developers set to true - velocity pages are NOT cached
-olatcore.debug=true
+olat.debug=true
 # for developers set to false - i18n files are not cached
 localization.cache=false
+# path to the source code. Use this together with olat.debug=true in a 
+# development setup. If set properly, velocity templates, i18n files and 
+# static files like CSS will be reloaded from the source code on each request 
+# without redeployment of the entire webapp.
+#project.build.home.directory=/Users/srosse/workspace/OpenOLAT
+
 user.generateTestUsers=false
 # disable full text indexer at startup for development environment
 generate.index.at.startup=false

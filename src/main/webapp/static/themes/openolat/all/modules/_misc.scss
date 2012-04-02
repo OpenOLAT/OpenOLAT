@@ -37,6 +37,11 @@ div.o_bcard_footer {text-align: right; clear: both; font-size: 95%; color:rgb(31
 }
 #callout_fx_link input { width:460px;}
 
+#b_footer .fx_footer #b_footer_version {
+	> a { display:block; min-height: 45px; height: 4em; background: transparent url('../../images/frentix/frentix_logo_grey.png') no-repeat left bottom ; }
+	> a:hover { background-image: url('../../images/frentix/frentix_logo.png'); }
+}
+
 /* INFO MESSAGES */
 div.o_infomsgs { 
 		padding-top:5px; 
@@ -79,7 +84,7 @@ div.o_cmembers {
 		float:left; 
 		
 		width:30%; 
-		height:75px; /* let's fix this, we want all boxes the same height */
+		height:50px; 
 		overflow: hidden;
 		margin: 5px 5px 5px 0; 
 		padding:8px; 
@@ -88,10 +93,15 @@ div.o_cmembers {
 		@include o_gradient2(#f6f6f6,#ebebeb);
 		@include o-border-radius(5px);
 		@include o-box-shadow(0, 1px, 2px, #d3d3d3);
-		
-		.o_cmember_portrait_wrapper { height:100%; width:65px; overflow:hidden; display:inline-block; margin-right: 5px;   border:1px solid #ddd;  }
-		img.o_cmember_portrait { height:100%; width:100%; background-color:white; background-position:50% 50%; background-repeat:no-repeat; }
+		* {vertical-align:middle;}
+		.o_cmember_portrait_wrapper {
+			background-color:white;
+			float:left; height:100%; width:50px; overflow:hidden;  margin-right: 5px;   border:1px solid #ddd;  
+			img.o_cmember_portrait { background-color:white; min-width:50px; background-position:50% 50%; background-repeat:no-repeat; }
+		}
+		.o_cmember_info_wrapper { padding:16px 0px; 	}
 	}
+	
 	a.o_cmembers_mail { float:none; margin-left:5px; padding-left:20px; background-image:url(../openolat/images/mail.png); }
 	a.o_cmembers_mail span { display:none; }
 	h4 { padding: 7px 0 0 0; clear:both;}
@@ -144,11 +154,65 @@ div.fx_available_portlets {
 
 div.fx_portlets_admin_column { min-height:12em; }
 
-	
+
 /* Site admin. */
 div.fx_site_admin_column { float:left; }
 div.fx_site_admin_column div.fx_site_definition { min-height:1em;}
 	
+/* --------------- SUBSCRIPTIONS / Abonnements / NOTIFICATIONS --------------*/
+div.o_notifications_news_wrapper {}
+div.o_notifications_news_datechooser { 
+	border-bottom: 1px solid #bbb; padding:1em 0 1em 0;
+	 label { padding-right:1em;}
+}
+div.o_notifications_news_subscription { 
+	margin: 1.5em 0 2em 0;
+	h4 { font-size: 110%; }
+}
+div.o_notifications_news_context { color: #7D7D7D; font-size: 90%; }
+div.o_notifications_news_content {
+	margin: 0.5em 0 0.5em 0;
+	ul { list-style-type: none; margin: 0;}
+}
+div.o_notifications_news_url { }
+		
+		
+		
+/* --------------- FULLTEXT SEARCH --------------- */
+#o_search_form { margin: 5px; position: relative;}
+#o_search_form_toggler {background-image: url(../openolat/images/magnifier-zoom.png); cursor: pointer;}
+#o_search_form_content div.b_form div.b_form_element_wrapper div.b_form_element_wrapper { margin: 0.5em 0; }
+#o_search_form div.b_contexthelp_wrapper a.b_contexthelp { right: 0;}	
+#o_search_results {border-top: 1px solid #eee; margin: 5px;}
+#o_search_results_header { 
+		line-height: 16px; vertical-align: middle; background: url(../openolat/images/magnifier-zoom.png) no-repeat center left #F8F8F8; padding:2px 2px 2px 20px; margin-bottom: 5px;
+		
+		div.o_search_results_stats { float: right; display: inline; font-size: 90%;}
+		span.o_search_highlight { padding-left: 2em;}
+} 
+#o_search_results_header.o_search_did_you_mean,
+#o_search_results_header.o_search_no_results { background-image: url(../openolat/images/exclamation.png); color: #990000; }
+#o_search_results_header.o_search_did_you_mean span.o_search_did_you_mean_words{ color: #000; font-weight: bold;}
+#o_search_results_header #o_search_pageing { padding-left: 2em; display: inline; }
+#o_search_pageing_bottom { text-align: center; background: #F8F8F8; border-bottom: 1px solid #eee; padding: 3px;}
+#o_search_results_toomany { background: url(../openolat/images/exclamation.png) no-repeat center left #F8F8F8; color: #990000; padding: 5px 0 3px 20px; position: relative; top: -5px; margin-bottom: 5px;} 
+div.o_search_result {margin: 0 0 1em 0; padding: 1em 0 0 0; }
+div.o_search_result_title a {font-weight: bold; } 
+div.o_search_result_title a.o_search_result_details_link { margin-left: 1em; font-weight: normal; font-size: 90%; vertical-align: bottom;}
+div.o_search_result_excerpt { 
+		padding: 2px 0 1px 0; font-size: 95%; max-width: 60em;
+		 span.o_search_result_highlight { font-weight: bold; background-color: #FFFF80;}
+}
+
+
+div.o_search_result_context, 
+div.o_search_result_author,
+div.o_search_result_lastmod,
+div.o_search_result_type,
+div.o_search_result_desc { padding: 1px 0; font-size: 90%; color: #667;}
+a.o_fulltext_search_button { background:url(../openolat/images/magnifier-zoom.png) top left no-repeat; }
+
+
 
 /* nicer html error pages (404, 403, 500 ) */
 div.error-box { 
@@ -172,7 +236,92 @@ div.error-box {
 
 
 
+/** -------------- TAGGING ---------------- **/
+/* tagging */
+.b_tag_list { background: url(../openolat/images/tag-label-yellow.png) 0px 3px no-repeat !important; }
+.b_tag_icon { background-image: url(../openolat/images/tag-label-yellow.png); }
 	
+	
+div.b_tags {
+	margin: 2em 0; 
+	div { padding: 0.5em 0 0 20px; }
+	span.b_tag { font-size: 80%; padding: 5px 2px 5px 2px;line-height:3em; white-space: nowrap;}
+}
+	
+	
+/* TextboxList  */
+*:first-child + html div.holder { padding-bottom: 2px; }
+* html div.holder { padding-bottom: 2px; } /* ie7 and below */
+.textbox-outer	{ 
+	list-style-type: none; 
+	margin-left: 0em;
+}
+
+/* autocompleter bitbox (item) holder */
+a.bit-box, span.b_tag { -moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; border: 1px solid #CAD8F3; background: #DEE7F8; padding: 1px 5px 2px; padding-right: 15px; position: relative; }
+div.holder { 
+	font-size:80%;
+	min-width: 200px; width: auto; margin: 0; overflow: hidden; height: auto !important; height: 1%; padding: 0px 0px 0; cursor: text;
+	a { float: left; margin: 0 5px 4px 0; }
+	a.bit { text-decoration: none; color: black; }
+	a.bit:active,  a.bit:focus { outline: none; }
+	a.bit-box-focus { border-color: #598BEC; background: #598BEC; color: #fff; }
+	a.bit-input .maininput { border: 1px solid $basegray_ultra_light;  } 
+	a.bit-input input { 
+		width: 100px; 
+		margin: 0; 
+		border: none; 
+		background: white; 
+		outline: 0; 
+		padding: 3px 0 2px;/* no left/right padding here please */ 
+		
+		&.smallinput { width: 20px; }
+	} 
+	
+	a.bit-hover { background: #BBCEF1; border: 1px solid #6D95E0; }
+	a.bit-box-focus { background: #598BEC; color: #fff; }
+	a.bit-box {
+		a.closebutton { position: absolute; right: 0; top: 5px	; display: block; width: 7px; height: 7px; font-size: 1px; background: url('../openolat/images/tag_x.gif'); }
+		a.closebutton:hover { background-position: 7px; }
+		a.closebutton:active { outline: none }
+	}
+	a.bit-box-focus a.closebutton,  a.bit-box-focus a.closebutton:hover { background-position: bottom; }
+}
+
+
+/* Autocompleter for textboxlist */
+ol.textbox-outer { margin: 0; padding: 0;}
+.textboxlist-auto { 
+	position: absolute; 
+	width: 300px; 
+	overflow: visible;
+	display: none;   // hide at first, will be shown by JS on user input
+	background: #eee;
+	z-index: 2;  // has to be "on top " of e.g.  the taglist in "add artefact wizard"
+	
+	.default { padding: 5px 7px; border: 1px solid #ccc; border-width: 0 1px 1px; }
+	ul { 
+		display: none; margin: 0; padding: 0; 
+		overflow: auto; 
+		li { padding: 5px 12px; z-index: 1000; cursor: pointer; margin: 0; list-style-type: none; border: 1px solid #ccc; border-width: 0 1px 1px; }
+		li.loading-indicator { padding-left: 30px; background-position: 5px center; cursor: defat; font-size: 100.01% ! important; line-height: 1.5em; }
+		li.more-indicator { cursor: defat; font-style: italic; }
+		li em { font-weight: bold; font-style: normal; background: #ccc; }
+		li.auto-focus { background: #4173CC; color: #fff; }
+		li.auto-focus em { background: none; }
+	}
+}
+input.inputMessage { color: #AAA; font-size: 11px; }
+
+.b_wizard {
+	.textbox-outer { 
+		background: url(../openolat/images/tag-label-yellow.png) top left no-repeat;
+		li { margin-left:18px; } 
+	}
+	.textboxlist-auto ul li { margin-left:0;}
+	div.holder a.bit-input input { background: #f8f8f8; padding: 0.4em; }
+}
+
 /* classes to use in course layout generator to have previews in dropdown elements */
 /* note: this does not work in chrome (jan2012, chrome 16.0.) */
 .clgen_font_arial { font-family: arial,helvetica; }

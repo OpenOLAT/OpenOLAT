@@ -209,27 +209,31 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 					targetLocale = I18nModule.getOverlayLocales().get(targetLocale);	
 				}
 				List<I18nItem> i18nItems = i18nMgr.findExistingAndMissingI18nItems(referenceLocale, targetLocale, bundle, false);
-				i18nMgr.sortI18nItems(i18nItems, true, true); // sort with priority
-				// Initialize inline translation controller
-				if (i18nItemEditCtr != null) removeAsListenerAndDispose(i18nItemEditCtr);
-				// Disable inline translation markup while inline translation tool is
-				// running -
-				// must be done before instantiating the translation controller
-				i18nMgr.setMarkLocalizedStringsEnabled(ureq.getUserSession(), false);
-				i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, referenceLocale, !I18nModule.isTransToolEnabled());
-				listenTo(i18nItemEditCtr);
-				// set current key from the package as current translation item
-				for (I18nItem item : i18nItems) {
-					if (item.getKey().equals(key)) {
-						i18nItemEditCtr.initialzeI18nitemAsCurrentItem(ureq, item);
-						break;
+				if(i18nItems.isEmpty()) {
+					logError("Can not launch inline translation tool, bundle or key empty! bundle::" + bundle + " key::" + key, null);
+				} else {
+					i18nMgr.sortI18nItems(i18nItems, true, true); // sort with priority
+					// Initialize inline translation controller
+					if (i18nItemEditCtr != null) removeAsListenerAndDispose(i18nItemEditCtr);
+					// Disable inline translation markup while inline translation tool is
+					// running -
+					// must be done before instantiating the translation controller
+					i18nMgr.setMarkLocalizedStringsEnabled(ureq.getUserSession(), false);
+					i18nItemEditCtr = new TranslationToolI18nItemEditCrumbController(ureq, getWindowControl(), i18nItems, referenceLocale, !I18nModule.isTransToolEnabled());
+					listenTo(i18nItemEditCtr);
+					// set current key from the package as current translation item
+					for (I18nItem item : i18nItems) {
+						if (item.getKey().equals(key)) {
+							i18nItemEditCtr.initialzeI18nitemAsCurrentItem(ureq, item);
+							break;
+						}
 					}
+					// Open in modal window
+					if (cmc != null) removeAsListenerAndDispose(cmc);
+					cmc = new CloseableModalController(getWindowControl(), "close", i18nItemEditCtr.getInitialComponent());
+					listenTo(cmc);
+					cmc.activate();
 				}
-				// Open in modal window
-				if (cmc != null) removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), "close", i18nItemEditCtr.getInitialComponent());
-				listenTo(cmc);
-				cmc.activate();
 			} else {
 				logError("Can not launch inline translation tool, bundle or key empty! bundle::" + bundle + " key::" + key, null);
 			}

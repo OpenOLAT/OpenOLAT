@@ -26,7 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 
@@ -45,7 +45,7 @@ public class EPMapOnInvitationExtension {
 
 	public EPMapOnInvitationExtension() {
 
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("MapInvitation", new ContextEntryControllerCreator(){
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("MapInvitation", new DefaultContextEntryControllerCreator(){
 			
 			@Override
 			public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
@@ -64,13 +64,13 @@ public class EPMapOnInvitationExtension {
 			}
 
 			@Override
-			public String getTabName(ContextEntry ce) {
+			public String getTabName(ContextEntry ce, UserRequest ureq) {
 				PortfolioStructureMap map = getMapFromContext(ce);
 				return map.getTitle();
 			}
 
 			@Override
-			public String getSiteClassName(ContextEntry ce) {
+			public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 				return null;
 			}
 

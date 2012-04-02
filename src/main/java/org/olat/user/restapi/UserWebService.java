@@ -75,7 +75,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.restapi.group.MyGroupWebService;
@@ -323,9 +322,8 @@ public class UserWebService {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 			
-			File portraitDir = DisplayPortraitManager.getInstance().getPortraitDir(identity);
-			File portrait = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			if(!portrait.exists()) {
+			File portrait = DisplayPortraitManager.getInstance().getBigPortrait(identity);
+			if(portrait == null || !portrait.exists()) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
 
@@ -370,15 +368,7 @@ public class UserWebService {
 			
 			File tmpFile = getTmpFile(filename);
 			FileUtils.save(file, tmpFile);
-
-			DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
-			File uploadDir = dps.getPortraitDir(identity);
-			File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);				
-			boolean ok = ImageHelper.scaleImage(tmpFile, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
-			if(ok){
-				ok = ImageHelper.scaleImage(tmpFile, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
-			}
+			DisplayPortraitManager.getInstance().setPortrait(tmpFile, identity);
 			tmpFile.delete();
 			return Response.ok().build();
 		} catch (Throwable e) {
@@ -402,20 +392,11 @@ public class UserWebService {
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
-			}else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
+			} else if(!isUserManager(request) && !identity.equalsByPersistableKey(authIdentity)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		
-			DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
-			File uploadDir = dps.getPortraitDir(identity);
-			File pBigFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME);
-			if(pBigFile.exists()) {
-				pBigFile.delete();
-			}
-			File pSmallFile = new File(uploadDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
-			if(pSmallFile.exists()) {
-				pSmallFile.delete();
-			}
+			DisplayPortraitManager.getInstance().deletePortrait(identity);
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);

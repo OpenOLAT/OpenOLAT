@@ -33,6 +33,16 @@ import java.util.Map;
  */
 public interface ResultMapProvider {
 
+	/**
+	 * adds values for TextBoxList auto-completion for the given
+	 * searchValue (which will be the user input) to the resMap.<br />
+	 * Key-String of the resulting Map is the caption, Value-String is the value<br />
+	 * (i.e.: in autocompletion-dropdown, caption is displayed, value is
+	 * submitted)
+	 * 
+	 * @param searchValue
+	 * @param resMap
+	 */
 	public void getAutoCompleteContent(String searchValue, Map<String, String> resMap);
 
 }

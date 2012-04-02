@@ -19,6 +19,8 @@
  */
 package org.olat.portfolio.ui;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.search.ui.SearchController;
 import org.olat.core.commons.services.search.ui.SearchServiceUIFactory;
@@ -36,7 +38,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWrapperController;
 import org.olat.core.gui.control.generic.dtabs.Activateable;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.PortfolioModule;
@@ -61,7 +66,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
  * Initial Date:  11.06.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class EPMapRunController extends BasicController implements Activateable {
+public class EPMapRunController extends BasicController implements Activateable, Activateable2 {
 
 	private VelocityContainer vC;
 	private Link createMapLink;
@@ -171,6 +176,12 @@ public class EPMapRunController extends BasicController implements Activateable 
 	public void activate(UserRequest ureq, String viewIdentifier) {
 		if(!StringHelper.containsNonWhitespace(viewIdentifier)) return;
 		multiMapCtrl.activate(ureq, viewIdentifier);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		multiMapCtrl.activate(ureq, entries, state);
 	}
 
 	@SuppressWarnings("unused")

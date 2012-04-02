@@ -28,17 +28,20 @@ package org.olat.course.assessment;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
  * Description:<br>
- * TODO: guido Class Description for UpdateEfficiencyStatementsWorker
+ * A worker which updates the efficicency statements 
  */
 public class UpdateEfficiencyStatementsWorker implements Runnable {
-	private List identities;
-	private OLATResourceable ores;
+	private OLog log = Tracing.createLoggerFor(UpdateEfficiencyStatementsWorker.class);
+	private final OLATResourceable ores;
 	
 	/**
 	 * 
@@ -47,10 +50,6 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 	 */
 	public UpdateEfficiencyStatementsWorker(OLATResourceable ores) {
 		this.ores = ores;
-		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry re = rm.lookupRepositoryEntry(ores, false);
-		// get all users who already have an efficiency statement
-		identities = EfficiencyStatementManager.getInstance().findIdentitiesWithEfficiencyStatements(re.getKey());
 	}
 
 	/**
@@ -59,11 +58,17 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 	public void run() {
 		boolean success = false;
 		try{
+			RepositoryManager rm = RepositoryManager.getInstance();
 			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-			esm.updateEfficiencyStatements(ores, identities, true);
+			RepositoryEntry re = rm.lookupRepositoryEntry(ores, false);
+			
+			List<Identity> identities = EfficiencyStatementManager.getInstance().findIdentitiesWithEfficiencyStatements(re.getKey());
+			esm.updateEfficiencyStatements(ores, identities);
 			// close db session in this thread
 			DBFactory.getInstance(false).commitAndCloseSession();
 			success = true;
+		} catch(Exception ex) {
+			log.error("Unexpected exception updating the efficiency statements of " + ores, ex);
 		} finally {
 			// close db session in this thread
 			if (!success) {
@@ -71,5 +76,4 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 			}
 		}
 	}
-
 }

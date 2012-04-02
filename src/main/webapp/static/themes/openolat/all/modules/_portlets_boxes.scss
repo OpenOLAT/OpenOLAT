@@ -20,7 +20,7 @@ div.o_home_portaleditlink {
 	right: 0;
 }
 
-.o_home_main h4 {
+.o_home_main {
 	text-align: center;
 }
 
@@ -29,6 +29,14 @@ div.o_home_rsslink {
 	float: right;
 	display: inline;
 	margin: 10px 0;
+	a { float: right; display: inline; }
+	a.o_home_rsslink{
+		background: url(../openolat/images/feed.png) no-repeat;
+		width:16px;
+		display:block;
+		height: 16px;
+		line-height:0;
+	}
 }
 
 

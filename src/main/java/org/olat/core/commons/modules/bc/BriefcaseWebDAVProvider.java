@@ -26,16 +26,10 @@
 
 package org.olat.core.commons.modules.bc;
 
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.servlets.WebDAVProvider;
-import org.olat.core.util.vfs.MergeSource;
-import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 /**
  * 
  */
@@ -43,43 +37,21 @@ public class BriefcaseWebDAVProvider  extends BasicManager implements WebDAVProv
 
 	private static final String MOUNTPOINT = "home";
 	
-	public String getMountPoint() { return MOUNTPOINT; }
+	public String getMountPoint() {
+		return MOUNTPOINT;
+	}
 
 	/**
 	 * @see org.olat.commons.servlets.util.WebDAVProvider#getContainer(org.olat.core.id.Identity)
 	 */
 	public VFSContainer getContainer(Identity identity) {
 		// merge /public and /private
-		MergeSource homeMergeSource = new MergeSource(null, identity.getName());
-		
-		// mount /public
-		OlatRootFolderImpl vfsPublic = new OlatRootFolderImpl(getRootPathFor(identity) + "/public", homeMergeSource);
-		vfsPublic.getBasefile().mkdirs(); // lazy initialize folders
-		// we do a little trick here and wrap it again in a NamedContainerImpl so
-		// it doesn't show up as a OlatRootFolderImpl to prevent it from editing its MetaData
-		OlatNamedContainerImpl vfsNamedPublic = new OlatNamedContainerImpl("public", vfsPublic);
-		
-		// mount /private
-		OlatRootFolderImpl vfsPrivate = new OlatRootFolderImpl(getRootPathFor(identity) + "/private", homeMergeSource);
-		vfsPrivate.getBasefile().mkdirs(); // lazy initialize folders
-		// we do a little trick here and wrap it again in a NamedContainerImpl so
-		// it doesn't show up as a OlatRootFolderImpl to prevent it from editing its MetaData
-		OlatNamedContainerImpl vfsNamedPrivate = new OlatNamedContainerImpl("private", vfsPrivate);
-		
-		// set quota for this merge source
-		QuotaManager qm = QuotaManager.getInstance();
-		Quota quota = qm.getCustomQuotaOrDefaultDependingOnRole(identity, getRootPathFor(identity));
-		FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(quota);
-
-		homeMergeSource.setLocalSecurityCallback(secCallback);
-		homeMergeSource.addContainer(vfsNamedPublic);
-		homeMergeSource.addContainer(vfsNamedPrivate);
-		
-		return homeMergeSource;
+		return new BriefcaseWebDAVMergeSource(identity);
 	}
 	
 	protected String getRootPathFor(Identity identity) {
 		return FolderConfig.getUserHomes() + "/" + identity.getName();
 	}
-
 }
+	
+

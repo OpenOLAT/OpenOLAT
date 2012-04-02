@@ -27,6 +27,7 @@ package org.olat.user;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -241,4 +242,19 @@ public abstract class UserManager extends BasicManager {
 		this.userPropertiesConfig = userPropertiesConfig;
 	}
 
+	/**
+	 * Returns the users displayable name, e.g. "Firstname Lastname"
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public abstract String getUserDisplayName(User user);
+	
+	/**
+	 * Returns the users displayable name, e.g. "Firstname Lastname"
+	 * 
+	 * @param user
+	 * @return
+	 */
+	public abstract String getUserDisplayName(IdentityShort user);
 }

@@ -201,8 +201,12 @@
 
 	<!-- SEARCH PROXY SIDE CONFIGURATION -->
 	<!-- =============================== -->
+	<!-- OO-109: bypass the JMS server in no-cluster environment ==> use searchClientLocal if singleVM -->	
+	<alias alias="searchClient" name="searchClient${cluster.mode}"/>
+
+	<bean id="searchClientSingleVM" class="org.olat.search.service.searcher.SearchClientLocal"/>
 	
-	<bean id="searchClient" class="org.olat.search.service.searcher.SearchClientProxy" init-method="springInit" destroy-method="stop">
+	<bean id="searchClientCluster" class="org.olat.search.service.searcher.SearchClientProxy" init-method="springInit" destroy-method="stop" lazy-init="true">
 		<property name="connectionFactory" ref="searchConnectionFactory"/>
 		<property name="searchQueue" ref="searchQueue"/>
 		<property name="receiveTimeout" value="45000"/>
@@ -213,12 +217,12 @@
 	<!-- ========================================================= -->
 
 	<!-- JMS Stuff -->
-	<bean id="searchConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" >
+	<bean id="searchConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
 		<property name="brokerURL" value="${search.broker.url}" /> 
 	</bean>
 
 	<!-- used for sending the search requests -->
-	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue">
+	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
 		<constructor-arg value="olat/searchQueue" />
 	</bean>
 

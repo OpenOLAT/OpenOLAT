@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -146,6 +145,7 @@ public class NodeConfigFormController extends FormBasicController {
 		// add the short title text input element
 		shortTitle = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", SHORT_TITLE_MAX_LENGTH, (menuTitle == null ? "": menuTitle), formLayout);
 		shortTitle.setMandatory(true);
+		shortTitle.setCheckVisibleLength(true);
 		
 		// add the title input text element
 		title = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, (displayTitle==null? "": displayTitle), formLayout);
@@ -180,6 +180,8 @@ public class NodeConfigFormController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(shortTitle.getValue())) {
 			// the short title is mandatory
 			shortTitle.setErrorKey("nodeConfigForm.menumust", new String[] {});
+			shortTitleOk = false;
+		} else if (shortTitle.hasError()) {
 			shortTitleOk = false;
 		}
 		if (shortTitleOk && super.validateFormLogic(ureq)) {

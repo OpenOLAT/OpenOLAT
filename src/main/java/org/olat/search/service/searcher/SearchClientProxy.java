@@ -64,7 +64,7 @@ import org.olat.core.logging.Tracing;
  * Initial Date:  03.06.2008 <br>
  * @author Lavinia Dumitrescu
  */
-public class SearchClientProxy {
+public class SearchClientProxy implements SearchClient {
 	
 	protected static final String JMS_RESPONSE_STATUS_PROPERTY_NAME = "response_status";
 	protected static final String JMS_RESPONSE_STATUS_OK = "ok";
@@ -150,6 +150,7 @@ public class SearchClientProxy {
 	 * Uses Request/reply mechanism for synchronous operation.
 	 * @see org.olat.search.service.searcher.OLATSearcher#doSearch(java.lang.String, org.olat.core.id.Identity, org.olat.core.id.Roles, boolean)
 	 */
+	@Override
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxResults, boolean doHighlighting) throws ServiceNotAvailableException, ParseException, QueryException {
 		boolean isDebug = Tracing.isDebugEnabled(SearchClientProxy.class);
 		if(isDebug){

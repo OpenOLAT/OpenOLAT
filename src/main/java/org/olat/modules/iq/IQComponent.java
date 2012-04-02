@@ -85,5 +85,13 @@ public class IQComponent extends Component {
 	public boolean provideMemoField () {
 		return provideMemoField;
 	}
-
+	
+	/**
+	 * Return true to force incrementing of the timestamp. This protect
+	 * the test against back button which is not supported.
+	 */
+	@Override
+	public boolean isSilentlyDynamicalCmp() {
+		return true;
+	}
 }

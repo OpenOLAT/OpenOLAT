@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,34 @@ import org.olat.core.util.component.ComponentVisitor;
  * @author Felix Jost
  */
 public class ComponentHelper {
-
+	
+	
+	public static List<Component> findAncestorsOrSelfByID(Component startFrom, Component target) {
+		List<Component> ancestors = new ArrayList<Component>();
+		dofindAncestors(startFrom, target, ancestors);
+		return ancestors;
+	}
+	
+	private static boolean dofindAncestors(Component current, Component target, List<Component> ancestors) {
+		if (target == current) {
+			ancestors.add(target);
+			return true;
+		}
+		if (current instanceof Container) {
+			Container co = (Container) current;
+			Map<String,Component> children = co.getComponents();
+			for (Iterator<Component> iter = children.values().iterator(); iter.hasNext();) {
+				Component child = iter.next();
+				boolean found = dofindAncestors(child, target, ancestors);
+				if (found) {
+					ancestors.add(current);
+					return found;
+				}
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * @param startFrom
 	 * @param id

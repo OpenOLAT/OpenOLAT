@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema targetNamespace="http://www.imsglobal.org/xsd/imsmd_v1p2" 
-            xmlns:x="http://www.w3.org/XML/1998/namespace" 
+<xsd:schema targetNamespace="http://www.imsglobal.org/xsd/imsmd_v1p2"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
             xmlns="http://www.imsglobal.org/xsd/imsmd_v1p2" 
             elementFormDefault="qualified" 
             version="IMS MD 1.2.3">
 
-   <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="ims_xml.xsd"/> 
+   <xsd:import namespace = "http://www.w3.org/XML/1998/namespace" schemaLocation = "http://www.w3.org/2001/03/xml.xsd"/>
    
    <!-- ******************** -->
    <!-- ** Change History ** -->
@@ -322,7 +321,7 @@
    <xsd:complexType name="langstringType">
       <xsd:simpleContent>
          <xsd:extension base="xsd:string">
-            <xsd:attribute ref="x:lang"/>
+            <xsd:attribute ref="xml:lang"/>
          </xsd:extension>
       </xsd:simpleContent>
    </xsd:complexType>
@@ -468,7 +467,7 @@
    <xsd:complexType name="stringType">
       <xsd:simpleContent>
          <xsd:extension base="xsd:string">
-            <xsd:attribute ref="x:lang"/>
+            <xsd:attribute ref="xml:lang"/>
          </xsd:extension>
       </xsd:simpleContent>
    </xsd:complexType>

@@ -31,7 +31,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.model.DBMail;
-import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.core.util.notifications.NotificationsHandler;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;

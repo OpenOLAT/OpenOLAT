@@ -37,6 +37,10 @@ public class StateMapped implements StateEntry{
 	public StateMapped() {
 		//make XStream happy
 	}
+	
+	public StateMapped(String key, String value) {
+		delegate.put(key, value);
+	}
 
 	public Map<String, String> getDelegate() {
 		return delegate;

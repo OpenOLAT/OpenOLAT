@@ -58,6 +58,7 @@ import org.olat.resource.OLATResourceManager;
  * 
  * @author Mike Stock
  * @author guido
+ * @author Florian Gnägi
  */
 public class CourseModule extends AbstractOLATModule {
 
@@ -68,6 +69,7 @@ public class CourseModule extends AbstractOLATModule {
 	private static OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	private static String helpCourseSoftkey;
+	private static boolean helpCourseEnabled;
 	private static CoordinatorManager coordinatorManager;
 	private Map<String, RepositoryEntry> deployedCourses;
 	private boolean deployCoursesEnabled;
@@ -130,6 +132,8 @@ public class CourseModule extends AbstractOLATModule {
 		courseChatEnabled = getBooleanConfigParameter("enableCourseChat", true);
 		deployCoursesEnabled = getBooleanConfigParameter("deployCourseExportsEnabled", true);
 		displayParticipantsCount = getBooleanConfigParameter("displayParticipantsCount", true);
+		helpCourseEnabled = getBooleanConfigParameter("helpCourseEnabled", false);
+		helpCourseSoftkey = getStringConfigParameter("helpCourseSoftKey", "", true);
 	}
 
 	/**
@@ -139,7 +143,7 @@ public class CourseModule extends AbstractOLATModule {
 		// skip all the expensive course demo setup and deployment when we are in junit mode.
 		if (Settings.isJUnitTest()) return;
 		
-		logInfo("Initializing the OLAT course system");		
+		logInfo("Initializing the OpenOLAT course system");		
 		
 		// Cleanup, otherwise this subjects will have problems in normal OLAT
 		// operation
@@ -151,18 +155,13 @@ public class CourseModule extends AbstractOLATModule {
 		logInfo("Deploying course exports.");
 		for (DeployableCourseExport export: deployableCourseExports) {
 			if (0 < export.getAccess() && export.getAccess() < 5) {
-				if (deployCoursesEnabled || export.isHelpCourse()) {
-					RepositoryEntry re = null;
+				if (deployCoursesEnabled) {
 					try {
-						re = deployCourse(export, export.getAccess());
+						deployCourse(export, export.getAccess());
 					} catch (Exception e) {
 						logWarn("Skipping deployment of course::" + export.getIdentifier(), e);
 					}
 					DBFactory.getInstance().intermediateCommit();
-					if (re != null && export.isHelpCourse()) {
-						helpCourseSoftkey = re.getSoftkey();
-						logInfo("Assigned help course softkey: "+re.getSoftkey());
-					}
 					continue;
 				}
 			} else {
@@ -317,6 +316,13 @@ public class CourseModule extends AbstractOLATModule {
 	 */
 	public static String getHelpCourseSoftKey() {
 		return helpCourseSoftkey;
+	}
+	
+	/**
+	 * @return true: show help course link in top nav; false: do not show help course
+	 */
+	public static boolean isHelpCourseEnabled() {
+		return helpCourseEnabled;
 	}
 
 	/**

@@ -24,16 +24,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperRegistry;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.media.MediaResource;
@@ -41,48 +43,103 @@ import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.util.StringHelper;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
- * component to use the TextBoxList from 
- * http://www.interiders.com/2008/02/18/protomultiselect-02/
- * a bugfixed-version (the one used in OLAT) stays here:
+ * component to use the TextBoxList from
+ * http://www.interiders.com/2008/02/18/protomultiselect-02/ a bugfixed-version
+ * (the one used in OLAT) stays here:
  * http://github.com/thewebfellas/protomultiselect
+ * 
+ * note: march 2012, strentini merged some bugfixes from
+ * https://github.com/garrytan/protomultiselect as of march 2012, this is
+ * intended to be used always within a flexiform.
  * 
  * <P>
  * Initial Date: 23.07.2010 <br>
+ * 
+ * 
+ * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class TextBoxListComponent extends FormBaseComponentImpl {
+public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
-	public static final String MORE_RESULTS_INDICATOR = "....."; // if changed, do so also in multiselect.js!
-	private static final ComponentRenderer RENDERER = new TextBoxListRenderer(false);
+	// if changed, do so also in multiselect.js!
+	public static final String MORE_RESULTS_INDICATOR = ".....";
+
 	private String inputHint;
-	private Map<String, String> initialItems;
-	private boolean allowNewValues = true;
-	private boolean allowDuplicates = false;
-	private Map<String, String> autoCompleteContent;
-	ResultMapProvider provider;
-	private String mapperUri;
-	private boolean noFormSubmit;
-	private int maxResults;
 
-	private TextBoxListComponent(String name, Translator translator) {
-		super(name, translator);
-	}
+	/*
+	 * holds the initial items (keyString is the caption! valueString is the
+	 * value)
+	 */
+	private Map<String, String> initialItems;
+
+	/*
+	 * holds the current Set of items
+	 */
+	private Map<String, String> currentItems;
+
+	/*
+	 * if set to true, multiselect.js will allow new values (apart from the ones
+	 * in the autocompletion set)
+	 */
+	private boolean allowNewValues = true;
+
+	private boolean allowDuplicates = false;
+
+	private static OLog logger = Tracing.createLoggerFor(TextBoxListComponent.class);
+
+	/*
+	 * the autoCompletion map. Key-String in the map is the "caption",
+	 * Value-String is the "value"
+	 */
+	private Map<String, String> autoCompletionValues;
+
+	private ResultMapProvider provider;
+	private String mapperUri;
+
+	/*
+	 * if set to true, form is submitted on user input. Default is false
+	 */
+	private boolean doFormSubmitOnInput = false;
+
+	/*
+	 * the number of maxResults shown in the auto-completion list
+	 */
+	private int maxResults;
 
 	/**
 	 * 
 	 * @param name
-	 * @param inputHint i18n key for an input hint, displayed when no autocompletion result are shown and the pointer is in the input field
-	 * @param initialItems set the already existing items. Map is "Key, Value" where value could be null. so returned value is same as key.
+	 * @param inputHint
+	 *            i18n key for an input hint, displayed when no autocompletion
+	 *            result are shown and the pointer is in the input field
+	 * @param initialItems
+	 *            set the already existing items. Map is "Key, Value" where
+	 *            value could be null. so returned value is same as key. If you
+	 *            don't want to set any intial items, just pass null or an empty
+	 *            map
 	 * 
 	 */
 	public TextBoxListComponent(String name, String inputHint, Map<String, String> initialItems, Translator translator) {
-		this(name, translator);
+		super(name, translator);
 		this.inputHint = inputHint;
 		this.initialItems = initialItems;
+
+		// check for null values
+		if (this.initialItems == null) {
+			this.initialItems = new HashMap<String, String>();
+		}
+
+		// copy the initialItems into the "currentItems" map
+		this.currentItems = new HashMap<String, String>();
+		
+		for (Entry<String, String> initialMapEntry : this.initialItems.entrySet()) {
+			currentItems.put(initialMapEntry.getKey(), initialMapEntry.getValue());
+		}
 	}
 
 	/**
@@ -90,43 +147,97 @@ public class TextBoxListComponent extends FormBaseComponentImpl {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
+
 		String inputId = "textboxlistinput" + getFormDispatchId();
 		String cmd = ureq.getParameter(inputId);
-		if (StringHelper.containsNonWhitespace(cmd)){
-			List<String> items = StringHelper.getParts(cmd, ",");
-			List<String> allCleaned = new ArrayList<String>();
-			List<String> newOnly = new ArrayList<String>();
-			for (String item : items) {
-				String cleanedItem = item; 
-				if (item.startsWith("[") && item.endsWith("]")){
-					cleanedItem = item.substring(1, item.length()-1);
-					newOnly.add(cleanedItem);
-				} 
-				allCleaned.add(cleanedItem); 
+		String[] splitted = cmd.split(",");
+		ArrayList<String> cleanedItemValues = new ArrayList<String>();
+		for (String item : splitted) {
+			if (!StringUtils.isBlank(item))
+				cleanedItemValues.add(item.trim());
+		}
+		if (!isAllowDuplicates())
+			removeDuplicates(cleanedItemValues);
+
+		// update our current items
+		currentItems = new HashMap<String, String>();
+		String caption = "";
+		for (String itemValue : cleanedItemValues) {
+			caption = getCaptionForKnownValue(itemValue);
+			if ("".equals(caption)) {
+				currentItems.put(itemValue, itemValue);
+			} else {
+				currentItems.put(caption, itemValue);
 			}
-			if (!isAllowDuplicates()) removeDuplicates(allCleaned);			
-			fireEvent(ureq, new TextBoxListEvent(allCleaned, newOnly));			
-		}		
+		}
+
+		if (logger.isDebug())
+			logger.debug("doDispatchRequest --> firing textBoxListEvent with current items: " + cleanedItemValues);
+		fireEvent(ureq, new TextBoxListEvent(cleanedItemValues));
 	}
-	
-	public static void removeDuplicates(List<String> arlList) {
+
+	/**
+	 * 
+	 * @param itemValue
+	 * @return
+	 */
+	private String getCaptionForKnownValue(String itemValue) {
+		String caption = getInitialItemCaptionByValue(itemValue);
+		if ("".equals(caption))
+			caption = getAutoCompletionItemCaptionByValue(itemValue);
+
+		return caption;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private String getInitialItemCaptionByValue(String itemValue) {
+		String initialItemCaption = "";
+		for (Entry<String, String> initialItemEntry : this.initialItems.entrySet()) {
+			if (initialItemEntry.getValue().equals(itemValue))
+				initialItemCaption = initialItemEntry.getKey();
+		}
+		return initialItemCaption;
+	}
+
+	/**
+	 * 
+	 * @param itemValue
+	 * @return
+	 */
+	private String getAutoCompletionItemCaptionByValue(String itemValue) {
+		String autoCompletionItemCaption = "";
+		if (this.getAutoCompleteContent() == null)
+			return autoCompletionItemCaption;
+		for (Entry<String, String> autoCompletionItemEntry : this.getAutoCompleteContent().entrySet()) {
+			if (autoCompletionItemEntry.getValue().equals(itemValue))
+				autoCompletionItemCaption = autoCompletionItemEntry.getKey();
+		}
+		return autoCompletionItemCaption;
+	}
+
+	/**
+	 * 
+	 * @param arlList
+	 */
+	private static void removeDuplicates(List<String> arlList) {
 		HashSet<String> h = new HashSet<String>(arlList);
 		arlList.clear();
 		arlList.addAll(h);
 	}
-	
 
 	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
+	 * returns the input-hint <br />
+	 * (the text that is displayed within the input-field on rendering)
+	 * 
+	 * @return
 	 */
-	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
-	}
-
 	public String getInputHint() {
 		return inputHint;
 	}
+
 	/**
 	 * @return Returns the provider.
 	 */
@@ -134,20 +245,76 @@ public class TextBoxListComponent extends FormBaseComponentImpl {
 		return provider;
 	}
 
+	/**
+	 * returns the set of initial items
+	 * 
+	 * @return
+	 */
 	public Map<String, String> getInitialItems() {
 		return initialItems;
+	}
+
+	/**
+	 * returns the current Set of items in the textBoxList<br />
+	 * (aka the current "bits"). The returned map contains the captions (as key)
+	 * and the values
+	 * 
+	 * @return the current Items/"bits" of the TextBoxListComponent
+	 */
+	public Map<String, String> getCurrentItems() {
+		return currentItems;
+	}
+
+	/**
+	 * returns the current List of item-values (without the captions)
+	 * 
+	 * @return
+	 */
+	public List<String> getCurrentItemValues() {
+		return new ArrayList<String>(currentItems.values());
 	}
 
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
 		jsa.addRequiredJsFile(TextBoxListComponent.class, "js/multiselect.js");
-		if (this.provider != null) setMapper(ureq);
+		if (this.provider != null)
+			setMapper(ureq);
 	}
 
 	/**
-	 * @param allowNewValues if set to false, no values outside the autocompletion-result are allowed to be entered. 
-	 * default is true
+	 * registers a OpenOLAT Mapper for this textBoxListComponent
+	 * 
+	 * @param ureq
+	 */
+	private void setMapper(UserRequest ureq) {
+		Mapper mapper = new Mapper() {
+
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				String lastInput = request.getParameter("keyword");
+				if (lastInput.length() > 2) {
+					Map<String, String> autoCContLoc = new HashMap<String, String>();
+					provider.getAutoCompleteContent(lastInput, autoCContLoc);
+					setAutoCompleteContent(autoCContLoc);
+				}
+				String jsonResult = getAutoCompleteJSON();
+				StringMediaResource mediaResource = new StringMediaResource();
+				mediaResource.setContentType("application/x-json;charset=utf-8");
+				mediaResource.setEncoding("utf-8");
+				mediaResource.setData(jsonResult);
+				return mediaResource;
+			}
+		};
+
+		MapperRegistry mr = MapperRegistry.getInstanceFor(ureq.getUserSession());
+		String fetchUri = mr.register(mapper);
+		this.mapperUri = fetchUri + "/";
+	}
+
+	/**
+	 * @param allowNewValues
+	 *            if set to false, no values outside the autocompletion-result
+	 *            are allowed to be entered. default is true
 	 */
 	public void setAllowNewValues(boolean allowNewValues) {
 		this.allowNewValues = allowNewValues;
@@ -168,40 +335,55 @@ public class TextBoxListComponent extends FormBaseComponentImpl {
 	}
 
 	/**
-	 * @param allowDuplicates if set to false (default) duplicates will be filtered automatically
+	 * @param allowDuplicates
+	 *            if set to false (default) duplicates will be filtered
+	 *            automatically
 	 */
 	public void setAllowDuplicates(boolean allowDuplicates) {
 		this.allowDuplicates = allowDuplicates;
 	}
 
 	/**
-	 * @param autoCompleteContent set a Map to use for autocompletion
-	 * the integer is displayed in the list and elements get ordered by its value 
+	 * @param autoCompletionValues
+	 *            set a Map to use for autocompletion. Key in the map is the
+	 *            "caption"
 	 */
-	public void setAutoCompleteContent(Map<String, String> autoCompleteContent) {
-		this.autoCompleteContent = autoCompleteContent;
+	public void setAutoCompleteContent(Map<String, String> autoCompletionValues) {
+		this.autoCompletionValues = autoCompletionValues;
 	}
 
 	/**
-	 * set a list which gets converted to a map with <caption, value> pairs
-	 * @param tagL
+	 * set a Set of auto-completion values. ( caption will be equal to value,
+	 * use setAutoCompleteContent(Map<String, String> autoCompleteContent) if
+	 * you want to set custom values and captions )
+	 * 
+	 * @param autoCompletionValues
+	 *            the Set of autoCompletionValues to use in this
+	 *            TextBoxListComponent
 	 */
-	public void setAutoCompleteContent(List<String> tagL) {
-		Map<String, String> map = new HashMap<String, String>(tagL.size());
-		for (String string : tagL) {
+	public void setAutoCompleteContent(Set<String> autoCompletionValues) {
+		Map<String, String> map = new HashMap<String, String>(autoCompletionValues.size());
+		for (String string : autoCompletionValues) {
 			map.put(string, string);
 		}
 		setAutoCompleteContent(map);
 	}
-	
+
 	/**
-	 * @return Returns the autoCompleteContent.
+	 * @return Returns the autoCompletionValues as Map, where the Key-String is
+	 *         the caption, the Value-String the value of the
+	 *         auto-Completion-item
 	 */
 	public Map<String, String> getAutoCompleteContent() {
-		return autoCompleteContent;
+		return autoCompletionValues;
 	}
-	
-	// list contains String (caption), string (value to submit)
+
+	/**
+	 * returns the AutoCompletionContent as JSON String.<br />
+	 * it will contain the captions and values
+	 * 
+	 * @return the autoCompletionContent as JSON
+	 */
 	protected String getAutoCompleteJSON() {
 		String res = "[]";
 		try {
@@ -215,42 +397,16 @@ public class TextBoxListComponent extends FormBaseComponentImpl {
 					cssAdd.put(array);
 				}
 				res = cssAdd.toString();
-			} 
+			}
 		} catch (JSONException e) {
 			throw new OLATRuntimeException("could not convert the autocompletion-map to json", e);
 		}
 		return res;
 	}
-	
-	public void setMapperProvider(ResultMapProvider provider){
-		this.provider = provider;		
+
+	public void setMapperProvider(ResultMapProvider provider) {
+		this.provider = provider;
 	}
-	
-	private void setMapper(UserRequest ureq){
-		Mapper mapper = new Mapper() {
-			@SuppressWarnings("unused")
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				String lastInput = request.getParameter("keyword");
-				if (lastInput.length() > 2){
-					Map<String, String> autoCContLoc = new HashMap<String, String>();
-					provider.getAutoCompleteContent(lastInput, autoCContLoc);
-					setAutoCompleteContent(autoCContLoc);
-				}
-				String jsonRes = getAutoCompleteJSON();
-				StringMediaResource smr = new StringMediaResource();
-				smr.setContentType("application/x-json;charset=utf-8");
-				smr.setEncoding("utf-8");
-				smr.setData(jsonRes);
-				return smr;
-			}
-		};
-		
-		MapperRegistry mr = MapperRegistry.getInstanceFor(ureq.getUserSession());
-		String fetchUri = mr.register(mapper);
-		this.mapperUri = fetchUri + "/";
-	}
-	
-	
 
 	/**
 	 * @return Returns the mapperUri.
@@ -258,38 +414,56 @@ public class TextBoxListComponent extends FormBaseComponentImpl {
 	public String getMapperUri() {
 		return mapperUri;
 	}
-	
-	public void setNoFormSubmit(boolean noFormSubmit) {
-		this.noFormSubmit = noFormSubmit;		
-	}
-	
+
 	/**
-	 * @return Return the maximal number of results showned by the box
+	 * @return Return the maximal number of results shown by the auto-completion
+	 *         list
 	 */
 	public int getMaxResults() {
 		return maxResults;
 	}
 
+	/**
+	 * set the maximal number of results that should be shown by the
+	 * auto-completion list
+	 * 
+	 * @param maxResults
+	 */
 	public void setMaxResults(int maxResults) {
 		this.maxResults = maxResults;
 	}
 
 	/**
-	 * @return Returns the noFormSubmit.
+	 * configures the behavior on user input (item added, item deleted).
+	 * 
+	 * @param doFormSubmit
+	 *            If set to true, containing form will be submitted on user
+	 *            input
 	 */
-	public boolean isNoFormSubmit() {
-		return noFormSubmit;
+	public void doFormSubmitOnInput(boolean doFormSubmit) {
+		this.doFormSubmitOnInput = doFormSubmit;
 	}
 
-	public String getReadOnlyContent() {
-		Map<String, String> content = getInitialItems();
-		if (content != null && content.size()!=0) {
-			String res = "";
-			for (String item : content.keySet()) {
-				res = res + ", " + content.get(item);
-			}
-			return res.substring(2);
-		} else return "";
+	/**
+	 * 
+	 * @return true if this TextBoxListElement is configured to submit the
+	 *         containing form on userinput.
+	 */
+	public boolean doFormSubmitOnInput() {
+		return doFormSubmitOnInput;
 	}
-	
+
+	/**
+	 * returns a the initialItems as comma-separated list.<br />
+	 * 
+	 * @return
+	 */
+	public String getInitialItemsAsString() {
+		Map<String, String> content = getInitialItems();
+		if (content != null && content.size() != 0) {
+			return StringUtils.join(content.keySet(), ", ");
+		} else
+			return "";
+	}
+
 }

@@ -1,5 +1,7 @@
 /** ----------------- BUTTONS  ----------------- **/
 
+button { border:none; }
+
 .b_button {
 	@include btt-outer;
 	&,span {@include btt-inner;}
@@ -11,11 +13,11 @@
 		@include o-box-shadow(0, 1px, 1px, rgba(0,0,0,0.1));
 	}
 	&:focus {
-		border-color:$basecolor;
+		border:1px solid $basecolor;
 	}
 	&:active {
 		@include o-box-shadow-inset(0, 1px, 2px, rgba(0,0,0,0.3));
-		border-color:$basecolor;
+		border:1px solid $basecolor;
 	}
 	
 	&.b_button_preferred {
@@ -26,6 +28,16 @@
 	}
 }
 
+/**
+	 * fix button hover for IE8  ::   notice: for <= IE7, there is patches.css !
+	 * @bugfix
+	 * @affected   IE6, IE7, IE8
+	 * @css-for    all browsers
+	 * @valid      no!
+*/	 
+.b_button:focus, .b_button:hover {
+	border: 1px solid #aaa\9;
+} 
 
 /* dirty button (form with unsaved values ) */
 .b_button_dirty {
@@ -214,7 +226,7 @@ div.b_form {
 		.b_form_disabled { color: #504D4E; }
 		.b_form_element_disabled { color: #9E9C9C; background: #EEEEEE; border: 1px solid #CDCBCB;}
 		/* date and generic chooser icon*/
-		span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px; padding-top:2px;}
+		span.b_form_datechooser { background: url(../openolat/images/calendar.png) no-repeat; padding-left: 18px; height: 16px; line-height: 16px; margin-left: 2px; padding-top:3px;}
 		a.b_form_groupchooser { background: url(../openolat/images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}
 		a.b_form_genericchooser { background: url(../openolat/images/users.png) no-repeat; padding-left: 18px; height: 16px;line-height: 16px; margin-left: 2px;}	
 	    a.b_form_wikitext { background-repeat: no-repeat; padding-left: 12px; line-height: 1.5em; font-style: italic;}

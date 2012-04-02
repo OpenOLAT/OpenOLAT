@@ -685,6 +685,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	@Override
 	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty() || tabbedPane == null) return;
 		tabbedPane.activate(ureq, entries, state);
 	}
 

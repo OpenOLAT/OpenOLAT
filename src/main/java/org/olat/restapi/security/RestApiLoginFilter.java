@@ -120,6 +120,7 @@ public class RestApiLoginFilter implements Filter {
 						followWithoutAuthentication(httpRequest, httpResponse, chain);
 					} else if (isRequestTokenValid(httpRequest)) {
 						String token = httpRequest.getHeader(RestSecurityHelper.SEC_TOKEN);
+						
 						followToken(token, httpRequest, httpResponse, chain);
 					} else if (isBasicAuthenticated(httpRequest, httpResponse, requestURI)) {
 						followBasicAuthenticated(request, response, chain);
@@ -178,7 +179,7 @@ public class RestApiLoginFilter implements Filter {
 							UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 							//Forge a new security token
 							RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
-							String token = securityBean.generateToken(identity);
+							String token = securityBean.generateToken(identity, request.getSession());
 							response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
 						}
 						return true;

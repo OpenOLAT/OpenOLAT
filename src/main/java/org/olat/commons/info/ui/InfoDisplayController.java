@@ -54,6 +54,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.activity.CourseLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -61,6 +64,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -287,6 +291,10 @@ public class InfoDisplayController extends FormBasicController {
 		} else if(source == confirmDelete) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				InfoMessage msgToDelete = (InfoMessage)confirmDelete.getUserObject();
+
+				ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_DELETED, getClass(),
+						LoggingResourceable.wrap(msgToDelete.getOLATResourceable(), OlatResourceableType.infoMessage));
+				
 				infoMessageManager.deleteInfoMessage(msgToDelete);
 				loadMessages();
 			}
@@ -412,6 +420,10 @@ public class InfoDisplayController extends FormBasicController {
 			}
 			
 			infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), identities);
+			
+			ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_CREATED, getClass(),
+					LoggingResourceable.wrap(msg.getOLATResourceable(), OlatResourceableType.infoMessage));
+
 			return StepsMainRunController.DONE_MODIFIED;
 		}
 	}

@@ -122,8 +122,12 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 		VFSContainer writableRootContainer = folderComponent.getRootContainer();
 		ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
 		if (result != null) {
-			writableRootContainer = result.getContainer();
-			relFilePath = currentItem.getName();
+			if(currentItem.getParentContainer() != null) {
+				writableRootContainer = currentItem.getParentContainer();
+				relFilePath = currentItem.getName();
+			} else {
+				writableRootContainer = result.getContainer();
+			}
 		} else {
 			// use fallback that always work: current directory and current file
 			relFilePath = currentItem.getName();

@@ -23,14 +23,15 @@ import static org.olat.collaboration.CollaborationTools.KEY_FORUM;
 import static org.olat.collaboration.CollaborationTools.PROP_CAT_BG_COLLABTOOLS;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -47,8 +48,6 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -58,22 +57,15 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FOCourseNode;
-import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.SearchBusinessGroupParams;
-import org.olat.modules.fo.Forum;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -95,9 +87,8 @@ import org.olat.restapi.group.LearningGroupWebService;
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(MyForumsWebService.class);
+	private OLog log = Tracing.createLoggerFor(MyForumsWebService.class);
 
-	
 	/**
 	 * Retrieves the forum of a group
 	 * @response.representation.200.qname {http://www.example.com}forumVO
@@ -119,7 +110,7 @@ public class MyForumsWebService {
 	}
 	
 	/**
-	 * Retrieves the folrum of a course building block
+	 * Retrieves the forum of a course building block
 	 * @response.representation.200.qname {http://www.example.com}fileVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The files
@@ -133,35 +124,7 @@ public class MyForumsWebService {
 	@Path("course/{courseKey}/{courseNodeId}")
 	public ForumWebService getCourseFolder(@PathParam("courseKey") Long courseKey, @PathParam("courseNodeId") String courseNodeId,
 			@Context HttpServletRequest request) {
-		
-		if(courseNodeId == null) {
-			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-		} else if (courseKey != null) {
-			ICourse course = loadCourse(courseKey);
-			if(course == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			}
-			CourseNode node =course.getEditorTreeModel().getCourseNode(courseNodeId);
-			if(node == null) {
-				throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
-			} else if(!(node instanceof FOCourseNode)) {
-				throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
-			}
-			
-			FOCourseNode bcNode = (FOCourseNode)node;
-			UserRequest ureq = getUserRequest(request);
-			UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment());
-			NodeEvaluation ne = bcNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
-
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
-			if(mayAccessWholeTreeUp) {
-				Forum forum = bcNode.loadOrCreateForum(course.getCourseEnvironment());
-				return new ForumWebService(forum);
-			} else {
-				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-			}
-		}
-		return null;
+		return new ForumCourseNodeWebService().getForumContent(courseKey, courseNodeId, request);
 	}
 	
 	/**
@@ -200,6 +163,8 @@ public class MyForumsWebService {
 
 		Map<Long,Long> groupNotified = new HashMap<Long,Long>();
 		Map<Long,Long> courseNotified = new HashMap<Long,Long>();
+		final Set<Long> subscriptions = new HashSet<Long>();
+		
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
 			List<String> notiTypes = Collections.singletonList("Forum");
@@ -207,6 +172,8 @@ public class MyForumsWebService {
 			for(Subscriber sub:subs) {
 				String resName = sub.getPublisher().getResName();
 				Long forumKey = Long.parseLong(sub.getPublisher().getData());
+				subscriptions.add(forumKey);
+				
 				if("BusinessGroup".equals(resName)) {
 					Long groupKey = sub.getPublisher().getResId();
 					groupNotified.put(groupKey, forumKey);
@@ -217,8 +184,7 @@ public class MyForumsWebService {
 			}
 		}
 		
-
-		List<ForumVO> forumVOs = new ArrayList<ForumVO>();
+		final List<ForumVO> forumVOs = new ArrayList<ForumVO>();
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		ACFrontendManager acManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
@@ -228,50 +194,21 @@ public class MyForumsWebService {
 		for(RepositoryEntry entry:entries) {
 			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
 			if(result.isAccessible()) {
-				ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-				CourseNode rootNode = course.getRunStructure().getRootNode();
-				
-				//collect the forums
-				final List<FOCourseNode> forumsNode = new ArrayList<FOCourseNode>();
-				TreeVisitor treeVisitor = new TreeVisitor(new Visitor() {
-					@Override
-					public void visit(INode node) {
-						if(node instanceof FOCourseNode) {
-							forumsNode.add((FOCourseNode)node);
-						}
-					}
-				}, rootNode, false);
-				treeVisitor.visitAll();
-				
-				//check the access
-				if(!forumsNode.isEmpty()) {
-					IdentityEnvironment ienv = new IdentityEnvironment();
-					ienv.setIdentity(retrievedUser);
-					ienv.setRoles(roles);
-					UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-
-					TreeEvaluation treeEval = new TreeEvaluation();
-					rootNode.eval(userCourseEnv.getConditionInterpreter(), treeEval);
-					
-					for(FOCourseNode forumNode:forumsNode) {
-						TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(forumNode);
-						if (newCalledTreeNode != null) {
-							NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-							boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
-							if(mayAccessWholeTreeUp) {
-								Forum forum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
-								
-								ForumVO forumVo = new ForumVO(forum);
-								forumVo.setName(course.getCourseTitle());
-								forumVo.setDetailsName(forumNode.getShortTitle());
-								forumVo.setSubscribed(courseNotified.containsKey(entry.getKey()));
-								forumVo.setForumKey(courseNotified.get(entry.getKey()));
-								forumVo.setCourseKey(course.getResourceableId());
-								forumVo.setCourseNodeId(forumNode.getIdent());
+				try {
+					final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+					final IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+					new CourseTreeVisitor(course, ienv).visit(new Visitor() {
+						@Override
+						public void visit(INode node) {
+							if(node instanceof FOCourseNode) {
+								FOCourseNode forumNode = (FOCourseNode)node;	
+								ForumVO forumVo = ForumCourseNodeWebService.createForumVO(course, forumNode, subscriptions);
 								forumVOs.add(forumVo);
 							}
 						}
-					}
+					});
+				} catch (Exception e) {
+					log.error("", e);
 				}
 			}
 		}
@@ -321,15 +258,5 @@ public class MyForumsWebService {
 		voes.setForums(forumVOs.toArray(new ForumVO[forumVOs.size()]));
 		voes.setTotalCount(forumVOs.size());
 		return Response.ok(voes).build();
-	}
-	
-	private ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
 	}
 }

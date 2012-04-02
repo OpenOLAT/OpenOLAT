@@ -13,7 +13,9 @@
 
 	<version name="version" access="field" column="version" type="int"/>
 	<property  name="creationDate" column="creationdate" type="timestamp" />   
- 	
+	
+	<property  name="lastModified" column="lastmodified" type="timestamp" />
+	 	
 	<property name="resName" type="string" >
 		<column name="resname" not-null="true" length="50" index="resname_idx2"/>
 	</property>    	

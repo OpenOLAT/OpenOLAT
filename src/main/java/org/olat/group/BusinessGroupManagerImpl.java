@@ -257,6 +257,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if(maxResults > 0) {
 			dbq.setMaxResults(maxResults);
 		}
+		dbq.setCacheable(true);
 		List<BusinessGroup> groups = dbq.list();
 		return groups;
 	}
@@ -716,10 +717,12 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		DBQuery dbq = createContactsQuery(identity, false);
 		dbq.setFirstResult(firstResult);
 		if(maxResults > 0) {
-			dbq.setMaxResults(maxResults);
+			dbq.setMaxResults(maxResults + 1);
 		}
 		List<Identity> contacts = dbq.list();
-		contacts.remove(identity);
+		if(!contacts.remove(identity) && maxResults > 0 && contacts.size() > maxResults) {
+			contacts.remove(contacts.size() - 1);
+		}
 		return contacts;
 	}
 	
@@ -1168,7 +1171,9 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		if (group.getAutoCloseRanksEnabled() != null) {
 			newGroup.autoCloseRanks = group.getAutoCloseRanksEnabled();
 		}
-		newGroup.description = Collections.singletonList(group.getDescription());
+		if(StringHelper.containsNonWhitespace(group.getDescription())) {
+			newGroup.description = Collections.singletonList(group.getDescription());
+		}
 		// collab tools
 
 		CollabTools toolsConfig = new CollabTools();

@@ -71,7 +71,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.search.service.searcher.SearchClientProxy;
+import org.olat.search.service.searcher.SearchClient;
 
 /**
  * Description:<br>
@@ -106,7 +106,7 @@ public class SearchInputController extends FormBasicController implements Search
 	
 	private Map<String,Properties> prefs;
 	private SearchLRUCache searchCache;
-	private SearchClientProxy searchClient;
+	private SearchClient searchClient;
 	
 	public SearchInputController(UserRequest ureq, WindowControl wControl, String resourceUrl, DisplayOption displayOption) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
@@ -184,7 +184,7 @@ public class SearchInputController extends FormBasicController implements Search
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchClient = (SearchClientProxy)CoreSpringFactory.getBean("searchClient");
+		searchClient = (SearchClient)CoreSpringFactory.getBean("searchClient");
 		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.STANDARD_TEXT)) {
 			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", formLayout);

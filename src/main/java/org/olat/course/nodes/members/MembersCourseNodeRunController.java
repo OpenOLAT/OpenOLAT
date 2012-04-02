@@ -209,7 +209,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		User user = identity.getUser();
 		String firstname = user.getProperty(UserConstants.FIRSTNAME, null);
 		String lastname = user.getProperty(UserConstants.LASTNAME, null);
-		MediaResource rsrc = portraitManager.getPortrait(identity, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+		MediaResource rsrc = portraitManager.getSmallPortraitResource(identity);
 		
 		String portraitCssClass = null;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
@@ -308,7 +308,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	}
 	
 	protected void openHomePage(Identity member, UserRequest ureq) {
-		String url = "[Identity:" + member.getKey() + "]";
+		String url = "[HomePage:" + member.getKey() + "]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 	  NewControllerFactory.getInstance().launch(ureq, bwControl);
@@ -330,7 +330,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 					for(FormLink memberLink:memberLinks) {
 						Member m = (Member)memberLink.getUserObject();
 						if(m.getIdentity().getKey().equals(key)) {
-							return portraitManager.getPortrait(m.getIdentity(), DisplayPortraitManager.PORTRAIT_SMALL_FILENAME);
+							return portraitManager.getSmallPortraitResource(m.getIdentity());
 						}
 					}
 				}

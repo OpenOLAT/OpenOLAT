@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
@@ -33,13 +34,15 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
  * Description:<br>
- * renderer for the textboxlist-component
- * can be used in a flexiform mode or without and will then provide its own form
+ * renderer for the textboxlist-component can be used in a flexiform mode or
+ * without and will then provide its own form
  * 
  * <P>
  * Initial Date: 23.07.2010 <br>
@@ -48,10 +51,13 @@ import org.olat.core.util.Util;
  */
 public class TextBoxListRenderer implements ComponentRenderer {
 
-	private boolean isFlexible;
+	private static OLog logger = Tracing.createLoggerFor(TextBoxListRenderer.class);
+	
+	/**
+	 * default constructor
+	 */
+	public TextBoxListRenderer() {
 
-	public TextBoxListRenderer(boolean isFlexible) {
-		this.isFlexible = isFlexible;
 	}
 
 	/**
@@ -63,141 +69,175 @@ public class TextBoxListRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
 	@Override
-	@SuppressWarnings("unused")
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderResult renderResult, String[] args) {
+	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult,
+			String[] args) {
+
+		TextBoxListComponent tblComponent = (TextBoxListElementComponent) source;
+		if (tblComponent.isEnabled()) {
+			renderEnabledMode(tblComponent, sb, translator);
+		} else {
+			renderDisabledMode(tblComponent, sb);
+		}
+
+	}
+
+	/**
+	 * renders the component in Enabled / editable mode
+	 * 
+	 * @param tblComponent
+	 *            the component to render
+	 * @param output
+	 *            the StringOutput
+	 * @param translator
+	 */
+	private void renderEnabledMode(TextBoxListComponent tblComponent, StringOutput output, Translator translator) {
+		
+		/* if in debug mode, create more readable javascript code */
+		String lineBreak = "";
+		if(logger.isDebug()){
+			lineBreak = Character.toString((char)10);
+			logger.debug("rendering TextBoxListComponent in debug mode, nice JS output.");
+		}
+		
+		TextBoxListElementImpl te = ((TextBoxListElementComponent) tblComponent).getTextElementImpl();
+		Form rootForm = te.getRootForm();
 		Translator fullTrans = Util.createPackageTranslator(TextBoxListRenderer.class, translator.getLocale(), translator);
-		
-		TextBoxListComponent tbComp;
-		String formRefId;
-		TextBoxListElementImpl te = null;
+		String dispatchId = tblComponent.getFormDispatchId();
 
-		if (!isFlexible) {
-			tbComp = (TextBoxListComponent) source;
-			formRefId = tbComp.getComponentName() + "_" + tbComp.hashCode();
-		} else {
-			tbComp = (TextBoxListElementComponent) source;
-			te = ((TextBoxListElementComponent)tbComp).getTextElementImpl();
-			formRefId = te.getRootForm().getFormName();
-		}
-		String dispatchId = tbComp.getFormDispatchId();
-		if (tbComp.isEnabled()){
-		if (!isFlexible) { // build own form, when used as a plain component
-			sb.append("<form method=\"post\" name=\"").append(formRefId).append("\" id=\"").append(formRefId).append("\" action=\"");
-			ubu.buildURI(sb, null, null, 0);
-			sb.append("\"");
-			sb.append(" onsubmit=\"if(o_info.linkbusy) return false; else o_beforeserver(); return true;\" ");
-			sb.append(">");
-		}
+		output.append("<ol class=\"textbox-outer\">");
+		output.append("<li id=\"textbox-list").append(dispatchId).append("\" class=\"input-text\">");
 
-		sb.append("<ol class=\"textbox-outer\">");
-		sb.append("<li id=\"textbox-list").append(dispatchId).append("\" class=\"input-text\">");
-		
-		//TODO: epf: RH: provide the initial input as value (json-string), set jsonInputValue: true, loadfromInput: true
-		sb.append("<input type=\"text\" value=\"\" id=\"textboxlistinput").append(dispatchId).append("\" ");
-		sb.append("name=\"textboxlistinput");
-		sb.append(dispatchId);
-		sb.append("\"");
-		if (isFlexible){
-			//TODO: epf: RH: this doesn't work, as the input-field isn't manipulated by user, but javascript.
-			// if formInnerEvents need to work, then have an own javascript method to run onAdd / onRemove and 
-			StringBuilder rawData = FormJSHelper.getRawJSFor(te.getRootForm(), "textboxlistinput" + dispatchId, te.getAction());
-//			sb.append(rawData.toString());
-		}
-		sb.append("/>");
-		
-		// building the initial content-list
-		sb.append("<div class=\"textboxlist-auto\" id=\"textboxlist-auto").append(dispatchId).append("\">");
-		
-		sb.append("<ul class=\"feed\">");
-		Map<String, String> initItems = tbComp.getInitialItems();
-		if (initItems != null){
+		// TODO: epf: RH: provide the initial input as value (json-string),
+		// set jsonInputValue: true, loadfromInput: true
+		output.append("<input type=\"text\" value=\"\" id=\"textboxlistinput").append(dispatchId).append("\" ");
+		output.append("name=\"textboxlistinput");
+		output.append(dispatchId);
+		output.append("\"");
+		output.append("/>");
+
+		// building the "initial" content-list
+		output.append("<div class=\"textboxlist-auto\" id=\"textboxlist-auto").append(dispatchId).append("\">");
+
+		output.append("<ul class=\"feed\">");
+		// OO-137 : here, we display the currentItems. (at first render, this is equal to initialItems)
+		// on succeeding rendering, we want to reflect the current component status
+		Map<String, String> initItems = tblComponent.getCurrentItems();
+		if (initItems != null) {
 			for (Entry<String, String> item : initItems.entrySet()) {
-				sb.append("<li value=\"");
+				output.append("<li value=\"");
 				String value;
-				if (StringHelper.containsNonWhitespace(item.getValue())) value = item.getValue();
-				else value = item.getKey();
-				sb.append(value);
-				sb.append("\">");
-				sb.append(item.getKey());
-				sb.append("</li>");
+				if (StringHelper.containsNonWhitespace(item.getValue()))
+					value = item.getValue();
+				else
+					value = item.getKey();
+				output.append(value);
+				output.append("\">");
+				output.append(item.getKey());
+				output.append("</li>");
 			}
 		}
 
-		sb.append("</ul>");
-		sb.append("</div>");
-		sb.append("</li>");
-		sb.append("</ol>");
-		if(!isFlexible) {
-			sb.append("</form>");
-		}
+		output.append("</ul>");
+		output.append("</div>");
+		output.append("</li>");
+		output.append("</ol>");
 
-		// instantiating the JS-code for the textboxlist
-		sb.append(FormJSHelper.getJSStart());
-		sb.append("tlist = new ProtoMultiSelect('textboxlistinput").append(dispatchId).append("', 'textboxlist-auto").append(dispatchId).append("',{ newValues: ");
-		sb.append(Boolean.toString(tbComp.isAllowNewValues()));
-		sb.append(", "); 
-		
-		if (tbComp.getProvider() != null) {
+		// generate the JS-code for the textboxlist
+		output.append(FormJSHelper.getJSStart());
+		output.append("tlist = new ProtoMultiSelect('textboxlistinput").append(dispatchId).append("', 'textboxlist-auto").append(dispatchId)
+				.append("',{ newValues: ").append(lineBreak);
+		output.append(Boolean.toString(tblComponent.isAllowNewValues())).append(lineBreak);
+		output.append(", ").append(lineBreak);
+
+		if (tblComponent.getProvider() != null) {
 			// use autocomplete provider instead of prebuilt-map
-			String mapperUri = tbComp.getMapperUri();
-			sb.append("fetchFile: '").append(mapperUri).append("', ");
+			String mapperUri = tblComponent.getMapperUri();
+			output.append("fetchFile: '").append(mapperUri).append("', ").append(lineBreak);
 		}
-		sb.append("jsonInputValue: false,");
-		
-		String setHintKey = tbComp.getInputHint();
+		output.append("jsonInputValue: false,").append(lineBreak);
+
+		// hint for the input field
+		String setHintKey = tblComponent.getInputHint();
 		String inputHint;
-		if (!StringHelper.containsNonWhitespace(setHintKey)) inputHint = fullTrans.translate("default.input.hint");
-		else inputHint = tbComp.getTranslator().translate(setHintKey);
+		if (!StringHelper.containsNonWhitespace(setHintKey))
+			inputHint = fullTrans.translate("default.input.hint");
+		else
+			inputHint = tblComponent.getTranslator().translate(setHintKey);
 
-		sb.append("inputMessage: '").append(inputHint).append("',");
-		sb.append("sortResults: true, ");
-		sb.append("autoResize: true, ");
-		if (tbComp.getMaxResults() > 0 && tbComp.getMaxResults() != 10) {//10 is the default
-			sb.append("results: ").append(tbComp.getMaxResults()).append(", ");
-			sb.append("maxResults: ").append(tbComp.getMaxResults()).append(", ");
-		}
-		sb.append("encodeEntities: false, ");
-		sb.append("addPrefix: '").append(fullTrans.translate("add.new.element.prefix")).append("', ");
-		sb.append("searchMessage: '").append(fullTrans.translate("please.wait.searching")).append("', ");
-		sb.append("moreMessage: '").append(fullTrans.translate("more.results.found.specify.search")).append("', ");
-		sb.append("allowDuplicates: ").append(Boolean.toString(tbComp.isAllowDuplicates())).append(", ");
-		sb.append("loadFromInput: false,");
-		sb.append("fetchParameters: 'keyword', ");
-		if (!tbComp.isNoFormSubmit()){
-			sb.append("onEmptyInput: function(input){ ");
-			sb.append("document.forms['").append(formRefId).append("'].submit();} , ");
-			
-			sb.append("onUserAdd: function(input){"); //alert('bla' + new Hash(input).inspect()); }, ");
-			sb.append("document.forms['").append(formRefId).append("'].submit();} , ");
+		output.append("inputMessage: '").append(inputHint).append("',").append(lineBreak);
+		output.append("sortResults: true, ").append(lineBreak);
+		output.append("autoResize: true, ").append(lineBreak);
 
-			sb.append("onUserRemove: function(input){"); //alert('bla' + new Hash(input).inspect()); }, ");
-			sb.append("document.forms['").append(formRefId).append("'].submit();} , ");
+		if (tblComponent.getMaxResults() > 0 ) {
+			output.append("results: ").append(tblComponent.getMaxResults()).append(", ").append(lineBreak);
+			output.append("maxResults: ").append(tblComponent.getMaxResults()).append(", ").append(lineBreak);
 		}
-		sb.append("regexSearch: false });");
-	
-		if (tbComp.getProvider() == null) {
-			// use a prebuilt-map to look for autocompletion
-			sb.append("var myjson = ");
-			sb.append(tbComp.getAutoCompleteJSON());
-			sb.append(";");
-			sb.append("myjson.each(function(t){tlist.autoFeed(t)});");
-		}
+		output.append("encodeEntities: false, ");
+		output.append("addPrefix: '").append(fullTrans.translate("add.new.element.prefix")).append("', ").append(lineBreak);
+		output.append("searchMessage: '").append(fullTrans.translate("please.wait.searching")).append("', ").append(lineBreak);
+		output.append("moreMessage: '").append(fullTrans.translate("more.results.found.specify.search")).append("', ").append(lineBreak);
+		output.append("allowDuplicates: ").append(Boolean.toString(tblComponent.isAllowDuplicates())).append(", ").append(lineBreak);
+		output.append("loadFromInput: false,").append(lineBreak);
+		output.append("fetchParameters: 'keyword', ").append(lineBreak);
 
-		sb.append(FormJSHelper.getJSEnd());
-		
+		// depending on config of the Component, form is submitted on input
+		if (tblComponent.doFormSubmitOnInput()) {
+			output.append("onEmptyInput: function(input){ ");
+			output.append("document.forms['").append(rootForm.getFormName()).append("'].submit();} , ").append(lineBreak);
+
+			output.append("onUserAdd: function(input){");
+			output.append("document.forms['").append(rootForm.getFormName()).append("'].submit();} , ").append(lineBreak);
+
+			output.append("onUserRemove: function(input){");
+			output.append("document.forms['").append(rootForm.getFormName()).append("'].submit();} , ").append(lineBreak);
 		} else {
-			// read only view
-			String readOnlyContent = tbComp.getReadOnlyContent();
-			if (readOnlyContent.length() > 0) {
-				sb.append("<div class=\"b_with_small_icon_left b_tag_icon\">");
-				FormJSHelper.appendReadOnly(readOnlyContent, sb);	
-				sb.append("</div>");
-			} else {
-				FormJSHelper.appendReadOnly("-", sb);	
-			}
+			// otherwise, o_ffEvents are fired:
+			// OO-137 ( invoke o_ffEvent on UserAdd or userRemove )
+			// but only in flexiform
+			String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
+			output.append("onEmptyInput: function(input){").append(lineBreak);
+			output.append("console.log('onEmptyInput');").append(lineBreak);
+			output.append(o_ffEvent).append("; } , ").append(lineBreak);
+			
+			output.append("onUserAdd: function(input){").append(lineBreak);
+			output.append("console.log('onUserAdd');").append(lineBreak);
+			output.append(o_ffEvent).append("; } , ").append(lineBreak);
+
+			output.append("onUserRemove: function(input){").append(lineBreak);
+			output.append("console.log('onUserRemove');").append(lineBreak);
+			output.append(o_ffEvent).append("; } , ").append(lineBreak);
+		}
+		output.append("regexSearch: false });").append(lineBreak);
+
+		if (tblComponent.getProvider() == null) {
+			// no provider is specified, use a prebuilt-map to look for
+			// autocompletion
+			output.append("var myjson = ");
+			output.append(tblComponent.getAutoCompleteJSON());
+			output.append(";");
+			output.append("myjson.each(function(t){tlist.autoFeed(t)});");
 		}
 
+		output.append(FormJSHelper.getJSEnd()).append(lineBreak);
+	}
+
+	/**
+	 * Renders the textBoxListComponent in disabled/read-only mode
+	 * 
+	 * @param tblComponent
+	 * @param output
+	 */
+	private void renderDisabledMode(TextBoxListComponent tblComponent, StringOutput output) {
+		// read only view, we just display the initialItems as
+		// comma-separated string
+		String readOnlyContent = tblComponent.getInitialItemsAsString();
+		if (readOnlyContent.length() > 0) {
+			output.append("<div class=\"b_with_small_icon_left b_tag_icon\">");
+			FormJSHelper.appendReadOnly(readOnlyContent, output);
+			output.append("</div>");
+		} else {
+			FormJSHelper.appendReadOnly("-", output);
+		}
 	}
 
 	/**
@@ -208,11 +248,10 @@ public class TextBoxListRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
-	@SuppressWarnings({ "unused", "deprecation" })
 	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source,  URLBuilder ubu, Translator translator,
+	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
-		//nothing
+		// nothing
 	}
 
 	/**
@@ -222,9 +261,8 @@ public class TextBoxListRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.render.RenderingState)
 	 */
 	@Override
-	@SuppressWarnings( "unused" )
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//nothing to load
+		// nothing to load
 	}
 
 }

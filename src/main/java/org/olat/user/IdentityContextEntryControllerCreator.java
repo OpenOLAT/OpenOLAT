@@ -26,10 +26,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.ContextEntryControllerCreator2;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-
 import org.olat.home.HomeSite;
 
 /**
@@ -42,7 +41,7 @@ import org.olat.home.HomeSite;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class IdentityContextEntryControllerCreator implements ContextEntryControllerCreator2 {
+public class IdentityContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 	private static final OLog log = Tracing.createLoggerFor(IdentityContextEntryControllerCreator.class);
 
 	/**
@@ -57,17 +56,9 @@ public class IdentityContextEntryControllerCreator implements ContextEntryContro
 		return uimc;
 	}
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
-	 */
-	public String getSiteClassName(ContextEntry ce) {
-		// opened as tab not site
-		return null;
-	}
-
 	@Override
 	//fxdiff BAKS-7 Resume function
-	public String getSiteClassName(UserRequest ureq, ContextEntry ce) {
+	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
 		Long resId = ce.getOLATResourceable().getResourceableId();
 		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
 			return HomeSite.class.getName();
@@ -78,10 +69,10 @@ public class IdentityContextEntryControllerCreator implements ContextEntryContro
 	/**
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
 	 */
-	public String getTabName(ContextEntry ce) {
+	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		Identity identity = extractIdentity(ce);
 		if (identity == null) return null;
-		return identity.getName();
+		return UserManagerImpl.getInstance().getUserDisplayName(identity.getUser());
 	}
 
 	/**

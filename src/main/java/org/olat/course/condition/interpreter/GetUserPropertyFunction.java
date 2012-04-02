@@ -81,6 +81,9 @@ public class GetUserPropertyFunction extends AbstractFunction {
 		}
 
 		Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
+		if(ident == null) {
+			return defaultValue();
+		}
 		User user = ident.getUser();
 		String propertyName = (String) inStack[0];
 		

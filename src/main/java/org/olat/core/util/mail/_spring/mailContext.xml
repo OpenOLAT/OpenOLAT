@@ -36,6 +36,7 @@
 	
 	<!-- Mail admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.mailcfg" init-method="initExtensionPoints">
+		<property name="order" value="7208" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.util.mail.ui.MailAdminController"/>
@@ -51,7 +52,6 @@
 			</list>
 		</property>
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
-		<property name="order" value="780" />
 	</bean> 
 	
 	<bean id="mailManager" class="org.olat.core.util.mail.manager.MailManager" init-method="init">

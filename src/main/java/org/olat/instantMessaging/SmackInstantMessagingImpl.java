@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.jivesoftware.smack.packet.Presence;
@@ -41,7 +40,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -52,9 +50,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.LogDelegator;
-import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.SearchBusinessGroupParams;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
@@ -65,9 +63,6 @@ import org.olat.instantMessaging.syncservice.InstantMessagingSessionCount;
 import org.olat.instantMessaging.syncservice.InstantMessagingSessionItems;
 import org.olat.instantMessaging.syncservice.RemoteAccountCreation;
 import org.olat.instantMessaging.ui.ConnectedUsersListEntry;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -92,7 +87,6 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	private InstantMessagingServerPluginVersion pluginVersion;
 	private AutoCreator actionControllerCreator;
 	private volatile int sessionCount;
-	private long timeOfLastSessionCount;
 	
 	/**
 	 * [spring]
@@ -277,17 +271,8 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	/**
 	 * @see org.olat.instantMessaging.InstantMessaging#countConnectedUsers()
 	 */
+	@Override
 	public int countConnectedUsers() {
-		long now = System.currentTimeMillis();
-		if ((now - timeOfLastSessionCount) > 30000) { //only grab session count every 30s
-			logDebug("Getting session count from IM server");
-			try{
-				TaskExecutorManager.getInstance().runTask(new CountSessionsOnServerTask(sessionCountService, this));
-			} catch(RejectedExecutionException e) {
-				logError("countConnectedUsers: TaskExecutorManager rejected execution of CountSessionsOnServerTask. Cannot update user count", e);
-			}
-			timeOfLastSessionCount = System.currentTimeMillis();
-		}
 		return sessionCount;
 	}
 	
@@ -297,7 +282,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>();
 		secGroups.add(group.getOwnerGroup());
 		secGroups.add(group.getPartipiciantGroup());
-		List<IdentityShort> users = securityManager.getIdentitiesShortOfSecurityGroups(secGroups);
+		List<IdentityShort> users = securityManager.getIdentitiesShortOfSecurityGroups(secGroups, 0, -1);
 
 		int counter = 0;
 		List<String> usernames = new ArrayList<String>();
@@ -344,51 +329,37 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		}
 		logInfo("Starting synchronisation of LearningGroups with IM server");
 		long start = System.currentTimeMillis();
-		
-		RepositoryManager rm = RepositoryManager.getInstance();
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		//pull as admin
-		Roles roles = new Roles(true, true, true, true, false, true, false);
-		List<RepositoryEntry> allCourses = rm.queryByTypeLimitAccess(null, CourseModule.getCourseTypeName(), roles);
 		boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
-		Set<Long> checkedIdentities = new HashSet<Long>();
-		
+
 		int counter = 0;
-		for (RepositoryEntry entry: allCourses) {
-			OLATResource courseResource = entry.getOlatResource();
-			List<BGContext> contexts = contextManager.findBGContextsForResource(courseResource, BusinessGroup.TYPE_LEARNINGROUP, true, true);
-			
-			List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-			for (BGContext bgContext:contexts) {
-				groups.addAll(contextManager.getGroupsOfBGContext(bgContext));
-			}
-	
+		int GROUP_BATCH_SIZE = 50;
+		List<BusinessGroup> groups;
+		Set<Long> checkedIdentities = new HashSet<Long>();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
+		do {
+			groups = BusinessGroupManagerImpl.getInstance().findBusinessGroups(params, null, false, false, null, counter, GROUP_BATCH_SIZE);
 			for (BusinessGroup group:groups) {
-					boolean isLearn = group.getType().equals(BusinessGroup.TYPE_LEARNINGROUP);
-					if (isLearn && !syncLearn) {
-						String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
-						if (deleteRosterGroup(groupID)) {
-							logInfo("deleted unwanted group: "+group.getResourceableTypeName()+" "+groupID, null);
-						}
-					} else if (!synchonizeBuddyRoster(group, checkedIdentities)) {
-						logError("couldn't sync group: "+group.getResourceableTypeName(), null);
+				if (!syncLearn) {
+					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
+					if (deleteRosterGroup(groupID)) {
+						logInfo("deleted unwanted group: "+group.getResourceableTypeName()+" "+groupID, null);
 					}
-					counter++;
-					if (counter%6==0) {
-						DBFactory.getInstance(false).intermediateCommit();
-					}
-					
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+				} else if (!synchonizeBuddyRoster(group, checkedIdentities)) {
+					logError("couldn't sync group: "+group.getResourceableTypeName(), null);
+				}
+				if (counter++ % 6 == 0) {
+					DBFactory.getInstance(false).intermediateCommit();
+				}
+
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					logError("", e);
+				}
 			}
-				
-			if (counter%6==0) {
-				DBFactory.getInstance(false).intermediateCommit();
-			}
-		}
+		} while(groups.size() == GROUP_BATCH_SIZE);
+
 		logInfo("Ended synchronisation of LearningGroups with IM server: Synched "+counter+" groups in " + (System.currentTimeMillis() - start) + " (ms)");
 		return true;
 	}
@@ -439,6 +410,10 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	 */
 	public List<ConnectedUsersListEntry> getAllConnectedUsers(Identity currentUser) {
 		return sessionItemsService.getConnectedUsers(currentUser);
+	}
+
+	public InstantMessagingSessionCount getSessionCountService() {
+		return sessionCountService;
 	}
 
 	/**

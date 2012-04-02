@@ -40,6 +40,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalWindowWra
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPUIFactory;
@@ -226,7 +229,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 				} else if (CMD_CHOOSE.equals(action)){
 					fireEvent(ureq, new EPArtefactChoosenEvent(artefact));
 				} else if (CMD_UNLINK.equals(action)){
-					struct = ePFMgr.loadPortfolioStructureByKey(struct.getKey());
+					struct = ePFMgr.reloadPortfolioStructure(struct);
 					ePFMgr.removeArtefactFromStructure(artefact, struct);
 					artefactListTblCtrl.modelChanged();
 					fireEvent(ureq, new EPStructureChangeEvent(EPStructureChangeEvent.ADDED, struct));
@@ -257,6 +260,27 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		}
 		
 		super.event(ureq, source, event);
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		OLATResourceable ores = entries.get(0).getOLATResourceable();
+		if("AbstractArtefact".equals(ores.getResourceableTypeName())) {
+			Long resId = ores.getResourceableId();
+			ArtefactTableDataModel model = (ArtefactTableDataModel)  artefactListTblCtrl.getTableDataModel();
+			for(int i=0; i< model.getRowCount(); i++) {
+				AbstractArtefact artefact = (AbstractArtefact)model.getObject(i);
+				if(artefact.getKey().equals(resId)) {
+					int artefactsPerPage = artefactListTblCtrl.getPageSize();
+					int rest = (i % artefactsPerPage);
+					int page = (i - rest) / artefactsPerPage;
+					artefactListTblCtrl.setPage(new Integer(page + 1));
+					break;
+				}	
+			}
+		}
 	}
 	
 	private void showMoveTree(UserRequest ureq, AbstractArtefact artefact){

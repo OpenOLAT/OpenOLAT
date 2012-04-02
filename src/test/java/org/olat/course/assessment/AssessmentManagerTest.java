@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -87,8 +88,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		try {
 			log.info("setUp start ------------------------");
 			
-			tutor = JunitTestHelper.createAndPersistIdentityAsUser("junit_tutor");
-			student = JunitTestHelper.createAndPersistIdentityAsUser("junit_student");
+			tutor = JunitTestHelper.createAndPersistIdentityAsUser("junit_tutor_" + UUID.randomUUID().toString().replace("-", ""));
+			student = JunitTestHelper.createAndPersistIdentityAsUser("junit_student_" + UUID.randomUUID().toString().replace("-", ""));
 			
       //import "Demo course" into the bcroot_junittest
 			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
@@ -209,8 +210,6 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		List <Identity> identitiyList = new ArrayList<Identity> ();
 		identitiyList.add(student);
 		
-		boolean checkForExistingProperty = false;
-		
 		Long courseResId = course.getCourseEnvironment().getCourseResourceableId(); 
 		RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(
 				OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId), false);
@@ -220,7 +219,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		
 		EfficiencyStatementManager efficiencyStatementManager = EfficiencyStatementManager.getInstance();
 		//force the storing of the efficiencyStatement - this is usually done only at Learnresource/modify properties/Efficiency statement (ON)
-		efficiencyStatementManager.updateEfficiencyStatements(course, identitiyList, checkForExistingProperty);
+		efficiencyStatementManager.updateEfficiencyStatements(course, identitiyList);
 		DBFactory.getInstance().closeSession();
 						
 		//archive the efficiencyStatement into a temporary dir

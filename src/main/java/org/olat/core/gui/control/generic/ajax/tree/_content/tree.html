@@ -86,6 +86,12 @@ try {
 		}  		
   		return b_amt_status;
     });
+	
+	
+	#if($beforeNodeClickCallback)
+		tree.on('beforeclick', $beforeNodeClickCallback);
+	#end
+	
     ## sent click events via brasato framework ajax channel, asynchronous
     tree.on('click', function(node){
     	if (!o_info.linkbusy) { 

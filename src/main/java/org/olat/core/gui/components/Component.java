@@ -29,6 +29,7 @@ package org.olat.core.gui.components;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -119,9 +120,35 @@ public abstract class Component {
 			staticCmp = true;
 		}
 		
+		// OO-98: dispatchID will get used in generated js-code. thus, make sure it
+		// is valid as variable name.
+		dispatchID = secureJSVarName(dispatchID);
+					
 		this.name = name;
 		this.translator = translator;
 		listeners = new ArrayList<Controller>(2);
+	}
+	
+	/**
+	 * OO-98 : a fix in FormUIFactory changed the id from "null" to
+	 * "something.like.this" for selectionElements (like radio-buttons)
+	 * this led to js-errors because output was:  var o_fisomething.like.this [..]
+	 * now this method ensures that the id does not contain dots 
+	 * 
+	 * @param id
+	 * @return a valid JS variableName
+	 */
+	private static String secureJSVarName(String id) {
+		if(StringUtils.isBlank(id)) return "o_"+Long.toString(CodeHelper.getRAMUniqueID());
+		id = id.replace("-", "_"); // no - 
+		id =  id.replace(".", "_"); // no dots
+		
+		// no numbers at the beginning
+		char c = id.charAt(0);
+        if (c <='/' || c >= ':') {
+        	id = "o"+id;
+        }
+		return id;
 	}
 
 	/**
@@ -385,6 +412,15 @@ public abstract class Component {
 	 */
 	public Container getParent(){
 		return this.parent;
+	}
+	
+	/**
+	 * Return true if the component is changed without dirty marking. It's a special case which
+	 * for special components which provide a protection against back button usage.
+	 * @return
+	 */
+	public boolean isSilentlyDynamicalCmp() {
+		return false;
 	}
 		
 	/**
