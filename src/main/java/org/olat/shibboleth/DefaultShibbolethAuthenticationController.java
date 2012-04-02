@@ -80,7 +80,7 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 		
 		if (LoginModule.isGuestLoginLinksEnabled()) {
 			guestLink = LinkFactory.createLink("menu.guest", loginComp, this);
-			guestLink.setCustomEnabledLinkCSS("o_login_guests");
+			guestLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
 		}
 		
 		mainPanel = putInitialPanel(loginComp);
