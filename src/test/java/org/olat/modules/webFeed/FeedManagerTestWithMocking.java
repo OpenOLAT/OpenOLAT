@@ -66,7 +66,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 		"classpath*:org/olat/modules/webFeed/_spring/webFeedContext.xml",
 		"classpath*:org/olat/modules/webFeed/_spring/webFeedTestContextMock.xml",
 		"classpath*:org/olat/test/_spring/coordinatorAndDatabaseContextMock.xml",
-		"classpath*:org/olat/test/_spring/utilCoreContextMock.xml",
+		"classpath*:org/olat/test/_spring/utilCorecontextMock.xml",
 		"classpath*:org/olat/fileresource/_spring/fileresourceContext.xml",
 		"classpath*:org/olat/resource/_spring/resourceContext.xml",
 		"classpath*:org/olat/test/_spring/webapphelperMock.xml",
