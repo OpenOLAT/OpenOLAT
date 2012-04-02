@@ -47,18 +47,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 	
-	private String magickPath;
-	
 	public ImageMagickHelper() {
 		//
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param magickPath
-	 */
-	public void setMagickPath(String magickPath) {
-		this.magickPath = magickPath;
 	}
 
 	@Override
@@ -258,9 +248,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 				}
 				
 				ProcessBuilder builder = new ProcessBuilder(cmd);
-				builder.environment().put("PATH", magickPath);
 				process = builder.start();
-				
 				size = executeProcess(thumbnailFile, process);
 				doneSignal.countDown();
 			} catch (IOException e) {
