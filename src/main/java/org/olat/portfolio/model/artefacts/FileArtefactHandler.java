@@ -172,7 +172,7 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 					sb.append(content);
 				}
 			} catch (Exception e) {
-				log.error("", e);
+				log.error("Could not get content of file "+file.getName()+" (file-artefact "+artefact.getKey()+")", e);
 			}
 		}
 	}
