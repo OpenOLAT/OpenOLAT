@@ -63,6 +63,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserManagerImpl;
 
 /**
  * 
@@ -386,17 +387,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		}
 
 		public String getFullName() {
-			StringBuilder sb = new StringBuilder();
-			if(StringHelper.containsNonWhitespace(lastName)) {
-				sb.append(lastName);
-			}
-			if(StringHelper.containsNonWhitespace(firstName)) {
-				if(sb.length() > 0) {
-					sb.append(' ');
-				}
-				sb.append(firstName);
-			}
-			return sb.toString(); 
+			return UserManagerImpl.getInstance().getUserDisplayName(identity.getUser());
 		}
 
 		public Long getKey() {
