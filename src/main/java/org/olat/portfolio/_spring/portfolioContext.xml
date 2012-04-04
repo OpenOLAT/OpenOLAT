@@ -118,8 +118,7 @@
 		<constructor-arg index="6" ref="taggingManager" />
 		<constructor-arg index="7" ref="database" />
 		<constructor-arg index="8" ref="org.olat.course.assessment.AssessmentNotificationsHandler" />
-		<constructor-arg index="9" ref="epNotificationManager" />
-		<constructor-arg index="10" ref="userManager" />
+		<constructor-arg index="9" ref="userManager" />
 		<property name="searchClient" ref="searchClient"/>
 		<property name="portfolioModule" ref="portfolioModule"/>
 	</bean>

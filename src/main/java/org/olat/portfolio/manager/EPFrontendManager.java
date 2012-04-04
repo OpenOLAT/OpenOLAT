@@ -99,7 +99,6 @@ public class EPFrontendManager extends BasicManager {
 	private SearchClient searchClient;
 	private final EPSettingsManager settingsManager; 
 	private final EPPolicyManager policyManager;
-	private final EPNotificationManager notificationManager;
 	private final UserManager userManager;
 	private PortfolioModule portfolioModule;
 
@@ -108,7 +107,7 @@ public class EPFrontendManager extends BasicManager {
 	 */
 	public EPFrontendManager(EPArtefactManager artefactManager, EPStructureManager structureManager, EPSettingsManager settingsManager,
 			EPPolicyManager policyManager, CoordinatorManager coordinatorManager, BaseSecurity securityManager, TaggingManager taggingManager,
-			DB dbInstance, AssessmentNotificationsHandler assessmentNotificationsHandler, EPNotificationManager notificationManager,
+			DB dbInstance, AssessmentNotificationsHandler assessmentNotificationsHandler,
 			UserManager userManager) {
 		this.artefactManager = artefactManager;
 		this.structureManager = structureManager;
@@ -119,7 +118,6 @@ public class EPFrontendManager extends BasicManager {
 		this.dbInstance = dbInstance;
 		this.settingsManager = settingsManager;
 		this.policyManager = policyManager;
-		this.notificationManager = notificationManager;
 		this.userManager = userManager;
 	}
 	
