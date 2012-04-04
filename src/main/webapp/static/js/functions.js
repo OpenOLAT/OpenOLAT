@@ -693,7 +693,7 @@ function o_openUriInMainWindow(uri) {
 	w.location.replace(uri);
 }
 
-viewportHeight() {
+function b_viewportHeight() {
 	// based on prototype library
 	var prototypeViewPortHight = document.viewport.getHeight()
 	if (prototypeViewPortHight > 0) {
