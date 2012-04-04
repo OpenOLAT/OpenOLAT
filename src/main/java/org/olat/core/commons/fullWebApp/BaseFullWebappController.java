@@ -44,6 +44,7 @@ import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.OncePanel;
@@ -68,6 +69,7 @@ import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.navigation.BornSiteInstance;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
+import org.olat.core.gui.themes.Theme;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -439,9 +441,26 @@ public class BaseFullWebappController extends BasicController implements Generic
 		// set maintenance message
 		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
 		this.mainVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
-		this.mainVc.contextPut("stickyMessage", stickyMessage);					
-}
+		this.mainVc.contextPut("stickyMessage", stickyMessage);		
+		
+		addCustomThemeJS();
+	}
 
+	/**
+	 * adds the custom js-code to the mainVc
+	 * FXOLAT-310
+	 */
+	private void addCustomThemeJS() {
+		Theme currentTheme = getWindowControl().getWindowBackOffice().getWindow().getGuiTheme();
+		if (currentTheme.hasCustomJS()) {
+			String fullPath = currentTheme.getFullPathToCustomJS();
+			CustomJSComponent customJS = new CustomJSComponent("customThemejs", new String[] { fullPath });
+			if (isLogDebugEnabled())
+				logDebug("injecting custom javascript from current OLAT-Theme", fullPath);
+			mainVc.put(customJS.getComponentName(), customJS);
+		}
+	}
+	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
@@ -707,6 +726,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 		myWindow.setAttribute(CURRENT_CUSTOM_CSS_KEY, customCSS);
 		// add css component to view
 		mainVc.put("jsAndCss", customCSS.getJSAndCSSComponent());		
+		
+		addCustomThemeJS();
 	}
 	
 	/**
