@@ -142,6 +142,7 @@ public class IdentityAssessmentEditController extends BasicController {
 				doIdentityAssessmentOverview(ureq, false);
 			} else if (event.equals(Event.CHANGED_EVENT)) {
 				doIdentityAssessmentOverview(ureq, true);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 	}
