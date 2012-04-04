@@ -181,7 +181,13 @@ public class EfficiencyStatementsListController extends BasicController {
 					}
 				} else if (actionid.equals(CMD_DELETE)) {					
 					// show confirmation dialog
-					confirmDeleteCtr = activateYesNoDialog(ureq, null, translate("efficiencyStatements.delete.confirm", efficiencyStatement.getShortTitle()), confirmDeleteCtr);
+					RepositoryManager rm = RepositoryManager.getInstance();
+					RepositoryEntry re = rm.lookupRepositoryEntry(efficiencyStatement.getCourseRepoKey(), false);
+					if(re == null) {
+						confirmDeleteCtr = activateYesNoDialog(ureq, null, translate("efficiencyStatements.delete.confirm", efficiencyStatement.getShortTitle()), confirmDeleteCtr);
+					} else {
+						showWarning("efficiencyStatements.cannot.delete");
+					}
 					return;
 				} else if (actionid.equals(CMD_ARTEFACT)) {
 					popupArtefactCollector(ureq);

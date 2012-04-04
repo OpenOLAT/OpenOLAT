@@ -59,6 +59,7 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
@@ -95,6 +96,7 @@ public class RepositoryManager extends BasicManager {
 	private static RepositoryManager INSTANCE;
 	private BaseSecurity securityManager;
 	private static BackgroundTaskQueueManager taskQueueManager;
+	private UserCourseInformationsManager userCourseInformationsManager;
 
 	/**
 	 * [used by spring]
@@ -103,6 +105,14 @@ public class RepositoryManager extends BasicManager {
 		this.securityManager = securityManager;
 		RepositoryManager.taskQueueManager = taskQueueManager;
 		INSTANCE = this;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param userCourseInformationsManager
+	 */
+	public void setUserCourseInformationsManager(UserCourseInformationsManager userCourseInformationsManager) {
+		this.userCourseInformationsManager = userCourseInformationsManager;
 	}
 
 	/**
@@ -258,6 +268,9 @@ public class RepositoryManager extends BasicManager {
 		if (picFile.exists()) {
 			picFile.delete();
 		}
+		
+		userCourseInformationsManager.deleteUserCourseInformations(entry);
+		
 		// delete all bookmarks referencing deleted entry
 		BookmarkManager.getInstance().deleteAllBookmarksFor(entry);
 		// delete all catalog entries referencing deleted entry
