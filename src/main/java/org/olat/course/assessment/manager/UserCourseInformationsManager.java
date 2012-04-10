@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserCourseInformations;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -13,12 +14,14 @@ import org.olat.course.assessment.UserCourseInformations;
  */
 public interface UserCourseInformationsManager {
 	
-	UserCourseInformations getUserCourseInformations(Long courseResourceId, Identity identity);
+	public UserCourseInformations getUserCourseInformations(Long courseResourceId, Identity identity);
 	
 	public UserCourseInformations updateUserCourseInformations(Long courseResId, Identity identity);
 	
 	public Date getInitialLaunchDate(Long courseResourceId, Identity identity);
 	
 	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId, List<Identity> identities);
+	
+	public int deleteUserCourseInformations(RepositoryEntry entry);
 
 }

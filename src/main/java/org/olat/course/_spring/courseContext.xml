@@ -41,10 +41,10 @@
 			</bean>
 			<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
 			<bean class="org.olat.course.DeployableCourseExport">
-				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.0/OpenOLAT-Help-8.0.zip" />
-				<property name="identifier" value="OLAT Hilfe" />
+				<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.1/OpenOLAT-Help-8.1.zip" />
+				<property name="identifier" value="OLAT::help-course_de.zip" />
 				<property name="access" value="4" />
-				<property name="version" value="8.0" />
+				<property name="version" value="8.1" />
 				<property name="redeploy" value="true" />
 				<!-- 
 					Url to the course which should be used as help course. The specified course will be used 

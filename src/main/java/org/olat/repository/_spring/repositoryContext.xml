@@ -24,6 +24,7 @@
 <bean id="repositoryManager" class="org.olat.repository.RepositoryManager">
 	<constructor-arg index="0" ref="baseSecurityManager" />
 	<constructor-arg index="1" ref="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" />
+	<property name="userCourseInformationsManager" ref="userCourseInformationsManager"/>
 </bean>
 
 <!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->

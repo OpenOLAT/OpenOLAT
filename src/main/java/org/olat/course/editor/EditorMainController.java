@@ -701,7 +701,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				previewController = null;
 			}
 			
-		} else if (source == cmc || source == folderController) {
+		} else if (source == cmc) {
 			//aggressive clean-up
 			removeAsListenerAndDispose(multiSPChooserCtr);
 			removeAsListenerAndDispose(moveCopyController);
