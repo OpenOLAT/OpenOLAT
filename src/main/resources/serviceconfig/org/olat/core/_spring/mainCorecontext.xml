@@ -153,8 +153,8 @@
 		*** right upper corner inin context help**
 		******************************************
 	-->
-	<bean id="fullWebApp.ContextHelpNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.core.commons.contextHelp.ContextHelpMinimalTopNavController" />
+	<bean id="fullWebApp.ContextHelpTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+		<property name="className" value="org.olat.core.commons.contextHelp.ContextHelpTopNavController" />
 	</bean>
 	<!--
 		******************************************
