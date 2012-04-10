@@ -755,7 +755,7 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 	// (fg)
 	var theIframe = Ext.fly(iframeId);
 	if (theIframe != 'undefined' && theIframe != null) {
-		var colsHeight = b_getMainColumnsMaxHeight();
+		var colsHeight = OPOL.getMainColumnsMaxHeight();
 		
 		var potentialHeight = b_viewportHeight() - 100;// remove some padding etc.
 		var elem = Ext.get('b_header');
