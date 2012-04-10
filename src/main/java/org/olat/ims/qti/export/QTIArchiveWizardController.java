@@ -86,7 +86,7 @@ public class QTIArchiveWizardController extends BasicController {
 	private String emb = "\""; // fields embedded by
 	private String esc = "\\"; // fields escaped by
 	private String car = "\\r\\n"; // carriage return
-	private String suf = ".xls"; // file name suffix
+	private String suf = ".csv"; // file name suffix
 	
 	private WizardController wc;
 	

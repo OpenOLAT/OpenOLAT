@@ -150,6 +150,9 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 		String inputId = "textboxlistinput" + getFormDispatchId();
 		String cmd = ureq.getParameter(inputId);
+		if(cmd == null){
+			return;
+		}
 		String[] splitted = cmd.split(",");
 		ArrayList<String> cleanedItemValues = new ArrayList<String>();
 		for (String item : splitted) {

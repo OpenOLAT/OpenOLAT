@@ -44,6 +44,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -88,6 +89,7 @@ import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
@@ -581,6 +583,9 @@ public class CourseFactory extends BasicManager {
 		RepositoryEntry existingEntry = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
 		if (existingEntry != null) {
 			Tracing.logInfo("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.", CourseFactory.class);
+			//seem to be a problem
+			UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
+			userCourseInformationsManager.deleteUserCourseInformations(existingEntry);
 			CourseFactory.deleteCourse(newCourseResource);
 			return existingEntry;
 		}

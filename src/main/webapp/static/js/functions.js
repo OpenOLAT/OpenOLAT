@@ -2,6 +2,10 @@
  * This file contains helper methods for the olatcore web app framework and the
  * learning management system OLAT
  */
+
+/** OpenOLAT namespace **/
+OPOL = {};
+
 //used to mark form dirty and warn user to save first.
 var o2c=0;
 var o3c=new Array();//array holds flexi.form id's
@@ -676,7 +680,6 @@ function gotonode(nodeid) {
 }
 
 
-//TODO:: discuss with HJZ how calendar and course should be designed
 function o_openUriInMainWindow(uri) {
 	// get the "olatmain" window
 	var w = top;
@@ -700,39 +703,52 @@ function b_viewportHeight() {
 	}
 }
 
-function b_getMainColumnsMaxHeight() {
-	// calculate the height of the inner content area that can be used for 
-	// displaying content without using scrollbars. 
-	// Depends on prototype library
-	// (fg)
-	var col1Height = 0
-	var col1 = Ext.get('b_col1_content');
-	if (col1 != 'undefined' && col1 != null) col1Height = col1.getHeight();
 
-	var col2Height = 0
-	var col2 = Ext.get('b_col2_content');
-	if (col2 != 'undefined' && col2 != null) col2Height = col2.getHeight();
+/**
+ *  calculate the height of the inner content area that can be used for 
+ *  displaying content without using scrollbars.
+ *  @dependencies: prototype library, ExtJS
+ *  @author: Florian Gnaegi
+ */
+OPOL.getMainColumnsMaxHeight =  function(){
+	var col1Height = 0,
+	col2Height = 0,
+	col3Height = 0,
+	mainInnerHeight = 0,
+	mainHeight = 0,
+	mainDomElement,
+	col1DomElement = Ext.get('b_col1_content'),
+	col2DomElement = Ext.get('b_col2_content'),
+	col3DomElement = Ext.get('b_col3_content');
+	
+	if (col1DomElement != 'undefined' && col1DomElement != null) {
+		col1Height = col1DomElement.getHeight();
+	}
+	if (col2DomElement != 'undefined' && col2DomElement != null){
+		col2Height = col2DomElement.getHeight();
+	}
+	if (col3DomElement != 'undefined' && col3DomElement != null){
+		col3Height = col3DomElement.getHeight();
+	}
 
-	var col3Height = 0
-	var col3 = Ext.get('b_col3_content');
-	if (col3 != 'undefined' && col3 != null) col3Height = col3.getHeight();
-
-	var mainInnerHeight = (col1Height > col2Height ? col1Height : col2Height);
+	mainInnerHeight = (col1Height > col2Height ? col1Height : col2Height);
 	mainInnerHeight = (mainInnerHeight > col3Height ? mainInnerHeight : col3Height);
-
 	if (mainInnerHeight > 0) {
 		return mainInnerHeight;
 	} 
+	
 	// fallback, try to get height of main container
-	var mainHeight = 0
-	var main = Ext.get('b_main');
-	if (main != 'undefined' && main != null) mainHeight = main.getHeight();
-	if (main > 0) {
-		return main;
+	mainDomElement = Ext.get('b_main');
+	if (mainDomElement != 'undefined' && mainDomElement != null) { 
+		mainHeight = mainDomElement.getHeight();
+	}
+	if (mainDomElement > 0) {
+		return mainDomElement;
 	} 
 	// fallback to viewport height	
 	return b_viewportHeight();
-}
+};
+
   
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible

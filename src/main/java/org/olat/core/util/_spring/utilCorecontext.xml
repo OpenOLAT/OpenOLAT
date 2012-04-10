@@ -20,7 +20,5 @@
 
 	<bean id="imageHelperServiceProvider_java" class="org.olat.core.util.image.spi.ImageHelperImpl" />
 	
-	<bean id="imageHelperServiceProvider_magick" class="org.olat.core.util.image.spi.ImageMagickHelper">
-		<property name="magickPath" value="${thumbnail.magick.path}"/>
-	</bean>
+	<bean id="imageHelperServiceProvider_magick" class="org.olat.core.util.image.spi.ImageMagickHelper" />
 </beans>

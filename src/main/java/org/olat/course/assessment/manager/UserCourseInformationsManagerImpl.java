@@ -32,13 +32,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurity;
+import org.hibernate.FlushMode;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ import org.springframework.stereotype.Service;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-@Service
+@Service("userCourseInformationsManager")
 public class UserCourseInformationsManagerImpl extends BasicManager implements UserCourseInformationsManager {
 
 	@Autowired
@@ -181,6 +182,22 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 		} catch (Exception e) {
 			logError("Cannot retrieve course informations for: " + courseResourceId, e);
 			return Collections.emptyMap();
+		}
+	}
+
+	@Override
+	public int deleteUserCourseInformations(RepositoryEntry entry) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("delete from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+			  .append(" where resource.key=:resourceKey");
+
+			DBQuery query = dbInstance.createQuery(sb.toString());
+			query.setLong("resourceKey", entry.getOlatResource().getKey());
+			return query.executeUpdate(FlushMode.AUTO);
+		} catch (Exception e) {
+			logError("Cannot Delete course informations for: " + entry, e);
+			return -1;
 		}
 	}
 }

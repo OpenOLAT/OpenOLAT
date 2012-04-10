@@ -19,6 +19,7 @@
  */
 package org.olat.modules.vitero.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -41,8 +42,6 @@ import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.StartBookingComparator;
 import org.olat.modules.vitero.model.ViteroBooking;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
