@@ -14,7 +14,6 @@
 *  =================================================
 */
 
-
 // will produce a shiny-glassy gradient (ie9 will produce linear gradient with only 2 colors) */
 @mixin o-gradient-glassy($col1,$col2,$col3,$col4){
 	background: $col1;
@@ -24,7 +23,6 @@
 	background: -o-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
 	background: -ms-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
 	background: linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col4}',GradientType=0 );
 }
 
 // will produce a shiny-glassy gradient (ie9 will produce linear gradient with only 2 colors) */
@@ -41,7 +39,6 @@
 	background: -o-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
 	background: -ms-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
 	background: linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col4}',GradientType=0 );
 }
 
 @mixin o-gradient2($col1,$col2){
@@ -52,7 +49,6 @@
 	background: -o-linear-gradient(top, $col1 0%,$col2 100%);
 	background: -ms-linear-gradient(top, $col1 0%,$col2 100%);
 	background: linear-gradient(top, $col1 0%,$col2 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
 }
 
 /* also gradient with two colors but with custom color-stops */
@@ -64,7 +60,6 @@
 	background: -o-linear-gradient(top, $col1 $stop1,$col2 $stop2);
 	background: -ms-linear-gradient(top, $col1 $stop1,$col2 $stop2);
 	background: linear-gradient(top, $col1 $stop1,$col2 $stop2);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
 }
 
 @mixin o-gradient-white(){
@@ -77,7 +72,6 @@
 	background: -o-linear-gradient(top, $col1 80%,$col2 100%);
 	background: -ms-linear-gradient(top, $col1 80%,$col2 100%);
 	background: linear-gradient(top, $col1 80%,$col2 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col2}',GradientType=0 );
 }
 
 @mixin o-gradient4($col1,$col2,$col3,$col4){
@@ -88,7 +82,6 @@
 	background: -o-linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
 	background: -ms-linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
 	background: linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$col1}', endColorstr='#{$col4}',GradientType=0 );
 }
 
 @mixin o-border-radius($rad){
