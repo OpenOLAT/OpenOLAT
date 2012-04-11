@@ -6,9 +6,5 @@
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 <bean id="AssessmentControllerCreatorOnyx" class="de.bps.course.assessment.AssessmentControllerCreatorOnyx" lazy-init="true"/>
-<bean id="org.olat.course.assessment.EfficiencyStatementManager" class="org.olat.course.assessment.EfficiencyStatementManager">
-	<constructor-arg index="0" ref="userDeletionManager" />
-</bean>
-
 
 </beans>
