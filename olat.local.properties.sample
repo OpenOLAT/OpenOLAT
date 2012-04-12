@@ -20,9 +20,12 @@ userdata.dir=/opt/openolat/olatdata
 
 # supported vendors currently include "mysql" and "postgresql"
 db.vendor=mysql
-db.hibernate.ddl.auto=validate
-#db.hibernate.ddl.auto=update
-auto.upgrade.database=false
+# here you have two options: when you set auto.upgrade.database to true
+# the alter scripts in /src/main/resources/database/**/alter**.sql are 
+# executed automatically. For most cases this is fine. If you set it to 
+# false however, you must execute those scripts yourself BEFORE starting
+# OpenOLAT after an update. 
+auto.upgrade.database=true
 
 # the name of the application database
 db.name=openolat
