@@ -30,7 +30,7 @@
 		<property name="deletable" value="false" />
 	</bean>
 	
-	<bean name="userPropertyBirthDay" class="org.olat.user.propertyhandlers.DatePropertyHandler">
+	<bean name="userPropertyBirthDay" class="org.olat.user.propertyhandlers.PastDatePropertyHandler">
 		<property name="name" value="birthDay" />
 		<property name="group" value="person" />
 		<property name="deletable" value="true" />
