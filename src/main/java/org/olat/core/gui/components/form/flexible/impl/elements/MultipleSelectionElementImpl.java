@@ -340,7 +340,8 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			}
 		}
 		// create and add selectbox element
-		SelectboxComponent sssc = new SelectboxComponent(getFormItemId() + "_SELBOX", getName() + "_SELBOX", translator, this, keys, values, cssClasses);
+		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
+		SelectboxComponent sssc = new SelectboxComponent(ssscId, getName() + "_SELBOX", translator, this, keys, values, cssClasses);
 
 		formLayoutContainer.put(getName() + "_SELBOX", sssc);
 		formLayoutContainer.contextPut("selectbox", getName() + "_SELBOX");
