@@ -316,6 +316,8 @@ public abstract class FeedManager extends BasicManager implements CommentAndRati
 			feedKind = KIND_PODCAST;
 		} else if (BlogFileResource.TYPE_NAME.equals(typeName)) {
 			feedKind = KIND_BLOG;
+		} else if ("LiveBlog".equals(typeName)) {
+			feedKind = KIND_BLOG;
 		}
 		return feedKind;
 	}

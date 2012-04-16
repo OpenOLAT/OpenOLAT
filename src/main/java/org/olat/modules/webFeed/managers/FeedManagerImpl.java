@@ -194,7 +194,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 				@SuppressWarnings("synthetic-access")
 				public void execute() {
 					if (feedCache == null) {
-						feedCache = coordinator.getCacher().getOrCreateCache(this.getClass(), "feed");
+						feedCache = coordinator.getCacher().getOrCreateCache(FeedManagerImpl.class, "feed");
 					}
 				}
 			});
@@ -264,7 +264,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 	 * @param ores
 	 * @param feed
 	 */
-	void syncedFeedCacheUpdate(final Feed feed, boolean inSync) {
+	private void syncedFeedCacheUpdate(final Feed feed, boolean inSync) {
 		initFeedCache();
 		if(inSync) {
 			coordinator.getSyncer().doInSync(feed, new SyncerExecutor() {
