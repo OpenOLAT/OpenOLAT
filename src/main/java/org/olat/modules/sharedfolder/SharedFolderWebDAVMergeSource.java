@@ -138,7 +138,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 	
 	private VFSContainer getSharedContainer(RepositoryEntry re, boolean readOnly) {
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
-		VFSContainer shared = sfm.getNamedSharedFolder(re);
+		VFSContainer shared = sfm.getNamedSharedFolder(re, true);
 		if(readOnly) {
 			shared.setLocalSecurityCallback(readOnlyCallback);
 		}
@@ -158,7 +158,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 		//
 		if (addedEntries == null || !PersistenceHelper.listContainsObjectByKey(addedEntries, entry)) {
 			// add the entry (readonly)
-			VFSContainer folder = sfm.getNamedSharedFolder(entry);
+			VFSContainer folder = sfm.getNamedSharedFolder(entry, true);
 			folder.setLocalSecurityCallback(readOnlyCallback);
 			rootContainer.addContainer(folder);
 			addedEntries.add(entry);
@@ -170,7 +170,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<RepositoryEntry> ownerEntries = (List<RepositoryEntry>) repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry repoEntry : ownerEntries) {
-			addContainer(sfm.getNamedSharedFolder(repoEntry));
+			addContainer(sfm.getNamedSharedFolder(repoEntry, true));
 		}
 
 		// see /olat3/webapp/WEB-INF/olat_extensions.xml

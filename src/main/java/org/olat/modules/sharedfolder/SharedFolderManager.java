@@ -69,8 +69,17 @@ public class SharedFolderManager extends BasicManager {
 		return INSTANCE;
 	}
 	
-	public OlatNamedContainerImpl getNamedSharedFolder(RepositoryEntry re) {
-		return new OlatNamedContainerImpl(Formatter.makeStringFilesystemSave(re.getDisplayname()), getSharedFolder(re.getOlatResource()));
+	/**
+	 * @param re The repository entry of the shared folder
+	 * @param urlCompliant Encode the name to be file save
+	 * @return The container
+	 */
+	public VFSContainer getNamedSharedFolder(RepositoryEntry re, boolean urlCompliant) {
+		String name = re.getDisplayname();
+		if(urlCompliant) {
+			name = Formatter.makeStringFilesystemSave(name);
+		}
+		return new OlatNamedContainerImpl(name, getSharedFolder(re.getOlatResource()));
 	}
 
 	public OlatRootFolderImpl getSharedFolder(OLATResourceable res) {

@@ -26,7 +26,6 @@
 package org.olat.modules.sharedfolder;
 
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -58,7 +57,7 @@ public class SharedFolderEditorController extends DefaultController {
 	private Link previewButton;
 	
 	private RepositoryEntry re;
-	private OlatNamedContainerImpl sharedFolder;
+	private VFSContainer sharedFolder;
 	private FolderRunController folderRunController;
 	private CloseableModalController cmc;
 	private Controller controller;
@@ -79,7 +78,7 @@ public class SharedFolderEditorController extends DefaultController {
 		previewButton = LinkFactory.createButtonSmall("command.preview", vcEdit, this);
 		
 		re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
-		sharedFolder = SharedFolderManager.getInstance().getNamedSharedFolder(re);
+		sharedFolder = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);
 		folderRunController = new FolderRunController(sharedFolder, true, true, false, ureq, getWindowControl());
 		vcEdit.put("folder", folderRunController.getInitialComponent());
 		
@@ -92,7 +91,7 @@ public class SharedFolderEditorController extends DefaultController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) {
-			VFSContainer sharedFolderPreview = SharedFolderManager.getInstance().getNamedSharedFolder(re);
+			VFSContainer sharedFolderPreview = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);
 			sfdCtr = new SharedFolderDisplayController(ureq, getWindowControl(), sharedFolderPreview, re, true);
 			cmc = new CloseableModalController(getWindowControl(), translator.translate("close"), sfdCtr.getInitialComponent());
 			cmc.activate();
