@@ -283,7 +283,8 @@ public class ProjectDetailsDisplayController extends BasicController {
 		String baseUrl = registerMapper(new Mapper() {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(ProjectBrokerManagerFactory.getProjectBrokerManager().getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
-				VFSLeaf vfsfile = (VFSLeaf) rootFolder.resolve(relPath);
+				//ignore the relPath, we know it from the constructor of the DisplayOrDownloadComponent usin the mapper
+				VFSLeaf vfsfile = (VFSLeaf) rootFolder.resolve(project.getAttachmentFileName());
 				if (vfsfile == null) {
 					return new NotFoundMediaResource(relPath);
 				} else {
@@ -291,8 +292,11 @@ public class ProjectDetailsDisplayController extends BasicController {
 				}
 			}
 		});
+
 		// Trigger auto-download
-		getLogger().debug("baseUrl=" + baseUrl);
+		if(isLogDebugEnabled()) {
+			logDebug("baseUrl=" + baseUrl, null);
+		}
 		DisplayOrDownloadComponent dordc = new DisplayOrDownloadComponent("downloadcomp",baseUrl + "/" + project.getAttachmentFileName());
 		myContent.put("autoDownloadComp", dordc);
 	}
