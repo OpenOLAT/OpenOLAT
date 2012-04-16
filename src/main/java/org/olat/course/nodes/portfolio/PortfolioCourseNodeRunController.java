@@ -29,7 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -37,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -46,6 +44,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
@@ -84,6 +83,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private FormLink newMapLink;
 	private FormLink selectMapLink;
 	private StaticTextElement newMapMsgEl;
+	private FormLayoutContainer infosContainer;
+	private FormLayoutContainer assessmentInfosContainer;
 
 	private Formatter formatter;
 
@@ -93,7 +94,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne, PortfolioCourseNode courseNode) {
-		super(ureq, wControl);
+		super(ureq, wControl, "run");
 		
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
@@ -115,9 +116,19 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		infosContainer = FormLayoutContainer.createDefaultFormLayout("infos", getTranslator());
+		formLayout.add(infosContainer);
+		
+		String assessmentPage = velocity_root + "/assessment_infos.html";
+		assessmentInfosContainer = FormLayoutContainer.createCustomFormLayout("assessmentInfos", getTranslator(), assessmentPage);
+		assessmentInfosContainer.setVisible(false);
+		formLayout.add(assessmentInfosContainer);
+		
 		Object text = config.get(PortfolioCourseNodeConfiguration.NODE_TEXT);
 		String explanation = (text instanceof String) ? (String)text : "";
-		uifactory.addStaticTextElement("explanation.text", explanation, flc);
+		if(StringHelper.containsNonWhitespace(explanation)) {
+			uifactory.addStaticTextElement("explanation.text", explanation, infosContainer);
+		}
 		
 		String deadlineconfig = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_TYPE);
 		if (!DeadlineType.none.name().equals(deadlineconfig) && deadlineconfig!=null){
@@ -130,7 +141,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			} else {
 				deadLineInfo = getDeadlineRelativeInfo();
 			}
-			deadlineDateText = uifactory.addStaticTextElement("deadline", deadLineLabel, deadLineInfo, formLayout);			
+			deadlineDateText = uifactory.addStaticTextElement("deadline", deadLineLabel, deadLineInfo, infosContainer);			
 		}
 		
 		if(template != null) {
@@ -159,19 +170,19 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			String title = template.getTitle();
 			String msg = translate("map.available", new String[]{ title });
 			if(newMapMsgEl == null) {
-				newMapMsgEl = uifactory.addStaticTextElement("map.available", msg, flc);
+				newMapMsgEl = uifactory.addStaticTextElement("map.available", msg, infosContainer);
 			}
 			newMapMsgEl.setLabel(null, null);
 			
 			FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonGroupLayout.setRootForm(mainForm);
-			flc.add(buttonGroupLayout);
+			infosContainer.add(buttonGroupLayout);
 			if(newMapLink == null) {
 				newMapLink = uifactory.addFormLink("map.new", buttonGroupLayout, Link.BUTTON);
 			}
 		} else {
 			if(selectMapLink == null) {
-				selectMapLink = uifactory.addFormLink("select", "select.mymap", "select.mymap", flc, Link.LINK);
+				selectMapLink = uifactory.addFormLink("select", "select.mymap", "select.mymap", infosContainer, Link.LINK);
 			} else {
 				selectMapLink.setVisible(true);
 			}
@@ -182,33 +193,49 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			String copyDate = "";
 			if(structuredMap.getCopyDate() != null) {
 				copyDate = formatter.formatDateAndTime(structuredMap.getCopyDate());
-				uifactory.addStaticTextElement("map.copyDate", copyDate, flc);			
+				uifactory.addStaticTextElement("map.copyDate", copyDate, infosContainer);			
 			}
 			String returnDate = "";
 			if(structuredMap.getReturnDate() != null) {
 				returnDate = formatter.formatDateAndTime(structuredMap.getReturnDate());
-				uifactory.addStaticTextElement("map.returnDate", returnDate, flc);
+				uifactory.addStaticTextElement("map.returnDate", returnDate, infosContainer);
 
-				SpacerElement spacer = uifactory.addSpacerElement("space", flc, false);
-				// show rating
-				// create an identenv with no roles, no attributes, no locale
-				IdentityEnvironment ienv = new IdentityEnvironment();
-				ienv.setIdentity(getIdentity());
 				// Fetch all score and passed and calculate score accounting for the entire course
 				ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 				scoreAccounting.evaluateAll();			
 				ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
-				Float score = scoreEval.getScore();
-				if (score != null) uifactory.addStaticTextElement("map.score", String.valueOf(score), flc);
-				Boolean passed = scoreEval.getPassed();
-				if (passed==null) uifactory.addStaticTextElement("map.not.rated.yet", "", flc);
-				else if (passed) uifactory.addStaticTextElement("map.passed", "", flc);
-				else uifactory.addStaticTextElement("map.not.passed", "", flc);
-				
+
+				//score
+				assessmentInfosContainer.contextPut("hasScoreField", new Boolean(courseNode.hasScoreConfigured()));
+				if(courseNode.hasScoreConfigured()) {
+					Float score = scoreEval.getScore();
+					Float minScore = courseNode.getMinScoreConfiguration();
+					Float maxScore = courseNode.getMaxScoreConfiguration();
+					assessmentInfosContainer.contextPut("scoreMin", AssessmentHelper.getRoundedScore(minScore));
+					assessmentInfosContainer.contextPut("scoreMax", AssessmentHelper.getRoundedScore(maxScore));
+					assessmentInfosContainer.contextPut("score", AssessmentHelper.getRoundedScore(score));
+				}
+
+				//passed
+				assessmentInfosContainer.contextPut("hasPassedField", new Boolean(courseNode.hasPassedConfigured()));
+				if(courseNode.hasPassedConfigured()) {
+					Boolean passed = scoreEval.getPassed();
+					assessmentInfosContainer.contextPut("passed", passed);
+					assessmentInfosContainer.contextPut("hasPassedValue", new Boolean(passed != null));
+					Float cutValue = courseNode.getCutValueConfiguration();
+					assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
+				}
+
 				// get comment
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 				String comment = am.getNodeComment(courseNode, getIdentity());
-				if (comment != null) uifactory.addStaticTextElement("map.comment", comment, flc);
+				assessmentInfosContainer.contextPut("hasCommentField", new Boolean(comment != null));
+				if (comment != null) {
+					assessmentInfosContainer.contextPut("comment", comment);
+				}
+				assessmentInfosContainer.setVisible(true);
+			} else {
+				assessmentInfosContainer.setVisible(false);
 			}
 			// show absolute deadline when task is taken. nothing if taken map still has a deadline configured.
 			if (deadlineDateText != null && structuredMap.getDeadLine() != null) {
