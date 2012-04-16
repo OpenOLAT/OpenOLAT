@@ -515,7 +515,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 		//release the previous if not correctly released by CLOSE events
 		
 		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(struct.getClass(), struct.getKey()), null);
-		mapViewCtrl = new EPMapViewController(ureq, bwControl, struct, true, secCallback);
+		mapViewCtrl = new EPMapViewController(ureq, bwControl, struct, true, false, secCallback);
 		listenTo(mapViewCtrl);
 		myPanel.pushContent(mapViewCtrl.getInitialComponent());
 	}

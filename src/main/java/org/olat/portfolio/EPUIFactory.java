@@ -120,13 +120,18 @@ public class EPUIFactory {
 	
 	public static Controller createPortfolioStructureMapController(UserRequest ureq, WindowControl wControl, PortfolioStructureMap map,
 			EPSecurityCallback secCallback) {
-		return new EPMapViewController(ureq, wControl, map, false, secCallback);
+		return new EPMapViewController(ureq, wControl, map, false, false, secCallback);
+	}
+	
+	public static Controller createPortfolioStructureMapPreviewController(UserRequest ureq, WindowControl wControl, PortfolioStructureMap map,
+			EPSecurityCallback secCallback) {
+		return new EPMapViewController(ureq, wControl, map, false, true, secCallback);
 	}
 	
 	public static Controller createMapViewController(UserRequest ureq, WindowControl wControl,
 			PortfolioStructureMap map, EPSecurityCallback secCallback) {
 		EPMapViewController mapViewController = 
-			new EPMapViewController(ureq, wControl, map, false, secCallback);
+			new EPMapViewController(ureq, wControl, map, false, false, secCallback);
 		return mapViewController;
 	}
 	

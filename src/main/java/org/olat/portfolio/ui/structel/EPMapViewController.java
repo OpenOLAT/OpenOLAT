@@ -88,7 +88,7 @@ public class EPMapViewController extends BasicController implements Activateable
 	private final VelocityContainer mainVc;
 
 	public EPMapViewController(UserRequest ureq, WindowControl control, PortfolioStructureMap initialMap, boolean back,
-			EPSecurityCallback secCallback) {
+			boolean preview, EPSecurityCallback secCallback) {
 		super(ureq, control);
 		this.map = initialMap;
 		this.back = back;
@@ -113,7 +113,8 @@ public class EPMapViewController extends BasicController implements Activateable
 			}
 		}
 		
-		if(initialMap instanceof EPStructuredMapTemplate) {
+		//don't show the message for preview
+		if(initialMap instanceof EPStructuredMapTemplate && !preview) {
 			boolean inUse = ePFMgr.isTemplateInUse(initialMap, null, null, null);
 			if(inUse) {
 				showWarning("template.alreadyInUse");

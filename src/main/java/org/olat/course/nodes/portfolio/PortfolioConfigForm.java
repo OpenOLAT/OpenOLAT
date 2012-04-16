@@ -134,7 +134,6 @@ public class PortfolioConfigForm extends FormBasicController {
 			changeMapLink.setVisible(map != null);
 			changeMapLink.setEnabled(!inUse);
 			editMapLink.setVisible(map != null);
-			editMapLink.setEnabled(!inUse);
 		}
 	}
 	
@@ -187,7 +186,7 @@ public class PortfolioConfigForm extends FormBasicController {
 				removeAsListenerAndDispose(previewCtr);
 				removeAsListenerAndDispose(columnLayoutCtr);
 			}
-			previewCtr = EPUIFactory.createPortfolioStructureMapController(ureq, getWindowControl(), map, secCallback);
+			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
 			listenTo(previewCtr);
 			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, previewCtr.getInitialComponent(), "portfolio" + map.getKey());
 			ctr.activate();
