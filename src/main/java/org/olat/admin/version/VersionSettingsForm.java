@@ -79,8 +79,10 @@ public class VersionSettingsForm extends FormBasicController {
 		Long maxNumber = getNumOfVersions();
 		if(maxNumber == null) {
 			numOfVersions.select("0", true);
+		} else if (maxNumber.longValue() == 0l) {
+			numOfVersions.select("0", true); // deactivated
 		} else if (maxNumber.longValue() == -1l) {
-			numOfVersions.select("-1", true);
+			numOfVersions.select("-1", true); // unlimited
 		} else {
 			String str = maxNumber.toString();
 			boolean found = false;
