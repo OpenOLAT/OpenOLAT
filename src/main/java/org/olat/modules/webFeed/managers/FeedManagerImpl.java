@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
@@ -53,7 +52,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -73,7 +71,6 @@ import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.controllers.RepositoryEntryImageController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -325,14 +322,13 @@ public abstract class FeedManagerImpl extends FeedManager {
 				feed.setDescription(entry.getDescription());
 				feed.setAuthor(entry.getInitialAuthor());
 				// Update the image
-				VFSContainer repoHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()));
-				String imageFilename = RepositoryEntryImageController.getImageFilename(entry);
-				VFSItem repoEntryImage = repoHome.resolve(imageFilename);
+
+				VFSLeaf repoEntryImage = repositoryManager.getImage(entry);
 				if (repoEntryImage != null) {
 					getFeedMediaContainer(feed).copyFrom(repoEntryImage);
-					VFSLeaf newImage = (VFSLeaf) getFeedMediaContainer(feed).resolve(imageFilename);
+					VFSItem newImage = getFeedMediaContainer(feed).resolve(repoEntryImage.getName());
 					if (newImage != null) {
-						feed.setImageName(imageFilename);
+						feed.setImageName(newImage.getName());
 					}
 				} else {
 					// There's no repo entry image -> delete the feed image as well.
@@ -750,9 +746,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 				String saveDesc = PersistenceHelper.truncateStringDbSave(feed.getDescription(), 16777210, true);
 				entry.setDescription(saveDesc);
 				// Update the image
-				VFSContainer repoHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()));
-				String imageFilename = RepositoryEntryImageController.getImageFilename(entry);
-				VFSItem oldEntryImage = repoHome.resolve(imageFilename);
+				VFSLeaf oldEntryImage = repositoryManager.getImage(entry);
 				if (oldEntryImage != null) {
 					// Delete the old File
 					oldEntryImage.delete();
@@ -766,9 +760,7 @@ public abstract class FeedManagerImpl extends FeedManager {
 						// huh? image defined but not found on disk - remove image from feed
 						deleteImage(feed);
 					} else {
-						repoHome.copyFrom(newImage);
-						VFSItem newEntryImage = repoHome.resolve(feed.getImageName());
-						newEntryImage.rename(imageFilename);						
+						repositoryManager.setImage((VFSLeaf)newImage, entry);					
 					}
 				}
 			}

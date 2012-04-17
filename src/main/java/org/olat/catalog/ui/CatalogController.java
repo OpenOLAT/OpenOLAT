@@ -80,6 +80,8 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
@@ -87,7 +89,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositoryEditDescriptionController;
-import org.olat.repository.controllers.RepositoryEntryImageController;
 import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -204,8 +205,9 @@ public class CatalogController extends BasicController implements Activateable, 
 
 	private VelocityContainer myContent;
 
-	private CatalogManager cm;
-	private ACFrontendManager acFrontendManager;
+	private final CatalogManager cm;
+	private final ACFrontendManager acFrontendManager;
+	private final RepositoryManager repositoryManager;
 	private CatalogEntry currentCatalogEntry;
 	private CatalogEntry newLinkNotPersistedYet;
 	private int currentCatalogEntryLevel = -1;
@@ -258,7 +260,8 @@ public class CatalogController extends BasicController implements Activateable, 
 		
 		cm = CatalogManager.getInstance();
 		//fxdiff VCRP-1,2: access control of resources
-		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
+		acFrontendManager = CoreSpringFactory.getImpl(ACFrontendManager.class);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
 		CatalogEntry rootce;
@@ -272,8 +275,6 @@ public class CatalogController extends BasicController implements Activateable, 
 		revokeRightsAndSetDefaults();
 		// and also if user is localTreeAdmin
 		updateToolAccessRights(ureq, rootce, 0);
-
-		cm = CatalogManager.getInstance();
 
 		myContent = createVelocityContainer("catalog");
 		
@@ -1044,12 +1045,14 @@ public class CatalogController extends BasicController implements Activateable, 
 				}
 			}
 			
+			VFSLeaf image = repositoryManager.getImage(entry.getRepositoryEntry());
 			String name = "image" + childCe.indexOf(leaf);
-			ImageComponent ic = RepositoryEntryImageController.getImageComponentForRepositoryEntry(name, entry.getRepositoryEntry());
-			if(ic == null) {
+			if(image == null) {
 				myContent.remove(myContent.getComponent(name));
 				continue;
 			}
+			ImageComponent ic = new ImageComponent(name);
+			ic.setMediaResource(new VFSMediaResource(image));
 			ic.setMaxWithAndHeightToFitWithin(200, 100);
 			myContent.put(name, ic);
 		}

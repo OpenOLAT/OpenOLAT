@@ -78,6 +78,8 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.run.RunMainController;
@@ -244,10 +246,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		if (repositoryEntry.getDescription() != null) {
 			main.contextPut("description", Formatter.formatLatexFormulas(repositoryEntry.getDescription()));
 		}
-		ImageComponent ic = RepositoryEntryImageController.getImageComponentForRepositoryEntry("image", repositoryEntry);
-
-		if (ic != null) {
+		VFSLeaf image = RepositoryManager.getInstance().getImage(repositoryEntry);
+		if (image != null) {
 			// display only within 600x300 - everything else looks ugly
+			ImageComponent ic = new ImageComponent("image");
+			ic.setMediaResource(new VFSMediaResource(image));
 			ic.setMaxWithAndHeightToFitWithin(600, 300);
 			main.contextPut("hasImage", Boolean.TRUE);
 			main.put("image", ic);

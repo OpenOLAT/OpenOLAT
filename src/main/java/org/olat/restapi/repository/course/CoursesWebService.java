@@ -244,7 +244,7 @@ public class CoursesWebService {
 			// create security group
 			prepareSecurityGroup(ureq.getIdentity(), preparedEntry);
 			// copy image if available
-			RepositoryEntryImageController.copyImage(src, preparedEntry);
+			RepositoryManager.getInstance().copyImage(src, preparedEntry);
 			
 			return prepareCourse(preparedEntry, courseConfigVO);
 		}

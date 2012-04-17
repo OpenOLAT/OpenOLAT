@@ -219,7 +219,7 @@ public class RepositoryCopyController extends BasicController {
 
 		RepositoryManager.getInstance().saveRepositoryEntry(preparedEntry);
 		// copy image if available
-		RepositoryEntryImageController.copyImage(src, preparedEntry);
+		RepositoryManager.getInstance().copyImage(src, preparedEntry);
 		return preparedEntry;
 	}
 

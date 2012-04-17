@@ -41,6 +41,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -56,7 +57,15 @@ import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.ImageHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.image.Size;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -75,7 +84,6 @@ import org.olat.repository.async.SetAccessBackgroundTask;
 import org.olat.repository.async.SetDescriptionNameBackgroundTask;
 import org.olat.repository.async.SetLastUsageBackgroundTask;
 import org.olat.repository.async.SetPropertiesBackgroundTask;
-import org.olat.repository.controllers.RepositoryEntryImageController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
@@ -92,9 +100,12 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  */
 public class RepositoryManager extends BasicManager {
+	
+	private final int PICTUREWIDTH = 570;
 
 	private static RepositoryManager INSTANCE;
 	private BaseSecurity securityManager;
+	private ImageHelper imageHelper;
 	private static BackgroundTaskQueueManager taskQueueManager;
 	private UserCourseInformationsManager userCourseInformationsManager;
 
@@ -113,6 +124,14 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public void setUserCourseInformationsManager(UserCourseInformationsManager userCourseInformationsManager) {
 		this.userCourseInformationsManager = userCourseInformationsManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param userCourseInformationsManager
+	 */
+	public void setImageHelper(ImageHelper imageHelper) {
+		this.imageHelper = imageHelper;
 	}
 
 	/**
@@ -180,7 +199,7 @@ public class RepositoryManager extends BasicManager {
 		DBFactory.getInstance().deleteObject(re);
 		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
 		//instead of a controller.
-		RepositoryEntryImageController.deleteImage(re);
+		deleteImage(re);
 	}
 	
 	public void createTutorSecurityGroup(RepositoryEntry re) {
@@ -239,7 +258,71 @@ public class RepositoryManager extends BasicManager {
 		
 		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
 		//instead of a controller.
-		RepositoryEntryImageController.deleteImage(entry);
+		deleteImage(entry);
+	}
+	
+	/**
+	 * Copy the repo entry image from the source to the target repository entry.
+	 * If the source repo entry does not exists, nothing will happen
+	 * 
+	 * @param src
+	 * @param target
+	 * @return
+	 */
+	public boolean copyImage(RepositoryEntry source, RepositoryEntry target) {
+		VFSLeaf srcFile = getImage(source);
+		if(srcFile == null) {
+			return false;
+		}
+
+		VFSLeaf targetFile = getImage(target);
+		if(targetFile != null) {
+			targetFile.delete();
+		}
+		
+		String sourceImageSuffix = FileUtils.getFileSuffix(srcFile.getName());
+		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
+		VFSLeaf newImage = repositoryHome.createChildLeaf(target.getResourceableId() + "." + sourceImageSuffix);	
+		if (newImage != null) {
+			return VFSManager.copyContent(srcFile, newImage);
+		}
+		return false;
+	}
+	
+	public void deleteImage(RepositoryEntry re) {
+		VFSLeaf imgFile =  getImage(re);
+		if (imgFile != null) {
+			imgFile.delete();
+		}
+	}
+	
+	public VFSLeaf getImage(RepositoryEntry re) {
+		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
+		String imageName = re.getResourceableId() + ".jpg";
+		VFSItem image = repositoryHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
+		imageName = re.getResourceableId() + ".png";
+		image = repositoryHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
+		return null;
+	}
+	
+	public boolean setImage(VFSLeaf newImageFile, RepositoryEntry re) {
+		VFSLeaf currentImage = getImage(re);
+		if(currentImage != null) {
+			currentImage.delete();
+		}
+
+		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
+		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + ".png");
+		
+		imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
+		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH);
+		return size != null;
 	}
 	
 	/**

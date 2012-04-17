@@ -26,7 +26,6 @@
 package org.olat.repository.controllers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,14 +43,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.ImageHelper;
-import org.olat.core.util.image.Size;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -72,12 +70,12 @@ import org.olat.repository.RepositoryManager;
 public class RepositoryEntryImageController extends BasicController {
 	private VelocityContainer vContainer;
 	private Link deleteButton; 
-	private FileUploadController uploadCtr;
-	private RepositoryEntry repositoryEntry;
+	private final FileUploadController uploadCtr;
+	private final RepositoryEntry repositoryEntry;
 
-	private File repositoryEntryImageFile = null;
-	private File newFile = null;
-	private final int PICTUREWIDTH = 570;
+	//private File newFile = null;
+	
+	private final RepositoryManager repositoryManager;
 
 	
 	/**
@@ -93,8 +91,8 @@ public class RepositoryEntryImageController extends BasicController {
 		// use velocity files and translations from folder module package
 		setBasePackage(RepositoryManager.class);
 		
-		this.repositoryEntryImageFile = new File(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()),
-				getImageFilename(repositoryEntry));
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+
 		this.repositoryEntry = repositoryEntry;
 		this.vContainer = createVelocityContainer("imageupload");
 		// Init upload controller
@@ -103,7 +101,7 @@ public class RepositoryEntryImageController extends BasicController {
 		mimeTypes.add("image/jpg");
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
-		File uploadDir = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome());
+		File uploadDir = new File(FolderConfig.getCanonicalTmpDir());
 		VFSContainer uploadContainer = new LocalFolderImpl(uploadDir);
 		uploadCtr = new FileUploadController(getWindowControl(), uploadContainer, ureq, limitKB, Quota.UNLIMITED, mimeTypes, false, false, false, true);
 		uploadCtr.hideTitleAndFieldset();
@@ -123,7 +121,7 @@ public class RepositoryEntryImageController extends BasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == deleteButton){
-			repositoryEntryImageFile.delete();
+			repositoryManager.deleteImage(repositoryEntry);
 		}
 		displayImage();
 	}
@@ -137,24 +135,20 @@ public class RepositoryEntryImageController extends BasicController {
 			if (event instanceof FolderEvent && event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
 				FolderEvent folderEvent = (FolderEvent) event;
 				// Get file from temp folder location
-				String uploadFileName = folderEvent.getFilename();
-				File uploadDir = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome());
-				newFile = new File(uploadDir, uploadFileName);
-				if (!newFile.exists()) {
-					showError("Failed");
-				} else {
-					// Scale uploaded image
-					File pBigFile = new File(uploadDir, getImageFilename(repositoryEntry));
-					ImageHelper imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
-					Size size = imageHelper.scaleImage(newFile, pBigFile, PICTUREWIDTH, PICTUREWIDTH);
+				VFSContainer tmpHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalTmpDir()));
+				VFSItem newFile = tmpHome.resolve(folderEvent.getFilename());
+				if (newFile instanceof VFSLeaf) {
+					boolean ok = repositoryManager.setImage((VFSLeaf)newFile, repositoryEntry);
 					// Cleanup original file
 					newFile.delete();
 					// And finish workflow
-					if (size != null) {			
+					if (ok) {			
 						fireEvent(ureq, Event.DONE_EVENT);
 					} else {
 						showError("NoImage");
-					}					
+					}
+				} else {
+					showError("Failed");
 				}
 			}
 			// redraw image
@@ -168,7 +162,7 @@ public class RepositoryEntryImageController extends BasicController {
 	 * Internal helper to create the image component and push it to the view
 	 */
 	private void displayImage() {
-		ImageComponent ic = getImageComponentForRepositoryEntry("image",this.repositoryEntry);
+		ImageComponent ic = getImageComponentForRepositoryEntry("image", repositoryEntry);
 		if (ic != null) {
 			// display only within 400x200 in form
 			ic.setMaxWithAndHeightToFitWithin(400, 200);
@@ -180,15 +174,6 @@ public class RepositoryEntryImageController extends BasicController {
 	}
 
 	/**
-	 * Internal helper to create the image name
-	 * @param re
-	 * @return
-	 */
-	public static String getImageFilename(RepositoryEntry re) {
-		return re.getResourceableId() + ".jpg";
-	}
-
-	/**
 	 * Check if the repo entry does have an images and if yes create an image
 	 * component that displays the image of this repo entry.
 	 * 
@@ -197,38 +182,14 @@ public class RepositoryEntryImageController extends BasicController {
 	 * @return The image component or NULL if the repo entry does not have an
 	 *         image
 	 */
-	public static ImageComponent getImageComponentForRepositoryEntry(String componentName, RepositoryEntry repositoryEntry){
-		File repositoryEntryImageFile= new File(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()),
-				getImageFilename(repositoryEntry));
-		if (!repositoryEntryImageFile.exists()) {
+	private ImageComponent getImageComponentForRepositoryEntry(String componentName, RepositoryEntry repositoryEntry) {
+		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
+		if (img == null) {
 			return null;
 		}
 		ImageComponent imageComponent = new ImageComponent(componentName);
-		imageComponent.setMediaResource(new FileMediaResource(repositoryEntryImageFile));
+		imageComponent.setMediaResource(new VFSMediaResource(img));
 		return imageComponent;
-	}
-
-	/**
-	 * Copy the repo entry image from the source to the target repository entry.
-	 * If the source repo entry does not exists, nothing will happen
-	 * 
-	 * @param src
-	 * @param target
-	 * @return
-	 */
-	public static boolean copyImage(RepositoryEntry src, RepositoryEntry target) {
-		File srcFile = new File(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()),
-			getImageFilename(src));
-		File targetFile = new File(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()),
-			getImageFilename(target));
-		if (srcFile.exists()) {
-			try {
-				FileUtils.bcopy(srcFile, targetFile, "copyRepoImageFile");
-			} catch (IOException ioe) {
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	/**
@@ -238,16 +199,4 @@ public class RepositoryEntryImageController extends BasicController {
 	protected void doDispose() {
 		// controllers autodisposed by basic controller
 	}
-
-	/**
-	 * FIXME: this code belongs to a manager and not to a controller!
-	 * Method to remove the image for the given repo entry from disk
-	 * @param re
-	 */
-	public static void deleteImage(RepositoryEntry re) {
-		File srcFile = new File(new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome()),
-			getImageFilename(re));
-		if (srcFile.exists()) srcFile.delete();
-	}
-
 }
