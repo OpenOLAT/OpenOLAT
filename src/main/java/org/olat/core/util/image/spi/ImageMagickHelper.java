@@ -127,7 +127,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-thumbnail");
-		cmds.add(maxWidth + "x" + maxHeight);
+		cmds.add(maxWidth + "x" + maxHeight + ">");
 		if(firstOnly) {
 			cmds.add(file.getAbsolutePath() + "[0]");
 		} else {
@@ -187,30 +187,67 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 			return null;
 		}
 	}
-		
+	/**
+	 * Extract informations from the process:<br/>
+	 * The image was scaled:
+	 * /HotCoffee/olatdatas/openolat/bcroot/tmp/ryomou.jpg JPEG 579x579 579x579+0+0 8-bit DirectClass 327KB 0.020u 0:00.020/HotCoffee/olatdatas/openolat/bcroot/tmp/ryomou.jpg=>/HotCoffee/olatdatas/openolat_mysql/bcroot/repository/27394049.png JPEG 579x579=>570x570 8-bit DirectClass 803KB 0.150u 0:00.160<br/>
+	 * The image wasn't scaled:
+	 * /HotCoffee/olatdatas/openolat/bcroot/tmp/yukino.jpg JPEG 184x184 184x184+0+0 8-bit DirectClass 17.5KB 0.000u 0:00.009/HotCoffee/olatdatas/openolat/bcroot/tmp/yukino.jpg=>/HotCoffee/olatdatas/openolat_mysql/bcroot/repository/27394049.png JPEG 184x184 8-bit DirectClass 49.2KB 0.060u 0:00.060
+	 * 
+	 * @param thumbnailBaseFile
+	 * @param output
+	 * @return
+	 */
 	private final FinalSize extractSizeFromOutput(File thumbnailBaseFile, StringBuilder output) {
 		try {
 			String verbose = output.toString();
 			int lastIndex = verbose.lastIndexOf(thumbnailBaseFile.getName());
 			if(lastIndex > 0) {
 				int sizeIndex = verbose.indexOf("=>", lastIndex);
+				// => appears if the image is downscaled
 				if(sizeIndex > 0) {
 					int stopIndex = verbose.indexOf(' ', sizeIndex);
 					if(stopIndex > sizeIndex) {
 						String sizeStr = verbose.substring(sizeIndex + 2, stopIndex);
-						String[] sizes = sizeStr.split("x");
-						if(sizes != null && sizes.length == 2) {
-							int width = Integer.parseInt(sizes[0]);
-							int height = Integer.parseInt(sizes[1]);
-							return new FinalSize(width, height);
-						}
+						FinalSize size = extractSizeFromChuck(sizeStr);
+						return size;
 					}
+				// no scaling apparently, try to find the size
+				} else {
+					String ending = verbose.substring(lastIndex + thumbnailBaseFile.getName().length());
+					String[] endings = ending.split(" ");
+					for(String chuck:endings) {
+						FinalSize size = extractSizeFromChuck(chuck);
+						if(size != null) {
+							return size;
+						}
+					}	
 				}
 			}
 		} catch (NumberFormatException e) {
 			logError("Error parsing output: " + output, null);
 		}
 		return null;
+	}
+	
+	private FinalSize extractSizeFromChuck(String chuck) {
+		FinalSize size = null;
+		if(chuck.indexOf('x') > 0) {
+			String[] sizes = chuck.split("x");
+			if(sizes.length == 2) {
+				try {
+					int width = Integer.parseInt(sizes[0]);
+					int height = Integer.parseInt(sizes[1]);
+					return new FinalSize(width, height);
+				} catch (NumberFormatException e) {
+					//not a number, it's possible
+					if(isLogDebugEnabled()) {
+						logDebug("Not a size: " + chuck, null);
+					}
+				}
+			}
+		}
+		return size;
 	}
 	
 	private class ProcessWorker extends Thread {
