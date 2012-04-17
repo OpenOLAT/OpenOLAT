@@ -638,7 +638,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			//is frameset -> deliver unparsed
 			smr.setData(page);			
 		} else {
-			smr.setData(injectJavaScript(page, mimetype, checkForInlineEvent));			     
+			String agent = httpRequest.getHeader("User-Agent");
+			boolean firefoxWorkaround = agent != null && agent.indexOf("Firefox/") > 0;
+			smr.setData(injectJavaScript(page, mimetype, checkForInlineEvent, firefoxWorkaround));			     
 			// When loading next page, check if it was an inline user click
 			this.checkForInlineEvent = true; 
 
@@ -661,7 +663,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * TODO:gs make more stable by only adding some js stuff to the end of the page. First check if document.height is ready
 	 * when puttings js to the end or menachism like ext.onReady is needed
 	 */
-	private String injectJavaScript(String page, String mimetype, boolean addCheckForInlineEvents) {
+	private String injectJavaScript(String page, String mimetype, boolean addCheckForInlineEvents, boolean anchorFirefoxWorkaround) {
 		StringOutput sb = new StringOutput();
 		//do not use parser and just check for css and script stuff myself and append just before body and head
 		SimpleHtmlParser parser = new SimpleHtmlParser(page);
@@ -769,6 +771,10 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			
 			if (this.enableTextmarking){
 				sb.append("b_addOnloadEvent(b_glossaryHighlight);");
+			}
+			
+			if(anchorFirefoxWorkaround) {
+				sb.append("b_addOnloadEvent(b_anchorFirefoxWorkaround);");
 			}
 			
 			sb.append("\n/* ]]> */\n</script>");

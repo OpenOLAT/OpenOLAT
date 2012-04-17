@@ -228,6 +228,50 @@ function b_addOnloadEvent(fnc){
 		//console.log(e);
 	}
 }
+//only for firefox
+function b_anchorFirefoxWorkaround() {
+	var anchors = document.getElementsByTagName('a');
+	for (var i=0; i < anchors.length; i++) {
+		var anchor = anchors[i];
+    	var href = anchor.getAttribute('href');
+    	if(href && href[0] == "#") {
+      		var name = href.substring(1);
+      		anchor.addEventListener('click', function() {
+        		try {
+        			var nameElement = document.getElementsByName(name);
+            		var element = null;
+            		if(nameElement != null && nameElement.length > 0) {
+             			element = nameElement[0];
+            		} else {
+            			var idElement = document.getElementById(name);
+            		 	if(idElement != null) { 
+            		 		element = idElement;
+            		 	}
+            		}
+            		if(element && window && window.parent) {
+              			var offset = b_anchorFirefoxWorkaroundCumulativeOffset(element);
+              			window.parent.scrollTo(offset[0], offset[1]);
+            		}
+        		} catch(e) {
+        			//console.log(e);
+        		}
+        		return true;
+      		});
+		}
+	}
+}
+//only for firefox
+function b_anchorFirefoxWorkaroundCumulativeOffset(element) {
+    var valueT = 0, valueL = 0;
+    if (element.parentNode) {
+      do {
+        valueT += element.offsetTop  || 0;
+        valueL += element.offsetLeft || 0;
+        element = element.offsetParent;
+      } while (element);
+    }
+    return [valueL, valueT];
+}
 
 function b_removeOnloadEvent(fnc) {
 	try {
