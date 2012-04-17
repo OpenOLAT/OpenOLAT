@@ -46,4 +46,10 @@ public interface IAssessmentCallback {
 	 * learners.
 	 */
 	public boolean mayAssessCoachedUsers();
+	
+	/**
+	 * @return True if the user can trigger the recalculation of
+	 * all efficiency statements.
+	 */
+	public boolean mayRecalculateEfficiencyStatements();
 }

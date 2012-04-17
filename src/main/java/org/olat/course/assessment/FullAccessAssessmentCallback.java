@@ -34,6 +34,13 @@ package org.olat.course.assessment;
  * @author gnaegi
  */
 public class FullAccessAssessmentCallback implements IAssessmentCallback {
+	
+	private boolean isCourseAdmin;
+	
+	public FullAccessAssessmentCallback(boolean isCourseAdmin) {
+		this.isCourseAdmin = isCourseAdmin;
+	}
+	
 	public boolean mayViewAllUsersAssessments() {
 		return true;
 	}
@@ -44,5 +51,10 @@ public class FullAccessAssessmentCallback implements IAssessmentCallback {
 
 	public boolean mayAssessCoachedUsers() {
 		return true;
+	}
+
+	@Override
+	public boolean mayRecalculateEfficiencyStatements() {
+		return isCourseAdmin;
 	}
 }

@@ -125,6 +125,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private static final String CMD_GROUPFOCUS 	= "cmd.groupfocus";
 	private static final String CMD_NODEFOCUS 	= "cmd.nodefocus";
 	private static final String CMD_BULKFOCUS 	= "cmd.bulkfocus";
+	private static final String CMD_EFF_STATEMENT 	= "cmd.effstatement";
 
 	private static final String CMD_CHOOSE_GROUP = "cmd.choose.group";
 	private static final String CMD_CHOOSE_USER = "cmd.choose.user";
@@ -134,6 +135,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private static final int MODE_GROUPFOCUS	= 1;
 	private static final int MODE_NODEFOCUS		= 2;
 	private static final int MODE_BULKFOCUS		= 3;
+	private static final int MODE_EFF_STATEMENT = 4;
 	private int mode;
 
 	private IAssessmentCallback callback;
@@ -180,6 +182,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private Link filterCourseNodesButton;
 	
 	private BulkAssessmentMainController bamc;
+	private EfficiencyStatementAssessmentController esac;
 
 	private OLATResourceable ores;
 	
@@ -340,6 +343,11 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				} else if (cmd.equals(CMD_BULKFOCUS)){
 					this.mode = MODE_BULKFOCUS;
 					doBulkChoose(ureq);
+				} else if (cmd.equals(CMD_EFF_STATEMENT)){
+					if(callback.mayRecalculateEfficiencyStatements()) {
+						this.mode = MODE_EFF_STATEMENT;
+						doEfficiencyStatement(ureq);
+					}
 				}
 			}
 		} else if (source == allUsersButton){	
@@ -863,6 +871,13 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		listenTo(bamc);
 		main.setContent(bamc.getInitialComponent());
 	}
+	
+	private void doEfficiencyStatement(UserRequest ureq) {
+		removeAsListenerAndDispose(esac);
+		esac = new EfficiencyStatementAssessmentController(ureq, getWindowControl(), ores);
+		listenTo(esac);
+		main.setContent(esac.getInitialComponent());
+	}
 
 	/**
 	 * Recursive method that adds assessable nodes and all its parents to a list
@@ -1081,6 +1096,14 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 			gtn.setUserObject(CMD_BULKFOCUS);
 			gtn.setAltText(translate("menu.bulkfocus.alt"));
 			root.addChild(gtn);
+			
+			if(callback.mayRecalculateEfficiencyStatements()) {
+				gtn = new GenericTreeNode();
+				gtn.setTitle(translate("menu.efficiency.statment"));
+				gtn.setUserObject(CMD_EFF_STATEMENT);
+				gtn.setAltText(translate("menu.efficiency.statment.alt"));
+				root.addChild(gtn);
+			}
 		}
 		
 		return gtm;

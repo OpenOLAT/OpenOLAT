@@ -54,6 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -67,6 +68,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
@@ -102,7 +104,7 @@ import org.olat.resource.references.ReferenceManager;
  * 
  * @author Felix Jost
  */
-public class RepositoryDetailsController extends BasicController implements GenericEventListener {
+public class RepositoryDetailsController extends BasicController implements GenericEventListener, Activateable2 {
 	OLog log = Tracing.createLoggerFor(this.getClass());
 
 	private static final String ACTION_CLOSE = "cmd.close";
@@ -525,6 +527,25 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			doLaunch(ureq);
 		} else if (source == loginLink){
 			DispatcherAction.redirectToDefaultDispatcher(ureq.getHttpResp());
+		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("settings".equals(type)) {
+			if(isAuthor && isOwner) {
+				removeAsListenerAndDispose(repositoryEditPropertiesController);
+				repositoryEditPropertiesController = new RepositoryEditPropertiesController(ureq, getWindowControl(), repositoryEntry, false);
+				listenTo(repositoryEditPropertiesController);
+				doEditSettings(ureq, repositoryEditPropertiesController);
+				
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				repositoryEditPropertiesController.activate(ureq, subEntries, entry.getTransientState());
+			}
 		}
 	}
 

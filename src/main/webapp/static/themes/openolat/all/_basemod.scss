@@ -245,6 +245,50 @@ div.b_breadcumb_path {
 }
 div.b_breadcumb_content { clear: both;  margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid #ACAAAA;}
 
+/* --------------- TOOLBAR ------------ */
+
+div.b_toolbar {
+	@include o-gradient2(#f9f9f9,#d0d0d0);
+	position:relative;
+	padding: 10px;
+	height: 19px;
+	min-height: 19px;
+	border-bottom: 1px solid #7D7D7D;
+	
+	ul {
+		margin:0;
+		list-style-image:none;
+		list-style-type:none;
+		
+		li {
+			margin:0px 16px 0px 0px;
+			list-style-image:none;
+			list-style-type:none;
+		}
+	}
+	
+	div.b_toolbar_left {
+		position:absolute;
+		top:7px;
+		left:7px;
+	}
+	ul.b_toolbar_left li {
+		float:left;
+	}
+	div.b_toolbar_right {
+		position:absolute;
+		top:7px;
+		right:7px;
+	}
+	ul.b_toolbar_right li {
+		float:right;
+		margin:0px 2px 0px 2px;
+	}
+	div.b_toolbar_center {
+		text-align:center;
+	}
+}
+
 /* NOTIFICATIONS */
 div.b_noti { 
 		border: 1px solid #E9EAEF; padding: 3px 23px 3px 3px; float: right; display: inline; position: relative; right: 0; font-size: 95%;

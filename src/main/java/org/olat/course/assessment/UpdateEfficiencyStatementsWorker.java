@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -67,6 +68,9 @@ public class UpdateEfficiencyStatementsWorker implements Runnable {
 			// close db session in this thread
 			DBFactory.getInstance(false).commitAndCloseSession();
 			success = true;
+			
+			EfficiencyStatementEvent finishedEvent = new EfficiencyStatementEvent(EfficiencyStatementEvent.CMD_FINISHED, ores.getResourceableId());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(finishedEvent, ores);
 		} catch(Exception ex) {
 			log.error("Unexpected exception updating the efficiency statements of " + ores, ex);
 		} finally {

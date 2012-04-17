@@ -41,10 +41,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -93,7 +96,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Ingmar Kroll
  */
-public class RepositoryEditPropertiesController extends BasicController {
+public class RepositoryEditPropertiesController extends BasicController implements Activateable2 {
 	
 	private static final String ACTION_FORWARD ="forw";
 	private static final String ACTION_BACKWARD ="bckw";
@@ -244,6 +247,13 @@ public class RepositoryEditPropertiesController extends BasicController {
 			this.dispose();
 			throw e;
 		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		tabbedPane.activate(ureq, entries, state);
 	}
 
 	/**

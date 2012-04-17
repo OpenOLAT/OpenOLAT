@@ -17,30 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.manager;
+package org.olat.course.assessment;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.olat.core.id.Identity;
-import org.olat.course.assessment.UserCourseInformations;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface UserCourseInformationsManager {
-	
-	public UserCourseInformations getUserCourseInformations(Long courseResourceId, Identity identity);
-	
-	public UserCourseInformations updateUserCourseInformations(Long courseResId, Identity identity);
-	
-	public Date getInitialLaunchDate(Long courseResourceId, Identity identity);
-	
-	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId, List<Identity> identities);
-	
-	public int deleteUserCourseInformations(RepositoryEntry entry);
+public class EfficiencyStatementEvent extends MultiUserEvent {
 
+	private static final long serialVersionUID = 5909863438474123648L;
+
+	private Long courseResourceId;
+	
+	public static final String CMD_RECALCULATE = "recalculate";
+	public static final String CMD_FINISHED = "recalculate.finished";
+
+	public EfficiencyStatementEvent(String cmd, Long courseResourceId) {
+		super(cmd);
+		this.courseResourceId = courseResourceId;	
+	}
+
+	public Long getCourseResourceId() {
+		return courseResourceId;
+	}
 }

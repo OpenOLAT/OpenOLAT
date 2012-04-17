@@ -113,22 +113,31 @@ public class AssessmentModule implements Initializable, Destroyable, GenericEven
 				return;
 			} else if (pe.getState() == PublishEvent.PUBLISH && pe.getEventIdentifier() == PublishEvent.EVENT_IDENTIFIER) {
 				// a publish event, check if it matches a previous checked
-				boolean recalc = false;
-				Long resId = pe.getPublishedCourseResId();
-				synchronized (upcomingWork) { //o_clusterOK by:ld synchronized OK - only one cluster node must update the EfficiencyStatements (the course is locked for editing) (same as e.g. file indexer)
-					recalc = upcomingWork.contains(resId);
-					if (recalc) {
-						upcomingWork.remove(resId);
-					}
-				}
-				if (recalc) {
-					ICourse pubCourse = CourseFactory.loadCourse(pe.getPublishedCourseResId());
-					UpdateEfficiencyStatementsWorker worker = new UpdateEfficiencyStatementsWorker(pubCourse);
-					TaskExecutorManager.getInstance().runTask(worker);
-				}
+				prepareUpdate(pe.getPublishedCourseResId());
+			}
+		} else if (event instanceof EfficiencyStatementEvent) {
+			if(EfficiencyStatementEvent.CMD_RECALCULATE.equals(event.getCommand())) {
+				EfficiencyStatementEvent esEvent = (EfficiencyStatementEvent)event;
+				//force recalculate
+				upcomingWork.add(esEvent.getCourseResourceId());
+				prepareUpdate(esEvent.getCourseResourceId());
 			}
 		}
-
+	}
+	
+	private void prepareUpdate(Long resId) {
+		boolean recalc = false;
+		synchronized (upcomingWork) { //o_clusterOK by:ld synchronized OK - only one cluster node must update the EfficiencyStatements (the course is locked for editing) (same as e.g. file indexer)
+			recalc = upcomingWork.contains(resId);
+			if (recalc) {
+				upcomingWork.remove(resId);
+			}
+		}
+		if (recalc) {
+			ICourse pubCourse = CourseFactory.loadCourse(resId);
+			UpdateEfficiencyStatementsWorker worker = new UpdateEfficiencyStatementsWorker(pubCourse);
+			TaskExecutorManager.getInstance().runTask(worker);
+		}
 	}
 
 	/**

@@ -968,7 +968,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
 			Activateable assessmentToolCtr = 
-				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course, new FullAccessAssessmentCallback());
+				AssessmentUIFactory.createAssessmentMainController(ureq, swControl, course, new FullAccessAssessmentCallback(isCourseAdmin));
 			assessmentToolCtr.activate(ureq, viewIdentifier);
 			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);

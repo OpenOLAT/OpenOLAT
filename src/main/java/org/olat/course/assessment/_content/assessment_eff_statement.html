@@ -1,0 +1,14 @@
+<h5>$r.translate("efficiencystatement.title")</h5>
+<p>$r.translate("efficiencystatement.intro.1")</p>
+<p>$r.translate("efficiencystatement.intro.2", $enabledStr)</p>
+$r.render("config")
+<br/><br/>
+#if($enabled)
+	<p>$r.translate("efficiencystatement.intro.3")</p>
+	<p>$r.translate("efficiencystatement.intro.4")</p>
+	#if($recalculating)
+		<div class="o_eff_statement_recalculating">$r.render("recalculate")</div>
+	#else
+		$r.render("recalculate")
+	#end
+#end

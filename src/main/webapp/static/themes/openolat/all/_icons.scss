@@ -36,6 +36,10 @@ option.b_with_small_icon_left {
 	background-repeat: no-repeat;
 }
 
+.b_with_small_icon_only span {
+	display: none;
+}
+
 .b_small_icon {
 	float: left;
 	display: inline;
@@ -240,10 +244,11 @@ span.o_passed { background: url(../openolat/images/tick.png) no-repeat right 50%
 span.o_notpassed { background: url(../openolat/images/cross.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
 .o_efficiencystatement_icon { background-image: url(../openolat/images/seal.png);}
 
-span.o_green_led { background: url(../openolat/images/green_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
-span.o_yellow_led { background: url(../openolat/images/yellow_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
-span.o_red_led { background: url(../openolat/images/red_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
-span.o_black_led { background: url(../openolat/images/black_led.png) no-repeat right 50%; padding: 0 25px 0 0; color: #990000; }
+span.o_green_led { background: url(../openolat/images/green_led.png) no-repeat left 50%; padding: 0 0 0 25px; }
+span.o_yellow_led { background: url(../openolat/images/yellow_led.png) no-repeat left 50%; padding: 0 0 0 25px; }
+span.o_red_led { background: url(../openolat/images/red_led.png) no-repeat left 50%; padding: 0 0 0 25px; }
+span.o_black_led { background: url(../openolat/images/black_led.png) no-repeat left 50%; padding: 0 0 0 25px; }
+span.o_grey_led { background: url(../openolat/images/grey_led.png) no-repeat left 50%; padding: 0 0 0 25px; }
 
 /* --------- course building block icons ------------------- */
 .o_bc_icon { background-image: url('../openolat/images/folder.png') ! important; }

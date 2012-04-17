@@ -45,4 +45,9 @@ public class CoachingGroupAccessAssessmentCallback implements IAssessmentCallbac
 	public boolean mayAssessCoachedUsers() {
 		return true;
 	}
+
+	@Override
+	public boolean mayRecalculateEfficiencyStatements() {
+		return false;
+	}
 }

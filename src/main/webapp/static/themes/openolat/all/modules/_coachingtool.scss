@@ -1,0 +1,68 @@
+/* ------------------------- COACHING TOOL ------------------------------ */
+
+#b_main.o_coaching {
+	
+	// the 'neutral' progress bar
+	div.o_eff_statement_progress {
+		width: 100%;
+		height:15px;
+		background-color: $basegray_ultra_light;
+		border:1px solid $basegray_light;
+		
+		div.o_eff_statement_solved {
+			height:15px;
+			@include o-gradient2($basecolor_light,$basecolor);
+		}
+	}
+	
+	// the 'red/green' progress bar
+	.o_eff_statement_rg div.o_eff_statement_progress {
+		@include o-gradient-glassy(#f85032 , #f16f5c , #f6290c , #e73827);
+	
+		div.o_eff_statement_solved {
+			@include o-gradient-glassy(#9dd53a , #a1d54f , #80c217 , #7cbc0a);
+		}
+	}
+	
+	
+	div.o_eff_statement_details {
+		margin:10px 0 10px 0;
+	}
+
+	.b_toolbar_center {
+		span.b_disabled {
+			display:none;
+		}
+	}
+	
+}
+
+div.o_eff_statement_progress {
+	width: 100%;
+	height:15px;
+	background-color:
+	$basegray_ultra_light;
+	border:1px solid $basegray_light;
+	
+	div.o_eff_statement_solved {
+		height:15px;
+		background-color: #81afca;
+	}
+}
+
+.o_eff_statement_rg div.o_eff_statement_progress {
+	background-color: red;
+	
+	div.o_eff_statement_solved {
+		background-color: green;
+	}
+}
+
+div.o_eff_statement_details {
+	margin:10px 0 10px 0;
+}
+
+div.o_eff_statement_recalculating {
+	padding-left: 30px;
+	background:transparent url(../openolat/images/ajax-loader.gif) no-repeat top left;
+}

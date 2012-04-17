@@ -829,9 +829,12 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 				long resId = entry.getOLATResourceable().getResourceableId();
 				activateContent(ureq, type, resId != 0 ? Long.toString(resId) : null);
 				if(!entries.isEmpty()) {
-					String subType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+					ContextEntry nextEntry = entries.get(0);
+					String subType = nextEntry.getOLATResourceable().getResourceableTypeName();
 					if(RepositoryEntry.class.getSimpleName().equals(subType)) {
 						searchController.activate(ureq, entries, entry.getTransientState());
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						detailsController.activate(ureq, subEntries, nextEntry.getTransientState());
 					} else if(CatalogEntry.class.getSimpleName().equals(subType)) {
 						catalogCntrllr.activate(ureq, entries, entry.getTransientState());
 					}
