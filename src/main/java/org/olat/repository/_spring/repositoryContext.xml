@@ -25,6 +25,7 @@
 	<constructor-arg index="0" ref="baseSecurityManager" />
 	<constructor-arg index="1" ref="org.olat.core.commons.persistence.async.BackgroundTaskQueueManager" />
 	<property name="userCourseInformationsManager" ref="userCourseInformationsManager"/>
+	<property name="imageHelper" ref="imageHelper"/>
 </bean>
 
 <!-- BackgroundTaskQueueManager for increment launch-,download-counter and set LastUsage in background thread -->

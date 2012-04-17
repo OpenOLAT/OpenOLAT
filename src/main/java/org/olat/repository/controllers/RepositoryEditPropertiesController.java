@@ -126,6 +126,8 @@ public class RepositoryEditPropertiesController extends BasicController implemen
   private boolean repositoryEntryChanged; //false per default
 	private boolean courseConfigChanged;
 	
+	private int efficiencyConfigPos;
+	
 	private OLog log = Tracing.createLoggerFor(this.getClass());
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + RepositoryEditPropertiesController.class;
 	
@@ -210,7 +212,7 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 
 			  ceffC = new CourseEfficencyStatementController(ureq, getWindowControl(), changedCourseConfig);
 			  this.listenTo(ceffC);
-			  tabbedPane.addTab(translate("tab.efficencystatement"), ceffC.getInitialComponent());
+			  efficiencyConfigPos = tabbedPane.addTab(translate("tab.efficencystatement"), ceffC.getInitialComponent());
 			
 			  calCfgCtr = new CourseCalendarConfigController(ureq, getWindowControl(), changedCourseConfig);
 			  this.listenTo(calCfgCtr);
@@ -253,7 +255,13 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		tabbedPane.activate(ureq, entries, state);
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("tabs".equals(type)) {
+			tabbedPane.activate(ureq, entries, state);
+		} else if ("EfficiencyStatementConfig".equals(type)) {
+			tabbedPane.setSelectedPane(efficiencyConfigPos);
+		}
 	}
 
 	/**

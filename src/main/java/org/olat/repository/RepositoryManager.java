@@ -41,7 +41,6 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -320,7 +319,6 @@ public class RepositoryManager extends BasicManager {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
 		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + ".png");
 		
-		imageHelper = CoreSpringFactory.getImpl(ImageHelper.class);
 		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH);
 		return size != null;
 	}
