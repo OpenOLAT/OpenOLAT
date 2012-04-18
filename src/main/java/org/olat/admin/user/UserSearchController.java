@@ -68,6 +68,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -393,14 +394,12 @@ class UserSearchForm extends FormBasicController {
 	protected List<UserPropertyHandler> userPropertyHandlers;
 	protected Map <String,FormItem>propFormItems;
 	
-	
 	/**
 	 * @param name
 	 * @param cancelbutton
 	 * @param isAdmin if true, no field must be filled in at all, otherwise
 	 *          validation takes place
 	 */
-
 	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelButton) {
 		super(ureq, wControl);
 		
@@ -409,14 +408,12 @@ class UserSearchForm extends FormBasicController {
 	
 		initForm(ureq);
 	}
-
 	
 	@Override
 	@SuppressWarnings("unused")
 	public boolean validateFormLogic (UserRequest ureq) {
 		// override for admins
 		if (isAdmin) return true;
-		
 		
 		boolean filled = !login.isEmpty();
 		StringBuffer  full = new StringBuffer(login.getValue().trim());  
@@ -429,16 +426,17 @@ class UserSearchForm extends FormBasicController {
 		// "this e-mail exists already"
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());
-				String uiValue = userPropertyHandler.getStringValue(ui);
-				// add value for later non-empty search check
-				if (StringHelper.containsNonWhitespace(uiValue)) {
-					full.append(uiValue.trim());
-					filled = true;
-				}else{
-					//its an empty field
-					filled = filled || false;
-				}
-				lastFormElement = ui;
+			String uiValue = userPropertyHandler.getStringValue(ui);
+			// add value for later non-empty search check
+			if (StringHelper.containsNonWhitespace(uiValue)) {
+				full.append(uiValue.trim());
+				filled = true;
+			}else{
+				//its an empty field
+				filled = filled || false;
+			}
+
+			lastFormElement = ui;
 		}
 
 		// Don't allow searches with * or %  or @ chars only (wild cards). We don't want
@@ -464,18 +462,12 @@ class UserSearchForm extends FormBasicController {
 		return true;
 	}
 
-	
-
 	@Override
 	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
-		
 		login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
-		
-		
+
 		UserManager um = UserManager.getInstance();
-		
 		Translator tr = Util.createPackageTranslator(
 				UserPropertyHandler.class,
 				getLocale(), 
@@ -494,6 +486,12 @@ class UserSearchForm extends FormBasicController {
 					getLocale(), null, getClass().getCanonicalName(), false, formLayout
 			);
 			fi.setTranslator(tr);
+			
+			// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
+			if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
+				TextElement textElement = (TextElement)fi;
+				textElement.setItemValidatorProvider(null);
+			}
 
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}

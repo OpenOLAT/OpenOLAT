@@ -57,7 +57,7 @@ import org.olat.core.id.Identity;
  *         Fires a MultiIdentityChoosenEvent when multiples identities have been
  *         chosen which contains the choosen identities<br>
  *         <p>
- *         Optionally set the useMultiSelect boolean to true whcih allows to
+ *         Optionally set the useMultiSelect boolean to true which allows to
  *         select multiple identities from within the search results.
  */
 public class DeletableUserSearchController extends UserSearchController {
@@ -72,12 +72,13 @@ public class DeletableUserSearchController extends UserSearchController {
 	 * @param userPropertiesSearch
 	 * @return
 	 */
-	protected List searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
-	  List users = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(
+	@Override
+	protected List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
+	  List<Identity> users = BaseSecurityManager.getInstance().getVisibleIdentitiesByPowerSearch(
 			(login.equals("") ? null : login),
 			userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
 			null, null, null, null, null);
-	  List notDeletable = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(
+	  List<Identity> notDeletable = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(
 				(login.equals("") ? null : login),
 				userPropertiesSearch, userPropertiesAsIntersectionSearch,	// in normal search fields are intersected
 				null, null, null, null, null, null, null,Identity.STATUS_PERMANENT);
