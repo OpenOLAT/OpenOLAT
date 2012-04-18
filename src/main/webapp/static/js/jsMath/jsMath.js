@@ -26,26 +26,6507 @@
  *  
  *****************************************************************************/
 
-if (!window.jsMath) {jsMath = {}}
-if (!jsMath.Script) {jsMath.Script = {}}
+/*
+ *  Prevent running everything again if this file is loaded twice
+ */
+if (!window.jsMath || !window.jsMath.loaded) {
 
-jsMath.Script.Uncompress = function (data) {
-  for (var k = 0; k <  data.length; k++) {
-    var d = data[k]; var n = d.length;
-    for (var i = 0; i < n; i++) {if (typeof(d[i]) == 'number') {d[i] = d[d[i]]}}
-    data[k] = d.join('');
+var jsMath_old = window.jsMath;  // save user customizations
+
+//
+// debugging routine
+// 
+/* 
+ * function ShowObject (obj,spaces) {
+ *   var s = ''; if (!spaces) {spaces = ""}
+ *   for (var i in obj) {
+ *     if (obj[i] != null) {
+ *       if (typeof(obj[i]) == "object") {
+ *         s += spaces + i + ": {\n"
+ *           + ShowObject(obj[i],spaces + '  ')
+ *           + spaces + "}\n";
+ *       } else if (typeof(obj[i]) != "function") {
+ *         s += spaces + i + ': ' + obj[i] + "\n";
+ *       }
+ *     }
+ *   }
+ *   return s;
+ * }
+ */
+
+/***************************************************************************/
+//
+//  Check for DOM support
+//
+if (!document.getElementById || !document.childNodes || !document.createElement) {
+  alert('The mathematics on this page requires W3C DOM support in its JavaScript. '
+      + 'Unfortunately, your browser doesn\'t seem to have this.');
+} else {
+
+/***************************************************************************/
+
+window.jsMath = {
+  
+  version: "3.6-OLAT-7.2.1.3",  // change this if you edit the file, but don't edit this file
+  
+  document: document,  // the document loading jsMath
+  window: window,      // the window of the of loading document
+  
+  platform: (navigator.platform.match(/Mac/) ? "mac" :
+             navigator.platform.match(/Win/) ? "pc" : "unix"),
+  
+  // Font sizes for \tiny, \small, etc. (must match styles below)
+  sizes: [50, 60, 70, 85, 100, 120, 144, 173, 207, 249],
+
+  //
+  //  The styles needed for the TeX fonts and other jsMath elements
+  //
+  styles: {
+    '.math': {                  // unprocessed mathematics
+      'font-family': 'serif',
+      'font-style':  'normal',
+      'font-weight': 'normal'
+    },
+
+    '.typeset': {               // final typeset mathematics
+      'font-family': 'serif',
+      'font-style':  'normal',
+      'font-weight': 'normal',
+      'line-height': 'normal',
+      'text-indent': '0px'
+    },
+    
+    '.typeset .normal': {       // \hbox contents style
+      'font-family': 'serif',
+      'font-style': 'normal',
+      'font-weight': 'normal'
+    },
+    
+    'div.typeset': {            // display mathematics
+      'text-align': 'center',
+       margin:       '1em 0px'
+    },
+    
+    'span.typeset': {           // in-line mathematics
+      'text-align': 'left'
+    },
+    
+    '.typeset span': {          // prevent outside CSS from setting these
+      'text-align': 'left',
+       border:       '0px',
+       margin:       '0px',
+       padding:      '0px'
+    },
+    
+    'a .typeset img, .typeset a img': {   // links in image mode
+       border: '0px',
+      'border-bottom': '1px solid blue;'
+    },
+
+    // Font sizes
+    '.typeset .size0': {'font-size': '50%'},  // tiny (\scriptscriptsize)
+    '.typeset .size1': {'font-size': '60%'},  //       (50% of \large for consistency)
+    '.typeset .size2': {'font-size': '70%'},  // scriptsize
+    '.typeset .size3': {'font-size': '85%'},  // small (70% of \large for consistency)
+    '.typeset .size4': {'font-size': '100%'}, // normalsize
+    '.typeset .size5': {'font-size': '120%'}, // large
+    '.typeset .size6': {'font-size': '144%'}, // Large
+    '.typeset .size7': {'font-size': '173%'}, // LARGE
+    '.typeset .size8': {'font-size': '207%'}, // huge
+    '.typeset .size9': {'font-size': '249%'}, // Huge
+  
+    // TeX fonts
+    '.typeset .cmr10':  {'font-family': 'jsMath-cmr10, serif'},
+    '.typeset .cmbx10': {'font-family': 'jsMath-cmbx10, jsMath-cmr10'},
+    '.typeset .cmti10': {'font-family': 'jsMath-cmti10, jsMath-cmr10'},
+    '.typeset .cmmi10': {'font-family': 'jsMath-cmmi10'},
+    '.typeset .cmsy10': {'font-family': 'jsMath-cmsy10'},
+    '.typeset .cmex10': {'font-family': 'jsMath-cmex10'},
+    
+    '.typeset .textit': {'font-family': 'serif', 'font-style': 'italic'},
+    '.typeset .textbf': {'font-family': 'serif', 'font-weight': 'bold'},
+    
+    '.typeset .link':   {'text-decoration': 'none'},  // links in mathematics
+
+    '.typeset .error':  {      // in-line error messages
+      'font-size':        '90%',
+      'font-style':       'italic',
+      'background-color': '#FFFFCC',
+       padding:           '1px',
+       border:            '1px solid #CC0000'
+    },
+
+    '.typeset .blank': {       // internal use
+      display: 'inline-block',
+      overflow: 'hidden',
+      border: '0px none',
+      width: '0px',
+      height: '0px'
+    },
+    '.typeset .spacer': {      // internal use
+      display: 'inline-block'
+    },
+    
+    '#jsMath_hiddenSpan': {    // used for measuring BBoxes
+       visibility:    'hidden',
+       position:      'absolute',
+       top:           '0px',
+       left:          '0px',
+      'line-height':  'normal',
+      'text-indent':  '0px'
+    },
+
+    '#jsMath_message': {      // percentage complete message
+       position:   'fixed',
+       bottom:     '1px',
+       left:       '2px',
+      'background-color': '#E6E6E6',
+       border:     'solid 1px #959595',
+       margin:     '0px',
+       padding:    '1px 8px',
+      'z-index':   '102',
+       color:      'black',
+      'font-size': 'small',
+       width:      'auto'
+    },
+
+    '#jsMath_panel': {        // control panel
+       position:    'fixed',
+       bottom:      '1.75em',
+       right:       '1.5em',
+       padding:     '.8em 1.6em',
+      'background-color': '#DDDDDD',
+       border:      'outset 2px',
+      'z-index':    '103',
+       width:       'auto',
+       color:       'black',
+      'font-size':  '10pt',
+      'font-style': 'normal'
+    },
+    '#jsMath_panel .disabled': {color: '#888888'},   // disabled items in the panel
+    '#jsMath_panel .infoLink': {'font-size': '85%'}, // links to web pages
+
+    // avoid CSS polution from outside the panel
+    '#jsMath_panel *':  {
+      'font-size':   'inherit',
+      'font-style':  'inherit',
+      'font-family': 'inherit',
+      'line-height': 'normal'
+    },
+    '#jsMath_panel div':   {'background-color': 'inherit', color: 'inherit'},
+    '#jsMath_panel span':  {'background-color': 'inherit', color: 'inherit'},
+    '#jsMath_panel td': {
+       border: '0px', padding: '0px', margin: '0px',
+      'background-color': 'inherit', color: 'inherit'
+    },
+    '#jsMath_panel tr': {
+       border: '0px', padding: '0px', margin: '0px',
+      'background-color': 'inherit', color: 'inherit'
+    },
+    '#jsMath_panel table': {
+       border: '0px', padding: '0px', margin: '0px',
+      'background-color': 'inherit', color: 'inherit',
+       height: 'auto', width: 'auto'
+    },
+    
+    '#jsMath_button': {  // the jsMath floating button (to open control panel)
+       position:   'fixed',
+       bottom:     '1px',
+       right:      '2px',
+      'background-color': 'white',
+       border:     'solid 1px #959595',
+       margin:     '0px',
+       padding:    '0px 3px 1px 3px',
+      'z-index':   '102',
+       color:      'black',
+      'text-decoration':  'none',
+      'font-size': 'x-small',
+       width:      'auto',
+       cursor:     'hand'
+    },
+    '#jsMath_button *': {
+      padding: '0px', border: '0px', margin: '0px', 'line-height': 'normal',
+      'font-size': 'inherit', 'font-style': 'inherit', 'font-family': 'inherit'
+    },
+    
+    '#jsMath_global': {'font-style': 'italic'},  // 'global' in jsMath button
+
+    '#jsMath_noFont .message': {  // missing font message window
+      'text-align': 'center',
+       padding:     '.8em 1.6em',
+       border:      '3px solid #DD0000',
+      'background-color': '#FFF8F8',
+       color:       '#AA0000',
+      'font-size':  'small',
+       width:       'auto'
+    },
+    '#jsMath_noFont .link': {
+       padding:    '0px 5px 2px 5px',
+       border:     '2px outset',
+      'background-color': '#E8E8E8',
+       color:      'black',
+      'font-size': '80%',
+       width:      'auto',
+       cursor:     'hand'
+    },
+
+    '#jsMath_PrintWarning .message': {  // warning on print pages
+      'text-align': 'center',
+       padding: '.8em 1.6em',
+       border: '3px solid #DD0000',
+      'background-color': '#FFF8F8',
+       color: '#AA0000',
+      'font-size': 'x-small',
+       width: 'auto'
+    },
+
+    '@media print': {
+      '#jsMath_button': {display: 'none'},
+      '#jsMath_Warning': {display: 'none'}
+    },
+                         
+    '@media screen': {
+      '#jsMath_PrintWarning': {display:'none'}
+    }
+
+  },
+  
+
+  /***************************************************************************/
+
+  /*
+   *  Get a jsMath DOM element
+   */
+  Element: function (name) {return jsMath.document.getElementById('jsMath_'+name)},
+  
+  /*
+   *  Get the width and height (in pixels) of an HTML string
+   */
+  BBoxFor: function (s) {
+    this.hidden.innerHTML = 
+      '<nobr><span class="typeset"><span class="scale">'+s+'</span></span></nobr>';
+    var bbox = {w: this.hidden.offsetWidth, h: this.hidden.offsetHeight};
+    this.hidden.innerHTML = '';
+    return bbox;
+  },
+
+  /*
+   *  Get the width and height (in ems) of an HTML string.
+   *  Check the cache first to see if we've already measured it.
+   */
+  EmBoxFor: function (s) {
+    var cache = jsMath.Global.cache.R;
+    if (!cache[this.em]) {cache[this.em] = {}}
+    if (!cache[this.em][s]) {
+      var bbox = this.BBoxFor(s);
+      cache[this.em][s] = {w: bbox.w/this.em, h: bbox.h/this.em};
+    }
+    return cache[this.em][s];
+  },
+
+  /*
+   *  For browsers that don't handle sizes of italics properly (MSIE).
+   *  Check the cache first to see if we've already measured it.
+   */
+  EmBoxForItalics: function (s) {
+    var cache = jsMath.Global.cache.R;
+    if (!cache[this.em]) {cache[this.em] = {}}
+    if (!cache[this.em][s]) {
+      var bbox = this.BBoxFor(s);
+      if (s.match(/<i>|class=\"(icm|italic|igreek|iaccent)/i)) {
+        bbox.w = bbox.Mw = this.BBoxFor(s+jsMath.Browser.italicString).w
+                             - jsMath.Browser.italicCorrection;
+      }
+      cache[this.em][s] = {w: bbox.w/this.em, h: bbox.h/this.em};
+    }
+    return cache[this.em][s];
+  },
+
+  /*
+   *  Initialize jsMath.  This determines the em size, and a variety
+   *  of other parameters used throughout jsMath.
+   */
+  Init: function () {
+    if (jsMath.Setup.inited != 1) {
+      if (!jsMath.Setup.inited) {jsMath.Setup.Body()}
+      if (jsMath.Setup.inited != 1) {
+        if (jsMath.Setup.inited == -100) return;
+        jsMath.Setup.inited = 1;
+      }
+    }
+    this.em = this.CurrentEm();
+    var cache = jsMath.Global.cache.B;
+    if (!cache[this.em]) {
+      cache[this.em] = {};
+      cache[this.em].bb = this.BBoxFor('x'); var hh = cache[this.em].bb.h;
+      cache[this.em].d = this.BBoxFor('x'+jsMath.HTML.Rule(1,hh/jsMath.em)).h - hh;
+      if (jsMath.Browser.italicString) 
+        {cache[this.em].ic = jsMath.BBoxFor(jsMath.Browser.italicString).w}
+    }
+    jsMath.Browser.italicCorrection = cache[this.em].ic;
+    var bb = cache[this.em].bb; var h = bb.h; var d = cache[this.em].d
+    this.h = (h-d)/this.em; this.d = d/this.em;
+    this.hd = this.h + this.d;
+
+    this.Setup.TeXfonts();
+    
+    var x_height = this.EmBoxFor('<span class="cmr10">M</span>').w/2;
+    this.TeX.M_height = x_height*(26/14);
+    this.TeX.h = this.h; this.TeX.d = this.d; this.TeX.hd = this.hd;
+    
+    this.Img.Scale();
+    if (!this.initialized) {
+      this.Setup.Sizes();
+      this.Img.UpdateFonts();
+    }
+
+    // factor for \big and its brethren
+    this.p_height = (this.TeX.cmex10[0].h + this.TeX.cmex10[0].d) / .85;
+
+    this.initialized = 1;
+  },
+  
+  /*
+   *  Get the x size and if it has changed, reinitialize the sizes
+   */
+  ReInit: function () {
+    if (this.em != this.CurrentEm()) {this.Init()}
+  },
+  
+  /*
+   *  Find the em size in effect at the current text location
+   */
+  CurrentEm: function () {
+    var em = this.BBoxFor('<span style="'+jsMath.Browser.block+';width:13em;height:1em"></span>').w/13;
+    if (em > 0) {return em}
+    // handle older browsers
+    return this.BBoxFor('<img src="'+jsMath.blank+'" style="width:13em;height:1em"/>').w/13;
+  },
+  
+  /*
+   *  Mark jsMath as loaded and copy any user-provided overrides
+   */
+  Loaded: function () {
+    if (jsMath_old) {
+      var override = ['Process', 'ProcessBeforeShowing',
+        'ConvertTeX','ConvertTeX2','ConvertLaTeX','ConvertCustom',
+        'CustomSearch', 'Synchronize', 'Macro', 'document'];
+      for (var i = 0; i < override.length; i++) {
+        if (jsMath_old[override[i]]) {delete jsMath_old[override[i]]}
+      }
+    }
+    if (jsMath_old) {this.Insert(jsMath,jsMath_old)}
+    jsMath_old = null;
+    jsMath.loaded = 1;
+  },
+  
+  /*
+   *  Manage JavaScript objects:
+   *  
+   *      Add:        add/replace items in an object
+   *      Insert:     add items to an object
+   *      Package:    add items to an object prototype
+   */
+  Add: function (dst,src) {for (var id in src) {dst[id] = src[id]}},
+  Insert: function (dst,src) {
+    for (var id in src) {
+      if (dst[id] && typeof(src[id]) == 'object'
+                  && (typeof(dst[id]) == 'object'
+                  ||  typeof(dst[id]) == 'function')) {
+        this.Insert(dst[id],src[id]);
+      } else {
+        dst[id] = src[id];
+      }
+    }
+  },
+  Package: function (obj,def) {this.Insert(obj.prototype,def)}
+
+};
+
+
+/***************************************************************************/
+
+  /*
+   *  Implements items associated with the global cache.
+   *
+   *  This object will be replaced by a global version when 
+   *  (and if) jsMath-global.html is loaded.
+   */
+jsMath.Global = {
+    isLocal: 1,  // a local copy if jsMath-global.html hasn't been loaded
+    cache: {T: {}, D: {}, R: {}, B: {}},
+
+    /*
+     *  Clear the global (or local) cache
+     */
+    ClearCache: function () {jsMath.Global.cache = {T: {}, D: {}, R: {}, B: {}}},
+
+    /*
+     *  Initiate global mode
+     */
+    GoGlobal: function (cookie) {
+      var url = String(jsMath.window.location);
+      var c = (jsMath.isCHMmode ? '#' : '?');
+      if (cookie) {url = url.replace(/\?.*/,'') + '?' + cookie}
+      jsMath.Controls.Reload(jsMath.root + "jsMath-global.html" + c +escape(url));
+    },
+
+    /*
+     *  Check if we need to go to global mode
+     */
+    Init: function () {
+      if (jsMath.Controls.cookie.global == "always" && !jsMath.noGoGlobal) {
+        if (navigator.accentColorName) return; // OmniWeb crashes on GoGlobal
+        if (!jsMath.window) {jsMath.window = window}
+        jsMath.Controls.loaded = 1;
+        jsMath.Controls.defaults.hiddenGlobal = null;
+        this.GoGlobal(jsMath.Controls.SetCookie(2));
+      }
+    },
+
+    /*
+     *  Try to register with a global.html window that contains us
+     */
+    Register: function () {
+      var parent = jsMath.window.parent;
+      if (!jsMath.isCHMode)
+        {jsMath.isCHMmode = (jsMath.window.location.protocol == 'mk:')}
+      try {
+        if (!jsMath.isCHMmode) this.Domain();
+        if (parent.jsMath && parent.jsMath.isGlobal)
+          {parent.jsMath.Register(jsMath.window)}
+      } catch (err) {jsMath.noGoGlobal = 1}
+    },
+
+    /*
+     *  If we're not the parent window, try to set the domain to
+     *  match the parent's domain (so we can use the Global data
+     *  if the surrounding frame is a Global frame.
+     */
+    Domain: function () {
+      // MSIE/Mac can't do domain changes, so don't bother trying
+      if (navigator.appName == 'Microsoft Internet Explorer' &&
+          jsMath.platform == 'mac' && navigator.userProfile != null) return;
+      if (window == parent) return;
+      var oldDomain = jsMath.document.domain;
+      try {
+        while (true) {
+          try {if (parent.document.title != null) return} catch (err) {}
+          if (!document.domain.match(/\..*\./)) break;
+          jsMath.document.domain = jsMath.document.domain.replace(/^[^.]*\./,'');
+        }
+      } catch (err) {}
+      jsMath.document.domain = oldDomain;
+    }
+
+};
+  
+
+
+/***************************************************************************/
+
+/*
+ *
+ *  Implement loading of remote scripts using XMLHttpRequest, if
+ *  possible, otherwise use a hidden IFRAME and fake it.  That
+ *  method runs asynchronously, which causes lots of headaches.
+ *  Solve these using Push command, which queues actions
+ *  until files have loaded.
+ */
+
+jsMath.Script = {
+
+  request: null, // the XMLHttpRequest object
+
+  /*
+   *  Create the XMLHttpRequest object, if we can.
+   *  Otherwise, use the iframe-based fallback method.
+   */
+  Init: function () {
+    if (!(jsMath.Controls.cookie.asynch && jsMath.Controls.cookie.progress)) {
+      if (window.XMLHttpRequest) {
+        try {this.request = new XMLHttpRequest} catch (err) {}
+        // MSIE and FireFox3 can't use xmlRequest on local files,
+        // but we don't have jsMath.browser yet to tell, so use this check
+        if (this.request && jsMath.root.match(/^file:\/\//)) {
+          try {
+            this.request.open("GET",jsMath.root+"jsMath.js",false);
+            this.request.send(null);
+          } catch (err) {
+            this.request = null;
+            //  Firefox3 has window.postMessage for inter-window communication. 
+            //  It can be used to handle the new file:// security model,
+            //  so set up the listener.
+            if (window.postMessage) {
+              this.mustPost = 1;
+              jsMath.window.addEventListener("message",jsMath.Post.Listener,false);
+            }
+          }
+        }
+      }
+      if (!this.request && window.ActiveXObject) {
+        var xml = ["MSXML2.XMLHTTP.5.0","MSXML2.XMLHTTP.4.0","MSXML2.XMLHTTP.3.0",
+                   "MSXML2.XMLHTTP","Microsoft.XMLHTTP"];
+        for (var i = 0; i < xml.length && !this.request; i++) {
+          try {this.request = new ActiveXObject(xml[i])} catch (err) {}
+        }
+      }
+    }
+    //
+    //  Use the delayed-script fallback for MSIE/Mac and old versions
+    //  of several browsers (Opera 7.5, OmniWeb 4.5).
+    //
+    if (!this.request || jsMath.Setup.domainChanged)
+      {this.Load = this.delayedLoad; this.needsBody = 1}
+  },
+
+  /*
+   *  Load a script and evaluate it in the window's context
+   */
+  Load: function (url,show) {
+    if (show) {
+      jsMath.Message.Set("Loading "+url);
+      jsMath.Script.Delay(1);
+      jsMath.Script.Push(this,'xmlRequest',url);
+      jsMath.Script.Push(jsMath.Message,'Clear');
+    } else {
+      jsMath.Script.Push(this,'xmlRequest',url);
+    }
+  },
+
+  /*
+   *  Load a URL and run the contents of the file
+   */
+  xmlRequest: function (url) {
+    this.blocking = 1;
+//    this.debug('xmlRequest: '+url);
+    try {
+      this.request.open("GET",url,false);
+      this.request.send(null);
+    } catch (err) {
+      this.blocking = 0;
+      if (jsMath.Translate.restart && jsMath.Translate.asynchronous) {return ""}
+      throw "jsMath can't load the file '"+url+"'\n"
+          + "Message: "+err.message;
+    }
+    if (this.request.status != null && (this.request.status >= 400 || this.request.status < 0)) {
+      // Do we need to deal with redirected links?
+      this.blocking = 0;
+      if (jsMath.Translate.restart && jsMath.Translate.asynchronous) {return ""}
+      throw "jsMath can't load the file '"+url+"'\n"
+          + "Error status: "+this.request.status;
+    }
+    if (!url.match(/\.js$/)) {return(this.request.responseText)}
+    var tmpQueue = this.queue; this.queue = [];
+//    this.debug('xml Eval ['+tmpQueue.length+']');
+    jsMath.window.eval(this.request.responseText);
+//    this.debug('xml Done ['+this.queue.length+' + '+tmpQueue.length+']');
+    this.blocking = 0; this.queue = this.queue.concat(tmpQueue);
+    this.Process();
+    return "";
+  },
+
+  /********************************************************************
+   *
+   *  Implement asynchronous loading and execution of scripts
+   *  (via hidden IFRAME) interleved with other JavaScript commands
+   *  that must be synchronized with the file loading.  (Basically, this
+   *  is for MSIE/Mac and Opera 7.5, which don't have XMLHttpRequest.)
+   */
+
+  cancelTimeout: 30*1000,   // delay for canceling load (30 sec)
+
+  blocking: 0,       // true when an asynchronous action is being performed
+  cancelTimer: null, // timer to cancel load if it takes too long
+  needsBody: 0,      // true if loading files requires BODY to be present
+  
+  queue: [],         // the stack of pending actions
+
+  /*
+   *  Provide mechanism for synchronizing with the asynchronous jsMath
+   *  file-loading mechanism.  'code' can be a string or a function.
+   */
+  Synchronize: function (code,data) {
+    if (typeof(code) != 'string') {jsMath.Script.Push(null,code,data)}
+      else {jsMath.Script.Push(jsMath.window,'eval',code)}
+  },
+  
+  /*
+   *  Queue a function to be processed.
+   *  If nothing is being loaded, do the pending commands.
+   */
+  Push: function (object,method,data) {
+//  this.debug('Pushing: '+method+' at '+this.queue.length); // debug
+    this.queue[this.queue.length] = [object,method,data];
+    if (!(this.blocking || (this.needsBody && !jsMath.document.body))) this.Process();
+  },
+
+  /*
+   *  Do any pending functions (stopping if a file load is started)
+   */
+  Process: function () {
+    while (this.queue.length && !this.blocking) {
+      var call = this.queue[0]; this.queue = this.queue.slice(1);
+      var savedQueue = this.SaveQueue();
+      var object = call[0]; var method = call[1]; var data = call[2];
+//    this.debug('Calling: '+method+' ['+savedQueue.length+']'); // debug
+      if (object) {object[method](data)} else if (method) {method(data)}
+//    this.debug('Done:    '+method+' ['+this.queue.length+' + '+savedQueue.length+'] ('+this.blocking+')'); // debug
+      this.RestoreQueue(savedQueue);
+    }
+  },
+  
+  /*
+   *  Allows pushes to occur at the FRONT of the queue
+   *  (so a command acts as a single unit, including anything
+   *  that it pushes on to the command stack)
+   */
+  SaveQueue: function () {
+    var queue = this.queue;
+    this.queue = [];
+    return queue;
+  },
+  RestoreQueue: function (queue) {
+    this.queue = this.queue.concat(queue);
+  },
+  
+  /*
+   *  Handle loading of scripts that run asynchronously
+   */
+  delayedLoad: function (url) {
+//    this.debug('Loading: '+url);
+    this.Push(this,'startLoad',url);
+  },
+  startLoad: function (url) {
+    var iframe = jsMath.document.createElement('iframe');
+    iframe.style.visibility = 'hidden';
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    if (jsMath.document.body.firstChild) {
+      jsMath.document.body.insertBefore(iframe,jsMath.document.body.firstChild);
+    } else {
+      jsMath.document.body.appendChild(iframe);
+    }
+    this.blocking = 1; this.url = url;
+    if (url.substr(0,jsMath.root.length) == jsMath.root)
+      {url = url.substr(jsMath.root.length)}
+    jsMath.Message.Set("Loading "+url);
+    this.cancelTimer = setTimeout('jsMath.Script.cancelLoad()',this.cancelTimeout);
+    if (this.mustPost)           {iframe.src = jsMath.Post.startLoad(url,iframe)}
+    else if (url.match(/\.js$/)) {iframe.src = jsMath.root+"jsMath-loader.html"}
+    else                         {iframe.src = this.url}
+  },
+  endLoad: function (action) {
+    if (this.cancelTimer) {clearTimeout(this.cancelTimer); this.cancelTimer = null}
+    jsMath.Post.endLoad();
+    jsMath.Message.Clear();
+    if (action != 'cancel') {this.blocking = 0; this.Process()}
+  },
+  
+  Start: function () {
+//    this.debug('Starting: ['+this.queue.length+'] '+this.url);
+    this.tmpQueue = this.queue; this.queue = [];
+  },
+  End:   function () {
+//    this.debug('Ending:   ['+this.queue.length+' + '+this.tmpQueue.length+'] '+this.url);
+    this.queue = this.queue.concat(this.tmpQueue); delete this.tmpQueue;
+  },
+
+  /*
+   *  If the loading takes too long, cancel it and end the load.
+   */
+  cancelLoad: function (message,delay) {
+    if (this.cancelTimer) {clearTimeout(this.cancelTimer); this.cancelTimer = null}
+    if (message == null) {message = "Can't load file"}
+    if (delay == null) {delay = 2000}
+    jsMath.Message.Set(message);
+    setTimeout('jsMath.Script.endLoad("cancel")',delay);
+  },
+
+  /*
+   *  Perform a delay (to let the browser catch up)
+   */
+  Delay: function (time) {
+    this.blocking = 1;
+    setTimeout('jsMath.Script.endDelay()',time);
+  },
+  endDelay: function () {
+//    this.debug('endDelay');
+    this.blocking = 0;
+    this.Process();
+  },
+  
+  /*
+   *  Load an image and wait for it
+   *  (so MSIE won't load extra copies of it)
+   */
+  imageCount: 0,
+  WaitForImage: function (file) {
+    this.blocking = 1; this.imageCount++;
+    if (this.img == null) {this.img = []}
+    var img = new Image(); this.img[this.img.length] = img;
+    img.onload = function () {if (--jsMath.Script.imageCount == 0) jsMath.Script.endDelay()}
+    img.onerror = img.onload; img.onabort = img.onload;
+    img.src = file;
+  },
+  
+  /*
+   *  The code uncompressor
+   */
+  Uncompress: function (data) {
+    for (var k = 0; k <  data.length; k++) {
+      var d = data[k]; var n = d.length;
+      for (var i = 0; i < n; i++) {if (typeof(d[i]) == 'number') {d[i] = d[d[i]]}}
+      data[k] = d.join('');
+    }
+    window.eval(data.join(''));
   }
-  eval(data.join(''));
+  
+  /*
+   *  for debugging the event queue
+   */
+  /* 
+   * ,debug: function (message) {
+   *   if (jsMath.document.body && jsMath.window.debug) {jsMath.window.debug(message)}
+   *     else {alert(message)}
+   * }
+   */
+
+};
+
+/***************************************************************************/
+
+/*
+ *  Handle window.postMessage() events in Firefox3
+ */
+
+jsMath.Post = {
+  window: null,  // iframe we are listening to
+  
+  Listener: function (event) {
+    if (event.source != jsMath.Post.window) return;
+    var domain = event.origin.replace(/^file:\/\//,'');
+    var ddomain = document.domain.replace(/^file:\/\//,'');
+    if (domain == null || domain == "") {domain = "localhost"}
+    if (ddomain == null || ddomain == "") {ddomain = "localhost"}
+    if (domain != ddomain || !event.data.substr(0,6).match(/jsM(CP|LD):/)) return;
+    var type = event.data.substr(6,3).replace(/ /g,'');
+    var message = event.data.substr(10);
+    if (jsMath.Post.Commands[type]) (jsMath.Post.Commands[type])(message);
+    // cancel event?
+  },
+  
+  /*
+   *  Commands that can be performed by the listener
+   */
+  Commands: {
+    SCR: function (message) {jsMath.window.eval(message)},
+    ERR: function (message) {jsMath.Script.cancelLoad(message,3000)},
+    BGN: function (message) {jsMath.Script.Start()},
+    END: function (message) {if (message) jsMath.Script.End(); jsMath.Script.endLoad()}
+  },
+  
+  startLoad: function (url,iframe) {
+    this.window = iframe.contentWindow;
+    if (!url.match(/\.js$/)) {return jsMath.root+url}
+    return jsMath.root+"jsMath-loader-post.html?"+url;
+  },
+  endLoad: function () {this.window = null}
+};
+
+/***************************************************************************/
+
+/*
+ *  Message and screen blanking facility
+ */
+
+jsMath.Message = {
+  
+  blank: null,    // the div to blank out the screen
+  message: null,  // the div for the messages
+  text: null,     // the text node for messages
+  clear: null,    // timer for clearing message
+
+  /*
+   *  Create the elements needed for the message box
+   */
+  Init: function () {
+    if (!jsMath.document.body || !jsMath.Controls.cookie.progress) return;
+    if (jsMath.Setup.stylesReady) {
+      this.message = jsMath.Setup.DIV('message',{visibility:'hidden'},jsMath.fixedDiv);
+    } else {
+      this.message = jsMath.Setup.DIV('message',{
+        visibility:'hidden', position:'absolute', bottom:'1px', left:'2px',
+        backgroundColor:'#E6E6E6', border:'solid 1px #959595',
+        margin:'0px', padding:'1px 8px', zIndex:102,
+        color:'black', fontSize:'small', width:'auto'
+      },jsMath.fixedDiv);
+    }
+    this.text = jsMath.document.createTextNode('');
+    this.message.appendChild(this.text);
+    this.message.onmousedown = jsMath.Translate.Cancel;
+  },
+  
+  /*
+   *  Set the contents of the message box, or use the window status line
+   */
+  Set: function (text,canCancel) {
+    if (this.clear) {clearTimeout(this.clear); this.clear = null}
+    if (jsMath.Controls.cookie.progress) {
+      if (!this.text) {this.Init(); if (!this.text) return}
+      if (jsMath.Browser.textNodeBug) {this.message.innerHTML = text}
+        else {this.text.nodeValue = text}
+      this.message.style.visibility = 'visible';
+      if (canCancel) {
+        this.message.style.cursor = 'pointer';
+        if (!this.message.style.cursor) {this.message.style.cursor = 'hand'}
+        this.message.title = ' Cancel Processing of Math ';
+      } else {
+        this.message.style.cursor = '';
+        this.message.title = '';
+      }
+    } else {
+      if (text.substr(0,8) != "Loading ") {jsMath.window.status = text}
+    }
+  },
+  
+  /*
+   *  Clear the message box or status line
+   */
+  Clear: function () {
+    if (this.clear) {clearTimeout(this.clear)}
+    this.clear = setTimeout("jsMath.Message.doClear()",1000);
+  },
+  doClear: function () {
+    if (this.clear) {
+      this.clear = null;
+      jsMath.window.status = '';
+      if (this.text) {this.text.nodeValue = ''}
+      if (this.message) {this.message.style.visibility = 'hidden'}
+    }
+  },
+  
+  
+  /*
+   *  Put up a DIV that covers the window so that the
+   *  "flicker" of processing the mathematics will not be visible
+   */
+  Blank: function () {
+    if (this.blank || !jsMath.document.body) return;
+    this.blank = jsMath.Setup.DIV("blank",{
+      position:(jsMath.Browser.msiePositionFixedBug? 'absolute': 'fixed'),
+      top:'0px', left:'0px', bottom:'0px', right:'0px',
+      zIndex:101, backgroundColor:'white'
+    },jsMath.fixedDiv);
+    if (jsMath.Browser.msieBlankBug) {
+      this.blank.innerHTML = '&nbsp;';
+      this.blank.style.width = "110%";
+      this.blank.style.height = "110%";
+    }
+  },
+  
+  UnBlank: function () {
+    if (this.blank) {jsMath.document.body.removeChild(this.blank)}
+    this.blank = null;
+  }
+};
+
+
+/***************************************************************************/
+
+/*
+ *  Miscellaneous setup and initialization
+ */
+jsMath.Setup = {
+  
+  loaded: [],  // array of files already loaded
+  
+  /*
+   *  Insert a DIV at the top of the page with given ID,
+   *  attributes, and style settings
+   */
+  DIV: function (id,styles,parent) {
+    if (parent == null) {parent = jsMath.document.body}
+    var div = jsMath.document.createElement('div');
+    div.id = 'jsMath_'+id;
+    for (var i in styles) {div.style[i]= styles[i]}
+    if (!parent.hasChildNodes) {parent.appendChild(div)}
+      else {parent.insertBefore(div,parent.firstChild)}
+    return div;
+  },
+  
+  /*
+   *  Source a jsMath JavaScript file (only load any given file once)
+   */
+  Script: function (file,show) {
+    if (this.loaded[file]) {return} else {this.loaded[file] = 1}
+    if (!file.match('^([a-zA-Z]+:/?)?/')) {file = jsMath.root + file}
+    jsMath.Script.Load(file,show);
+  },
+  
+  /*
+   *  Use a hidden <DIV> for measuring the BBoxes of things
+   */
+  Hidden: function () {
+    jsMath.hidden = this.DIV("Hidden",{
+      visibility: 'hidden', position:"absolute",
+      top:0, left:0, border:0, padding:0, margin:0
+    });
+    jsMath.hiddenTop = jsMath.hidden;
+    return;
+  },
+
+  /*
+   *  Find the root URL for the jsMath files (so we can load
+   *  the other .js and .gif files)
+   */
+  Source: function () {
+    if (jsMath.Autoload && jsMath.Autoload.root) {
+      jsMath.root = jsMath.Autoload.root;
+    } else {
+      jsMath.root = '';
+      var script = jsMath.document.getElementsByTagName('script');
+      if (script) {
+        for (var i = 0; i < script.length; i++) {
+          var src = script[i].src;
+          if (src && src.match('(^|/|\\\\)jsMath.js$')) {
+            jsMath.root = src.replace(/jsMath.js$/,'');
+            break;
+          }
+        }
+      }
+    }
+    if (jsMath.root.charAt(0) == '\\') {jsMath.root = jsMath.root.replace(/\\/g,'/')}
+    if (jsMath.root.charAt(0) == '/') {
+      if (jsMath.root.charAt(1) != '/') {
+        if (jsMath.document.location.port)
+          {jsMath.root = ':' + jsMath.document.location.port + jsMath.root}
+        jsMath.root = '//' + jsMath.document.location.host + jsMath.root;
+      }
+      jsMath.root = jsMath.document.location.protocol + jsMath.root;
+    } else if (!jsMath.root.match(/^[a-z]+:/i)) {
+      var src = new String(jsMath.document.location);
+      var pattern = new RegExp('/[^/]*/\\.\\./')
+      jsMath.root = src.replace(new RegExp('[^/]*$'),'') + jsMath.root;
+      while (jsMath.root.match(pattern))
+        {jsMath.root = jsMath.root.replace(pattern,'/')}
+    }
+    jsMath.Img.root = jsMath.root + "fonts/";
+    jsMath.blank = jsMath.root + "blank.gif";
+    this.Domain();
+  },
+  
+  /*
+   *  Find the most restricted common domain for the main
+   *  page and jsMath.  Report an error if jsMath is outside
+   *  the domain of the calling page.
+   */
+  Domain: function () {
+    try {jsMath.document.domain} catch (err) {return}
+    var jsDomain = ''; var pageDomain = jsMath.document.domain;
+    if (jsMath.root.match('://([^/]*)/')) {jsDomain = RegExp.$1}
+    jsDomain = jsDomain.replace(/:\d+$/,'');
+    if (jsDomain == "" || jsDomain == pageDomain) return;
+    //
+    // MSIE on the Mac can't change jsMath.document.domain and 'try' won't
+    //   catch the error (Grrr!), so exit for them.
+    //
+    if (navigator.appName == 'Microsoft Internet Explorer' &&
+        jsMath.platform == 'mac' && navigator.onLine &&
+        navigator.userProfile && jsMath.document.all) return;
+    jsDomain = jsDomain.split(/\./); pageDomain = pageDomain.split(/\./);
+    if (jsDomain.length < 2 || pageDomain.length < 2 ||
+        jsDomain[jsDomain.length-1] != pageDomain[pageDomain.length-1] ||
+        jsDomain[jsDomain.length-2] != pageDomain[pageDomain.length-2]) {
+      this.DomainWarning();
+      return;
+    }
+    var domain = jsDomain[jsDomain.length-2] + '.' + jsDomain[jsDomain.length-1];
+    for (var i = 3; i <= jsDomain.length && i <= pageDomain.length; i++) {
+      if (jsDomain[jsDomain.length-i] != pageDomain[pageDomain.length-i]) break;
+      domain = jsDomain[jsDomain.length-i] + '.' + domain;
+    }
+    jsMath.document.domain = domain;
+    this.domainChanged = 1;
+  },
+
+  DomainWarning: function () {
+    alert("In order for jsMath to be able to load the additional "
+        + "components that it may need, the jsMath.js file must be "
+        + "loaded from a server in the same domain as the page that "
+        + "contains it.  Because that is not the case for this page, "
+        + "the mathematics displayed here may not appear correctly.");
+  },
+  
+  /*
+   *  Initialize a font's encoding array
+   */
+  EncodeFont: function (name) {
+    var font = jsMath.TeX[name];
+    if (font[0].c != null) return;
+    for (var k = 0; k < 128; k++) {
+      var data = font[k]; font[k] = data[3];
+      if (font[k] == null) {font[k] = {}};
+      font[k].w = data[0]; font[k].h = data[1];
+      if (data[2] != null) {font[k].d = data[2]}
+      font[k].c = jsMath.TeX.encoding[k];
+    }
+  },
+  
+  /*
+   *  Initialize the encodings for all fonts
+   */
+  Fonts: function () {
+    for (var i = 0; i < jsMath.TeX.fam.length; i++) {
+      var name = jsMath.TeX.fam[i];
+      if (name) {this.EncodeFont(name)}
+    }
+  },
+  
+  /*
+   *  Look up the default height and depth for a TeX font
+   *  and set the skewchar
+   */
+  TeXfont: function (name) {
+    var font = jsMath.TeX[name]; if (font == null) return;
+    var WH = jsMath.EmBoxFor('<span class="'+name+'">'+font[65].c+'</span>');
+    font.hd = WH.h; font.dh = .05;
+    font.d = jsMath.EmBoxFor('<span class="'+name+'">'+ font[65].c +
+      jsMath.HTML.Rule(1,font.hd) + '</span>').h - font.hd;
+    font.h = font.hd - font.d;
+    if (name == 'cmmi10') {font.skewchar = 0177} 
+    else if (name == 'cmsy10') {font.skewchar = 060}
+  },
+
+  /*
+   *  Init all the TeX fonts
+   */
+  TeXfonts: function () {
+    for (var i = 0; i < jsMath.TeX.fam.length; i++) 
+      {if (jsMath.TeX.fam[i]) {this.TeXfont(jsMath.TeX.fam[i])}}
+  },
+
+  /*
+   *  Compute font parameters for various sizes
+   */
+  Sizes: function () {
+    jsMath.TeXparams = []; var i; var j;
+    for (j=0; j < jsMath.sizes.length; j++) {jsMath.TeXparams[j] = {}}
+    for (i in jsMath.TeX) {
+      if (typeof(jsMath.TeX[i]) != 'object') {
+        for (j=0; j < jsMath.sizes.length; j++) {
+          jsMath.TeXparams[j][i] = jsMath.sizes[j]*jsMath.TeX[i]/100;
+        }
+      }
+    }
+  },
+
+  /*
+   *  Send the style definitions to the browser (these may be adjusted
+   *  by the browser-specific code)
+   */
+  Styles: function (styles) {
+    if (!styles) {
+      styles = jsMath.styles;
+      styles['.typeset .scale'] = {'font-size': jsMath.Controls.cookie.scale+'%'};
+      this.stylesReady = 1;
+    }
+    jsMath.Script.Push(this,'AddStyleSheet',styles);
+    if (jsMath.Browser.styleChangeDelay) {jsMath.Script.Push(jsMath.Script,'Delay',1)}
+  },
+  
+  /*
+   *  Make a style string from a hash of style definitions, which are
+   *  either strings themselves or hashes of style settings.
+   */
+  StyleString: function (styles) {
+    var styleString = {}, id;
+    for (id in styles) {
+      if (typeof styles[id] === 'string') {
+        styleString[id] = styles[id];
+      } else if (id.substr(0,1) === '@') {
+        styleString[id] = this.StyleString(styles[id]);
+      } else if (styles[id] != null) {
+        var style = [];
+        for (var name in styles[id]) {
+          if (styles[id][name] != null)
+            {style[style.length] = name + ': ' + styles[id][name]}
+        }
+        styleString[id] = style.join('; ');
+      }
+    }
+    var string = '';
+    for (id in styleString) {string += id + " {"+styleString[id]+"}\n"}
+    return string;
+  },
+  
+  AddStyleSheet: function (styles) {
+    var head = jsMath.document.getElementsByTagName('head')[0];
+    var string = this.StyleString(styles);
+    if (jsMath.document.createStyleSheet) {// check for MSIE
+      head.insertAdjacentHTML('beforeEnd',
+          '<span style="display:none">x</span>'  // MSIE needs this for some reason
+          + '<style type="text/css">'+string+'</style>');
+    } else {
+      var style = jsMath.document.createElement('style'); style.type = "text/css";
+      style.appendChild(jsMath.document.createTextNode(string));
+      head.appendChild(style);
+    }
+  },
+
+  /*
+   *  Do the initialization that requires the <body> to be in place.
+   */
+  Body: function () {
+    if (this.inited) return;
+    
+    this.inited = -1;
+
+    jsMath.Setup.Hidden(); this.inited = -2;
+    jsMath.Browser.Init(); this.inited = -3;
+
+    // blank screen if necessary
+    if (jsMath.Controls.cookie.blank) {jsMath.Message.Blank()}; this.inited = -4;
+
+    jsMath.Setup.Styles(); this.inited = -5;
+    jsMath.Controls.Init(); this.inited = -6;
+    
+    // do user-specific initialization
+    jsMath.Script.Push(jsMath.Setup,'User','pre-font'); this.inited = -7;
+
+    // make sure browser-specific loads are done before this
+    jsMath.Script.Push(jsMath.Font,'Check');
+    if (jsMath.Font.register.length)
+      {jsMath.Script.Push(jsMath.Font,'LoadRegistered')}
+
+    this.inited = 1;
+  },
+  
+  /*
+   *  Web page author can override the entries to the UserEvent hash 
+   *  functions that will be run at various times during jsMath's setup
+   *  process.
+   */
+  User: function (when) {
+    if (jsMath.Setup.UserEvent[when]) {(jsMath.Setup.UserEvent[when])()}
+  },
+  
+  UserEvent: {
+    "pre-font": null,  // after browser is set up but before fonts are tested
+    "onload": null     // after jsMath.js is loaded and finished running
+  }
+  
+};
+
+jsMath.Update = {
+
+  /*
+   *  Update specific parameters for a limited number of font entries
+   */
+  TeXfonts: function (change) {
+    for (var font in change) {
+      for (var code in change[font]) {
+        for (var id in change[font][code]) {
+          jsMath.TeX[font][code][id] = change[font][code][id];
+        }
+      }
+    }
+  },
+  
+  /*
+   *  Update the character code for every character in a list
+   *  of fonts
+   */
+  TeXfontCodes: function (change) {
+    for (var font in change) {
+      for (var i = 0; i < change[font].length; i++) {
+        jsMath.TeX[font][i].c = change[font][i];
+      }
+    }
+  }
+  
+};
+
+/***************************************************************************/
+
+/*
+ *  Implement browser-specific checks
+ */
+
+jsMath.Browser = {
+
+  allowAbsolute: 1,           // tells if browser can nest absolutely positioned
+                              //   SPANs inside relative SPANs
+  allowAbsoluteDelim: 0,      // OK to use absolute placement for building delims?
+  separateSkips: 0,           // MSIE doesn't do negative left margins, and
+                              //   Netscape doesn't combine skips well
+
+  valignBug: 0,               // Konqueror doesn't nest vertical-align
+  operaHiddenFix: '',         // for Opera to fix bug with math in tables
+  msieCenterBugFix: '',       // for MSIE centering bug with image fonts
+  msieInlineBlockFix: '',     // for MSIE alignment bug in non-quirks mode
+  msieSpaceFix: '',           // for MSIE to avoid dropping empty spans
+  imgScale: 1,                // MSI scales images for 120dpi screens, so compensate
+
+  renameOK: 1,                // tells if brower will find a tag whose name
+                              //   has been set via setAttributes
+  styleChangeDelay: 0,        // true if style changes need a delay in order
+                              //   for them to be available
+
+  delay: 1,                   // delay for asynchronous math processing
+  
+  version: 0,                 // browser version number (when needed)
+
+  /*
+   *  Determine if the "top" of a <SPAN> is always at the same height
+   *  or varies with the height of the rest of the line (MSIE).
+   */
+  TestSpanHeight: function () {
+    jsMath.hidden.innerHTML = '<span><span style="'+this.block+';height:2em;width:1px"></span></span>';
+    var span = jsMath.hidden.firstChild;
+    var img  = span.firstChild;
+    this.spanHeightVaries = (span.offsetHeight >= img.offsetHeight && span.offsetHeight > 0);
+    this.spanHeightTooBig = (span.offsetHeight > img.offsetHeight);
+    jsMath.hidden.innerHTML = '';
+  },
+  
+  /*
+   *  Determine if an inline-block with 0 width is OK or not
+   *  and decide whether to use spans or images for spacing
+   */
+  TestInlineBlock: function () {
+    this.block = "display:-moz-inline-box";
+    this.hasInlineBlock = jsMath.BBoxFor('<span style="'+this.block+';width:10px;height:5px"></span>').w > 0;
+    if (this.hasInlineBlock) {
+      jsMath.styles['.typeset .blank'].display = '-moz-inline-box';
+      delete jsMath.styles['.typeset .spacer'].display;
+    } else {
+      this.block = "display:inline-block";
+      this.hasInlineBlock = jsMath.BBoxFor('<span style="'+this.block+';width:10px;height:5px"></span>').w > 0;
+      if (!this.hasInlineBlock) return;
+    }
+    this.block += ';overflow:hidden';
+    var h = jsMath.BBoxFor('x').h;
+    this.mozInlineBlockBug = jsMath.BBoxFor(
+       '<span style="'+this.block+';height:'+h+'px;width:1px"></span>x'+
+       '<span style="'+this.block+';height:'+h+'px;width:1px;vertical-align:-'+h+'px"></span>').h > 2*h;
+    this.widthAddsBorder = jsMath.BBoxFor('<span style="'+this.block+
+        ';overflow:hidden;height:1px;width:10px;border-left:10px solid"></span>').w > 10;
+    this.msieBorderBug =
+      jsMath.BBoxFor('<span style="'+this.block+';height:'+h+'px;width:1px"></span>x').h !=
+      jsMath.BBoxFor('<span style="'+this.block+';height:'+h+'px;width:1px;border-left:1px solid"></span>x').h;
+    this.blankWidthBug = this.msieBorderBug ||
+      jsMath.BBoxFor('<span style="'+this.block+';height:2em;width:0px"></span>').h == 0;
+  },
+  
+  /*
+   *  Determine if the NAME attribute of a tag can be changed
+   *  using the setAttribute function, and then be properly
+   *  returned by getElementByName.
+   */
+  TestRenameOK: function () {
+    jsMath.hidden.innerHTML = '<span></span>';
+    var test = jsMath.hidden.firstChild;
+    test.setAttribute('name','jsMath_test');
+    this.renameOK = (jsMath.document.getElementsByName('jsMath_test').length > 0);
+    jsMath.hidden.innerHTML = '';
+  },
+  
+  /*
+   *  See if style changes occur immediately, or if we need to delay
+   *  in order to let them take effect.
+   */
+  TestStyleChange: function () {
+    jsMath.hidden.innerHTML = '<span ID="jsMath_test">x</span>';
+    var span = jsMath.hidden.firstChild;
+    var w = span.offsetWidth;
+    jsMath.Setup.AddStyleSheet({'#jsMath_test': 'font-size:200%'});
+    this.styleChangeDelay = (span.offsetWidth == w);
+    jsMath.hidden.innerHTML = '';
+  },
+  
+  /*
+   *  Perform a version check on a standard version string
+   */
+  VersionAtLeast: function (v) {
+    var bv = new String(this.version).split('.');
+    v = new String(v).split('.'); if (v[1] == null) {v[1] = '0'}
+    return bv[0] > v[0] || (bv[0] == v[0] && bv[1] >= v[1]);
+  },
+
+  /*
+   *  Test for browser characteristics, and adjust things
+   *  to overcome specific browser bugs
+   */
+  Init: function () {
+    jsMath.browser = 'unknown';
+    this.TestInlineBlock();
+    this.TestSpanHeight();
+    this.TestRenameOK();
+    this.TestStyleChange();
+
+    this.MSIE();
+    this.Mozilla();
+    this.Opera();
+    this.OmniWeb();
+    this.Safari();
+    this.Konqueror();
+    
+    //
+    // Change some routines depending on the browser
+    // 
+    if (this.allowAbsoluteDelim) {
+      jsMath.Box.DelimExtend = jsMath.Box.DelimExtendAbsolute;
+      jsMath.Box.Layout = jsMath.Box.LayoutAbsolute;
+    } else {
+      jsMath.Box.DelimExtend = jsMath.Box.DelimExtendRelative;
+      jsMath.Box.Layout = jsMath.Box.LayoutRelative;
+    }
+    
+    if (this.separateSkips) {
+      jsMath.HTML.Place = jsMath.HTML.PlaceSeparateSkips;
+      jsMath.Typeset.prototype.Place = jsMath.Typeset.prototype.PlaceSeparateSkips;
+    }
+  },
+  
+  //
+  //  Handle bug-filled Internet Explorer
+  //
+  MSIE: function () {
+    if (this.spanHeightVaries && !this.spanHeightTooBig) {
+      jsMath.browser = 'MSIE';
+      if (jsMath.platform == 'pc') {
+        this.IE7 = (window.XMLHttpRequest != null);
+        this.quirks = (jsMath.document.compatMode == "BackCompat");
+        this.msieStandard6 = !this.quirks && !this.IE7;
+        this.allowAbsoluteDelim = 1; this.separateSkips = 1;
+        this.buttonCheck = 1; this.msieBlankBug = 1;
+        this.msieAccentBug = 1; this.msieRelativeClipBug = 1;
+        this.msieDivWidthBug = 1; this.msiePositionFixedBug = 1;
+        this.msieIntegralBug = 1; this.waitForImages = 1;
+        this.msieAlphaBug = !this.IE7; this.alphaPrintBug = !this.IE7;
+        this.msieCenterBugFix = 'position:relative; ';
+        this.msieInlineBlockFix = ' display:inline-block;';
+        this.msieTeXfontBaselineBug = !this.quirks;
+        this.msieBorderBug = this.blankWidthBug = 1; // force these, since IE7 doesn't register it
+        this.msieSpaceFix = '<span style="display:inline-block"></span>';
+        jsMath.Macro('joinrel','\\mathrel{\\kern-5mu}'),
+        jsMath.Parser.prototype.mathchardef.mapstocharOrig = jsMath.Parser.prototype.mathchardef.mapstochar;
+        delete jsMath.Parser.prototype.mathchardef.mapstochar;
+        jsMath.Macro('mapstochar','\\rlap{\\mapstocharOrig\\,}\\kern1mu'),
+        jsMath.styles['.typeset .arial'] = {'font-family': "'Arial unicode MS'"};
+        if (!this.IE7 || this.quirks) {
+          // MSIE doesn't implement fixed positioning, so use absolute
+          jsMath.styles['#jsMath_message'].position = 'absolute';
+          delete jsMath.styles['#jsMath_message'].width;
+          jsMath.styles['#jsMath_panel'].position = 'absolute';
+          delete jsMath.styles['#jsMath_panel'].width;
+          jsMath.styles['#jsMath_button'].width = '1px';
+          jsMath.styles['#jsMath_button'].position = 'absolute'
+          delete jsMath.styles['#jsMath_button'].width;
+          jsMath.fixedDiv = jsMath.Setup.DIV("fixedDiv",{position:'absolute', zIndex: 101});
+          jsMath.window.attachEvent("onscroll",jsMath.Controls.MoveButton);
+          jsMath.window.attachEvent("onresize",jsMath.Controls.MoveButton);
+          jsMath.Controls.MoveButton();
+	}
+        // Make MSIE put borders around the whole button
+        jsMath.styles['#jsMath_noFont .link'].display = "inline-block";
+        // MSIE needs this NOT to be inline-block
+        delete jsMath.styles['.typeset .spacer'].display;
+        // MSIE can't insert DIV's into text nodes, so tex2math must use SPAN's to fake DIV's
+        jsMath.styles['.tex2math_div'] = {}; jsMath.Add(jsMath.styles['.tex2math_div'],jsMath.styles['div.typeset']);
+        jsMath.styles['.tex2math_div'].width = '100%';
+        jsMath.styles['.tex2math_div'].display = 'inline-block';
+        // Reduce occurrance of zoom bug in IE7
+        jsMath.styles['.typeset']['letter-spacing'] = '0';
+        // MSIE will rescale images if the DPIs differ
+        if (screen.deviceXDPI && screen.logicalXDPI 
+             && screen.deviceXDPI != screen.logicalXDPI) {
+          this.imgScale *= screen.logicalXDPI/screen.deviceXDPI;
+          jsMath.Controls.cookie.alpha = 0;
+        }
+        // Handle bug with getting width of italic text
+        this.italicString = '<i>x</i>';
+        jsMath.EmBoxFor = jsMath.EmBoxForItalics;
+      } else if (jsMath.platform == 'mac') {
+        this.msieAbsoluteBug = 1; this.msieButtonBug = 1;
+        this.msieDivWidthBug = 1; this.msieBlankBug = 1;
+        this.quirks = 1;
+        jsMath.Setup.Script('jsMath-msie-mac.js');
+        jsMath.Parser.prototype.macros.angle = ['Replace','ord','<font face="Symbol">&#x8B;</font>','normal'];
+        jsMath.styles['#jsMath_panel'].width = '42em';
+        jsMath.Controls.cookie.printwarn = 0; // MSIE/Mac doesn't handle '@media screen'
+      }
+      jsMath.Macro('not','\\mathrel{\\rlap{\\kern3mu/}}');
+    }
+  },
+
+  //
+  //  Handle Netscape/Mozilla (any flavor)
+  //
+  Mozilla: function () {
+    if (jsMath.hidden.ATTRIBUTE_NODE) {
+      jsMath.browser = 'Mozilla';
+      if (jsMath.platform == 'pc') {this.alphaPrintBug = 1}
+      this.allowAbsoluteDelim = 1;
+      jsMath.styles['#jsMath_button'].cursor = jsMath.styles['#jsMath_noFont .link'].cursor = 'pointer',
+      jsMath.Macro('not','\\mathrel{\\rlap{\\kern3mu/}}');
+      if (navigator.vendor == 'Firefox') {
+        this.version = navigator.vendorSub;
+      } else if (navigator.userAgent.match(' Firefox/([0-9.]+)([a-z ]|$)')) {
+        this.version = RegExp.$1;
+      }
+    }
+  },
+  
+  //
+  //  Handle OmniWeb
+  //
+  OmniWeb: function () {
+    if (navigator.accentColorName) {
+      jsMath.browser = 'OmniWeb';
+      this.allowAbsolute = this.hasInlineBlock;
+      this.allowAbsoluteDelim = this.allowAbsolute;
+      this.valignBug = !this.allowAbsolute;
+      this.buttonCheck = 1; this.textNodeBug = 1;
+      jsMath.noChangeGlobal = 1; // OmniWeb craches on GoGlobal
+      if (!this.hasInlineBlock) {jsMath.Setup.Script('jsMath-old-browsers.js')}
+    }
+  },
+    
+  //
+  //  Handle Opera
+  //
+  Opera: function () {
+    if (this.spanHeightTooBig) {
+      jsMath.browser = 'Opera';
+      var isOld = navigator.userAgent.match("Opera 7");
+      this.allowAbsolute = 0;
+      this.delay = 10;
+      this.operaHiddenFix = '[Processing]';
+      if (isOld) {jsMath.Setup.Script('jsMath-old-browsers.js')}
+      var version = navigator.appVersion.match(/^(\d+\.\d+)/);
+      if (!version) {vesion = 0};
+      this.operaAbsoluteWidthBug = this.operaLineHeightBug = (version[1] >= 9.5);
+    }
+  },
+
+  //
+  //  Handle Safari
+  //
+  Safari: function () {
+    if (navigator.appVersion.match(/Safari\//)) {
+      jsMath.browser = 'Safari';
+      var version = navigator.userAgent.match("Safari/([0-9]+)");
+      version = (version)? version[1] : 400;
+      for (var i = 0; i < jsMath.TeX.fam.length; i++) {
+        if (jsMath.TeX.fam[i] && jsMath.TeX[jsMath.TeX.fam[i]])
+          {jsMath.TeX[jsMath.TeX.fam[i]].dh = .1}
+      }
+      jsMath.TeX.axis_height += .05;
+      jsMath.TeX.default_rule_thickness += .025;
+      this.allowAbsoluteDelim = version >= 125;
+      this.safariIFRAMEbug = version >= 312 && version < 412;
+      this.safariButtonBug = version < 412;
+      this.safariImgBug = 1; this.textNodeBug = 1;
+      this.buttonCheck = version < 500;
+      this.styleChangeDelay = 1;
+    }
+  },
+  
+  //
+  //  Handle Konqueror
+  //
+  Konqueror: function () {
+    if (navigator.product && navigator.product.match("Konqueror")) {
+      jsMath.browser = 'Konqueror';
+      this.allowAbsolute = 0;
+      this.allowAbsoluteDelim = 0;
+      if (navigator.userAgent.match(/Konqueror\/(\d+)\.(\d+)/)) {
+        if (RegExp.$1 < 3 || (RegExp.$1 == 3 && RegExp.$2 < 3)) {
+          this.separateSkips = 1;
+          this.valignBug = 1;
+          jsMath.Setup.Script('jsMath-old-browsers.js');
+        }
+      }
+      //  Apparently, Konqueror wants the names without the hyphen
+      jsMath.Add(jsMath.styles,{
+        '.typeset .cmr10':    'font-family: jsMath-cmr10, jsMath cmr10, serif',
+        '.typeset .cmbx10':   'font-family: jsMath-cmbx10, jsMath cmbx10, jsMath-cmr10, jsMath cmr10',
+        '.typeset .cmti10':   'font-family: jsMath-cmti10, jsMath cmti10, jsMath-cmr10, jsMath cmr10',
+        '.typeset .cmmi10':   'font-family: jsMath-cmmi10, jsMath cmmi10',
+        '.typeset .cmsy10':   'font-family: jsMath-cmsy10, jsMath cmsy10',
+        '.typeset .cmex10':   'font-family: jsMath-cmex10, jsMath cmex10'
+      });
+      jsMath.Font.testFont = "jsMath-cmex10, jsMath cmex10";
+    }
+  }
+
+};
+
+/***************************************************************************/
+
+/*
+ *  Implement font check and messages
+ */
+jsMath.Font = {
+  
+  testFont: "jsMath-cmex10",
+  fallback: "symbol", // the default fallback method
+  register: [],       // list of fonts registered before jsMath.Init()
+
+  // the HTML for the missing font message
+  message:    
+    '<b>No jsMath TeX fonts found</b> -- using image fonts instead.<br/>\n'
+      + 'These may be slow and might not print well.<br/>\n'
+      + 'Use the jsMath control panel to get additional information.',
+      
+  extra_message:
+    'Extra TeX fonts not found: <b><span id="jsMath_ExtraFonts"></span></b><br/>'
+      + 'Using image fonts instead.  This may be slow and might not print well.<br/>\n'
+      + 'Use the jsMath control panel to get additional information.',
+
+  print_message:
+    'To print higher-resolution math symbols, click the<br/>\n'
+       + '<b>Hi-Res Fonts for Printing</b> button on the jsMath control panel.<br/>\n',
+
+  alpha_message:
+    'If the math symbols print as black boxes, turn off <b>image alpha channels</b><br/>\n'
+       + 'using the <B>Options</B> pane of the jsMath control panel.<br/>\n',
+  
+  /*
+   *  Look to see if a font is found.
+   *  Check the character in a given position, and see if it is
+   *  wider than the usual one in that position.
+   */
+  Test1: function (name,n,factor,prefix) {
+    if (n == null) {n = 0x7C}; if (factor == null) {factor = 2}; if (prefix == null) {prefix = ''}
+    var wh1 = jsMath.BBoxFor('<span style="font-family: '+prefix+name+', serif">'+jsMath.TeX[name][n].c+'</span>');
+    var wh2 = jsMath.BBoxFor('<span style="font-family: serif">'+jsMath.TeX[name][n].c+'</span>');
+    //alert([wh1.w,wh2.w,wh1.h,factor*wh2.w]);
+    return (wh1.w > factor*wh2.w && wh1.h != 0);
+  },
+
+  Test2: function (name,n,factor,prefix) {
+    if (n == null) {n = 0x7C}; if (factor == null) {factor = 2}; if (prefix == null) {prefix = ''}
+    var wh1 = jsMath.BBoxFor('<span style="font-family: '+prefix+name+', serif">'+jsMath.TeX[name][n].c+'</span>');
+    var wh2 = jsMath.BBoxFor('<span style="font-family: serif">'+jsMath.TeX[name][n].c+'</span>');
+    //alert([wh2.w,wh1.w,wh1.h,factor*wh1.w]);
+    return (wh2.w > factor*wh1.w && wh1.h != 0);
+  },
+  
+  /*
+   *  Check for the new jsMath versions of the fonts (blacker with
+   *  different encoding) and if not found, look for old-style fonts.
+   *  If they are found, load the BaKoMa encoding information.
+   */
+  CheckTeX: function () {
+    var wh = jsMath.BBoxFor('<span style="font-family: '+jsMath.Font.testFont+', serif">'+jsMath.TeX.cmex10[1].c+'</span>');
+    jsMath.nofonts = ((wh.w*3 > wh.h || wh.h == 0) && !this.Test1('cmr10',null,null,'jsMath-'));
+    if (!jsMath.nofonts) return;
+    if (jsMath.browser != 'Mozilla' ||
+         (jsMath.platform == "mac" &&
+           (!jsMath.Browser.VersionAtLeast(1.5) || jsMath.Browser.VersionAtLeast(3.0))) ||
+         (jsMath.platform != "mac" && !jsMath.Browser.VersionAtLeast(3.0))) {
+      wh = jsMath.BBoxFor('<span style="font-family: CMEX10, serif">'+jsMath.TeX.cmex10[1].c+'</span>');
+      jsMath.nofonts = ((wh.w*3 > wh.h || wh.h == 0) && !this.Test1('cmr10'));
+      if (!jsMath.nofonts) {jsMath.Setup.Script("jsMath-BaKoMa-fonts.js")}
+    }
+  },
+  
+  /*
+   *  Check for the availability of TeX fonts.  We do this by looking at
+   *  the width and height of a character in the cmex10 font.  The cmex10
+   *  font has depth considerably greater than most characters' widths (the
+   *  whole font has the depth of the character with greatest depth).  This
+   *  is not the case for most fonts, so if we can access cmex10, the
+   *  height of a character should be much bigger than the width.
+   *  Otherwise, if we don't have cmex10, we'll get a character in another
+   *  font with normal height and width.  In this case, we insert a message
+   *  pointing the user to the jsMath site, and load one of the fallback
+   *  definitions.
+   *  
+   */
+  Check: function () {
+    var cookie = jsMath.Controls.cookie;
+    this.CheckTeX();
+    if (jsMath.nofonts) {
+      if (cookie.autofont || cookie.font == 'tex') {
+        cookie.font = this.fallback;
+        if (cookie.warn) {
+          jsMath.nofontMessage = 1;
+          cookie.warn = 0; jsMath.Controls.SetCookie(0);
+          if (jsMath.window.NoFontMessage) {jsMath.window.NoFontMessage()}
+                               else {this.Message(this.message)}
+        }
+      }
+    } else {
+      if (cookie.autofont) {cookie.font = 'tex'}
+      if (cookie.font == 'tex') return;
+    }
+    if (jsMath.noImgFonts) {cookie.font = 'unicode'}
+    if (cookie.font == 'unicode') {
+      jsMath.Setup.Script('jsMath-fallback-'+jsMath.platform+'.js');
+      jsMath.Box.TeXnonfallback = jsMath.Box.TeX;
+      jsMath.Box.TeX = jsMath.Box.TeXfallback;
+      return;
+    }
+    if (!cookie.print && cookie.printwarn) {
+      this.PrintMessage(
+        (jsMath.Browser.alphaPrintBug && jsMath.Controls.cookie.alpha) ?
+          this.print_message + this.alpha_message : this.print_message);
+    }
+    if (jsMath.Browser.waitForImages) {
+      jsMath.Script.Push(jsMath.Script,"WaitForImage",jsMath.blank);
+    }
+    if (cookie.font == 'symbol') {
+      jsMath.Setup.Script('jsMath-fallback-symbols.js');
+      jsMath.Box.TeXnonfallback = jsMath.Box.TeX;
+      jsMath.Box.TeX = jsMath.Box.TeXfallback;
+      return;
+    }
+    jsMath.Img.SetFont({
+      cmr10:  ['all'], cmmi10: ['all'], cmsy10: ['all'],
+      cmex10: ['all'], cmbx10: ['all'], cmti10: ['all']
+    });
+    jsMath.Img.LoadFont('cm-fonts');
+  },
+
+  /*
+   *  The message for when no TeX fonts.  You can eliminate this message
+   *  by including
+   *  
+   *      <script>jsMath = {Font: {Message: function () {}}}</script>
+   *
+   *  in your HTML file, before loading jsMath.js, if you want.  But this
+   *  means the user may not know that he or she can get a better version
+   *  of your page.
+   */
+  Message: function (message) {
+    if (jsMath.Element("Warning")) return;
+    var div = jsMath.Setup.DIV("Warning",{});
+    div.innerHTML = 
+      '<center><table><tr><td>'
+      + '<div id="jsMath_noFont"><div class="message">' + message
+      + '<div style="text-align:left"><span style="float:left; margin: 8px 0px 0px 20px">'
+      + '<span onclick="jsMath.Controls.Panel()" title=" Open the jsMath Control Panel " class="link">jsMath Control Panel</span>'
+      + '</span><span style="margin: 8px 20px 0px 0px; float:right">'
+      + '<span onclick="jsMath.Font.HideMessage()" title=" Remove this font warning message " class="link">Hide this Message</span>'
+      + '</span></div><div style="height:6px"></div><br clear="all"/></div></div>'
+      + '<div style="width:22em; height:1px"></div>'
+      + '</td></tr></table></center><hr/>';
+  },
+  
+  HideMessage: function () {
+    var message = jsMath.Element("Warning");
+    if (message) {message.style.display = "none"}
+  },
+  
+  PrintMessage: function (message) {
+    if (jsMath.Element("PrintWarning")) return;
+    var div = jsMath.Setup.DIV("PrintWarning",{});
+    div.innerHTML = 
+      '<center><table><tr><td>'
+      + '<div class="message">' + message + '</div>'
+      + '<div style="width:22em; height:1px"></div>'
+      + '</td></tr></table></center><hr/>';
+  },
+  
+  /*
+   *  Register an extra font so jsMath knows about it
+   */
+  Register: function (data,force) {
+    if (typeof(data) == 'string') {data = {name: data}}
+    if (!jsMath.Setup.inited && !force) {
+      this.register[this.register.length] = data;
+      return;
+    }
+    var fontname = data.name; var name = fontname.replace(/10$/,'');
+    var fontfam = jsMath.TeX.fam.length;
+    if (data.prefix == null) {data.prefix = ""}
+    if (!data.style) {data.style = "font-family: "+data.prefix+fontname+", serif"}
+    if (!data.styles) {data.styles = {}}
+    if (!data.macros) {data.macros = {}}
+    /*
+     *  Register font family
+     */
+    jsMath.TeX.fam[fontfam] = fontname;
+    jsMath.TeX.famName[fontname] = fontfam;
+    data.macros[name] = ['HandleFont',fontfam];
+    jsMath.Add(jsMath.Parser.prototype.macros,data.macros);
+    /*
+     *  Set up styles
+     */
+    data.styles['.typeset .'+fontname] = data.style;
+    jsMath.Setup.Styles(data.styles);
+    if (jsMath.initialized) {jsMath.Script.Push(jsMath.Setup,'TeXfont',fontname)}
+    /*
+     *  Check for font and give message if missing
+     */
+    var cookie = jsMath.Controls.cookie;
+    var hasTeXfont = !jsMath.nofonts &&
+                      data.test(fontname,data.testChar,data.testFactor,data.prefix);
+    if (hasTeXfont && cookie.font == 'tex') {
+      if (data.tex) {data.tex(fontname,fontfam,data)}
+      return;
+    }
+    if (!hasTeXfont && cookie.warn && cookie.font == 'tex' && !jsMath.nofonts) {
+      if (!cookie.fonts.match("/"+fontname+"/")) {
+        cookie.fonts += fontname + "/"; jsMath.Controls.SetCookie(0);
+        if (!jsMath.Element("Warning")) this.Message(this.extra_message);
+        var extra = jsMath.Element("ExtraFonts");
+        if (extra) {
+          if (extra.innerHTML != "") {extra.innerHTML += ','}
+          extra.innerHTML += " " + data.prefix+fontname;
+        }
+      }
+    }
+    if (cookie.font == 'unicode' || jsMath.noImgFonts) {
+      if (data.fallback) {data.fallback(fontname,fontfam,data)}
+      return;
+    }
+    //  Image fonts
+    var font = {};
+    if (cookie.font == 'symbol' && data.symbol != null) {
+      font[fontname] = data.symbol(fontname,fontfam,data);
+    } else {
+      font[fontname] = ['all'];
+    }
+    jsMath.Img.SetFont(font);
+    jsMath.Img.LoadFont(fontname);
+    if (jsMath.initialized) {
+      jsMath.Script.Push(jsMath.Img,'Scale');
+      jsMath.Script.Push(jsMath.Img,'UpdateFonts');
+    }
+  },
+  /*
+   *  If fonts are registered before jsMath.Init() is called, jsMath.em
+   *  will not be available, so they need to be delayed.
+   */
+  LoadRegistered: function () {
+    var i = 0;
+    while (i < this.register.length) {this.Register(this.register[i++],1)}
+    this.register = [];
+  },
+
+  /*
+   *  Load a font
+   */
+  Load: function (name) {jsMath.Setup.Script(this.URL(name))},
+  URL: function (name) {return jsMath.Img.root+name+'/def.js'}
+  
+};
+
+/***************************************************************************/
+
+/*
+ *  Implements the jsMath control panel.
+ *  Much of the code is in jsMath-controls.html, which is
+ *  loaded into a hidden IFRAME on demand
+ */
+jsMath.Controls = {
+
+  //  Data stored in the jsMath cookie
+  cookie: {
+    scale: 100,
+    font: 'tex', autofont: 1, scaleImg: 0, alpha: 1,
+    warn: 1, fonts: '/', printwarn: 1, stayhires: 0,
+    button: 1, progress: 1, asynch: 0, blank: 0,
+    print: 0, keep: '0D', global: 'auto', hiddenGlobal: 1
+  },
+  
+  cookiePath: '/',  // can also set cookieDomain
+  noCookiePattern: /^(file|mk):$/,  // pattern for handling cookies locally
+  
+  
+  /*
+   *  Create the HTML needed for control panel
+   */
+  Init: function () {
+    this.panel = jsMath.Setup.DIV("panel",{display:'none'},jsMath.fixedDiv);
+    if (!jsMath.Browser.msieButtonBug) {this.Button()}
+      else {setTimeout("jsMath.Controls.Button()",500)}
+  },
+
+  /*
+   *  Load the control panel
+   */
+  Panel: function () {
+    jsMath.Translate.Cancel();
+    if (this.loaded) {this.Main()}
+      else {jsMath.Script.delayedLoad(jsMath.root+"jsMath-controls.html")}
+  },
+  
+  /*
+   *  Create the control panel button
+   */
+  Button: function () {
+    var button = jsMath.Setup.DIV("button",{},jsMath.fixedDiv);
+    button.title = ' Open jsMath Control Panel ';
+    button.innerHTML = 
+      '<span onclick="jsMath.Controls.Panel()">jsMath</span>';
+    if (!jsMath.Global.isLocal && !jsMath.noShowGlobal) {
+      button.innerHTML +=
+        '<span id="jsMath_global" title=" Open jsMath Global Panel " '
+          + 'onclick="jsMath.Global.Show(1)">Global&nbsp;</span>';
+    }
+    if (button.offsetWidth < 30) {button.style.width = "auto"}
+    if (!this.cookie.button) {button.style.display = "none"}
+  },
+  
+  /*
+   *  Since MSIE doesn't handle position:float, we need to have the
+   *  window repositioned every time the window scrolls.  We do that
+   *  putting the floating elements into a window-sized DIV, but
+   *  absolutely positioned, and then move the DIV.
+   */
+  MoveButton: function () {
+    jsMath.fixedDiv.style.left = document.body.scrollLeft + 'px';
+    jsMath.fixedDiv.style.top = document.body.scrollTop + 'px';
+    jsMath.fixedDiv.style.width = document.body.clientWidth + 'px';
+    jsMath.fixedDiv.style.height = document.body.clientHeight + 'px';
+  },
+
+  /*
+   *  Get the cookie data from the browser
+   *  (for file: references, use url '?' syntax)
+   */
+  GetCookie: function () {
+    // save the current cookie settings as the defaults
+    if (this.defaults == null) {this.defaults = {}}
+    jsMath.Add(this.defaults,this.cookie); this.userSet = {};
+    // get the browser's cookie data
+    var cookies = jsMath.document.cookie;
+    if (jsMath.window.location.protocol.match(this.noCookiePattern)) {
+      cookies = this.localGetCookie();
+      this.isLocalCookie = 1;
+    }
+    if (cookies.match(/jsMath=([^;]+)/)) {
+      var data = unescape(RegExp.$1).split(/,/);
+      for (var i = 0; i < data.length; i++) {
+        var x = data[i].match(/(.*):(.*)/);
+        if (x[2].match(/^\d+$/)) {x[2] = 1*x[2]} // convert from string
+        this.cookie[x[1]] = x[2];
+        this.userSet[x[1]] = 1;
+      }
+    }
+  },
+  localGetCookie: function () {
+    return jsMath.window.location.search.substr(1);
+  },
+  
+  /*
+   *  Save the cookie data in the browser
+   *  (for file: urls, append data like CGI reference)
+   */
+  SetCookie: function (warn) {
+    var cookie = [];
+    for (var id in this.cookie) {
+      if (this.defaults[id] == null || this.cookie[id] != this.defaults[id])
+        {cookie[cookie.length] = id + ':' + this.cookie[id]}
+    }
+    cookie = cookie.join(',');
+    if (this.isLocalCookie) {
+      if (warn == 2) {return 'jsMath='+escape(cookie)}
+      this.localSetCookie(cookie,warn);
+    } else {
+      cookie = escape(cookie);
+      if (cookie == '') {warn = 0}
+      if (this.cookiePath) {cookie += '; path='+this.cookiePath}
+      if (this.cookieDomain) {cookie += '; domain='+this.cookieDomain}
+      if (this.cookie.keep != '0D') {
+        var ms = {
+          D: 1000*60*60*24,
+          W: 1000*60*60*24*7,
+          M: 1000*60*60*24*30,
+          Y: 1000*60*60*24*365
+        };
+        var exp = new Date;
+        exp.setTime(exp.getTime() +
+            this.cookie.keep.substr(0,1) * ms[this.cookie.keep.substr(1,1)]);
+        cookie += '; expires=' + exp.toGMTString();
+      }
+      if (cookie != '') {
+        jsMath.document.cookie = 'jsMath='+cookie;
+        var cookies = jsMath.document.cookie;
+        if (warn && !cookies.match(/jsMath=/))
+          {alert("Cookies must be enabled in order to save jsMath options")}
+      }
+    }
+    return null;
+  },
+  localSetCookie: function (cookie,warn) {
+    if (!warn) return;
+    var href = String(jsMath.window.location).replace(/\?.*/,"");
+    if (cookie != '') {href += '?jsMath=' + escape(cookie)}
+    if (href != jsMath.window.location.href) {this.Reload(href)}
+  },
+  
+  /*
+   *  Reload the page (with the given URL)
+   */
+  Reload: function (url) {
+    if (!this.loaded) return;
+    this.loaded = 0; jsMath.Setup.inited = -100;
+    jsMath.Global.ClearCache();
+    if (url) {jsMath.window.location.replace(url)}
+        else {jsMath.window.location.reload()}
+  }
+  
+};
+
+/***************************************************************************/
+
+/*
+ *  Implements the actions for clicking and double-clicking
+ *  on math formulas
+ */
+jsMath.Click = {
+  
+  /*
+   *  Handle clicking on math to get control panel
+   */
+  CheckClick: function (event) {
+    if (!event) {event = jsMath.window.event}
+    if (event.altKey) jsMath.Controls.Panel();
+  },
+  
+  /*
+   *  Handle double-click for seeing TeX code
+   */
+
+  CheckDblClick: function (event) {
+    if (!event) {event = jsMath.window.event}
+    if (!jsMath.Click.DblClick) {
+      jsMath.Extension.Require('double-click',1);
+      // Firefox clears the event, so copy it
+      var tmpEvent = event; event = {};
+      for (var id in tmpEvent) {event[id] = tmpEvent[id]}
+    }
+    jsMath.Script.Push(jsMath.Click,'DblClick',[event,this.alt]);
+  }
+  
+};
+
+/***************************************************************************/
+
+/*
+ *  The TeX font information
+ */
+jsMath.TeX = {
+
+  //
+  //  The TeX font parameters
+  //
+  thinmuskip:   3/18,
+  medmuskip:    4/18,
+  thickmuskip:  5/18,
+
+  x_height:    .430554,
+  quad:        1,
+  num1:        .676508,
+  num2:        .393732,
+  num3:        .44373,
+  denom1:      .685951,
+  denom2:      .344841,
+  sup1:        .412892,
+  sup2:        .362892,
+  sup3:        .288888,
+  sub1:        .15,
+  sub2:        .247217,
+  sup_drop:    .386108,
+  sub_drop:    .05,
+  delim1:     2.39,
+  delim2:     1.0,
+  axis_height: .25,
+  default_rule_thickness: .06,
+  big_op_spacing1:  .111111,
+  big_op_spacing2:  .166666,
+  big_op_spacing3:  .2,
+  big_op_spacing4:  .6,
+  big_op_spacing5:  .1,
+
+  integer:          6553.6,     // conversion of em's to TeX internal integer
+  scriptspace:         .05,
+  nulldelimiterspace:  .12,
+  delimiterfactor:     901,
+  delimitershortfall:   .5,
+  scale:                 1,     //  scaling factor for font dimensions
+ 
+  //  The TeX math atom types (see Appendix G of the TeXbook)
+  atom: ['ord', 'op', 'bin', 'rel', 'open', 'close', 'punct', 'ord'],
+
+  //  The TeX font families
+  fam: ['cmr10','cmmi10','cmsy10','cmex10','cmti10','','cmbx10',''],
+  famName: {cmr10:0, cmmi10:1, cmsy10:2, cmex10:3, cmti10:4, cmbx10:6},
+
+  //  Encoding used by jsMath fonts
+  encoding: [
+    '&#xC0;', '&#xC1;', '&#xC2;', '&#xC3;', '&#xC4;', '&#xC5;', '&#xC6;', '&#xC7;',
+    '&#xC8;', '&#xC9;', '&#xCA;', '&#xCB;', '&#xCC;', '&#xCD;', '&#xCE;', '&#xCF;',
+
+    '&#xB0;', '&#xD1;', '&#xD2;', '&#xD3;', '&#xD4;', '&#xD5;', '&#xD6;', '&#xB7;',
+    '&#xD8;', '&#xD9;', '&#xDA;', '&#xDB;', '&#xDC;', '&#xB5;', '&#xB6;', '&#xDF;',
+
+    '&#xEF;', '!', '&#x22;', '#', '$', '%', '&#x26;', '&#x27;',
+    '(', ')', '*', '+', ',', '-', '.', '/',
+
+    '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', ':', ';', '&#x3C;', '=', '&#x3E;', '?',
+
+    '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+    'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+    'X', 'Y', 'Z', '[', '&#x5C;', ']', '^', '_',
+
+    '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+    'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+
+    'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+    'x', 'y', 'z', '{', '|', '}', '&#x7E;', '&#xFF;'
+  ],
+
+  /*
+   *  The following are the TeX font mappings and metrics.  The metric
+   *  information comes directly from the TeX .tfm files.  Browser-specific
+   *  adjustments are made to these tables in the Browser.Init() routine
+   */
+  cmr10: [
+    [0.625,0.683], [0.833,0.683], [0.778,0.683], [0.694,0.683],
+    [0.667,0.683], [0.75,0.683], [0.722,0.683], [0.778,0.683],
+    [0.722,0.683], [0.778,0.683], [0.722,0.683],
+    [0.583,0.694,0,{ic: 0.0778, krn: {'39': 0.0778, '63': 0.0778, '33': 0.0778, '41': 0.0778, '93': 0.0778}, lig: {'105': 14, '108': 15}}],
+    [0.556,0.694], [0.556,0.694], [0.833,0.694], [0.833,0.694],
+
+    [0.278,0.431], [0.306,0.431,0.194], [0.5,0.694], [0.5,0.694],
+    [0.5,0.628], [0.5,0.694], [0.5,0.568], [0.75,0.694],
+    [0.444,0,0.17], [0.5,0.694], [0.722,0.431], [0.778,0.431],
+    [0.5,0.528,0.0972], [0.903,0.683], [1.01,0.683], [0.778,0.732,0.0486],
+
+    [0.278,0.431,0,{krn: {'108': -0.278, '76': -0.319}}],
+    [0.278,0.694,0,{lig: {'96': 60}}],
+    [0.5,0.694], [0.833,0.694,0.194], [0.5,0.75,0.0556],
+    [0.833,0.75,0.0556], [0.778,0.694],
+    [0.278,0.694,0,{krn: {'63': 0.111, '33': 0.111}, lig: {'39': 34}}],
+    [0.389,0.75,0.25], [0.389,0.75,0.25], [0.5,0.75],
+    [0.778,0.583,0.0833], [0.278,0.106,0.194],
+    [0.333,0.431,0,{lig: {'45': 123}}],
+    [0.278,0.106], [0.5,0.75,0.25],
+
+    [0.5,0.644], [0.5,0.644], [0.5,0.644], [0.5,0.644],
+    [0.5,0.644], [0.5,0.644], [0.5,0.644], [0.5,0.644],
+    [0.5,0.644], [0.5,0.644], [0.278,0.431], [0.278,0.431,0.194],
+    [0.278,0.5,0.194], [0.778,0.367,-0.133], [0.472,0.5,0.194],
+    [0.472,0.694,0,{lig: {'96': 62}}],
+
+    [0.778,0.694],
+    [0.75,0.683,0,{krn: {'116': -0.0278, '67': -0.0278, '79': -0.0278, '71': -0.0278, '85': -0.0278, '81': -0.0278, '84': -0.0833, '89': -0.0833, '86': -0.111, '87': -0.111}}],
+    [0.708,0.683], [0.722,0.683],
+    [0.764,0.683,0,{krn: {'88': -0.0278, '87': -0.0278, '65': -0.0278, '86': -0.0278, '89': -0.0278}}],
+    [0.681,0.683],
+    [0.653,0.683,0,{krn: {'111': -0.0833, '101': -0.0833, '117': -0.0833, '114': -0.0833, '97': -0.0833, '65': -0.111, '79': -0.0278, '67': -0.0278, '71': -0.0278, '81': -0.0278}}],
+    [0.785,0.683], [0.75,0.683], [0.361,0.683,0,{krn: {'73': 0.0278}}],
+    [0.514,0.683],
+    [0.778,0.683,0,{krn: {'79': -0.0278, '67': -0.0278, '71': -0.0278, '81': -0.0278}}],
+    [0.625,0.683,0,{krn: {'84': -0.0833, '89': -0.0833, '86': -0.111, '87': -0.111}}],
+    [0.917,0.683], [0.75,0.683],
+    [0.778,0.683,0,{krn: {'88': -0.0278, '87': -0.0278, '65': -0.0278, '86': -0.0278, '89': -0.0278}}],
+
+    [0.681,0.683,0,{krn: {'65': -0.0833, '111': -0.0278, '101': -0.0278, '97': -0.0278, '46': -0.0833, '44': -0.0833}}],
+    [0.778,0.683,0.194],
+    [0.736,0.683,0,{krn: {'116': -0.0278, '67': -0.0278, '79': -0.0278, '71': -0.0278, '85': -0.0278, '81': -0.0278, '84': -0.0833, '89': -0.0833, '86': -0.111, '87': -0.111}}],
+    [0.556,0.683],
+    [0.722,0.683,0,{krn: {'121': -0.0278, '101': -0.0833, '111': -0.0833, '114': -0.0833, '97': -0.0833, '65': -0.0833, '117': -0.0833}}],
+    [0.75,0.683],
+    [0.75,0.683,0,{ic: 0.0139, krn: {'111': -0.0833, '101': -0.0833, '117': -0.0833, '114': -0.0833, '97': -0.0833, '65': -0.111, '79': -0.0278, '67': -0.0278, '71': -0.0278, '81': -0.0278}}],
+    [1.03,0.683,0,{ic: 0.0139, krn: {'111': -0.0833, '101': -0.0833, '117': -0.0833, '114': -0.0833, '97': -0.0833, '65': -0.111, '79': -0.0278, '67': -0.0278, '71': -0.0278, '81': -0.0278}}],
+    [0.75,0.683,0,{krn: {'79': -0.0278, '67': -0.0278, '71': -0.0278, '81': -0.0278}}],
+    [0.75,0.683,0,{ic: 0.025, krn: {'101': -0.0833, '111': -0.0833, '114': -0.0833, '97': -0.0833, '65': -0.0833, '117': -0.0833}}],
+    [0.611,0.683], [0.278,0.75,0.25], [0.5,0.694],
+    [0.278,0.75,0.25], [0.5,0.694], [0.278,0.668],
+
+    [0.278,0.694,0,{lig: {'96': 92}}],
+    [0.5,0.431,0,{krn: {'118': -0.0278, '106': 0.0556, '121': -0.0278, '119': -0.0278}}],
+    [0.556,0.694,0,{krn: {'101': 0.0278, '111': 0.0278, '120': -0.0278, '100': 0.0278, '99': 0.0278, '113': 0.0278, '118': -0.0278, '106': 0.0556, '121': -0.0278, '119': -0.0278}}],
+    [0.444,0.431,0,{krn: {'104': -0.0278, '107': -0.0278}}],
+    [0.556,0.694], [0.444,0.431],
+    [0.306,0.694,0,{ic: 0.0778, krn: {'39': 0.0778, '63': 0.0778, '33': 0.0778, '41': 0.0778, '93': 0.0778}, lig: {'105': 12, '102': 11, '108': 13}}],
+    [0.5,0.431,0.194,{ic: 0.0139, krn: {'106': 0.0278}}],
+    [0.556,0.694,0,{krn: {'116': -0.0278, '117': -0.0278, '98': -0.0278, '121': -0.0278, '118': -0.0278, '119': -0.0278}}],
+    [0.278,0.668], [0.306,0.668,0.194],
+    [0.528,0.694,0,{krn: {'97': -0.0556, '101': -0.0278, '97': -0.0278, '111': -0.0278, '99': -0.0278}}],
+    [0.278,0.694],
+    [0.833,0.431,0,{krn: {'116': -0.0278, '117': -0.0278, '98': -0.0278, '121': -0.0278, '118': -0.0278, '119': -0.0278}}],
+    [0.556,0.431,0,{krn: {'116': -0.0278, '117': -0.0278, '98': -0.0278, '121': -0.0278, '118': -0.0278, '119': -0.0278}}],
+    [0.5,0.431,0,{krn: {'101': 0.0278, '111': 0.0278, '120': -0.0278, '100': 0.0278, '99': 0.0278, '113': 0.0278, '118': -0.0278, '106': 0.0556, '121': -0.0278, '119': -0.0278}}],
+
+    [0.556,0.431,0.194,{krn: {'101': 0.0278, '111': 0.0278, '120': -0.0278, '100': 0.0278, '99': 0.0278, '113': 0.0278, '118': -0.0278, '106': 0.0556, '121': -0.0278, '119': -0.0278}}],
+    [0.528,0.431,0.194], [0.392,0.431], [0.394,0.431],
+    [0.389,0.615,0,{krn: {'121': -0.0278, '119': -0.0278}}],
+    [0.556,0.431,0,{krn: {'119': -0.0278}}],
+    [0.528,0.431,0,{ic: 0.0139, krn: {'97': -0.0556, '101': -0.0278, '97': -0.0278, '111': -0.0278, '99': -0.0278}}],
+    [0.722,0.431,0,{ic: 0.0139, krn: {'101': -0.0278, '97': -0.0278, '111': -0.0278, '99': -0.0278}}],
+    [0.528,0.431],
+    [0.528,0.431,0.194,{ic: 0.0139, krn: {'111': -0.0278, '101': -0.0278, '97': -0.0278, '46': -0.0833, '44': -0.0833}}],
+    [0.444,0.431], [0.5,0.431,0,{ic: 0.0278, lig: {'45': 124}}],
+    [1,0.431,0,{ic: 0.0278}], [0.5,0.694], [0.5,0.668], [0.5,0.668]
+  ],
+  
+  cmmi10: [
+    [0.615,0.683,0,{ic: 0.139, krn: {'61': -0.0556, '59': -0.111, '58': -0.111, '127': 0.0833}}],
+    [0.833,0.683,0,{krn: {'127': 0.167}}],
+    [0.763,0.683,0,{ic: 0.0278, krn: {'127': 0.0833}}],
+    [0.694,0.683,0,{krn: {'127': 0.167}}],
+    [0.742,0.683,0,{ic: 0.0757, krn: {'127': 0.0833}}],
+    [0.831,0.683,0,{ic: 0.0812, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0556}}],
+    [0.78,0.683,0,{ic: 0.0576, krn: {'127': 0.0833}}],
+    [0.583,0.683,0,{ic: 0.139, krn: {'61': -0.0556, '59': -0.111, '58': -0.111, '127': 0.0556}}],
+    [0.667,0.683,0,{krn: {'127': 0.0833}}],
+    [0.612,0.683,0,{ic: 0.11, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0556}}],
+    [0.772,0.683,0,{ic: 0.0502, krn: {'127': 0.0833}}],
+    [0.64,0.431,0,{ic: 0.0037, krn: {'127': 0.0278}}],
+    [0.566,0.694,0.194,{ic: 0.0528, krn: {'127': 0.0833}}],
+    [0.518,0.431,0.194,{ic: 0.0556}],
+    [0.444,0.694,0,{ic: 0.0378, krn: {'59': -0.0556, '58': -0.0556, '127': 0.0556}}],
+    [0.406,0.431,0,{krn: {'127': 0.0556}}],
+
+    [0.438,0.694,0.194,{ic: 0.0738, krn: {'127': 0.0833}}],
+    [0.497,0.431,0.194,{ic: 0.0359, krn: {'127': 0.0556}}],
+    [0.469,0.694,0,{ic: 0.0278, krn: {'127': 0.0833}}],
+    [0.354,0.431,0,{krn: {'127': 0.0556}}],
+    [0.576,0.431], [0.583,0.694],
+    [0.603,0.431,0.194,{krn: {'127': 0.0278}}],
+    [0.494,0.431,0,{ic: 0.0637, krn: {'59': -0.0556, '58': -0.0556, '127': 0.0278}}],
+    [0.438,0.694,0.194,{ic: 0.046, krn: {'127': 0.111}}],
+    [0.57,0.431,0,{ic: 0.0359}],
+    [0.517,0.431,0.194,{krn: {'127': 0.0833}}],
+    [0.571,0.431,0,{ic: 0.0359, krn: {'59': -0.0556, '58': -0.0556}}],
+    [0.437,0.431,0,{ic: 0.113, krn: {'59': -0.0556, '58': -0.0556, '127': 0.0278}}],
+    [0.54,0.431,0,{ic: 0.0359, krn: {'127': 0.0278}}],
+    [0.596,0.694,0.194,{krn: {'127': 0.0833}}],
+    [0.626,0.431,0.194,{krn: {'127': 0.0556}}],
+
+    [0.651,0.694,0.194,{ic: 0.0359, krn: {'127': 0.111}}],
+    [0.622,0.431,0,{ic: 0.0359}],
+    [0.466,0.431,0,{krn: {'127': 0.0833}}],
+    [0.591,0.694,0,{krn: {'127': 0.0833}}],
+    [0.828,0.431,0,{ic: 0.0278}],
+    [0.517,0.431,0.194,{krn: {'127': 0.0833}}],
+    [0.363,0.431,0.0972,{ic: 0.0799, krn: {'127': 0.0833}}],
+    [0.654,0.431,0.194,{krn: {'127': 0.0833}}],
+    [1,0.367,-0.133], [1,0.367,-0.133], [1,0.367,-0.133], [1,0.367,-0.133], 
+    [0.278,0.464,-0.0363], [0.278,0.464,-0.0363], [0.5,0.465,-0.0347], [0.5,0.465,-0.0347],
+
+    [0.5,0.431], [0.5,0.431], [0.5,0.431], [0.5,0.431,0.194],
+    [0.5,0.431,0.194], [0.5,0.431,0.194], [0.5,0.644], [0.5,0.431,0.194],
+    [0.5,0.644], [0.5,0.431,0.194], [0.278,0.106], [0.278,0.106,0.194],
+    [0.778,0.539,0.0391],
+    [0.5,0.75,0.25,{krn: {'1': -0.0556, '65': -0.0556, '77': -0.0556, '78': -0.0556, '89': 0.0556, '90': -0.0556}}],
+    [0.778,0.539,0.0391], [0.5,0.465,-0.0347],
+
+    [0.531,0.694,0,{ic: 0.0556, krn: {'127': 0.0833}}],
+    [0.75,0.683,0,{krn: {'127': 0.139}}],
+    [0.759,0.683,0,{ic: 0.0502, krn: {'127': 0.0833}}],
+    [0.715,0.683,0,{ic: 0.0715, krn: {'61': -0.0278, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.828,0.683,0,{ic: 0.0278, krn: {'127': 0.0556}}],
+    [0.738,0.683,0,{ic: 0.0576, krn: {'127': 0.0833}}],
+    [0.643,0.683,0,{ic: 0.139, krn: {'61': -0.0556, '59': -0.111, '58': -0.111, '127': 0.0833}}],
+    [0.786,0.683,0,{krn: {'127': 0.0833}}],
+    [0.831,0.683,0,{ic: 0.0812, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0556}}],
+    [0.44,0.683,0,{ic: 0.0785, krn: {'127': 0.111}}],
+    [0.555,0.683,0,{ic: 0.0962, krn: {'61': -0.0556, '59': -0.111, '58': -0.111, '127': 0.167}}],
+    [0.849,0.683,0,{ic: 0.0715, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0556}}],
+    [0.681,0.683,0,{krn: {'127': 0.0278}}],
+    [0.97,0.683,0,{ic: 0.109, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.803,0.683,0,{ic: 0.109, krn: {'61': -0.0833, '61': -0.0278, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.763,0.683,0,{ic: 0.0278, krn: {'127': 0.0833}}],
+
+    [0.642,0.683,0,{ic: 0.139, krn: {'61': -0.0556, '59': -0.111, '58': -0.111, '127': 0.0833}}],
+    [0.791,0.683,0.194,{krn: {'127': 0.0833}}],
+    [0.759,0.683,0,{ic: 0.00773, krn: {'127': 0.0833}}],
+    [0.613,0.683,0,{ic: 0.0576, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.584,0.683,0,{ic: 0.139, krn: {'61': -0.0278, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.683,0.683,0,{ic: 0.109, krn: {'59': -0.111, '58': -0.111, '61': -0.0556, '127': 0.0278}}],
+    [0.583,0.683,0,{ic: 0.222, krn: {'59': -0.167, '58': -0.167, '61': -0.111}}],
+    [0.944,0.683,0,{ic: 0.139, krn: {'59': -0.167, '58': -0.167, '61': -0.111}}],
+    [0.828,0.683,0,{ic: 0.0785, krn: {'61': -0.0833, '61': -0.0278, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.581,0.683,0,{ic: 0.222, krn: {'59': -0.167, '58': -0.167, '61': -0.111}}],
+    [0.683,0.683,0,{ic: 0.0715, krn: {'61': -0.0556, '59': -0.0556, '58': -0.0556, '127': 0.0833}}],
+    [0.389,0.75], [0.389,0.694,0.194], [0.389,0.694,0.194],
+    [1,0.358,-0.142], [1,0.358,-0.142],
+
+    [0.417,0.694,0,{krn: {'127': 0.111}}],
+    [0.529,0.431], [0.429,0.694], [0.433,0.431,0,{krn: {'127': 0.0556}}],
+    [0.52,0.694,0,{krn: {'89': 0.0556, '90': -0.0556, '106': -0.111, '102': -0.167, '127': 0.167}}],
+    [0.466,0.431,0,{krn: {'127': 0.0556}}],
+    [0.49,0.694,0.194,{ic: 0.108, krn: {'59': -0.0556, '58': -0.0556, '127': 0.167}}],
+    [0.477,0.431,0.194,{ic: 0.0359, krn: {'127': 0.0278}}],
+    [0.576,0.694,0,{krn: {'127': -0.0278}}], [0.345,0.66],
+    [0.412,0.66,0.194,{ic: 0.0572, krn: {'59': -0.0556, '58': -0.0556}}],
+    [0.521,0.694,0,{ic: 0.0315}], [0.298,0.694,0,{ic: 0.0197, krn: {'127': 0.0833}}],
+    [0.878,0.431], [0.6,0.431], [0.485,0.431,0,{krn: {'127': 0.0556}}],
+
+    [0.503,0.431,0.194,{krn: {'127': 0.0833}}],
+    [0.446,0.431,0.194,{ic: 0.0359, krn: {'127': 0.0833}}],
+    [0.451,0.431,0,{ic: 0.0278, krn: {'59': -0.0556, '58': -0.0556, '127': 0.0556}}],
+    [0.469,0.431,0,{krn: {'127': 0.0556}}], [0.361,0.615,0,{krn: {'127': 0.0833}}],
+    [0.572,0.431,0,{krn: {'127': 0.0278}}],
+    [0.485,0.431,0,{ic: 0.0359, krn: {'127': 0.0278}}],
+    [0.716,0.431,0,{ic: 0.0269, krn: {'127': 0.0833}}],
+    [0.572,0.431,0,{krn: {'127': 0.0278}}],
+    [0.49,0.431,0.194,{ic: 0.0359, krn: {'127': 0.0556}}],
+    [0.465,0.431,0,{ic: 0.044, krn: {'127': 0.0556}}],
+    [0.322,0.431,0,{krn: {'127': 0.0278}}],
+    [0.384,0.431,0.194,{krn: {'127': 0.0833}}],
+    [0.636,0.431,0.194,{krn: {'127': 0.111}}],
+    [0.5,0.714,0,{ic: 0.154}], [0.278,0.694,0,{ic: 0.399}]
+  ],
+
+  cmsy10: [
+    [0.778,0.583,0.0833], [0.278,0.444,-0.0556], [0.778,0.583,0.0833],
+    [0.5,0.465,-0.0347], [0.778,0.583,0.0833], [0.5,0.444,-0.0556],
+    [0.778,0.583,0.0833], [0.778,0.583,0.0833], [0.778,0.583,0.0833],
+    [0.778,0.583,0.0833], [0.778,0.583,0.0833], [0.778,0.583,0.0833],
+    [0.778,0.583,0.0833], [1,0.694,0.194], [0.5,0.444,-0.0556], [0.5,0.444,-0.0556],
+
+    [0.778,0.464,-0.0363], [0.778,0.464,-0.0363], [0.778,0.636,0.136],
+    [0.778,0.636,0.136], [0.778,0.636,0.136], [0.778,0.636,0.136],
+    [0.778,0.636,0.136], [0.778,0.636,0.136], [0.778,0.367,-0.133],
+    [0.778,0.483,-0.0169], [0.778,0.539,0.0391], [0.778,0.539,0.0391],
+    [1,0.539,0.0391], [1,0.539,0.0391], [0.778,0.539,0.0391], [0.778,0.539,0.0391],
+
+    [1,0.367,-0.133], [1,0.367,-0.133], [0.5,0.694,0.194], [0.5,0.694,0.194],
+    [1,0.367,-0.133], [1,0.694,0.194], [1,0.694,0.194], [0.778,0.464,-0.0363],
+    [1,0.367,-0.133], [1,0.367,-0.133], [0.611,0.694,0.194], [0.611,0.694,0.194],
+    [1,0.367,-0.133], [1,0.694,0.194], [1,0.694,0.194], [0.778,0.431],
+
+    [0.275,0.556], [1,0.431], [0.667,0.539,0.0391], [0.667,0.539,0.0391],
+    [0.889,0.694,0.194], [0.889,0.694,0.194], [0,0.694,0.194], [0,0.367,-0.133],
+    [0.556,0.694], [0.556,0.694], [0.667,0.431], [0.5,0.75,0.0556],
+    [0.722,0.694], [0.722,0.694], [0.778,0.694], [0.778,0.694],
+
+    [0.611,0.694], [0.798,0.683,0,{krn: {'48': 0.194}}],
+    [0.657,0.683,0,{ic: 0.0304, krn: {'48': 0.139}}],
+    [0.527,0.683,0,{ic: 0.0583, krn: {'48': 0.139}}],
+    [0.771,0.683,0,{ic: 0.0278, krn: {'48': 0.0833}}],
+    [0.528,0.683,0,{ic: 0.0894, krn: {'48': 0.111}}],
+    [0.719,0.683,0,{ic: 0.0993, krn: {'48': 0.111}}],
+    [0.595,0.683,0.0972,{ic: 0.0593, krn: {'48': 0.111}}],
+    [0.845,0.683,0,{ic: 0.00965, krn: {'48': 0.111}}],
+    [0.545,0.683,0,{ic: 0.0738, krn: {'48': 0.0278}}],
+    [0.678,0.683,0.0972,{ic: 0.185, krn: {'48': 0.167}}],
+    [0.762,0.683,0,{ic: 0.0144, krn: {'48': 0.0556}}],
+    [0.69,0.683,0,{krn: {'48': 0.139}}], [1.2,0.683,0,{krn: {'48': 0.139}}],
+    [0.82,0.683,0,{ic: 0.147, krn: {'48': 0.0833}}],
+    [0.796,0.683,0,{ic: 0.0278, krn: {'48': 0.111}}],
+
+    [0.696,0.683,0,{ic: 0.0822, krn: {'48': 0.0833}}],
+    [0.817,0.683,0.0972,{krn: {'48': 0.111}}],
+    [0.848,0.683,0,{krn: {'48': 0.0833}}],
+    [0.606,0.683,0,{ic: 0.075, krn: {'48': 0.139}}],
+    [0.545,0.683,0,{ic: 0.254, krn: {'48': 0.0278}}],
+    [0.626,0.683,0,{ic: 0.0993, krn: {'48': 0.0833}}],
+    [0.613,0.683,0,{ic: 0.0822, krn: {'48': 0.0278}}],
+    [0.988,0.683,0,{ic: 0.0822, krn: {'48': 0.0833}}],
+    [0.713,0.683,0,{ic: 0.146, krn: {'48': 0.139}}],
+    [0.668,0.683,0.0972,{ic: 0.0822, krn: {'48': 0.0833}}],
+    [0.725,0.683,0,{ic: 0.0794, krn: {'48': 0.139}}],
+    [0.667,0.556], [0.667,0.556], [0.667,0.556], [0.667,0.556], [0.667,0.556],
+
+    [0.611,0.694], [0.611,0.694], [0.444,0.75,0.25], [0.444,0.75,0.25],
+    [0.444,0.75,0.25], [0.444,0.75,0.25], [0.5,0.75,0.25], [0.5,0.75,0.25],
+    [0.389,0.75,0.25], [0.389,0.75,0.25], [0.278,0.75,0.25], [0.5,0.75,0.25],
+    [0.5,0.75,0.25], [0.611,0.75,0.25], [0.5,0.75,0.25], [0.278,0.694,0.194],
+
+    [0.833,0.04,0.96], [0.75,0.683], [0.833,0.683], [0.417,0.694,0.194,{ic: 0.111}],
+    [0.667,0.556], [0.667,0.556], [0.778,0.636,0.136], [0.778,0.636,0.136],
+    [0.444,0.694,0.194], [0.444,0.694,0.194], [0.444,0.694,0.194],
+    [0.611,0.694,0.194], [0.778,0.694,0.13], [0.778,0.694,0.13],
+    [0.778,0.694,0.13], [0.778,0.694,0.13]
+  ],
+
+  cmex10: [
+    [0.458,0.04,1.16,{n: 16}], [0.458,0.04,1.16,{n: 17}],
+    [0.417,0.04,1.16,{n: 104}], [0.417,0.04,1.16,{n: 105}],
+    [0.472,0.04,1.16,{n: 106}], [0.472,0.04,1.16,{n: 107}],
+    [0.472,0.04,1.16,{n: 108}], [0.472,0.04,1.16,{n: 109}],
+    [0.583,0.04,1.16,{n: 110}], [0.583,0.04,1.16,{n: 111}],
+    [0.472,0.04,1.16,{n: 68}], [0.472,0.04,1.16,{n: 69}],
+    [0.333,0,0.6,{delim: {rep: 12}}], [0.556,0,0.6,{delim: {rep: 13}}],
+    [0.578,0.04,1.16,{n: 46}], [0.578,0.04,1.16,{n: 47}],
+
+    [0.597,0.04,1.76,{n: 18}], [0.597,0.04,1.76,{n: 19}],
+    [0.736,0.04,2.36,{n: 32}], [0.736,0.04,2.36,{n: 33}],
+    [0.528,0.04,2.36,{n: 34}], [0.528,0.04,2.36,{n: 35}],
+    [0.583,0.04,2.36,{n: 36}], [0.583,0.04,2.36,{n: 37}],
+    [0.583,0.04,2.36,{n: 38}], [0.583,0.04,2.36,{n: 39}],
+    [0.75,0.04,2.36,{n: 40}], [0.75,0.04,2.36,{n: 41}],
+    [0.75,0.04,2.36,{n: 42}], [0.75,0.04,2.36,{n: 43}],
+    [1.04,0.04,2.36,{n: 44}], [1.04,0.04,2.36,{n: 45}],
+
+    [0.792,0.04,2.96,{n: 48}], [0.792,0.04,2.96,{n: 49}],
+    [0.583,0.04,2.96,{n: 50}], [0.583,0.04,2.96,{n: 51}],
+    [0.639,0.04,2.96,{n: 52}], [0.639,0.04,2.96,{n: 53}],
+    [0.639,0.04,2.96,{n: 54}], [0.639,0.04,2.96,{n: 55}],
+    [0.806,0.04,2.96,{n: 56}], [0.806,0.04,2.96,{n: 57}],
+    [0.806,0.04,2.96], [0.806,0.04,2.96],
+    [1.28,0.04,2.96], [1.28,0.04,2.96],
+    [0.811,0.04,1.76,{n: 30}], [0.811,0.04,1.76,{n: 31}],
+
+    [0.875,0.04,1.76,{delim: {top: 48, bot: 64, rep: 66}}],
+    [0.875,0.04,1.76,{delim: {top: 49, bot: 65, rep: 67}}],
+    [0.667,0.04,1.76,{delim: {top: 50, bot: 52, rep: 54}}],
+    [0.667,0.04,1.76,{delim: {top: 51, bot: 53, rep: 55}}],
+    [0.667,0.04,1.76,{delim: {bot: 52, rep: 54}}],
+    [0.667,0.04,1.76,{delim: {bot: 53, rep: 55}}],
+    [0.667,0,0.6,{delim: {top: 50, rep: 54}}],
+    [0.667,0,0.6,{delim: {top: 51, rep: 55}}],
+    [0.889,0,0.9,{delim: {top: 56, mid: 60, bot: 58, rep: 62}}],
+    [0.889,0,0.9,{delim: {top: 57, mid: 61, bot: 59, rep: 62}}],
+    [0.889,0,0.9,{delim: {top: 56, bot: 58, rep: 62}}],
+    [0.889,0,0.9,{delim: {top: 57, bot: 59, rep: 62}}],
+    [0.889,0,1.8,{delim: {rep: 63}}],
+    [0.889,0,1.8,{delim: {rep: 119}}],
+    [0.889,0,0.3,{delim: {rep: 62}}],
+    [0.667,0,0.6,{delim: {top: 120, bot: 121, rep: 63}}],
+
+    [0.875,0.04,1.76,{delim: {top: 56, bot: 59, rep: 62}}],
+    [0.875,0.04,1.76,{delim: {top: 57, bot: 58, rep: 62}}],
+    [0.875,0,0.6,{delim: {rep: 66}}], [0.875,0,0.6,{delim: {rep: 67}}],
+    [0.611,0.04,1.76,{n: 28}], [0.611,0.04,1.76,{n: 29}],
+    [0.833,0,1,{n: 71}], [1.11,0.1,1.5], [0.472,0,1.11,{ic: 0.194, n: 73}],
+    [0.556,0,2.22,{ic: 0.444}], [1.11,0,1,{n: 75}], [1.51,0.1,1.5],
+    [1.11,0,1,{n: 77}], [1.51,0.1,1.5], [1.11,0,1,{n: 79}], [1.51,0.1,1.5],
+
+    [1.06,0,1,{n: 88}], [0.944,0,1,{n: 89}], [0.472,0,1.11,{ic: 0.194, n: 90}],
+    [0.833,0,1,{n: 91}], [0.833,0,1,{n: 92}], [0.833,0,1,{n: 93}],
+    [0.833,0,1,{n: 94}], [0.833,0,1,{n: 95}], [1.44,0.1,1.5],
+    [1.28,0.1,1.5], [0.556,0,2.22,{ic: 0.444}], [1.11,0.1,1.5],
+    [1.11,0.1,1.5], [1.11,0.1,1.5], [1.11,0.1,1.5], [1.11,0.1,1.5],
+
+    [0.944,0,1,{n: 97}], [1.28,0.1,1.5], [0.556,0.722,0,{n: 99}],
+    [1,0.75,0,{n: 100}], [1.44,0.75], [0.556,0.722,0,{n: 102}],
+    [1,0.75,0,{n: 103}], [1.44,0.75], [0.472,0.04,1.76,{n: 20}],
+    [0.472,0.04,1.76,{n: 21}], [0.528,0.04,1.76,{n: 22}],
+    [0.528,0.04,1.76,{n: 23}], [0.528,0.04,1.76,{n: 24}],
+    [0.528,0.04,1.76,{n: 25}], [0.667,0.04,1.76,{n: 26}],
+    [0.667,0.04,1.76,{n: 27}],
+
+    [1,0.04,1.16,{n: 113}], [1,0.04,1.76,{n: 114}], [1,0.04,2.36,{n: 115}],
+    [1,0.04,2.96,{n: 116}], [1.06,0,1.8,{delim: {top: 118, bot: 116, rep: 117}}],
+    [1.06,0,0.6], [1.06,0.04,0.56],
+    [0.778,0,0.6,{delim: {top: 126, bot: 127, rep: 119}}],
+    [0.667,0,0.6,{delim: {top: 120, rep: 63}}],
+    [0.667,0,0.6,{delim: {bot: 121, rep: 63}}],
+    [0.45,0.12], [0.45,0.12], [0.45,0.12], [0.45,0.12],
+    [0.778,0,0.6,{delim: {top: 126, rep: 119}}],
+    [0.778,0,0.6,{delim: {bot: 127, rep: 119}}]
+  ],
+  
+  cmti10: [
+    [0.627,0.683,0,{ic: 0.133}], [0.818,0.683], [0.767,0.683,0,{ic: 0.094}],
+    [0.692,0.683], [0.664,0.683,0,{ic: 0.153}], [0.743,0.683,0,{ic: 0.164}],
+    [0.716,0.683,0,{ic: 0.12}], [0.767,0.683,0,{ic: 0.111}],
+    [0.716,0.683,0,{ic: 0.0599}], [0.767,0.683,0,{ic: 0.111}],
+    [0.716,0.683,0,{ic: 0.103}],
+    [0.613,0.694,0.194,{ic: 0.212, krn: {'39': 0.104, '63': 0.104, '33': 0.104, '41': 0.104, '93': 0.104}, lig: {'105': 14, '108': 15}}],
+    [0.562,0.694,0.194,{ic: 0.103}], [0.588,0.694,0.194,{ic: 0.103}],
+    [0.882,0.694,0.194,{ic: 0.103}], [0.894,0.694,0.194,{ic: 0.103}],
+
+    [0.307,0.431,0,{ic: 0.0767}], [0.332,0.431,0.194,{ic: 0.0374}],
+    [0.511,0.694], [0.511,0.694,0,{ic: 0.0969}], [0.511,0.628,0,{ic: 0.083}],
+    [0.511,0.694,0,{ic: 0.108}], [0.511,0.562,0,{ic: 0.103}], [0.831,0.694],
+    [0.46,0,0.17], [0.537,0.694,0.194,{ic: 0.105}], [0.716,0.431,0,{ic: 0.0751}],
+    [0.716,0.431,0,{ic: 0.0751}], [0.511,0.528,0.0972,{ic: 0.0919}],
+    [0.883,0.683,0,{ic: 0.12}], [0.985,0.683,0,{ic: 0.12}],
+    [0.767,0.732,0.0486,{ic: 0.094}],
+
+    [0.256,0.431,0,{krn: {'108': -0.256, '76': -0.321}}],
+    [0.307,0.694,0,{ic: 0.124, lig: {'96': 60}}],
+    [0.514,0.694,0,{ic: 0.0696}], [0.818,0.694,0.194,{ic: 0.0662}],
+    [0.769,0.694], [0.818,0.75,0.0556,{ic: 0.136}],
+    [0.767,0.694,0,{ic: 0.0969}],
+    [0.307,0.694,0,{ic: 0.124, krn: {'63': 0.102, '33': 0.102}, lig: {'39': 34}}],
+    [0.409,0.75,0.25,{ic: 0.162}], [0.409,0.75,0.25,{ic: 0.0369}],
+    [0.511,0.75,0,{ic: 0.149}], [0.767,0.562,0.0567,{ic: 0.0369}],
+    [0.307,0.106,0.194], [0.358,0.431,0,{ic: 0.0283, lig: {'45': 123}}],
+    [0.307,0.106], [0.511,0.75,0.25,{ic: 0.162}],
+
+    [0.511,0.644,0,{ic: 0.136}], [0.511,0.644,0,{ic: 0.136}],
+    [0.511,0.644,0,{ic: 0.136}], [0.511,0.644,0,{ic: 0.136}],
+    [0.511,0.644,0.194,{ic: 0.136}], [0.511,0.644,0,{ic: 0.136}],
+    [0.511,0.644,0,{ic: 0.136}], [0.511,0.644,0.194,{ic: 0.136}],
+    [0.511,0.644,0,{ic: 0.136}], [0.511,0.644,0,{ic: 0.136}],
+    [0.307,0.431,0,{ic: 0.0582}], [0.307,0.431,0.194,{ic: 0.0582}],
+    [0.307,0.5,0.194,{ic: 0.0756}], [0.767,0.367,-0.133,{ic: 0.0662}],
+    [0.511,0.5,0.194], [0.511,0.694,0,{ic: 0.122, lig: {'96': 62}}],
+
+    [0.767,0.694,0,{ic: 0.096}],
+    [0.743,0.683,0,{krn: {'110': -0.0256, '108': -0.0256, '114': -0.0256, '117': -0.0256, '109': -0.0256, '116': -0.0256, '105': -0.0256, '67': -0.0256, '79': -0.0256, '71': -0.0256, '104': -0.0256, '98': -0.0256, '85': -0.0256, '107': -0.0256, '118': -0.0256, '119': -0.0256, '81': -0.0256, '84': -0.0767, '89': -0.0767, '86': -0.102, '87': -0.102, '101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.704,0.683,0,{ic: 0.103}], [0.716,0.683,0,{ic: 0.145}],
+    [0.755,0.683,0,{ic: 0.094, krn: {'88': -0.0256, '87': -0.0256, '65': -0.0256, '86': -0.0256, '89': -0.0256}}],
+    [0.678,0.683,0,{ic: 0.12}],
+    [0.653,0.683,0,{ic: 0.133, krn: {'111': -0.0767, '101': -0.0767, '117': -0.0767, '114': -0.0767, '97': -0.0767, '65': -0.102, '79': -0.0256, '67': -0.0256, '71': -0.0256, '81': -0.0256}}],
+    [0.774,0.683,0,{ic: 0.0872}], [0.743,0.683,0,{ic: 0.164}],
+    [0.386,0.683,0,{ic: 0.158}], [0.525,0.683,0,{ic: 0.14}],
+    [0.769,0.683,0,{ic: 0.145, krn: {'79': -0.0256, '67': -0.0256, '71': -0.0256, '81': -0.0256}}],
+    [0.627,0.683,0,{krn: {'84': -0.0767, '89': -0.0767, '86': -0.102, '87': -0.102, '101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.897,0.683,0,{ic: 0.164}], [0.743,0.683,0,{ic: 0.164}],
+    [0.767,0.683,0,{ic: 0.094, krn: {'88': -0.0256, '87': -0.0256, '65': -0.0256, '86': -0.0256, '89': -0.0256}}],
+
+    [0.678,0.683,0,{ic: 0.103, krn: {'65': -0.0767}}],
+    [0.767,0.683,0.194,{ic: 0.094}],
+    [0.729,0.683,0,{ic: 0.0387, krn: {'110': -0.0256, '108': -0.0256, '114': -0.0256, '117': -0.0256, '109': -0.0256, '116': -0.0256, '105': -0.0256, '67': -0.0256, '79': -0.0256, '71': -0.0256, '104': -0.0256, '98': -0.0256, '85': -0.0256, '107': -0.0256, '118': -0.0256, '119': -0.0256, '81': -0.0256, '84': -0.0767, '89': -0.0767, '86': -0.102, '87': -0.102, '101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.562,0.683,0,{ic: 0.12}],
+    [0.716,0.683,0,{ic: 0.133, krn: {'121': -0.0767, '101': -0.0767, '111': -0.0767, '114': -0.0767, '97': -0.0767, '117': -0.0767, '65': -0.0767}}],
+    [0.743,0.683,0,{ic: 0.164}],
+    [0.743,0.683,0,{ic: 0.184, krn: {'111': -0.0767, '101': -0.0767, '117': -0.0767, '114': -0.0767, '97': -0.0767, '65': -0.102, '79': -0.0256, '67': -0.0256, '71': -0.0256, '81': -0.0256}}],
+    [0.999,0.683,0,{ic: 0.184, krn: {'65': -0.0767}}],
+    [0.743,0.683,0,{ic: 0.158, krn: {'79': -0.0256, '67': -0.0256, '71': -0.0256, '81': -0.0256}}],
+    [0.743,0.683,0,{ic: 0.194, krn: {'101': -0.0767, '111': -0.0767, '114': -0.0767, '97': -0.0767, '117': -0.0767, '65': -0.0767}}],
+    [0.613,0.683,0,{ic: 0.145}], [0.307,0.75,0.25,{ic: 0.188}],
+    [0.514,0.694,0,{ic: 0.169}], [0.307,0.75,0.25,{ic: 0.105}],
+    [0.511,0.694,0,{ic: 0.0665}], [0.307,0.668,0,{ic: 0.118}],
+
+    [0.307,0.694,0,{ic: 0.124, lig: {'96': 92}}], [0.511,0.431,0,{ic: 0.0767}],
+    [0.46,0.694,0,{ic: 0.0631, krn: {'101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.46,0.431,0,{ic: 0.0565, krn: {'101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.511,0.694,0,{ic: 0.103, krn: {'108': 0.0511}}],
+    [0.46,0.431,0,{ic: 0.0751, krn: {'101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.307,0.694,0.194,{ic: 0.212, krn: {'39': 0.104, '63': 0.104, '33': 0.104, '41': 0.104, '93': 0.104}, lig: {'105': 12, '102': 11, '108': 13}}],
+    [0.46,0.431,0.194,{ic: 0.0885}], [0.511,0.694,0,{ic: 0.0767}],
+    [0.307,0.655,0,{ic: 0.102}], [0.307,0.655,0.194,{ic: 0.145}],
+    [0.46,0.694,0,{ic: 0.108}], [0.256,0.694,0,{ic: 0.103, krn: {'108': 0.0511}}],
+    [0.818,0.431,0,{ic: 0.0767}], [0.562,0.431,0,{ic: 0.0767, krn: {'39': -0.102}}],
+    [0.511,0.431,0,{ic: 0.0631, krn: {'101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+
+    [0.511,0.431,0.194,{ic: 0.0631, krn: {'101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.46,0.431,0.194,{ic: 0.0885}],
+    [0.422,0.431,0,{ic: 0.108, krn: {'101': -0.0511, '97': -0.0511, '111': -0.0511, '100': -0.0511, '99': -0.0511, '103': -0.0511, '113': -0.0511}}],
+    [0.409,0.431,0,{ic: 0.0821}], [0.332,0.615,0,{ic: 0.0949}],
+    [0.537,0.431,0,{ic: 0.0767}], [0.46,0.431,0,{ic: 0.108}],
+    [0.664,0.431,0,{ic: 0.108, krn: {'108': 0.0511}}],
+    [0.464,0.431,0,{ic: 0.12}], [0.486,0.431,0.194,{ic: 0.0885}],
+    [0.409,0.431,0,{ic: 0.123}], [0.511,0.431,0,{ic: 0.0921, lig: {'45': 124}}],
+    [1.02,0.431,0,{ic: 0.0921}], [0.511,0.694,0,{ic: 0.122}],
+    [0.511,0.668,0,{ic: 0.116}], [0.511,0.668,0,{ic: 0.105}]
+  ],
+  
+  cmbx10: [
+    [0.692,0.686], [0.958,0.686], [0.894,0.686], [0.806,0.686],
+    [0.767,0.686], [0.9,0.686], [0.831,0.686], [0.894,0.686],
+    [0.831,0.686], [0.894,0.686], [0.831,0.686],
+    [0.671,0.694,0,{ic: 0.109, krn: {'39': 0.109, '63': 0.109, '33': 0.109, '41': 0.109, '93': 0.109}, lig: {'105': 14, '108': 15}}],
+    [0.639,0.694], [0.639,0.694], [0.958,0.694], [0.958,0.694],
+
+    [0.319,0.444], [0.351,0.444,0.194], [0.575,0.694], [0.575,0.694],
+    [0.575,0.632], [0.575,0.694], [0.575,0.596], [0.869,0.694],
+    [0.511,0,0.17], [0.597,0.694], [0.831,0.444], [0.894,0.444],
+    [0.575,0.542,0.0972], [1.04,0.686], [1.17,0.686], [0.894,0.735,0.0486],
+
+    [0.319,0.444,0,{krn: {'108': -0.319, '76': -0.378}}],
+    [0.35,0.694,0,{lig: {'96': 60}}], [0.603,0.694], [0.958,0.694,0.194],
+    [0.575,0.75,0.0556], [0.958,0.75,0.0556], [0.894,0.694],
+    [0.319,0.694,0,{krn: {'63': 0.128, '33': 0.128}, lig: {'39': 34}}],
+    [0.447,0.75,0.25], [0.447,0.75,0.25], [0.575,0.75], [0.894,0.633,0.133],
+    [0.319,0.156,0.194], [0.383,0.444,0,{lig: {'45': 123}}],
+    [0.319,0.156], [0.575,0.75,0.25],
+
+    [0.575,0.644], [0.575,0.644], [0.575,0.644], [0.575,0.644],
+    [0.575,0.644], [0.575,0.644], [0.575,0.644], [0.575,0.644],
+    [0.575,0.644], [0.575,0.644], [0.319,0.444], [0.319,0.444,0.194],
+    [0.35,0.5,0.194], [0.894,0.391,-0.109], [0.543,0.5,0.194],
+    [0.543,0.694,0,{lig: {'96': 62}}],
+
+    [0.894,0.694],
+    [0.869,0.686,0,{krn: {'116': -0.0319, '67': -0.0319, '79': -0.0319, '71': -0.0319, '85': -0.0319, '81': -0.0319, '84': -0.0958, '89': -0.0958, '86': -0.128, '87': -0.128}}],
+    [0.818,0.686], [0.831,0.686],
+    [0.882,0.686,0,{krn: {'88': -0.0319, '87': -0.0319, '65': -0.0319, '86': -0.0319, '89': -0.0319}}],
+    [0.756,0.686],
+    [0.724,0.686,0,{krn: {'111': -0.0958, '101': -0.0958, '117': -0.0958, '114': -0.0958, '97': -0.0958, '65': -0.128, '79': -0.0319, '67': -0.0319, '71': -0.0319, '81': -0.0319}}],
+    [0.904,0.686], [0.9,0.686], [0.436,0.686,0,{krn: {'73': 0.0319}}],
+    [0.594,0.686],
+    [0.901,0.686,0,{krn: {'79': -0.0319, '67': -0.0319, '71': -0.0319, '81': -0.0319}}],
+    [0.692,0.686,0,{krn: {'84': -0.0958, '89': -0.0958, '86': -0.128, '87': -0.128}}],
+    [1.09,0.686], [0.9,0.686],
+    [0.864,0.686,0,{krn: {'88': -0.0319, '87': -0.0319, '65': -0.0319, '86': -0.0319, '89': -0.0319}}],
+
+    [0.786,0.686,0,{krn: {'65': -0.0958, '111': -0.0319, '101': -0.0319, '97': -0.0319, '46': -0.0958, '44': -0.0958}}],
+    [0.864,0.686,0.194],
+    [0.862,0.686,0,{krn: {'116': -0.0319, '67': -0.0319, '79': -0.0319, '71': -0.0319, '85': -0.0319, '81': -0.0319, '84': -0.0958, '89': -0.0958, '86': -0.128, '87': -0.128}}],
+    [0.639,0.686],
+    [0.8,0.686,0,{krn: {'121': -0.0319, '101': -0.0958, '111': -0.0958, '114': -0.0958, '97': -0.0958, '65': -0.0958, '117': -0.0958}}],
+    [0.885,0.686],
+    [0.869,0.686,0,{ic: 0.016, krn: {'111': -0.0958, '101': -0.0958, '117': -0.0958, '114': -0.0958, '97': -0.0958, '65': -0.128, '79': -0.0319, '67': -0.0319, '71': -0.0319, '81': -0.0319}}],
+    [1.19,0.686,0,{ic: 0.016, krn: {'111': -0.0958, '101': -0.0958, '117': -0.0958, '114': -0.0958, '97': -0.0958, '65': -0.128, '79': -0.0319, '67': -0.0319, '71': -0.0319, '81': -0.0319}}],
+    [0.869,0.686,0,{krn: {'79': -0.0319, '67': -0.0319, '71': -0.0319, '81': -0.0319}}],
+    [0.869,0.686,0,{ic: 0.0287, krn: {'101': -0.0958, '111': -0.0958, '114': -0.0958, '97': -0.0958, '65': -0.0958, '117': -0.0958}}],
+    [0.703,0.686], [0.319,0.75,0.25], [0.603,0.694], [0.319,0.75,0.25],
+    [0.575,0.694], [0.319,0.694],
+
+    [0.319,0.694,0,{lig: {'96': 92}}],
+    [0.559,0.444,0,{krn: {'118': -0.0319, '106': 0.0639, '121': -0.0319, '119': -0.0319}}],
+    [0.639,0.694,0,{krn: {'101': 0.0319, '111': 0.0319, '120': -0.0319, '100': 0.0319, '99': 0.0319, '113': 0.0319, '118': -0.0319, '106': 0.0639, '121': -0.0319, '119': -0.0319}}],
+    [0.511,0.444,0,{krn: {'104': -0.0319, '107': -0.0319}}],
+    [0.639,0.694], [0.527,0.444],
+    [0.351,0.694,0,{ic: 0.109, krn: {'39': 0.109, '63': 0.109, '33': 0.109, '41': 0.109, '93': 0.109}, lig: {'105': 12, '102': 11, '108': 13}}],
+    [0.575,0.444,0.194,{ic: 0.016, krn: {'106': 0.0319}}],
+    [0.639,0.694,0,{krn: {'116': -0.0319, '117': -0.0319, '98': -0.0319, '121': -0.0319, '118': -0.0319, '119': -0.0319}}],
+    [0.319,0.694], [0.351,0.694,0.194],
+    [0.607,0.694,0,{krn: {'97': -0.0639, '101': -0.0319, '97': -0.0319, '111': -0.0319, '99': -0.0319}}],
+    [0.319,0.694],
+    [0.958,0.444,0,{krn: {'116': -0.0319, '117': -0.0319, '98': -0.0319, '121': -0.0319, '118': -0.0319, '119': -0.0319}}],
+    [0.639,0.444,0,{krn: {'116': -0.0319, '117': -0.0319, '98': -0.0319, '121': -0.0319, '118': -0.0319, '119': -0.0319}}],
+    [0.575,0.444,0,{krn: {'101': 0.0319, '111': 0.0319, '120': -0.0319, '100': 0.0319, '99': 0.0319, '113': 0.0319, '118': -0.0319, '106': 0.0639, '121': -0.0319, '119': -0.0319}}],
+
+    [0.639,0.444,0.194,{krn: {'101': 0.0319, '111': 0.0319, '120': -0.0319, '100': 0.0319, '99': 0.0319, '113': 0.0319, '118': -0.0319, '106': 0.0639, '121': -0.0319, '119': -0.0319}}],
+    [0.607,0.444,0.194], [0.474,0.444], [0.454,0.444],
+    [0.447,0.635,0,{krn: {'121': -0.0319, '119': -0.0319}}],
+    [0.639,0.444,0,{krn: {'119': -0.0319}}],
+    [0.607,0.444,0,{ic: 0.016, krn: {'97': -0.0639, '101': -0.0319, '97': -0.0319, '111': -0.0319, '99': -0.0319}}],
+    [0.831,0.444,0,{ic: 0.016, krn: {'101': -0.0319, '97': -0.0319, '111': -0.0319, '99': -0.0319}}],
+    [0.607,0.444],
+    [0.607,0.444,0.194,{ic: 0.016, krn: {'111': -0.0319, '101': -0.0319, '97': -0.0319, '46': -0.0958, '44': -0.0958}}],
+    [0.511,0.444], [0.575,0.444,0,{ic: 0.0319, lig: {'45': 124}}],
+    [1.15,0.444,0,{ic: 0.0319}], [0.575,0.694], [0.575,0.694], [0.575,0.694]
+  ]
+};
+
+/***************************************************************************/
+
+/*
+ *  Implement image-based fonts for fallback method
+ */
+jsMath.Img = {
+  
+  // font sizes available
+  fonts: [50, 60, 70, 85, 100, 120, 144, 173, 207, 249, 298, 358, 430],
+    
+  // em widths for the various font size directories
+  w: {'50': 6.9, '60': 8.3, '70': 9.7, '85': 11.8, '100': 13.9,
+      '120': 16.7, '144': 20.0, '173': 24.0, '207': 28.8, '249': 34.6,
+      '298': 41.4, '358': 49.8, '430': 59.8},
+        
+  best: 4,     // index of best font size in the fonts list    
+  update: {},  // fonts to update (see UpdateFonts below)
+  factor: 1,   // factor by which to shrink images (for better printing)
+  loaded: 0,   // image fonts are loaded
+
+  // add characters to be drawn using images
+  SetFont: function (change) {
+    for (var font in change) {
+      if (!this.update[font]) {this.update[font] = []}
+      this.update[font] = this.update[font].concat(change[font]);
+    }
+  },
+
+  /*
+   *  Called by the exta-font definition files to add an image font
+   *  into the mix
+   */
+  AddFont: function (size,def) {
+    if (!jsMath.Img[size]) {jsMath.Img[size] = {}};
+    jsMath.Add(jsMath.Img[size],def);
+  },
+    
+  /*
+   *  Update font(s) to use image data rather than native fonts
+   *  It looks in the jsMath.Img.update array to find the names
+   *  of the fonts to udpate, and the arrays of character codes
+   *  to set (or 'all' to change every character);
+   */
+  UpdateFonts: function () {
+    var change = this.update; if (!this.loaded) return;
+    for (var font in change) {
+      for (var i = 0; i < change[font].length; i++) {
+        var c = change[font][i];
+        if (c == 'all') {for (c in jsMath.TeX[font]) {jsMath.TeX[font][c].img = {}}}
+          else {jsMath.TeX[font][c].img = {}}
+      }
+    }
+    this.update = {};
+  },
+  
+  /*
+   *  Find the font size that best fits our current font
+   *  (this is the directory name for the img files used
+   *  in some fallback modes).
+   */
+  BestSize: function () {
+    var w = jsMath.em * this.factor;
+    var m = this.w[this.fonts[0]];
+    for (var i = 1; i < this.fonts.length; i++) {
+      if (w < (this.w[this.fonts[i]] + 2*m) / 3) {return i-1}
+      m = this.w[this.fonts[i]];
+    }
+    return i-1;
+  },
+
+  /*
+   *  Get the scaling factor for the image fonts
+   */
+  Scale: function () {
+    if (!this.loaded) return;
+    this.best = this.BestSize();
+    this.em = jsMath.Img.w[this.fonts[this.best]];
+    this.scale = (jsMath.em/this.em);
+    if (Math.abs(this.scale - 1) < .12) {this.scale = 1}
+  },
+
+  /*
+   *  Get URL to directory for given font and size, based on the
+   *  user's alpha/plain setting
+   */
+  URL: function (name,size,C) {
+    var type = (jsMath.Controls.cookie.alpha) ? '/alpha/': '/plain/';
+    if (C == null) {C = "def.js"} else {C = 'char'+C+'.png'}
+    if (size != "") {size += '/'}
+    return this.root+name+type+size+C;
+  },
+
+  /*
+   *  Laod the data for an image font
+   */
+  LoadFont: function (name) {
+    if (!this.loaded) this.Init();
+    jsMath.Setup.Script(this.URL(name,""));
+  },
+  
+  /*
+   *  Setup for print mode, and create the hex code table
+   */
+  Init: function () {
+    if (jsMath.Controls.cookie.print || jsMath.Controls.cookie.stayhires) {
+      jsMath.Controls.cookie.print = jsMath.Controls.cookie.stayhires;
+      this.factor *= 3;
+      if (!jsMath.Controls.isLocalCookie || !jsMath.Global.isLocal) {jsMath.Controls.SetCookie(0)}
+      if (jsMath.Browser.alphaPrintBug) {jsMath.Controls.cookie.alpha = 0}
+    }
+    var codes = '0123456789ABCDEF';
+    this.HexCode = [];
+    for (var i = 0; i < 128; i++) {
+      var h = Math.floor(i/16); var l = i - 16*h;
+      this.HexCode[i] = codes.charAt(h)+codes.charAt(l);
+    }
+    this.loaded = 1;
+  }
+  
+};
+
+/***************************************************************************/
+
+/*
+ *  jsMath.HTML handles creation of most of the HTML needed for
+ *  presenting mathematics in HTML pages.
+ */
+
+jsMath.HTML = {
+  
+  /*
+   *  Produce a string version of a measurement in ems,
+   *  showing only a limited number of digits, and 
+   *  using 0 when the value is near zero.
+   */
+  Em: function (m) {
+    var n = 5; if (m < 0) {n++}
+    if (Math.abs(m) < .000001) {m = 0}
+    var s = String(m); s = s.replace(/(\.\d\d\d).+/,'$1');
+    return s+'em'
+  },
+
+  /*
+   *  Create a horizontal space of width w
+   */
+  Spacer: function (w) {
+    if (w == 0) {return ''};
+    return jsMath.Browser.msieSpaceFix+'<span class="spacer" style="margin-left:'+this.Em(w)+'"></span>';
+  },
+  
+  /*
+   *  Create a blank rectangle of the given size
+   *  If the height is small, it is converted to pixels so that it
+   *  will not disappear at small font sizes.
+   */
+  
+  Blank: function (w,h,d,isRule) {
+    var backspace = ''; var style = ''
+    if (isRule) {
+      style += 'border-left:'+this.Em(w)+' solid;';
+      if (jsMath.Browser.widthAddsBorder) {w = 0};
+    }
+    if (w == 0) {
+      if (jsMath.Browser.blankWidthBug) {
+        if (jsMath.Browser.quirks) {
+          style += 'width:1px;';
+          backspace = '<span class="spacer" style="margin-right:-1px"></span>'
+        } else if (!isRule) {
+          style += 'width:1px;margin-right:-1px;';
+        }
+      }
+    } else {style += 'width:'+this.Em(w)+';'}
+    if (d == null) {d = 0}
+    if (h) {
+      var H = this.Em(h+d);
+      if (isRule && h*jsMath.em <= 1.5) {H = "1.5px"; h = 1.5/jsMath.em}
+      style += 'height:'+H+';';
+    }
+    if (jsMath.Browser.mozInlineBlockBug) {d = -h}
+    if (jsMath.Browser.msieBorderBug && !isRule) {d -= jsMath.d}
+    if (d) {style += 'vertical-align:'+this.Em(-d)}
+    return backspace+'<span class="blank" style="'+style+'"></span>';
+  },
+
+  /*
+   *  Create a rule line for fractions, etc.
+   */
+  Rule: function (w,h) {
+    if (h == null) {h = jsMath.TeX.default_rule_thickness}
+    return this.Blank(w,h,0,1);
+  },
+  
+  /*
+   *  Add a <SPAN> tag to activate a specific CSS class
+   */
+  Class: function (tclass,html) {
+    return '<span class="'+tclass+'">'+html+'</span>';
+  },
+  
+  /*
+   *  Use a <SPAN> to place some HTML at a specific position.
+   *  (This can be replaced by the ones below to overcome
+   *   some browser-specific bugs.)
+   */
+  Place: function (html,x,y) {
+    if (Math.abs(x) < .0001) {x = 0}
+    if (Math.abs(y) < .0001) {y = 0}
+    if (x || y) {
+      var span = '<span style="position: relative;';
+      if (x) {span += ' margin-left:'+this.Em(x)+';'}
+      if (y) {span += ' top:'+this.Em(-y)+';'}
+      html = span + '">' + html + '</span>';
+    }
+    return html;
+  },
+  
+  /*
+   *  For MSIE on Windows, backspacing must be done in a separate
+   *  <SPAN>, otherwise the contents will be clipped.  Netscape
+   *  also doesn't combine vertical and horizontal spacing well.
+   *  Here the x and y positioning are done in separate <SPAN> tags
+   */
+  PlaceSeparateSkips: function (html,x,y,mw,Mw,w) {
+    if (Math.abs(x) < .0001) {x = 0}
+    if (Math.abs(y) < .0001) {y = 0}
+    if (y) {
+      var lw = 0; var rw = 0; var width = "";
+      if (mw != null) {
+        rw = Mw - w; lw = mw;
+        width = ' width:'+this.Em(Mw-mw)+';';
+      }
+      html = 
+        this.Spacer(lw-rw) +
+        '<span style="position: relative; '
+            + 'top:'+this.Em(-y)+';'
+            + 'left:'+this.Em(rw)+';'
+            + width + '">' +
+          this.Spacer(-lw) +
+          html +
+          this.Spacer(rw) +
+        '</span>'
+    }
+    if (x) {html = this.Spacer(x) + html}
+    return html;
+  },
+  
+  /*
+   *  Place a SPAN with absolute coordinates
+   */
+  PlaceAbsolute: function (html,x,y,mw,Mw,w) {
+    if (Math.abs(x) < .0001) {x = 0}
+    if (Math.abs(y) < .0001) {y = 0}
+    var leftSpace = ""; var rightSpace = ""; var width = "";
+    if (jsMath.Browser.msieRelativeClipBug && mw != null) {
+      leftSpace  = this.Spacer(-mw); x += mw;
+      rightSpace = this.Spacer(Mw-w);
+    }
+    if (jsMath.Browser.operaAbsoluteWidthBug) {width = " width: "+this.Em(w+2)}
+    html =
+      '<span style="position:absolute; left:'+this.Em(x)+'; '
+            + 'top:'+this.Em(y)+';'+width+'">' +
+        leftSpace + html + rightSpace +
+        '&nbsp;' + //  space normalizes line height in script styles
+      '</span>';
+    return html;
+  },
+
+  Absolute: function(html,w,h,d,y) {
+    if (y != "none") {
+      if (Math.abs(y) < .0001) {y = 0}
+      html = '<span style="position:absolute; '
+               + 'top:'+jsMath.HTML.Em(y)+'; left:0em;">'
+               + html + '&nbsp;' // space normalizes line height in script styles
+             + '</span>';
+    }
+    if (d == "none") {d = 0}
+    html += this.Blank(w,h-d,d);
+    if (jsMath.Browser.msieAbsoluteBug) {           // for MSIE (Mac)
+      html = '<span style="position:relative;">' + html + '</span>';
+    }
+    html = '<span style="position:relative;'
+         +   jsMath.Browser.msieInlineBlockFix
+         + '">' + html + '</span>';
+    return html;
+  }
+
+};
+
+
+/***************************************************************************/
+
+/*
+ *  jsMath.Box handles TeX's math boxes and jsMath's equivalent of hboxes.
+ */
+
+jsMath.Box = function (format,text,w,h,d) {
+  if (d == null) {d = jsMath.d}
+  this.type = 'typeset';
+  this.w = w; this.h = h; this.d = d; this.bh = h; this.bd = d;
+  this.x = 0; this.y = 0; this.mw = 0; this.Mw = w;
+  this.html = text; this.format = format;
+};
+
+
+jsMath.Add(jsMath.Box,{
+  
+  defaultH: 0, // default height for characters with none specified
+
+  /*
+   *  An empty box
+   */
+  Null: function () {return new jsMath.Box('null','',0,0,0)},
+
+  /*
+   *  A box containing only text whose class and style haven't been added
+   *  yet (so that we can combine ones with the same styles).  It gets
+   *  the text dimensions, if needed.  (In general, this has been
+   *  replaced by TeX() below, but is still used in fallback mode.)
+   */
+  Text: function (text,tclass,style,size,a,d) {
+    var html = jsMath.Typeset.AddClass(tclass,text);
+        html = jsMath.Typeset.AddStyle(style,size,html);
+    var BB = jsMath.EmBoxFor(html); var TeX = jsMath.Typeset.TeX(style,size);
+    var bd = ((tclass == 'cmsy10' || tclass == 'cmex10')? BB.h-TeX.h: TeX.d*BB.h/TeX.hd);
+    var box = new jsMath.Box('text',text,BB.w,BB.h-bd,bd);
+    box.style = style; box.size = size; box.tclass = tclass;
+    if (d != null) {box.d = d*TeX.scale} else {box.d = 0}
+    if (a == null || a == 1) {box.h = .9*TeX.M_height}
+      else {box.h = 1.1*TeX.x_height + TeX.scale*a}
+    return box;
+  },
+
+  /*
+   *  Produce a box containing a given TeX character from a given font.
+   *  The box is a text box (like the ones above), so that characters from
+   *  the same font can be combined.
+   */
+  TeX: function (C,font,style,size) {
+    var c = jsMath.TeX[font][C];
+    if (c.d == null) {c.d = 0}; if (c.h == null) {c.h = 0}
+    if (c.img != null && c.c != '') this.TeXIMG(font,C,jsMath.Typeset.StyleSize(style,size));
+    var scale = jsMath.Typeset.TeX(style,size).scale;
+    var h = c.h + jsMath.TeX[font].dh
+    var box = new jsMath.Box('text',c.c,c.w*scale,h*scale,c.d*scale);
+    box.style = style; box.size = size;
+    if (c.tclass) {
+      box.tclass = c.tclass;
+      if (c.img) {box.bh = c.img.bh; box.bd = c.img.bd}
+            else {box.bh = scale*jsMath.h; box.bd = scale*jsMath.d}
+    } else {
+      box.tclass = font;
+      box.bh = scale*jsMath.TeX[font].h;
+      box.bd = scale*jsMath.TeX[font].d;
+      if (jsMath.Browser.msieFontBug && box.html.match(/&#/)) {
+        // hack to avoid font changing back to the default
+        // font when a unicode reference is not followed
+        // by a letter or number
+        box.html += '<span style="display:none">x</span>';
+      }
+    }
+    return box;
+  },
+
+  /*
+   *  In fallback modes, handle the fact that we don't have the
+   *  sizes of the characters precomputed
+   */
+  TeXfallback: function (C,font,style,size) {
+    var c = jsMath.TeX[font][C]; if (!c.tclass) {c.tclass = font}
+    if (c.img != null) {return this.TeXnonfallback(C,font,style,size)}
+    if (c.h != null && c.a == null) {c.a = c.h-1.1*jsMath.TeX.x_height}
+    var a = c.a; var d = c.d; // avoid Firefox warnings
+    var box = this.Text(c.c,c.tclass,style,size,a,d);
+    var scale = jsMath.Typeset.TeX(style,size).scale;
+    if (c.bh != null) {
+      box.bh = c.bh*scale;
+      box.bd = c.bd*scale;
+    } else {
+      var h = box.bd+box.bh;
+      var html = jsMath.Typeset.AddClass(box.tclass,box.html);
+          html = jsMath.Typeset.AddStyle(style,size,html);
+      box.bd = jsMath.EmBoxFor(html+jsMath.HTML.Blank(1,h)).h - h;
+      box.bh = h - box.bd;
+      if (scale == 1) {c.bh = box.bh; c.bd = box.bd}
+    }
+    if (jsMath.msieFontBug && box.html.match(/&#/))
+      {box.html += '<span style="display:none">x</span>'}
+    return box;
+  },
+
+  /*
+   *  Set the character's string to the appropriate image file
+   */
+  TeXIMG: function (font,C,size) {
+    var c = jsMath.TeX[font][C];
+    if (c.img.size != null && c.img.size == size &&
+        c.img.best != null && c.img.best == jsMath.Img.best) return;
+    var mustScale = (jsMath.Img.scale != 1);
+    var id = jsMath.Img.best + size - 4;
+    if (id < 0) {id = 0; mustScale = 1} else
+    if (id >= jsMath.Img.fonts.length) {id = jsMath.Img.fonts.length-1; mustScale = 1}
+    var imgFont = jsMath.Img[jsMath.Img.fonts[id]];
+    var img = imgFont[font][C];
+    var scale = 1/jsMath.Img.w[jsMath.Img.fonts[id]];
+    if (id != jsMath.Img.best + size - 4) {
+      if (c.w != null) {scale = c.w/img[0]} else {
+        scale *= jsMath.Img.fonts[size]/jsMath.Img.fonts[4]
+              *  jsMath.Img.fonts[jsMath.Img.best]/jsMath.Img.fonts[id];
+      }
+    }
+    var w = img[0]*scale; var h = img[1]*scale; var d = -img[2]*scale; var v;
+    var wadjust = (c.w == null || Math.abs(c.w-w) < .01)? "" : " margin-right:"+jsMath.HTML.Em(c.w-w)+';';
+    var resize = ""; C = jsMath.Img.HexCode[C];
+    if (!mustScale && !jsMath.Controls.cookie.scaleImg) {
+      if (2*w < h || (jsMath.Browser.msieAlphaBug && jsMath.Controls.cookie.alpha))
+         {resize = "height:"+(img[1]*jsMath.Browser.imgScale)+'px;'}
+      resize += " width:"+(img[0]*jsMath.Browser.imgScale)+'px;'
+      v = -img[2]+'px';
+    } else {
+      if (2*w < h || (jsMath.Browser.msieAlphaBug && jsMath.Controls.cookie.alpha))
+         {resize = "height:"+jsMath.HTML.Em(h*jsMath.Browser.imgScale)+';'}
+      resize += " width:"+jsMath.HTML.Em(w*jsMath.Browser.imgScale)+';'
+      v = jsMath.HTML.Em(d);
+    }
+    var vadjust = (Math.abs(d) < .01 && !jsMath.Browser.valignBug)?
+                         "": " vertical-align:"+v+';';
+    var URL = jsMath.Img.URL(font,jsMath.Img.fonts[id],C);
+    if (jsMath.Browser.msieAlphaBug && jsMath.Controls.cookie.alpha) {
+      c.c = '<img src="'+jsMath.blank+'" '
+               + 'style="'+jsMath.Browser.msieCenterBugFix
+               + resize + vadjust + wadjust
+               + ' filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=' + "'"
+               + URL + "', sizingMethod='scale'" + ');" />';
+    } else {
+      c.c = '<img src="'+URL+'" style="'+jsMath.Browser.msieCenterBugFix
+                  + resize + vadjust + wadjust + '" />';
+    }
+    c.tclass = "normal";
+    c.img.bh = h+d; c.img.bd = -d;
+    c.img.size = size; c.img.best = jsMath.Img.best;
+  },
+  
+  /*
+   *  A box containing a spacer of a specific width
+   */
+  Space: function (w) {
+    return new jsMath.Box('html',jsMath.HTML.Spacer(w),w,0,0);
+  },
+
+  /*
+   *  A box containing a horizontal rule
+   */
+  Rule: function (w,h) {
+    if (h == null) {h = jsMath.TeX.default_rule_thickness}
+    var html = jsMath.HTML.Rule(w,h);
+    return new jsMath.Box('html',html,w,h,0);
+  },
+
+  /*
+   *  Get a character from a TeX font, and make sure that it has
+   *  its metrics specified.
+   */
+  GetChar: function (code,font) {
+    var c = jsMath.TeX[font][code];
+    if (c.img != null) {this.TeXIMG(font,code,4)}
+    if (c.tclass == null) {c.tclass = font}
+    if (!c.computedW) {
+      c.w = jsMath.EmBoxFor(jsMath.Typeset.AddClass(c.tclass,c.c)).w;
+      if (c.h == null) {c.h = jsMath.Box.defaultH}; if (c.d == null) {c.d = 0}
+      c.computedW = 1;
+    }
+    return c;
+  },
+  
+  /*
+   *  Locate the TeX delimiter character that matches a given height.
+   *  Return the character, font, style and actual height used.
+   */
+  DelimBestFit: function (H,c,font,style) {
+    if (c == 0 && font == 0) return null;
+    var C; var h; font = jsMath.TeX.fam[font];
+    var isSS = (style.charAt(1) == 'S');
+    var isS  = (style.charAt(0) == 'S');
+    while (c != null) {
+      C = jsMath.TeX[font][c];
+      if (C.h == null) {C.h = jsMath.Box.defaultH}; if (C.d == null) {C.d = 0}
+      h = C.h+C.d;
+      if (C.delim) {return [c,font,'',H]}
+      if (isSS && .5*h >= H) {return [c,font,'SS',.5*h]}
+      if (isS  && .7*h >= H) {return [c,font,'S',.7*h]}
+      if (h >= H || C.n == null) {return [c,font,'T',h]}
+      c = C.n;
+    }
+    return null;
+  },
+  
+  /*
+   *  Create the HTML needed for a stretchable delimiter of a given height,
+   *  either centered or not.  This version uses relative placement (i.e.,
+   *  backspaces, not line-breaks).  This works with more browsers, but
+   *  if the font size changes, the backspacing may not be right, so the
+   *  delimiters may become jagged.
+   */
+  DelimExtendRelative: function (H,c,font,a,nocenter) {
+    var C = jsMath.TeX[font][c];
+    var top = this.GetChar(C.delim.top? C.delim.top: C.delim.rep,font);
+    var rep = this.GetChar(C.delim.rep,font);
+    var bot = this.GetChar(C.delim.bot? C.delim.bot: C.delim.rep,font);
+    var ext = jsMath.Typeset.AddClass(rep.tclass,rep.c);
+    var w = rep.w; var h = rep.h+rep.d
+    var y; var Y; var html; var dx; var i; var n;
+    if (C.delim.mid) {// braces
+      var mid = this.GetChar(C.delim.mid,font);
+      n = Math.ceil((H-(top.h+top.d)-(mid.h+mid.d)-(bot.h+bot.d))/(2*(rep.h+rep.d)));
+      H = 2*n*(rep.h+rep.d) + (top.h+top.d) + (mid.h+mid.d) + (bot.h+bot.d);
+      if (nocenter) {y = 0} else {y = H/2+a}; Y = y;
+      html = jsMath.HTML.Place(jsMath.Typeset.AddClass(top.tclass,top.c),0,y-top.h)
+           + jsMath.HTML.Place(jsMath.Typeset.AddClass(bot.tclass,bot.c),-(top.w+bot.w)/2,y-(H-bot.d))
+           + jsMath.HTML.Place(jsMath.Typeset.AddClass(mid.tclass,mid.c),-(bot.w+mid.w)/2,y-(H+mid.h-mid.d)/2);
+      dx = (w-mid.w)/2; if (Math.abs(dx) < .0001) {dx = 0}
+      if (dx) {html += jsMath.HTML.Spacer(dx)}
+      y -= top.h+top.d + rep.h;
+      for (i = 0; i < n; i++) {html += jsMath.HTML.Place(ext,-w,y-i*h)}
+      y -= H/2 - rep.h/2;
+      for (i = 0; i < n; i++) {html += jsMath.HTML.Place(ext,-w,y-i*h)}
+    } else {// everything else
+      n = Math.ceil((H - (top.h+top.d) - (bot.h+bot.d))/(rep.h+rep.d));
+      // make sure two-headed arrows have an extender
+      if (top.h+top.d < .9*(rep.h+rep.d)) {n = Math.max(1,n)}
+      H = n*(rep.h+rep.d) + (top.h+top.d) + (bot.h+bot.d);
+      if (nocenter) {y = 0} else {y = H/2+a}; Y = y;
+      html = jsMath.HTML.Place(jsMath.Typeset.AddClass(top.tclass,top.c),0,y-top.h)
+      dx = (w-top.w)/2; if (Math.abs(dx) < .0001) {dx = 0}
+      if (dx) {html += jsMath.HTML.Spacer(dx)}
+      y -= top.h+top.d + rep.h;
+      for (i = 0; i < n; i++) {html += jsMath.HTML.Place(ext,-w,y-i*h)}
+      html += jsMath.HTML.Place(jsMath.Typeset.AddClass(bot.tclass,bot.c),-(w+bot.w)/2,Y-(H-bot.d));
+    }
+    if (nocenter) {h = top.h} else {h = H/2+a}
+    var box = new jsMath.Box('html',html,rep.w,h,H-h);
+    box.bh = jsMath.TeX[font].h; box.bd = jsMath.TeX[font].d;
+    return box;
+  },
+
+  /*
+   *  Create the HTML needed for a stretchable delimiter of a given height,
+   *  either centered or not.  This version uses absolute placement (i.e.,
+   *  line-breaks, not backspacing).  This gives more reliable results,
+   *  but doesn't work with all browsers.
+   */
+  DelimExtendAbsolute: function (H,c,font,a,nocenter) {
+    var Font = jsMath.TeX[font];
+    var C = Font[c]; var html;
+    var top = this.GetChar(C.delim.top? C.delim.top: C.delim.rep,font);
+    var rep = this.GetChar(C.delim.rep,font);
+    var bot = this.GetChar(C.delim.bot? C.delim.bot: C.delim.rep,font);
+    var n; var h; var y; var ext; var i;
+    
+    if (C.delim.mid) {// braces
+      var mid = this.GetChar(C.delim.mid,font);
+      n = Math.ceil((H-(top.h+top.d)-(mid.h+mid.d-.05)-(bot.h+bot.d-.05))/(2*(rep.h+rep.d-.05)));
+      H = 2*n*(rep.h+rep.d-.05) + (top.h+top.d) + (mid.h+mid.d-.05) + (bot.h+bot.d-.05);
+      
+      html = jsMath.HTML.PlaceAbsolute(jsMath.Typeset.AddClass(top.tclass,top.c),0,0);
+      h = rep.h+rep.d - .05; y = top.d-.05 + rep.h;
+      ext = jsMath.Typeset.AddClass(font,rep.c)
+      for (i = 0; i < n; i++) {html += jsMath.HTML.PlaceAbsolute(ext,0,y+i*h)}
+      html += jsMath.HTML.PlaceAbsolute(jsMath.Typeset.AddClass(mid.tclass,mid.c),0,y+n*h-rep.h+mid.h);
+      y += n*h + mid.h+mid.d - .05;
+      for (i = 0; i < n; i++) {html += jsMath.HTML.PlaceAbsolute(ext,0,y+i*h)}
+      html += jsMath.HTML.PlaceAbsolute(jsMath.Typeset.AddClass(bot.tclass,bot.c),0,y+n*h-rep.h+bot.h);
+    } else {// all others
+      n = Math.ceil((H - (top.h+top.d) - (bot.h+bot.d-.05))/(rep.h+rep.d-.05));
+      H = n*(rep.h+rep.d-.05) + (top.h+top.d) + (bot.h+bot.d-.05);
+
+      html = jsMath.HTML.PlaceAbsolute(jsMath.Typeset.AddClass(top.tclass,top.c),0,0);
+      h = rep.h+rep.d-.05; y = top.d-.05 + rep.h;
+      ext = jsMath.Typeset.AddClass(rep.tclass,rep.c);
+      for (i = 0; i < n; i++) {html += jsMath.HTML.PlaceAbsolute(ext,0,y+i*h)}
+      html += jsMath.HTML.PlaceAbsolute(jsMath.Typeset.AddClass(bot.tclass,bot.c),0,y+n*h-rep.h+bot.h);
+    }
+    
+    var w = top.w;
+    if (nocenter) {h = top.h; y = 0} else {h = H/2 + a; y = h - top.h}
+    html = jsMath.HTML.Absolute(html,w,Font.h,"none",-y);
+    var box = new jsMath.Box('html',html,rep.w,h,H-h);
+    box.bh = jsMath.TeX[font].h; box.bd = jsMath.TeX[font].d;
+    return box;
+  },
+  
+  /*
+   *  Get the HTML for a given delimiter of a given height.
+   *  It will return either a single character, if one exists, or the
+   *  more complex HTML needed for a stretchable delimiter.
+   */
+  Delimiter: function (H,delim,style,nocenter) {
+    var size = 4;  //### pass this?
+    var TeX = jsMath.Typeset.TeX(style,size);
+    if (!delim) {return this.Space(TeX.nulldelimiterspace)}
+    var CFSH = this.DelimBestFit(H,delim[2],delim[1],style);
+    if (CFSH == null || CFSH[3] < H) 
+      {CFSH = this.DelimBestFit(H,delim[4],delim[3],style)}
+    if (CFSH == null) {return this.Space(TeX.nulldelimiterspace)}
+    if (CFSH[2] == '')
+      {return this.DelimExtend(H,CFSH[0],CFSH[1],TeX.axis_height,nocenter)}
+    var box = jsMath.Box.TeX(CFSH[0],CFSH[1],CFSH[2],size).Styled();
+    if (nocenter) {box.y = -jsMath.TeX[CFSH[1]].dh*TeX.scale}
+      else {box.y = -((box.h+box.d)/2 - box.d - TeX.axis_height)}
+    if (Math.abs(box.y) < .0001) {box.y = 0}
+    if (box.y) {box = jsMath.Box.SetList([box],CFSH[2],size)}
+    return box;
+  },
+  
+  /*
+   *  Get a character by its TeX charcode, and make sure its width
+   *  is specified.
+   */
+  GetCharCode: function (code) {
+    var font = jsMath.TeX.fam[code[0]];
+    var Font = jsMath.TeX[font];
+    var c = Font[code[1]];
+    if (c.img != null) {this.TeXIMG(font,code[1],4)}
+    if (c.w == null) {c.w = jsMath.EmBoxFor(jsMath.Typeset.AddClass(c.tclass,c.c)).w}
+    if (c.font == null) {c.font = font}
+    return c;
+  },
+
+  /*
+   * Add the class to the html, and use the font if there isn't one
+   * specified already
+   */
+
+  AddClass: function (tclass,html,font) {
+    if (tclass == null) {tclass = font}
+    return jsMath.Typeset.AddClass(tclass,html);
+  },
+  
+  /*
+   *  Create the HTML for an alignment (e.g., array or matrix)
+   *  Since the widths are not really accurate (they are based on pixel
+   *  widths not the sub-pixel widths of the actual characters), there
+   *  is some drift involved.  We lay out the table column by column
+   *  to help reduce the problem.
+   *  
+   *  ###  still need to allow users to specify row and column attributes,
+   *       and do things like \span and \multispan  ###
+   */
+  LayoutRelative: function (size,table,align,cspacing,rspacing,vspace,useStrut,addWidth) {
+    if (align == null) {align = []}
+    if (cspacing == null) {cspacing = []}
+    if (rspacing == null) {rspacing = []}
+    if (useStrut == null) {useStrut = 1}
+    if (addWidth == null) {addWidth = 1}
+    
+    // get row and column maximum dimensions
+    var scale = jsMath.sizes[size]/100;
+    var W = []; var H = []; var D = [];
+    var unset = -1000; var bh = unset; var bd = unset;
+    var i; var j; var row;
+    for (i = 0; i < table.length; i++) {
+      if (rspacing[i] == null) {rspacing[i] = 0}
+      row = table[i];
+      H[i] = useStrut*jsMath.h*scale; D[i] = useStrut*jsMath.d*scale;
+      for (j = 0; j < row.length; j++) {
+        row[j] = row[j].Remeasured();
+        if (row[j].h > H[i]) {H[i] = row[j].h}
+        if (row[j].d > D[i]) {D[i] = row[j].d}
+        if (j >= W.length) {W[j] = row[j].w}
+        else if (row[j].w > W[j]) {W[j] = row[j].w}
+        if (row[j].bh > bh) {bh = row[j].bh}
+        if (row[j].bd > bd) {bd = row[j].bd}
+      }
+    }
+    if (rspacing[table.length] == null) {rspacing[table.length] = 0}
+    if (bh == unset) {bh = 0}; if (bd == unset) {bd = 0}
+
+    // lay out the columns
+    var HD = useStrut*(jsMath.hd-.01)*scale;
+    var dy = (vspace || 1) * scale/6;
+    var html = ''; var pW = 0; var cW = 0;
+    var w; var h; var y;
+    var box; var mlist; var entry;
+    for (j = 0; j < W.length; j++) {
+      mlist = []; y = -H[0]-rspacing[0]; pW = 0;
+      for (i = 0; i < table.length; i++) {
+        entry = table[i][j];
+        if (entry && entry.format != 'null') {
+          if (align[j] == 'l') {w = 0} else
+          if (align[j] == 'r') {w = W[j] - entry.w} else
+            {w = (W[j] - entry.w)/2}
+          entry.x = w - pW; pW = entry.w + w; entry.y = y;
+          mlist[mlist.length] = entry;
+        }
+        if (i+1 < table.length) {y -= Math.max(HD,D[i]+H[i+1]) + dy + rspacing[i+1]}
+      }
+      if (cspacing[j] == null) cspacing[j] = scale;
+      if (mlist.length > 0) {
+        box = jsMath.Box.SetList(mlist,'T',size);
+        html += jsMath.HTML.Place(box.html,cW,0);
+        cW = W[j] - box.w + cspacing[j];
+      } else {cW += cspacing[j]}
+    }
+    
+    // get the full width and height
+    w = -cspacing[W.length-1]; y = (H.length-1)*dy + rspacing[0];
+    for (i = 0; i < W.length; i++) {w += W[i] + cspacing[i]}
+    for (i = 0; i < H.length; i++) {y += Math.max(HD,H[i]+D[i]) + rspacing[i+1]}
+    h = y/2 + jsMath.TeX.axis_height; var d = y-h;
+    
+    // adjust the final row width, and vcenter the table
+    //   (add 1/6em at each side for the \,)
+    html += jsMath.HTML.Spacer(cW-cspacing[W.length-1] + addWidth*scale/6);
+    html = jsMath.HTML.Place(html,addWidth*scale/6,h);
+    box = new jsMath.Box('html',html,w+addWidth*scale/3,h,d);
+    box.bh = bh; box.bd = bd;
+    return box;
+  },
+
+  /*
+   *  Create the HTML for an alignment (e.g., array or matrix)
+   *  Use absolute position for elements in the array.
+   *  
+   *  ###  still need to allow users to specify row and column attributes,
+   *       and do things like \span and \multispan  ###
+   */
+  LayoutAbsolute: function (size,table,align,cspacing,rspacing,vspace,useStrut,addWidth) {
+    if (align == null) {align = []}
+    if (cspacing == null) {cspacing = []}
+    if (rspacing == null) {rspacing = []}
+    if (useStrut == null) {useStrut = 1}
+    if (addWidth == null) {addWidth = 1}
+    
+    // get row and column maximum dimensions
+    var scale = jsMath.sizes[size]/100;
+    var HD = useStrut*(jsMath.hd-.01)*scale;
+    var dy = (vspace || 1) * scale/6;
+    var W = []; var H = []; var D = [];
+    var w = 0; var h; var x; var y;
+    var i; var j; var row;
+    for (i = 0; i < table.length; i++) {
+      if (rspacing[i] == null) {rspacing[i] = 0}
+      row = table[i];
+      H[i] = useStrut*jsMath.h*scale; D[i] = useStrut*jsMath.d*scale;
+      for (j = 0; j < row.length; j++) {
+        row[j] = row[j].Remeasured();
+        if (row[j].h > H[i]) {H[i] = row[j].h}
+        if (row[j].d > D[i]) {D[i] = row[j].d}
+        if (j >= W.length) {W[j] = row[j].w}
+        else if (row[j].w > W[j]) {W[j] = row[j].w}
+      }
+    }
+    if (rspacing[table.length] == null) {rspacing[table.length] = 0}
+
+    // get the height and depth of the centered table
+    y = (H.length-1)*dy + rspacing[0];
+    for (i = 0; i < H.length; i++) {y += Math.max(HD,H[i]+D[i]) + rspacing[i+1]}
+    h = y/2 + jsMath.TeX.axis_height; var d = y - h;
+
+    // lay out the columns
+    var html = ''; var entry; w = addWidth*scale/6;
+    for (j = 0; j < W.length; j++) {
+      y = H[0]-h + rspacing[0];
+      for (i = 0; i < table.length; i++) {
+        entry = table[i][j];
+        if (entry && entry.format != 'null') {
+          if (align[j] && align[j] == 'l') {x = 0} else
+          if (align[j] && align[j] == 'r') {x = W[j] - entry.w} else
+            {x = (W[j] - entry.w)/2}
+          html += jsMath.HTML.PlaceAbsolute(entry.html,w+x,
+                    y-Math.max(0,entry.bh-jsMath.h*scale),
+                    entry.mw,entry.Mw,entry.w);
+        }
+        if (i+1 < table.length) {y += Math.max(HD,D[i]+H[i+1]) + dy + rspacing[i+1]}
+      }
+      if (cspacing[j] == null) cspacing[j] = scale;
+      w += W[j] + cspacing[j];
+    }
+    
+    // get the full width
+    w = -cspacing[W.length-1]+addWidth*scale/3;
+    for (i = 0; i < W.length; i++) {w += W[i] + cspacing[i]}
+
+    html = jsMath.HTML.Spacer(addWidth*scale/6)+html+jsMath.HTML.Spacer(addWidth*scale/6);
+    if (jsMath.Browser.spanHeightVaries) {y = h-jsMath.h} else {y = 0}
+    html = jsMath.HTML.Absolute(html,w,h+d,d,y);
+    var box = new jsMath.Box('html',html,w+addWidth*scale/3,h,d);
+    return box;
+  },
+
+  /*
+   *  Look for math within \hbox and other non-math text
+   */
+  InternalMath: function (text,size) {
+    if (!jsMath.safeHBoxes) {text = text.replace(/@\(([^)]*)\)/g,'<$1>')}
+    if (!text.match(/\$|\\\(/)) {return this.Text(text,'normal','T',size).Styled()}
+
+    var i = 0; var k = 0; var c; var match = '';
+    var mlist = []; var parse;
+    while (i < text.length) {
+      c = text.charAt(i++);
+      if (c == '$') {
+        if (match == '$') {
+          parse = jsMath.Parse(text.slice(k,i-1),null,size);
+          if (parse.error) {
+            mlist[mlist.length] = this.Text(parse.error,'error','T',size,1,.2);
+          } else {
+            parse.Atomize();
+            mlist[mlist.length] = parse.mlist.Typeset('T',size).Styled();
+          }
+          match = ''; k = i;
+        } else {
+          mlist[mlist.length] = this.Text(text.slice(k,i-1),'normal','T',size,1,.2);
+          match = '$'; k = i;
+        }
+      } else if (c == '\\') {
+        c = text.charAt(i++);
+        if (c == '(' && match == '') {
+          mlist[mlist.length] = this.Text(text.slice(k,i-2),'normal','T',size,1,.2);
+          match = ')'; k = i;
+        } else if (c == ')' && match == ')') {
+          parse = jsMath.Parse(text.slice(k,i-2),null,size);
+          if (parse.error) {
+            mlist[mlist.length] = this.Text(parse.error,'error','T',size,1,.2);
+          } else {
+            parse.Atomize();
+            mlist[mlist.length] = parse.mlist.Typeset('T',size).Styled();
+          }
+          match = ''; k = i;
+        }
+      }
+    }
+    mlist[mlist.length] = this.Text(text.slice(k),'normal','T',size,1,.2);
+    return this.SetList(mlist,'T',size);
+  },
+  
+  /*
+   *  Convert an abitrary box to a typeset box.  I.e., make an
+   *  HTML version of the contents of the box, at its desired (x,y)
+   *  position.
+   */
+  Set: function (box,style,size,addstyle) {
+    if (box && box.type) {
+      if (box.type == 'typeset') {return box}
+      if (box.type == 'mlist') {
+        box.mlist.Atomize(style,size);
+        return box.mlist.Typeset(style,size);
+      }
+      if (box.type == 'text') {
+        box = this.Text(box.text,box.tclass,style,size,box.ascend||null,box.descend||null);
+        if (addstyle != 0) {box.Styled()}
+        return box;
+      }
+      box = this.TeX(box.c,box.font,style,size);
+      if (addstyle != 0) {box.Styled()}
+      return box;
+    }
+    return jsMath.Box.Null();
+  },
+
+  /*
+   *  Convert a list of boxes to a single typeset box.  I.e., finalize
+   *  the HTML for the list of boxes, properly spaced and positioned.
+   */
+  SetList: function (boxes,style,size) {
+    var mlist = []; var box;
+    for (var i = 0; i < boxes.length; i++) {
+      box = boxes[i];
+      if (box.type == 'typeset') {box = jsMath.mItem.Typeset(box)}
+      mlist[mlist.length] = box;
+    }
+    var typeset = new jsMath.Typeset(mlist);
+    return typeset.Typeset(style,size);
+  }
+
+});
+
+
+jsMath.Package(jsMath.Box,{
+
+  /*
+   *  Add the class and style to a text box (i.e., finalize the
+   *  unpositioned HTML for the box).
+   */
+  Styled: function () {
+    if (this.format == 'text') {
+      this.html = jsMath.Typeset.AddClass(this.tclass,this.html);
+      this.html = jsMath.Typeset.AddStyle(this.style,this.size,this.html);
+      delete this.tclass; delete this.style;
+      this.format = 'html';
+    }
+    return this;
+  },
+  
+  /*
+   *  Recompute the box width to make it more accurate.
+   */
+  Remeasured: function () {
+    if (this.w > 0) {this.w = jsMath.EmBoxFor(this.html).w}
+    return this;
+  }
+
+});
+
+
+/***************************************************************************/
+
+/*
+ *  mItems are the building blocks of mLists (math lists) used to
+ *  store the information about a mathematical expression.  These are
+ *  basically the items listed in the TeXbook in Appendix G (plus some
+ *  minor extensions).
+ */
+jsMath.mItem = function (type,def) {
+  this.type = type;
+  jsMath.Add(this,def);
 }
 
-//start = new Date().getTime();
-jsMath.Script.Uncompress([
-  ['if(!','window','.jsMath','||!',1,'.','jsMath.','loaded','){var ','jsMath_old','=',1,2,';',0,'document.','getElementById','||!',15,'childNodes||!',15,'createElement','){','alert("','The',' mathematics ','on this page requires W3C DOM support in its JavaScript. Unfortunately, your ','browser',' doesn\'t seem to have this.")}else{',1,2,'={version:"3.6",document:document,',1,':',1,',','platform',':(','navigator.',36,'.match(/','Mac/)?"mac":',38,36,40,'Win/)?"pc":"unix"),','sizes',':[50,60,70,85,100,120,144,173,207,249],styles:{".math','":{"font-family":"serif","font-style":"normal","font-weight":"normal','"},".typeset',48,'","line-height":"normal','","text-indent":"0px','"},".typeset .','normal',48,'"},"div','.typeset','":{"text-align":"','center",margin:"1em 0px"},"span',57,58,'left',49,' span',58,'left",border',':"0px",margin:"0px','",padding',':"0px"},"a .typeset img, .typeset a img','":{border:"0px','","border-bottom":"','1px solid',' blue;"},".typeset .size0','":{"font-size":"','50','%"},".typeset .','size1',74,'60',76,'size2',74,'70',76,'size3',74,'85',76,'size4',74,'100',76,'size5',74,'120',76,'size6',74,'144',76,'size7',74,'173',76,'size8',74,'207',76,'size9',74,'249',76,'cmr10','":{"font-family":"jsMath-',113,', serif',53,'cmbx10',114,118,', ','jsMath-cmr10',53,'cmti10',114,124,', ',122,53,'cmmi10',114,130,53,'cmsy10',114,134,53,'cmex10',114,138,53,'textit','":{"font-family":"','serif","','font-style":"italic',53,'textbf',143,'serif","font-weight":"bold',53,'link":{"','text-decoration":"none',53,'error',74,'90%","',145,'","background-color','":"#FFFFCC',68,':"1px','",border:"',72,' #CC0000',53,'blank','":{display:"','inline-block','",overflow:"','hidden',162,'0px none",width:"0px",height:"0px',53,'spacer',167,168,'"},"#','jsMath_hiddenSpan":{','visibility:"hidden",position:"absolute",','top:"0px",left:"0px',51,52,177,'jsMath_message','":{position:"fixed",bottom:"','1px",left:"2px',158,'":"#E6E6E6','",border:"solid 1px #959595",margin:"0px",padding:"','1px 8px','","z-index":"','102','",color:"black","font-size":"','small",width:"auto','"},"#jsMath_panel',185,'1.75em",right:"1.5em',68,':".8em 1.6em',158,'":"#DDDDDD',162,'outset 2px',191,'103",','width:"auto',193,'10pt","font-style":"',54,195,' .disabled":{color:"#888888',195,' .infoLink',74,'85%"},"#jsMath_panel *":{"','font-size":"inherit","font-style":"inherit","font-family":"inherit',51,195,' div":{"','background-color":"inherit",color:"inherit"},"#jsMath_panel ','span":{"',220,'td',70,68,67,'","',220,'tr',70,68,67,'","',220,'table',70,68,67,158,'":"inherit",color:"inherit",height:"auto",',206,177,'jsMath_button',185,'1px",right:"2px',158,'":"white',189,'0px 3px 1px 3px',191,'102",color:"black","',152,'","font-size":"x-',194,'",cursor:"hand"},"#',243,' *":{padding:"0px",border',67,51,'","',216,177,'jsMath_global":{"',145,177,'jsMath_noFont',' .message":{"text-align":"center",padding:".8em 1.6em",border:"3px solid #DD0000","background-color":"#FFF8F8",color:"#AA0000","font-size":"',194,177,'jsMath_noFont .link":{padding:"0px 5px 2px 5px',162,'2px outset',158,'":"#E8E8E8',193,'80%",',206,255,'jsMath_PrintWarning',267,'x-',194,'"},"@media print":{"#',243,167,'none',177,'jsMath_Warning',167,'none"}},"@media screen":{"#',279,167,'none"}}},Element',':function(','A','){return ',6,15,16,'("jsMath_"+A)},','BBoxFor',294,'A','){this.','hidden.innerHTML','=\'<nobr><','span class="','typeset"><',307,'scale">\'+A+"</span></span></nobr>";var B={w:this.',170,'.offsetWidth',',h:this.',170,'.offsetHeight','};this.',305,'="";return B},EmBoxFor',294,'B){var A=',6,'Global.cache.R;if(!A[this.em]){A[this.em]={}}if(!A[this.em][B]){var C=this.BBoxFor(B);','A[this.em][B]={w:C.w/this.em,h:C.h/this.em}}return A[this.em][B]},','EmBoxForItalics',294,320,6,322,'if(B.match(/<i>|class=\\"(icm|italic|igreek|iaccent)/i)){C.w=C.Mw=','this.BBoxFor','(B+',6,'Browser.','italicString',').w-',6,333,'italicCorrection','}',323,'Init',':function(){','if(',6,'Setup.inited','!=1){',0,6,345,'){',6,'Setup.','Body()}if(',6,345,'!=1){if(',6,345,'==-100','){return }',23,'It looks like jsMath failed to set up properly (error code "+',6,345,'+").  I will try to keep going, but it could get ugly.");',6,345,'=1}}this.em=this.CurrentEm();','var A=',6,'Global.cache','.B;',0,'A[this.em]){A[this.em]={};','A[this.em].','bb=',330,'("x");var C=',375,'bb.h;',375,'d=',330,'("x"+',6,'HTML.Rule(1,','C/',6,'em)).h-C;if(',6,333,334,'){',375,'ic=',6,301,'(',6,333,334,').w}}',6,333,338,'=',375,'ic;var F=',375,'bb;var D=F.h;var E=',375,'d;this.h=(D-E)/this.em;this.d=E/this.em;this.hd=this.h+','this.d;this.',352,'TeXfonts','();var B=this.EmBoxFor(\'<',307,113,'">M</span>\').w/2;this.TeX.M_height=B*(26/14);this.TeX.h=this.h;this.TeX.d=',413,'TeX.hd=this.hd;this.Img.Scale();',0,'this.initialized',304,352,'Sizes','();this.','Img.UpdateFonts()}this.p_height=(','this.TeX.cmex10[0].','h+',429,'d)/0.85;',423,'=1},ReInit',342,'if(this.','em!=this.CurrentEm()){this.Init()}},CurrentEm',342,369,330,'(\'<span style="\'+',6,333,'block+\';','width:13em;height:1em','"></span>\').','w/13;if(A>0',296,'A}return ',330,'(\'<img src="\'+',6,166,'+\'" style="',445,'"/>\').w/13},Loaded',342,'if(',9,8,'B=["Process","ProcessBeforeShowing","ConvertTeX","ConvertTeX2","ConvertLaTeX","ConvertCustom","CustomSearch","Synchronize","Macro","document"];','for(var A=0;A<','B','.length;A++){','if(',9,'[B[A]]){','delete ',9,'[B[A]]}}}if(',9,304,'Insert(jsMath,',9,')}',9,'=null;',6,7,'=1},Add',294,'C,A){for(var B in A){','C[B]=A[B]}},Insert',294,482,'if(C[B]&&typeof (A[B])=="object"&&(','typeof (C[B])=="','object"||',487,'function")){this.Insert(C[B],A[B])}else{C[B]=A[B]}}},Package',294,'B,A',304,'Insert(B.prototype,A)}};',6,'Global={isLocal:1,cache:{','T:{},D:{},R:{},B',':{}},ClearCache',342,6,371,'={',497,':{}}},GoGlobal',294,320,'String(',6,1,'.','location);var C','=(',6,'isCHMmode','?"#":"?");if(B){A=A.replace(/\\?.*/,"")+"?"+B}',6,'Controls.','Reload(',6,'root+"jsMath-','global.html"+C+escape(A))},Init',342,'if(',6,'Controls.cookie.','global=="always"&&!',6,'noGoGlobal','){if(',38,'accentColorName',360,0,6,1,'){',6,1,'=',1,'}',6,517,7,'=1;',6,517,'defaults.hiddenGlobal=null;this.GoGlobal(',6,517,'SetCookie(2))}},Register',342,369,6,1,'.parent;',0,6,'isCHMode){',6,514,'=(',6,1,'.','location.','protocol=="mk:")}try{',0,6,514,304,'Domain()}if(A',2,'&&A.',6,'isGlobal){A.',6,'Register(',6,1,')}}catch(B){',6,528,'=1}},Domain',342,'if(',38,'appName=="Microsoft Internet Explorer"&&',6,36,'=="mac"&&',38,'userProfile','!=null',360,'if(',1,'==parent',360,'var B=',6,15,'domain',';try{while(true){try{if(parent.',15,'title',594,'){return }}','catch(A){}',0,15,603,'.match(/\\..*\\./)){break}',6,15,603,'=',6,15,603,'.replace(/^[^.]*\\./,"")}}',609,6,15,603,'=B}};',6,'Script={request:null,Init',342,'if(!(',6,525,'asynch&&',6,525,'progress',')){if(',1,'.XMLHttpRequest','){try{','this.request','=new XMLHttpRequest}catch(C){}if(',641,'&&',6,'root.match','(/^file:\\/\\//)){try{',641,'.open("GET",',6,'root+"',6,'js",false);',641,'.send(null)}catch(','C){',641,'=null;if(',1,'.postMessage',304,'mustPost=1;',6,1,'.addEventListener("message",',6,'Post.','Listener,false)}}}}',0,641,'&&',1,'.','ActiveXObject',8,'A=["MSXML2.XMLHTTP.5','.0","MSXML2.XMLHTTP','.4',677,'.3',677,'","Microsoft.XMLHTTP"];','for(var B=0;B<','A.length&&!',641,';B++){try{',641,'=new ',674,'(A[B])}catch(C){}}}}',0,641,'||',6,352,'domainChanged',304,'Load=this.delayedLoad;this.needsBody=1}},Load',294,'B,A){','if(A){',6,'Message.Set("Loading "+','B);',6,'Script.','Delay(1);',6,'Script.Push(','this,"xmlRequest",B',');',6,709,6,'Message',',"Clear")}else{',6,709,710,')}},xmlRequest',294,'url){','this.blocking','=1;try{',641,649,'url,false);',641,655,'err){',723,'=0;if(',6,'Translate.','restart&&',6,'Translate.asynchronous){return""}throw"jsMath can\'t load the file \'"+url+"\'\\','nMessage: "+err.message}if(',641,'.status',594,'&&(',641,740,'>=400||',641,740,'<0)){',723,'=0;if(',6,734,'restart&&',6,737,'nError status: "+',641,740,'}',0,'url','.match(/\\.js$/)){','return(',641,'.responseText',')}var tmpQueue','=this.queue;this.queue','=[];',6,1,'.eval(',641,765,');',723,'=0;','this.queue=this.queue.concat(','tmpQueue);this.Process();return""},cancelTimeout:30*1000,blocking:0,cancelTimer:null,needsBody:0,queue:[],Synchronize',294,'A,B){','if(typeof (','A)!="string"){',6,709,'null,A,B',')}else{',6,709,6,1,',"eval",A)}},Push',294,'A,C,B',304,'queue[','this.queue.length',']=[A,C,B];if(!(',723,'||(this.needsBody&&!',6,15,'body))){this.Process()}},Process',342,'while(',796,'&&!',723,8,'C=this.queue[0];this.queue=this.queue.slice(1);',369,'this.SaveQueue();var B=C[0];var E=C[1];var D=C[2];if(B){B[E](D',786,'if(E){E(D)}}this.','RestoreQueue','(A)}},SaveQueue',342,'var A',767,'=[];return A},',814,294,'A){',777,'A)},delayedLoad',294,'A',304,'Push(','this,"','startLoad','",A)},',830,294,'A',8,'B=',6,15,21,'("iframe");','B.style.','visibility="','hidden";',841,'position="absolute";',841,'width="0px";B','.style.height="','0px";if(',6,15,'body.firstChild','){',6,15,'body.insertBefore(B,',6,15,852,786,6,15,'body','.appendChild(','B)}',723,'=1;this.','url=A;if(A','.substr(0,',6,'root.length',')==',6,'root){A=A.substr(',6,871,')}',6,703,'A);this.cancelTimer=setTimeout("',6,706,'cancelLoad','()",this.cancelTimeout);',436,'mustPost){B.src=',6,667,830,'(A,B',786,'if(A',762,'B.src=',6,520,'loader.html"}else{B.src=this.url}}},','endLoad',294,'A){if(this.cancelTimer){clearTimeout(this.cancelTimer);this.cancelTimer=null}',6,667,898,'();',6,715,'.Clear();if(A!="cancel"){',723,'=0;this.Process','()}},Start',342,'this.tmpQueue',767,'=[]},End',342,777,912,');',468,912,'},',883,294,'B,',900,'if(B==null){B','="Can\'t load file"}if(A==null){A=2000}',6,715,'.Set(B);setTimeout(\'',6,706,898,'("cancel")\',A)},Delay',294,'A){',723,'=1;setTimeout("',6,706,'endDelay','()",A)},',941,342,723,909,'()},','imageCount',':0,WaitForImage',294,'B){',723,867,948,'++;',436,'img==null',304,'img=[]}',369,'new Image',427,'img[this.img.length]=A;A.onload=function(){if(--',6,706,948,'==0){',6,706,941,'()}};A.onerror=A.onload;A.onabort=A.onload;A.src=B},Uncompress',294,'data){for(var k=0;k<data.length;k++){var d=data[k];var n=d.length;for(var i=0;i<n;i++){',781,'d[i])=="number"){d[i]=d[d[i]]}}data[k]=d.join("")}',1,771,'data.join(""))}};',6,'Post={',1,':null,Listener',294,'D){if(D.source!=',6,667,1,360,'var E=D.origin','.replace(/^file:\\/\\//,"");',369,15,603,990,'if(E==null||E==""){E','="localhost"}if(','A==null||A==""){A',996,'E!=A||!','D.data.substr(','0,6).match(/jsM(CP|LD):/)){return }var B=',1000,'6,3).replace(/ /g,"");var C=',1000,'10);if(',6,'Post.Commands[B',']){(',6,1007,'])(C)}},Commands:{SCR',294,'message){',6,1,771,'message)},ERR',294,'A){',6,706,883,'(A,3000)},BGN',294,'A){',6,706,'Start()},END',294,'A){',701,6,706,'End()}',6,706,898,'()}},',830,294,'A,B',304,1,'=B.contentWindow;',0,'A',762,'return ',6,'root+',449,6,520,'loader-post.html?"+A},',898,342,'this.',1,'=null}};',6,715,'={',166,':null,message:null,text:null,clear:null,Init',342,0,6,15,'body||!',6,525,636,360,'if(',6,352,'stylesReady){','this.message','=',6,'Setup.DIV("','message",{visibility:"',170,'"},',6,'fixedDiv',786,1078,'=',6,1081,'message",{',179,'bottom:"',186,'",','backgroundColor',':"#E6E6E6',189,190,'",zIndex:102,color:"black",fontSize:"',194,'"},',6,1086,')}','this.text','=',6,15,'createTextNode','("");',1078,864,1107,');',1078,'.onmousedown=',6,734,'Cancel},Set',294,700,'if(this.clear){clearTimeout(this.clear',');this.clear=null}if(',6,525,636,'){',0,1107,304,'Init();',0,1107,608,'if(',6,333,'textNodeBug','){',1078,'.innerHTML','=B','}else{',1107,'.nodeValue','=B}','this.message.style.',842,'visible";',701,1149,'cursor="pointer','";',0,1149,'cursor){',1149,'cursor="hand"}',1078,'.title=" Cancel Processing of Math "}else{',1149,'cursor="";',1078,'.title=""}}else{if(B',869,'8)!="Loading "){',6,1,740,'=B}}},Clear',342,1124,')}this.clear=setTimeout("',6,715,'.doClear()",1000)},doClear',342,436,'clear',304,'clear=null;',6,1,740,'="";',436,'text){',1107,1147,'=""}if(',1078,'){',1149,842,170,'"}}},Blank',342,436,166,'||!',6,15,'body',360,'this.blank','=',6,1081,166,'",{position',':(',6,333,'msiePositionFixedBug','?"absolute":"fixed"),',180,'",bottom:"0px",right:"0px",zIndex:101,',1097,':"white"},',6,1086,');if(',6,333,'msieBlankBug){',1207,1143,'="&nbsp;";',1207,'.style.width="110%";',1207,848,'110%"}},UnBlank',342,436,166,'){',6,15,'body.removeChild(',1207,')}',1207,'=null}};',6,'Setup={',7,':[],DIV',294,'E,C,B){',926,'=',6,15,'body}var D=',6,15,21,'("div");D.id="jsMath_"+E;','for(var A in C){','D.style[A]=C[A]}',0,'B.hasChildNodes){B',864,'D',786,'B.insertBefore(D,','B.firstChild',')}return D},Script',294,700,436,7,'[B]){return }else{this.',7,'[B]=1}',0,'B.match("^([a-zA-Z]+:/?)?/")){B=',6,'root+B}',6,706,'Load(B,A)},Hidden',342,6,170,'=this.DIV("Hidden",{',179,'top:0,left:0,border:0,padding:0,margin:0});',6,'hiddenTop=',6,170,';return },Source',342,'if(',6,'Autoload','&&',6,1300,'.root){',6,'root=',6,1300,'.','root}else{',6,'root="";',369,6,15,'getElementsByTagName("','script");',701,683,'A.','length;B++){','var D=A[B].src;if(D&&D.match("(^|/|\\\\\\\\)',6,'js$")){',6,1306,'D.replace','(/',6,'js$/,"");break}}}}if(',6,'root.charAt(','0)=="\\\\"){',6,1306,6,'root.replace','(/\\\\/g,"/")}if(',6,1332,'0)=="/"){if(',6,1332,'1)!="/"){if(',6,15,566,'port){',6,'root=":"+',6,15,566,'port+',6,'root}',6,'root="//"+',6,15,566,'host+',6,1356,6,1306,6,15,566,'protocol+',6,1310,0,6,646,'(/^[a-z]+:/i)){var D=','new String(',6,15,511,'=new RegExp("/[^/]*/\\\\.\\\\./");',6,1306,1327,'(new RegExp("[^/]*$"),"")+',6,'root;while(',6,646,'(C)){',6,1306,6,1337,'(C,"/")}}}',6,'Img.',1306,6,651,'fonts/";',6,166,'=',6,651,166,'.gif";this.Domain()},Domain',342,'try{',6,15,603,'}catch(D',360,'var C="";',369,6,15,603,';if(',6,646,'("://([^/]*)/")){C=RegExp.$1}C=C.replace(/:\\d+$/,"");if(C==""||C==A',360,'if(',38,'appName=="Microsoft Internet Explorer"&&',6,36,'=="mac"&&',38,'onLine&&',38,593,'&&',6,15,'all',360,'C=C.split(/\\./);A=A.split(/\\./);if(C.length<2||A.length<2||','C[C.length-','1',']!=A[A.length-','1]||',1442,'2',1444,'2]){this.','DomainWarning','();return }var E=',1442,'2]+"."+',1442,'1];for(var B=3;B<=C.length&&B<=A.',1321,'if(',1442,'B',1444,'B]){break}E=',1442,'B]+"."+E}',6,15,603,'=E;this.',696,'=1},',1450,342,23,'In order for jsMath to be able to load the additional components that it may need, the ',6,'js file must be ',7,' from a server in the same ',603,' as the page that contains it.  Because that is not the case for this page, the',25,'displayed here may not appear correctly.")},','EncodeFont',294,'C',8,'B=',6,'TeX[C];if(B','[0].c',594,360,462,'128;A++){var D=B[A];B[A]=D[3];if(B[A]==null){B[A]={}}B[A].w=D[0];B[A].h=D[1];if(D[2]!=null){B[A].d=D[2]}B[A].c=',6,'TeX.encoding[A]}},Fonts',342,683,6,'TeX.fam','.',1321,369,6,1499,'[B];if(A',304,1482,'(A)}}},TeXfont',294,'C',8,'B=',6,1488,'==null',360,369,6,'EmBoxFor(\'<span class="\'+C+\'">\'+B[65].c','+"</span>");B.hd=A.h;B.dh=0.05;B.d=',6,1519,'+',6,386,'B.hd)+"</span>").h-B.hd;B.h=B.hd-B.d;if(C=="',130,'"){B.skewchar=','127','}else{if(','C=="',134,1528,'48}}},',415,342,462,6,1499,464,'if(',6,1499,'[A]){this.TeXfont(',6,1499,'[A])}}},Sizes',342,6,'TeXparams','=[];var B;var A;for(A=0;A<',6,46,464,6,1550,'[A]={}}for(B in ',6,'TeX){',781,6,'TeX[B])!="object"){for(A=0;A<',6,46,464,6,1550,'[A][B]=',6,46,'[A]*',6,'TeX[B]/100}}}},Styles',294,'A){',0,'A){A=',6,'styles;A[".typeset .scale"]={"font-size":',6,525,'scale+"%"};this.stylesReady=1}',6,709,829,'AddStyleSheet','",A);if(',6,333,'styleChangeDelay','){',6,709,6,'Script,"Delay",1)}},StyleString',294,'E',8,'A={},F;for(F in E){if(typeof E[F]==="string"){A[F]=E[F]}else{if(F',869,'1)==="@"){A[F]=','this.StyleString(','E[F])}else{if(E[F]!=null',8,'D=[];for(var C in E[F]){if(E[F][C]!=null){D[D.length]=C+": "+E[F][C]}}A[F]=D.join("; ")}}}}var B="";for(F in A){B+=F+" {"+A[F]+"}\\n"}return B},',1586,294,'D',8,'B=',6,15,1316,'head")[0];',369,1602,'D);if(',6,15,'createStyleSheet){B.insertAdjacentHTML("beforeEnd",\'<','span style="display:','none">x</span><style type="text/css">\'+A+"</style>")}else{var C=',6,15,21,'("style");C.type="text/css";C',864,6,15,1111,'(A));B',864,'C)}},Body',342,436,'inited',360,'this.inited=-','1;',6,352,'Hidden();',1638,'2;',6,333,1133,1638,'3;if(',6,525,166,'){',6,715,'.Blank()}',1638,'4;',6,352,'Styles();',1638,'5;',6,517,1133,1638,'6;',6,709,6,'Setup,"User","pre-font");',1638,'7;',6,709,6,'Font,"Check");if(',6,'Font.register.length){',6,709,6,'Font,"LoadRegistered")}this.inited=1},User',294,'A){if(',6,'Setup.UserEvent[A',']){(',6,1688,'])()}},UserEvent:{"pre-font":null,onload:null}};',6,'Update={',415,294,'D){for(var A in D){for(var B in D[A]){for(var C in D[A][B]){',6,'TeX[A][B][C]=D[A][B][C]}}}},TeXfontCodes',294,'C){',1262,683,'C[A].',1321,6,'TeX[A][B].c=C[A][B]}}}};',6,'Browser={allowAbsolute:1,allowAbsoluteDelim:0,','separateSkips',':0,valignBug:0,operaHiddenFix:"",','msieCenterBugFix',':"",','msieInlineBlockFix',':"",msieSpaceFix:"",imgScale:1,renameOK:1,',1590,':0,delay:1,version:0,','TestSpanHeight',342,6,305,'=\'<span><','span style="\'+this.block','+\';height:2em;width:','1px"></span></span>\';var B=',6,'hidden.firstChild;',369,1270,';this.','spanHeightVaries','=(B',315,'>=A',315,'&&B',315,'>0);','this.spanHeightTooBig','=(B',315,'>A',315,');',6,305,'=""},','TestInlineBlock',342,'this.block="display',':-','moz-inline-box";','this.hasInlineBlock','=',6,'BBoxFor(\'<span style="\'+this.block','+\';width:10px;height:5px"></span>\').w>0;if','(',1753,'){',6,'styles[".typeset',' .',166,'"].display="-',1752,468,6,1762,' .spacer"].display',1145,1750,':',168,'";',1753,'=',6,1756,1757,'(!',1753,608,'this.block+=";overflow:',843,369,6,301,'("x").h;this.mozInlineBlockBug=',6,1756,'+";height:"+A+\'px;width:1px','"></span>x','<',1723,'+";height:"+A+"px;width:1px;vertical-align:-"+A+\'px',446,'h>2*A;this.widthAddsBorder=',6,1756,'+\';overflow:',170,';height:1px;width:10px',';border-left:','10px solid',446,'w>10;','this.msieBorderBug','=',6,1756,1792,1793,'\').h!=',6,1756,1792,1804,72,1793,'\').h;','this.blankWidthBug=',1808,'||',6,1756,1724,'0px',446,'h==0},','TestRenameOK',342,6,305,'="<span></span>";',369,6,1727,'A.setAttribute("name","','jsMath_test','");this.renameOK=(',6,15,'getElementsByName("',1840,'").length>0);',6,305,1747,'TestStyleChange',342,6,305,'=\'<span ID="',1840,'">x</span>\';var B=',6,1727,369,'B',312,';',6,352,1586,'({"#',1840,'":"font-size:200%"});this.',1590,'=(B',312,'==A);',6,305,1747,'VersionAtLeast',294,320,1377,'this.version',').split(".");','B=',1377,'B',1881,'if(B[1]==null){B[1]="0"}return A[0]>B[0]||(A[0]==B[0]&&A[1]>=B[1])},Init',342,6,27,'="unknown";this.',1748,427,1718,427,1831,427,1850,427,'MSIE',427,'Mozilla',427,'Opera',427,'OmniWeb',427,'Safari',427,'Konqueror();if(','this.allowAbsoluteDelim','){',6,'Box.DelimExtend=',6,'Box.DelimExtendAbsolute;',6,'Box.Layout=',6,'Box.LayoutAbsolute',1145,6,'Box.DelimExtend=',6,'Box.DelimExtendRelative;',6,'Box.Layout=',6,'Box.LayoutRelative}',436,1710,'){',6,'HTML.Place=',6,'HTML.','PlaceSeparateSkips',';',6,'Typeset.prototype.','Place=',6,1939,1936,'}},MSIE',342,436,1731,'&&!',1739,'){',6,27,'="MSIE";if(',6,36,'=="pc"){this.','IE7=(',1,639,594,');','this.quirks','=(',6,15,'compatMode=="BackCompat");this.msieStandard6=!',1962,'&&!this.IE7;',1910,867,1710,'=1',';this.buttonCheck=1;this.','msieBlankBug=1;this.','msieAccentBug',867,'msieRelativeClipBug','=1;this.msieDivWidthBug=1;this.',1216,867,'msieIntegralBug',867,'waitForImages',867,'msieAlphaBug','=!this.IE7;this.','alphaPrintBug',1986,1712,'="position:relative; ";this.',1714,'=" display:',168,';";this.msieTeXfontBaselineBug=!',1962,';',1808,'=',1822,'1;this.msieSpaceFix=\'<',1621,168,'"></span>\';',6,'Macro("joinrel","\\\\mathrel{\\\\kern-5mu}"),',6,'Parser.prototype.mathchardef.','mapstocharOrig','=',6,2007,'mapstochar;',468,6,2007,2012,6,'Macro("mapstochar","\\\\rlap{\\\\',2008,'\\\\,}\\\\kern1mu"),',6,1762,' .arial"]={"font-family":"\'Arial unicode MS\'"};',0,'this.IE7||',1962,'){',6,'styles["#jsMath_message"].',845,468,6,2029,'width;',6,'styles["#jsMath_panel"].',845,468,6,2036,'width;',6,'styles["#jsMath_button"].','width="1px";',6,2043,845,468,6,2043,'width;',6,1086,'=',6,1081,1086,1212,':"absolute",zIndex:101});',6,1,'.attachEvent("','onscroll",',6,'Controls.MoveButton',');',6,1,2062,'onresize",',6,2065,');',6,2065,'()}',6,'styles["#jsMath_noFont .link"].','display="',168,'";',468,6,1762,1770,';',6,'styles[".tex2math_div','"]={};',6,'Add(',6,2088,'"],',6,'styles["div',57,'"]);',6,2088,'"].width="100%";',6,2088,'"].',2079,168,'";',6,1762,'"]["letter-spacing"]="0";if(','screen.deviceXDPI','&&','screen.logicalXDPI','&&',2111,'!=',2113,304,'imgScale*=',2113,'/',2111,';',6,525,'alpha=0}this.',334,'="<i>x</i>";',6,'EmBoxFor=',6,324,1530,6,36,'=="mac"){this.msieAbsoluteBug',867,'msieButtonBug',1978,1974,'quirks=1;',6,'Setup.Script("jsMath-','msie-mac.js");',6,'Parser.prototype.macros.angle=["Replace","ord",\'<font face="Symbol">&#x8B;</font>\',"',54,'"];',6,2036,'width="42em";',6,525,'printwarn=0}}',6,'Macro("not","\\\\mathrel{\\\\rlap{\\\\kern3mu','/}}")}},',1901,342,'if(',6,170,'.ATTRIBUTE_NODE){',6,27,'="',1901,'";if(',6,36,1956,1987,'=1}',1910,'=1;',6,2043,'cursor=',6,2078,1154,'",',6,2156,'/}}");if(',38,'vendor=="Firefox"){',1880,'=',38,'vendorSub',1530,38,'userAgent.match','(" Firefox/([0-9.]+)([a-z ]|$)")){',1880,'=RegExp.$1}}}},',1905,342,'if(',38,'accentColorName){',6,27,'="',1905,'";','this.allowAbsolute','=',1753,';',1910,'=',2208,';this.valignBug=!',2208,1973,1140,'=1;',6,'noChangeGlobal=1;',0,1753,'){',6,2143,'old-browsers.js','")}}},Opera',342,'if(',1739,'){',6,27,'="Opera";var B=',38,2194,'("Opera 7");',2208,'=0;this.delay=10;this.operaHiddenFix="[Processing]";if(B){',6,2143,2227,'")}',369,38,'appVersion.match(/^(\\d+\\.\\d+)/);',0,'A){vesion=0}this.operaAbsoluteWidthBug=this.operaLineHeightBug=(A[1]>=9.5)}},Safari:functio'],
-  ['n(){if(','navigator.','appVersion.match(/Safari\\//)){','jsMath.','browser','="Safari";','var A=',1,'userAgent.match','("Safari/([0-9]+)");A=(A)?A[1]:400;for(','var B=','0;B<',3,'TeX.fam','.length',';B++){','if(',3,13,'[B]&&',3,'TeX[',3,13,'[B]]){',3,21,3,13,'[B]].dh=0.1}}',3,'TeX.axis_height+=0.05;',3,'TeX.','default_rule_thickness','+=0.025',';this.allowAbsoluteDelim=','A>=125;this.safariIFRAMEbug=A>=312&&A<412;this.safariButtonBug=A<412;this.safariImgBug=1;this.textNodeBug=1;this.buttonCheck=A<500;this.styleChangeDelay=1}},','Konqueror',':function(){','if(',1,'product&&',1,'product.match("',38,'")){',3,4,'="',38,'";this.allowAbsolute=0',36,'0;if(',1,8,'(/',38,'\\/(\\d+)\\.(\\d+)/)){if(RegExp.$1<3||(RegExp.$1==3&&RegExp.$2<3)){this.separateSkips=1;this.valignBug=1;',3,'Setup.Script("jsMath-','old-browsers.js")}}',3,'Add(',3,'styles,{".typeset .cmr10','":"font-family: jsMath-','cmr10',', jsMath ','cmr10, serif','",".typeset .','cmbx10',66,71,68,71,', jsMath-cmr10, jsMath cmr10",".typeset .','cmti10',66,77,68,77,76,'cmmi10',66,83,68,83,70,'cmsy10',66,89,68,89,70,'cmex10',66,'cmex10, jsMath cmex10','"});',3,'Font.testFont','="jsMath','-',97,'"}}};',3,'Font={testFont:"jsMath-cmex10",','fallback',':"symbol",register:[],message:"<b>No jsMath TeX fonts found</b> -- using',' image fonts instead','.<br/>\\nThese',' may be slow and might not print well.<br/>\\nUse the jsMath control panel to get additional information','.",','extra_message',':\'Extra TeX fonts not found: <b><span id="jsMath_ExtraFonts"></span></b><br/>Using',109,'.  This',111,'.\',','print_message',':"To print higher-resolution math symbols, click the<br/>\\n<b>Hi-Res Fonts for Printing</b> button on',' the jsMath control panel.<br/>\\n",','alpha_message',':"If the math symbols print as black boxes, turn off <b>image alpha channels</b><br/>\\nusing the <B>Options</B> pane of',121,'Test1',':function(','C',',F,D,E){if(F==null){F=124}if(D==null){D=2}if(E==null){E=""}var B=jsMath.BBoxFor(\'<span style="font-family: \'+E+C+\', serif">\'+jsMath.TeX[C][F].c+"</span>");var A=jsMath.BBoxFor(\'<span style="font-family: serif">\'+jsMath.TeX[C][F].c+"</span>");return','(B.w>D*A.w&&B.h!=0)},Test2',126,'C',128,'(A.w>D*B.w&&B.h!=0)},CheckTeX',39,6,3,'BBoxFor(\'<span style="font-family',': \'+',3,100,'+\', serif">\'+',3,'TeX.cmex10[1','].c+"</span>");',3,'nofonts=((A.w*3>A.h||A.h==0)&&!this.Test1("cmr10','",null,null,"jsMath-"));if(!',3,'nofonts){','return }','if(',3,4,'!="Mozilla"||(',3,'platform','=="mac"&&(!',3,'Browser.VersionAtLeast(','1.5)||',3,159,'3)))||(',3,156,'!="mac"&&!',3,159,'3))){A=',3,137,': CMEX10, serif">\'+',3,'TeX.cmex10[1',144,3,146,'"));if(!',3,149,3,60,'BaKoMa-fonts.js")}}},Check',39,6,3,'Controls.','cookie;this.CheckTeX();if(',3,149,'if(A.autofont','||A','.font=="tex"){','A.font=this.',107,';if(A.warn){',3,'nofontMessage=1;A.warn=0;',3,187,'SetCookie(0);if','(',3,'window.NoFontMessage','){',3,204,'()}else{','this.Message(this.','message)}}}}else{',191,'){A.font="tex"}if(A',193,'return }}if(',3,'noImgFonts){','A.font="unicode"}if(A','.font=="unicode','"){',3,60,107,'-"+',3,156,'+".js");',3,'Box.TeXnonfallback=',3,'Box.TeX',';',3,230,'=',3,'Box.TeXfallback;return }','if(!A.print&&A.printwarn){this.','PrintMessage','((',3,'Browser.','alphaPrintBug&&',3,187,'cookie.alpha)?this.',119,'+this.',122,':this.',119,')}if(',3,241,'waitForImages){',3,'Script.','Push(',3,'Script,"WaitForImage",',3,'blank)}if(A.font=="symbol"){',3,60,107,'-symbols.js");',3,'Box.TeXnonfallback=',3,230,';',3,230,'=',3,236,3,'Img.SetFont','({cmr10',':["all"],',83,279,89,279,'cmex10',279,71,279,77,':["all"]});',3,'Img.LoadFont','("cm-fonts")},Message',126,'A){if(',3,'Element("Warning',46,150,10,3,'Setup.DIV("','Warning','",{});B.innerHTML=\'<center><table><tr><td><div ','id="jsMath_noFont"><div ','class="message">\'+A','+\'<div style="text-align:left"><span style="float:left; margin: 8px 0px 0px 20px"><span onclick="',3,187,'Panel()" ','title=" Open ','the ','jsMath Control Panel',' " class="link">',312,'</span></span','><span style="margin: 8px 20px 0px 0px; float:right"><span onclick="',3,'Font.','HideMessage','()" title=" Remove this font warning message',313,'Hide this Message',315,'></div><div style="height:6px"></div><br clear="all"/></div></','div><div style="width:22em; height:1px"></div></td></tr></table></center><hr/>\'},',319,39,6,3,296,'");if(A','){A.style.display="none"}},',238,126,294,3,'Element("','PrintWarning',46,150,10,3,301,338,303,305,'+\'</',325,'Register',126,'H,B){if(typeof (H)=="string"){H={name:H}}if(!',3,'Setup.inited','&&!B){','this.register','[',355,14,']=H;',150,'var I=H.name;',6,'I.replace(/10$/,"");var F=',3,13,14,';if(H.prefix==null){H.prefix=""}if(!H.style){H.style="font-family: "+H.prefix+I+", serif"}if(!H.styles){H.styles={}}if(!H.macros){H.macros={}}',3,13,'[F]=I;',3,'TeX.famName[I]=F;H.macros[A]=["HandleFont",F];',3,63,3,'Parser.prototype.macros,H.macros);H.styles[".typeset ."+I]=H.style;',3,'Setup.Styles(H.styles);if(',3,'initialized){',3,256,'Push(',3,'Setup,"TeXfont",I)}var C=',3,187,'cookie;var E=!',3,'nofonts&&H.test(I,H.testChar,H.testFactor,H.prefix);if(E&&C',193,'if(H.tex){H.tex','(I,F,H)}',150,'if(!E&&C.warn&&C.font=="tex"&&!',3,149,'if(!C.fonts.match("/"+I+"/")){C.fonts+=I+"/";',3,187,201,'(!',3,296,46,209,113,')}var G=',3,337,'ExtraFonts");if(G){if(G','.innerHTML','!=""){G',412,'+=","}G',412,'+=" "+H.prefix+I}}}if(C',218,'"||',3,216,'if(H.',107,'){H.',107,393,150,'var D={};if(C.font=="symbol"&&H.symbol!=null){D[I]=H.symbol',393,'else{D[I]=["all"]}',3,277,'(D);',3,291,'(I);if(',3,'initialized){',3,256,'Push(',3,'Img,"Scale");',3,256,'Push(',3,'Img,"UpdateFonts")}},LoadRegistered',39,6,'0;while(A<',355,14,'){this.Register(',355,'[A++],1)}',355,'=[]},Load',126,'A){',3,'Setup.Script(this.URL(A))},URL',126,'A){','return ',3,'Img.root+A+"/def.js"}};',3,'Controls={cookie:{scale:100,font:"tex",autofont:1,scaleImg:0,alpha:1,warn:1,fonts:"/",printwarn:1,stayhires:0,button:1,progress:1,asynch:0,blank:0,print:0,keep:"0D",global:"auto",hiddenGlobal:1},cookiePath:"/",','noCookiePattern',':/^(file|mk):$/,Init',39,'this.panel=',3,301,'panel",{display:"none"},',3,'fixedDiv);','if(!',3,241,'msieButtonBug){this.Button',208,'setTimeout("',3,187,'Button()",500)}},Panel',39,3,'Translate.Cancel();if(','this.loaded','){this.Main',208,3,256,'delayedLoad(',3,'root+"jsMath-controls.html")}},Button',39,6,3,301,'button",{},',3,478,'A.',310,312,' ";A',412,'=\'<span onclick="',3,187,'Panel()">jsMath</span>\';if(!',3,'Global.','isLocal&&!',3,'noShowGlobal){A',412,'+=\'<span id="jsMath_global" ',310,'jsMath Global Panel " onclick="',3,516,'Show(1)">Global&nbsp;</span>\'}if(A.offsetWidth<30){A.style.width="auto"}if(!','this.cookie','.button',332,'MoveButton',39,3,'fixedDiv.style.','left','=document.body.','scrollLeft+"px";',3,533,'top',535,'scrollTop+"px";',3,533,'width',535,'clientWidth+"px";',3,533,'height',535,'clientHeight+"px"},GetCookie',39,'if(','this.defaults','==null){',554,'={}}',3,63,554,',',527,');this.userSet={};var C=',3,'document.cookie',';if(',3,'window.location','.protocol.match(this.',470,')){C=this.','localGetCookie','();','this.isLocalCookie','=1}if(','C.match(/jsMath','=([^;]+)/)){var D=unescape(RegExp.$1).split(/,/);for(',10,11,'D',14,15,6,'D[B].match(/(.*):(.*)/);if(A[2].match(/^\\d+$/)){A[2]=1*A[2]}',527,'[A[1]]=A[2];this.userSet[A[1]]=1}}},',572,39,465,3,568,'.search.substr(1)},SetCookie',126,'F){var B=[];for(var E in ',527,'){if(',554,'[E]==null||',527,'[E]!=',554,'[E]){B[B',14,']=E+":"+',527,'[E]}}B=B.join(",");if(',574,'){if(F==2){return"','jsMath="+escape(B)}','this.','localSetCookie','(B,F)}else{B=escape(B);if(B==""){F=0}if(','this.cookiePath','){B+="; path="+',613,'}if(','this.cookieDomain','){B+="; domain="+',617,'}if(',527,'.keep!="0D"){var A={D',':1000*60*60*24',',W',623,'*7,M',623,'*30,Y',623,'*365};var D=new Date;D.setTime(D.getTime()+',527,'.keep.substr(','0,1)*A[',527,632,'1,1)]);B+="; expires="+D.toGMTString()}if(B!=""){',3,565,101,'="+B;var C=',3,565,';if(F&&!',576,'=/)){alert("Cookies must be enabled in order to save jsMath options")}}}',465,'null},',611,126,'B,C){if(!C){',150,6,'String(',3,568,').replace(/\\?.*/,"");if(B!=""){A+="?',609,'if(A!=',3,568,'.href){this.Reload(A)}},Reload',126,'A){if(!',491,'){',150,491,'=0;',3,353,'=-100;',3,516,'ClearCache();if(A){',3,568,'.replace(A)}else{',3,568,'.reload()}}};',3,'Click={CheckClick',126,663,'A){A=',3,'window.event}if','(A.altKey){',3,187,'Panel()}},CheckDblClick',126,'B){if(!B){B=',3,687,'(!',3,'Click.DblClick){',3,'Extension.Require("double-click",1);',6,'B;B={};for(var C in A){B[C]=A[C]}}',3,256,'Push(',3,'Click,"DblClick",[B,this.alt])}};',3,'TeX={thinmuskip:3/18,medmuskip:4/18,thickmuskip:5/18,x_height:0.430554,quad:1,num1:0.676508,num2:0.393732,num3:0.44373,denom1:0.685951,denom2:0.344841,sup1:0.412892,sup2:0.362892,sup3:0.288888,sub1:0.15,sub2:0.247217,sup_drop:0.386108,sub_drop:0.05,delim1:2.39,delim2:1,axis_height:0.25,',34,':0.06,big_op_spacing1:0.111111,big_op_spacing2:0.166666,big_op_spacing3:0.2,big_op_spacing4:0.6,big_op_spacing5:0.1,integer:6553.6,scriptspace:0.05,nulldelimiterspace:0.12,delimiterfactor:901,delimitershortfall:0.5,scale:1,atom:["ord","op","bin","rel","open","close","punct","ord"],fam:["cmr10","',83,'","',89,'","cmex10","',77,'","","',71,'",""],famName:{cmr10:0,',83,':1,',89,':2,cmex10:3,',77,':4,',71,':6},encoding:["&#xC0;","&#xC1;","&#xC2;","&#xC3;","&#xC4;","&#xC5;","&#xC6;","&#xC7;","&#xC8;","&#xC9;","&#xCA;","&#xCB;","&#xCC;","&#xCD;","&#xCE;","&#xCF;","&#xB0;","&#xD1;","&#xD2;","&#xD3;","&#xD4;","&#xD5;","&#xD6;","&#xB7;","&#xD8;","&#xD9;","&#xDA;","&#xDB;","&#xDC;","&#xB5;","&#xB6;","&#xDF;","&#xEF;","!","&#x22;","#","$","%","&#x26;","&#x27;","(",")","*","+",",","-",".","/","0","1","2","3","4","5","6","7","8","9",":",";","&#x3C;","=","&#x3E;","?","@","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","[","&#x5C;","]","^","_","`","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","{","|","}","&#x7E;","&#xFF;"],cmr10:[[0.625',',0.683],[0.','833',728,'778',728,'694',728,'667',728,'75',728,'722',728,'778',728,'722',728,'778',728,'722',728,'583',',0.694,0,{ic:0.0778,krn:{"39":0.0778,"63":0.0778,"33":0.0778,"41":0.0778,"93":0.0778},lig:{"105":','14,"108":15}}],[0.556',',0.694],[0.','556',752,'833',752,'833',752,'278',',0.431],[0.','306',',0.431,0.194],[0.','5',752,'5',752,'5,0.628],[0.5',752,'5,0.568],[0.75',752,'444,0,0.17],[0.5',752,'722',760,'778',760,'5,0.528,0.0972],[0.903,0.683],[1.01',728,'778,0.732,0.0486],[0.278',',0.431,0,{','krn:{"108":-0.278,"76":-0.319}}],[0.278',',0.694,0,{','lig:{"96":','60}}],[0.5',752,'833',',0.694,0.194],[','0.5',',0.75,0.0556],[0.','833',789,'778',752,'278',782,'krn:{"63":0.111,"33":0.111},lig:{"39":34}}],[0.389',',0.75,0.25],[0.','389',797,'5,0.75],[','0.778,0.583,0.0833],[','0.278,0.106',',0.194],[0.','333',780,'lig:{"45":','123}}],[',802,'],[0.5',797,'5,0.644','],[0.5,0.644],[0.5,0.','644',812,'644',812,'644',812,'644],[0.5,0.644],[0.278',760,'278',762,'278,0.5',803,'778',',0.367,-0.133],[','0.472,0.5',803,'472',782,783,'62}}],[0.778',752,'75',',0.683,0,{krn:{"','116','":-0.0278,"','67',837,'79',837,'71',837,'85',837,'81',837,'84":-0.0833,"89":-0.0833,"86":-0.111,"87":-0.111}}],[0.','708',728,'722',728,'764',835,'88',837,'87',837,'65',837,'86',837,'89":-','0.0278}}],[0.','681',728,'653',',0.683,0,{','krn:{"111":-0.0833,"101":-0.0833,"117":-0.0833,"114":-0.0833,"97":-0.0833,"65":-0.111,"79":-0.0278,"67":-0.0278,"71":-0.0278,"81":-0.0278}}],[','0.785',728,'75',728,'361',835,'73":',864,'514',728,'778',835,'79',837,'67',837,'71',837,'81":-',864,'625',835,848,'917',728,'75',728,'778',835,'88',837,'87',837,'65',837,'86',837,'89":-',864,'681',835,'65','":-0.0833,"','111',837,'101',837,'97',837,'46',912,'44":-0.','0833}}],[0.','778,0.683',803,'736',835,'116',837,'67',837,'79',837,'71',837,'85',837,'81',837,848,'556',728,'722',835,'121',837,'101',912,'111',912,'114',912,'97',912,'65',912,'117":-0.',922,'75',728,'75',',0.683,0,{ic:0.','0139,',869,'1.03',961,'0139,',869,'0.75',835,'79',837,'67',837,'71',837,'81":-',864,'75',961,'025,krn:{"101',912,'111',912,'114',912,'97',912,'65',912,956,922,'611',728,'278',797,'5',752,'278',797,'5',752,'278,0.668],[0.','278',782,783,'92}}],[0.5',780,'krn:{"118',837,'106":0.0556,"121',837,'119":-',864,'556,0.','694,0',',{krn:{"101":0.0278,"111":0.0278,"120":-0.0278,"100":0.0278,"99":0.0278,"113":0.0278,"118":-0.0278,"106":0.0556,"121":-0.0278,"119":-0.0278}}],[0.','444',780,'krn:{"104',837,'107":-',864,'556',752,'444',760,'306',750,'12,"102":11,"108":13}}],[0.5',',0.431,0.194,{','ic:0.','0139,krn:{"','106":',864,'556',782,'krn:{"116',837,'117',837,'98',837,'121',837,'118',837,'119":-',864,1002,'306,0.668',803,'528',782,'krn:{"97','":-0.0556,"','101',837,'97',837,'111',837,'99":-',864,'278',752,'833',780,'krn:{"116',837,'117',837,'98',837,'121',837,'118',837,'119":-',864,'556',780,'krn:{"116',837,'117',837,'98',837,'121',837,'118',837,'119":-',864,'5,0.431,0',1016,1014,'431,0.194',1016,'528',762,'392',760,'394',760,'389,0.615,0,{krn:{"121',837,'119":-',864,'556',780,'krn:{"119":-',864,'528',',0.431,0,{ic:0.',1032,'97',1055,'101',837,'97',837,'111',837,'99":-',864,'722',1114,1032,'101',837,'97',837,'111',837,'99":-',864,'528',760,'528',1030,'ic:0.',1032,'111',837,'101',837,'97',837,'46',912,'44":-0.',922,'444',760,'5',1114,'0278,',806,'124}}],[1',1114,'0278}],[0.','5',752,'5,0.668],[0.5,0.668]],',83,':[[0.615',961,'139',',krn:{"61":-0.0556,"59":-0.111,"58":-0.111,"127":0.',922,'833',835,'127":0.167}}],[0.','763',961,1157,'krn:{"127":0.0833}}],[0.','694',835,1173,'742',961,'0757,',1177,'831',961,'0812,krn:{"61',1055,'59":-0.0556,"58":-0.0556,"127":0.','0556}}],[0.','78',961,'0576,',1177,'583',961,'139',1169,1190,'667',868,1177,'612',961,'11,krn:{"61',1055,1189,1190,'772',961,'0502,',1177,'64',1114,'0037,','krn:{"127":',864,'566',',0.694,0.194,{ic:0.','0528,',1177,'518',1030,'ic:0.0556','}],[0.444',782,'ic:0.0378,krn:{"',1189,1190,'406',780,'krn:{"127":0.0556}}],[0.','438',1219,'0738,',1177,'497',1030,'ic:0.0359',',',1232,'469',782,'ic:0.',1157,1177,'354',780,1232,'576',760,'583',752,'603',1030,1216,864,'494',1114,'0637,krn:{"',1189,'0278}}],[0.','438',1219,'046,',1216,'0.111}}],[0.','57',1114,'0359}],[0.','517',1030,1177,'571',1114,'0359,krn:{"59',1055,'58":-0.',1190,'437',1114,'113,krn:{"',1189,1262,'54',1114,'0359,',1216,864,'596,0.694,0.194,{',1177,'626',1030,1232,'651',1219,'0359,',1216,1267,'622',1114,1270,'466',780,1177,'591',782,1177,'828',1114,1161,'517',1030,1177,'363,0.431,0.0972,{ic:0.0799,',1177,'654',1030,1216,'0.0833}}],[1',826,'1',826,'1',826,'1',826,'0.278',',0.464,-0.0363],[','0.278',1329,'0.5,0.465,-0.0347],[',1332,'0.5',760,'5',760,'5',760,'5',762,'5',762,'5,0.',1097,812,1097,812,'431',803,'278,0.106],[',802,803,'778',',0.539,0.0391],[','0.5,0.75,0.25,{krn:{"1',1055,'65',1055,'77',1055,'78',1055,'89":0.0556,"90":-0.',1190,'778',1355,1332,'0.531',782,1224,',',1177,'75',835,'127":','0.','139}}],[0.','759',961,'0502,',1177,'715',961,'0715,krn:{"61',837,1189,922,'828',961,1157,1232,'738',961,'0576,',1177,'643',961,'139',1169,922,'786',868,1177,'831',961,'0812,krn:{"61',1055,1189,1190,'44',961,'0785,',1216,1267,'555',961,'0962',1169,'167}}],[0.','849',961,'0715,krn:{"61',1055,1189,1190,'681',835,1376,864,'97',961,'109,krn:{"','61',1055,1189,922,'803',961,1433,'61',912,'61',837,1189,922,'763',961,1157,1177,'642',961,'139',1169,922,'791,0.683,0.194,{',1177,'759',961,'00773,',1177,'613',961,'0576,krn:{"61',1055,1189,922,'584',961,'139,krn:{"61',837,1189,922,'683',961,1433,'59":-0.111,"',1278,'111,"61',1055,1376,864,'583',961,'222',',krn:{"59":-0.167,"58":-0.167,"61":-0.111}}],[0.','944',961,'139',1486,'828',961,'0785,krn:{"61',912,'61',837,1189,922,'581',961,'222',1486,'683',961,'0715,krn:{"61',1055,1189,922,'389,0.75],[0.389',787,'0.389',787,'1,0.358,-0.142],[',1513,'0.417',782,1216,1267,'529',760,'429',752,'433',780,1232,'52',782,'krn:{"89":0.0556,"90',1055,'106":-0.111,"102":-0.167,"',1173,'466',780,1232,'49',1219,'108,krn:{"',1189,1420,'477',1030,1239,',',1216,864,'576',782,'krn:{"127":-',864,'345,0.66],[0.412,0.66,0.194,{ic:0.0572,krn:{"59',1055,1278,1190,'521',782,'ic:0.0315}],[0.298',782,'ic:0.0197,',1177,'878',760,'6',760,'485',780,1232,'503',1030,1177,'446',1030,1239,',',1177,'451',1114,1157,'krn:{"',1189,1190,'469',780,1232,'361,0.615,0,{',1177,'572',780,1216,864,'485',1114,'0359,',1216,864,'716',1114,'0269,',1177,'572',780,1216,864,'49',1030,1239,',',1232,'465',1114,'044,',1232,'322',780,1216,864,'384',1030,1177,'636',1030,1216,1267,'5,0.714,0,{ic:0.154}],[0.278',782,'ic:0.399}]],',89,':[[',801,'0.278,0.444,-0.0556],[',801,1332,801,'0.5,0.444,-0.0556],[',801,801,801,801,801,801,801,'1',787,1633,1633,'0.778',1329,'0.778,0.464,-0.0363','],[0.778,0.636,0.136',1648,1648,1648,1648,1648,'],[0.778',826,'0.778,0.483,-0.0169],[0.778',1355,'0.778',1355,'1',1355,'1',1355,'0.778',1355,'0.778',1355,'1',826,'1',826,'0.5',787,'0.5',787,'1',826,'1',787,'1',787,'0.778',1329,'1',826,'1',826,'0.611',787,'0.611',787,'1',826,'1',787,'1',787,'0.778',760,'275,0.556],[1',760,'667',1355,'0.667',1355,'0.889',787,'0.889',787,'0',787,'0',826,'0.556',752,'556',752,'667',760,'5',789,'722',752,'722',752,'778',752,'778',752,'611',752,'798',835,'48":0.','194}}],[0.657',961,'0304',',krn:{"48":0.',1378,'527',961,'0583',1738,1378,'771',961,'0278',1738,922,'528',961,'0894',1738,'111}}],[0.','719',961,'0993',1738,1754,'595',',0.683,0.0972,{ic:0.','0593',1738,1754,'845',961,'00965',1738,1754,'545',961,'0738,krn:{"48":',864,'678',1761,'185',1738,1420,'762',961,'0144',1738,1190,'69',835,1734,'139}}],[1.2',835,1734,1378,'82',961,'147',1738,922,'796',961,1747,1738,1754,'696',961,'0822',1738,922,'817,0.683,0.0972,{krn:{"48":',1267,'848',835,1734,922,'606',961,'075',1738,1378,'545',961,'254,krn:{"48":',864,'626',961,'0993',1738,922,'613',961,'0822,krn:{"48":',864,'988',961,'0822',1738,922,'713',961,'146',1738,1378,'668',1761,'0822',1738,922,'725',961,'0794',1738,1378,'667,0.556],[0.',1850,1850,1850,1850,'611',752,'611',752,'444',797,'444',797,'444',797,'444',797,'5',797,'5',797,'389',797,'389',797,'278',797,'5',797,'5',797,'611',797,'5',797,'278',787,'0.833,0.04,0.96],[0.75',728,'833',728,'417',1219,'111}],[0.',1850,'667,0.556',1648,1648,'],[0.444',787,'0.444',787,'0.444',787,'0.611',787,'0.778,0.694,0.13','],[',1906,'],[',1906,'],[',1906,']],cmex10:[[0.458',',0.04,1.16,{n:','16}],[0.458',1914,'17}],[0.417',1914,'104}],[0.417',1914,'105','}],[0.472,0.04,1.16,{n:','106',1922,'107',1922,'108',1922,'109}],[0.583',1914,'110}],[0.583',1914,'111',1922,'68',1922,'69}],[0.333',',0,0.6,{delim:{rep:','12}}],[0.556',1938,'13}}],[0.578',1914,'46}],[0.578',1914,'47}],[0.597',',0.04,1.76,{n:','18}],[0.597',1946,'19}],[0.736',',0.04,2.36,{n:','32}],[0.736',1950,'33}],[0.528',1950,'34}],[0.528',1950,'35}],[0.583',1950,'36}],[0.583',1950,'37}],[0.583',1950,'38}],[0.583',1950,'39}],[0.75',1950,'40}],[0.75',1950,'41}],[0.75',1950,'42}],[0.75',1950,'43}],[1.04',1950,'44}],[1.04',1950,'45}],[0.792',',0.04,2.96,{n:','48}],[0.792',1978,'49}],[0.583',1978,'50}],[0.583',1978,'51}],[0.639',1978,'52}],[0.639',1978,'53}],[0.639',1978,'54}],[0.639',1978,'55}],[0.806',1978,'56}],[0.806',1978,'57}],[0.806',',0.04,2.96],[','0.806',1998,'1.28',1998,'1.28',1998,'0.811',1946,'30}],[0.811',1946,'31}],[0.875',',0.04,1.76,{delim:{top:','48,bot:64,rep:66}}],[0.875',2010,'49,bot:65,rep:67}}],[0.667',2010,'50,bot:52,rep:54}}],[0.667',2010,'51,bot:53,rep:55','}}],[0.667,0.04,1.76,{delim:{bot:','52,rep:54',2018,'53,rep:55','}}],[0.667,0,0.6,{delim:{top:','50,rep:54',2022,'51,rep:55','}}],[0.889,0,0.9,{delim:{top:','56,mid:60,bot:58,rep:62',2026,'57,mid:61,bot:59,rep:62',2026,'56,bot:58,rep:62',2026,'57,bot:59,rep:62','}}],[0.889,0,1.8,{delim:{rep:','63',2034,'119}}],[0.889,0,0.3,{delim:{rep:62',2022,'120,bot:121,rep:63}}],[0.875',2010,'56,bot:59,rep:62}}],[0.875',2010,'57,bot:58,rep:62}}],[0.875',1938,'66}}],[0.875',1938,'67}}],[0.611',1946,'28}],[0.611',1946,'29','}],[0.833,0,1,{n:','71}],[1.11,0.1,1.5],[','0.472,0,1.11,{ic:0.194,n:','73}],[0.556,0,2.22,{ic:0.444}],[1.','11,0,1,{n:','75}],[1.51',',0.1,1.5],[1.',2056,'77}],[1.51',2058,2056,'79}],[1.51',2058,'06,0,1,{n:88}],[0.944,0,1,{n:89}],[',2054,'90',2052,'91',2052,'92',2052,'93',2052,'94',2052,'95}],[1.44',2058,'28,0.1,1.5],[0.556,0,2.22,{ic:0.444}],[1.11',2058,'11',2058,'11',2058,'1'],
-  ['1,0.1,1.5],[1.11,0.1,1.5],[0.944,0,1,{n:97}],[1.28,0.1,1.5','],[0.556,0.722,0,{n:','99','}],[1,0.75,0,{n:','100}],[1.44,0.75',1,'102',3,'103}],[1.44,0.75],[0.472',',0.04,1.76,{n:','20}],[0.472',9,'21}],[0.528',9,'22}],[0.528',9,'23}],[0.528',9,'24}],[0.528',9,'25}],[0.667',9,'26}],[0.667',9,'27','}],[1,0.04,','1.16,{n:113}],[1',9,'114',25,'2.36,{n:115',25,'2.96,{n:116}],[1.06,0,1.8,{delim:{top:118,bot:116,rep:117}}],[1.06,0,0.6],[1.06,0.04,0.56],[0.778',',0,0.6,{delim:{','top:126,','bot:127,rep:119','}}],[0.667',33,'top:120,rep:63}}],[0.667',33,'bot:121,rep:63}}],[0','.45,0.12],[0',41,41,41,'.778',33,34,'rep:119}}],[0.778',33,35,'}}]],cmti10:[[0.627',',0.683,0,{ic:0.','133}],[0.818,0.683],[0.767',52,'094}],[0.','692,0.683],[0.664',52,'153}],[0.743',52,'164}],[0.','716',52,'12}],[0.','767',52,'111}],[0.716',52,'0599}],[0.767',52,'111}],[0.716',52,'103}],[0.','613',',0.694',',0.194,{ic:0.','212,krn:{"39":0.104,"63":0.104,"33":0.104,"41":0.104,"93":0.104},lig:{"105":','14,"108":15}}],[0.','562',74,75,72,'588',74,75,72,'882',74,75,72,'894',74,75,72,'307',',0.431,0,{ic:0.','0767}],[0.','332,0.431',75,'0374}],[0.511',',0.694],[0.','511',',0.694,0,{ic:0.','0969','}],[0.511,0.','628',',0,{ic:0.','083}],[0.511',102,'108',104,'562',106,72,'831',100,'46,0,0.17],[0.537',74,75,'105}],[0.','716',95,'0751','}],[0.716',95,122,104,'528,0.0972,{ic:0.0919}],[0.883',52,63,'985',52,63,'767,0.732,0.0486,{ic:0.',55,'256,0.431,0,{krn:{"108":-0.256,"76":-0.321}}],[0.307',102,'124,lig:{"96":','60}}],[0.','514',102,'0696}],[0.818',74,75,'0662}],[0.769',100,'818',',0.75,0.0556',',{ic:0.136}],[0.','767',102,'0969}],[0.307',102,'124',',krn:{"','63":0.102,"33":0.102','},lig:{"39":34}}],[0.','409',',0.75,0.25,{ic:0.','162}],[0.409',158,'0369',104,'75',106,'149}],[0.767,0.562,0.0567,{ic:0.0369','}],[0.307,0.','106',',0.194],[0.','358',95,'0283,','lig:{"45":123}}],[0.','307,0.106],[0.511',158,'162',104,'644,0',',{ic:0.136}],[0.511,0.644,0',178,178,178,'.194',178,178,178,182,178,178,148,'307',95,'0582',166,'431',75,'0582',166,'5',75,'0756}],[0.767,0.367,-0.133,{ic:0.0662',104,'5',168,'511',102,'122,lig:{"96":62}}],[0.767',102,'096}],[0.743,0.683,0,{','krn:{"110":-0.0256,"108":-0.0256,"114":-0.0256,"117":-0.0256,"109":-0.0256,"116":-0.0256,"105":-0.0256,"67":-0.0256,"79":-0.0256,"71":-0.0256,"104":-0.0256,"98":-0.0256,"85":-0.0256,"107":-0.0256,"118":-0.0256,"119":-0.0256,"81":-','0.0256,"84','":-0.0767,"','89',211,'86','":-0.102,"','87',215,'101":-0.0511,"97":-0.0511,"111":-0.0511,"100":-0.0511,"99":-0.0511,"103":-0.0511,"113":-0.0511}}],[0.','704',52,72,'716',52,'145}],[0.','755',52,'094',154,'88','":-0.0256,"','87',230,'65',230,'86',230,'89','":-0.0256}}],[0.','678',52,63,'653',52,'133',154,'111',211,'101',211,'117','":-0.0767,"114":-0.0767,"97":-0.0767,"','65',215,'79":-0.0256,"67":-0.0256,"71":-0.0256,"81":-0.0256}}],[0.','774',52,'0872}],[0.743',52,60,'386',52,'158}],[0.525',52,'14}],[0.769',52,'145',154,254,'627,0.683,0,{krn:{"84',211,'89',211,'86',215,'87',215,218,'897',52,60,'743',52,60,'767',52,'094',154,'88',230,'87',230,'65',230,'86',230,'89',238,'678',52,'103',154,'65":-0.0767}}],[0.','767,0.683',75,55,'729',52,'0387,',209,'0.0256,"84',211,'89',211,'86',215,'87',215,218,'562',52,63,'716',52,'133',154,'121',211,'101',211,'111',251,'117',211,302,'743',52,60,'743',52,'184',154,'111',211,'101',211,'117',251,'65',215,254,'999',52,'184',154,302,'743',52,'158',154,254,'743',52,'194',154,'101',211,'111',251,'117',211,302,'613',52,224,'307',158,'188}],[0.514',102,'169}],[0.307',158,119,'511',102,'0665',166,'668',106,'118}],[0.307',102,137,'92}}],[0.','511',95,96,'46',102,'0631',154,218,'46',95,'0565',154,218,'511',102,'103',',krn:{"108":0.0511}}],[0.','46',95,122,154,218,'307',74,75,76,'12,"102":11,"108":13}}],[0.','46,0.431',75,'0885}],[0.','511',102,96,'307,0.655',106,'102',166,'655',75,224,'46',102,'108}],[0.','256',102,'103',408,'818',95,96,'562',95,'0767',154,'39":-0.102}}],[0.511',95,'0631',154,218,'511,0.431',75,'0631',154,218,'46,0.431',75,421,'422',95,'108',154,218,'409',95,'0821}],[0.332,0.615',106,'0949}],[0.537',95,96,'46',95,434,'664',95,'108',408,'464',95,63,'486,0.431',75,421,'409',95,'123}],[0.511',95,'0921',',lig:{"45":124}}],[1.','02',95,'0921}],[0.511',102,'122',104,'668',106,'116',104,'668',106,'105}]],cmbx10:[[0.692',',0.686],[0.','958',503,'894',503,'806',503,'767',503,'9',503,'831',503,'894',503,'831',503,'894',503,'831',503,'671',102,'109,krn:{"39":0.109,"63":0.109,"33":0.109,"41":0.109,"93":0.109},lig:{"105":',77,'639',100,'639',100,'958',100,'958',100,'319',',0.444],[0.','351,0.444',168,'575',100,'575',100,'575,0.','632],[0.575',100,544,'596],[0.869',100,'511,0,0.17],[0.597',100,'831',537,'894',537,544,'542,0.0972],[1.04,0.686],[1.17',503,'894,0.735,0.0486],[0.319',',0.444,0,{krn:{"','108":-0.319,"76":-0.378}}],[0.35',',0.694,0,{lig:{"96":',138,'603',100,'958',74,168,'575',147,'],[0.958',147,'],[0.894',100,'319',',0.694,0,{krn:{"','63":0.128,"33":0.128',156,'447',',0.75,0.25],[0.','447',580,544,'75],[0.894,0.633,0.133],[0.','319,0.156',168,'383,0.444,0,{',172,585,'],[0.575',580,544,'644],[','0.575,0.644],[0.575,0.644],[',594,594,594,'0.',544,'644],[0.319',537,'319,0.444',168,'35,0.5',168,'894,0.391,-0.109],[0.543,0.5',168,'543',562,'62}}],[0.894',100,'869',',0.686,0,{krn:{"','116','":-0.0319,"','67',615,'79',615,'71',615,'85',615,'81',615,'84":-0.0958,"89":-0.0958,"86":-0.128,"87":-0.128}}],[','0.818',503,'831',503,'882',613,'88',615,'87',615,'65',615,'86',615,'89','":-0.0319}}],[0.','756',503,'724,0.686,0,{','krn:{"111":-0.0958,"101":-0.0958,"117":-0.0958,"114":-0.0958,"97":-0.0958,"65":-0.128,"79":-0.0319,"67":-0.0319,"71":-0.0319,"81":-0.0319}}],[','0.904',503,'9',503,'436',613,'73','":0.0319}}],[0.','594',503,'901',613,'79',615,'67',615,'71',615,'81',642,'692',613,626,'1.09',503,'9',503,'864',613,'88',615,'87',615,'65',615,'86',615,'89',642,'786',613,'65":-0.0958,"111',615,'101',615,'97',615,'46":-0.0958,"44":-0.0958}}],[0.','864,0.686',168,'862',613,'116',615,'67',615,'79',615,'71',615,'85',615,'81',615,626,'0.639',503,'8',613,'121',615,'101":-0.0958,"111":-0.0958,"114":-0.0958,"97":-0.0958,"65":-0.0958,"117":-0.0958}}],[0.','885',503,'869,0.686',106,'016,',646,'1.19,0.686',106,'016,',646,'0.869',613,'79',615,'67',615,'71',615,'81',642,'869,0.686',106,'0287',154,718,'703',503,'319',580,'603',100,'319',580,'575',100,'319',100,'319',562,391,'559',560,'118',615,'106":0.0639,"121',615,'119',642,'639',74,',0',',{krn:{"101":0.0319,"111":0.0319,"120":-0.0319,"100":0.0319,"99":0.0319,"113":0.0319,"118":-0.0319,"106":0.0639,"121":-0.0319,"119":-0.0319}}],[0.','511',560,'104',615,'107',642,'639',100,'527',537,'351',102,526,418,544,'444',75,'016,krn:{"','106',654,'639',576,'116',615,'117',615,'98',615,'121',615,'118',615,'119',642,'319',100,'351',74,168,'607',576,'97":-0.0639,"101',615,'97',615,'111',615,'99',642,'319',100,'958',560,'116',615,'117',615,'98',615,'121',615,'118',615,'119',642,'639',560,'116',615,'117',615,'98',615,'121',615,'118',615,'119',642,544,'444,0',770,'639,0.444,0',182,770,'607,0.444',168,'474',537,'454',537,'447,0.635,0,{krn:{"121',615,'119',642,'639',560,'119',642,856,106,788,'97":-0.0639,"101',615,'97',615,'111',615,'99',642,'831,0.444',106,788,'101',615,'97',615,'111',615,'99',642,'607',537,856,75,788,'111',615,'101',615,'97',615,694,'511',537,544,'444',106,'0319',489,'15,0.444',106,'0319}],[0.575',100,'575',100,'575',74,']]};','jsMath.Img','={fonts:[50,60,70,85,100,120,144,173,207,249,298,358,430],w:{"50":6.9,"60":8.3,"70":9.7,"85":11.8,"100":13.9,"120":16.7,"144":20,"173":24,"207":28.8,"249":34.6,"298":41.4,"358":49.8,"430":59.8},best:4,update:{},factor:1,loaded:0,SetFont',':function(','B){for(var A in B){if(!','this.update[A',']){',924,']=[]}',924,']=',924,'].concat(B[A])}},AddFont',922,'A,B){if(!',920,'[A]){',920,'[A]={}}jsMath.Add(',920,'[A],B)},UpdateFonts',':function(){','var D=this.update;','if(!this.loaded){','return }for(var A in D){for(var B=0;B<D[A].length;B++){var C=D[A][B];if(C=="all"){for(C in ','jsMath.TeX[','A]){',944,'A][C].img','={}}}else{',944,947,'={}}}}this.update={}},BestSize',940,'var B=jsMath.em*this.factor;var A=','this.w[this.fonts[','0]];for(var C=1;C<this.fonts.length;C++){if(B<(',954,'C]]+2*A)/3){return C-1}A=',954,'C]]}return C-1},Scale',940,942,'return }this.best=this.BestSize();this.em=',920,'.w[this.fonts[this.best]];','this.scale','=(jsMath.em/this.em);','if(Math.abs(',965,'-1)<0.12){',965,'=1}},URL',922,'A,B,E){var D=(','jsMath.Controls.cookie.','alpha)?"/alpha/":"/plain/";','if(E==null','){E="def.js"}else{E="char"+E+".png"}if(B!=""){B+="/"}','return this.','root+A+D+B+E},LoadFont',922,'A){',942,'this.Init()}jsMath.Setup.Script(this.URL(A,""))},Init',940,'if(',974,'print||',974,'stayhires','){',974,'print=',974,989,';this.factor*=3;if(!','jsMath.Controls.','isLocalCookie||!jsMath.Global.isLocal){',996,'SetCookie(0)}if(','jsMath.Browser.','alphaPrintBug){',974,'alpha=0}}var B="0123456789ABCDEF";this.HexCode=[];for(var C=0;C<128;C++){var D=Math.floor(C/16);var A=C-16*D;this.HexCode[C]=B.charAt(D)+B.charAt(A)}this.loaded=1}};jsMath.HTML={Em',922,'A){var C=','5;if(A<0){C++}',967,'A)<0.000001){A=0}var B=String(A);B=B.replace(/(\\.\\d\\d\\d).+/,"$1");return B+"em"},Spacer',922,'A){if(A==0){return""}return ',1000,'msieSpaceFix+\'<','span class="spacer" style="margin-','left:\'+this.Em(','A)+\'"></span>\'},Blank',922,'B,E,G,F){var A="";var D="";if(F){D+="border-left',':"+this.Em(','B)+" solid;";if(',1000,'widthAddsBorder){B=0}}if(B==0){if(',1000,'blankWidthBug){if(',1000,'quirks','){D+="width:1px',';";A=\'<',1013,'right:-1px"></span>\'}else{if(!F',1026,';margin-right:-1px;"}}}}else{D+="width',1018,'B)+";"}if(G==null){G=0}if(E){var C=this.Em(E+G);if(F&&E*jsMath.em<=1.5){C="1.5px";E=1.5/jsMath.em}D+="height:"+C+";"}if(',1000,'mozInlineBlockBug){G=-E}if(',1000,'msieBorderBug&&!F){G-=jsMath.d}if(G){D+="','vertical-align:"+','this.Em(-G)}return A+\'<span class="blank" ','style="\'+','D+\'"></span>\'},Rule',922,'A,B){if(B==null){B','=jsMath.TeX.default_rule_thickness}',978,'Blank(A,B,0,1)},Class',922,'A,B){return\'<span class="\'+A','+\'">\'+B+"</span','>"},Place',922,'B,A,D){',967,'A)<0.0001){A=0}',967,'D)<0.0001){D=0}if(A||D){var C=\'<','span style="position',': relative',';\';if(A){C+=" margin-left',1018,'A)+";"}if(D){C+=" top:"+this.Em(-D)+";"}B=C',1049,'>"}return B},PlaceSeparateSkips',922,'E',',G,F,I,A,H){if(Math.abs(G)<0.0001){G=0}if(Math.abs(F)<0.0001){F=0}','if(F){var D=0;var C=0;','var B="";if(','I!=null){C=','A-H;D=I;B=" width',1018,'A-I)+";"}E=','this.Spacer','(D-C)+\'<',1057,1058,'; top:\'+this.Em(-F)+";left',1018,'C',')+";"+B+\'">\'+',1073,'(-D)+E+',1073,'(C)+"</span>"}if(G){E=',1073,'(G)+E}return E},PlaceAbsolute',922,'D',1066,'var C="";var ','E="";',1068,1000,'msieRelativeClipBug&&',1069,1073,'(-I);G+=I;E=',1073,'(A-H)}if(',1000,'operaAbsoluteWidthBug){B=" width: "+this.Em(H+2)}D=\'<',1057,':absolute; ',1014,'G)+"; top',1018,'F',1080,'C+D+E+"&nbsp;</span>";','return D},','Absolute',922,'B,A,C,D,E){if(E!="none"){',967,'E)<0.0001){E=0}B=\'<',1057,1103,'top:\'+','jsMath.HTML.','Em(E)+\'; left:0em;">\'+B+"&nbsp;</span>"}if(D=="none"){D=0}B+=this.Blank(A,C-D,D);if(',1000,'msieAbsoluteBug){B=\'<',1057,':relative',';">\'+B+"</span>"}B=\'<',1057,1124,';\'+',1000,'msieInlineBlockFix',1049,'>";return B}};','jsMath.Box','=function(C,E,A,B,D){if(D==null){D=jsMath.d}this.type="typeset";this.w=A;this.h=B;this.d=D;this.bh=B;this.bd=D;this.x=0;this.y=0;this.mw=0;this.Mw=A;this.html=E;this.format=C};jsMath.Add(',1133,',{defaultH:0,Null',940,'return new ',1133,'("null","",0,0,0)},Text',922,'J,I,A,K,H,G){var E=','jsMath.Typeset.AddClass(','I,J);E=','jsMath.Typeset.','AddStyle(','A,K,E);var B','=jsMath.EmBoxFor(','E);var C=',1145,'TeX(A,K);var F=((I=="cmsy10"||I=="cmex10")?B.h-C.h:C.d*B.h/C.hd);var D=new ',1133,'("text",J,B.w,B.h-F,F);D.style=A;D.size=K;D.tclass=I;if(G!=null){D.d=G*C.scale}else{D.d=0}if(H==null||H==1){D.h=0.9*C.M_height}else{D.h=1.1*C.x_height+C.scale*H}',1110,'TeX',922,'H,A,E,B){var I=',944,'A][H];','if(I.d==null){I.d=0}','if(I.h==null){I.h=','0}if(I.img!=null&&I.c!=""){this.TeXIMG(A,H,',1145,'StyleSize(E,B))}var G=',1145,'TeX(E,B).scale;var D=I.h+',944,'A].dh;var F=new ',1133,'("text",I.c,I.w*G,D*G,I.d*G);F.style=E;F.size=B;if(I.tclass){F.tclass=I.tclass;if(I.img){F.bh=I.img.bh;F.bd=I.img.bd}else{F.bh=G*jsMath.h;F.bd=G*jsMath.d}}else{F.tclass=A;F.bh=G*',944,'A].h;F.bd=G*',944,'A].d;if(',1000,'msieFontBug&&','F','.html.match(/&#/)){','F','.html+=\'<span style="display:none">x</span','>\'}}return F},TeXfallback',922,'A,D,B,L){var J=',944,'D][A];if(!J.tclass){J.tclass=D}if(J.img!=null){',978,'TeXnonfallback(A,D,B,L)}if(J.h!=null&&J.a==null){J.a=J.h-1.1*jsMath.TeX.x_height}var K=J.a;var I=J.d;var H=this.Text(J.c,J.tclass,B,L,K,I);var E=',1145,'TeX(B,L).scale;if(J.bh!=null){H.bh=J.bh*E;H.bd=J.bd*E}else{var G=H.bd+H.bh;var F=',1143,'H.tclass,H.html);F=',1145,1146,'B,L,F);H.bd',1148,'F+',1119,'Blank(1,G)).h-G;H.bh=G-H.bd;if(E==1){J.bh=H.bh;J.bd=H.bd}}if(jsMath.',1176,'H',1178,'H',1180,'>\'}return H},TeXIMG',922,'E,A,R){var M=',944,'E][A];if(M.img.size!=null&&M.img.size==R&&M.img.best!=null&&M.img.best==','jsMath.Img.best','){return }var F=(',920,'.scale!=1);var B=',1209,'+R-4;if(B<0){B=0;F=1','}else{if(','B>=','jsMath.Img.fonts','.length){','B=',1217,'.length-1',';F=1}}var Q=',920,'[',1217,'[B]];var I=Q[E][A];var G=1/',920,'.w[',1217,'[B]];if(B!=',1209,'+R-4){if(M.w!=null){G=M.w/I[0]}else{G*=',1217,'[R]/',1217,'[4]*',1217,'[',1209,']/',1217,'[B]}}var N=I[0]*G;var J=I[1]*G;var L=-I[2]*G;var O;var H=(M.w==null||Math.abs(M.w-N)<0.01)?"":" margin-right:"+',1119,'Em(M.w-N)+";";var D="";A=',920,'.HexCode[A];if(!F&&!',974,'scaleImg){if(2*N<J||(',1000,'msieAlphaBug&&',974,'alpha)){D="height',':"+(I[1]*',1000,'imgScale',')+"px;"}D+=" width:"+(I[0]*',1000,1255,')+"px;";O=-I[2]+"px"}else{if(2*N<J||(',1000,'msieAlphaBug&&',974,1252,':"+',1119,'Em(J*',1000,1255,')+";"}D+=" width:"+',1119,'Em(N*',1000,1255,')+";";O=',1119,'Em(L)}var P=(Math.abs(L)<0.01&&!',1000,'valignBug)?"":" ',1038,'O+";";var K=',920,'.URL(E,',1217,'[B],A);if(',1000,'msieAlphaBug&&',974,'alpha){','M.c=\'<img src="\'+','jsMath.blank+\'" ',1040,1000,'msieCenterBugFix+D+P+H','+" filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src=\'"+K+"\', sizingMethod=\'scale\');\\" />"}else{',1289,'K+\'" ',1040,1000,1293,'+\'" />\'}M.tclass="normal";M.img.bh=J+L;M.img.bd=-L;M.img.size=R;M.img.best=',1209,'},Space',922,'A){return ','new jsMath.Box("html",',1119,'Spacer(A),A,0,0)},Rule',922,'A,C){if(C','==null){C',1044,'var B=',1119,'Rule(A,C);return ',1305,'B,A,C,0)},GetChar',922,'B,',1005,944,'A][B];','if(C.img!=null){this.TeXIMG(A,B',',4)}if(C.tclass',1310,'.tclass=A}if(!C.computedW){C.w',1148,1143,'C.tclass,C.c)).w',';if(C.h',1310,'.h=',1133,'.defaultH}if(C.d',1310,'.d=0}C.computedW=1}return C},DelimBestFit',922,'E,J,D,G){if(J==0&&D==0){return null}var I;var F;D','=jsMath.TeX.fam[','D];var A=(G.charAt(1)=="S");var B=(G.charAt(0)=="S");while(J!=null){I=',944,'D][J];',1161,1133,'.defaultH}',1160,'F=I.h+I.d;if(I.delim){return[J,D,"",E]}if(A&&0.5*F>=E','){return[J,D,"','SS",0.5*F]}if(B&&0.7*F>=E',1347,'S",0.7*F]}if(F>=E||I.n==null',1347,'T",F]}J=I.n}return null},DelimExtendRelative',922,'I,T,O,V,D){var P=',944,'O][T];var N','=this.GetChar(','P.delim.','top?P','.delim.top:','P.delim.rep,O);var ','A',1357,1361,'M',1357,1358,'bot?P','.delim.bot:',1361,'E=',1143,'A.tclass,A.c);','var J=A.w;var S=A.h+A.d;var F;var B;var K;var L;var R;var Q;if(',1358,'mid){var U',1357,1358,'mid,O);Q','=Math.ceil((I-(','N.h+N.d)-(','U.h+U.d)-(M.h+M.d))/(2*(A.h+A.d',')));I=2*','Q*(A.h+A.d)+(N.h+N.d)+(','U.h+U.d)+(M.h+M.d);if(D){F=0}else{F=I/2+V}B=F;K=',1119,'Place(',1143,'N.tclass,N.c),0,F-N.h',')+',1119,1387,1143,'M.tclass,M.c),-(','N.w+M.w)/2,F-(I-M.d))+',1119,1387,1143,'U.tclass,U.c),-(M.w+U.w)/2,F-(I+U.h-U.d)/2);L=(J-U','.w)/2;if(Math.abs(L)<0.0001){L=0}if(L){K+=jsMath.HTML.Spacer(L)}F-=N.h+N.d+A.h;for(R=0;R<Q;R++){K+=jsMath.HTML.Place(E,-J,F-R*S)}','F-=I/2-A.h/2;for(R=0;R<Q;R++){K+=',1119,1387,'E,-J,F-R*S)}}else{Q',1380,1381,'M.h+M.d))/(A.h+A.d));if(N.h+N.d<0.9*(A.h+A.d)){Q=Math.max(1,Q)}I=',1384,'M.h+M.d);if(D){F=0}else{F=I/2+V}B=F;K=',1119,1387,1143,1389,');L=(J-N',1400,'K+=',1119,1387,1143,1394,'J+M.w)/2,B-(I-M.d))}if(D){S=N.h}else{S=I/2+V}var G=',1305,'K,A.w,S,I-S);G.bh=',944,'O].h;G.bd=',944,'O].d;return G},DelimExtendAbsolute',922,'I,S,M,U,B){var R=',944,'M];var N=R[S];var J;var L',1357,'N.delim.top?N',1360,'N.delim.rep,M);var ','A',1357,1435,'K',1357,'N.delim.bot?N',1369,1435,'O;var Q;var E;var D;var P;if(N.delim.mid){var T',1357,'N.delim.mid,M);O',1380,'L.h+L.d)-(','T.h+T.d-0.05',')-(','K.h+K.d-0.05','))/(2*(','A.h+A.d-0.05',1383,'O*(A.h+A.d-0.05)+(L.h+L.d)+(',1449,')+(',1451,');J=','jsMath.HTML.PlaceAbsolute(',1143,'L.tclass,L.c),0,0);Q=',1453,';E=L.d-0.05+A.h;D=',1143,'M,A.c);for(P=0;P<O;P++){J+=',1460,'D,0,E+P*Q)}J+=',1460,1143,'T.tclass,T.c),0,E+O*Q-A.h+T.h);E+=O*Q+',1449,';for(P=0;P<O;P++){J+=',1460,'D,0,E+P*Q)}J+=',1460,1143,'K.tclass,K.c),0,E+O*Q-A.h+K.h)}','else{O',1380,1448,1451,'))/(',1453,'));I=',1455,1451,');J=',1460,1143,'L.tclass,L.c),0,0);Q=',1453,';E=L.d-0.05+A.h;D=',1143,1373,'for(P=0;P<O;P++){J+=',1460,'D,0,E+P*Q)}J+=',1460,1143,1478,'var G=L.w;if(B){Q=L.h;E=0}else{Q=I/2+U;E=Q-L.h}J=',1119,1111,'(J,G,R.h,"none",-E);var F=',1305,'J,A.w,Q,I-Q);F.bh=',944,'M].h;F.bd=',944,'M].d;return F},Delimiter',922,'B,I,C,G){var A=4;var F=',1145,'TeX(C,A);if(!I','){return this.Space(F.nulldelimiterspace)}','var ','E=this.DelimBestFit(B,I[','2],I[1],C);',976,'||E[3]<B){',1518,'4],I[3],C)}',976,1516,'if(E[2]==""){',978,'DelimExtend(B,E[0],E[1],F.axis_height,G)}var D=',1133,'.TeX(E[0],E[1],E[2],A).Styled();if(G){D.y=-',944,'E[1]].dh*F.scale}else{D.y=-((D.h+D.d)/2-D.d-F.axis_height)}',967,'D.y)<0.0001){D.y=0}if(D.y){D=',1133,'.SetList([D],E[2],A)}',1110,'GetCharCode',922,'B){var A',1338,'B[0]];var D=',944,'A];var C=D[B[1]];',1322,'[1],4)}if(C.w',1310,'.w',1148,1143,1328,'}if(C.font',1310,'.font=A}return C},AddClass',922,'B,C,A){if(B==null){B=A}return ',1143,'B,C)},LayoutRelative',922,'V,f,Y,I,J,N,c,X){if(Y==null){Y=[]}if(I==null){I=[]}if(J==null){J=[]}if(c==null){c=1}','if(X==null){X=1}','var k=jsMath.sizes[V]/100;var G=[];var T=[];var U=[];var E=-1000;var F=E;var K=E;var a;var Z;var M',';for(a=0;a<f.length;a++){','if(J[a]==null){J[a]=0}M=f[a];T[a]=c*jsMath.h*k;U[a]=c*jsMath.d*k;for(Z=0;Z<M.length;Z++){M[Z]=M[Z','].Remeasured();if(','M[Z].h>T[a]){T[a]=M[Z].h}if(M[Z].d>U[a]){U[a]=M[Z].d}if(Z>=G',1218,'G[Z]=M[Z].w',1215,'M[Z].w>G[Z]){',1568,'}}if(M[Z].bh>F){F=M[Z].bh}if(M[Z].bd>K){K=M[Z].bd}}}if(J[f','.length]==null){','J[f.length]=0}if(F==E){F=0}if(K==E){K=0}var A=c','*(jsMath.hd-0.01)*','k;var S=(N||1)*k/6;var R="";var L=0;var e=0;var Q;var b;var O;var P;var C;var B;for(Z=0;Z<G.length;Z++){C=[];O=-T[0]-J[0];L=0',1563,'B=f[a][Z','];if(B&&B.format!="null"){if(','Y[Z]=="l"){Q=0',1215,'Y[Z]=="r"){Q=G[Z]-B.w}else{Q=(G[Z]-B.w)/2}}B.x=Q-L;L=B.w+Q;B.y=O;C[C.length]=B}if(a+1<f',1218,'O-=Math.max(A,U[a]+T[a+1])+S+J[a+1]}}if(I[Z]==null){I[Z]=k}if(C.length>0){P=',1133,'.SetList(C,"T",V);R+=',1119,1387,'P.html,e,0);e=G[Z]-P.w+I[Z]}else{e+=I[Z]}}Q=-I[G',1221,'];O=(T',1221,')*S+J[0];for(a=0;a<G.length;a++){Q+=G[a]+I[a]}for(a=0;a<T.length;a++){O','+=Math.max(A,','T[a]+U[a])+J[a+1]}b=O','/2+jsMath.TeX.axis_height;var ','g=O-b;R+=',1119,'Spacer(e-I[G',1221,']+X*k/6);R=',1119,1387,'R,X*k/6,b);P=',1305,'R,Q+X*k/3,b,g);P.bh=F;P.bd=K;return P},LayoutAbsolute',922,'R,Z,U,E,F,I,X,S){if(U==null){U=[]}',976,'){E=[]}if(F==null){F=[]}',1561,'if(S==null){S=1}var b=jsMath.sizes[R]/100;var A=X',1575,'b;var N=(I||1)*b/6;var C=[];var O=[];var Q=[];var P=0;var Y;var L;var J;var V;var T;var G;','for(V=0;V<Z.length;V++){','if(F[V]==null){F[V]=0}G=Z[V];O[V]=X*jsMath.h*b;Q[V]=X*jsMath.d*b;for(T=0;T<G.length;T++){G[T]=G[T',1565,'G[T].h>O[V]){O[V]=G[T].h}if(G[T].d>Q[V]){Q[V]=G[T].d}if(T>=C',1218,'C[T]=G[T].w',1215,'G[T].w>C[T]){',1620,'}}}}if(F[Z',1573,'F[Z.length]=0}J=(O',1221,')*N+F[0];for(V=0;V<O.length;V++){J',1594,'O[V]+Q[V])+F[V+1]}Y=J',1596,'a=J-Y;var M="";var B;P=S*b/6;for(T=0;T<C.length;T++){J=O[0]-Y+F[0];',1615,'B=Z[V][T',1579,'U[T]&&U[T]=="','l"){L=0',1215,1636,'r"){L=C[T]-B.w}else{L=(C[T]-B.w)/2}}M+=',1460,'B.html,P+L,J-Math.max(0,B.bh-jsMath.h*b),B.mw,B.Mw,B.w)}if(V+1<Z',1218,'J',1594,'Q[V]+O[V+1])+N+F[V+1]}}if(E[T]==null){E[T]=b}P+=C[T]+E[T]}P=-E[C',1221,']+S*b/3;for(V=0;V<C.length;V++){P+=C[V]+E[V]}M=',1119,'Spacer(S*b/6',')+M+',1119,1650,');if(',1000,'spanHeightVaries){J=Y-jsMath.h}else{J=0}M=',1119,1111,'(M,P,Y+a,a,J);var K=',1305,'M,P+S*b/3,Y,a);return K},InternalMath',922,'G,E){if(!jsMath.safeHBoxes){G=G.replace(/@\\(([^)]*)\\)/g,"<$1>")}if(!G.match(/\\$|\\\\\\(/)){',978,'Text(G,"normal","T",E).Styled()}var D=0;var B=0;var H;',1090,'A=[];var F;while(D<G',1218,'H=G.charAt(D++);if(H','=="$"){if(C=="$"){','F=jsMath.Parse(G.slice(B,D-','1','),null,E);if(F.error){A[A.length]=this.Text(F.error,"error","T",E,1,0.2)}else{F.Atomize();A[A.length]=F.mlist.Typeset("T",E).Styled()}C="";B=D','}else{','A[A.length]=this.Text(G.slice(B',',D-1','),"normal","T",E,1,0.2);','C="$";B=D}}else{if(H=="\\\\"){',1669,'=="("&&C==""){',1675,',D-2',1677,'C=")";B=D',1215,'H==")"&&C==")"){',1671,'2',1673,'}}}}}',1675,1677,978,'SetList(A,"T",E)},Set',922,'C,B,A,D){if(C&&C.type){i'],
-  ['f(C','.type=="','typeset"){','return ','C}if(C',1,'mlist"){','C.mlist.','Atomize','(B,A);',3,7,'Typeset','(B,A)}if(C',1,'text"){C','=this.','Text(C.text,C.tclass,B,A,C.ascend||null,C.descend||null);if(D!=0){C','.Styled()}',3,'C}C=this','.TeX(','C.c,C.font,B,A);if(D!=0){C',18,3,'C}',3,'jsMath.Box.','Null()},','SetList',':function(','D,F,C){var A=[];var G;','for(var B=0;B<','D.length;B++){G=D[B];if(G',1,2,'G=','jsMath.mItem','.',12,'(G)}','A[A.length]=','G}var E=new ','jsMath.Typeset','(A);',3,'E.',12,'(F,C)}});','jsMath.Package(jsMath.','Box,{Styled',':function(){','if(this.','format=="text"){','this.html','=',43,'.AddClass(','this.tclass',',',54,');',54,'=',43,'.AddStyle(','this.style',',this.size,',54,');delete ',58,';delete ',66,';this.format="html"}',3,'this},Remeasured',51,52,'w>0){this.w=jsMath.EmBoxFor(',54,').w}',3,'this}});',37,'=function(A',',B','){this.type','=A;','jsMath.Add(','this,B)};',88,37,',{Atom',30,'B,A){',3,'new ',37,'(B,{','atom:1,nuc:A})},','TextAtom',30,'C,F,B,A,E){var D=new ',37,'(C',',{atom:1,nuc:{type:"','text",text:F,tclass:B}});if(A','!=null){D.nuc.','ascend=A}if(E',107,'descend=E}',3,'D},TeXAtom',30,'B,','C,A){',3,'new ',37,'(B',105,'TeX",c:C,font:A}})},Fraction',30,'B,A,F,D,E,C){',3,'new ',37,'("fraction",{from:B,num:A,den:F,','thickness',':D,left:E,right:C})},Space',30,'A){',3,'new ',37,'("space",{w:A})},',12,30,'A){',3,'new ',37,'("ord",{',99,'HTML',30,'A){',3,'new ',37,'("html",{html:A})}});','jsMath.mList','=function(D,A,B,C){','if(D){','this.mlist','=D}else{',154,'=[]}','if(C==null){C','="T"}if(B==null){B=4}','this.data','={openI:null,overI:null,overF:null,font:A,','size:B,style:C','};this.init={',162,'}};',49,'mList,{Add',30,'A){return(',154,'[','this.mlist.length',']=A)},Get',30,'A){',3,154,'[A]},Length',51,3,172,'},Last',51,'if(',172,'==0){',3,'null}',3,154,'[',172,'-1]},Range',30,94,'if(A==null){A=',172,'}',3,'new ',151,'(',154,'.slice(B,A+1))},Delete',30,'D,C){',158,'=D}if(',154,'.splice){',154,'.splice(D,C-D+1)}else{var A=[];',32,172,';B++){if(B<D||B>C){',41,154,'[B]}}',154,'=A}},Open',30,'D){var C',16,'Add(new ',37,'("boundary",{','data:',160,'}));var A=',160,';',160,'={};for(var B in A){',160,'[B]=A[B]}delete ',160,'.overI',71,160,'.overF;',160,'.openI=',172,'-1;if(D!=null){C.left=D}',3,'C},Close',30,'C){if(C!=null){C=new ',37,226,'right:C})}var E;','var B=',160,'.openI;var F=',160,'.overI;var ','G=',160,240,160,'=',154,'[B].data;if(F){E=',37,'.Fraction(','G.name,{','type:"mlist",mlist:this.Range(','B+1,F-1)},{',267,'F)},G.',128,',G.left,G.right);if(C){var A=new ',151,'([',154,'[B],E,C]);E=',37,'.Atom("inner",{type:"mlist",mlist:A})}}else{var D=B+1;if(C){this.Add(C);D--}E=',37,'.Atom((C)?"inner":"ord",{',267,'D)})}this.Delete(B,this.Length());',3,'this.Add(E)},Over',51,252,160,256,'C=',160,240,'var A=',37,265,'C.name,{',267,'open+1,B-1)},{',267,'B)},C.',128,',C.left,C.right);',154,'=[A]},',8,30,206,'var A;var E="";',66,'=D;this.size=C;',32,172,';B++){A=',154,'[B];A.delta=0;if(A',1,'choice"){',154,16,8,'.choice(',66,',A,B,',154,');B--}else{',52,8,'[A.type]){var F',16,8,'[A.type];F(',66,67,'A,E,this,B)}}E=A}if(A&&A',1,'bin"){A','.type="ord"}','if(',172,'>=2&&A',1,'boundary"&&',154,'[0].type=="boundary"){this.','AddDelimiters','(D,C)}},',344,30,'A,N){var M=-10000;var E=M;var G=M;for(var D=0;D<',172,';D++){var F=',154,'[D];if(F.atom||F',1,'box"){E','=Math.max(','E,F.nuc.h+F.nuc.y);G',355,'G,F.nuc.d-F.nuc.y)}}var C=jsMath.TeX;var I=',43,21,'A,N).','axis_height',';var L',355,'E-I,G+I);var K',355,'Math.floor(C.integer*L/500)*C.delimiterfactor,C.integer*(2*L-C.delimitershortfall))/C.integer;',252,154,'[0];var J=',154,'[',172,'-1];B.nuc=',27,'Delimiter(','K,B.left,A);J.nuc=',27,376,'K,J.right,A);B.type="open";B.atom=1',71,'B.left;J.type="close";J.atom=1',71,'J.right},',12,30,115,252,'new ',43,'(',154,');',3,'B.',12,'(C,A)}});',88,151,'.prototype.',8,',{style',30,'D,C,A,E,B){B.','style=A.style},size',30,404,'size=A.size},phantom',30,'C,B,A){','var D=A.nuc','=jsMath.Box.Set(','A.phantom',',C,B);if(A.h){D.','Remeasured();','D.html=','jsMath.HTML.Spacer','(D.w)}else{D.html="",D.w=D.Mw=D.mw=0}if(!A.v){','D.h=D.d=0','}D.bd=D.bh=0',71,413,';A.type="box"},','smash',30,410,'var D=A.nuc',412,'A.smash',',C,B).',415,419,71,429,423,'raise',30,410,'A.nuc',412,'A.nuc,C,B);var ','D=A.raise;','A.nuc.html','=','jsMath.HTML.','Place(',443,',0,D,A.nuc.mw,A.nuc.Mw,A.nuc.w);A.nuc.h+=D;A.nuc.d-=D;A','.type="ord";','A.atom=1},lap',30,'D,C,A){var ','E',412,'A.nuc,','D,C).',415,'var B=[E];if(A.lap=="llap"){E.x=-E.w}','else{if(A.lap=="','rlap"){B[1]=',37,'.Space(-E.w)}',459,'ulap"){E.y=E.d;E.h=E.d=0}',459,'dlap"){E.y=-E.h;E.h=E.d=0}}}}A','.nuc=jsMath.Box.SetList','(B,D,C);if(A.lap=="ulap"||A.lap=="dlap"){A.nuc.h=A.nuc.d=0}A.type="box";delete A.atom},bin',30,'D,B,A,E){if(E&&E.type){var C=E.type;if(C=="bin"||C=="op"||C=="rel"||C=="open"||C=="punct"||C==""||(C=="',341,'E.left!="")){A.type="ord"}}else{A',336,'jsMath.mList.prototype.Atomize.SupSub(','D,B,A)},rel',30,'C,B,A,D){if(D.type&&D',1,'bin"){D',336,474,'C,B,A)},','close',30,'C,B,A,D){if(D.type&&D',1,'bin"){D',336,474,482,'punct',30,'C,B,A,D){if(D.type&&D',1,'bin"){D',336,474,482,'open',30,410,474,482,'inner',30,410,474,482,'vcenter',30,410,'var D',412,441,'E=',43,21,'C,B);D.y=E.',362,'-(D.h-D.d)/2;A.nuc=D;A',449,474,482,'overline',30,452,'G=',43,21,'D,C);var E',412,455,43,'.PrimeStyle(D),C).Remeasured();var B=G.default_rule_thickness;var F=jsMath.Box.Rule(E.w,B);F.x=-F.w;F.y','=E.h+3*B;A',467,'([E,F],D,C);A.nuc.','h+=B;A',449,474,'D,C,A)},','underline',30,452,'G=',43,21,'D,C);var E',412,455,43,534,'=-E.d-3*B-B;A',467,537,'d+=B;A',449,474,541,'radical',30,'B,M,G){var D=',43,21,'B,M);var K=',43,'.PrimeStyle(B);var ','F',412,'G.nuc,K,M).',415,'var L=D','.default_rule_thickness',';var C=L;if(B=="D"||B=="D\'"){C=D.x_height}var A=L+C/4;var E=',27,376,'F.h+F.d+A+L,[0,2,112,3,112],B,1);if(E.d>F.h+F.d+A){A=(A+E.d-F.h-F.d)/2}E.y=F.h+A;var J=',27,'Rule(F.w,L);J.y=E.y-L/2;J.h+=3*L/2;F.x=-F.w;var I=',43,'.UpStyle(',43,581,'B));var H',412,'G.root||null,I,M).',415,'if(G.root){H.y=0.55*(F.h+F.d+3*L+A)-F.d;E.x',355,'H.w-(11/18)*E.w,0);J.x=(7/18)*E.w;H.x=-(H.w+J.x)}G',467,'([E,H,J,F],B,M);G',449,474,'B,M,G)},accent',30,'B,P,I){var E=',43,21,'B,P);var L=',43,567,'H',412,'I.nuc,L,P);var N=H.w;var O;var J;var C=0;if(I.nuc',1,'TeX"){','J=','jsMath.TeX[','I.nuc.font];if(J[I.nuc.c].krn&&J.skewchar){O=J[I.nuc.c].krn[J.skewchar]}C=J[I.nuc.c].ic;',158,'=0}}if(O==null){O=0}var K=I.accent[2];var D=jsMath.TeX.fam[I.accent[1]];J=',609,'D];while(J[K].n&&J[J[K].n].w<=N){K=J[K].n}var M=Math.min(H.h,E.x_height);if(I.nuc',1,607,'var G=',37,'.Atom("ord",I.nuc);G.sup=I.sup;G.sub=I.sub;G.delta=0;',474,'B,P,G);M+=(G.nuc.h-H.h);H=I.nuc=G.nuc',71,'I.sup',71,'I.sub}var F=',27,'TeX(K,D,B,P);F.y=H.h-M;F.x=-H.w+O+(N-F.w)/2;if(jsMath.Browser.msieAccentBug){F.html+=',417,'(0.1);F.w+=0.1;F.Mw+=0.1}if(J[K].ic||C){F.x+=(C-(J[K].ic||0))*E.scale}I',467,'([H,F],B,P);if(I.nuc.w!=H.w){var A=',37,'.Space(','H.w-I.nuc.w);I',467,'([I.nuc,A],B,P)}I',449,474,'B,P,I)},op',30,'D,O,J){var G=',43,21,'D,O);var I;J.delta=0;var N=(D','.charAt(0)=="','D");if(J.limits==null&&N){J.limits=1}if(J.nuc',1,607,252,609,'J.nuc.font][','J.nuc.c];if(N&&B.n){J.nuc.c=B.n;B=',609,651,'B.n]}I=J.nuc',412,'J.nuc,D,O',');if(B.ic){J.delta=B.ic*G.scale;if(J.limits||!J.sub||','jsMath.Browser.msieIntegralBug','){I=J',467,'([I,',37,633,'J.delta)],D,O)}}I.y=-((I.h+I.d)/2-I.d-G.',362,');if(Math.abs(I.y)<0.0001){I.y=0}}if(!I){I=J.nuc',412,657,').Remeasured()}if(J.limits){var F=I.w;var L=I.w;var E=[I];var K=0;var M=0;if(J.sup){var H',412,'J.sup,',43,581,'D),O).',415,'H.x=((I.w-H.w)/2+J.delta/2)-L;K=G.big_op_spacing5;F',355,'F,H.w);L+=H.x+H.w;H.y=I.h+H.d+I.y+Math.max(G.big_op_spacing1,G.big_op_spacing3-H.d);','E[E.length]=','H',71,'J.sup}if(J.sub){var A',412,'J.sub,',43,'.DownStyle(','D),O).',415,'A.x=((I.w-A.w)/2-J.delta/2)-L;M=G.big_op_spacing5;F',355,'F,A.w);L+=A.x+A.w;A.y=-I.d-A.h+I.y-Math.max(G.big_op_spacing2,G.big_op_spacing4-A.h);',680,'A',71,'J.sub}if(F>I.w){I.x=(F-I.w)/2;L+=I.x}if(L<F){',680,37,633,'F-L)}J',467,'(E,D,O);J.nuc.h+=K;J.nuc.d+=M','}else{if(',659,'&&J.sub&&B&&B.ic){J',467,'([I,',27,'Space(-B.ic*G.scale)],D,O)}else{if(I.y){J',467,'([I],D,O)}}',474,'D,O,J)}},ord',30,'A,I,G,B,F,E){if(G.nuc',1,'TeX"&&!G.sup&&!G.sub){var D=F.mlist[E+1];if(D&&D.atom&&D.type&&(D',1,'ord"||D',1,'op"||D',1,'bin"||D',1,'rel"||D',1,'open"||D',1,'close"||D',1,'punct")){if(D.nuc',1,'TeX"&&D.nuc.font==G.nuc.font){G.textsymbol=1;var H=',609,'G.nuc.font][G.nuc.c].krn;H*=',43,21,'A,I).scale;if(H&&H[D.nuc.c]){for(var C=F.mlist.length-1;C>E;C--){F.mlist[C+1]=F.mlist[C]}F.mlist[E+1]=',37,633,'H[D.nuc.c])}}}}',474,'A,I,G)},fraction',30,'R,N,B){var U=',43,21,'R,N);var L=0;if(B.',128,'!=null){L=B.',128,703,'B.from.match(/over/)){L=U',573,'}}var Q=(R',645,'D");var F=(R=="D")?"T":(R=="D\'")?"T\'":',43,581,'R);var P=(Q)?"T\'":',43,687,'R);var E',412,'B.num,F,N).',415,'var D',412,'B.den,P,N).',415,'var K;var J;var I;var O;var M;var G=(Q)?U.delim1:U.delim2;var A=[',27,376,'G,B.left,R)];var S=',27,376,'G,B.right,R);if(E.w<D.w){E.x=(D.w-E.w)/2;D.x=-(E.w+E.x);I=D.w;A[1]=E;A[2]=D}else{D.x=(E.w-D.w)/2;E.x=-(D.w+D.x);I=E.w;A[1]=D;A[2]=E}if(Q){K=U.num1;J=U.denom1}else{K=(L!=0)?U.num2:U.num3;J=U.denom2}if(L==0){O=(Q)?7*U',573,':3*U',573,';M=(K-E.d',')-(D.h-J);if(M<O){','K+=(O-M)/2;J+=(O-M)/2}}else{O=(Q)?3*L:L;var T=U.',362,';M=(K-E.d)-(T+L/2);if(M<O){K+=O-M}M=(T-L/2',782,'J+=O-M}var C=',27,'Rule(I,L);C.x=-I;C.y=T-L/2;',41,'C}E.y=K;D.y=-J;',41,'S;B',467,'(A,R,N);B',449,'B.atom=1',71,'B.num',71,'B.den;',474,'R,N,B)},SupSub',30,'F,R,L){var H=',43,21,'F,R);var P=L.nuc;var K=L.nuc',412,'L.nuc,F,R,0);if(K.format=="null"){K=L.nuc=',27,'Text("","normal",F,R)}if(P',1,607,'if(!L.textsymbol){var E=',609,'P.font][P.c];if(E.ic){L.delta=E.ic*H.scale;if(!L.sub){K=L',467,'([K,',27,'Space(L.delta)],F,R);L.delta=0}}}else{L.delta=0}}if(!L.sup&&!L.sub){return }L.nuc.Styled();var I=',43,687,'F);var M=',43,581,'F);var D=',43,21,'M,R).sup_drop;',252,43,21,'I,R).sub_drop;var O=0;var N=0;var G;if(P.type&&P.type!="text"&&P.type!="TeX"&&P.type!="null"){O=K.h-D;N=K.d+B}if(L.sub){var A',412,'L.sub,I,R);A=',27,29,'([A,',37,'.Space(H.scriptspace)],F,R',')}if(!L.sup){A.y=-Math.max(N,H.sub1,A.h-(4/5)*',43,21,'I,R).x_height);L',467,'([K,A],F,R).Styled();delete L.sub;return }var J',412,'L.sup,M,R);J=',27,29,'([J,',37,841,');if(F=="D"){G=H.sup1',703,'F','.charAt(','F','.length-1)=="\'"){','G=H.sup3}else{G=H.sup2}}O',355,'O,G,J.d+',43,21,'M,R).x_height/4);if(!L.sub){J.y=O;L',467,'([K,J],F,R',69,'L.sup;return }N',355,'N,',43,21,'I,R).sub2);var Q=H',573,';if((O-J.d)-(A.h-N)<4*Q){N=4*Q+A.h-(O-J.d);G=(4/5)*H.x_height-(O-J.d);if(G>0){O+=G;N-=G}}J.',415,'A.',415,'J.y=O;A.y=-N;J.x=L.delta;if(J.w+J.x>A.w){J.x-=A.w;L',467,'([K,A,J],F,R)}else{A.x-=(J.w+J.x);L',467,'([K,J,A],F,R)}delete L.sup',71,'L.sub}});',43,84,86,'="typeset";',154,'=A};',88,43,',{upStyle:{D:"S",T:"S","','D\'":"S\'","T\'":"S\'",S:"SS','",SS:"SS","','S\'":"SS\'","SS\'":"SS\'"},','downStyle:{D:"S\'",T:"S\'","',897,'\'",SS:"SS\'","',899,'UpStyle',30,'A){',3,'this.upStyle[A]},DownStyle',30,'A){',3,'this.downStyle[A]},PrimeStyle',30,'A){if(A',858,'A',860,3,'A}',3,'A+"\'"},StyleValue',30,94,'if(B=="S"||B=="S\'"){',3,'0.7*A}if(B=="SS"||B=="SS\'"){',3,'0.5*A}',3,'A},StyleSize',30,'B,A){if(B=="S"||B=="S\'"){A=Math.max(0,A-2)}else{if(B=="SS"||B=="SS\'"){A=Math.max(0,A-4)}}return ','A},TeX',30,932,'jsMath.TeXparams[A]},AddStyle',30,410,'if(C=="S"||C=="S\'"){B',355,'0,B-2)}else{if(C=="SS"||C=="SS\'"){B',355,'0,B-4)}}if(B!=4){A=\'<span class="size\'+B+\'">\'+A+"</span>"}',3,'A},AddClass',30,'A,B){if(A!=""&&A!="normal"){B=',445,'Class(A,B)}',3,'B}});jsMath.Package(',43,',{DTsep:{ord',':{op:1,bin:2,rel:3,inner:1},','op',':{ord:1,op:1',',rel:3,inner:1},bin:{ord:2,op:2,open:2,inner:2},rel:{ord:3,op:3,open:3,inner:3},open:{},close',954,'punct',956,',rel:1,open:1,close',':1,punct:1,inner:1','},inner',956,',bin:2,rel:3,open',962,'}},SSsep:{ord:{op:1},op',956,'},bin:{},rel:{},open:{},close:{op:1},punct:{},inner:{op:1}},sepW:["","thinmuskip","medmuskip","thickmuskip"],','GetSeparation',30,'A,D,B){if(A&&A.atom&&D.atom){var C',16,'DTsep;if(B',645,'S"){C',16,'SSsep}var E=C[A.type];if(E&&E[D.type]!=null){',3,609,'this.sepW[E[D.type]]]}}',3,'0},',12,30,206,66,309,'var G=-10000;this.w=0;this.mw=0;this.Mw=0;this.h=G;this.d=G;','this.bh',16,'h;','this.bd',16,'d;this.tbuf="";this.tx=0;',58,'="";','this.cbuf','="";this.hbuf="";this.hx=0;var A=null;var F;this.x=0;','this.dx=0;',32,172,';B++){F=A;A=',154,'[B];switch(A.type){case"size":','this.FlushClassed();','this.size=A.size;','A=F;break;case"','style":',1006,'if(',66,858,66,860,66,'=A.style+"\'"}else{',66,'=A.style}',1008,'space":if(typeof (A.w)=="object"){if(',66,858,'1)=="S"){A.w=0.5*A.w[0]/18',703,66,645,'S"){A.w=0.7*A.w[0]/18}else{A.w=A.w[0]/18}}}this.dx+=A.w-0;',1008,'html":',1006,'if(this.hbuf==""){this.hx=this.','x}','this.hbuf+=','A.html;A=F;break;default:if(!A.atom&&A.type!="box"){break}A.nuc.x+=this.dx+this.',970,'(F,A,',66,');','if(A.nuc.x||A.nuc.y){','A.nuc',18,1000,'this.x',16,'x+this.w;',52,'x','+A.nuc.x+A.nuc.','mw','<this.mw){this.mw=this.','x',1049,'mw}',52,'w',1049,'Mw','>this.Mw){this.Mw=this.w',1049,'Mw}this.w+=A.nuc.w+A.nuc.x;if(A.nuc.',53,'if(',58,'!=A.nuc.tclass&&',58,'!=""){','this.FlushText','()}',52,'tbuf==""&&',998,'==""){this.tx',16,'x}this.tbuf+=',443,';',58,'=A.nuc.tclass}else{',1006,1040,'this.Place(A.nuc)}',1032,'x}',1034,443,'}this.h',355,'this.h,A.nuc.h+A.nuc.y);',990,355,990,',A.nuc.bh);this.d',355,'this.d,A.nuc.d-A.nuc.y);',993,355,993,',A.nuc.bd);break}}',1006,52,'dx){',1034,417,'(this.dx);this.w+=this.dx;',52,'w',1059,'}',52,'w',1051,'w}}',52,'hbuf==""){',3,27,'Null()}',52,'h==G){this.h=0}',52,'d==G){this.d=0}','var E=new jsMath.','Box("html",this.hbuf,this.w,this.h,this.d);E.bh',16,'bh;E.bd',16,'bd;E.mw',16,'mw;E.Mw',16,'Mw;',3,'E},FlushText',51,52,'tbuf','==""){return }',998,'+=',43,'.AddClass(',58,',this.tbuf);this.tbuf="";',58,'=""},FlushClassed',51,1068,'();',52,'cbuf',1138,1032,'tx}',1034,43,'.AddStyle(',66,67,998,');',998,'=""},Place',30,'B){var A=\'<','span style="position: relative',';\';if(B.x){A+=" margin-left',':"+jsMath.HTML.Em','(B.x)+";"}if(B.y){A+=" top',1168,'(-B.y)+";"}B.html=A+\'">\'+B.html+"</span>";','B.h+=B.y;B.d-=B.y;B.x=0;B.y=0','},PlaceSeparateSkips',30,'B){if(B.y){var D=B.Mw-B.w;var C=B.mw;var A=B.Mw-B.mw;B.html=',417,'(C-D)+\'<',1166,'; top:\'+',445,'Em(-B.y)+";left',1168,'(D)+"; width',1168,'(A)+\';">\'+',417,'(-C)+B.html+',417,'(D)+"</span>"}if(B.x){B.html=',417,'(B.x)+B.html}',1172,'}});jsMath.Parse',152,1123,'Parser(D,A,B,C);E.Parse();',3,'E};jsMath.Parser',152,'this.string=D;this.i=0;',154,'=new ',151,'(null,A,B,C)};',49,'Parser,{cmd:"\\\\",open:"{",close:"}",letter:/[a-z]/i,number:/[0-9]/,scriptargs:/^((math|text)..|mathcal|[hm]box)$/,mathchar:{"!":[5,0,33],"(":[4,0,40],")":[5,0,41],"*":[2,2,3],"+":[2,0,43],",":[6,1,59],"-":[2,2,0],".":[0,1,58],"/":[0,1,61],":":[3,0,58],";":[6,0,59],"<":[3,1,60],"=":[3,0,61],">":[3,1,62],"?":[5,0,63],"[":[4,0,91],"]":[5,0,93],"|":[0,2,106]},special:{"~":"Tilde","^":"HandleSuperscript",_:"HandleSubscript"," ":"Space","\\01','":"Space","\\','t',1207,'r',1207,'n":"Space","\'":"Prime","%":"HandleComment","&":"HandleEntry","#":"Hash"},mathchardef:{braceld:[0,3,122],bracerd:[0,3,123],bracelu:[0,3,124],braceru:[0,3,125],alpha:[0,1,11],beta:[0,1,12],gamma:[0,1,13],delta:[0,1,14],epsilon:[0,1,15],zeta:[0,1,16],eta:[0,1,17],theta:[0,1,18],iota:[0,1,19],kappa:[0,1,20],lambda:[0,1,21],mu:[0,1,22],nu:[0,1,23],xi:[0,1,24],pi:[0,1,25],rho:[0,1,26],sigma:[0,1,27],tau:[0,1,28],upsilon:[0,1,29],phi:[0,1,30],chi:[0,1,31],psi:[0,1,32],omega:[0,1,33],varepsilon:[0,1,34],vartheta:[0,1,35],varpi:[0,1,36],varrho:[0,1,37],varsigma:[0,1,38],varphi:[0,1,39],Gamma:[7,0,0],Delta:[7,0,1],Theta:[7,0,2],Lambda:[7,0,3],Xi:[7,0,4],Pi:[7,0,5],Sigma:[7,0,6],Upsilon:[7,0,7],Phi:[7,0,8],Psi:[7,0,9],Omega:[7,0,10],aleph:[0,2,64],imath:[0,1,123],jmath:[0,1,124],ell:[0,1,96],wp:[0,1,125],Re:[0,2,60],Im:[0,2,61],partial:[0,1,64],infty:[0,2,49],prime:[0,2,48],emptyset:[0,2,59],nabla:[0,2,114],surd:[1,2,112],top:[0,2,62],bot:[0,2,63],triangle:[0,2,52],forall:[0,2,56],exists:[0,2,57],neg:[0,2,58],lnot:[0,2,58],flat:[0,1,91],natural:[0,1,92],sharp:[0,1,93],clubsuit:[0,2,124],diamondsuit:[0,2,125],heartsuit:[0,2,126],spadesuit:[0,2,127],coprod:[1,3,96],bigvee:[1,3,87],bigwedge:[1,3,86],biguplus:[1,3,85],bigcap:[1,3,84],bigcup:[1,3,83],intop:[1,3,82],prod:[1,3,81],sum:[1,3,80],bigotimes:[1,3,78],bigoplus:[1,3,76],bigodot:[1,3,74],ointop:[1,3,72],bigsqcup:[1,3,70],smallint:[1,2,115],triangleleft:[2,1,47],triangleright:[2,1,46],bigtriangleup:[2,2,52],bigtriangledown:[2,2,53],wedge:[2,2,94],land:[2,2,94],vee:[2,2,95],lor:[2,2,95],cap:[2,2,92],cup:[2,2,91],ddagger:[2,2,122],dagger:[2,2,121],sqcap:[2,2,117],sqcup:[2,2,116],uplus:[2,2,93],amalg:[2,2,113],diamond:[2,2,5],bullet:[2,2,15],wr:[2,2,111],div:[2,2,4],odot:[2,2,12],oslash:[2,2,11],otimes:[2,2,10],ominus:[2,2,9],oplus:[2,2,8],mp:[2,2,7],pm:[2,2,6],circ:[2,2,14],bigcirc:[2,2,13],setminus:[2,2,110],cdot:[2,2,1],ast:[2,2,3],times:[2,2,2],star:[2,1,63],propto:[3,2,47],sqsubseteq:[3,2,118],sqsupseteq:[3,2,119],parallel:[3,2,107],mid:[3,2,106],dashv:[3,2,97],vdash:[3,2,96],leq:[3,2,20],le:[3,2,20],geq:[3,2,21],ge:[3,2,21],lt:[3,1,60],gt:[3,1,62],succ:[3,2,31],prec:[3,2,30],approx:[3,2,25],succeq:[3,2,23],preceq:[3,2,22],supset:[3,2,27],subset:[3,2,26],supseteq:[3,2,19],subseteq:[3,2,18],"in":[3,2,50],ni:[3,2,51],owns:[3,2,51],gg:[3,2,29],ll:[3,2,28],not:[3,2,54],sim:[3,2,24],simeq:[3,2,39],perp:[3,2,63],equiv:[3,2,17],asymp:[3,2,16],smile:[3,1,94],frown:[3,1,95],Leftrightarrow:[3,2,44],Leftarrow:[3,2,40],Rightarrow:[3,2,41],leftrightarrow:[3,2,36],','leftarrow',':[3,2,32],gets:[3,2,32],rightarrow:[3,2,33],to:[3,2,33],','mapstochar',':[3,2,55],leftharpoonup:[3,1,40],','leftharpoondown',':[3,1,41],rightharpoonup:[3,1,42],rightharpoondown:[3,1,43],nearrow:[3,2,37],searrow:[3,2,38],nwarrow:[3,2,45],swarrow:[3,2,46],minuschar:[3,2,0],hbarchar:[0,0,22],lhook:[3,1,44],rhook:[3,1,45],ldotp:[6,1,58],cdotp:[6,2,1],colon:[6,0,58],"#":[7,0,35],"$":[7,0,36],"%":[7,0,37],"&":[7,0,38]},delimiter:{"(":[0,0,40,3,0],")":[0,0,41,3,1],"[":[0,0,91,3,2],"]":[0,0,93,3,3],"<":[0,2,104,3,10],">":[0',',2,105,3,11],"\\\\','lt":[0',',2,104,3,10],"\\\\','gt":[0,2,105,3,11],"/":[0,0,47,3,14],"|":[0,2,106,3,12],".":[0,0,0,0,0],"\\\\":[','0,2,110,3,15],"\\\\','lmoustache":[4,3,122,3,64],"\\\\rmoustache":[5,3,123,3,65],"\\\\lgroup":[4,6,40,3,58],"\\\\rgroup":[5,6,41,3,59],"\\\\arrowvert','":[0,2,106,3,','60],"\\\\Arrowvert":[0,2,107,3,61],"\\\\bracevert',1225,'62],"\\\\Vert":[0,2,107,3,13],"\\\\|":[0,2,107,3,13],"\\\\vert',1225,'12],"\\\\uparrow":[3,2,34,3,120],"\\\\downarrow":[3,2,35,3,121],"\\\\updownarrow":[3,2,108,3,63],"\\\\Uparrow":[3,2,42,3,126],"\\\\Downarrow":[3,2,43,3,127],"\\\\Updownarrow":[3,2,109,3,119],"\\\\backslash":[',1223,'rangle":[5',1219,'langle":[4',1221,'rbrace":[5,2,103,3,9],"\\\\lbrace":[4,2,102,3,8],"\\\\}":[5,2,103,3,9],"\\\\{":[4,2,102,3,8],"\\\\rceil":[5,2,101,3,7],"\\\\lceil":[4,2,100,3,6],"\\\\rfloor":[5,2,99,3,5],"\\\\lfloor":[4,2,98,3,4],"\\\\lbrack":[0,0,91,3,2],"\\\\rbrack":[0,0,93,3,3]},macros:{displaystyle',':["HandleStyle","','D"],textstyle',1237,'T"],scriptstyle',1237,'S"],scriptscriptstyle',1237,'SS"],rm',':["HandleFont",','0],mit',1245,'1],oldstyle',1245,'1],cal',1245,'2],it',1245,'4],bf',1245,'6],font',':["Extension","','font"],left:"HandleLeft",right:"HandleRight",arcsin',':["NamedOp",0],','arccos',1259,'arctan',1259,'arg',1259,'cos',1259,'cosh',1259,'cot',1259,'coth',1259,'csc',1259,'deg',1259,'det',':"NamedOp",','dim',1259,'exp',1259,'gcd',1279,'hom',1259,'inf',1279,'ker',1259,'lg',1259,'lim',1279,'liminf',':["NamedOp",null,\'lim<span style="margin-left: \'+1/6+\'em"></span>','inf\'],limsup',1297,'sup\'],ln',1259,'log',1259,'max',1279,'min',1279,'Pr',1279,'sec',1259,'sin',1259,'sinh',1259,'sup',1279,'tan',1259,'tanh',1259,509,':["HandleAtom","',509,'"],',524,1323,524,'"],',542,1323,542,'"],over',':"HandleOver",','overwithdelims',1334,'atop',1334,'atopwithdelims',1334,'above',1334,'abovewithdelims',1334,'brace',':["HandleOver','","\\\\{","\\\\}"],brack',1346,'","[","]"],choose',1346,'","(",")"],overbrace',':["Extension","leaders"],','underbrace',1352,'overrightarrow',1352,'underrightarrow',1352,'overleftarrow',1352,'underleftarrow',1352,'overleftrightarrow',1352,'underleftrightarrow',1352,'overset',':["Extension","underset-overset"],','underset',1368,'llap',':"HandleLap",','rlap',1372,'ulap',1372,'dlap',1372,'raise:"RaiseLower",lower:"RaiseLower",moveleft',':"MoveLeftRight",','moveright',1380,'frac:"Frac",root:"Root",sqrt:"Sqrt",hbar',':["Macro","\\\\','hbarchar\\\\kern-.5em h"],ne',1384,'not="],neq',1384,'not="],notin',1384,'mathrel{\\\\','rlap{\\\\kern2mu/}}\\\\in"],cong',1384,1391,'lower2mu{\\\\mathrel{{\\\\rlap{=}\\\\raise6mu\\\\sim}}}}"],bmod',1384,'mathbin{\\\\rm mod}"],pmod',1384,'kern 18mu ({\\\\rm mod}\\\\,\\\\,#1)",1],"int":["Macro","\\\\intop\\\\nolimits"],oint',1384,'ointop\\\\nolimits"],doteq',1384,'buildrel\\\\textstyle.\\\\over="],ldots',1384,'mathinner{\\\\','ldotp\\\\ldotp\\\\ldotp}"],cdots',1384,1405,'cdotp\\\\cdotp\\\\cdotp}"],vdots',1384,1405,'rlap{\\\\raise8pt{.\\\\rule 0pt 6pt 0pt}}\\\\rlap{\\\\raise4pt{.}}.}"],ddots',1384,1405,'kern1mu\\\\raise7pt{\\\\rule 0pt 7pt 0pt .}\\\\kern2mu\\\\raise4pt{.}\\\\kern2mu\\\\raise1pt{.}\\\\kern1mu}"],joinrel',1384,1391,'kern-4mu}"],relbar',1384,1391,'smash-}"],Relbar',1384,'mathrel="],bowtie',1384,'mathrel\\\\triangleright\\\\joinrel\\\\mathrel\\\\triangleleft"],models',1384,'mathrel|\\\\joinrel="],mapsto',1384,1391,1215,'\\\\rightarrow}"],rightleftharpoons',1384,509,'{\\\\',1391,'rlap{\\\\raise3mu{\\\\rightharpoonup}}}\\\\',1217,'}"],hookrightarrow',1384,'lhook','\\\\joinrel\\\\rightarrow','"],hookleftarrow',1384,'leftarrow\\\\joinrel\\\\','rhook"],Longrightarrow',1384,'Relbar\\\\joinrel\\\\','Rightarrow"],','longrightarrow',1384,'relbar',1441,'"],longleftarrow',1384,1444,'relbar"],Longleftarrow',1384,'Leftarrow\\\\joinrel\\\\','Relbar"],longmapsto',1384,1391,1215,'\\\\minuschar',1441,'}"],longleftrightarrow',1384,1213,1441,'"],','Longleftrightarrow',1384,1458,1448,'iff:["Macro","\\\\;\\\\',1470,'\\\\;"],mathcal',':["Macro","{\\\\','cal #1}",1],mathrm',1477,'rm #1}",1],mathbf',1477,'bf #1}",1],','mathbb',1477,1482,'mathit',1477,'it #1}",1],textrm',1384,'mathord{\\\\hbox{#1}}",1],textit',1384,'mathord{\\\\class{','textit','}{\\\\hbox{#1}}}",1],','textbf',1384,1492,1495,1494,'pmb',1384,'rlap{#1}\\\\kern1px{#1}",1],TeX:["Macro","T\\\\kern-.1667em\\\\lower.5ex{E}\\\\kern-.125em X"],limits:["Limits",1],nolimits:["Limits",0],",":["Spacer",1/6],":":["Spacer",1/6],">":["Spacer",2/9],";":["Spacer",5/18],"!":["Spacer",-1/6],enspace:["Spacer",1/2],quad:["Spacer",1],qquad:["Spacer",2],thinspace:["Spacer",1/6],negthinspace:["Spacer",-1/6],hskip:"Hskip",kern:"Hskip",rule:["Rule","colored"],space:["Rule","blank"],big',':["MakeBig","','ord",0.85],Big',1503,'ord",1.15],bigg',1503,'ord",1.45],Bigg',1503,'ord",1.75],bigl',1503,'open",0.85],Bigl',1503,'open",1.','15],biggl',1503,1514,'45],Biggl',1503,1514,'75],bigr',1503,'close",0.85],Bigr',1503,'close",1.','15],biggr',1503,1525,'45],Biggr',1503,1525,'75],bigm',1503,'rel",0.85],Bigm',1503,'rel",1.15],biggm',1503,'rel",1.45],Biggm',1503,'rel",1.75],mathord',1323,'ord"],mathop',1323,'op"],mathopen',1323,'open"],mathclose',1323,'close"],mathbin',1323,'bin"],mathrel',1323,'rel"],mathpunct',1323,'punct"],mathinner',1323,'inner"],','mathchoice',1257,1557,'"],buildrel:"BuildRel",hbox:"HBox",text:"HBox",mbox:"HBox",fbox',1257,'fbox"],strut:"Strut",mathstrut',1384,'vphantom{(}"],phantom:["Phantom",1,1],vphantom:["Phantom",1,0],hphantom:["Phantom",0,1],smash:"Smash",acute',':["MathAccent",[7,0,','19]],grave',1565,'18]],ddot',1565,'127]'],
-  ['],tilde',':["MathAccent",[','7,0,','126]],bar',1,2,'22]],breve',1,2,'21]],check',1,2,'20]],hat',1,2,'94]],vec',1,'0,1,126]],dot',1,2,'95]],widetilde',1,'0,3,101]],widehat',1,'0,3,98]],_',':["Replace","ord','","_","normal",-0.4,0.1]," ":["Replace","','ord","&nbsp;","normal','"],angle',25,'","&#x2220;","normal"],matrix:"Matrix",array:"Matrix",pmatrix:["Matrix','","(",")","c"],','cases:["Matrix","\\\\{",".",["l","l"],null,2],eqalign',':["Matrix",null,null,["','r","l"],[5/18],3,"D"],displaylines',33,'c"],null,3,"D"],cr:"','HandleRow','","\\\\":"',37,'",newline:"',37,'",noalign:"','HandleNoAlign','",eqalignno',33,'r","l","r"],[5/8,3],3,"D"],','leqalignno',33,46,'begin:"Begin",end:"End",tiny',':["HandleSize",','0],Tiny',51,'1],scriptsize',51,'2],small',51,'3],normalsize',51,'4],large',51,'5],Large',51,'6],LARGE',51,'7],huge',51,'8],Huge',51,'9],dots:["Macro","\\\\ldots"],newcommand',':["Extension","','newcommand"],','newenvironment',71,72,'def',71,72,'color',71,'HTML"],','href',71,'HTML"],"class":["','Extension','","',81,'style',71,81,'cssId',71,81,'unicode',71,81,'bbox',71,'bbox"],require:"Require","char":"Char"},','environments',':{array:"Array",matrix',':["Array",null,null,"','c"],pmatrix',':["Array',31,'bmatrix',104,'","[","]","c"],Bmatrix',104,'","\\\\{","\\\\}","c"],vmatrix',104,'","\\\\vert","\\\\vert","c"],Vmatrix',104,'","\\\\Vert","\\\\Vert","c"],cases',104,'","\\\\{",".","ll",null,2],eqnarray',102,'rcl",[5/18,5/18],3,"D"],equation:"Equation","equation*":"Equation",align',71,'AMSmath','"],"align','*":["Extension","AMSmath"],','aligned',71,120,'"],','multline',71,120,'"],"',127,122,'split',71,120,'"],gather',71,120,'"],"gather',122,'gathered',71,120,'"]},AddSpecial',':function(','A){for(var B in A){','jsMath.Parser.prototype','.special[',147,'[B]]=A[B]}},Error',145,'A','){this.i','=','this.string.length',';if(A','.error){','this.error','=A.error}','else{if(!','this',157,158,'=A}}},nextIsSpace',':function(){','return ','this.string.charAt(this.i',')==" "},trimSpaces',145,'A){','if(typeof (','A)!="string"){',166,'A}',166,'A.replace(/^\\s+|\\s+$/g',',"")},','Process',145,'A){var ','C=','this.mlist.','data;','A','=jsMath.Parse(','A,C.font,C.size,C.style',');if(A',157,'this.Error(','A);','return null','}if(A.mlist.Length()==','0){',191,192,'1','){var B=','A.mlist.','Last();if(','B.atom&&B.type=="ord"&&B.nuc&&!B.sub&&!B.sup&&(B.nuc.type=="text"||B.nuc.type=="TeX")){',166,'B.nuc}}return{type:"mlist",mlist:A.mlist}},GetCommand',':function(){var ','A=/^([a-z]+|.) ?/i;var B=A.exec(','this.string.slice(this.i','));if(B',153,'+=B[1].','length;',166,'B[1]}this.i++;return" "},GetArgument',145,'B,C){while','(this.nextIsSpace()){this.i','++}','if(this.','i>=',155,'){','if(!C){','this.Error("','Missing',' argument for "+B)}',191,'}if(',167,')==this.close){',220,221,'Extra close brace','")}',191,'}if(',167,')==','this.cmd',153,'++;','return this.','cmd+','this.GetCommand','()}if(',167,')!=','this.open){',166,167,'++)}var A=++this.i;var D=1;var E="";','while(this.i<this.string.length){','E=',167,'++);if(','E==',236,153,'++}else{if(','E==',245,'D',256,'E==this.close){','if(D==0){',221,230,'");',191,'}if(--D==0){',239,'string.slice(','A,this.i-1)}}}}}',221,'Missing close brace','");',191,'},','ProcessArg',145,'B){var ','A=','this.GetArgument(','B);','if(this.error){return',' null}',239,178,'(A)},ProcessScriptArg',145,'C){','var A=',280,'C);',282,283,'if(A.charAt(0)==',236,197,'A.substr(1);if(B=="frac"){A+="{"+',280,'B)+"}";',282,283,'A+="{"+',280,'B)+"}";',282,' null}}else{if(B','=="sqrt"){A+="["+','this.GetBrackets(','B)+"]";',282,283,'A+="{"+',280,'B)+"}";',282,306,'.match(this.scriptargs)){A+="{"+',280,'B)+"}";',282,' null}}}}}',239,178,'(A)},GetDelimiter',145,'A){while',214,'++}var B=',167,');',216,'i<',155,153,'++;if(B==',236,'){B="\\\\"+',241,'(A);',282,' null}}','if(','this.delimiter[','B]!=null){',239,'delimiter[','B]}}',221,222,' or unrecognized delimiter for "+A);',191,'},GetDimen',145,'A,D){var ','B;var C=0;if',214,'++}if(',167,')=="{"){B=',280,'A)}else{B=',205,');C=1}',239,'ParseDimen','(B,A,C,D)},',365,145,'C,B,D,E){',289,'C.match(/^\\s*([-+]?(\\.\\d+|\\d+(\\.\\d*)?))(pt|em|ex|mu|px)/);if(!A){',221,222,' dimension or its units for "+B);',191,'}if(D',153,'+=A[0].',209,'if',214,'++}}var F=A[1]-0;if(A[4]=="px"){F/=jsMath.em','}else{if(A[4]=="','pt"){F/=10',383,'ex"){F*=','jsMath.TeX','.x_height',383,'mu"){if(E){F=F/18}else{F=[F,"mu"]}}}}}',166,'F},GetNext',165,'while',214,'++}',166,167,')},GetBrackets',145,180,'D','=this.GetNext();if(','D!="["){return""}var C=++this.i;var B=0;',249,'D=',167,252,'D=="{"){B',256,'D=="}"){','if(B==0){',221,230,' while looking for',' \']\'");',191,'}B--}','else{if(','D==',236,153,256,'D=="]"){',412,239,269,'C,this.i-1)}}}}}}',221,'Couldn\'t find',' closing \']\' for argument to "+',236,'+A);',191,'},GetUpto',145,'B,C){while',214,'++}var F=this.i;var D=0;',249,'var E=',167,252,'E=="{"){D',256,'E=="}"){',262,221,230,415,' "+',236,'+C);',191,'}D--}',419,'E==',236,'){if(',205,',this.i+','5)=="begin"){D++;this.i+=4}',419,205,461,'3)=="end"){if(D>0){D--;this.i+=2}}}',262,'if(',205,461,'C.length)==C){E=',167,'+C.length);if(E.match(/[^a-z]/i)||!C.match(/[a-z]/i)){',289,'this.',269,'F,this.i-1);this.i+=C.',209,166,'A}}}this.i++}}}}',221,430,' "+',236,'+C+" for "+B);',191,'},','ProcessUpto',145,'B,C){var ','A=this.GetUpto(B,C);',282,283,239,178,'(A)},GetEnd',145,'C){var A="";var B="";while(B!=C){A+=this.GetUpto("begin{"+C+"}","end");',282,283,'B=','this.GetArgument(this.cmd','+"end");',282,341,166,'A},Space',':function(){},','Prime',145,'C',197,182,199,'B==null||(!B.atom&&B','.type!="box"&&','B','.type!="frac")){','B=','this.mlist.Add(jsMath.mItem.','Atom("ord",{type:null}))}','if(B.sup){',221,'Prime causes double exponent',': use braces to clarify");return',' }var ','A="";while(C=="\'"){A+=',236,'+"prime";C',403,'C=="\'"){this.i++}}B.sup=this.',178,'(A);B.sup.isPrime=1},RaiseLower',145,180,'B','=this.GetDimen(this.cmd+','A,1);',282,526,'C','=this.ProcessScriptArg','(',236,433,282,' }if(A=="lower"){B=-B}',182,'Add(new jsMath.mItem("','raise",{nuc:C,raise:B}))},MoveLeftRight',145,278,'A',537,'B,1);',282,526,'C','=this.ProcessArg(this.cmd+','B);',282,' }if(B=="moveleft"){A=-A}',520,'Space(A','));',520,'Atom("ord",C));',520,'Space(-A))},Require',145,180,'B=',502,433,282,' }B=','jsMath.Extension','.URL(B);if(','jsMath.Setup.','loaded[B]){','return }','this.Extension(null,[','B])},',85,145,'A,B){','jsMath.Translate','.restart=1;if(A','!=null){','delete ',147,'[B[1]||"macros"][A]}',577,'.Require(B[0],',587,'.asynchronous',');throw"restart"},Frac',145,278,'A',559,'B);',282,526,'C',559,'B);',282,' }',520,'Fraction("over",A,C))},Sqrt',145,278,'D=',308,236,'+B);',282,526,'A',559,'B);',282,' }var C=jsMath.mItem.Atom("','radical",A);','if(D!=""){C.root=this.',178,'(D);',282,' }}',182,'Add(C)},','Root',145,278,'D=this.',488,'(',236,'+B,"of");',282,526,'A',559,'B);',282,624,625,'C.root=D;',182,632,'BuildRel',145,180,'B=this.',488,'(',236,'+A,"over");',282,526,'D',559,'A);',282,624,'op",D);C.limits=1;C.sup=B;',182,632,'MakeBig',145,354,'C=D[0];var B=D[1]*jsMath.p_height;var E','=this.GetDelimiter(this.cmd+','A);',282,' }',520,'Atom(C,','jsMath.Box.Delimiter(','B,E,"T")))},Char',145,278,'A=',502,'+B);',282,526,'C=',502,'+B);',282,' }if(!',387,'[A]){',387,'[A]=[];',582,'jsMath.Font.URL(A',')])}else{',520,'Typeset(','jsMath.Box.TeX(C-0,A,"T",',182,'data.size',')))}},Matrix',145,'B,H){var E=',182,'data;var A=',502,'+B);',282,526,'G=','new jsMath.','Parser(A+',236,'+"\\\\",null,','E.size,H[5]||"T");G.matrix=B;G.row=[];G.table=[];G.rspacing=[];G.Parse();if(G',157,189,'G);',581,'G.',37,'(',555,'var D','=jsMath.Box.','Layout(E.size,G.table,H[2]||null,H[3]||null,G.rspacing,H[4]||null);if(H[0]&&H[1]){var F=',680,'D.h+D','.d-jsMath.hd/4,this.delimiter[','H[0]],"T");var C=',680,'D.h+D',734,'H[1]],"T");D',730,'SetList([','F,D,C],E.style,E.size)}',520,'Atom((H','[0]?"inner":"ord"),','D))},HandleEntry',145,'B){','if(!this.','matrix){',189,'B','+" can only appear in a matrix or array");return }if(',182,'data.openI',589,289,182,'Get(',182,755,187,'.left){',221,222,' "+',236,'+"right','")}else{',221,272,'")}}if(',182,'data.overI',589,182,'Over()}var D=',182,183,182,'Atomize(','D.style,D.size);','var C=',182,702,782,'C.entry=D.entry;delete D.entry;if(!C.entry){C.entry={}}this.row[','this.row.length',']=C;this.mlist=',716,'mList(null,null,D.size,D.style)},',37,145,'A,C){var B;',749,'matrix){',189,236,'+A',753,'A=="\\\\"){B=',308,236,433,282,' }if(B){',655,365,'(B,',236,'+A,0,1)}}this.HandleEntry(A);if(!C||',788,'>1||this.row[0].format!="null"){this.table[this.table.length]=this.row}if(B){','this.rspacing[this.table.length',']=B}this.row=[]},',43,145,278,'A=',502,'+B);',282,526,'C=A.replace(/^.*(vskip|vspace)([^a-z])/i,"$2");if(C.length==A','.length){',581,'var D=this.',365,'(C,',236,'+RegExp.$1,0,1);',282,' }',814,']=(',814,']||0)+D},Array',145,490,'E=C[2];var I=C[3];if(!E){E=',502,'+"begin{"+B+"}");',282,' }}E=E.replace(/[^clr]/g,"");E=E.split("");var G=',182,710,'C[5]||"T";var K=this.GetEnd(B);',282,526,'F=',716,'Parser(K+',236,719,'G.size,A);F.matrix=B;F.row=[];F.table=[];F.rspacing=[];F.Parse();if(F',157,189,'F);',581,'F.',37,'(',555,'var H',730,'Layout(G.size,F.table,E,I,F.rspacing,C[4],C[6],C[7]);if(C[0]&&C[1]){var D=',680,'H.h+H',734,'C[0]],"T");var J=',680,'H.h+H',734,'C[1]],"T");H',730,741,'D,H,J],G.style,G.size)}',520,'Atom((C',745,'H))},Begin',145,180,'B=',502,433,282,' }if(B.match(/[^a-z*]/i)){this.Error(\'Invalid environment name "\'+B+\'"\');',581,749,100,'[B]){this.Error(\'Unknown environment "\'+B+\'"\');',581,'var C=this.',100,'[B];',171,'C',')=="string"){','C=[C]}this[C[0]](B,C.slice(1))},End',145,180,'B=',502,433,282,' }',189,236,'+A+"{"+B+"} without matching "+',236,'+"begin")},Equation',145,278,'A=this.GetEnd(B);',282,' }','this.string=','A+',205,');this.i=0},Spacer',145,'B,A){',520,564,'-0))},Hskip',145,278,'A',537,'B);',282,' }',520,564,'))},HBox',145,180,'C=',502,433,282,526,'B',730,'InternalMath(C,',182,705,');',520,702,'B))},Rule',145,'B,E){var A',537,555,282,526,'D',537,555,282,526,'F',537,555,282,' }D+=F;var C;if(D!=0){D=Math.max(1.05/jsMath.em,D)}if(D==0||A==0||E=="blank"){C=','jsMath.HTML.','Blank(A,D)}else{C=',969,'Rule(A,D)}if(F){C=\'<span style="vertical-align:\'+',969,'Em(-F)+\'">\'+C','+"</span>"}',520,702,716,'Box("html",C,A,D-F,F)))},Strut',203,'A=',182,705,';var B',730,'Text("","normal","T",A).Styled();B.bh=B.bd=0;B.h=0.8;B.d=0.3;B.w=B.Mw=0;',520,702,'B))},Phantom',145,490,'A',559,'B);',282,' }',182,549,'phantom",{phantom:A,v:C[0],h:C[1]}))},Smash',145,490,'A',559,'B);',282,' }',182,549,'smash",{smash:A}))},MathAccent',145,'B,',180,'D',559,'B);',282,624,'accent",D);C.accent=A[0];',182,632,'NamedOp',145,'B,D){var ','A=(B.match(/[^acegm-su-z]/))?1:0;var E=(B.match(/[gjpqy]/))?0.2:0;if(D[1]){B=D[1]}var C=jsMath.mItem.','TextAtom("','op",B,',387,'.fam[0],A,E);if(D[0]!=null){C.limits=D[0]}',182,632,'Limits',145,'A,C',197,182,'Last();if(!B||B.type!="op"){',189,236,'+A+" is allowed only on operators");',581,'B.limits=C[0]},Macro',145,1023,'E=D[0];if(D[1]){var A=[];for(var C=0;C<D[1];C++){A[A.length]=',502,'+B);',282,' }}E=this.','SubstituteArgs','(A,E)}',918,'this.AddArgs(','E,',205,'));this.i=0},',1049,145,'B,',180,'E="";var D="";var F;var C=0;while(C<A',825,'F=A.charAt(C++);if(F','==',236,'){E+=F+A.charAt(C++)}',419,'F=="#"){',1062,'=="#"){E+=F}',160,'F.match(/[1-9]/)||F>B',825,221,'Illegal ','macro parameter ','reference");',191,'}D=',1052,1052,'D,E),B[F-1]);E=""}}else{E+=F}}}',239,'AddArgs(D,E)},AddArgs',145,923,'if(A.match(/^[a-z]/i)&&B.match(/(^|[^\\\\])(\\\\\\\\)*\\\\[a-z]+$/i)){B+=" "}',166,'B+A},Replace',145,586,520,'TextAtom(','B[0],B[1],B[2','],B[3]))},Hash',145,'A){',221,'You can\'t use \'',1075,'character #\' in math mode")},Tilde',145,'A){',520,1025,27,'"))},HandleLap',145,180,655,276,'();',282,576,182,549,'lap",{nuc:B,lap:A}))},HandleAtom',145,490,'A',559,'B);',282,' }',520,'Atom(C[0],A))},HandleMathCode',145,'A,B','){this.HandleTeXchar(',1093,'])},HandleTeXchar',145,'B,A,C){if(B==7&&',182,'data.font',589,'A=',182,1134,'}A=',387,'.fam[A];if(!',387,'[A]){',387,'[A]=[];',582,699,')])}else{',520,'TeXAtom(',387,'.atom[B],C,A))}},','HandleVariable',145,'A',1128,'7,1,','A.charCodeAt(0))},','HandleNumber',145,'A',1128,2,1158,'HandleOther',145,'A){',520,1025,'ord",A,"normal"))},HandleComment',203,'A;',249,'A=',167,252,'A=="\\r"||A=="\\n"){return }}},HandleStyle',145,586,182,'data.style=B[0];',182,549,'style",{style:B[0]}))},HandleSize',145,586,182,705,'=B[0];',182,549,'size",{size:B[0]}))},HandleFont',145,923,182,1134,'=A[0]},HandleCS',203,'B=',241,'();',282,' }',216,'macros[B]){',289,'this','.macros','[B];',171,'A',899,'A=[A]}this[A[0]](B,A.slice(1));',581,216,'mathchardef','[','B]){this.HandleMathCode(B,this.',1216,'[B]);',581,'if(',343,236,'+',1218,346,236,'+B].slice(0,3));',581,221,'Unknown control sequence \'"+',236,'+B+"\'")},HandleOpen',165,182,'Open()},HandleClose',165,'if(',182,755,'==null){',221,230,'");',581,289,182,'Get(',182,755,');if(!A||A.left',1242,182,'Close','()}else{',221,230,' or missing "+',236,768,'");return }},HandleLeft',145,180,'B',674,'A);',282,' }',182,'Open(B)},HandleRight',145,278,'C',674,'B);',282,526,'A=',182,'Get(',182,755,187,'&&A.left',589,182,'Close(C)}else{',221,'Extra open brace or missing "+',236,'+"left")}},HandleOver',145,586,'if(',182,774,589,221,'Ambiguous use of "+',236,433,581,182,774,'=',182,'Length();',182,'data.overF={name:A};if(B.length>0){',182,'data.overF.','left=',343,'B[0]];',182,1312,'right=',343,'B[1]]}',419,'A.match(/withdelims$/)){',182,1312,'left',674,'A);',282,' }',182,1312,'right',674,'A);',282,' }}else{',182,1312,'left=null;',182,1312,1318,'null}}if(A.match(/^above/)){',182,1312,'thickness',537,'A,1);',282,' }}else{',182,1312,'thickness=null}},HandleSuperscript',203,'A=',182,199,182,774,'==',182,'Length()){A=null}','if(A==null','||(!A.atom&&A',516,'A',518,'A=',520,521,'if(A.sup){if(A.sup.isPrime){A=',520,521,'else{',221,'Double exponent',525,' }}A.sup',542,'("superscript");',282,' }},HandleSubscript',203,'A=',182,199,182,774,'==',182,'Length()){A=null}',1363,'||(!A.atom&&A',516,'A',518,'A=',520,521,'if(A.sub){',221,'Double subscripts',525,' }A.sub',542,'("subscript");',282,' }},Parse',203,'B;',249,'B=',167,'++);',216,'mathchar[',1218,'mathchar[B])}else{',216,'special[B]){this[this',148,'B]](B)}else{',216,'letter','.test(B)){this.',1153,'(B)}else{',216,'number',1425,1159,1427,'this.',1165,'(B)}}}}}if(',182,755,589,289,182,'Get(',182,755,187,'.left){',221,222,' "+',236,768,769,221,272,'")}}if(',182,774,589,182,'Over()}},Atomize',203,'A=',182,'init;if(!this',157,182,781,'A.style,A.size)}},Typeset',203,'F=',182,'init;',827,'typeset=',182,702,'F.style,F.size);',282,'\'<span class="error">\'+',158,975,'if(D.format=="null"){return""}D.Styled().Remeasured();var E=0;var C=0;if(D.bh>D.h&&','D.bh>jsMath.h+0.001){','E=1}if(D.bd>D.d&&D.bd>jsMath.d+0.001){E=1}if(D.h>jsMath.h||D.d>jsMath.d){C=1}var B=D.html;if(E){if(','jsMath.Browser.','allowAbsolute){var G=0;if(',1482,'G=jsMath.h-D.bh}B=',969,'Absolute(B,D.w,jsMath.h,0,G)}',419,1484,'valignBug){','B=\'<span style="line-height:\'+jsMath.HTML.Em(jsMath.d',')+\';">\'+B',975,160,1484,'operaLineHeightBug){',289,969,'Em(Math.max(0,D.bd-jsMath.hd)/3);',1493,')+"; position:relative; top:"+A+"; vertical-align:"+A+\'">\'+B+"</span>"}}}C=1}if(C){B+=',969,'Blank(0,D.h+0.05,D.d+0.05)}return\'<nobr><span class="scale">\'+B+"</span></nobr>"}});',147,'.AddSpecial({cmd:"HandleCS",open:"HandleOpen",close:"HandleClose"});','jsMath.Add(jsMath,{','Macro',145,180,'C=',147,1208,';C[A]=["Macro"];for(var B=1;B<arguments.',209,'B++){C[A][C[A].length]=arguments[B]}}});',577,'={safeRequire:1,Macro',145,'A,',278,'C=',147,1208,';if(B',1242,'B=A}C[A]=["',85,'",B]},LaTeX',145,'B,',180,'C=',147,'.',100,';C[B]=["Extension",','A,"',100,'"]},Font',145,923,1363,'){A=B+"10"}var C=',147,1208,1538,699,')]},MathChar',145,'C,',180,'D=',387,'.famName[C','];if(D',1242,'D=',387,'.fam.',209,387,'.fam[D]=C;',387,1556,']=D}var B=',147,'.',1216,';for(var E in A){B[E]=[A[E][0],D,A[E][1]]}},Require',145,923,216,'safeRequire&&(B.match(/\\.\\.\\/|[^-a-z0-9.\\/:_+=%~]/i)||(B.match(/:/)&&B.substr(0,jsMath.root.length)!=jsMath.root))){',579,'loaded[B]=1;',581,579,'Script(this.URL(B),A)},URL',145,'A){A=',176,',"");if(!A.match(/^([a-z]+:|\\/|fonts|extensions\\/)/i)){A="extensions/"+A}if(!A.match(/\\.js$/)){A+=".js"}',166,'A}};',1508,178,145,'A){',579,'Body();','jsMath.Script.','Push(',587,',"','Asynchronous','",A)},','ProcessBeforeShowing',145,'A){',579,1592,'var B=(','jsMath.Controls.cookie.','asynch?"',1597,'":"','Synchronous','");',1593,1594,587,',B,A)},','ProcessElement',145,'A){',579,1592,1593,1594,587,',"ProcessOne",A)}});',587,'={element:[],cancel:0,Parse',145,'D,C,',180,'B=','jsMath.Global.','cache[D];if(!','B[jsMath.em',']){',1632,']={}}var F=',1632,'][C];if(!F||',180,'E',185,'C,null,null,D);E.Atomize();F=E.Typeset();if(!A){',1632,'][C]=F}}',166,'F},TextMode',145,'B,A){this.Parse("','T",B,A)},DisplayMode',145,1647,'D",B,A)},','GetElementText',145,'B){if(','B.childNodes.length','==1&&','B.childNodes[','0].nodeName==="#','comment"){',289,1657,'0].nodeValue.match(/^\\[CDATA\\[(.*)\\]\\]$/);if(A',589,166,'A[1]}}',894,'recursiveElementText','(B);B.alt=C;if(C.search("&")>=0){','C=C.replace(/&','lt;/g,"<");',1669,'gt;/g,">");',1669,'quot;/g,\'"\');',1669,'amp;/g,"&")}',166,'C},',1667,145,1654,'B.nodeValue',589,'if(B.nodeName!=="#',1659,166,1682,'}',166,1682,'.replace(/^\\[CDATA\\[(.*)\\]\\]$/,"$1")}if(',1655,'===0){return" "}var C="";for(',289,'0;A<',1655,';A++){C+=this.',1667,'(',1657,'A])}',166,'C},ResetHidden',145,'A){A.innerHTML=\'<span id="jsMath_hiddenSpan" style="position:absolute"></span>\'+',1484,'operaHiddenFix;A','.className','="";','jsMath.hidden','=A.firstChild;if(!jsMath.BBoxFor("x").w){','jsMath.hidden=jsMath.hiddenTop','}jsMath.ReInit()},ConvertMath',145,'C,B,',180,636,1652,'(B);this.ResetHidden(B);if(D.match(/^\\s*\\\\nocache([^a-zA-Z])/)){A=true;D=D.replace(/\\s*\\\\nocache/,"")}',636,'Parse(C,D,A);B',1708,'="typeset";B.innerHTML=D},',1615,145,'C){this.restart=0;if(!C',1708,'.match(/(^| )math( |$)/)){',581,'var A=(C',1708,'.toLowerCase','().match(/(^| )nocache( |$)/)!=null);try{var D=(C.tagName',1732,'()=="div"?"D":"T");this.ConvertMath(D,C,A);C.onclick=jsMath.Click.CheckClick;C.ondblclick=jsMath.Click.CheckDblClick}catch(E){if(C.alt',197,'C.alt;B=B.replace(/&/g,"&amp',';");B=B.replace','(/</g,"&lt',1738,'(/>/g,"&gt;");C.innerHTML=B;C',1708,'="math";if(A){C',1708,'+=" nocache"}}',1712,'}},','ProcessElements',145,'B){',1593,'blocking=','1;if(B>=','this.element.length','||this.cancel){this.','ProcessComplete','();',216,'cancel){','jsMath.Message.','Set("',178,' Math: Canceled");',1760,'Clear()}',1593,1752,'0;',1593,178,1256,289,1593,'SaveQueue();','this.ProcessElement(this.element[','B]);',1593,'RestoreQueue(A);',216,'restart){',1593,1594,'this,"',1748,'",B);',1593,1752,'0;setTimeout("',1593,178,'()",',1484,'delay)}else{B++;var C=Math.floor(100*B/',1754,');','jsMath.Message.Set("Processing Math',': "+C+"%");setTimeout("',587,'.',1748,'("+B+")",',1484,'delay)}}},',1597,145,'A','){if(!jsMath.initialized){jsMath.Init()}this.element','=this.GetMathElements(','A);',1593,1752,'1;this.cancel=0;this',596,'=1;',1796,': 0%",1);setTimeout("',587,'.',1748,'(0)",',1484,'delay)},',1609,145,923,1363,1807,1808,'B);A=0}this',596,'=0;while(A<',1754,'){',1775,'A]);',216,'restart){','jsMath.Synchronize','("',587,'.',1609,'(null,"+A+")");',1593,178,'();',581,'A++}this.',1756,'(1)},ProcessOne',145,'A',1807,'=[A];this.',1609,'(null,0)},GetMathElements',145,'D){var B=[];var A;if(!D){D=','jsMath.document','}',171,'D',899,'D=',1859,'.getElementById(D)}if(!','D.getElementsByTagName','){',191,'}var C=',1867,'("div','");for(A=0;A<C.length;A++){if(C[A].className&&C[A].className.match(/(^| )math( |$)/)){if(jsMath.Browser.renameOK&&D.getElementsByName){C[A].setAttribute("name","_jsMath_")}else{B[B.length]=C[A]}}}','C=',1867,'("span',1873,'if(',1484,'renameOK','&&D','.getElementsByName','){B=D',1882,'("_jsMath_','")}',419,1710,'.sourceIndex','){B.sort(function(F,E){',166,'F',1889,'-E',1889,'})}}',166,'B},',1756,145,'C){if(',1484,1880,197,1859,1882,1885,'");for(',289,'B.length-1;A>=0;A--){B[A].removeAttribute("name")}}',1712,';this.element=[];this.restart=null;',220,1796,': Done");',1760,'Clear()}',1760,'UnBlank();if(',1484,'safariImgBug&&(',1605,'font=="symbol"||',1605,'font=="image")){',216,'timeout){clearTimeout(this.timeout)}this.timeout=setTimeout("','jsMath.window.resizeBy','(-1,0); ',1928,'(1,0); ',587,'.timeout = null",2000)}},Cancel',165,587,'.cancel=1;if(',1593,'cancelTimer){',1593,'cancelLoad()}}};',1508,'ConvertTeX',145,'A){',1593,'Push(jsMath.tex2math,"',1942,1598,'ConvertTeX2',145,'A){',1593,1946,1949,1598,'ConvertLaTeX',145,'A){',1593,1946,1956,1598,'ConvertCustom',145,'A){',1593,1946,1963,1598,'CustomSearch',145,'C,B,A,D){',1593,1594,'null,function(){jsMath.tex2math.',1970,'(C,B,A,D)})},tex2math:{',1942,508,1949,508,1956,508,1963,508,1970,':function(){}}});',1838,'=',1593,'Synchronize;try{if(','window.parent','!=window&&window.jsMathAutoload){',1992,'.jsMath=jsMath;',1859,'=',1992,'.document;jsMath.window=',1992,'}}catch(err){}',1630,'Register();jsMath.Loaded();jsMath.Controls.GetCookie();',579,'Source();',1630,'Init();',1593,'Init();',579,'Fonts();if(',1859,'.body){',579,'Body()}',579,'User("onload")}};']
+jsMath.Add(jsMath.mItem,{
 
-]);
-//end = new Date().getTime();
-//alert(end-start);
+  /*
+   *  A general atom (given a nucleus for the atom)
+   */
+  Atom: function (type,nucleus) {
+    return new jsMath.mItem(type,{atom: 1, nuc: nucleus});
+  },
+
+  /*
+   *  An atom whose nucleus is a piece of text, in a given
+   *  class, with a given additional height and depth
+   */
+  TextAtom: function (type,text,tclass,a,d) {
+    var atom = new jsMath.mItem(type,{
+      atom: 1,
+      nuc: {
+        type: 'text',
+        text: text,
+        tclass: tclass
+      }
+    });
+    if (a != null) {atom.nuc.ascend = a}
+    if (d != null) {atom.nuc.descend = d}
+    return atom;
+  },
+  
+  /*
+   *  An atom whose nucleus is a TeX character in a specific font
+   */
+  TeXAtom: function (type,c,font) {
+    return new jsMath.mItem(type,{
+      atom: 1,
+      nuc: {
+        type: 'TeX',
+        c: c,
+        font: font
+      }
+    });
+  },
+
+  /*
+   *  A generalized fraction atom, with given delimiters, rule
+   *  thickness, and a numerator and denominator.
+   */
+  Fraction: function (name,num,den,thickness,left,right) {
+    return new jsMath.mItem('fraction',{
+      from: name, num: num, den: den,
+      thickness: thickness, left: left, right: right
+    });
+  },
+
+  /*
+   *  An atom that inserts some glue
+   */
+  Space: function (w) {return new jsMath.mItem('space',{w: w})},
+
+  /*
+   *  An atom that contains a typeset box (like an hbox or vbox)
+   */
+  Typeset: function (box) {return new jsMath.mItem('ord',{atom:1, nuc: box})},
+  
+  /*
+   *  An atom that contains some finished HTML (acts like a typeset box)
+   */
+  HTML: function (html) {return new jsMath.mItem('html',{html: html})}
+
+});
+
+/***************************************************************************/
+
+/*
+ *  mLists are lists of mItems, and encode the contents of
+ *  mathematical expressions and sub-expressions.  They act as
+ *  the expression "stack" as the mathematics is parsed, and
+ *  contain some state information, like the position of the
+ *  most recent open paren and \over command, and the current font.
+ */
+jsMath.mList = function (list,font,size,style) {
+  if (list) {this.mlist = list} else {this.mlist = []}
+  if (style == null) {style = 'T'}; if (size == null) {size = 4}
+  this.data = {openI: null, overI: null, overF: null,
+               font: font, size: size, style: style};
+  this.init = {size: size, style: style};
+}
+
+jsMath.Package(jsMath.mList,{
+
+  /*
+   *  Add an mItem to the list
+   */
+  Add: function (box) {return (this.mlist[this.mlist.length] = box)},
+  
+  /*
+   *  Get the i-th mItem from the list
+   */
+  Get: function (i) {return this.mlist[i]},
+  
+  /*
+   *  Get the length of the list
+   */
+  Length: function() {return this.mlist.length},
+
+  /*
+   *  Get the tail mItem of the list
+   */
+  Last: function () {
+    if (this.mlist.length == 0) {return null}
+    return this.mlist[this.mlist.length-1]
+  },
+
+  /*
+   *  Get a sublist of an mList
+   */
+  Range: function (i,j) {
+    if (j == null) {j = this.mlist.length}
+    return new jsMath.mList(this.mlist.slice(i,j+1));
+  },
+
+  /*
+   *  Remove a range of mItems from the list.
+   */
+  Delete: function (i,j) {
+    if (j == null) {j = i}
+    if (this.mlist.splice) {this.mlist.splice(i,j-i+1)} else {
+      var mlist = [];
+      for (var k = 0; k < this.mlist.length; k++)
+        {if (k < i || k > j) {mlist[mlist.length] = this.mlist[k]}}
+      this.mlist = mlist;
+    }
+  },
+
+  /*
+   *  Add an open brace and maintain the stack information
+   *  about the previous open brace so we can recover it
+   *  when this one os closed.
+   */
+  Open: function (left) {
+    var box = this.Add(new jsMath.mItem('boundary',{data: this.data}));
+    var olddata = this.data;
+    this.data = {}; for (var i in olddata) {this.data[i] = olddata[i]}
+    delete this.data.overI; delete this.data.overF;
+    this.data.openI = this.mlist.length-1;
+    if (left != null) {box.left = left}
+    return box;
+  },
+
+  /*
+   *  Attempt to close a brace.  Recover the stack information
+   *  about previous open braces and \over commands.  If there was an
+   *  \over (or \above, etc) in this set of braces, create a fraction
+   *  atom from the two halves, otherwise create an inner or ord
+   *  from the contents of the braces.
+   *  Remove the braced material from the list and add the newly
+   *  created atom (the fraction, inner or ord).
+   */
+  Close: function (right) {
+    if (right != null) {right = new jsMath.mItem('boundary',{right: right})}
+    var atom; var open = this.data.openI;
+    var over = this.data.overI; var from = this.data.overF;
+    this.data  = this.mlist[open].data;
+    if (over) {
+      atom = jsMath.mItem.Fraction(from.name,
+        {type: 'mlist', mlist: this.Range(open+1,over-1)},
+        {type: 'mlist', mlist: this.Range(over)},
+        from.thickness,from.left,from.right);
+      if (right) {
+        var mlist = new jsMath.mList([this.mlist[open],atom,right]);
+        atom = jsMath.mItem.Atom('inner',{type: 'mlist', mlist: mlist});
+      }
+    } else {
+      var openI = open+1; if (right) {this.Add(right); openI--}
+      atom = jsMath.mItem.Atom((right)?'inner':'ord',
+                  {type: 'mlist', mlist: this.Range(openI)});
+    }
+    this.Delete(open,this.Length());
+    return this.Add(atom);
+  },
+
+  /*
+   *  Create a generalized fraction from an mlist that
+   *  contains an \over (or \above, etc).
+   */
+  Over: function () {
+    var over = this.data.overI; var from = this.data.overF;
+    var atom = jsMath.mItem.Fraction(from.name,
+      {type: 'mlist', mlist: this.Range(open+1,over-1)},
+      {type: 'mlist', mlist: this.Range(over)},
+      from.thickness,from.left,from.right);
+    this.mlist = [atom];
+  },
+
+  /*
+   *  Take a raw mList (that has been produced by parsing some TeX
+   *  expression), and perform the modifications outlined in
+   *  Appendix G of the TeXbook.  
+   */
+  Atomize: function (style,size) {
+    var mitem; var prev = '';
+    this.style = style; this.size = size;
+    for (var i = 0; i < this.mlist.length; i++) {
+      mitem = this.mlist[i]; mitem.delta = 0;
+      if (mitem.type == 'choice') 
+        {this.mlist = this.Atomize.choice(this.style,mitem,i,this.mlist); i--}
+      else if (this.Atomize[mitem.type]) {
+        var f = this.Atomize[mitem.type]; // Opera needs separate name
+        f(this.style,this.size,mitem,prev,this,i);
+      }
+      prev = mitem;
+    }
+    if (mitem && mitem.type == 'bin') {mitem.type = 'ord'}
+    if (this.mlist.length >= 2 && mitem.type == 'boundary' &&
+        this.mlist[0].type == 'boundary') {this.AddDelimiters(style,size)}
+  },
+
+  /*
+   *  For a list that has boundary delimiters as its first and last
+   *  entries, we replace the boundary atoms by open and close
+   *  atoms whose nuclii are the specified delimiters properly sized
+   *  for the contents of the list.  (Rule 19)
+   */
+  AddDelimiters: function(style,size) {
+    var unset = -10000; var h = unset; var d = unset;
+    for (var i = 0; i < this.mlist.length; i++) {
+      var mitem = this.mlist[i];
+      if (mitem.atom || mitem.type == 'box') {
+        h = Math.max(h,mitem.nuc.h+mitem.nuc.y);
+        d = Math.max(d,mitem.nuc.d-mitem.nuc.y);
+      }
+    }
+    var TeX = jsMath.TeX; var a = jsMath.Typeset.TeX(style,size).axis_height;
+    var delta = Math.max(h-a,d+a);
+    var H =  Math.max(Math.floor(TeX.integer*delta/500)*TeX.delimiterfactor,
+                      TeX.integer*(2*delta-TeX.delimitershortfall))/TeX.integer;
+    var left = this.mlist[0]; var right = this.mlist[this.mlist.length-1];
+    left.nuc = jsMath.Box.Delimiter(H,left.left,style);
+    right.nuc = jsMath.Box.Delimiter(H,right.right,style);
+    left.type = 'open'; left.atom = 1; delete left.left;
+    right.type = 'close'; right.atom = 1; delete right.right;
+  },
+  
+  /*
+   *  Typeset a math list to produce final HTML for the list.
+   */
+  Typeset: function (style,size) {
+    var typeset = new jsMath.Typeset(this.mlist);
+    return typeset.Typeset(style,size);
+  }
+
+});
+
+
+/*
+ *  These routines implement the main rules given in Appendix G of the
+ *  TeXbook
+ */
+
+jsMath.Add(jsMath.mList.prototype.Atomize,{
+
+  /*
+   *  Handle \displaystyle, \textstyle, etc.
+   */
+  style: function (style,size,mitem,prev,mlist) {
+    mlist.style = mitem.style;
+  },
+  
+  /*
+   *  Handle \tiny, \small, etc.
+   */
+  size: function (style,size,mitem,prev,mlist) {
+    mlist.size = mitem.size;
+  },
+  
+  /*
+   *  Create empty boxes of the proper sizes for the various
+   *  phantom-type commands
+   */
+  phantom: function (style,size,mitem) {
+    var box = mitem.nuc = jsMath.Box.Set(mitem.phantom,style,size);
+    if (mitem.h) {box.Remeasured(); box.html = jsMath.HTML.Spacer(box.w)}
+      else {box.html = '', box.w = box.Mw = box.mw = 0;}
+    if (!mitem.v) {box.h = box.d = 0}
+    box.bd = box.bh = 0;
+    delete mitem.phantom;
+    mitem.type = 'box';
+  },
+  
+  /*
+   *  Create a box of zero height and depth containing the
+   *  contents of the atom
+   */
+  smash: function (style,size,mitem) {
+    var box = mitem.nuc = jsMath.Box.Set(mitem.smash,style,size).Remeasured();
+    box.h = box.d = 0;
+    delete mitem.smash;
+    mitem.type = 'box';
+  },
+
+  /*
+   *  Move a box up or down vertically
+   */
+  raise: function (style,size,mitem) {
+    mitem.nuc = jsMath.Box.Set(mitem.nuc,style,size);
+    var y = mitem.raise;
+    mitem.nuc.html =
+      jsMath.HTML.Place(mitem.nuc.html,0,y,mitem.nuc.mw,mitem.nuc.Mw,mitem.nuc.w);
+    mitem.nuc.h += y; mitem.nuc.d -= y;
+    mitem.type = 'ord'; mitem.atom = 1;
+  },
+
+  /*
+   *  Hide the size of a box so that it laps to the left or right, or
+   *  up or down.
+   */
+  lap: function (style,size,mitem) {
+    var box = jsMath.Box.Set(mitem.nuc,style,size).Remeasured();
+    var mlist = [box];
+    if (mitem.lap == 'llap') {box.x = -box.w} else
+    if (mitem.lap == 'rlap') {mlist[1] = jsMath.mItem.Space(-box.w)} else
+    if (mitem.lap == 'ulap') {box.y = box.d; box.h = box.d = 0} else
+    if (mitem.lap == 'dlap') {box.y = -box.h; box.h = box.d = 0}
+    mitem.nuc = jsMath.Box.SetList(mlist,style,size);
+    if (mitem.lap == 'ulap' || mitem.lap == 'dlap') {mitem.nuc.h = mitem.nuc.d = 0}
+    mitem.type = 'box'; delete mitem.atom;
+  },
+
+  /*
+   *  Handle a Bin atom. (Rule 5)
+   */
+  bin: function (style,size,mitem,prev) {
+    if (prev && prev.type) {
+      var type  = prev.type;
+      if (type == 'bin' || type == 'op' || type == 'rel' ||
+          type == 'open' || type == 'punct' || type == '' ||
+          (type == 'boundary' && prev.left != '')) {mitem.type = 'ord'}
+    } else {mitem.type = 'ord'}
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle a Rel atom.  (Rule 6)
+   */
+  rel: function (style,size,mitem,prev) {
+    if (prev.type && prev.type == 'bin') {prev.type = 'ord'}
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle a Close atom.  (Rule 6)
+   */
+  close: function (style,size,mitem,prev) {
+    if (prev.type && prev.type == 'bin') {prev.type = 'ord'}
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle a Punct atom.  (Rule 6)
+   */
+  punct: function (style,size,mitem,prev) {
+    if (prev.type && prev.type == 'bin') {prev.type = 'ord'}
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle an Open atom.  (Rule 7)
+   */
+  open: function (style,size,mitem) {
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle an Inner atom.  (Rule 7)
+   */
+  inner: function (style,size,mitem) {
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle a Vcent atom.  (Rule 8)
+   */
+  vcenter: function (style,size,mitem) {
+    var box = jsMath.Box.Set(mitem.nuc,style,size);
+    var TeX = jsMath.Typeset.TeX(style,size);
+    box.y = TeX.axis_height - (box.h-box.d)/2;
+    mitem.nuc = box; mitem.type = 'ord';
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle an Over atom.  (Rule 9)
+   */
+  overline: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size);
+    var box = jsMath.Box.Set(mitem.nuc,jsMath.Typeset.PrimeStyle(style),size).Remeasured();
+    var t = TeX.default_rule_thickness;
+    var rule = jsMath.Box.Rule(box.w,t);
+    rule.x = -rule.w; rule.y = box.h + 3*t;
+    mitem.nuc = jsMath.Box.SetList([box,rule],style,size);
+    mitem.nuc.h += t;
+    mitem.type = 'ord';
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle an Under atom.  (Rule 10)
+   */
+  underline: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size);
+    var box = jsMath.Box.Set(mitem.nuc,jsMath.Typeset.PrimeStyle(style),size).Remeasured();
+    var t = TeX.default_rule_thickness;
+    var rule = jsMath.Box.Rule(box.w,t);
+    rule.x = -rule.w; rule.y = -box.d - 3*t - t;
+    mitem.nuc = jsMath.Box.SetList([box,rule],style,size);
+    mitem.nuc.d += t;
+    mitem.type = 'ord';
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle a Rad atom.  (Rule 11 plus stuff for \root..\of)
+   */
+  radical: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size);
+    var Cp = jsMath.Typeset.PrimeStyle(style);
+    var box = jsMath.Box.Set(mitem.nuc,Cp,size).Remeasured();
+    var t = TeX.default_rule_thickness;
+    var p = t; if (style == 'D' || style == "D'") {p = TeX.x_height}
+    var r = t + p/4; 
+    var surd = jsMath.Box.Delimiter(box.h+box.d+r+t,[0,2,0x70,3,0x70],style,1);
+//    if (surd.h > 0) {t = surd.h} // thickness of rule is height of surd character
+    if (surd.d > box.h+box.d+r) {r = (r+surd.d-box.h-box.d)/2}
+    surd.y = box.h+r;
+    var rule = jsMath.Box.Rule(box.w,t);
+    rule.y = surd.y-t/2; rule.h += 3*t/2; box.x = -box.w;
+    var Cr = jsMath.Typeset.UpStyle(jsMath.Typeset.UpStyle(style));
+    var root = jsMath.Box.Set(mitem.root || null,Cr,size).Remeasured();
+    if (mitem.root) {
+      root.y = .55*(box.h+box.d+3*t+r)-box.d;
+      surd.x = Math.max(root.w-(11/18)*surd.w,0);
+      rule.x = (7/18)*surd.w;
+      root.x = -(root.w+rule.x);
+    }
+    mitem.nuc = jsMath.Box.SetList([surd,root,rule,box],style,size);
+    mitem.type = 'ord';
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle an Acc atom.  (Rule 12)
+   */
+  accent: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size);
+    var Cp = jsMath.Typeset.PrimeStyle(style);
+    var box = jsMath.Box.Set(mitem.nuc,Cp,size);
+    var u = box.w; var s; var Font; var ic = 0;
+    if (mitem.nuc.type == 'TeX') {
+      Font = jsMath.TeX[mitem.nuc.font];
+      if (Font[mitem.nuc.c].krn && Font.skewchar)
+        {s = Font[mitem.nuc.c].krn[Font.skewchar]}
+      ic = Font[mitem.nuc.c].ic; if (ic == null) {ic = 0}
+    }
+    if (s == null) {s = 0}
+    
+    var c = mitem.accent[2];
+    var font = jsMath.TeX.fam[mitem.accent[1]]; Font = jsMath.TeX[font];
+    while (Font[c].n && Font[Font[c].n].w <= u) {c = Font[c].n}
+    
+    var delta = Math.min(box.h,TeX.x_height);
+    if (mitem.nuc.type == 'TeX') {
+      var nitem = jsMath.mItem.Atom('ord',mitem.nuc);
+      nitem.sup = mitem.sup; nitem.sub = mitem.sub; nitem.delta = 0;
+      jsMath.mList.prototype.Atomize.SupSub(style,size,nitem);
+      delta += (nitem.nuc.h - box.h);
+      box = mitem.nuc = nitem.nuc;
+      delete mitem.sup; delete mitem.sub;
+    }
+    var acc = jsMath.Box.TeX(c,font,style,size);
+    acc.y = box.h - delta; acc.x = -box.w + s + (u-acc.w)/2;
+    if (jsMath.Browser.msieAccentBug) 
+      {acc.html += jsMath.HTML.Spacer(.1); acc.w += .1; acc.Mw += .1}
+    if (Font[c].ic || ic) {acc.x += (ic - (Font[c].ic||0)) * TeX.scale}
+
+    mitem.nuc = jsMath.Box.SetList([box,acc],style,size);
+    if (mitem.nuc.w != box.w) {
+      var space = jsMath.mItem.Space(box.w-mitem.nuc.w);
+      mitem.nuc = jsMath.Box.SetList([mitem.nuc,space],style,size);
+    }
+    mitem.type = 'ord';
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle an Op atom.  (Rules 13 and 13a)
+   */
+  op: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size); var box;
+    mitem.delta = 0; var isD = (style.charAt(0) == 'D');
+    if (mitem.limits == null && isD) {mitem.limits = 1}
+
+    if (mitem.nuc.type == 'TeX') {
+      var C = jsMath.TeX[mitem.nuc.font][mitem.nuc.c];
+      if (isD && C.n) {mitem.nuc.c = C.n; C = jsMath.TeX[mitem.nuc.font][C.n]}
+      box = mitem.nuc = jsMath.Box.Set(mitem.nuc,style,size);
+      if (C.ic) {
+        mitem.delta = C.ic * TeX.scale;
+        if (mitem.limits || !mitem.sub || jsMath.Browser.msieIntegralBug) {
+          box = mitem.nuc = jsMath.Box.SetList([box,jsMath.mItem.Space(mitem.delta)],style,size);
+        }
+      }
+      box.y = -((box.h+box.d)/2 - box.d - TeX.axis_height);
+      if (Math.abs(box.y) < .0001) {box.y = 0}
+    }
+    
+    if (!box) {box = mitem.nuc = jsMath.Box.Set(mitem.nuc,style,size).Remeasured()}
+    if (mitem.limits) {
+      var W = box.w; var x = box.w;
+      var mlist = [box]; var dh = 0; var dd = 0;
+      if (mitem.sup) {
+        var sup = jsMath.Box.Set(mitem.sup,jsMath.Typeset.UpStyle(style),size).Remeasured();
+        sup.x = ((box.w-sup.w)/2 + mitem.delta/2) - x; dh = TeX.big_op_spacing5;
+        W = Math.max(W,sup.w); x += sup.x + sup.w;
+        sup.y = box.h+sup.d + box.y +
+                    Math.max(TeX.big_op_spacing1,TeX.big_op_spacing3-sup.d);
+        mlist[mlist.length] = sup; delete mitem.sup;
+      }
+      if (mitem.sub) {
+        var sub = jsMath.Box.Set(mitem.sub,jsMath.Typeset.DownStyle(style),size).Remeasured();
+        sub.x = ((box.w-sub.w)/2 - mitem.delta/2) - x; dd = TeX.big_op_spacing5;
+        W = Math.max(W,sub.w); x += sub.x + sub.w;
+        sub.y = -box.d-sub.h + box.y -
+                   Math.max(TeX.big_op_spacing2,TeX.big_op_spacing4-sub.h);
+        mlist[mlist.length] = sub; delete mitem.sub;
+      }
+      if (W > box.w) {box.x = (W-box.w)/2; x += box.x}
+      if (x < W) {mlist[mlist.length] = jsMath.mItem.Space(W-x)}
+      mitem.nuc = jsMath.Box.SetList(mlist,style,size);
+      mitem.nuc.h += dh; mitem.nuc.d += dd;
+    } else {
+      if (jsMath.Browser.msieIntegralBug && mitem.sub && C && C.ic) 
+        {mitem.nuc = jsMath.Box.SetList([box,jsMath.Box.Space(-C.ic*TeX.scale)],style,size)}
+      else if (box.y) {mitem.nuc = jsMath.Box.SetList([box],style,size)}
+      jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+    }
+  },
+
+  /*
+   *  Handle an Ord atom.  (Rule 14)
+   */
+  ord: function (style,size,mitem,prev,mList,i) {
+    if (mitem.nuc.type == 'TeX' && !mitem.sup && !mitem.sub) {
+      var nitem = mList.mlist[i+1];
+      if (nitem && nitem.atom && nitem.type &&
+          (nitem.type == 'ord' || nitem.type == 'op' || nitem.type == 'bin' ||
+           nitem.type == 'rel' || nitem.type == 'open' ||
+           nitem.type == 'close' || nitem.type == 'punct')) {
+        if (nitem.nuc.type == 'TeX' && nitem.nuc.font == mitem.nuc.font) {
+          mitem.textsymbol = 1;
+          var krn = jsMath.TeX[mitem.nuc.font][mitem.nuc.c].krn;
+          krn *= jsMath.Typeset.TeX(style,size).scale;
+          if (krn && krn[nitem.nuc.c]) {
+            for (var k = mList.mlist.length-1; k > i; k--)
+              {mList.mlist[k+1] = mList.mlist[k]}
+            mList.mlist[i+1] = jsMath.mItem.Space(krn[nitem.nuc.c]);
+          }
+        }
+      }
+    }
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Handle a generalized fraction.  (Rules 15 to 15e)
+   */
+  fraction: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size); var t = 0;
+    if (mitem.thickness != null) {t = mitem.thickness}
+    else if (mitem.from.match(/over/)) {t = TeX.default_rule_thickness}
+    var isD = (style.charAt(0) == 'D');
+    var Cn = (style == 'D')? 'T': (style == "D'")? "T'": jsMath.Typeset.UpStyle(style);
+    var Cd = (isD)? "T'": jsMath.Typeset.DownStyle(style);
+    var num = jsMath.Box.Set(mitem.num,Cn,size).Remeasured();
+    var den = jsMath.Box.Set(mitem.den,Cd,size).Remeasured();
+
+    var u; var v; var w; var p; var r;
+    var H = (isD)? TeX.delim1 : TeX.delim2;
+    var mlist = [jsMath.Box.Delimiter(H,mitem.left,style)]
+    var right = jsMath.Box.Delimiter(H,mitem.right,style);
+
+    if (num.w < den.w) {
+      num.x = (den.w-num.w)/2;
+      den.x = -(num.w + num.x);
+      w = den.w; mlist[1] = num; mlist[2] = den;
+    } else {
+      den.x = (num.w-den.w)/2;
+      num.x = -(den.w + den.x);
+      w = num.w; mlist[1] = den; mlist[2] = num;
+    }
+    if (isD) {u = TeX.num1; v = TeX.denom1} else {
+      u = (t != 0)? TeX.num2: TeX.num3;
+      v = TeX.denom2;
+    }
+    if (t == 0) {// atop
+      p = (isD)? 7*TeX.default_rule_thickness: 3*TeX.default_rule_thickness;
+      r = (u - num.d) - (den.h - v);
+      if (r < p) {u += (p-r)/2; v += (p-r)/2}
+    } else {// over
+      p = (isD)? 3*t: t; var a = TeX.axis_height;
+      r = (u-num.d)-(a+t/2); if (r < p) {u += p-r}
+      r = (a-t/2)-(den.h-v); if (r < p) {v += p-r}
+      var rule = jsMath.Box.Rule(w,t); rule.x = -w; rule.y = a - t/2;
+      mlist[mlist.length] = rule;
+    }
+    num.y = u; den.y = -v;
+
+    mlist[mlist.length] = right;
+    mitem.nuc = jsMath.Box.SetList(mlist,style,size);
+    mitem.type = 'ord'; mitem.atom = 1;
+    delete mitem.num; delete mitem.den;
+    jsMath.mList.prototype.Atomize.SupSub(style,size,mitem);
+  },
+
+  /*
+   *  Add subscripts and superscripts.  (Rules 17-18f)
+   */
+  SupSub: function (style,size,mitem) {
+    var TeX = jsMath.Typeset.TeX(style,size);
+    var nuc = mitem.nuc;
+    var box = mitem.nuc = jsMath.Box.Set(mitem.nuc,style,size,0);
+    if (box.format == 'null') 
+      {box = mitem.nuc = jsMath.Box.Text('','normal',style,size)}
+
+    if (nuc.type == 'TeX') {
+      if (!mitem.textsymbol) {
+        var C = jsMath.TeX[nuc.font][nuc.c];
+        if (C.ic) {
+          mitem.delta = C.ic * TeX.scale;
+          if (!mitem.sub) {
+            box = mitem.nuc = jsMath.Box.SetList([box,jsMath.Box.Space(mitem.delta)],style,size);
+            mitem.delta = 0;
+          }
+        }
+      } else {mitem.delta = 0}
+    }
+
+    if (!mitem.sup && !mitem.sub) return;
+    mitem.nuc.Styled();
+    
+    var Cd = jsMath.Typeset.DownStyle(style);
+    var Cu = jsMath.Typeset.UpStyle(style);
+    var q = jsMath.Typeset.TeX(Cu,size).sup_drop;
+    var r = jsMath.Typeset.TeX(Cd,size).sub_drop;
+    var u = 0; var v = 0; var p;
+    if (nuc.type && nuc.type != 'text' && nuc.type != 'TeX' && nuc.type != 'null')
+      {u = box.h - q; v = box.d + r}
+
+    if (mitem.sub) {
+      var sub = jsMath.Box.Set(mitem.sub,Cd,size);
+      sub = jsMath.Box.SetList([sub,jsMath.mItem.Space(TeX.scriptspace)],style,size);
+    }
+
+    if (!mitem.sup) {
+      sub.y = -Math.max(v,TeX.sub1,sub.h-(4/5)*jsMath.Typeset.TeX(Cd,size).x_height);
+      mitem.nuc = jsMath.Box.SetList([box,sub],style,size).Styled(); delete mitem.sub;
+      return;
+    }
+
+    var sup = jsMath.Box.Set(mitem.sup,Cu,size);
+    sup = jsMath.Box.SetList([sup,jsMath.mItem.Space(TeX.scriptspace)],style,size);
+    if (style == 'D') {p = TeX.sup1}
+    else if (style.charAt(style.length-1) == "'") {p = TeX.sup3}
+    else {p = TeX.sup2}
+    u = Math.max(u,p,sup.d+jsMath.Typeset.TeX(Cu,size).x_height/4);
+
+    if (!mitem.sub) {
+      sup.y = u;
+      mitem.nuc = jsMath.Box.SetList([box,sup],style,size); delete mitem.sup;
+      return;
+    }
+
+    v = Math.max(v,jsMath.Typeset.TeX(Cd,size).sub2);
+    var t = TeX.default_rule_thickness;
+    if ((u-sup.d) - (sub.h -v) < 4*t) {
+      v = 4*t + sub.h - (u-sup.d);
+      p = (4/5)*TeX.x_height - (u-sup.d);
+      if (p > 0) {u += p; v -= p}
+    }
+    sup.Remeasured(); sub.Remeasured();
+    sup.y = u; sub.y = -v; sup.x = mitem.delta;
+    if (sup.w+sup.x > sub.w)
+      {sup.x -= sub.w; mitem.nuc = jsMath.Box.SetList([box,sub,sup],style,size)} else
+      {sub.x -= (sup.w+sup.x); mitem.nuc = jsMath.Box.SetList([box,sup,sub],style,size)}
+
+    delete mitem.sup; delete mitem.sub;
+  }
+
+});
+
+
+/***************************************************************************/
+
+/*
+ *  The Typeset object handles most of the TeX-specific processing
+ */
+
+jsMath.Typeset = function (mlist) {
+  this.type = 'typeset';
+  this.mlist = mlist;
+}
+
+jsMath.Add(jsMath.Typeset,{
+
+  /*
+   *  The "C-uparrow" style table (TeXbook, p. 441)
+   */
+  upStyle: {
+    D: "S", T: "S",  "D'": "S'", "T'": "S'",
+    S: "SS",  SS: "SS",  "S'": "SS'", "SS'": "SS'"
+  },
+
+  /*
+   *  The "C-downarrow" style table (TeXbook, p. 441)
+   */
+  downStyle: {
+    D: "S'", T: "S'",  "D'": "S'", "T'": "S'",
+    S: "SS'",  SS: "SS'",  "S'": "SS'", "SS'": "SS'"
+  },
+
+  /*
+   *  Get the various styles given the current style
+   *  (see TeXbook, p. 441)
+   */
+  UpStyle: function (style) {return this.upStyle[style]},
+  DownStyle: function (style) {return this.downStyle[style]},
+  PrimeStyle: function (style) {
+    if (style.charAt(style.length-1) == "'") {return style}
+    return style + "'"
+  },
+
+  /*
+   *  A value scaled to the appropriate size for scripts
+   */
+  StyleValue: function (style,v) {
+    if (style == "S" || style == "S'")   {return .7*v}
+    if (style == "SS" || style == "SS'") {return .5*v}
+    return v;
+  },
+  
+  /*
+   *  Return the size associated with a given style and size
+   */
+  StyleSize: function (style,size) {
+    if      (style == "S" || style == "S'")   {size = Math.max(0,size-2)}
+    else if (style == "SS" || style == "SS'") {size = Math.max(0,size-4)}
+    return size;
+  },
+
+  /*
+   *  Return the font parameter table for the given style
+   */
+  TeX: function (style,size) {
+    if      (style == "S" || style == "S'")   {size = Math.max(0,size-2)}
+    else if (style == "SS" || style == "SS'") {size = Math.max(0,size-4)}
+    return jsMath.TeXparams[size];
+  },
+
+
+  /*
+   *  Add the CSS class for the given TeX style
+   */
+  AddStyle: function (style,size,html) {
+    if      (style == "S" || style == "S'")   {size = Math.max(0,size-2)}
+    else if (style == "SS" || style == "SS'") {size = Math.max(0,size-4)}
+    if (size != 4) {html = '<span class="size'+size+'">' + html + '</span>'}
+    return html;
+  },
+
+  /*
+   *  Add the font class, if needed
+   */
+  AddClass: function (tclass,html) {
+    if (tclass != '' && tclass != 'normal') {html = jsMath.HTML.Class(tclass,html)}
+    return html;
+  }
+
+});
+
+
+jsMath.Package(jsMath.Typeset,{
+  
+  /*
+   *  The spacing tables for inter-atom spacing
+   *  (See rule 20, and Chapter 18, p 170)
+   */
+  DTsep: {
+    ord: {op: 1, bin: 2, rel: 3, inner: 1},
+    op:  {ord: 1, op: 1, rel: 3, inner: 1},
+    bin: {ord: 2, op: 2, open: 2, inner: 2},
+    rel: {ord: 3, op: 3, open: 3, inner: 3},
+    open: {},
+    close: {op: 1, bin:2, rel: 3, inner: 1},
+    punct: {ord: 1, op: 1, rel: 1, open: 1, close: 1, punct: 1, inner: 1},
+    inner: {ord: 1, op: 1, bin: 2, rel: 3, open: 1, punct: 1, inner: 1}
+  },
+
+  SSsep: {
+    ord: {op: 1},
+    op:  {ord: 1, op: 1},
+    bin: {},
+    rel: {},
+    open: {},
+    close: {op: 1},
+    punct: {},
+    inner: {op: 1}
+  },
+
+  /*
+   *  The sizes used in the tables above
+   */
+  sepW: ['','thinmuskip','medmuskip','thickmuskip'],
+  
+  
+  /*
+   *  Find the amount of separation to use between two adjacent
+   *  atoms in the given style
+   */
+  GetSeparation: function (l,r,style) {
+    if (l && l.atom && r.atom) {
+      var table = this.DTsep; if (style.charAt(0) == "S") {table = this.SSsep}
+      var row = table[l.type];
+      if (row && row[r.type] != null) {return jsMath.TeX[this.sepW[row[r.type]]]}
+    }
+    return 0;
+  },
+
+  /*
+   *  Typeset an mlist (i.e., turn it into HTML).
+   *  Here, text items of the same class and style are combined
+   *  to reduce the number of <SPAN> tags used (though it is still
+   *  huge).  Spaces are combined, when possible.
+   *  ###  More needs to be done with that.  ###
+   *  The width of the final box is recomputed at the end, since
+   *  the final width is not necessarily the sum of the widths of
+   *  the individual parts (widths are in pixels, but the browsers
+   *  puts pieces together using sub-pixel accuracy).
+   */
+  Typeset: function (style,size) {
+    this.style = style; this.size = size; var unset = -10000
+    this.w = 0; this.mw = 0; this.Mw = 0;
+    this.h = unset; this.d = unset;
+    this.bh = this.h; this.bd = this.d;
+    this.tbuf = ''; this.tx = 0; this.tclass = '';
+    this.cbuf = ''; this.hbuf = ''; this.hx = 0;
+    var mitem = null; var prev; this.x = 0; this.dx = 0;
+
+    for (var i = 0; i < this.mlist.length; i++) {
+      prev = mitem; mitem = this.mlist[i];
+      switch (mitem.type) {
+
+        case 'size':
+          this.FlushClassed();
+          this.size = mitem.size;
+          mitem = prev; // hide this from TeX
+          break;
+
+        case 'style':
+          this.FlushClassed();
+          if (this.style.charAt(this.style.length-1) == "'")
+            {this.style = mitem.style + "'"} else {this.style = mitem.style}
+          mitem = prev; // hide this from TeX
+          break;
+
+        case 'space':
+          if (typeof(mitem.w) == 'object') {
+            if (this.style.charAt(1) == 'S') {mitem.w = .5*mitem.w[0]/18}
+            else if (this.style.charAt(0) == 'S') {mitem.w = .7*mitem.w[0]/18}
+            else {mitem.w = mitem.w[0]/18}
+          }
+          this.dx += mitem.w-0; // mitem.w is sometimes a string?
+          mitem = prev; // hide this from TeX
+          break;
+          
+        case 'html':
+          this.FlushClassed();
+          if (this.hbuf == '') {this.hx = this.x}
+          this.hbuf += mitem.html;
+          mitem = prev; // hide this from TeX
+          break;
+          
+        default:   // atom
+          if (!mitem.atom && mitem.type != 'box') break;
+          mitem.nuc.x += this.dx + this.GetSeparation(prev,mitem,this.style);
+          if (mitem.nuc.x || mitem.nuc.y) mitem.nuc.Styled();
+          this.dx = 0; this.x = this.x + this.w;
+          if (this.x + mitem.nuc.x + mitem.nuc.mw < this.mw) 
+            {this.mw = this.x + mitem.nuc.x + mitem.nuc.mw}
+          if (this.w + mitem.nuc.x + mitem.nuc.Mw > this.Mw)
+            {this.Mw = this.w + mitem.nuc.x + mitem.nuc.Mw}
+          this.w += mitem.nuc.w + mitem.nuc.x;
+          if (mitem.nuc.format == 'text') {
+            if (this.tclass != mitem.nuc.tclass && this.tclass != '') this.FlushText();
+            if (this.tbuf == '' && this.cbuf == '') {this.tx = this.x}
+            this.tbuf += mitem.nuc.html; this.tclass = mitem.nuc.tclass;
+          } else  {
+            this.FlushClassed();
+            if (mitem.nuc.x || mitem.nuc.y) this.Place(mitem.nuc);
+            if (this.hbuf == '') {this.hx = this.x}
+            this.hbuf += mitem.nuc.html;
+          }
+          this.h = Math.max(this.h,mitem.nuc.h+mitem.nuc.y); this.bh = Math.max(this.bh,mitem.nuc.bh);
+          this.d = Math.max(this.d,mitem.nuc.d-mitem.nuc.y); this.bd = Math.max(this.bd,mitem.nuc.bd);
+          break;
+      }
+    }
+
+    this.FlushClassed(); // make sure scaling is included
+    if (this.dx) {
+      this.hbuf += jsMath.HTML.Spacer(this.dx); this.w += this.dx;
+      if (this.w > this.Mw) {this.Mw = this.w}
+      if (this.w < this.mw) {this.mw = this.w}
+    }
+    if (this.hbuf == '') {return jsMath.Box.Null()}
+    if (this.h == unset) {this.h = 0}
+    if (this.d == unset) {this.d = 0}
+    var box = new jsMath.Box('html',this.hbuf,this.w,this.h,this.d);
+    box.bh = this.bh; box.bd = this.bd;
+    box.mw = this.mw; box.Mw = this.Mw;
+    return box;
+  },
+
+  /*
+   *  Add the font to the buffered text and move it to the
+   *  classed-text buffer.
+   */
+  FlushText: function () {
+    if (this.tbuf == '') return;
+    this.cbuf += jsMath.Typeset.AddClass(this.tclass,this.tbuf);
+    this.tbuf = ''; this.tclass = '';
+  },
+
+  /*
+   *  Add the script or scriptscript style to the text and
+   *  move it to the HTML buffer
+   */
+  FlushClassed: function () {
+    this.FlushText();
+    if (this.cbuf == '') return;
+    if (this.hbuf == '') {this.hx = this.tx}
+    this.hbuf += jsMath.Typeset.AddStyle(this.style,this.size,this.cbuf);
+    this.cbuf = '';
+  },
+
+  /*
+   *  Add a <SPAN> to position an item's HTML, and
+   *  adjust the item's height and depth.
+   *  (This may be replaced buy one of the following browser-specific
+   *   versions by Browser.Init().)
+   */
+  Place: function (item) {
+    var html = '<span style="position: relative;';
+    if (item.x) {html += ' margin-left:'+jsMath.HTML.Em(item.x)+';'}
+    if (item.y) {html += ' top:'+jsMath.HTML.Em(-item.y)+';'}
+    item.html = html + '">' + item.html + '</span>';
+    item.h += item.y; item.d -= item.y;
+    item.x = 0; item.y = 0;
+  },
+  
+  /*
+   *  For MSIE on Windows, backspacing must be done in a separate
+   *  <SPAN>, otherwise the contents will be clipped.  Netscape
+   *  also doesn't combine vertical and horizontal spacing well.
+   *  Here, the horizontal and vertical spacing are done separately.
+   */
+
+  PlaceSeparateSkips: function (item) {
+    if (item.y) {
+      var rw = item.Mw - item.w; var lw = item.mw;
+      var W = item.Mw - item.mw;
+      item.html = 
+        jsMath.HTML.Spacer(lw-rw) +
+        '<span style="position: relative; '
+            + 'top:'+jsMath.HTML.Em(-item.y)+';'
+            + 'left:'+jsMath.HTML.Em(rw)+'; width:'+jsMath.HTML.Em(W)+';">' +
+          jsMath.HTML.Spacer(-lw) +
+          item.html +
+          jsMath.HTML.Spacer(rw) + 
+        '</span>'
+    }
+    if (item.x) {item.html = jsMath.HTML.Spacer(item.x) + item.html}
+    item.h += item.y; item.d -= item.y;
+    item.x = 0; item.y = 0;
+  }
+
+});
+
+
+
+/***************************************************************************/
+
+/*
+ *  The Parse object handles the parsing of the TeX input string, and creates
+ *  the mList to be typeset by the Typeset object above.
+ */
+
+jsMath.Parse = function (s,font,size,style) {
+  var parse = new jsMath.Parser(s,font,size,style);
+  parse.Parse();
+  return parse;
+}
+
+jsMath.Parser = function (s,font,size,style) {
+  this.string = s; this.i = 0;
+  this.mlist = new jsMath.mList(null,font,size,style);
+}
+
+jsMath.Package(jsMath.Parser,{
+  
+  // special characters
+  cmd:   '\\',
+  open:  '{',
+  close: '}',
+  
+  // patterns for letters and numbers
+  letter:  /[a-z]/i,
+  number:  /[0-9]/,
+  //  pattern for macros to ^ and _ that should be read with arguments
+  scriptargs: /^((math|text)..|mathcal|[hm]box)$/,
+  
+  //  the \mathchar definitions (see Appendix B of the TeXbook).
+  mathchar: {
+    '!': [5,0,0x21],
+    '(': [4,0,0x28],
+    ')': [5,0,0x29],
+    '*': [2,2,0x03], // \ast
+    '+': [2,0,0x2B],
+    ',': [6,1,0x3B],
+    '-': [2,2,0x00],
+    '.': [0,1,0x3A],
+    '/': [0,1,0x3D],
+    ':': [3,0,0x3A],
+    ';': [6,0,0x3B],
+    '<': [3,1,0x3C],
+    '=': [3,0,0x3D],
+    '>': [3,1,0x3E],
+    '?': [5,0,0x3F],
+    '[': [4,0,0x5B],
+    ']': [5,0,0x5D],
+//  '{': [4,2,0x66],
+//  '}': [5,2,0x67],
+    '|': [0,2,0x6A]
+  },
+
+  //  handle special \catcode characters
+  special: {
+    '~':   'Tilde',
+    '^':   'HandleSuperscript',
+    '_':   'HandleSubscript',
+    ' ':   'Space',
+    '\01': 'Space',
+    "\t":  'Space',
+    "\r":  'Space',
+    "\n":  'Space',
+    "'":   'Prime',
+    '%':   'HandleComment',
+    '&':   'HandleEntry',
+    '#':   'Hash'
+  },
+
+  // the \mathchardef table (see Appendix B of the TeXbook).
+  mathchardef: {
+  // brace parts
+    braceld:      [0,3,0x7A],
+    bracerd:      [0,3,0x7B],
+    bracelu:      [0,3,0x7C],
+    braceru:      [0,3,0x7D],
+
+  // Greek letters
+    alpha:        [0,1,0x0B],
+    beta:         [0,1,0x0C],
+    gamma:        [0,1,0x0D],
+    delta:        [0,1,0x0E],
+    epsilon:      [0,1,0x0F],
+    zeta:         [0,1,0x10],
+    eta:          [0,1,0x11],
+    theta:        [0,1,0x12],
+    iota:         [0,1,0x13],
+    kappa:        [0,1,0x14],
+    lambda:       [0,1,0x15],
+    mu:           [0,1,0x16],
+    nu:           [0,1,0x17],
+    xi:           [0,1,0x18],
+    pi:           [0,1,0x19],
+    rho:          [0,1,0x1A],
+    sigma:        [0,1,0x1B],
+    tau:          [0,1,0x1C],
+    upsilon:      [0,1,0x1D],
+    phi:          [0,1,0x1E],
+    chi:          [0,1,0x1F],
+    psi:          [0,1,0x20],
+    omega:        [0,1,0x21],
+    varepsilon:   [0,1,0x22],
+    vartheta:     [0,1,0x23],
+    varpi:        [0,1,0x24],
+    varrho:       [0,1,0x25],
+    varsigma:     [0,1,0x26],
+    varphi:       [0,1,0x27],
+    
+    Gamma:        [7,0,0x00],
+    Delta:        [7,0,0x01],
+    Theta:        [7,0,0x02],
+    Lambda:       [7,0,0x03],
+    Xi:           [7,0,0x04],
+    Pi:           [7,0,0x05],
+    Sigma:        [7,0,0x06],
+    Upsilon:      [7,0,0x07],
+    Phi:          [7,0,0x08],
+    Psi:          [7,0,0x09],
+    Omega:        [7,0,0x0A],
+
+  // Ord symbols
+    aleph:        [0,2,0x40],
+    imath:        [0,1,0x7B],
+    jmath:        [0,1,0x7C],
+    ell:          [0,1,0x60],
+    wp:           [0,1,0x7D],
+    Re:           [0,2,0x3C],
+    Im:           [0,2,0x3D],
+    partial:      [0,1,0x40],
+    infty:        [0,2,0x31],
+    prime:        [0,2,0x30],
+    emptyset:     [0,2,0x3B],
+    nabla:        [0,2,0x72],
+    surd:         [1,2,0x70],
+    top:          [0,2,0x3E],
+    bot:          [0,2,0x3F],
+    triangle:     [0,2,0x34],
+    forall:       [0,2,0x38],
+    exists:       [0,2,0x39],
+    neg:          [0,2,0x3A],
+    lnot:         [0,2,0x3A],
+    flat:         [0,1,0x5B],
+    natural:      [0,1,0x5C],
+    sharp:        [0,1,0x5D],
+    clubsuit:     [0,2,0x7C],
+    diamondsuit:  [0,2,0x7D],
+    heartsuit:    [0,2,0x7E],
+    spadesuit:    [0,2,0x7F],
+
+  // big ops
+    coprod:      [1,3,0x60],
+    bigvee:      [1,3,0x57],
+    bigwedge:    [1,3,0x56],
+    biguplus:    [1,3,0x55],
+    bigcap:      [1,3,0x54],
+    bigcup:      [1,3,0x53],
+    intop:       [1,3,0x52], 
+    prod:        [1,3,0x51],
+    sum:         [1,3,0x50],
+    bigotimes:   [1,3,0x4E],
+    bigoplus:    [1,3,0x4C],
+    bigodot:     [1,3,0x4A],
+    ointop:      [1,3,0x48],
+    bigsqcup:    [1,3,0x46],
+    smallint:    [1,2,0x73],
+
+  // binary operations
+    triangleleft:      [2,1,0x2F],
+    triangleright:     [2,1,0x2E],
+    bigtriangleup:     [2,2,0x34],
+    bigtriangledown:   [2,2,0x35],
+    wedge:       [2,2,0x5E],
+    land:        [2,2,0x5E],
+    vee:         [2,2,0x5F],
+    lor:         [2,2,0x5F],
+    cap:         [2,2,0x5C],
+    cup:         [2,2,0x5B],
+    ddagger:     [2,2,0x7A],
+    dagger:      [2,2,0x79],
+    sqcap:       [2,2,0x75],
+    sqcup:       [2,2,0x74],
+    uplus:       [2,2,0x5D],
+    amalg:       [2,2,0x71],
+    diamond:     [2,2,0x05],
+    bullet:      [2,2,0x0F],
+    wr:          [2,2,0x6F],
+    div:         [2,2,0x04],
+    odot:        [2,2,0x0C],
+    oslash:      [2,2,0x0B],
+    otimes:      [2,2,0x0A],
+    ominus:      [2,2,0x09],
+    oplus:       [2,2,0x08],
+    mp:          [2,2,0x07],
+    pm:          [2,2,0x06],
+    circ:        [2,2,0x0E],
+    bigcirc:     [2,2,0x0D],
+    setminus:    [2,2,0x6E], // for set difference A\setminus B
+    cdot:        [2,2,0x01],
+    ast:         [2,2,0x03],
+    times:       [2,2,0x02],
+    star:        [2,1,0x3F],
+
+  // Relations
+    propto:      [3,2,0x2F],
+    sqsubseteq:  [3,2,0x76],
+    sqsupseteq:  [3,2,0x77],
+    parallel:    [3,2,0x6B],
+    mid:         [3,2,0x6A],
+    dashv:       [3,2,0x61],
+    vdash:       [3,2,0x60],
+    leq:         [3,2,0x14],
+    le:          [3,2,0x14],
+    geq:         [3,2,0x15],
+    ge:          [3,2,0x15],
+    lt:          [3,1,0x3C],  // extra since < and > are hard
+    gt:          [3,1,0x3E],  //   to get in HTML
+    succ:        [3,2,0x1F],
+    prec:        [3,2,0x1E],
+    approx:      [3,2,0x19],
+    succeq:      [3,2,0x17],
+    preceq:      [3,2,0x16],
+    supset:      [3,2,0x1B],
+    subset:      [3,2,0x1A],
+    supseteq:    [3,2,0x13],
+    subseteq:    [3,2,0x12],
+    'in':        [3,2,0x32],
+    ni:          [3,2,0x33],
+    owns:        [3,2,0x33],
+    gg:          [3,2,0x1D],
+    ll:          [3,2,0x1C],
+    not:         [3,2,0x36],
+    sim:         [3,2,0x18],
+    simeq:       [3,2,0x27],
+    perp:        [3,2,0x3F],
+    equiv:       [3,2,0x11],
+    asymp:       [3,2,0x10],
+    smile:       [3,1,0x5E],
+    frown:       [3,1,0x5F],
+
+  // Arrows
+    Leftrightarrow:   [3,2,0x2C],
+    Leftarrow:        [3,2,0x28],
+    Rightarrow:       [3,2,0x29],
+    leftrightarrow:   [3,2,0x24],
+    leftarrow:        [3,2,0x20],
+    gets:             [3,2,0x20],
+    rightarrow:       [3,2,0x21],
+    to:               [3,2,0x21],
+    mapstochar:       [3,2,0x37],
+    leftharpoonup:    [3,1,0x28],
+    leftharpoondown:  [3,1,0x29],
+    rightharpoonup:   [3,1,0x2A],
+    rightharpoondown: [3,1,0x2B],
+    nearrow:          [3,2,0x25],
+    searrow:          [3,2,0x26],
+    nwarrow:          [3,2,0x2D],
+    swarrow:          [3,2,0x2E],
+
+    minuschar:  [3,2,0x00], // for longmapsto
+    hbarchar:   [0,0,0x16], // for \hbar
+    lhook:      [3,1,0x2C],
+    rhook:      [3,1,0x2D],
+
+    ldotp:      [6,1,0x3A], // ldot as a punctuation mark
+    cdotp:      [6,2,0x01], // cdot as a punctuation mark
+    colon:      [6,0,0x3A], // colon as a punctuation mark
+
+    '#':        [7,0,0x23],
+    '$':        [7,0,0x24],
+    '%':        [7,0,0x25],
+    '&':        [7,0,0x26]
+  },
+  
+  // The delimiter table (see Appendix B of the TeXbook)
+  delimiter: {
+    '(':                [0,0,0x28,3,0x00],
+    ')':                [0,0,0x29,3,0x01],
+    '[':                [0,0,0x5B,3,0x02],
+    ']':                [0,0,0x5D,3,0x03],
+    '<':                [0,2,0x68,3,0x0A],
+    '>':                [0,2,0x69,3,0x0B],
+    '\\lt':             [0,2,0x68,3,0x0A],  // extra since < and > are
+    '\\gt':             [0,2,0x69,3,0x0B],  //  hard to get in HTML
+    '/':                [0,0,0x2F,3,0x0E],
+    '|':                [0,2,0x6A,3,0x0C],
+    '.':                [0,0,0x00,0,0x00],
+    '\\':               [0,2,0x6E,3,0x0F],
+    '\\lmoustache':     [4,3,0x7A,3,0x40],  // top from (, bottom from )
+    '\\rmoustache':     [5,3,0x7B,3,0x41],  // top from ), bottom from (
+    '\\lgroup':         [4,6,0x28,3,0x3A],  // extensible ( with sharper tips
+    '\\rgroup':         [5,6,0x29,3,0x3B],  // extensible ) with sharper tips
+    '\\arrowvert':      [0,2,0x6A,3,0x3C],  // arrow without arrowheads
+    '\\Arrowvert':      [0,2,0x6B,3,0x3D],  // double arrow without arrowheads
+//  '\\bracevert':      [0,7,0x7C,3,0x3E],  // the vertical bar that extends braces
+    '\\bracevert':      [0,2,0x6A,3,0x3E],  // we don't load tt, so use | instead
+    '\\Vert':           [0,2,0x6B,3,0x0D],
+    '\\|':              [0,2,0x6B,3,0x0D],
+    '\\vert':           [0,2,0x6A,3,0x0C],
+    '\\uparrow':        [3,2,0x22,3,0x78],
+    '\\downarrow':      [3,2,0x23,3,0x79],
+    '\\updownarrow':    [3,2,0x6C,3,0x3F],
+    '\\Uparrow':        [3,2,0x2A,3,0x7E],
+    '\\Downarrow':      [3,2,0x2B,3,0x7F],
+    '\\Updownarrow':    [3,2,0x6D,3,0x77],
+    '\\backslash':      [0,2,0x6E,3,0x0F],  // for double coset G\backslash H
+    '\\rangle':         [5,2,0x69,3,0x0B],
+    '\\langle':         [4,2,0x68,3,0x0A],
+    '\\rbrace':         [5,2,0x67,3,0x09],
+    '\\lbrace':         [4,2,0x66,3,0x08],
+    '\\}':              [5,2,0x67,3,0x09],
+    '\\{':              [4,2,0x66,3,0x08],
+    '\\rceil':          [5,2,0x65,3,0x07],
+    '\\lceil':          [4,2,0x64,3,0x06],
+    '\\rfloor':         [5,2,0x63,3,0x05],
+    '\\lfloor':         [4,2,0x62,3,0x04],
+    '\\lbrack':         [0,0,0x5B,3,0x02],
+    '\\rbrack':         [0,0,0x5D,3,0x03]
+  },
+
+  /*
+   *  The basic macros for plain TeX.
+   *
+   *  When the control sequence on the left is called, the JavaScript
+   *  funtion on the right is called, with the name of the control sequence
+   *  as its first parameter (this way, the same function can be called by
+   *  several different control sequences to do similar actions, and the
+   *  function can still tell which TeX command was issued).  If the right
+   *  is an array, the first entry is the routine to call, and the
+   *  remaining entries in the array are parameters to pass to the function
+   *  as the second parameter (they are in an array reference).
+   *  
+   *  Note:  TeX macros as defined by the user are discussed below.
+   */
+  macros: {
+    displaystyle:      ['HandleStyle','D'],
+    textstyle:         ['HandleStyle','T'],
+    scriptstyle:       ['HandleStyle','S'],
+    scriptscriptstyle: ['HandleStyle','SS'],
+    
+    rm:                ['HandleFont',0],
+    mit:               ['HandleFont',1],
+    oldstyle:          ['HandleFont',1],
+    cal:               ['HandleFont',2],
+    it:                ['HandleFont',4],
+    bf:                ['HandleFont',6],
+    
+    font:              ['Extension','font'],
+    
+    left:              'HandleLeft',
+    right:             'HandleRight',
+
+    arcsin:       ['NamedOp',0],
+    arccos:       ['NamedOp',0],
+    arctan:       ['NamedOp',0],
+    arg:          ['NamedOp',0],
+    cos:          ['NamedOp',0],
+    cosh:         ['NamedOp',0],
+    cot:          ['NamedOp',0],
+    coth:         ['NamedOp',0],
+    csc:          ['NamedOp',0],
+    deg:          ['NamedOp',0],
+    det:           'NamedOp',
+    dim:          ['NamedOp',0],
+    exp:          ['NamedOp',0],
+    gcd:           'NamedOp',
+    hom:          ['NamedOp',0],
+    inf:           'NamedOp',
+    ker:          ['NamedOp',0],
+    lg:           ['NamedOp',0],
+    lim:           'NamedOp',
+    liminf:       ['NamedOp',null,'lim<span style="margin-left: '+1/6+'em"></span>inf'],
+    limsup:       ['NamedOp',null,'lim<span style="margin-left: '+1/6+'em"></span>sup'],
+    ln:           ['NamedOp',0],
+    log:          ['NamedOp',0],
+    max:           'NamedOp',
+    min:           'NamedOp',
+    Pr:            'NamedOp',
+    sec:          ['NamedOp',0],
+    sin:          ['NamedOp',0],
+    sinh:         ['NamedOp',0],
+    sup:           'NamedOp',
+    tan:          ['NamedOp',0],
+    tanh:         ['NamedOp',0],
+
+    vcenter:        ['HandleAtom','vcenter'],
+    overline:       ['HandleAtom','overline'],
+    underline:      ['HandleAtom','underline'],
+    over:            'HandleOver',
+    overwithdelims:  'HandleOver',
+    atop:            'HandleOver',
+    atopwithdelims:  'HandleOver',
+    above:           'HandleOver',
+    abovewithdelims: 'HandleOver',
+    brace:           ['HandleOver','\\{','\\}'],
+    brack:           ['HandleOver','[',']'],
+    choose:          ['HandleOver','(',')'],
+    
+    overbrace:       ['Extension','leaders'],
+    underbrace:      ['Extension','leaders'],
+    overrightarrow:  ['Extension','leaders'],
+    underrightarrow: ['Extension','leaders'],
+    overleftarrow:   ['Extension','leaders'],
+    underleftarrow:  ['Extension','leaders'],
+    overleftrightarrow:  ['Extension','leaders'],
+    underleftrightarrow: ['Extension','leaders'],
+    overset:         ['Extension','underset-overset'],
+    underset:        ['Extension','underset-overset'],
+
+    llap:            'HandleLap',
+    rlap:            'HandleLap',
+    ulap:            'HandleLap',
+    dlap:            'HandleLap',
+    raise:           'RaiseLower',
+    lower:           'RaiseLower',
+    moveleft:        'MoveLeftRight',
+    moveright:       'MoveLeftRight',
+
+    frac:            'Frac',
+    root:            'Root',
+    sqrt:            'Sqrt',
+
+    //  TeX substitution macros
+    hbar:               ['Macro','\\hbarchar\\kern-.5em h'],
+    ne:                 ['Macro','\\not='],
+    neq:                ['Macro','\\not='],
+    notin:              ['Macro','\\mathrel{\\rlap{\\kern2mu/}}\\in'],
+    cong:               ['Macro','\\mathrel{\\lower2mu{\\mathrel{{\\rlap{=}\\raise6mu\\sim}}}}'],
+    bmod:               ['Macro','\\mathbin{\\rm mod}'],
+    pmod:               ['Macro','\\kern 18mu ({\\rm mod}\\,\\,#1)',1],
+    'int':              ['Macro','\\intop\\nolimits'],
+    oint:               ['Macro','\\ointop\\nolimits'],
+    doteq:              ['Macro','\\buildrel\\textstyle.\\over='],
+    ldots:              ['Macro','\\mathinner{\\ldotp\\ldotp\\ldotp}'],
+    cdots:              ['Macro','\\mathinner{\\cdotp\\cdotp\\cdotp}'],
+    vdots:              ['Macro','\\mathinner{\\rlap{\\raise8pt{.\\rule 0pt 6pt 0pt}}\\rlap{\\raise4pt{.}}.}'],
+    ddots:              ['Macro','\\mathinner{\\kern1mu\\raise7pt{\\rule 0pt 7pt 0pt .}\\kern2mu\\raise4pt{.}\\kern2mu\\raise1pt{.}\\kern1mu}'],
+    joinrel:            ['Macro','\\mathrel{\\kern-4mu}'],
+    relbar:             ['Macro','\\mathrel{\\smash-}'], // \smash, because - has the same height as +
+    Relbar:             ['Macro','\\mathrel='],
+    bowtie:             ['Macro','\\mathrel\\triangleright\\joinrel\\mathrel\\triangleleft'],
+    models:             ['Macro','\\mathrel|\\joinrel='],
+    mapsto:             ['Macro','\\mathrel{\\mapstochar\\rightarrow}'],
+    rightleftharpoons:  ['Macro','\\vcenter{\\mathrel{\\rlap{\\raise3mu{\\rightharpoonup}}}\\leftharpoondown}'],
+    hookrightarrow:     ['Macro','\\lhook\\joinrel\\rightarrow'],
+    hookleftarrow:      ['Macro','\\leftarrow\\joinrel\\rhook'],
+    Longrightarrow:     ['Macro','\\Relbar\\joinrel\\Rightarrow'],
+    longrightarrow:     ['Macro','\\relbar\\joinrel\\rightarrow'],
+    longleftarrow:      ['Macro','\\leftarrow\\joinrel\\relbar'],
+    Longleftarrow:      ['Macro','\\Leftarrow\\joinrel\\Relbar'],
+    longmapsto:         ['Macro','\\mathrel{\\mapstochar\\minuschar\\joinrel\\rightarrow}'],
+    longleftrightarrow: ['Macro','\\leftarrow\\joinrel\\rightarrow'],
+    Longleftrightarrow: ['Macro','\\Leftarrow\\joinrel\\Rightarrow'],
+    iff:                ['Macro','\\;\\Longleftrightarrow\\;'],
+    mathcal:            ['Macro','{\\cal #1}',1],
+    mathrm:             ['Macro','{\\rm #1}',1],
+    mathbf:             ['Macro','{\\bf #1}',1],
+    mathbb:             ['Macro','{\\bf #1}',1],
+    mathit:             ['Macro','{\\it #1}',1],
+    textrm:             ['Macro','\\mathord{\\hbox{#1}}',1],
+    textit:             ['Macro','\\mathord{\\class{textit}{\\hbox{#1}}}',1],
+    textbf:             ['Macro','\\mathord{\\class{textbf}{\\hbox{#1}}}',1],
+    pmb:                ['Macro','\\rlap{#1}\\kern1px{#1}',1],
+
+    TeX:                ['Macro','T\\kern-.1667em\\lower.5ex{E}\\kern-.125em X'],
+
+    limits:       ['Limits',1],
+    nolimits:     ['Limits',0],
+
+    ',':          ['Spacer',1/6],
+    ':':          ['Spacer',1/6],  // for LaTeX
+    '>':          ['Spacer',2/9],
+    ';':          ['Spacer',5/18],
+    '!':          ['Spacer',-1/6],
+    enspace:      ['Spacer',1/2],
+    quad:         ['Spacer',1],
+    qquad:        ['Spacer',2],
+    thinspace:    ['Spacer',1/6],
+    negthinspace: ['Spacer',-1/6],
+    
+    hskip:         'Hskip',
+    kern:          'Hskip',
+    rule:          ['Rule','colored'],
+    space:         ['Rule','blank'],
+    
+    big:        ['MakeBig','ord',0.85],
+    Big:        ['MakeBig','ord',1.15],
+    bigg:       ['MakeBig','ord',1.45],
+    Bigg:       ['MakeBig','ord',1.75],
+    bigl:       ['MakeBig','open',0.85],
+    Bigl:       ['MakeBig','open',1.15],
+    biggl:      ['MakeBig','open',1.45],
+    Biggl:      ['MakeBig','open',1.75],
+    bigr:       ['MakeBig','close',0.85],
+    Bigr:       ['MakeBig','close',1.15],
+    biggr:      ['MakeBig','close',1.45],
+    Biggr:      ['MakeBig','close',1.75],
+    bigm:       ['MakeBig','rel',0.85],
+    Bigm:       ['MakeBig','rel',1.15],
+    biggm:      ['MakeBig','rel',1.45],
+    Biggm:      ['MakeBig','rel',1.75],
+    
+    mathord:    ['HandleAtom','ord'],
+    mathop:     ['HandleAtom','op'],
+    mathopen:   ['HandleAtom','open'],
+    mathclose:  ['HandleAtom','close'],
+    mathbin:    ['HandleAtom','bin'],
+    mathrel:    ['HandleAtom','rel'],
+    mathpunct:  ['HandleAtom','punct'],
+    mathinner:  ['HandleAtom','inner'],
+    
+    mathchoice: ['Extension','mathchoice'],
+    buildrel:   'BuildRel',
+    
+    hbox:       'HBox',
+    text:       'HBox',
+    mbox:       'HBox',
+    fbox:       ['Extension','fbox'],
+
+    strut:      'Strut',
+    mathstrut:  ['Macro','\\vphantom{(}'],
+    phantom:    ['Phantom',1,1],
+    vphantom:   ['Phantom',1,0],
+    hphantom:   ['Phantom',0,1],
+    smash:      'Smash',
+    
+    acute:      ['MathAccent', [7,0,0x13]],
+    grave:      ['MathAccent', [7,0,0x12]],
+    ddot:       ['MathAccent', [7,0,0x7F]],
+    tilde:      ['MathAccent', [7,0,0x7E]],
+    bar:        ['MathAccent', [7,0,0x16]],
+    breve:      ['MathAccent', [7,0,0x15]],
+    check:      ['MathAccent', [7,0,0x14]],
+    hat:        ['MathAccent', [7,0,0x5E]],
+    vec:        ['MathAccent', [0,1,0x7E]],
+    dot:        ['MathAccent', [7,0,0x5F]],
+    widetilde:  ['MathAccent', [0,3,0x65]],
+    widehat:    ['MathAccent', [0,3,0x62]],
+
+    '_':        ['Replace','ord','_','normal',-.4,.1],
+    ' ':        ['Replace','ord','&nbsp;','normal'],
+    angle:      ['Replace','ord','&#x2220;','normal'],
+        
+    matrix:     'Matrix',
+    array:      'Matrix',  // ### still need to do alignment options ###
+    pmatrix:    ['Matrix','(',')','c'],
+    cases:      ['Matrix','\\{','.',['l','l'],null,2],
+    eqalign:    ['Matrix',null,null,['r','l'],[5/18],3,'D'],
+    displaylines: ['Matrix',null,null,['c'],null,3,'D'],
+    cr:         'HandleRow',
+    '\\':       'HandleRow',
+    newline:    'HandleRow',
+    noalign:    'HandleNoAlign',
+    eqalignno:  ['Matrix',null,null,['r','l','r'],[5/8,3],3,'D'],
+    leqalignno: ['Matrix',null,null,['r','l','r'],[5/8,3],3,'D'],
+    
+    //  LaTeX
+    begin:      'Begin',
+    end:        'End',
+    tiny:       ['HandleSize',0],
+    Tiny:       ['HandleSize',1],  // non-standard
+    scriptsize: ['HandleSize',2],
+    small:      ['HandleSize',3],
+    normalsize: ['HandleSize',4],
+    large:      ['HandleSize',5],
+    Large:      ['HandleSize',6],
+    LARGE:      ['HandleSize',7],
+    huge:       ['HandleSize',8],
+    Huge:       ['HandleSize',9],
+    dots:       ['Macro','\\ldots'],
+    
+    newcommand:     ['Extension','newcommand'],
+    newenvironment: ['Extension','newcommand'],
+    def:            ['Extension','newcommand'],
+
+    //  Extensions to TeX
+    color:      ['Extension','HTML'],
+    href:       ['Extension','HTML'],
+    'class':    ['Extension','HTML'],
+    style:      ['Extension','HTML'],
+    cssId:      ['Extension','HTML'],
+    unicode:    ['Extension','HTML'],
+    bbox:       ['Extension','bbox'],
+    
+    require:    'Require',
+    
+    //  debugging and test routines
+    'char':     'Char'
+  },
+  
+  /*
+   *  LaTeX environments
+   */
+  environments: {
+    array:        'Array',
+    matrix:       ['Array',null,null,'c'],
+    pmatrix:      ['Array','(',')','c'],
+    bmatrix:      ['Array','[',']','c'],
+    Bmatrix:      ['Array','\\{','\\}','c'],
+    vmatrix:      ['Array','\\vert','\\vert','c'],
+    Vmatrix:      ['Array','\\Vert','\\Vert','c'],
+    cases:        ['Array','\\{','.','ll',null,2],
+    eqnarray:     ['Array',null,null,'rcl',[5/18,5/18],3,'D'],
+    equation:     'Equation',
+    'equation*':  'Equation',
+
+    align:        ['Extension','AMSmath'],
+    'align*':     ['Extension','AMSmath'],
+    aligned:      ['Extension','AMSmath'],
+    multline:     ['Extension','AMSmath'],
+    'multline*':  ['Extension','AMSmath'],
+    split:        ['Extension','AMSmath'],
+    gather:       ['Extension','AMSmath'],
+    'gather*':    ['Extension','AMSmath'],
+    gathered:     ['Extension','AMSmath']
+  },
+
+
+  /***************************************************************************/
+
+  /*
+   *  Add special characters to list above.  (This makes it possible
+   *  to define them in a variable that the user can change.)
+   */
+  AddSpecial: function (obj) {
+    for (var id in obj) {
+      jsMath.Parser.prototype.special[jsMath.Parser.prototype[id]] = obj[id];
+    }
+  },
+
+  /*
+   *  Throw an error
+   */
+  Error: function (s) {
+    this.i = this.string.length;
+    if (s.error) {this.error = s.error} else {
+      if (!this.error) {this.error = s}
+    }
+  },
+
+  /***************************************************************************/
+
+  /*
+   *  Check if the next character is a space
+   */
+  nextIsSpace: function () {
+    return this.string.charAt(this.i) == ' ';
+  },
+  
+  /*
+   *  Trim spaces from a string
+   */
+  trimSpaces: function (text) {
+    if (typeof(text) != 'string') {return text}
+    return text.replace(/^\s+|\s+$/g,'');
+  },
+
+  /*
+   *  Parse a substring to get its mList, and return it.
+   *  Check that no errors occured
+   */
+  Process: function (arg) {
+    var data = this.mlist.data;
+    arg = jsMath.Parse(arg,data.font,data.size,data.style);
+      if (arg.error) {this.Error(arg); return null}
+    if (arg.mlist.Length() == 0) {return null}
+    if (arg.mlist.Length() == 1) {
+      var atom = arg.mlist.Last();
+      if (atom.atom && atom.type == 'ord' && atom.nuc &&
+         !atom.sub && !atom.sup && (atom.nuc.type == 'text' || atom.nuc.type == 'TeX'))
+             {return atom.nuc}
+    }
+    return {type: 'mlist', mlist: arg.mlist};
+  },
+
+  /*
+   *  Get and return a control-sequence name from the TeX string
+   */
+  GetCommand: function () {
+    var letter = /^([a-z]+|.) ?/i;
+    var cmd = letter.exec(this.string.slice(this.i));
+    if (cmd) {this.i += cmd[1].length; return cmd[1]}
+    this.i++; return " ";
+  },
+
+  /*
+   *  Get and return a TeX argument (either a single character or control sequence,
+   *  or the contents of the next set of braces).
+   */
+  GetArgument: function (name,noneOK) {
+    while (this.nextIsSpace()) {this.i++}
+    if (this.i >= this.string.length) {if (!noneOK) this.Error("Missing argument for "+name); return null}
+    if (this.string.charAt(this.i) == this.close) {if (!noneOK) this.Error("Extra close brace"); return null}
+    if (this.string.charAt(this.i) == this.cmd) {this.i++; return this.cmd+this.GetCommand()}
+    if (this.string.charAt(this.i) != this.open) {return this.string.charAt(this.i++)}
+    var j = ++this.i; var pcount = 1; var c = '';
+    while (this.i < this.string.length) {
+      c = this.string.charAt(this.i++);
+      if (c == this.cmd) {this.i++}
+      else if (c == this.open) {pcount++}
+      else if (c == this.close) {
+        if (pcount == 0) {this.Error("Extra close brace"); return null}
+        if (--pcount == 0) {return this.string.slice(j,this.i-1)}
+      }
+    }
+    this.Error("Missing close brace");
+    return null;
+  },
+
+  /*
+   *  Get an argument and process it into an mList
+   */
+  ProcessArg: function (name) {
+    var arg = this.GetArgument(name); if (this.error) {return null}
+    return this.Process(arg);
+  },
+  
+  /*
+   *  Get and process an argument for a super- or subscript.
+   *  (read extra args for \frac, \sqrt, \mathrm, etc.)
+   *  This handles these macros as special cases, so is really
+   *  rather a hack.  A more general method for indicating
+   *  how to handle macros in scripts needs to be developed.
+   */
+  ProcessScriptArg: function (name) {
+    var arg = this.GetArgument(name); if (this.error) {return null}
+    if (arg.charAt(0) == this.cmd) {
+      var csname = arg.substr(1);
+      if (csname == "frac") {
+        arg += '{'+this.GetArgument(csname)+'}'; if (this.error) {return null}
+        arg += '{'+this.GetArgument(csname)+'}'; if (this.error) {return null}
+      } else if (csname == "sqrt") {
+        arg += '['+this.GetBrackets(csname)+']'; if (this.error) {return null}
+        arg += '{'+this.GetArgument(csname)+'}'; if (this.error) {return null}
+      } else if (csname.match(this.scriptargs)) {
+        arg += '{'+this.GetArgument(csname)+'}'; if (this.error) {return null}
+      }
+    }
+    return this.Process(arg);
+  },
+
+  /*
+   *  Get the name of a delimiter (check it in the delimiter list).
+   */
+  GetDelimiter: function (name) {
+    while (this.nextIsSpace()) {this.i++}
+    var c = this.string.charAt(this.i);
+    if (this.i < this.string.length) {
+      this.i++;
+      if (c == this.cmd) {c = '\\'+this.GetCommand(name); if (this.error) return null}
+      if (this.delimiter[c] != null) {return this.delimiter[c]}
+    }
+    this.Error("Missing or unrecognized delimiter for "+name);
+    return null;
+  },
+  
+  /*
+   *  Get a dimension (including its units).
+   *  Convert the dimen to em's, except for mu's, which must be
+   *  converted when typeset.
+   */
+  GetDimen: function (name,nomu) {
+    var rest; var advance = 0;
+    if (this.nextIsSpace()) {this.i++}
+    if (this.string.charAt(this.i) == '{') {
+      rest = this.GetArgument(name);
+    } else {
+      rest = this.string.slice(this.i);
+      advance = 1;
+    }
+    return this.ParseDimen(rest,name,advance,nomu);
+  },
+  
+  ParseDimen: function (dimen,name,advance,nomu) {
+    var match = dimen.match(/^\s*([-+]?(\.\d+|\d+(\.\d*)?))(pt|em|ex|mu|px)/);
+    if (!match) {this.Error("Missing dimension or its units for "+name); return null}
+    if (advance) {
+      this.i += match[0].length;
+      if (this.nextIsSpace()) {this.i++}
+    }
+    var d = match[1]-0;
+    if (match[4] == 'px') {d /= jsMath.em}
+    else if (match[4] == 'pt') {d /= 10}
+    else if (match[4] == 'ex') {d *= jsMath.TeX.x_height}
+    else if (match[4] == 'mu') {if (nomu) {d = d/18} else {d = [d,'mu']}}
+    return d;
+  },
+
+  /*
+   *  Get the next non-space character
+   */
+  GetNext: function () {
+    while (this.nextIsSpace()) {this.i++}
+    return this.string.charAt(this.i);
+  },
+  
+  /*
+   *  Get an optional LaTeX argument in brackets
+   */
+  GetBrackets: function (name) {
+    var c = this.GetNext(); if (c != '[') return '';
+    var start = ++this.i; var pcount = 0;
+    while (this.i < this.string.length) {
+      c = this.string.charAt(this.i++);
+      if (c == '{') {pcount++}
+      else if (c == '}') {
+        if (pcount == 0)
+          {this.Error("Extra close brace while looking for ']'"); return null}
+        pcount --;
+      } else if (c == this.cmd) {
+        this.i++;
+      } else if (c == ']') {
+        if (pcount == 0) {return this.string.slice(start,this.i-1)}
+      }
+    }
+    this.Error("Couldn't find closing ']' for argument to "+this.cmd+name);
+    return null;
+  },
+  
+  /*
+   *  Get everything up to the given control sequence name (token)
+   */
+  GetUpto: function (name,token) {
+    while (this.nextIsSpace()) {this.i++}
+    var start = this.i; var pcount = 0;
+    while (this.i < this.string.length) {
+      var c = this.string.charAt(this.i++);
+      if (c == '{') {pcount++}
+      else if (c == '}') {
+        if (pcount == 0)
+          {this.Error("Extra close brace while looking for "+this.cmd+token); return null}
+        pcount --;
+      } else if (c == this.cmd) {
+        // really need separate counter for begin/end
+        // and it should really be a stack (new pcount for each begin)
+        if (this.string.slice(this.i,this.i+5) == "begin") {pcount++; this.i+=4}
+        else if (this.string.slice(this.i,this.i+3) == "end") {
+          if (pcount > 0) {pcount--; this.i += 2}
+        }
+        if (pcount == 0)  {
+          if (this.string.slice(this.i,this.i+token.length) == token) {
+            c = this.string.charAt(this.i+token.length);
+            if (c.match(/[^a-z]/i) || !token.match(/[a-z]/i)) {
+              var arg = this.string.slice(start,this.i-1);
+              this.i += token.length;
+              return arg;
+            }
+          }
+        }
+        this.i++;
+      }
+    }
+    this.Error("Couldn't find "+this.cmd+token+" for "+name);
+    return null;
+  },
+
+  /*
+   *  Get a parameter delimited by a control sequence, and
+   *  process it to get its mlist
+   */
+  ProcessUpto: function (name,token) {
+    var arg = this.GetUpto(name,token); if (this.error) return null;
+    return this.Process(arg);
+  },
+
+  /*
+   *  Get everything up to \end{env}
+   */
+  GetEnd: function (env) {
+    var body = ''; var name = '';
+    while (name != env) {
+      body += this.GetUpto('begin{'+env+'}','end'); if (this.error) return null;
+      name = this.GetArgument(this.cmd+'end'); if (this.error) return null;
+    }
+    return body;
+  },
+  
+
+  /***************************************************************************/
+
+
+  /*
+   *  Ignore spaces
+   */
+  Space: function () {},
+
+  /*
+   *  Collect together any primes and convert them to a superscript
+   */
+  Prime: function (c) {
+    var base = this.mlist.Last();
+    if (base == null || (!base.atom && base.type != 'box' && base.type != 'frac'))
+       {base = this.mlist.Add(jsMath.mItem.Atom('ord',{type:null}))}
+    if (base.sup) {this.Error("Prime causes double exponent: use braces to clarify"); return}
+    var sup = '';
+    while (c == "'") {sup += this.cmd+'prime'; c = this.GetNext(); if (c == "'") {this.i++}}
+    base.sup = this.Process(sup);
+    base.sup.isPrime = 1;
+  },
+
+  /*
+   *  Raise or lower its parameter by a given amount
+   *  @@@ Note that this is different from TeX, which requires an \hbox @@@
+   *  ### make this work with mu's ###
+   */
+  RaiseLower: function (name) {
+    var h = this.GetDimen(this.cmd+name,1); if (this.error) return;
+    var box = this.ProcessScriptArg(this.cmd+name); if (this.error) return;
+    if (name == 'lower') {h = -h}
+    this.mlist.Add(new jsMath.mItem('raise',{nuc: box, raise: h}));
+  },
+  
+  /*
+   *  Shift an expression to the right or left
+   *  @@@ Note that this is different from TeX, which requires a \vbox @@@
+   *  ### make this work with mu's ###
+   */
+  MoveLeftRight: function (name) {
+    var x = this.GetDimen(this.cmd+name,1); if (this.error) return;
+    var box = this.ProcessArg(this.cmd+name); if (this.error) return;
+    if (name == 'moveleft') {x = -x}
+    this.mlist.Add(jsMath.mItem.Space(x));
+    this.mlist.Add(jsMath.mItem.Atom('ord',box));
+    this.mlist.Add(jsMath.mItem.Space(-x));
+  },
+
+  /*
+   *  Load an extension if it has not already been loaded
+   */
+  Require: function (name) {
+    var file = this.GetArgument(this.cmd+name); if (this.error) return;
+    file = jsMath.Extension.URL(file);
+    if (jsMath.Setup.loaded[file]) return;
+    this.Extension(null,[file]);
+  },
+  
+  /*
+   *  Load an extension file and restart processing the math
+   */
+  Extension: function (name,data) {
+    jsMath.Translate.restart = 1;
+    if (name != null) {delete jsMath.Parser.prototype[data[1]||'macros'][name]}
+    jsMath.Extension.Require(data[0],jsMath.Translate.asynchronous);
+    throw "restart";
+  },
+  
+  /*
+   *  Implements \frac{num}{den}
+   */
+  Frac: function (name) {
+    var num = this.ProcessArg(this.cmd+name); if (this.error) return;
+    var den = this.ProcessArg(this.cmd+name); if (this.error) return;
+    this.mlist.Add(jsMath.mItem.Fraction('over',num,den));
+  },
+  
+  /*
+   *  Implements \sqrt[n]{...}
+   */
+  Sqrt: function (name) {
+    var n = this.GetBrackets(this.cmd+name); if (this.error) return;
+    var arg = this.ProcessArg(this.cmd+name); if (this.error) return;
+    var box = jsMath.mItem.Atom('radical',arg);
+    if (n != '') {box.root = this.Process(n); if (this.error) return}
+    this.mlist.Add(box);
+  },
+
+  /*
+   *  Implements \root...\of{...}
+   */
+  Root: function (name) {
+    var n = this.ProcessUpto(this.cmd+name,'of'); if (this.error) return;
+    var arg = this.ProcessArg(this.cmd+name); if (this.error) return;
+    var box = jsMath.mItem.Atom('radical',arg);
+    box.root = n; this.mlist.Add(box);
+  },
+  
+
+  /*
+   *  Implements \buildrel...\over{...}
+   */
+  BuildRel: function (name) {
+    var top = this.ProcessUpto(this.cmd+name,'over'); if (this.error) return;
+    var bot = this.ProcessArg(this.cmd+name); if (this.error) return;
+    var op = jsMath.mItem.Atom('op',bot);
+    op.limits = 1; op.sup = top;
+    this.mlist.Add(op);
+  },
+
+  /*
+   *  Create a delimiter of the type and size specified in the parameters
+   */
+  MakeBig: function (name,data) {
+    var type = data[0]; var h = data[1] * jsMath.p_height;
+    var delim = this.GetDelimiter(this.cmd+name); if (this.error) return;
+    this.mlist.Add(jsMath.mItem.Atom(type,jsMath.Box.Delimiter(h,delim,'T')));
+  },
+  
+  /*
+   *  Insert the specified character in the given font.
+   *  (Try to load the font if it is not already available.)
+   */
+  Char: function (name) {
+    var font = this.GetArgument(this.cmd+name); if (this.error) return;
+    var n = this.GetArgument(this.cmd+name); if (this.error) return;
+    if (!jsMath.TeX[font]) {
+      jsMath.TeX[font] = [];
+      this.Extension(null,[jsMath.Font.URL(font)]);
+    } else {
+      this.mlist.Add(jsMath.mItem.Typeset(jsMath.Box.TeX(n-0,font,'T',this.mlist.data.size)));
+    }
+  },
+  
+  /*
+   *  Create an array or matrix.
+   */
+  Matrix: function (name,delim) {
+    var data = this.mlist.data;
+    var arg = this.GetArgument(this.cmd+name); if (this.error) return;
+    var parse = new jsMath.Parser(arg+this.cmd+'\\',null,data.size,delim[5] || 'T');
+    parse.matrix = name; parse.row = []; parse.table = []; parse.rspacing = [];
+    parse.Parse(); if (parse.error) {this.Error(parse); return}
+    parse.HandleRow(name,1);  // be sure the last row is recorded
+    var box = jsMath.Box.Layout(data.size,parse.table,delim[2]||null,delim[3]||null,parse.rspacing,delim[4]||null);
+    // Add parentheses, if needed
+    if (delim[0] && delim[1]) {
+      var left  = jsMath.Box.Delimiter(box.h+box.d-jsMath.hd/4,this.delimiter[delim[0]],'T');
+      var right = jsMath.Box.Delimiter(box.h+box.d-jsMath.hd/4,this.delimiter[delim[1]],'T');
+      box = jsMath.Box.SetList([left,box,right],data.style,data.size);
+    }
+    this.mlist.Add(jsMath.mItem.Atom((delim[0]? 'inner': 'ord'),box));
+  },
+  
+  /*
+   *  When we see an '&', try to add a matrix entry to the row data.
+   *  (Use all the data in the current mList, and then clear it)
+   */
+  HandleEntry: function (name) {
+    if (!this.matrix) 
+      {this.Error(name+" can only appear in a matrix or array"); return}
+    if (this.mlist.data.openI != null) {
+      var open = this.mlist.Get(this.mlist.data.openI);
+      if (open.left) {this.Error("Missing "+this.cmd+"right")}
+        else {this.Error("Missing close brace")}
+    }
+    if (this.mlist.data.overI != null) {this.mlist.Over()}
+    var data = this.mlist.data;
+    this.mlist.Atomize(data.style,data.size);
+    var box = this.mlist.Typeset(data.style,data.size);
+    box.entry = data.entry; delete data.entry; if (!box.entry) {box.entry = {}};
+    this.row[this.row.length] = box;
+    this.mlist = new jsMath.mList(null,null,data.size,data.style); 
+  },
+  
+  /*
+   *  When we see a \cr or \\, try to add a row to the table
+   */
+  HandleRow: function (name,last) {
+    var dimen;
+    if (!this.matrix) {this.Error(this.cmd+name+" can only appear in a matrix or array"); return}
+    if (name == "\\") {
+      dimen = this.GetBrackets(this.cmd+name); if (this.error) return;
+      if (dimen) {dimen = this.ParseDimen(dimen,this.cmd+name,0,1)}
+    }
+    this.HandleEntry(name);
+    if (!last || this.row.length > 1 || this.row[0].format != 'null')
+      {this.table[this.table.length] = this.row}
+    if (dimen) {this.rspacing[this.table.length] = dimen}
+    this.row = [];
+  },
+  
+  /*
+   *  Look for \vskip or \vspace in \noalign parameters
+   */
+  HandleNoAlign: function (name) {
+    var arg = this.GetArgument(this.cmd+name); if (this.error) return;
+    var skip = arg.replace(/^.*(vskip|vspace)([^a-z])/i,'$2');
+    if (skip.length == arg.length) return;
+    var d = this.ParseDimen(skip,this.cmd+RegExp.$1,0,1); if (this.error) return;
+    this.rspacing[this.table.length] = (this.rspacing[this.table.length] || 0) + d;
+  },
+  
+  /*
+   *  LaTeX array environment
+   */
+  Array: function (name,delim) {
+    var columns = delim[2]; var cspacing = delim[3];
+    if (!columns) {
+      columns = this.GetArgument(this.cmd+'begin{'+name+'}');
+      if (this.error) return;
+    }
+    columns = columns.replace(/[^clr]/g,'');
+    columns = columns.split('');
+    var data = this.mlist.data; var style = delim[5] || 'T';
+    var arg = this.GetEnd(name); if (this.error) return;
+    var parse = new jsMath.Parser(arg+this.cmd+'\\',null,data.size,style);
+    parse.matrix = name; parse.row = []; parse.table = []; parse.rspacing = [];
+    parse.Parse(); if (parse.error) {this.Error(parse); return}
+    parse.HandleRow(name,1);  // be sure the last row is recorded
+    var box = jsMath.Box.Layout(data.size,parse.table,columns,cspacing,parse.rspacing,delim[4],delim[6],delim[7]);
+    // Add parentheses, if needed
+    if (delim[0] && delim[1]) {
+      var left  = jsMath.Box.Delimiter(box.h+box.d-jsMath.hd/4,this.delimiter[delim[0]],'T');
+      var right = jsMath.Box.Delimiter(box.h+box.d-jsMath.hd/4,this.delimiter[delim[1]],'T');
+      box = jsMath.Box.SetList([left,box,right],data.style,data.size);
+    }
+    this.mlist.Add(jsMath.mItem.Atom((delim[0]? 'inner': 'ord'),box));
+  },
+  
+  /*
+   *  LaTeX \begin{env}
+   */
+  Begin: function (name) {
+    var env = this.GetArgument(this.cmd+name); if (this.error) return;
+    if (env.match(/[^a-z*]/i)) {this.Error('Invalid environment name "'+env+'"'); return}
+    if (!this.environments[env]) {this.Error('Unknown environment "'+env+'"'); return}
+    var cmd = this.environments[env];
+    if (typeof(cmd) == "string") {cmd = [cmd]}
+    this[cmd[0]](env,cmd.slice(1));
+  },
+  
+  /*
+   *  LaTeX \end{env}
+   */
+  End: function (name) {
+    var env = this.GetArgument(this.cmd+name); if (this.error) return;
+    this.Error(this.cmd+name+'{'+env+'} without matching '+this.cmd+'begin');
+  },
+  
+  /*
+   *  LaTeX equation environment (just remove the environment)
+   */
+  Equation: function (name) {
+    var arg = this.GetEnd(name); if (this.error) return;
+    this.string = arg+this.string.slice(this.i); this.i = 0;
+  },
+
+  /*
+   *  Add a fixed amount of horizontal space
+   */
+  Spacer: function (name,w) {
+    this.mlist.Add(jsMath.mItem.Space(w-0));
+  },
+  
+  /*
+   *  Add horizontal space given by the argument
+   */
+  Hskip: function (name) {
+    var w = this.GetDimen(this.cmd+name); if (this.error) return;
+    this.mlist.Add(jsMath.mItem.Space(w));
+  },
+
+  /*
+   *  Typeset the argument as plain text rather than math.
+   */
+  HBox: function (name) {
+    var text = this.GetArgument(this.cmd+name); if (this.error) return;
+    var box = jsMath.Box.InternalMath(text,this.mlist.data.size);
+    this.mlist.Add(jsMath.mItem.Typeset(box));
+  },
+  
+  /*
+   *  Insert a rule of a particular width, height and depth
+   *  This replaces \hrule and \vrule
+   *  @@@ not a standard TeX command, and all three parameters must be given @@@
+   */
+  Rule: function (name,style) {
+    var w = this.GetDimen(this.cmd+name,1); if (this.error) return;
+    var h = this.GetDimen(this.cmd+name,1); if (this.error) return;
+    var d = this.GetDimen(this.cmd+name,1); if (this.error) return;
+    h += d; var html;
+    if (h != 0) {h = Math.max(1.05/jsMath.em,h)}
+    if (h == 0 || w == 0 || style == "blank")
+      {html = jsMath.HTML.Blank(w,h)} else {html = jsMath.HTML.Rule(w,h)}
+    if (d) {
+      html = '<span style="vertical-align:'+jsMath.HTML.Em(-d)+'">'
+           +  html + '</span>';
+    }
+    this.mlist.Add(jsMath.mItem.Typeset(new jsMath.Box('html',html,w,h-d,d)));
+  },
+  
+  /*
+   *  Inserts an empty box of a specific height and depth
+   */
+  Strut: function () {
+    var size = this.mlist.data.size;
+    var box = jsMath.Box.Text('','normal','T',size).Styled();
+    box.bh = box.bd = 0; box.h = .8; box.d = .3; box.w = box.Mw = 0;
+    this.mlist.Add(jsMath.mItem.Typeset(box));
+  },
+  
+  /*
+   *  Handles \phantom, \vphantom and \hphantom
+   */
+  Phantom: function (name,data) {
+    var arg = this.ProcessArg(this.cmd+name); if (this.error) return;
+    this.mlist.Add(new jsMath.mItem('phantom',{phantom: arg, v: data[0], h: data[1]}));
+  },
+  
+  /*
+   *  Implements \smash
+   */
+  Smash: function (name,data) {
+    var arg = this.ProcessArg(this.cmd+name); if (this.error) return;
+    this.mlist.Add(new jsMath.mItem('smash',{smash: arg}));
+  },
+  
+  /*
+   *  Puts an accent on the following argument
+   */
+  MathAccent: function (name,accent) {
+    var c = this.ProcessArg(this.cmd+name); if (this.error) return;
+    var atom = jsMath.mItem.Atom('accent',c); atom.accent = accent[0];
+    this.mlist.Add(atom);
+  },
+
+  /*
+   *  Handles functions and operators like sin, cos, sum, etc.
+   */
+  NamedOp: function (name,data) {
+    var a = (name.match(/[^acegm-su-z]/)) ? 1: 0;
+    var d = (name.match(/[gjpqy]/)) ? .2: 0;
+    if (data[1]) {name = data[1]}
+    var box = jsMath.mItem.TextAtom('op',name,jsMath.TeX.fam[0],a,d);
+    if (data[0] != null) {box.limits = data[0]}
+    this.mlist.Add(box);
+  },
+
+  /*
+   *  Implements \limits
+   */
+  Limits: function (name,data) {
+    var atom = this.mlist.Last();
+    if (!atom || atom.type != 'op') 
+      {this.Error(this.cmd+name+" is allowed only on operators"); return}
+    atom.limits = data[0];
+  },
+
+  /*
+   *  Implements macros like those created by \def.  The named control
+   *  sequence is replaced by the string given as the first data value.
+   *  If there is a second data value, this specifies how many arguments
+   *  the macro uses, and in this case, those arguments are substituted
+   *  for #1, #2, etc. within the replacement string.
+   *  
+   *  See the jsMath.Macro() command below for more details.
+   *  The "newcommand" extension implements \newcommand and \def
+   *  and are loaded automatically if needed.
+   */
+  Macro: function (name,data) {
+    var text = data[0];
+    if (data[1]) {
+      var args = [];
+      for (var i = 0; i < data[1]; i++)
+        {args[args.length] = this.GetArgument(this.cmd+name); if (this.error) return}
+      text = this.SubstituteArgs(args,text);
+    }
+    this.string = this.AddArgs(text,this.string.slice(this.i));
+    this.i = 0;
+  },
+  
+  /*
+   *  Replace macro paramters with their values
+   */
+  SubstituteArgs: function (args,string) {
+    var text = ''; var newstring = ''; var c; var i = 0;
+    while (i < string.length) {
+      c = string.charAt(i++);
+      if (c == this.cmd) {text += c + string.charAt(i++)}
+      else if (c == '#') {
+        c = string.charAt(i++);
+        if (c == "#") {text += c} else {
+          if (!c.match(/[1-9]/) || c > args.length)
+            {this.Error("Illegal macro parameter reference"); return null}
+          newstring = this.AddArgs(this.AddArgs(newstring,text),args[c-1]);
+          text = '';
+        }
+      } else {text += c}
+    }
+    return this.AddArgs(newstring,text);
+  },
+  
+  /*
+   *  Make sure that macros are followed by a space if their names
+   *  could accidentally be continued into the following text.
+   */
+  AddArgs: function (s1,s2) {
+    if (s2.match(/^[a-z]/i) && s1.match(/(^|[^\\])(\\\\)*\\[a-z]+$/i)) {s1 += ' '}
+    return s1+s2;
+  },
+  
+  /*
+   *  Replace the control sequence with the given text
+   */
+  Replace: function (name,data) {
+    this.mlist.Add(jsMath.mItem.TextAtom(data[0],data[1],data[2],data[3]));
+  },
+  
+  /*
+   *  Error for # (must use \#)
+   */
+  Hash: function (name) {
+    this.Error("You can't use 'macro parameter character #' in math mode");
+  },
+  
+  /*
+   *  Insert space for ~
+   */
+  Tilde: function (name) {
+    this.mlist.Add(jsMath.mItem.TextAtom('ord','&nbsp;','normal'));
+  },
+
+  /*
+   *  Implements \llap, \rlap, etc.
+   */
+  HandleLap: function (name) {
+    var box = this.ProcessArg(); if (this.error) return;
+    box = this.mlist.Add(new jsMath.mItem('lap',{nuc: box, lap: name}));
+  },
+
+  /*
+   *  Adds the argument as a specific type of atom (for commands like
+   *  \overline, etc.)
+   */
+  HandleAtom: function (name,data) {
+    var arg = this.ProcessArg(this.cmd+name); if (this.error) return;
+    this.mlist.Add(jsMath.mItem.Atom(data[0],arg));
+  },
+
+
+  /*
+   *  Process the character associated with a specific \mathcharcode
+   */
+  HandleMathCode: function (name,code) {
+    this.HandleTeXchar(code[0],code[1],code[2]);
+  },
+  
+  /*
+   *  Add a specific character from a TeX font (use the current
+   *  font if the type is 7 (variable) or the font is not specified)
+   *  Load the font if it is not already loaded.
+   */
+  HandleTeXchar: function (type,font,code) {
+    if (type == 7 && this.mlist.data.font != null) {font = this.mlist.data.font}
+    font = jsMath.TeX.fam[font];
+    if (!jsMath.TeX[font]) {
+      jsMath.TeX[font] = [];
+      this.Extension(null,[jsMath.Font.URL(font)]);
+    } else {
+      this.mlist.Add(jsMath.mItem.TeXAtom(jsMath.TeX.atom[type],code,font));
+    }
+  },
+
+  /*
+   *  Add a TeX variable character or number
+   */
+  HandleVariable: function (c) {this.HandleTeXchar(7,1,c.charCodeAt(0))},
+  HandleNumber: function (c) {this.HandleTeXchar(7,0,c.charCodeAt(0))},
+
+  /*
+   *  For unmapped characters, just add them in as normal
+   *  (non-TeX) characters
+   */
+  HandleOther: function (c) {
+    this.mlist.Add(jsMath.mItem.TextAtom('ord',c,'normal'));
+  },
+  
+  /*
+   *  Ignore comments in TeX data
+   *  ### Some browsers remove the newlines, so this might cause
+   *      extra stuff to be ignored; look into this ###
+   */
+  HandleComment: function () {
+    var c;
+    while (this.i < this.string.length) {
+      c = this.string.charAt(this.i++);
+      if (c == "\r" || c == "\n") return;
+    }
+  },
+
+  /*
+   *  Add a style change (e.g., \displaystyle, etc)
+   */
+  HandleStyle: function (name,style) {
+    this.mlist.data.style = style[0];
+    this.mlist.Add(new jsMath.mItem('style',{style: style[0]}));
+  },
+  
+  /*
+   *  Implements \small, \large, etc.
+   */
+  HandleSize: function (name,size) {
+    this.mlist.data.size = size[0];
+    this.mlist.Add(new jsMath.mItem('size',{size: size[0]}));
+  },
+
+  /*
+   *  Set the current font (e.g., \rm, etc)
+   */
+  HandleFont: function (name,font) {
+    this.mlist.data.font = font[0];
+  },
+
+  /*
+   *  Look for and process a control sequence
+   */
+  HandleCS: function () {
+    var cmd = this.GetCommand(); if (this.error) return;
+    if (this.macros[cmd]) {
+      var macro = this.macros[cmd];
+      if (typeof(macro) == "string") {macro = [macro]}
+      this[macro[0]](cmd,macro.slice(1)); return;
+    }
+    if (this.mathchardef[cmd]) {
+      this.HandleMathCode(cmd,this.mathchardef[cmd]);
+      return;
+    }
+    if (this.delimiter[this.cmd+cmd]) {
+      this.HandleMathCode(cmd,this.delimiter[this.cmd+cmd].slice(0,3))
+      return;
+    }
+    this.Error("Unknown control sequence '"+this.cmd+cmd+"'");
+  },
+
+  /*
+   *  Process open and close braces
+   */
+  HandleOpen: function () {this.mlist.Open()},
+  HandleClose: function () {
+    if (this.mlist.data.openI == null) {this.Error("Extra close brace"); return}
+    var open = this.mlist.Get(this.mlist.data.openI);
+    if (!open || open.left == null) {this.mlist.Close()}
+      else {this.Error("Extra close brace or missing "+this.cmd+"right"); return}
+  },
+
+  /*
+   *  Implements \left
+   */
+  HandleLeft: function (name) {
+    var left = this.GetDelimiter(this.cmd+name); if (this.error) return;
+    this.mlist.Open(left);
+  },
+
+  /*
+   *  Implements \right
+   */
+  HandleRight: function (name) {
+    var right = this.GetDelimiter(this.cmd+name); if (this.error) return;
+    var open = this.mlist.Get(this.mlist.data.openI);
+    if (open && open.left != null) {this.mlist.Close(right)}
+      else {this.Error("Extra open brace or missing "+this.cmd+"left");}
+  },
+
+  /*
+   *  Implements generalized fractions (\over, \above, etc.)
+   */
+  HandleOver: function (name,data) {
+    if (this.mlist.data.overI != null) 
+      {this.Error('Ambiguous use of '+this.cmd+name); return}
+    this.mlist.data.overI = this.mlist.Length();
+    this.mlist.data.overF = {name: name};
+    if (data.length > 0) {
+      this.mlist.data.overF.left  = this.delimiter[data[0]];
+      this.mlist.data.overF.right = this.delimiter[data[1]];
+    } else if (name.match(/withdelims$/)) {
+      this.mlist.data.overF.left  = this.GetDelimiter(this.cmd+name); if (this.error) return;
+      this.mlist.data.overF.right = this.GetDelimiter(this.cmd+name); if (this.error) return;
+    } else {
+      this.mlist.data.overF.left  = null;
+      this.mlist.data.overF.right = null;
+    }
+    if (name.match(/^above/)) {
+      this.mlist.data.overF.thickness = this.GetDimen(this.cmd+name,1);
+      if (this.error) return;
+    } else {
+      this.mlist.data.overF.thickness = null; 
+    }
+  },
+
+  /*
+   *  Add a superscript to the preceeding atom
+   */
+  HandleSuperscript: function () {
+    var base = this.mlist.Last();
+    if (this.mlist.data.overI == this.mlist.Length()) {base = null}
+    if (base == null || (!base.atom && base.type != 'box' && base.type != 'frac'))
+       {base = this.mlist.Add(jsMath.mItem.Atom('ord',{type:null}))}
+    if (base.sup) {
+      if (base.sup.isPrime) {base = this.mlist.Add(jsMath.mItem.Atom('ord',{type:null}))}
+        else {this.Error("Double exponent: use braces to clarify"); return}
+    }
+    base.sup = this.ProcessScriptArg('superscript'); if (this.error) return;
+  },
+
+  /*
+   *  Add a subscript to the preceeding atom
+   */
+  HandleSubscript: function () {
+    var base = this.mlist.Last();
+    if (this.mlist.data.overI == this.mlist.Length()) {base = null}
+    if (base == null || (!base.atom && base.type != 'box' && base.type != 'frac'))
+       {base = this.mlist.Add(jsMath.mItem.Atom('ord',{type:null}))}
+    if (base.sub) {this.Error("Double subscripts: use braces to clarify"); return}
+    base.sub = this.ProcessScriptArg('subscript'); if (this.error) return;
+  },
+
+  /*
+   *  Parse a TeX math string, handling macros, etc.
+   */
+  Parse: function () {
+    var c;
+    while (this.i < this.string.length) {
+      c = this.string.charAt(this.i++);
+      if (this.mathchar[c]) {this.HandleMathCode(c,this.mathchar[c])}
+      else if (this.special[c]) {this[this.special[c]](c)}
+      else if (this.letter.test(c)) {this.HandleVariable(c)}
+      else if (this.number.test(c)) {this.HandleNumber(c)}
+      else {this.HandleOther(c)}
+    }
+    if (this.mlist.data.openI != null) {
+      var open = this.mlist.Get(this.mlist.data.openI);
+      if (open.left) {this.Error("Missing "+this.cmd+"right")}
+        else {this.Error("Missing close brace")}
+    }
+    if (this.mlist.data.overI != null) {this.mlist.Over()}
+  },
+
+  /*
+   *  Perform the processing of Appendix G
+   */
+  Atomize: function () {
+    var data = this.mlist.init;
+    if (!this.error) this.mlist.Atomize(data.style,data.size)
+  },
+
+  /*
+   *  Produce the final HTML.
+   *  
+   *  We have to wrap the HTML it appropriate <SPAN> tags to hide its
+   *  actual dimensions when these don't match the TeX dimensions of the
+   *  results.  We also include an image to force the results to take up
+   *  the right amount of space.  The results may need to be vertically
+   *  adjusted to make the baseline appear in the correct place.
+   */
+  Typeset: function () {
+    var data = this.mlist.init;
+    var box = this.typeset = this.mlist.Typeset(data.style,data.size);
+    if (this.error) {return '<span class="error">'+this.error+'</span>'}
+    if (box.format == 'null') {return ''};
+
+    box.Styled().Remeasured(); var isSmall = 0; var isBig = 0;
+    if (box.bh > box.h && box.bh > jsMath.h+.001) {isSmall = 1}
+    if (box.bd > box.d && box.bd > jsMath.d+.001) {isSmall = 1}
+    if (box.h > jsMath.h || box.d > jsMath.d) {isBig = 1}
+
+    var html = box.html;
+    if (isSmall) {// hide the extra size
+      if (jsMath.Browser.allowAbsolute) {
+        var y = 0;
+        if (box.bh > jsMath.h+.001) {y = jsMath.h - box.bh}
+        html = jsMath.HTML.Absolute(html,box.w,jsMath.h,0,y);
+      } else if (jsMath.Browser.valignBug) {
+        // remove line height
+        html = '<span style="line-height:'+jsMath.HTML.Em(jsMath.d)+';">'
+             +    html + '</span>';
+      } else if (!jsMath.Browser.operaLineHeightBug) {
+        // remove line height and try to hide the depth
+        var dy = jsMath.HTML.Em(Math.max(0,box.bd-jsMath.hd)/3);
+        html = '<span style="line-height:'+jsMath.HTML.Em(jsMath.d)+';'
+               + ' position:relative; top:'+dy+'; vertical-align:'+dy
+               + '">' + html + '</span>';
+      }
+      isBig = 1;
+    }
+    if (isBig) {
+      // add height and depth to the line
+      //   (force a little extra to separate lines if needed)
+      html += jsMath.HTML.Blank(0,box.h+.05,box.d+.05);
+    }
+    return '<nobr><span class="scale">'+html+'</span></nobr>';
+  }
+
+});
+
+/*
+ *  Make these characters special (and call the given routines)
+ */
+jsMath.Parser.prototype.AddSpecial({
+  cmd:   'HandleCS',
+  open:  'HandleOpen',
+  close: 'HandleClose'
+});
+
+
+/*
+ *  The web-page author can call jsMath.Macro to create additional
+ *  TeX macros for use within his or her mathematics.  See the
+ *  author's documentation for more details.
+ */
+
+jsMath.Add(jsMath,{
+  Macro: function (name) {
+    var macro = jsMath.Parser.prototype.macros;
+    macro[name] = ['Macro'];
+    for (var i = 1; i < arguments.length; i++) 
+      {macro[name][macro[name].length] = arguments[i]}
+  }
+});
+
+/*
+ *  Use these commands to create macros that load
+ *  JavaScript files and reprocess the mathematics when
+ *  the file is loaded.  This lets you to have macros or
+ *  LaTeX environments that autoload their own definitions
+ *  only when they are needed, saving initial download time
+ *  on pages where they are not used.  See the author's
+ *  documentation for more details.
+ *
+ */
+
+jsMath.Extension = {
+
+  safeRequire: 1,   // disables access to files outside of jsMath/extensions
+  
+  Macro: function (name,file) {
+    var macro = jsMath.Parser.prototype.macros;
+    if (file == null) {file = name}
+    macro[name] = ['Extension',file];
+  },
+
+  LaTeX: function (env,file) {
+    var latex = jsMath.Parser.prototype.environments;
+    latex[env] = ['Extension',file,'environments'];
+  },
+
+  Font: function (name,font) {
+    if (font == null) {font = name + "10"}
+    var macro = jsMath.Parser.prototype.macros;
+    macro[name] = ['Extension',jsMath.Font.URL(font)];
+  },
+  
+  MathChar: function (font,defs) {
+    var fam = jsMath.TeX.famName[font];
+    if (fam == null) {
+      fam = jsMath.TeX.fam.length;
+      jsMath.TeX.fam[fam] = font;
+      jsMath.TeX.famName[font] = fam;
+    }
+    var mathchardef = jsMath.Parser.prototype.mathchardef;
+    for (var c in defs) {mathchardef[c] = [defs[c][0],fam,defs[c][1]]}
+  },
+
+  Require: function (file,show) {
+    if (this.safeRequire && (file.match(/\.\.\/|[^-a-z0-9.\/:_+=%~]/i) ||
+         (file.match(/:/) && file.substr(0,jsMath.root.length) != jsMath.root))) {
+      jsMath.Setup.loaded[file] = 1;
+      return;
+    }
+    jsMath.Setup.Script(this.URL(file),show);
+  },
+  
+  URL: function (file) {
+    file = file.replace(/^\s+|\s+$/g,'');
+    if (!file.match(/^([a-z]+:|\/|fonts|extensions\/)/i)) {file = 'extensions/'+file}
+    if (!file.match(/\.js$/)) {file += '.js'}
+    return file;
+  }
+}
+
+
+/***************************************************************************/
+
+/*
+ *  These routines look through the web page for math elements to process.
+ *  There are two main entry points you can call:
+ *  
+ *      <script> jsMath.Process() </script>
+ *  or
+ *      <script> jsMath.ProcessBeforeShowing() </script>
+ *
+ *  The first will process the page asynchronously (so the user can start
+ *  reading the top of the file while jsMath is still processing the bottom)
+ *  while the second does not update until all the mathematics is typeset.
+ */
+
+jsMath.Add(jsMath,{
+  /*
+   *  Call this at the bottom of your HTML page to have the
+   *  mathematics typeset asynchronously.  This lets the user
+   *  start reading the mathematics while the rest of the page
+   *  is being processed.
+   */
+  Process: function (obj) {
+    jsMath.Setup.Body();
+    jsMath.Script.Push(jsMath.Translate,'Asynchronous',obj);
+  },
+  
+  /*
+   *  Call this at the bottom of your HTML page to have the
+   *  mathematics typeset before the page is displayed.
+   *  This can take a long time, so the user could cancel the
+   *  page before it is complete; use it with caution, and only
+   *  when there is a relatively small amount of math on the page.
+   */
+  ProcessBeforeShowing: function (obj) {
+    jsMath.Setup.Body();
+    var method = (jsMath.Controls.cookie.asynch ? "Asynchronous": "Synchronous");
+    jsMath.Script.Push(jsMath.Translate,method,obj);
+  },
+  
+  /*
+   *  Process the contents of a single element.  It must be of
+   *  class "math".
+   */
+  ProcessElement: function (obj) {
+    jsMath.Setup.Body();
+    jsMath.Script.Push(jsMath.Translate,'ProcessOne',obj);
+  }
+  
+});
+
+jsMath.Translate = {
+
+  element: [],  // the list of math elements on the page
+  cancel: 0,    // set to 1 to cancel asynchronous processing
+  
+  /*
+   *  Parse a TeX string in Text or Display mode and return
+   *  the HTML for it (taking it from the cache, if available)
+   */
+  Parse: function (style,s,noCache) {
+    var cache = jsMath.Global.cache[style];
+    if (!cache[jsMath.em]) {cache[jsMath.em] = {}}
+    var HTML = cache[jsMath.em][s];
+    if (!HTML || noCache) {
+      var parse = jsMath.Parse(s,null,null,style);
+      parse.Atomize(); HTML = parse.Typeset();
+      if (!noCache) {cache[jsMath.em][s] = HTML}
+    }
+    return HTML;
+  },
+
+  TextMode:    function (s,noCache) {this.Parse('T',s,noCache)},
+  DisplayMode: function (s,noCache) {this.Parse('D',s,noCache)},
+  
+  /*
+   *  Return the text of a given DOM element
+   */
+  GetElementText: function (element) {
+    if (element.childNodes.length == 1 && element.childNodes[0].nodeName === "#comment") {
+      var result = element.childNodes[0].nodeValue.match(/^\[CDATA\[(.*)\]\]$/);
+      if (result != null) {return result[1]};
+    }
+    var text = this.recursiveElementText(element);
+    element.alt = text;
+    if (text.search('&') >= 0) {
+      text = text.replace(/&lt;/g,'<');
+      text = text.replace(/&gt;/g,'>');
+      text = text.replace(/&quot;/g,'"');
+      text = text.replace(/&amp;/g,'&');
+    }
+    return text;
+  },
+  recursiveElementText: function (element) {
+    if (element.nodeValue != null) {
+      if (element.nodeName !== "#comment") {return element.nodeValue}
+      return element.nodeValue.replace(/^\[CDATA\[(.*)\]\]$/,"$1");
+    }
+    if (element.childNodes.length === 0) {return " "}
+    var text = '';
+    for (var i = 0; i < element.childNodes.length; i++) 
+      {text += this.recursiveElementText(element.childNodes[i])}
+    return text;
+  },
+  
+  /*
+   *  Move hidden to the location of the math element to be
+   *  processed and reinitialize sizes for that location.
+   */
+  ResetHidden: function (element) {
+    element.innerHTML =
+      '<span id="jsMath_hiddenSpan" style="position:absolute"></span>'
+        + jsMath.Browser.operaHiddenFix; // needed by Opera in tables
+    element.className = '';
+    jsMath.hidden = element.firstChild;
+    if (!jsMath.BBoxFor("x").w) {jsMath.hidden = jsMath.hiddenTop}
+    jsMath.ReInit();
+  },
+
+  
+  /*
+   *  Typeset the contents of an element in \textstyle or \displaystyle
+   */
+  ConvertMath: function (style,element,noCache) {
+    var text = this.GetElementText(element);
+    this.ResetHidden(element);
+    if (text.match(/^\s*\\nocache([^a-zA-Z])/))
+      {noCache = true; text = text.replace(/\s*\\nocache/,'')}
+    text = this.Parse(style,text,noCache);
+    element.className = 'typeset';
+    element.innerHTML = text;
+  },
+
+  /*
+   *  Process a math element
+   */
+  ProcessElement: function (element) {
+    this.restart = 0;
+    if (!element.className.match(/(^| )math( |$)/)) return; // don't reprocess elements
+    var noCache = (element.className.toLowerCase().match(/(^| )nocache( |$)/) != null);
+    try {
+      var style = (element.tagName.toLowerCase() == 'div' ? 'D' : 'T');
+      this.ConvertMath(style,element,noCache);
+      element.onclick = jsMath.Click.CheckClick;
+      element.ondblclick = jsMath.Click.CheckDblClick;
+    } catch (err) {
+      if (element.alt) {
+        var tex = element.alt;
+        tex = tex.replace(/&/g,'&amp;');
+        tex = tex.replace(/</g,'&lt;');
+        tex = tex.replace(/>/g,'&gt;');
+        element.innerHTML = tex;
+        element.className = 'math';
+        if (noCache) {element.className += ' nocache'}
+      }
+      jsMath.hidden = jsMath.hiddenTop;
+    }
+  },
+
+  /*
+   *  Asynchronously process all the math elements starting with
+   *  the k-th one
+   */
+  ProcessElements: function (k) {
+    jsMath.Script.blocking = 1;
+    if (k >= this.element.length || this.cancel) {
+      this.ProcessComplete();
+      if (this.cancel) {
+        jsMath.Message.Set("Process Math: Canceled");
+        jsMath.Message.Clear()
+      }
+      jsMath.Script.blocking = 0;
+      jsMath.Script.Process();
+    } else {
+      var savedQueue = jsMath.Script.SaveQueue();
+      this.ProcessElement(this.element[k]);
+      jsMath.Script.RestoreQueue(savedQueue);
+      if (this.restart) {
+        jsMath.Script.Push(this,'ProcessElements',k);
+        jsMath.Script.blocking = 0;
+        setTimeout('jsMath.Script.Process()',jsMath.Browser.delay);
+      } else {
+        k++; var p = Math.floor(100 * k / this.element.length);
+        jsMath.Message.Set('Processing Math: '+p+'%');
+        setTimeout('jsMath.Translate.ProcessElements('+k+')',jsMath.Browser.delay);
+      }
+    }
+  },
+
+  /*
+   *  Start the asynchronous processing of mathematics
+   */
+  Asynchronous: function (obj) {
+    if (!jsMath.initialized) {jsMath.Init()}
+    this.element = this.GetMathElements(obj);
+    jsMath.Script.blocking = 1;
+    this.cancel = 0; this.asynchronous = 1;
+    jsMath.Message.Set('Processing Math: 0%',1);
+    setTimeout('jsMath.Translate.ProcessElements(0)',jsMath.Browser.delay);
+  },
+  
+  /*
+   *  Do synchronous processing of mathematics
+   */
+  Synchronous: function (obj,i) {
+    if (i == null) {
+      if (!jsMath.initialized) {jsMath.Init()}
+      this.element = this.GetMathElements(obj);
+      i = 0;
+    }
+    this.asynchronous = 0;
+    while (i < this.element.length) {
+      this.ProcessElement(this.element[i]);
+      if (this.restart) {
+        jsMath.Synchronize('jsMath.Translate.Synchronous(null,'+i+')');
+        jsMath.Script.Process();
+        return;
+      }
+      i++;
+    }
+    this.ProcessComplete(1);
+  },
+
+  /*
+   *  Synchronously process the contents of a single element
+   */
+  ProcessOne: function (obj) {
+    if (!jsMath.initialized) {jsMath.Init()}
+    this.element = [obj];
+    this.Synchronous(null,0);
+  },
+  
+  /*
+   *  Look up all the math elements on the page and
+   *  put them in a list sorted from top to bottom of the page
+   */
+  GetMathElements: function (obj) {
+    var element = []; var k;
+    if (!obj) {obj = jsMath.document}
+    if (typeof(obj) == 'string') {obj = jsMath.document.getElementById(obj)}
+    if (!obj.getElementsByTagName) return null;
+    var math = obj.getElementsByTagName('div');
+    for (k = 0; k < math.length; k++) {
+      if (math[k].className && math[k].className.match(/(^| )math( |$)/)) {
+        if (jsMath.Browser.renameOK && obj.getElementsByName) 
+               {math[k].setAttribute('name','_jsMath_')}
+          else {element[element.length] = math[k]}
+      }
+    }
+    math = obj.getElementsByTagName('span');
+    for (k = 0; k < math.length; k++) {
+      if (math[k].className && math[k].className.match(/(^| )math( |$)/)) {
+        if (jsMath.Browser.renameOK && obj.getElementsByName) 
+               {math[k].setAttribute('name','_jsMath_')}
+          else {element[element.length] = math[k]}
+      }
+    }
+    // this gets the SPAN and DIV elements interleaved in order
+    if (jsMath.Browser.renameOK && obj.getElementsByName) {
+      element = obj.getElementsByName('_jsMath_');
+    } else if (jsMath.hidden.sourceIndex) {
+      element.sort(function (a,b) {return a.sourceIndex - b.sourceIndex});
+    }
+    return element;
+  },
+
+  /*
+   *  Remove the window message about processing math
+   *  and clean up any marked <SPAN> or <DIV> tags
+   */
+  ProcessComplete: function (noMessage) {
+    if (jsMath.Browser.renameOK) {
+      var element = jsMath.document.getElementsByName('_jsMath_');
+      for (var i = element.length-1; i >= 0; i--) {
+        element[i].removeAttribute('name');
+      }
+    }
+    jsMath.hidden = jsMath.hiddenTop;
+    this.element = []; this.restart = null;
+    if (!noMessage) {
+      jsMath.Message.Set('Processing Math: Done');
+      jsMath.Message.Clear();
+    }
+    jsMath.Message.UnBlank();
+    if (jsMath.Browser.safariImgBug &&
+        (jsMath.Controls.cookie.font == 'symbol' ||
+         jsMath.Controls.cookie.font == 'image')) {
+      //
+      //  For Safari, the images don't always finish
+      //  updating, so nudge the window to cause a
+      //  redraw.  (Hack!)
+      //
+      if (this.timeout) {clearTimeout(this.timeout)}
+      this.timeout = setTimeout("jsMath.window.resizeBy(-1,0); "
+                              + "jsMath.window.resizeBy(1,0); "
+                              + "jsMath.Translate.timeout = null",2000);
+    }
+  },
+  
+  /*
+   *  Cancel procesing elements
+   */
+  Cancel: function () {
+    jsMath.Translate.cancel = 1;
+    if (jsMath.Script.cancelTimer) {jsMath.Script.cancelLoad()}
+  }
+  
+};
+
+jsMath.Add(jsMath,{
+  //
+  //  Synchronize these with the loading of the tex2math plugin.
+  //
+  ConvertTeX: function (element) {jsMath.Script.Push(jsMath.tex2math,'ConvertTeX',element)},
+  ConvertTeX2: function (element) {jsMath.Script.Push(jsMath.tex2math,'ConvertTeX2',element)},
+  ConvertLaTeX: function (element) {jsMath.Script.Push(jsMath.tex2math,'ConvertLaTeX',element)},
+  ConvertCustom: function (element) {jsMath.Script.Push(jsMath.tex2math,'ConvertCustom',element)},
+  CustomSearch: function (om,cm,od,cd) {jsMath.Script.Push(null,function () {jsMath.tex2math.CustomSearch(om,cm,od,cd)})},
+  tex2math: {
+    ConvertTeX: function () {},
+    ConvertTeX2: function () {},
+    ConvertLaTeX: function () {},
+    ConvertCustom: function () {},
+    CustomSearch: function () {}
+  }
+});
+jsMath.Synchronize = jsMath.Script.Synchronize;
+
+/***************************************************************************/
+
+
+/*
+ *  Initialize things
+ */
+try {
+  if (window.parent != window && window.jsMathAutoload) {
+    window.parent.jsMath = jsMath;
+    jsMath.document = window.parent.document;
+    jsMath.window = window.parent;
+  }
+} catch (err) {}
+
+jsMath.Global.Register();
+jsMath.Loaded();
+jsMath.Controls.GetCookie();
+jsMath.Setup.Source();
+jsMath.Global.Init();
+jsMath.Script.Init();
+jsMath.Setup.Fonts();
+if (jsMath.document.body) {jsMath.Setup.Body()}
+jsMath.Setup.User("onload");
+
+}}

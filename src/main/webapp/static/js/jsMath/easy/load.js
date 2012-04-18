@@ -117,12 +117,12 @@ jsMath.Easy = {
   //  Allow jsMath to enter global mode?
   //  (Uses frames, so may not always work with complex web sites)
   //
-  allowGlobal: 1,
+  allowGlobal: 0,
   
   //
   //  Disable image fonts?  (In case you don't load them on your server.)
   //
-  noImageFonts: 0
+  noImageFonts: 1
   
 };
 

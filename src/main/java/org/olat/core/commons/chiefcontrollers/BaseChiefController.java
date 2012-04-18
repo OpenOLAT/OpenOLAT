@@ -26,7 +26,6 @@
 
 package org.olat.core.commons.chiefcontrollers;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,10 +57,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
-import org.olat.core.util.ZipUtil;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
@@ -105,42 +101,11 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	private static Mapper jsTranslationMapper;
 	private static String jsTranslationMapperPath;
 
-	private static boolean jsMathEnabled;
-
 	static {
 		// initialize global javascript translation mapper - shared in VM by all
 		// users
 		jsTranslationMapper = new JSTranslatorMapper();
 		jsTranslationMapperPath = GlobalMapperRegistry.getInstance().register(JSTranslatorMapper.class, jsTranslationMapper);
-
-		// check if mandatory jsmath files are unzipped, write error otherwise
-		// fxdiff: we don't want to extract on servers where jsMath is symlinked
-		// for all OLATs!
-		String fDir = WebappHelper.getContextRoot() + "/static/js/jsMath/";
-		File jsMath = new File(fDir);
-		try {
-			if (jsMath.exists() && FileUtils.isSymlink(jsMath)) {
-				log.info("found a symlink to local jsMath fonts. wont extract fonts.zip, jsMath is ready!");
-				jsMathEnabled = true;
-			} else {
-				File jsMathImages = new File(fDir + "/fonts");
-				if (!jsMathImages.exists() || !jsMathImages.isDirectory() || !(jsMathImages.list().length > 0)) {
-					File fZip = new File(fDir + "/fonts.zip");
-					if (fZip.exists()) {
-						log.info("could not find jsMath fonts, try to unzip fonts.zip. please wait...");
-						jsMathEnabled = ZipUtil.unzip(fZip, new File(fDir));
-					}
-				} else {
-					jsMathEnabled = true;
-				}
-			}
-		} catch (Exception e) {
-			log.error("error finding jsMath: " + e);
-			jsMathEnabled = false;
-		}
-		if (!jsMathEnabled) {
-			log.error("jsMath fonts are not available (neither by symlink nor by fonts.zip). Please unzip the file ``fonts.zip'' before starting olat.");
-		}
 	}
 	
 	//REVIEW:12-2007:CodeCleanup
@@ -171,7 +136,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 		// component-id of mainPanel for the window id
 		mainvc.contextPut("o_winid", mainPanel.getDispatchID());
 		// add jsMath library
-		mainvc.contextPut("jsMathEnabled", Boolean.valueOf(jsMathEnabled));
+		mainvc.contextPut("jsMathEnabled", Boolean.TRUE);
 		// add optional css classes
 		mainvc.contextPut("bodyCssClasses", bodyCssClasses);
 
@@ -406,7 +371,7 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 * @return
 	 */
 	public static boolean isJsMathEnabled() {
-		return jsMathEnabled;
+		return true;
 	}
 
 	/**
