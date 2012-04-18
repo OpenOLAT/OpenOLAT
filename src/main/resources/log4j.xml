@@ -2,7 +2,10 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
 <log4j:configuration>
 
-<!-- This is just a minimal log4j config to get you started, for a production system see [olatdir]/conf/log4j.xml and adapt it for your needs -->
+<!-- 
+	This is just a minimal log4j config to get you started, for a production system you can adapt it for your needs 
+	Make sure you also set the properties log.dir and log.filename to match your log4j settings
+-->
 <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
 	<layout class="org.apache.log4j.PatternLayout">
   		 <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %c{1}:%L - %m%n"/>

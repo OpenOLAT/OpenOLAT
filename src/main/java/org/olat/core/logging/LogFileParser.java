@@ -48,17 +48,22 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class LogFileParser extends LogDelegator {
 	private static String logfilepathBase;
+	private static String filename;
 	private static final int linecount = 3; // we always get 4 lines
 	private static final String matchError = ".*" + Tracing.PREFIX + Tracing.ERROR + ".*";
 	private static final String matchWarn = ".*" + Tracing.PREFIX + Tracing.WARN + ".*" ;
-	private static String filename = "olat.log";
 	private static OLog log;
 	
 
 	/**
 	 * [spring]
 	 */
-	private LogFileParser(String logdir) {
+	private LogFileParser(String logdir, String file) {
+		if (StringHelper.containsNonWhitespace(file)) {
+			filename = file;
+		} else {
+			filename = "olat.log";
+		}
 		if (StringHelper.containsNonWhitespace(logdir)) {
 			if (logdir.endsWith(File.separator)) {
 				logfilepathBase = logdir + filename;
@@ -134,8 +139,7 @@ public class LogFileParser extends LogDelegator {
 	}
 
 	/**
-	 * extracts the errormessage from a line in the logfile and formats it for the
-	 * html
+	 * extracts the errormessage from a line in the logfile and formats it as text
 	 * 
 	 * @param s
 	 * @return errormsg

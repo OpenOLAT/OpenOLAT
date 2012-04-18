@@ -14,6 +14,7 @@
 
 <bean id="logFileParser" class="org.olat.core.logging.LogFileParser">
 	<constructor-arg type="String" value="${log.dir}" />
+	<constructor-arg type="String" value="${log.filename}" />
 </bean>
   
 </beans>
