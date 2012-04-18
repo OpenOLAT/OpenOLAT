@@ -152,7 +152,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		for (BusinessGroup group : tutorGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, true);
 		}
-		List<BusinessGroup> participantsGroups = bgm.findBusinessGroups(params, identity, true, false, null, 0, -1);
+		List<BusinessGroup> participantsGroups = bgm.findBusinessGroups(params, identity, false, true, null, 0, -1);
 		for (BusinessGroup group : participantsGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, false);
 		}
