@@ -41,8 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogDelegator;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -74,7 +73,16 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 		sb.append('/').append(pakkage.getName().replace(".", "/"));
 		if(!location.startsWith("/")) sb.append('/');
 		sb.append(location);
-		this.url = getClass().getResource(sb.toString());
+		
+		if(Settings.isDebuging() && StringHelper.containsNonWhitespace(WebappHelper.getSourcePath())) {
+			try {
+				this.url = new File(WebappHelper.getSourcePath(), sb.toString()).toURI().toURL();
+			} catch (MalformedURLException e) {
+				this.url = getClass().getResource(sb.toString());
+			}
+		} else {
+			this.url = getClass().getResource(sb.toString());
+		}
 		init(pakkage.getName());
 	}
 	
