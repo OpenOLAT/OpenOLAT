@@ -151,7 +151,10 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	 */
 	@Override
 	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId, List<Identity> identities) {
-		try {
+		if(identities == null || identities.isEmpty()) {
+			return new HashMap<Long,Date>();
+		}
+		try { 
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.identity.key, infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")

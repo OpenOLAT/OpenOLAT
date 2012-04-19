@@ -82,6 +82,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.run.RunMainController;
@@ -160,6 +161,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private boolean isOlatAdmin;
 	private boolean isGuestOnly = false;
 	private boolean jumpfromcourse = false;
+	private boolean corrupted;
 	public static final String ACTIVATE_EDITOR = "activateEditor";
 	public static final String ACTIVATE_RUN = "activateRun";
 	
@@ -308,11 +310,17 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		main.contextPut("iscourse", new Boolean(handler instanceof CourseHandler));
 		//brasato:: review why such a type check was necessary
 		
+		setCorrupted(false);
 		if (handler instanceof CourseHandler) {
-			removeAsListenerAndDispose(courseInfoForm);
-			courseInfoForm = new DisplayCourseInfoForm(ureq, getWindowControl(), CourseFactory.loadCourse(repositoryEntry.getOlatResource()));
-			listenTo(courseInfoForm);
-			infopanelVC.put("CourseInfoForm", courseInfoForm.getInitialComponent());
+			try {
+				removeAsListenerAndDispose(courseInfoForm);
+				courseInfoForm = new DisplayCourseInfoForm(ureq, getWindowControl(), CourseFactory.loadCourse(repositoryEntry.getOlatResource()));
+				listenTo(courseInfoForm);
+				infopanelVC.put("CourseInfoForm", courseInfoForm.getInitialComponent());
+			} catch(CorruptedCourseException e) {
+				log.error("", e);
+				setCorrupted(true);
+			}
 		}
 		removeAsListenerAndDispose(detailsForm);
 		detailsForm = handler.createDetailsForm(ureq, getWindowControl(), repositoryEntry.getOlatResource());
@@ -364,7 +372,13 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		listenTo(groupController);
 		
 		main.put("ownertable", groupController.getInitialComponent());
-
+	}
+	
+	public void setCorrupted(boolean corrupted) {
+		this.corrupted = corrupted;
+		downloadButton.setEnabled(!corrupted);
+		launchButton.setEnabled(!corrupted);
+		main.contextPut("corrupted", new Boolean(corrupted));
 	}
 
 	/**
@@ -402,7 +416,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 			detailsToolC.addHeader(translate("tools.details.header"));
 			detailsToolC.addLink(ACTION_LAUNCH, translate("details.launch"), TOOL_LAUNCH, null);
 		}
-		detailsToolC.setEnabled(TOOL_LAUNCH, checkIsRepositoryEntryLaunchable(ureq));
+		detailsToolC.setEnabled(TOOL_LAUNCH, checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 		if (!isGuestOnly) {
 			if (isNewController) {
 				//mark as download link
@@ -415,11 +429,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				&& !(isOwner || isAuthor)) canDownload = false;
 			// always enable download for owners
 			if (isOwner && handler.supportsDownload(repositoryEntry)) canDownload = true;
-			detailsToolC.setEnabled(TOOL_DOWNLOAD, canDownload);
+			detailsToolC.setEnabled(TOOL_DOWNLOAD, canDownload && !corrupted);
 			boolean canBookmark = true;
 			if (BookmarkManager.getInstance().isResourceableBookmarked(ureq.getIdentity(), repositoryEntry) || !repositoryEntry.getCanLaunch())
 				canBookmark = false;
-			detailsToolC.setEnabled(TOOL_BOOKMARK, canBookmark);
+			detailsToolC.setEnabled(TOOL_BOOKMARK, canBookmark && !corrupted);
 		}
 		//fxdiff VCRP-1 : moved some things around here to split large toolbox into smaller pieces
 		if (isNewController)
@@ -442,10 +456,13 @@ public class RepositoryDetailsController extends BasicController implements Gene
 					detailsToolC.addHeader(translate("table.action"));
 					if ((OresHelper.isOfType(repositoryEntry.getOlatResource(), CourseModule.class)) && (!RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed())) {
 						detailsToolC.addLink(ACTION_CLOSE_RESSOURCE, translate("details.close.ressoure"), TOOL_CLOSE_RESSOURCE, null);
+						if(corrupted) {
+							detailsToolC.setEnabled(TOOL_CLOSE_RESSOURCE, false);
+						}
 					}
 				}
 				// update catalog link
-				detailsToolC.setEnabled(TOOL_CATALOG, (repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS));
+				detailsToolC.setEnabled(TOOL_CATALOG, (repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS) && !corrupted);
 			}
 			if (isNewController) {
 				if(isAuthor) {
@@ -463,15 +480,15 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				}
 				// enable
 				if(isAuthor) {
-					detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry));
-					detailsToolC.setEnabled(TOOL_CHDESC, true);
-					detailsToolC.setEnabled(TOOL_CHPROP, true);
+					detailsToolC.setEnabled(TOOL_EDIT, handler.supportsEdit(repositoryEntry) && !corrupted);
+					detailsToolC.setEnabled(TOOL_CHDESC, !corrupted);
+					detailsToolC.setEnabled(TOOL_CHPROP, !corrupted);
 				}
 				
 				canCopy = true;
 			}
 			if(isAuthor) {
-				detailsToolC.setEnabled(TOOL_COPY, canCopy);
+				detailsToolC.setEnabled(TOOL_COPY, canCopy && !corrupted);
 			}
 		}
 	}
@@ -485,6 +502,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * @return A tool controller representing available tools for the given entry.
 	 */
 	public ToolController setEntry(RepositoryEntry entry, UserRequest ureq, boolean jumpfromcourse) {
+		this.corrupted = false;//reset the flag
 		this.jumpfromcourse = jumpfromcourse;
 		if (repositoryEntry != null) {
 			// The controller has already a repository-entry => do de-register it
@@ -589,7 +607,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * 
 	 * @param ureq
 	 */
-	void doLaunch(UserRequest ureq) {
+	boolean doLaunch(UserRequest ureq) {
 		RepositoryHandler typeToLaunch = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		if (typeToLaunch == null){
 			StringBuilder sb = new StringBuilder(translate("error.launch"));
@@ -599,41 +617,51 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 		if (RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey()) == null) {
 			showInfo("info.entry.deleted");
-			return;
+			return false;
 		}
 		
-		RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntry);
-		OLATResourceable ores = repositoryEntry.getOlatResource();
-		String displayName = getDisplayName(ureq.getLocale());
+		try {
+			RepositoryManager.getInstance().incrementLaunchCounter(repositoryEntry);
+			OLATResourceable ores = repositoryEntry.getOlatResource();
+			String displayName = getDisplayName(ureq.getLocale());
 
-		//was brasato:: DTabs dts = getWindowControl().getDTabs();
-		DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
-		DTab dt = dts.getDTab(ores);
-		if (dt == null) {
-			// does not yet exist -> create and add
-			//fxdiff BAKS-7 Resume function
-			dt = dts.createDTab(ores, repositoryEntry, displayName);
-			if (dt == null) return;
-			
-			// build up the context path
-			OLATResourceable businessOres = repositoryEntry;
-			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(businessOres);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, dt.getWindowControl());
-			
-			Controller ctrl = typeToLaunch.createLaunchController(ores, null, ureq, bwControl);
-			// if resource is an image, PDF or eq. (e.g. served by resulting media request), no controller is returned.
-			// FIXME:fj:test this
-			if (ctrl == null) return;
-			dt.setController(ctrl);
-			dts.addDTab(dt);
+			//was brasato:: DTabs dts = getWindowControl().getDTabs();
+			DTabs dts = (DTabs)Windows.getWindows(ureq).getWindow(ureq).getAttribute("DTabs");
+			DTab dt = dts.getDTab(ores);
+			if (dt == null) {
+				// does not yet exist -> create and add
+				//fxdiff BAKS-7 Resume function
+				dt = dts.createDTab(ores, repositoryEntry, displayName);
+				if (dt == null) {
+					return false;
+				}
+				
+				// build up the context path
+				OLATResourceable businessOres = repositoryEntry;
+				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(businessOres);
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, dt.getWindowControl());
+				
+				Controller ctrl = typeToLaunch.createLaunchController(ores, null, ureq, bwControl);
+				// if resource is an image, PDF or eq. (e.g. served by resulting media request), no controller is returned.
+				// FIXME:fj:test this
+				if (ctrl == null) {
+					return false;
+				}
+				dt.setController(ctrl);
+				dts.addDTab(dt);
+			}
+			dts.activate(ureq, dt, RepositoryDetailsController.ACTIVATE_RUN);	
+			/**
+			 * close detail page after resource is closed
+			 * DONE_EVENT will be catched by RepositoryMainController
+			 */ 
+			//fxdiff FXOLAT-128: back/resume function
+			fireEvent(ureq, LAUNCHED_EVENT);
+			return true;
+		} catch (CorruptedCourseException e) {
+			logError("Corrupted course: " + repositoryEntry, e);
+			return false;
 		}
-		dts.activate(ureq, dt, RepositoryDetailsController.ACTIVATE_RUN);	
-		/**
-		 * close detail page after resource is closed
-		 * DONE_EVENT will be catched by RepositoryMainController
-		 */ 
-		//fxdiff FXOLAT-128: back/resume function
-		fireEvent(ureq, LAUNCHED_EVENT);
 	}
 
 	private boolean checkIsRepositoryEntryLaunchable(UserRequest ureq) {
@@ -943,15 +971,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				return;
 			} else if (cmd.equals(ACTION_DELETE)) { // delete
 				if (!isOwner) throw new OLATSecurityException("Trying to delete, but not allowed: user = " + ureq.getIdentity());
-				// show how many users are currently using this resource
-				OLATResourceable ores = repositoryEntry.getOlatResource();
-				
-				String dialogTitle = translate("del.header", repositoryEntry.getDisplayname());
-				OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, repositoryEntry.getOlatResource().getResourceableId());
-				int cnt = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
-				
-				String dialogText = translate("del.confirm", String.valueOf(cnt));
-				deleteDialogController = activateYesNoDialog(ureq, dialogTitle, dialogText, deleteDialogController);
+				doDelete(ureq);
 				return;
 			}
 		} else if (source == wc) {
@@ -1111,6 +1131,17 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		listenTo(cmc);
 		
 		cmc.activate();
+	}
+	
+	private void doDelete(UserRequest ureq) {
+		//show how many users are currently using this resource
+
+		String dialogTitle = translate("del.header", repositoryEntry.getDisplayname());
+		OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, repositoryEntry.getOlatResource().getResourceableId());
+		int cnt = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+		
+		String dialogText = translate(corrupted ? "del.confirm.corrupted" : "del.confirm", String.valueOf(cnt));
+		deleteDialogController = activateYesNoDialog(ureq, dialogTitle, dialogText, deleteDialogController);
 	}
 
 	/**

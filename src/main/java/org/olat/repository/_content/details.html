@@ -14,6 +14,11 @@ $r.render("backLink")
 		$r.render("details.download")		
 	</p>
 #end
+#if($corrupted)
+	<div class="b_error">
+		<span class="b_error_icon">$r.translate("cif.error.corrupted")</span>
+	</div>
+#end
 
 <fieldset class="b_clearfix">
 	<legend>$r.translate("details.description")</legend>

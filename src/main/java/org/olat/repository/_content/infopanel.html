@@ -1,5 +1,5 @@
 #if ($isOwner || $isAuthor)
-	#if($iscourse)
+	#if($iscourse && $CourseInfoForm)
 			$r.render("CourseInfoForm")
 	#else
 		<fieldset>

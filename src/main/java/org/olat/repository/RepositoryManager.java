@@ -334,22 +334,19 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public boolean deleteRepositoryEntryWithAllData(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		// invoke handler delete callback
-		Tracing.logDebug("deleteRepositoryEntry start entry=" + entry, this.getClass());
+		logDebug("deleteRepositoryEntry start entry=" + entry);
 		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		Tracing.logDebug("deleteRepositoryEntry after load entry=" + entry, this.getClass());
-		Tracing.logDebug("deleteRepositoryEntry after load entry.getOwnerGroup()=" + entry.getOwnerGroup(), this.getClass());
+		logDebug("deleteRepositoryEntry after load entry=" + entry);
+		logDebug("deleteRepositoryEntry after load entry.getOwnerGroup()=" + entry.getOwnerGroup());
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 		OLATResource ores = entry.getOlatResource();
-		if (!handler.readyToDelete(ores, ureq, wControl)) return false;
+		if (!handler.readyToDelete(ores, ureq, wControl)) {
+			return false;
+		}
 
 		// start transaction
 		// delete entry picture
-		File uploadDir = new File(FolderConfig.getCanonicalRoot() + FolderConfig.getRepositoryHome());
-		File picFile = new File(uploadDir, entry.getKey() + ".jpg");
-		if (picFile.exists()) {
-			picFile.delete();
-		}
-		
+		deleteImage(entry);
 		userCourseInformationsManager.deleteUserCourseInformations(entry);
 		
 		// delete all bookmarks referencing deleted entry
@@ -358,13 +355,13 @@ public class RepositoryManager extends BasicManager {
 		CatalogManager.getInstance().resourceableDeleted(entry);
 		// delete the entry
 		entry = (RepositoryEntry) DBFactory.getInstance().loadObject(entry,true);
-		Tracing.logDebug("deleteRepositoryEntry after reload entry=" + entry, this.getClass());
+		logDebug("deleteRepositoryEntry after reload entry=" + entry);
 		deleteRepositoryEntryAndBasesecurity(entry);
 		
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable aswell.
 		handler.cleanupOnDelete(entry.getOlatResource());
-		Tracing.logDebug("deleteRepositoryEntry Done" , this.getClass());
+		logDebug("deleteRepositoryEntry Done");
 		return true;
 	}
 	

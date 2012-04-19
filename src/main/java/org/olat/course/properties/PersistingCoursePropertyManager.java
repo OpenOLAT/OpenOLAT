@@ -37,10 +37,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
@@ -60,15 +59,15 @@ import org.olat.properties.Property;
 public class PersistingCoursePropertyManager extends BasicManager implements CoursePropertyManager {
 
 	private NarrowedPropertyManager pm;
-	private Map anonymizerMap;
-	private ICourse ores;
+	private Map<String,String> anonymizerMap;
+	private OLATResourceable ores;
 	private static Random random = new Random(System.currentTimeMillis());
 
-	private PersistingCoursePropertyManager(ICourse course) {
+	private PersistingCoursePropertyManager(OLATResourceable course) {
 		this.ores = course;
-		this.pm = NarrowedPropertyManager.getInstance(course);
+		pm = NarrowedPropertyManager.getInstance(course);
 		// Initialize identity anonymizer map
-		this.anonymizerMap = new HashMap();
+		anonymizerMap = new HashMap<String,String>();
 	}
 
 	/**
@@ -78,7 +77,7 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 	 * @param olatCourse The course
 	 * @return The course property manager
 	 */
-	public static PersistingCoursePropertyManager getInstance(ICourse course) {
+	public static PersistingCoursePropertyManager getInstance(OLATResourceable course) {
 		return new PersistingCoursePropertyManager(course);
 	}
 
@@ -217,9 +216,8 @@ public class PersistingCoursePropertyManager extends BasicManager implements Cou
 
 		DB db = DBFactory.getInstance();
 		DBQuery dbq = db.createQuery(query.toString());
-		ICourse course = CourseFactory.loadCourse(ores);
-		dbq.setLong("resid", course.getResourceableId().longValue());
-		dbq.setString("resname", course.getResourceableTypeName());
+		dbq.setLong("resid", ores.getResourceableId());
+		dbq.setString("resname", ores.getResourceableTypeName());
 		if(excludeIdentities != null && !excludeIdentities.isEmpty()) {
 			List<Long> excludeKeys = new ArrayList<Long>();
 			for(Identity identity:excludeIdentities) {

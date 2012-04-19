@@ -86,7 +86,9 @@ import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
-import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -103,6 +105,8 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.repository.ImportCourseController;
 import org.olat.course.repository.ImportGlossaryReferencesController;
 import org.olat.course.repository.ImportSharedfolderReferencesController;
@@ -352,34 +356,51 @@ public class CourseFactory extends BasicManager {
 	public static void deleteCourse(OLATResourceable res) {
 		final long start = System.currentTimeMillis();
 		log.info("deleteCourse: starting to delete course. res="+res);
-		PersistingCourseImpl course = (PersistingCourseImpl) loadCourse(res);
 
 		// find all references to course
-		List refs = referenceManager.getReferences(course);
-		for (Iterator iter = refs.iterator(); iter.hasNext();) {
+		List<ReferenceImpl> refs = referenceManager.getReferences(res);
+		for (Iterator<ReferenceImpl> iter = refs.iterator(); iter.hasNext();) {
 			ReferenceImpl ref = (ReferenceImpl) iter.next();
 			referenceManager.delete(ref);
 		}
-		// call cleanupOnDelet for nodes
-		Visitor visitor = new NodeDeletionVisitor(course);
-		TreeVisitor tv = new TreeVisitor(visitor, course.getRunStructure().getRootNode(), true);
-		tv.visitAll();
-		// delete assessment notifications
-		CourseNode cn = course.getRunStructure().getRootNode();
-		CourseEnvironment ce = course.getCourseEnvironment();
-		SubscriptionContext sc = new SubscriptionContext(CourseModule.ORES_COURSE_ASSESSMENT, ce.getCourseResourceableId(), cn.getIdent());
-		NotificationsManager.getInstance().delete(sc);
 		
-		clearCalenderSubscriptions(course);
-		// delete course configuration
-		CourseConfigManagerImpl.getInstance().deleteConfigOf(course);
+		PersistingCourseImpl course = null;
+		try {
+			course = (PersistingCourseImpl)loadCourse(res);
+		} catch (CorruptedCourseException e) {
+			log.error("Try to delete a corrupted course, I make want I can.");
+		}
+		
+		// call cleanupOnDelete for nodes
+		if(course != null) {
+			Visitor visitor = new NodeDeletionVisitor(course);
+			TreeVisitor tv = new TreeVisitor(visitor, course.getRunStructure().getRootNode(), true);
+			tv.visitAll();
+		}
+
+		// delete assessment notifications
+		OLATResourceable assessmentOres = OresHelper.createOLATResourceableInstance(CourseModule.ORES_COURSE_ASSESSMENT, res.getResourceableId());
+		NotificationsManager.getInstance().deletePublishersOf(assessmentOres);
+		// delete all course notifications
+		NotificationsManager.getInstance().deletePublishersOf(res);
+		//delete calendar subscription
+		clearCalenderSubscriptions(res);
+		// delete course configuration (not really usefull, the config is in
+		// the course folder which is deleted right after)
+		if(course != null) {
+			CourseConfigManagerImpl.getInstance().deleteConfigOf(course);
+		}
+		
 		// delete course group- and rightmanagement
-		course.getCourseEnvironment().getCourseGroupManager().deleteCourseGroupmanagement();
+		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
+		courseGroupManager.deleteCourseGroupmanagement();
 		// delete all remaining course properties
-		course.getCourseEnvironment().getCoursePropertyManager().deleteAllCourseProperties();
+		CoursePropertyManager propertyManager = PersistingCoursePropertyManager.getInstance(res);
+		propertyManager.deleteAllCourseProperties();
 		// delete course calendar
 		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		calManager.deleteCourseCalendar(course);
+		calManager.deleteCourseCalendar(res);
+
 		// cleanup cache
 		removeFromCache(res.getResourceableId());
 		//TODO: ld: broadcast event: DeleteCourseEvent
@@ -389,8 +410,9 @@ public class CourseFactory extends BasicManager {
 		// we no longer do this though!
 
 		// delete course directory
-		File fCourseBasePath = course.getCourseBaseContainer().getBasefile();
-		boolean deletionSuccessful = FileUtils.deleteDirsAndFiles(fCourseBasePath, true, true);
+		VFSContainer fCourseBasePath = getCourseBaseContainer(res.getResourceableId());
+		VFSStatus status = fCourseBasePath.delete();
+		boolean deletionSuccessful = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
 		log.info("deleteCourse: finished deletion. res="+res+", deletion successful: "+deletionSuccessful+", duration: "+(System.currentTimeMillis()-start)+" ms.");
 	}
 
@@ -398,14 +420,13 @@ public class CourseFactory extends BasicManager {
 	 * Checks all learning group calendars and the course calendar for publishers (of subscriptions)
 	 * and sets their state to "1" which indicates that the ressource is deleted.
 	 */
-	private static void clearCalenderSubscriptions(ICourse course) {
+	private static void clearCalenderSubscriptions(OLATResourceable res) {
 		//set Publisher state to 1 (= ressource is deleted) for all calendars of the course
 		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
 		NotificationsManager nfm = NotificationsManager.getInstance();
-		List<BusinessGroup> learningGroups = course.getCourseEnvironment().getCourseGroupManager()
-			.getAllLearningGroupsFromAllContexts();
-		List<BusinessGroup> rightGroups = course.getCourseEnvironment().getCourseGroupManager()
-		.getAllRightGroupsFromAllContexts();
+		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
+		List<BusinessGroup> learningGroups = courseGroupManager.getAllLearningGroupsFromAllContexts();
+		List<BusinessGroup> rightGroups = courseGroupManager.getAllRightGroupsFromAllContexts();
 		learningGroups.addAll(rightGroups);
 		//all learning and right group calendars
 		for (BusinessGroup bg : learningGroups) {
@@ -424,12 +445,12 @@ public class CourseFactory extends BasicManager {
 			 * OLAT-4947: if we do not have an repo entry we get an exception here. 
 			 * This is normal in the case of courseimport and click canceling.
 			 */
-			course.getCourseTitle();
-			KalendarRenderWrapper courseCalendar = calMan.getCourseCalendar(course);
-			SubscriptionProvider subProvider = new SubscriptionProviderImpl(courseCalendar, course);
-			Publisher pub = nfm.getPublisher(subProvider.getSubscriptionContext());
-			if (pub != null) {
-				pub.setState(1);
+			KalendarRenderWrapper courseCalendar = calMan.getCalendarForDeletion(res);
+			if(courseCalendar != null) {
+				SubscriptionProvider subProvider = new SubscriptionProviderImpl(courseCalendar, res);
+				SubscriptionContext subContext = subProvider.getSubscriptionContext();
+				OLATResourceable oresToDelete = OresHelper.createOLATResourceableInstance(subContext.getResName(), subContext.getResId());
+				nfm.deletePublishersOf(oresToDelete);
 			}
 		} catch (AssertException e) {
 			//if we have a broken course (e.g. canceled import or no repo entry somehow) skip calendar deletion...
@@ -1046,7 +1067,7 @@ public class CourseFactory extends BasicManager {
 	 * @param resourceableId
 	 * @return
 	 */
-	public static VFSItem getCourseBaseContainer(Long resourceableId) {
+	public static VFSContainer getCourseBaseContainer(Long resourceableId) {
 		String relPath = "/course/" + resourceableId.longValue();
 		OlatRootFolderImpl courseRootContainer = new OlatRootFolderImpl(relPath, null);
 		File fBasePath = courseRootContainer.getBasefile();

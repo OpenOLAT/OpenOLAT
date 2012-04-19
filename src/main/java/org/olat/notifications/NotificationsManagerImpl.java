@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
+import org.hibernate.FlushMode;
 import org.olat.ControllerFactory;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.CoreBeanTypes;
@@ -631,17 +632,17 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		Long id = ores.getResourceableId();
 		if (type == null || id == null) throw new AssertException("type/id cannot be null! type:" + type + " / id:" + id);
 		List<Publisher> pubs = getPublishers(type, id);
-		for (Iterator<Publisher> it_pub = pubs.iterator(); it_pub.hasNext();) {
-			Publisher pub = it_pub.next();
-			
-			//grab all subscribers to the publisher and delete them
-			List<Subscriber> subs = getValidSubscribersOf(pub);
-			for (Iterator<Subscriber> iterator = subs.iterator(); iterator.hasNext();) {
-				Subscriber sub = iterator.next();
-				unsubscribe(sub);
-			}
-			deletePublisher(pub);
-		}
+		if(pubs.isEmpty()) return;
+
+		String q1 = "delete from org.olat.notifications.SubscriberImpl sub where sub.publisher in (:publishers)";
+		DBQuery query1 = DBFactory.getInstance().createQuery(q1);
+		query1.setParameterList("publishers", pubs);
+		query1.executeUpdate(FlushMode.AUTO);
+		
+		String q2 = "delete from org.olat.notifications.PublisherImpl pub where pub in (:publishers)";
+		DBQuery query2 = DBFactory.getInstance().createQuery(q2);
+		query2.setParameterList("publishers", pubs);
+		query2.executeUpdate(FlushMode.AUTO);
 	}
 
 	/**
@@ -931,7 +932,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		// else:
 		deletePublisher(p);
 	}
-	
+
 	/**
 	 * delete publisher and subscribers
 	 * 

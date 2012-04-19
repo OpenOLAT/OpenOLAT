@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
 
 /**
  * Description:<BR/> The course group manager provides methods to access
@@ -208,7 +209,7 @@ public interface CourseGroupManager {
 	 * @return A list of all learning group from all learning group contexts of
 	 *         this course
 	 */
-	public List getAllLearningGroupsFromAllContexts();
+	public List<BusinessGroup> getAllLearningGroupsFromAllContexts();
 
 	/**
 	 * @param groupName
@@ -274,7 +275,7 @@ public interface CourseGroupManager {
 	/**
 	 * @return A list of all right groups from this course
 	 */
-	public List getAllRightGroupsFromAllContexts();
+	public List<BusinessGroup> getAllRightGroupsFromAllContexts();
 
 	/**
 	 * @return A list of all group areas from this course

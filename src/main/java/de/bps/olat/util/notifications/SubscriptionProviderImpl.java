@@ -24,12 +24,12 @@ import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.notifications.ContextualSubscriptionController;
 import org.olat.core.util.notifications.PublisherData;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagerImpl;
 
@@ -47,7 +47,7 @@ public class SubscriptionProviderImpl implements SubscriptionProvider {
 	private String caller;
 	private KalendarRenderWrapper kalendarRenderWrapper;
 	private SubscriptionContext subscriptionContext;
-	private ICourse course;
+	private OLATResourceable course;
 	private BusinessGroup businessGroup;
 	
 	public SubscriptionProviderImpl(KalendarRenderWrapper kalendarRenderWrapper) {
@@ -62,7 +62,7 @@ public class SubscriptionProviderImpl implements SubscriptionProvider {
 		this.subscriptionContext = setSubscriptionContext();
 	}
 	
-	public SubscriptionProviderImpl(KalendarRenderWrapper kalendarRenderWrapper, ICourse course) {
+	public SubscriptionProviderImpl(KalendarRenderWrapper kalendarRenderWrapper, OLATResourceable course) {
 		this.kalendarRenderWrapper = kalendarRenderWrapper;
 		this.caller = kalendarRenderWrapper.getKalendar().getType();
 		this.course = course;

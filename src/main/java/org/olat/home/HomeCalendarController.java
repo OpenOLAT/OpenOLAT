@@ -57,6 +57,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -73,7 +74,7 @@ import org.olat.repository.RepositoryManager;
 
 public class HomeCalendarController extends BasicController implements Activateable, Activateable2, GenericEventListener {
 
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(HomeCalendarController.class);
 	
 	private UserSession userSession;
 	private CalendarController calendarController;
@@ -167,26 +168,30 @@ public class HomeCalendarController extends BasicController implements Activatea
 				calendarIDsToBeRemoved.add(courseCalendarID);
 				continue;
 			}
-			ICourse course = CourseFactory.loadCourse(new Long(courseResourceableID));
-			//calendar course aren't enabled per default but course node of type calendar are always possible
-			//REVIEW if (!course.getCourseEnvironment().getCourseConfig().isCalendarEnabled()) continue;
-			// add course calendar
-			KalendarRenderWrapper courseCalendarWrapper = calendarManager.getCourseCalendar(course);
-			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-			boolean isPrivileged = cgm.isIdentityCourseAdministrator(ureq.getIdentity())
-				|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
-			if (isPrivileged) {
-				courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			} else {
-				courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			try {
+				ICourse course = CourseFactory.loadCourse(new Long(courseResourceableID));
+				//calendar course aren't enabled per default but course node of type calendar are always possible
+				//REVIEW if (!course.getCourseEnvironment().getCourseConfig().isCalendarEnabled()) continue;
+				// add course calendar
+				KalendarRenderWrapper courseCalendarWrapper = calendarManager.getCourseCalendar(course);
+				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+				boolean isPrivileged = cgm.isIdentityCourseAdministrator(ureq.getIdentity())
+					|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
+				if (isPrivileged) {
+					courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				} else {
+					courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+				}
+				KalendarConfig courseKalendarConfig = calendarManager.findKalendarConfigForIdentity(courseCalendarWrapper.getKalendar(), ureq);
+				if (courseKalendarConfig != null) {
+					courseCalendarWrapper.getKalendarConfig().setCss(courseKalendarConfig.getCss());
+					courseCalendarWrapper.getKalendarConfig().setVis(courseKalendarConfig.isVis());
+				}
+				courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, ureq, wControl));
+				calendars.add(courseCalendarWrapper);
+			} catch (CorruptedCourseException e) {
+				log.error("Corrupted course: " + courseResourceableID, null);
 			}
-			KalendarConfig courseKalendarConfig = calendarManager.findKalendarConfigForIdentity(courseCalendarWrapper.getKalendar(), ureq);
-			if (courseKalendarConfig != null) {
-				courseCalendarWrapper.getKalendarConfig().setCss(courseKalendarConfig.getCss());
-				courseCalendarWrapper.getKalendarConfig().setVis(courseKalendarConfig.isVis());
-			}
-			courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, ureq, wControl));
-			calendars.add(courseCalendarWrapper);
 		}
 
 		// do calendar ID cleanup

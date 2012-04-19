@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -638,8 +639,12 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 				new Type[] { Hibernate.LONG, Hibernate.LONG });
 		// 2) update course context list in this course resource
 		if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-			ICourse course = CourseFactory.loadCourse(resource);
-			course.getCourseEnvironment().getCourseGroupManager().initGroupContextsList();
+			try {
+				ICourse course = CourseFactory.loadCourse(resource);
+				course.getCourseEnvironment().getCourseGroupManager().initGroupContextsList();
+			} catch (CorruptedCourseException e) {
+				logError("Corrupted course, cannot update group contexts", null);
+			}
 		} else if (resource.getResourceableTypeName().equals("junitcourse")) {
 			// do nothing when in junit test mode
 		} else {

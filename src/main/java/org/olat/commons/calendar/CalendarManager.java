@@ -147,6 +147,14 @@ public interface CalendarManager extends UserDataDeletable {
 	public KalendarRenderWrapper getCourseCalendar(ICourse course);
 	
 	/**
+	 * Get calendar for resource. If the calendar does not yet exist, it will not be created.
+	 * 
+	 * @param course
+	 * @return
+	 */
+	public KalendarRenderWrapper getCalendarForDeletion(OLATResourceable resource);
+	
+	/**
 	 * get the calendar file name from type and id 
 	 * @param type
 	 * @param calendarID
@@ -167,6 +175,12 @@ public interface CalendarManager extends UserDataDeletable {
 	 * @param course
 	 */
 	public void deleteCourseCalendar(ICourse course);
+	
+	/**
+	 * Delete the calendar of the given resource.
+	 * @param course
+	 */
+	public void deleteCourseCalendar(OLATResourceable resource);
 	
 	/**
 	 * Get the individual calendar configuration for a specific

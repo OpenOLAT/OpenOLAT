@@ -46,6 +46,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -58,6 +60,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -90,6 +93,8 @@ import de.tuchemnitz.wizard.workflows.coursecreation.steps.CcStep00;
  * 
  */
 public class CourseHandler implements RepositoryHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseHandler.class);
 
 	/**
 	 * Command to add (i.e. import) a course.
@@ -105,17 +110,17 @@ public class CourseHandler implements RepositoryHandler {
 	private static final boolean DOWNLOADEABLE = true;
 	private static final boolean EDITABLE = true;
 	private static final boolean WIZARD_SUPPORT = true;
-	private static final List supportedTypes;
+	private static final List<String> supportedTypes;
 
 	static { // initialize supported types
-		supportedTypes = new ArrayList(1);
+		supportedTypes = new ArrayList<String>(1);
 		supportedTypes.add(CourseModule.getCourseTypeName());
 	}
 	
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
 	 */
-	public List getSupportedTypes() {	return supportedTypes; }
+	public List<String> getSupportedTypes() {	return supportedTypes; }
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
@@ -239,10 +244,11 @@ public class CourseHandler implements RepositoryHandler {
 		 */
 		UserManager um = UserManager.getInstance();
 		String charset = um.getUserCharset(ureq.getIdentity());
-		CourseFactory.archiveCourse(res,charset,ureq.getLocale(),ureq.getIdentity());
-		/*
-		 * 
-		 */
+		try {
+			CourseFactory.archiveCourse(res,charset,ureq.getLocale(),ureq.getIdentity());
+		} catch (CorruptedCourseException e) {
+			log.error("The course is corrupted, cannot archive it: " + res, e);
+		}
 		return true;
 	}
 	

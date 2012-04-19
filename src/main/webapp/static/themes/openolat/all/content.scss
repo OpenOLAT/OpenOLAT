@@ -105,7 +105,9 @@ dd { margin: 0 0 1em 2em }
 .b_note {background: #E2E2E2; padding: 1em; border: 2px #B5B5B5 solid; @include o-border-radius(4px);}
 .b_important {background: #FFF1A4; padding: 1em; border: 2px #F4D000 solid; @include o-border-radius(4px);}
 .b_warning {background: #FFD5AA; padding: 1em; border: 2px #FF9E3E solid; @include o-border-radius(4px);}
-div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
+.b_error {background: #FF4019; padding: 1em; border: 2px #ff0600 solid; @include o-border-radius(4px);}
+
+div.b_note, div.b_important, div.b_warning, div.b_info, div.b_error { margin: 1em 0;}
 .b_border_box { border: 1px solid $basegray_light; padding: 1em;}
 /* font  */
 .b_disabled { color: $basegray_light; }
@@ -125,6 +127,8 @@ div.b_note, div.b_important, div.b_warning, div.b_info { margin: 1em 0;}
 blockquote.b_quote { margin: 0; border: 1px solid rgb(229, 229, 229);color: black;padding: 8px 10px 6px;color: #646464;background:#fff; }
 .b_border_box { border: 1px solid #ccc; padding: 1em; @include o-border-radius(2px); }
 .b_warning { padding: 1em; border: 2px #ffc659 solid; @include o-border-radius(4px); @include o-gradient2(#ffe49c,#fff4da); }
+.b_error { padding: 1em; border: 2px #ff0600 solid; @include o-border-radius(4px); @include o-gradient2(#ff4019,#ff7e5f); }
+.b_error .b_error_icon { padding: 9px 0 9px 41px; background: url(../../openolat/images/icon_error_32.png) no-repeat; }
 .b_dimmed { @include o-opacity(40); }
 .o_ochre { color: #c8a959; }
 	

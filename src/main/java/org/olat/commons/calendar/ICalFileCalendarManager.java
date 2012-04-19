@@ -776,6 +776,21 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		return calendarWrapper;
 	}
 	
+	@Override
+	public KalendarRenderWrapper getCalendarForDeletion(OLATResourceable resource) {
+		String type;
+		if("CourseModule".equals(resource.getResourceableTypeName())) {
+			type = CalendarManager.TYPE_COURSE;
+		} else {
+			type = CalendarManager.TYPE_GROUP;
+		}
+		Kalendar cal = getCalendar(type, resource.getResourceableId().toString());
+		KalendarRenderWrapper calendarWrapper = new KalendarRenderWrapper(cal);
+		KalendarConfig config = new KalendarConfig("To delete", KalendarRenderWrapper.CALENDAR_COLOR_GREEN, true);
+		calendarWrapper.setKalendarConfig(config);
+		return calendarWrapper;
+	}
+
 	public void deletePersonalCalendar(Identity identity) {
 		deleteCalendar(CalendarManager.TYPE_USER, identity.getName());
 	}
@@ -785,6 +800,10 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	}
 	
 	public void deleteCourseCalendar(ICourse course) {
+		deleteCalendar(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
+	}
+	
+	public void deleteCourseCalendar(OLATResourceable course) {
 		deleteCalendar(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
 	}
 
