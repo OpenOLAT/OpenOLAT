@@ -104,10 +104,5 @@
 			</bean>
 
 			<bean class="org.olat.core.gui.render.velocity.VelocityModule" depends-on="org.olat.core.helpers.Settings" init-method="init"/>
-
-	
-<!-- base setting (ram only) to be overridden in a config.xml -->
-<bean id="core.preferences.PreferencesStorage" 
-class="org.olat.core.util.prefs.ram.RamPreferencesStorage"  />
 	
 </beans>

@@ -227,15 +227,18 @@
 
 	<bean id="adminbean"
 		class="org.olat.admin.AdminModuleDispatcher" />
-	<bean id="redirect2defaultbean"
-		class="org.olat.core.defaults.dispatcher.RedirectToDefaultDispatcher" />
 	<!-- uncomment this if the xml catolog export should be enabled -->
 	<!-- 
 	<bean id ="catexport" class = "org.olat.dispatcher.CatalogExportModuleDispatcher" >
 		<constructor-arg index="0">5</constructor-arg>
 	</bean>
 	 -->
-	<!-- uncomment this and comment above line if automatic guest login should be enabled  <bean id ="redirect2defaultbean" class = "org.olat.dispatcher.RedirectToAutoGuestLoginDispatcher" /> -->
+
+	<bean id="redirect2defaultbean" class = "org.olat.core.defaults.dispatcher.RedirectToDefaultDispatcher" />
+	<!-- uncomment this and comment above line if automatic guest login should be enabled -->
+	<!--
+	<bean id="redirect2defaultbean" class = "org.olat.dispatcher.RedirectToAutoGuestLoginDispatcher" />
+	-->
 
 
 	<!-- podcast media dispatcher -->

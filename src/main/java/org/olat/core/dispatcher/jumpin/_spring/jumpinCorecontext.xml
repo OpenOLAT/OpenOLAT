@@ -8,30 +8,17 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+<!-- !Deprecated! -->
 <bean id="jumpInManager" class="org.olat.core.dispatcher.jumpin.JumpInManager" >
 	<constructor-arg ref="jumpinConfig" />
 </bean>
 
 <!--
 	************************************************
-	*** Configuration for core.dispatcher.jumpin ***
+	*** Configuration for dispatcher.jumpin ***
 	************************************************
-	
-	..your_thingy/go?param=something gets handled by a Your_thingyJumpInHandlerFactory by 
-	returning a Your_thingyJumpInReceptionist
-	This is used for example to directly jump to a course node
-	
+	See in serviceconfig/org/olat/_spring/olatextconfig.xml
 -->
-<bean id="jumpinConfig" class="org.olat.core.dispatcher.jumpin.JumpinConfig" >
-		<property name="jumpinhandlers">
-  			<map>
-  				<!-- <entry key="your_thingy/open">
-  					<ref bean="thingybean" />
-  				</entry> -->
-  			</map>
-  		</property>
-</bean>
-<!-- TODO:<bean id ="thingybean" class = "com.enterprise.Your_thingyJumpInHandlerFactory" scope="prototype"/> -->
 
 
 </beans>
