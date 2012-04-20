@@ -25,8 +25,12 @@
 
 package org.olat.registration;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.EmailAddressValidator;
 
 /**
@@ -45,10 +49,16 @@ import org.olat.core.util.mail.EmailAddressValidator;
 public class RegistrationModule extends AbstractOLATModule {
 	// registration config
 	private static final String CONFIG_SELFREGISTRATION = "enableSelfregistration";
+	private static final String CONFIG_SELFREGISTRATION_LINK = "enableSelfregistrationLink";
+	private static final String CONFIG_SELFREGISTRATION_LOGIN = "enableSelfregistrationLogin";
 	private static final String CONFIG_REGISTRATION_NOTIFICATION ="registrationNotificationEnabled";
 	private static final String CONFIG_REGISTRATION_NOTIFICATION_EMAIL ="registrationNotificationEmail";
-	private static boolean selfRegistrationEnabled;
-	private static String registrationNotificationEmail;
+	private boolean selfRegistrationEnabled;
+	private boolean selfRegistrationLinkEnabled;
+	private boolean selfRegistrationLoginEnabled;
+	private String registrationNotificationEmail;
+	private String domainList;
+	
 	// disclaimer config
 	private static final String CONFIG_DISCLAIMER = "disclaimerEnabled";
 	private static final String CONFIG_ADDITIONAL_CHECKBOX ="disclaimerAdditionalCheckbox";
@@ -77,8 +87,52 @@ public class RegistrationModule extends AbstractOLATModule {
 	/**
 	 * @return true if self registration is turned on, false otherwhise
 	 */
-	public static boolean isSelfRegistrationEnabled(){
+	public boolean isSelfRegistrationEnabled(){
 	    return selfRegistrationEnabled;
+	}
+	
+	public void setSelfRegistrationEnabled(boolean enable) {
+		String value = enable ? "true" : "false";
+		setStringProperty("registration.enabled", value, true);
+	}
+	
+	public boolean isSelfRegistrationLinkEnabled(){
+    return selfRegistrationLinkEnabled;
+	}
+	
+	public void setSelfRegistrationLinkEnabled(boolean enable) {
+		String value = enable ? "true" : "false";
+		setStringProperty("registration.link.enabled", value, true);
+	}
+	
+	public boolean isSelfRegistrationLoginEnabled(){
+    return selfRegistrationLoginEnabled;
+	}
+	
+	public void setSelfRegistrationLoginEnabled(boolean enable) {
+		String value = enable ? "true" : "false";
+		setStringProperty("registration.login.enabled", value, true);
+	}
+	
+	public String getDomainListRaw() {
+		return domainList;
+	}
+	
+	public void setDomainListRaw(String list) {
+		setStringProperty("registration.domains", normalizeDomainList(list), true);
+	}
+	
+	private String normalizeDomainList(String list) {
+		if(list == null) list = "";
+		return list.replace("\n", ",").replace("\r", "").replace(" ", ",").replace("\t", ",");
+	}
+	
+	public List<String> getDomainList() {
+		return Arrays.asList(domainList.split(","));
+	}
+	
+	public List<String> getDomainList(String list) {
+		return Arrays.asList(normalizeDomainList(list).split(","));
 	}
 
 	/**
@@ -87,45 +141,69 @@ public class RegistrationModule extends AbstractOLATModule {
 	 * should be applied.
 	 * @return String or null if not configured or disabled
 	 */
-	public static String getRegistrationNotificationEmail() {
+	public String getRegistrationNotificationEmail() {
 		return registrationNotificationEmail;
 	}
 
 	/**
 	 * @return true to force acceptance of disclaimer on first login; true to skip disclaimer
 	 */
-	public static boolean isDisclaimerEnabled() {
+	public boolean isDisclaimerEnabled() {
 		return disclaimerEnabled;
 	}
 	
 	/**
 	 * @return true to add a second checkbox to the disclaimer
 	 */
-	public static boolean isDisclaimerAdditionalCheckbox() {
+	public boolean isDisclaimerAdditionalCheckbox() {
 		return additionalCheckbox;
 	}
 
 	/**
 	 * @return true to add a link to the disclaimer
 	 */
-	public static boolean isDisclaimerAdditionaLinkText() {
+	public boolean isDisclaimerAdditionaLinkText() {
 		return additionaLinkText;
 	}
 
 	@Override
 	public void init() {
-		// Nothing to initialize
+		//registration enabled/disabled
+		String enabledObj = getStringPropertyValue("registration.enabled", true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			selfRegistrationEnabled = "true".equals(enabledObj);
+		}
+		
+		//link registration enabled/disabled (rest)
+		String linkEnabledObj = getStringPropertyValue("registration.link.enabled", true);
+		if(StringHelper.containsNonWhitespace(linkEnabledObj)) {
+			selfRegistrationLinkEnabled = "true".equals(linkEnabledObj);
+		}
+		
+		//link on the login page for registration enabled/disabled 
+		String loginEnabledObj = getStringPropertyValue("registration.login.enabled", true);
+		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
+			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
+		}
+		
+		//white list of domains
+		String domainObj = getStringPropertyValue("registration.domains", true);
+		if(StringHelper.containsNonWhitespace(domainObj)) {
+			domainList = domainObj;
+		}
 	}
 
 	@Override
 	protected void initDefaultProperties() {
-		
 		selfRegistrationEnabled = getBooleanConfigParameter(CONFIG_SELFREGISTRATION, false);
 		if (selfRegistrationEnabled) {
 		  logInfo("Selfregistration is turned ON");
 		} else {
 			logInfo("Selfregistration is turned OFF");
 		}
+		
+		selfRegistrationLinkEnabled = getBooleanConfigParameter(CONFIG_SELFREGISTRATION_LINK, false);
+		selfRegistrationLoginEnabled = getBooleanConfigParameter(CONFIG_SELFREGISTRATION_LOGIN, false);
 
 		// Check for registration email notification configuration
 		Boolean regNoti = getBooleanConfigParameter(CONFIG_REGISTRATION_NOTIFICATION, true);
@@ -151,7 +229,7 @@ public class RegistrationModule extends AbstractOLATModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		// Nothing to init
+		init();
 	}
 
 	@Override

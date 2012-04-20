@@ -27,13 +27,15 @@
 package org.olat.registration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -42,8 +44,17 @@ import org.olat.test.OlatTestCase;
  * @author Sabina Jeger
  */
 public class RegistrationManagerTest extends OlatTestCase {
-	private static Logger log = Logger.getLogger(RegistrationManagerTest.class.getName());
 
+	@Autowired
+	private RegistrationManager registrationManager;
+	@Autowired
+	private RegistrationModule registrationModule;
+	
+	@Test
+	public void testManagers() {
+		assertNotNull(registrationModule);
+		assertNotNull(registrationManager);
+	}
 
 	/**
 	 * Test internal registration.
@@ -51,7 +62,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 	@Test public void testRegister() {
 		String emailaddress = "sabina@jeger.net";
 		String ipaddress = "130.60.112.10";
-		TemporaryKeyImpl result = RegistrationManager.getInstance().register(emailaddress, ipaddress, "register");
+		TemporaryKeyImpl result = registrationManager.register(emailaddress, ipaddress, "register");
 		assertTrue(result != null);
 		assertEquals(emailaddress,result.getEmailAddress());
 		assertEquals(ipaddress,result.getIpAddress());
@@ -66,14 +77,13 @@ public class RegistrationManagerTest extends OlatTestCase {
 		String regkey = "";
 		TemporaryKeyImpl result = null;
 		String ipaddress = "130.60.112.12";
-		RegistrationManager rm = RegistrationManager.getInstance();
 
 		//
-		result = rm.loadTemporaryKeyByRegistrationKey(regkey);
+		result = registrationManager.loadTemporaryKeyByRegistrationKey(regkey);
 		assertTrue("not found, as registration key is empty", result == null);
 		
 		//now create a temp key
-		result = rm.createTemporaryKeyByEmail(emailaddress,ipaddress,rm.REGISTRATION);
+		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 		assertTrue("result not null because key generated", result != null);
 		//**
 		DBFactory.getInstance().closeSession();
@@ -82,7 +92,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		
 		//check that loading the key by registration key works
 		result = null;
-		result = rm.loadTemporaryKeyByRegistrationKey(regkey);
+		result = registrationManager.loadTemporaryKeyByRegistrationKey(regkey);
 		assertTrue("we should find the key just created", result != null);
 	}
 	
@@ -93,14 +103,13 @@ public class RegistrationManagerTest extends OlatTestCase {
 		String emailaddress = "patrickbrunner@uzh.ch";
 		TemporaryKeyImpl result = null;
 		String ipaddress = "130.60.112.11";
-		RegistrationManager rm = RegistrationManager.getInstance();
 
 		//try to load temp key which was not created before
-		result = rm.loadTemporaryKeyByEmail(emailaddress);
+		result = registrationManager.loadTemporaryKeyByEmail(emailaddress);
 		assertTrue("result should be null, because not found", result == null);
 		
 		//now create a temp key
-		result = rm.createTemporaryKeyByEmail(emailaddress,ipaddress,rm.REGISTRATION);
+		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 		assertTrue("result not null because key generated", result != null);
 		//**
 		DBFactory.getInstance().closeSession();
@@ -108,7 +117,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		
 		//check that loading the key by e-mail works
 		result = null;
-		result = rm.loadTemporaryKeyByEmail(emailaddress);
+		result = registrationManager.loadTemporaryKeyByEmail(emailaddress);
 		assertTrue("we shoult find the key just created", result != null);
 	}
 	
@@ -120,20 +129,45 @@ public class RegistrationManagerTest extends OlatTestCase {
 		String emailaddress = "sabina@jeger.net";
 		TemporaryKeyImpl result = null;
 		String ipaddress = "130.60.112.10";
-		RegistrationManager rm = RegistrationManager.getInstance();
 
-		result = rm.createTemporaryKeyByEmail(emailaddress,ipaddress,rm.REGISTRATION);
+		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 		assertTrue(result != null);
 
 		emailaddress = "sabina@jeger.ch";
-		result = rm.createTemporaryKeyByEmail(emailaddress,ipaddress,rm.REGISTRATION);
+		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 
 		assertTrue(result != null);
 		
 		emailaddress = "info@jeger.net";
-		result = rm.createTemporaryKeyByEmail(emailaddress,ipaddress,rm.REGISTRATION);
+		result = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 
-		assertTrue(result != null);
+		assertNotNull(result);
+	}
+	
+	@Test
+	public void validateAgainstWhiteList() {
+		//set domains
+		registrationModule.setDomainListRaw("frentix.com cyberiacafe.ch,openolat.org\nfrentix.de");
+		String domains = registrationModule.getDomainListRaw();
+		assertEquals("frentix.com,cyberiacafe.ch,openolat.org,frentix.de", domains);
+		
+		//check equals matching
+		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
+		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
+		assertFalse(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
+	}
+	
+	@Test
+	public void validateAgainstWhiteListWithWildCard() {
+		//set domains
+		registrationModule.setDomainListRaw("frentix.com *cyberiacafe.ch,openolat.org\nfrentix.de");
+		String domains = registrationModule.getDomainListRaw();
+		assertEquals("frentix.com,*cyberiacafe.ch,openolat.org,frentix.de", domains);
+		
+		//check equals matching
+		assertTrue(registrationManager.validateEmailUsername("aoi@cyberiacafe.ch"));
+		assertFalse(registrationManager.validateEmailUsername("aoi@cyberia.ch"));
+		assertTrue(registrationManager.validateEmailUsername("aoi@blog.cyberiacafe.ch"));
 	}
 
 	/* (non-Javadoc)

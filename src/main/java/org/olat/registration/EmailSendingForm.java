@@ -25,6 +25,7 @@
 
 package org.olat.registration;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -43,9 +44,13 @@ import org.olat.core.util.mail.MailHelper;
 public class EmailSendingForm extends FormBasicController {
 	
 	private TextElement mail;
+	private final RegistrationManager registrationManager;
 	
 	public EmailSendingForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		registrationManager = CoreSpringFactory.getImpl(RegistrationManager.class);
+		
 		initForm(ureq);
 	}
 
@@ -71,15 +76,24 @@ public class EmailSendingForm extends FormBasicController {
 	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
 		
 		if (mail.isEmpty("email.address.maynotbeempty")) {
-			return false;
-		}
-		if (!MailHelper.isValidEmailAddress(mail.getValue())) {
+			allOk &= false;
+		} else if (!MailHelper.isValidEmailAddress(mail.getValue())) {
 			mail.setErrorKey("email.address.notregular", null);
-			return false;
+			allOk &= false;
+		} else {
+			String val = mail.getValue();
+			
+			boolean valid = registrationManager.validateEmailUsername(val);
+			if(!valid) {
+				mail.setErrorKey("form.mail.whitelist.error", null);
+			}
+			allOk &= valid;
 		}
-		return true;
+
+		return allOk && super.validateFormLogic(ureq);
 	}
 
 	protected void formOK(UserRequest ureq) {

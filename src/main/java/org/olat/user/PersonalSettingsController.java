@@ -31,6 +31,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -115,7 +116,7 @@ public class PersonalSettingsController extends BasicController implements Activ
 			}
 
 			// Show read only display of disclaimer so user sees what he accepted if disclaimer enabled
-			if (RegistrationModule.isDisclaimerEnabled()) {
+			if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerEnabled()) {
 				Controller disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), true);
 				listenTo(disclaimerCtr);
 				userConfig.addTab(translate("tab.disclaimer"), disclaimerCtr.getInitialComponent());

@@ -33,6 +33,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -100,7 +101,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			pwLink.setCustomEnabledLinkCSS("o_login_pwd b_with_small_icon_left");
 		}
 		
-		if (RegistrationModule.isSelfRegistrationEnabled()) {
+		if (CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()
+				&& CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationLoginEnabled()) {
 			registerLink = LinkFactory.createLink("_olat_login_register", "menu.register", loginComp, this);
 			registerLink.setCustomEnabledLinkCSS("o_login_register b_with_small_icon_left");
 		}
@@ -156,7 +158,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		}
 	}
 	//fxdiff FXOLAT-113: business path in DMZ
-	protected void openRegistration(UserRequest ureq) {
+	protected RegistrationController openRegistration(UserRequest ureq) {
 		removeAsListenerAndDispose(subController);
 		subController = new RegistrationController(ureq, getWindowControl());
 		listenTo(subController);
@@ -166,6 +168,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		listenTo(cmc);
 
 		cmc.activate();
+		return (RegistrationController)subController;
 	}
 	//fxdiff FXOLAT-113: business path in DMZ
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
@@ -244,7 +247,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
 		if("changepw".equals(type)) {
 			String email = null;
 			if(entries.size() > 1) {
@@ -252,7 +256,11 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			}
 			openChangePassword(ureq, email);
 		} else if("registration".equals(type)) {
-			openRegistration(ureq);
+			if (CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()
+					&& CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationLinkEnabled()) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				openRegistration(ureq).activate(ureq, subEntries, entry.getTransientState());
+			}
 		}
 	}
 

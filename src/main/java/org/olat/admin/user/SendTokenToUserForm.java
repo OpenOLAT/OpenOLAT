@@ -149,7 +149,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
 		if (tk == null) {
 			String ip = ureq.getHttpReq().getRemoteAddr();
-			tk = rm.createTemporaryKeyByEmail(emailAdress, ip, rm.PW_CHANGE);
+			tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
 		}
 		if(text.indexOf(dummyKey) < 0) {
 			showWarning("changeuserpwd.failed");

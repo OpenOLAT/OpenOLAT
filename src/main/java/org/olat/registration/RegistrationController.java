@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -44,12 +45,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.WizardInfoController;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -68,7 +72,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * <P>
  * @author Sabina Jeger
  */
-public class RegistrationController extends BasicController {
+public class RegistrationController extends BasicController implements Activateable2 {
 
 	private static final String SEPARATOR = "____________________________________________________________________\n";
 
@@ -90,8 +94,10 @@ public class RegistrationController extends BasicController {
 	 */
 	public RegistrationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);		
-		if (!RegistrationModule.isSelfRegistrationEnabled()) { throw new OLATRuntimeException(RegistrationController.class,
-				"Registration controller launched but self registration is turned off in the config file", null); }
+		if (!CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()) { 
+			throw new OLATRuntimeException(RegistrationController.class,
+				"Registration controller launched but self registration is turned off in the config file", null);
+		}
 		// override language when not the same as in ureq and add fallback to
 		// property handler translator for user properties
 		String lang = ureq.getParameter("lang");
@@ -216,6 +222,13 @@ public class RegistrationController extends BasicController {
 		myContent.contextPut("text", translate("step1.reg.text"));
 		regarea.setContent(emailSendForm.getInitialComponent());
 	}
+	
+	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
@@ -252,7 +265,7 @@ public class RegistrationController extends BasicController {
 				boolean isMailSent = false;
 				if (!foundUser) {
 					TemporaryKey tk = registrationManager.loadTemporaryKeyByEmail(email);
-					if (tk == null) tk = registrationManager.createTemporaryKeyByEmail(email, ip, registrationManager.REGISTRATION);
+					if (tk == null) tk = registrationManager.createTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
 					myContent.contextPut("regKey", tk.getRegistrationKey());
 					body = getTranslator().translate("reg.body",
 							new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) })
@@ -399,7 +412,7 @@ public class RegistrationController extends BasicController {
 			// persist changes in db
 			um.updateUserFromIdentity(persistedIdentity);
 			// send notification mail to sys admin
-			String notiEmail = RegistrationModule.getRegistrationNotificationEmail();
+			String notiEmail = CoreSpringFactory.getImpl(RegistrationModule.class).getRegistrationNotificationEmail();
 			if (notiEmail != null) {
 				registrationManager.sendNewUserNotificationMessage(notiEmail, persistedIdentity);
 			}

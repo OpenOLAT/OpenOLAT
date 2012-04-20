@@ -45,6 +45,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	public EmailOrUsernameFormController(UserRequest ureq, WindowControl wControl, String initialEmail) {
 		super(ureq, wControl);
 		this.initialEmail = initialEmail;
+		
 		initForm(ureq);
 	}
 
@@ -68,7 +69,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-	
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)

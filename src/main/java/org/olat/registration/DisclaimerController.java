@@ -28,6 +28,7 @@ package org.olat.registration;
 import java.io.File;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -99,7 +100,7 @@ public class DisclaimerController extends BasicController {
 		
 		// add optinal download link, see class comments in DisclaimerFormController
 		// Add the additional link to the form (depending on the configuration)
-		if (RegistrationModule.isDisclaimerAdditionaLinkText()) {
+		if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerAdditionaLinkText()) {
 			File disclaimerDir = new File(WebappHelper.getUserDataRoot() + "/customizing/disclaimer/");
 			disclaimerDir.mkdirs();
 			VFSContainer disclaimerContainer = new LocalFolderImpl(disclaimerDir);
@@ -142,7 +143,7 @@ public class DisclaimerController extends BasicController {
 				// Verify that, if the additional checkbox is configured to be visible, it is checked as well
 				boolean acceptCheckboxChecked = (disclaimerFormController.acceptCheckbox != null) ? (disclaimerFormController.acceptCheckbox.isSelected(0)) : false;
 				// configure additional checkbox, see class comments in DisclaimerFormController
-				boolean additionalCheckboxConfigured = RegistrationModule.isDisclaimerAdditionalCheckbox();
+				boolean additionalCheckboxConfigured = CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerAdditionalCheckbox();
 				boolean additionalCheckboxChecked = (disclaimerFormController.additionalCheckbox != null) ? (disclaimerFormController.additionalCheckbox.isSelected(0)) : false;
 				if (!additionalCheckboxConfigured) {
 					if (acceptCheckboxChecked) {

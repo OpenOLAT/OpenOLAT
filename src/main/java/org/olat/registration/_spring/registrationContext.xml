@@ -5,19 +5,18 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-
-<!-- module -->
-<bean id="registrationModule" class="org.olat.registration.RegistrationModule" depends-on="i18nModule" >
-<property name="persistedProperties">
-  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-    <constructor-arg index="0" ref="coordinatorManager"/>
-    <constructor-arg index="1" ref="registrationModule" />
-  </bean>
-</property>
-<property name="usernamePresetBean" ref="registrationPresetUsername.${registration.preset.username}"/>
-</bean>
+	<!-- Registration module -->
+	<bean id="registrationModule" class="org.olat.registration.RegistrationModule" depends-on="i18nModule" >
+		<property name="persistedProperties">
+  			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+   				<constructor-arg index="0" ref="coordinatorManager"/>
+    			<constructor-arg index="1" ref="registrationModule" />
+			</bean>
+		</property>
+		<property name="usernamePresetBean" ref="registrationPresetUsername.${registration.preset.username}"/>
+	</bean>
                        
-       <bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="targetObject" ref="registrationModule" />
         <property name="targetMethod" value="init" />
         <property name="arguments">
@@ -26,6 +25,9 @@
 					<!-- local user accounts themself. This has no effect on the registration mechanism    -->
 					<!-- used in the Shibboleth registration process, its only about local user accounts   -->
         			enableSelfregistration=${registration.enableSelfRegistration}
+        			enableSelfregistrationLink=${registration.enableSelfRegistration.link}
+        			enableSelfregistrationLogin=${registration.enableSelfRegistration.login}
+        			registrationDomainList=${registration.domainList}
 					
 					<!-- Send an email to the given address every time a new user registers in the system. -->
 					<!-- This is usefull to monitor who is registering and maybe block unwanted users.     -->
@@ -34,17 +36,41 @@
 					disclaimerEnabled=${registration.enableDisclaimer}
 					disclaimerAdditionalCheckbox=${registration.disclaimerAdditionalCheckbox}
 					disclaimerAdditionaLinkText=${registration.disclaimerAdditionaLinkText}	
-	                 </value>
+	                </value>
 	     </property>
-</bean>
+	</bean>
+	
+	<bean id="selfRegistrationManager" class="org.olat.registration.RegistrationManager">
+		<property name="registrationModule" ref="registrationModule" />
+	</bean>
 
-<bean id="registrationPresetUsername.byEmail"
+	<bean id="registrationPresetUsername.byEmail"
 		class="org.olat.registration.SelfRegistrationUserNameFromEmailUserNameCreationInterceptor" lazy-init="true">
 		<property name="allowChangeOfUsername" value="${registration.preset.username.allowChanges}"/>
 		<property name="emailDomain" value="${registration.preset.username.domain}"/>
-</bean>
+	</bean>
 
-<bean id="registrationPresetUsername.disabled"
+	<bean id="registrationPresetUsername.disabled"
 		class="org.olat.registration.DummyUserNameCreationInterceptor" lazy-init="true" />  
+		
+	<!-- Registration admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7215" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.registration.RegistrationAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="selfregistration" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.registration"/>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean> 
 
 </beans>

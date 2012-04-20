@@ -19,6 +19,7 @@
  */
 package org.olat.registration;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -85,7 +86,7 @@ public class DisclaimerFormController extends FormBasicController {
 		acceptCheckbox.select(DCL_CHECKBOX_KEY, readOnly);
 		
 		// Add the additional checkbox to the form (depending on the configuration)
-		if(RegistrationModule.isDisclaimerAdditionalCheckbox()) {
+		if(CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerAdditionalCheckbox()) {
 			String additionalCheckboxText = translate("disclaimer.additionalcheckbox");
 			if (additionalCheckboxText != null) {
 				additionalCheckbox = uifactory.addCheckboxesVertical(ADDITIONAL_CHECKBOX_NAME, null, formLayout, new String[] {DCL_CHECKBOX_KEY2}, new String[] {additionalCheckboxText}, null, 1);

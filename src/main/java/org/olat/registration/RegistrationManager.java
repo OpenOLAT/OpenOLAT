@@ -25,6 +25,8 @@
 
 package org.olat.registration;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +38,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.hibernate.Hibernate;
 import org.olat.basesecurity.AuthHelper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.PackageTranslator;
@@ -44,9 +47,9 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -62,11 +65,13 @@ import org.olat.properties.PropertyManager;
  */
 public class RegistrationManager extends BasicManager {
 
-	public final String PW_CHANGE = "PW_CHANGE";
-	public final String REGISTRATION = "REGISTRATION";//fxdiff FXOLAT-113: business path in DMZ
+	public static final String PW_CHANGE = "PW_CHANGE";
+	public static final String REGISTRATION = "REGISTRATION";//fxdiff FXOLAT-113: business path in DMZ
 	public static final String EMAIL_CHANGE = "EMAIL_CHANGE";
 	protected static final int REG_WORKFLOW_STEPS = 5;
 	protected static final int PWCHANGE_WORKFLOW_STEPS = 4;
+	
+	private RegistrationModule registrationModule;
 
 	private RegistrationManager() {
 		// singleton
@@ -77,6 +82,75 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public static RegistrationManager getInstance() {
 		return new RegistrationManager();
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param registrationModule
+	 */
+	public void setRegistrationModule(RegistrationModule registrationModule) {
+		this.registrationModule = registrationModule;
+	}
+	
+	public boolean validateEmailUsername(String email) {
+		List<String> whiteList = registrationModule.getDomainList();
+		if(whiteList.isEmpty()) {
+			return true;
+		}
+		
+		if(!StringHelper.containsNonWhitespace(email)) {
+			return false;
+		}
+		int index = email.indexOf('@');
+		if(index < 0 || index+1 >= email.length()) {
+			return false;
+		}
+		
+		String emailDomain = email.substring(index+1);
+		boolean valid = false;
+		for(String domain:whiteList) {
+			try {
+				String pattern = convertDomainPattern(domain);
+				if(emailDomain.matches(pattern)) {
+					valid = true;
+					break;
+				}
+			} catch (Exception e) {
+				logError("Error matching an email adress", e);
+			}
+		}
+		return valid;
+	}
+	
+	/**
+	 * Validate the white list (prevent exception from regex matcher)
+	 * @param list
+	 * @return
+	 */
+	public List<String> validateWhiteList(List<String> list) {
+		if(list.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		String emailDomain = "openolat.org";
+		List<String> errors = new ArrayList<String>();
+		for(String domain:list) {
+			try {
+				String pattern = convertDomainPattern(domain);
+				emailDomain.matches(pattern);
+			} catch (Exception e) {
+				errors.add(domain);
+				logError("Error matching an email adress", e);
+			}
+		}
+		return errors;
+	}
+	
+	private String convertDomainPattern(String domain) {
+		if(domain.indexOf('*') >= 0) {
+			domain = domain.replace("*", ".*");
+		}
+		return domain;
 	}
 
 	/**
@@ -110,7 +184,7 @@ public class RegistrationManager extends BasicManager {
 			from = new InternetAddress(WebappHelper.getMailConfig("mailReplyTo"));
 			to = new Address[] { new InternetAddress(notificationMailAddress)};
 		} catch (AddressException e) {
-			Tracing.logError("Could not send registration notification message, bad mail address", e, RegistrationManager.class);
+			logError("Could not send registration notification message, bad mail address", e);
 			return;
 		}
 		MailerResult result = new MailerResult();
@@ -126,7 +200,7 @@ public class RegistrationManager extends BasicManager {
 		MimeMessage msg = MailManager.getInstance().createMimeMessage(from, to, null, null, body, subject, null, result);
 		MailManager.getInstance().sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
-			Tracing.logError("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), RegistrationManager.class);			
+			logError("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), null);			
 		}
 	}
 	
@@ -256,10 +330,10 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public boolean needsToConfirmDisclaimer(Identity identity) {
 		boolean needsToConfirm = false; // default is not to confirm
-		if (RegistrationModule.isDisclaimerEnabled()) {
+		if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerEnabled()) {
 			// don't use the discrete method to be more robust in case that more than one
 			// property is found
-			List disclaimerProperties = PropertyManager.getInstance().listProperties(identity, null, null, "user", "dislaimer_accepted");
+			List<Property> disclaimerProperties = PropertyManager.getInstance().listProperties(identity, null, null, "user", "dislaimer_accepted");
 			needsToConfirm = ( disclaimerProperties.size() == 0);
 		}
 		return needsToConfirm;
