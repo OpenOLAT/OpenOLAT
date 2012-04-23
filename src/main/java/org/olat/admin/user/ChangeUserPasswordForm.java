@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
+import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 
 /**
@@ -60,7 +62,7 @@ public class ChangeUserPasswordForm extends FormBasicController {
 	 * @param Identity of which password is to be changed
 	 */
 	public ChangeUserPasswordForm(UserRequest ureq, WindowControl wControl, Identity treatedIdentity) {
-		super(ureq, wControl);
+		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		userIdentity = treatedIdentity;
 		initForm(ureq);
 	}

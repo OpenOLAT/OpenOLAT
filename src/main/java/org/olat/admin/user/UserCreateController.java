@@ -25,15 +25,13 @@
 
 package org.olat.admin.user;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.basesecurity.AuthHelper;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -58,9 +56,11 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -81,7 +81,7 @@ public class UserCreateController extends BasicController  {
 	 * @param wControl
 	 */
 	public UserCreateController (UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
-		super(ureq,wControl);
+		super(ureq, wControl, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		BaseSecurity mgr = BaseSecurityManager.getInstance();
 		if (!mgr.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
@@ -285,7 +285,7 @@ class NewUserForm extends FormBasicController {
 				return false;
 			}
 			if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {					
-				psw1TextElement.setErrorKey("new.error.password.characters", new String[]{});					
+				psw1TextElement.setErrorKey("error.password.characters", new String[]{});					
 				return false;
 			}
 			psw1TextElement.clearError();

@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -79,7 +80,7 @@ public class RegistrationForm2 extends FormBasicController {
 	 */
 
 	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
-		super(ureq, wControl);
+		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 
 		this.languageKey = languageKey;
 		this.proposedUsername = proposedUsername;
@@ -237,7 +238,7 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		if (!UserManager.getInstance().syntaxCheckOlatPassword(newpass1.getValue())) {
-			newpass1.setErrorKey("form.checkregex", null);
+			newpass1.setErrorKey("error.password.characters", null);
 			return false;
 		}
 		if (!newpass1.getValue().equals(newpass2.getValue())) {

@@ -33,7 +33,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 
 /**
@@ -51,7 +53,7 @@ public class PwChangeForm extends FormBasicController {
 	 * @param name
 	 */
 	public PwChangeForm(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		initForm(ureq);
 	}
 
@@ -60,7 +62,7 @@ public class PwChangeForm extends FormBasicController {
 		
 		boolean newIsValid = UserManager.getInstance().syntaxCheckOlatPassword(newpass1.getValue());
 		if (!newIsValid) {
-			newpass1.setErrorKey("form.password.error.characters", null);
+			newpass1.setErrorKey("error.password.characters", null);
 		}
 		// validate that both passwords are the same
 		boolean newDoesMatch = newpass1.getValue().equals(newpass2.getValue());
