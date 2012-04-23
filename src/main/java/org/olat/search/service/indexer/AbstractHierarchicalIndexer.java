@@ -65,6 +65,15 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 				throw new StartupException("Configured indexer is not of type Indexer", cce);
 		}
 	}
+	
+	public void addIndexer(Indexer indexer) {
+		try {
+			childIndexers.put(indexer.getSupportedTypeName(), indexer);
+			logDebug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
+		}	catch (ClassCastException cce) {
+				throw new StartupException("Configured indexer is not of type Indexer", cce);
+		}
+	}
 
 	/**
 	 * Iterate over all child indexer define in indexer-list.
