@@ -46,13 +46,13 @@ public class PastDatePropertyHandler extends DatePropertyHandler {
 			return false;
 
 		// check for date in the past
-		if (isDateInThePast(((DateChooser) formItem).getDate())) {
+		Date date = ((DateChooser) formItem).getDate();
+		if (date == null || isDateInThePast(date)) {
 			return true;
 		} else {
 			formItem.setErrorKey("form.name.date.past.error", null);
 			return false;
 		}
-
 	}
 
 	/**
@@ -62,9 +62,8 @@ public class PastDatePropertyHandler extends DatePropertyHandler {
 	 * @param dateToCheck
 	 * @return true if the given date is in the past
 	 */
-	private static boolean isDateInThePast(Date dateToCheck) {
+	private boolean isDateInThePast(Date dateToCheck) {
 		Date now = new Date();
 		return (!DateUtils.isSameDay(now, dateToCheck)) && dateToCheck.before(now);
 	}
-
 }
