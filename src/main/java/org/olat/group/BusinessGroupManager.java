@@ -408,7 +408,7 @@ public interface BusinessGroupManager {
 	 * Get all business-groups.
 	 * @return List of BusinessGroup objects
 	 */
-	public List getAllBusinessGroups();
+	public List<BusinessGroup> getAllBusinessGroups();
 
   /**
    * Add a list of identity as owner to a business-group.

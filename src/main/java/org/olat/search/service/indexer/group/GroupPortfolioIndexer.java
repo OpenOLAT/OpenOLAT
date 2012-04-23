@@ -24,10 +24,6 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.collaboration.CollaborationTools;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
@@ -41,7 +37,7 @@ import org.olat.properties.Property;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.GroupDocument;
 import org.olat.search.service.document.PortfolioMapDocument;
-import org.olat.search.service.indexer.AbstractIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -53,7 +49,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * Initial Date:  17 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class GroupPortfolioIndexer extends AbstractIndexer  {
+public class GroupPortfolioIndexer extends AbstractHierarchicalIndexer  {
 	
 	public static final String TYPE = "type.group." + EPDefaultMap.class.getSimpleName();
 	public static final String ORES_TYPE = EPDefaultMap.class.getSimpleName(); 
@@ -113,10 +109,5 @@ public class GroupPortfolioIndexer extends AbstractIndexer  {
 			Document document = PortfolioMapDocument.createDocument(resourceContext, map);
 			indexerWriter.addDocument(document);
 		}
-	}
-
-	@Override
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
 	}
 }

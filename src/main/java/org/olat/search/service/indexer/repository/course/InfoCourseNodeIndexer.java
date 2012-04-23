@@ -31,11 +31,7 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.olat.commons.info.manager.InfoMessageManager;
 import org.olat.commons.info.model.InfoMessage;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
@@ -43,7 +39,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.InfoMessageDocument;
-import org.olat.search.service.indexer.AbstractIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 import org.olat.search.service.indexer.repository.CourseIndexer;
 
@@ -55,7 +51,7 @@ import org.olat.search.service.indexer.repository.CourseIndexer;
  * Initial Date:  29 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoCourseNodeIndexer extends AbstractIndexer implements CourseNodeIndexer {
+public class InfoCourseNodeIndexer extends AbstractHierarchicalIndexer implements CourseNodeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(InfoCourseNodeIndexer.class);
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -96,10 +92,6 @@ public class InfoCourseNodeIndexer extends AbstractIndexer implements CourseNode
 
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
-	}
-	
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;	
 	}
 	
 	private void doIndexInfos(SearchResourceContext parentResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)

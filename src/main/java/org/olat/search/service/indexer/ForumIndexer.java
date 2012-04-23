@@ -40,9 +40,8 @@ import org.olat.search.service.document.ForumMessageDocument;
  * Common forum indexer. Index all Messages of a forum.
  * @author Christian Guretzki
  */
-public abstract class ForumIndexer extends AbstractIndexer {
+public abstract class ForumIndexer extends AbstractHierarchicalIndexer {
 	
-
 	public ForumIndexer() {
 		//
 	}
@@ -62,5 +61,4 @@ public abstract class ForumIndexer extends AbstractIndexer {
 		  indexWriter.addDocument(document);
 		}
 	}
-
 }

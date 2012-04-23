@@ -28,11 +28,8 @@ package org.olat.search.service.indexer.group;
 
 import java.io.IOException;
 
+import org.olat.collaboration.CollaborationManager;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
@@ -51,17 +48,27 @@ public class GroupFolderIndexer extends FolderIndexer{
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.group.folder";
+	
+	private CollaborationManager collaborationManager;
 
 	public GroupFolderIndexer() {
+		//
 	}
-		
+	
+	/**
+	 * [used by Spring]
+	 * @param collaborationManager
+	 */
+	public void setCollaborationManager(CollaborationManager collaborationManager) {
+		this.collaborationManager = collaborationManager;
+	}
 
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		if (!(businessObj instanceof BusinessGroup) )
 			throw new AssertException("businessObj must be BusinessGroup");
 		BusinessGroup businessGroup = (BusinessGroup)businessObj;
-		
-		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(getFolderRelPath(businessGroup), null);
+		String path = collaborationManager.getFolderRelPath(businessGroup);
+		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(path, null);
 		SearchResourceContext forumSearchResourceContext = new SearchResourceContext(parentResourceContext);
 		forumSearchResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLFOLDER);
 		forumSearchResourceContext.setDocumentType(TYPE);
@@ -69,22 +76,8 @@ public class GroupFolderIndexer extends FolderIndexer{
 		forumSearchResourceContext.setParentContextName(businessGroup.getName());
 		doIndexVFSContainer(forumSearchResourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
 	}
-	
-	private String getFolderRelPath(BusinessGroup businessGroup) {
-		// TODO:chg: Same path like in CollaborationTools.getFolderRelPath() => ev static method to get path from there
-		return "/cts/folders/" + businessGroup.getResourceableTypeName() + "/" + businessGroup.getResourceableId();
-	}
-
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		// TODO:chg: check with collabTools if folder is enabled
-		return true; 
-	}
-
 
 	public String getSupportedTypeName() {
 		return BusinessGroupMainRunController.ORES_TOOLFOLDER.getResourceableTypeName();
 	}
-	
-	
 }

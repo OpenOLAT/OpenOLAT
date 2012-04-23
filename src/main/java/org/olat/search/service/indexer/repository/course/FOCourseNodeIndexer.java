@@ -102,7 +102,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 		if(isMessageHidden && !isOwner) {
 			return false;
 		}		
-		return true;	
+		return super.checkAccess(contextEntry, businessControl, identity, roles);	
 	}
 
 	/**

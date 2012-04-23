@@ -35,7 +35,7 @@ import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.AbstractIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -47,7 +47,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * Initial Date:  12 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PortfolioArtefactIndexer extends AbstractIndexer {
+public class PortfolioArtefactIndexer extends AbstractHierarchicalIndexer {
 	
 	public static final String TYPE = "type.identity." + AbstractArtefact.class.getSimpleName();
 		
@@ -113,6 +113,6 @@ public class PortfolioArtefactIndexer extends AbstractIndexer {
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		//reserved, check made by indexer with the RESERVEDTO field
-		return true;
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 }

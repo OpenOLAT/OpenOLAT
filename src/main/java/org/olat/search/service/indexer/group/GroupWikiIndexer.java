@@ -32,10 +32,6 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -62,7 +58,6 @@ public class GroupWikiIndexer extends FolderIndexer{
 	public GroupWikiIndexer() {
 		//
 	}
-		
 
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		if (!(businessObj instanceof BusinessGroup) )
@@ -97,17 +92,7 @@ public class GroupWikiIndexer extends FolderIndexer{
 		
 	}
 	
-
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		// TODO:chg: check with collabTools if folder is enabled
-		return true; 
-	}
-
-
 	public String getSupportedTypeName() {
 		return BusinessGroupMainRunController.ORES_TOOLWIKI.getResourceableTypeName();
 	}
-	
-	
 }

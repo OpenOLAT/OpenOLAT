@@ -35,7 +35,7 @@ import org.olat.core.id.context.ContextEntry;
  * Top class of indexer tree.
  * @author Christian Guretzki
  */
-public class MainIndexer extends AbstractIndexer {
+public class MainIndexer extends AbstractHierarchicalIndexer {
 	
 	private static final MainIndexer INSTANCE = new MainIndexer();
 	
@@ -57,6 +57,7 @@ public class MainIndexer extends AbstractIndexer {
 		return MainIndexer.class.getName(); 
 	}
 
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		return super.checkAccess(businessControl, identity, roles);
 	}

@@ -34,10 +34,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -112,11 +108,6 @@ public class SPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		return SUPPORTED_TYPE_NAME;
 	}
 
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		// no special check on SP-node -> Html-page needed
-		return true;
-	}
-
 	private void indexSubPages(SearchResourceContext courseNodeResourceContext, VFSContainer rootContainer, OlatFullIndexer indexWriter, VFSLeaf leaf, Set<String> alreadyIndexFileNames, int subPageLevel, String rootFilePath) throws IOException,InterruptedException {
 		int mySubPageLevel = subPageLevel;
 		// check deepness of recursion 
@@ -183,5 +174,4 @@ public class SPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		String suffix = fileName.substring(dotpos+1).toLowerCase();
 		return suffix;
 	}
-
 }

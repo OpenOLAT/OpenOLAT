@@ -29,10 +29,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.WikiResource;
@@ -42,14 +38,14 @@ import org.olat.modules.wiki.WikiPage;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.WikiPageDocument;
-import org.olat.search.service.indexer.Indexer;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Index a repository entry of type wiki.
  * @author Christian Guretzki
  */
-public class WikiRepositoryIndexer implements Indexer {
+public class WikiRepositoryIndexer extends DefaultIndexer {
 	private static OLog log = Tracing.createLoggerFor(WikiRepositoryIndexer.class);
 	
 	// Must correspond with LocalString_xx.properties
@@ -60,7 +56,6 @@ public class WikiRepositoryIndexer implements Indexer {
 	
 	public WikiRepositoryIndexer() {
 		// Repository types
-		
 	}
 	
 	/**
@@ -101,17 +96,4 @@ public class WikiRepositoryIndexer implements Indexer {
 			log.error("Error indexing wiki:" + repoEntryName, e);
 		}
 	}
-
-
-	/**
-	 * Bean setter method used by spring. 
-	 * @param indexerList
-	 */
-	public void setIndexerList(List indexerList) {
-	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-
 }

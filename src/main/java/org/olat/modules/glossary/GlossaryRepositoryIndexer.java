@@ -26,18 +26,12 @@
 package org.olat.modules.glossary;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.Indexer;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -45,7 +39,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * 
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
-public class GlossaryRepositoryIndexer implements Indexer {
+public class GlossaryRepositoryIndexer extends DefaultIndexer {
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttypes and
@@ -56,7 +50,6 @@ public class GlossaryRepositoryIndexer implements Indexer {
 
 	public GlossaryRepositoryIndexer() {
 	// Repository types
-
 	}
 
 	/**
@@ -72,7 +65,7 @@ public class GlossaryRepositoryIndexer implements Indexer {
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,
 			InterruptedException {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		Tracing.logDebug("Analyse Glosary RepositoryEntry...", GlossaryRepositoryIndexer.class);
+		if(isLogDebugEnabled()) logDebug("Analyse Glosary RepositoryEntry...");
 		try {
 			resourceContext.setDocumentType(TYPE);
 			Document document = GlossaryManager.getInstance().getIndexerDocument(repositoryEntry, resourceContext);
@@ -80,19 +73,7 @@ public class GlossaryRepositoryIndexer implements Indexer {
 				indexWriter.addDocument(document);
 			}
 		} catch (NullPointerException nex) {
-			Tracing.logWarn("NullPointerException in GlossaryRepositoryIndexer.doIndex.", nex, GlossaryRepositoryIndexer.class);
+			logWarn("NullPointerException in GlossaryRepositoryIndexer.doIndex.", nex);
 		}
 	}
-
-	/**
-	 * Bean setter method used by spring.
-	 * 
-	 * @param indexerList
-	 */
-	public void setIndexerList(List indexerList) {}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-
 }

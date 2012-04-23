@@ -48,7 +48,7 @@ import org.olat.search.service.document.PortfolioMapDocument;
  * Initial Date:  15 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class AbstractPortfolioMapIndexer extends AbstractIndexer {
+public abstract class AbstractPortfolioMapIndexer extends AbstractHierarchicalIndexer {
 	
 	private static final OLog log = Tracing.createLoggerFor(AbstractPortfolioMapIndexer.class);
 	
@@ -119,7 +119,7 @@ public abstract class AbstractPortfolioMapIndexer extends AbstractIndexer {
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		try {
 			OLATResourceable ores = contextEntry.getOLATResourceable();
-			return frontendManager.isMapVisible(identity, ores);
+			return frontendManager.isMapVisible(identity, ores) && super.checkAccess(contextEntry, businessControl, identity, roles);
 		} catch (Exception e) {
 			log.warn("Couldn't ask if map is visible: " + contextEntry, e);
 			return false;

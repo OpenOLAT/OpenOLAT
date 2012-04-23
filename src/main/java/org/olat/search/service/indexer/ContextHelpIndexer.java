@@ -62,7 +62,7 @@ import org.olat.search.service.document.ContextHelpDocument;
  * Initial Date:  05.11.2008 <br>
  * @author gnaegi
  */
-public class ContextHelpIndexer extends AbstractIndexer {
+public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 	private static final OLog log = Tracing.createLoggerFor(ContextHelpIndexer.class);
 
 	/**
@@ -82,9 +82,10 @@ public class ContextHelpIndexer extends AbstractIndexer {
 
 	
 	/**
-	 * @see org.olat.search.service.indexer.AbstractIndexer#doIndex(org.olat.search.service.SearchResourceContext,
+	 * @see org.olat.search.service.indexer.AbstractHierarchicalIndexer#doIndex(org.olat.search.service.SearchResourceContext,
 	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
 	 */
+	@Override
   public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
   	if (!ContextHelpModule.isContextHelpEnabled()) {
   		// don't index context help when disabled

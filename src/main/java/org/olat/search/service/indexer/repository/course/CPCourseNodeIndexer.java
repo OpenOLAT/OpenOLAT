@@ -28,12 +28,7 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.File;
 import java.io.IOException;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
@@ -69,7 +64,7 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	}
 	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (Tracing.isDebugEnabled(CPCourseNodeIndexer.class)) Tracing.logDebug("Index Content Package... courseNodeCounter=" + courseNodeCounter++ , CPCourseNodeIndexer.class);
+		if (isLogDebugEnabled()) logDebug("Index Content Package... courseNodeCounter=" + courseNodeCounter++ );
 
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
@@ -90,9 +85,4 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-	
 }

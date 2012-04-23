@@ -29,10 +29,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
@@ -60,12 +56,9 @@ public class TACourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public final static String TYPE_SOLUTIONBOX = "type.course.node.ta.solutionbox";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.TACourseNode";
-	
 
 	private CourseIndexer courseNodeIndexer;
 
-
-	
 	public TACourseNodeIndexer() {
 		courseNodeIndexer = new CourseIndexer();
 	}
@@ -107,13 +100,7 @@ public class TACourseNodeIndexer extends FolderIndexer implements CourseNodeInde
     courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 	}
 
-
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-	
 }

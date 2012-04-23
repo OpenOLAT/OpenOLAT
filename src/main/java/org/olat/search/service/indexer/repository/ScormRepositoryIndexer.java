@@ -29,10 +29,6 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.dom4j.Element;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -49,7 +45,6 @@ import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.file.IMSMetadataDocument;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
-import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -60,7 +55,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * Initial Date:  11 déc. 2009 <br>
  * @author srosse
  */
-public class ScormRepositoryIndexer extends FolderIndexer implements Indexer {
+public class ScormRepositoryIndexer extends FolderIndexer {
 	private static final OLog log = Tracing.createLoggerFor(ScormRepositoryIndexer.class);
 	public static Set<String> stopWords = new HashSet<String>();
 	static {
@@ -161,10 +156,6 @@ public class ScormRepositoryIndexer extends FolderIndexer implements Indexer {
 			Element child = (Element)children.get(i);
 			collectLangString(sb, child);
 		}
-	}
-	
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
 	}
 	
 	public class ScormFileAccess implements FolderIndexerAccess {

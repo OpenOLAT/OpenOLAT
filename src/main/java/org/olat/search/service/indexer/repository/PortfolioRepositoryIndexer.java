@@ -37,8 +37,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.PortfolioMapDocument;
-import org.olat.search.service.indexer.AbstractIndexer;
-import org.olat.search.service.indexer.Indexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -50,7 +49,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * Initial Date:  12 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class PortfolioRepositoryIndexer extends AbstractIndexer implements Indexer {
+public class PortfolioRepositoryIndexer extends AbstractHierarchicalIndexer {
 
 	private static final OLog log = Tracing.createLoggerFor(PortfolioRepositoryIndexer.class);
 	
@@ -106,6 +105,6 @@ public class PortfolioRepositoryIndexer extends AbstractIndexer implements Index
 
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 }

@@ -24,9 +24,6 @@ import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
@@ -82,14 +79,5 @@ public class PublicFolderIndexer extends FolderIndexer {
 		}
 		if (log.isDebug()) log.debug("PublicFolder finished for user::" + parentObject.toString());
 
-	}
-
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity,
-	 *      org.olat.core.id.Roles)
-	 */
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
 	}
 }

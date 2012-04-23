@@ -22,11 +22,6 @@ package org.olat.modules.webFeed.search.indexer;
 import java.io.IOException;
 
 import org.olat.core.commons.services.search.OlatDocument;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.dispatching.Path;
@@ -36,7 +31,7 @@ import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.Indexer;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -47,21 +42,13 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * 
  * @author gwassmann
  */
-public abstract class FeedRepositoryIndexer extends LogDelegator implements Indexer {
-
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity,
-	 *      org.olat.core.id.Roles)
-	 */
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
+public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext,
 	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
 	 */
+	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer) throws IOException,
 			InterruptedException {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;

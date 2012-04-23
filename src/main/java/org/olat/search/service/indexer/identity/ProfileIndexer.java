@@ -23,14 +23,11 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.IdentityDocument;
-import org.olat.search.service.indexer.AbstractIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
@@ -42,7 +39,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class ProfileIndexer extends AbstractIndexer {
+public class ProfileIndexer extends AbstractHierarchicalIndexer {
 	private static final OLog log = Tracing.createLoggerFor(ProfileIndexer.class);
 
 	/**
@@ -55,7 +52,7 @@ public class ProfileIndexer extends AbstractIndexer {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,
 			InterruptedException {
 
@@ -69,14 +66,5 @@ public class ProfileIndexer extends AbstractIndexer {
 		}
 		if (log.isDebug()) log.debug("ProfileIndexer finished for user::" + parentObject.toString());
 
-	}
-
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity,
-	 *      org.olat.core.id.Roles)
-	 */
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
 	}
 }

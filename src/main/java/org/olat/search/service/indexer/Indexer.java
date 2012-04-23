@@ -39,7 +39,7 @@ import org.olat.search.service.SearchResourceContext;
  * 
  * @author Christian Guretzki
  */
-public interface Indexer {
+public interface Indexer extends IndexerAccessSecurityCallback {
 
 	/**
 	 * Do index the part of an indexer.

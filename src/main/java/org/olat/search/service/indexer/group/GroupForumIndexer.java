@@ -120,7 +120,7 @@ public class GroupForumIndexer extends ForumIndexer{
 		if(isMessageHidden && !isOwner) {
 			return false;
 		}		
-		return true;
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 
 

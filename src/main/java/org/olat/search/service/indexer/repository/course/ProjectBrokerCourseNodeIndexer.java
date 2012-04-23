@@ -30,10 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
@@ -109,9 +105,4 @@ public class ProjectBrokerCourseNodeIndexer extends FolderIndexer implements Cou
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-	
 }

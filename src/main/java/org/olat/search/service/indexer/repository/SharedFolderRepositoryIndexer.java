@@ -26,12 +26,7 @@
 package org.olat.search.service.indexer.repository;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
@@ -41,14 +36,13 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
-import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Index a repository entry of type shared folder.
  * @author Christian Guretzki
  */
-public class SharedFolderRepositoryIndexer extends FolderIndexer implements Indexer {
+public class SharedFolderRepositoryIndexer extends FolderIndexer {
 	private static final OLog log = Tracing.createLoggerFor(SharedFolderRepositoryIndexer.class);
 	// fxdiff: see LibraryManager
 	private static final String NO_FOLDER_INDEXING_LOCKFILE = ".noFolderIndexing";
@@ -63,10 +57,7 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer implements Inde
 		// Repository types
 		
 	}
-	
-	/**
-	 * 
-	 */
+
 	public String getSupportedTypeName() {	
 		return ORES_TYPE_SHAREDFOLDER; 
 	}
@@ -74,7 +65,7 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer implements Inde
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-
+	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		if (log.isDebug()) log.debug("Analyse Shared Folder RepositoryEntry...");
@@ -89,17 +80,4 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer implements Inde
 			doIndexVFSContainer(resourceContext,sfContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
 		}
 	}
-
-
-	/**
-	 * Bean setter method used by spring. 
-	 * @param indexerList
-	 */
-	public void setIndexerList(List indexerList) {
-	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-
 }

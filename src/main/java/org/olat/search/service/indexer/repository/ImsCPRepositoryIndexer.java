@@ -27,12 +27,7 @@ package org.olat.search.service.indexer.repository;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -44,14 +39,13 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
-import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Index a repository entry of type IMS-CP.
  * @author Christian Guretzki
  */
-public class ImsCPRepositoryIndexer extends FolderIndexer implements Indexer {
+public class ImsCPRepositoryIndexer extends FolderIndexer {
 	private static final OLog log = Tracing.createLoggerFor(ImsCPRepositoryIndexer.class);
 	
 	// Must correspond with LocalString_xx.properties
@@ -75,7 +69,7 @@ public class ImsCPRepositoryIndexer extends FolderIndexer implements Indexer {
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
 	 */
-
+	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		if (log.isDebug()) log.debug("Analyse IMS CP RepositoryEntry...");
@@ -92,17 +86,4 @@ public class ImsCPRepositoryIndexer extends FolderIndexer implements Indexer {
     doIndexVFSContainer(resourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
 
 	}
-
-
-	/**
-	 * Bean setter method used by spring. 
-	 * @param indexerList
-	 */
-	public void setIndexerList(List indexerList) {
-	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-
 }

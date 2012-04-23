@@ -38,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
@@ -49,14 +48,14 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.GroupDocument;
-import org.olat.search.service.indexer.AbstractIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * Index all business-groups. Includes group-forums and groups-folders. 
  * @author Christian Guretzki
  */
-public class GroupIndexer extends AbstractIndexer {
+public class GroupIndexer extends AbstractHierarchicalIndexer {
 	
 	private BusinessGroupManager businessGroupManager;
 
@@ -69,8 +68,8 @@ public class GroupIndexer extends AbstractIndexer {
 
   public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		long startTime = System.currentTimeMillis();
-  	List groupList = businessGroupManager.getAllBusinessGroups();
-  	if (Tracing.isDebugEnabled(GroupIndexer.class)) Tracing.logDebug("GroupIndexer groupList.size=" + groupList.size(), GroupIndexer.class);
+  	List<BusinessGroup> groupList = businessGroupManager.getAllBusinessGroups();
+  	if (isLogDebugEnabled()) logDebug("GroupIndexer groupList.size=" + groupList.size());
   	
 		// committing here to make sure the loadBusinessGroup below does actually
 		// reload from the database and not only use the session cache 
@@ -79,21 +78,18 @@ public class GroupIndexer extends AbstractIndexer {
 		DBFactory.getInstance().commitAndCloseSession();
 
 		// loop over all groups
-		Iterator iter = groupList.iterator();
-		while(iter.hasNext()) {
-			BusinessGroup businessGroup = null;
+		for(BusinessGroup businessGroup:groupList){
 			try {
-				businessGroup = (BusinessGroup)iter.next();
 				
 				// reload the businessGroup here before indexing it to make sure it has not been deleted in the meantime
 				BusinessGroup reloadedBusinessGroup = businessGroupManager.loadBusinessGroup(businessGroup.getKey(), false);
 				if (reloadedBusinessGroup==null) {
-					Tracing.logInfo("doIndex: businessGroup was deleted while we were indexing. The deleted businessGroup was: "+businessGroup, GroupIndexer.class);
+					logInfo("doIndex: businessGroup was deleted while we were indexing. The deleted businessGroup was: "+businessGroup);
 					continue;
 				}
 				businessGroup = reloadedBusinessGroup;
 				
-				if (Tracing.isDebugEnabled(GroupIndexer.class)) Tracing.logDebug("Index BusinessGroup=" + businessGroup , GroupIndexer.class);
+				if (isLogDebugEnabled()) logDebug("Index BusinessGroup=" + businessGroup);
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(businessGroup);
 			  Document document = GroupDocument.createDocument(searchResourceContext, businessGroup);
@@ -101,15 +97,15 @@ public class GroupIndexer extends AbstractIndexer {
 		    // Do index child 
 			  super.doIndex(searchResourceContext, businessGroup, indexWriter);
 			} catch(Exception ex) {
-				Tracing.logError("Exception indexing group=" + businessGroup, ex , GroupIndexer.class);
+				logError("Exception indexing group=" + businessGroup, ex);
 				DBFactory.getInstance(false).rollbackAndCloseSession();
 			} catch (Error err) {
-				Tracing.logError("Error indexing group=" + businessGroup, err , GroupIndexer.class);
+				logError("Error indexing group=" + businessGroup, err);
 				DBFactory.getInstance(false).rollbackAndCloseSession();
 			}
 	  }
 		long indexTime = System.currentTimeMillis() - startTime;
-		if (Tracing.isDebugEnabled(GroupIndexer.class)) Tracing.logDebug("GroupIndexer finished in " + indexTime + " ms", GroupIndexer.class);
+		if (isLogDebugEnabled()) logDebug("GroupIndexer finished in " + indexTime + " ms");
 	}
 
 
@@ -119,14 +115,16 @@ public class GroupIndexer extends AbstractIndexer {
 		BusinessGroup group = bman.loadBusinessGroup(key, false);
 		boolean inGroup = bman.isIdentityInBusinessGroup(identity, group);
 		if (inGroup) {
-			return super.checkAccess(businessControl, identity, roles);
+			return super.checkAccess(contextEntry, businessControl, identity, roles)
+					&& super.checkAccess(businessControl, identity, roles);
 		} else {
 			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 			if(acModule.isEnabled()) {
 				ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 				OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
 				if(acFrontendManager.isResourceAccessControled(resource, new Date())) {
-					return super.checkAccess(businessControl, identity, roles);
+					return super.checkAccess(contextEntry, businessControl, identity, roles)
+							&& super.checkAccess(businessControl, identity, roles);
 				}
 			}
 			return false;

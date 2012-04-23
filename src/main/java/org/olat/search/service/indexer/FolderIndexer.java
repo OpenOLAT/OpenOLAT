@@ -47,7 +47,7 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  * Common folder indexer. Index all files form a certain VFS-container as starting point.
  * @author Christian Guretzki
  */
-public abstract class FolderIndexer extends AbstractIndexer {
+public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 	
 	protected OLog log = Tracing.createLoggerFor(FolderIndexer.class);
 	
@@ -148,5 +148,4 @@ public abstract class FolderIndexer extends AbstractIndexer {
 	  }
 		return path;
 	}
-	
 }

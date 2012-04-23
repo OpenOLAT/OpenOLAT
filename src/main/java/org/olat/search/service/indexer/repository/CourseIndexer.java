@@ -52,7 +52,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.Indexer;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexerFactory;
@@ -61,7 +61,7 @@ import org.olat.search.service.indexer.repository.course.CourseNodeIndexerFactor
  * Index a hole course.
  * @author Christian Guretzki
  */
-public class CourseIndexer implements Indexer {
+public class CourseIndexer extends DefaultIndexer {
 	private static final OLog log = Tracing.createLoggerFor(CourseIndexer.class);
 	
 	public final static String TYPE = "type.repository.entry.CourseModule"; 
@@ -69,9 +69,17 @@ public class CourseIndexer implements Indexer {
 	private RepositoryManager repositoryManager;
 	
 	public CourseIndexer() {
-		repositoryManager = RepositoryManager.getInstance();
+		//
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param repositoryManager
+	 */
+	public void setRepositoryManager(RepositoryManager repositoryManager) {
+		this.repositoryManager = repositoryManager;
+	}
+
 	/**
 	 * 
 	 */
@@ -148,6 +156,7 @@ public class CourseIndexer implements Indexer {
 		}
 	}
 
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		ContextEntry bcContextEntry = businessControl.popLauncherContextEntry();
 		if (bcContextEntry == null) {
@@ -196,7 +205,8 @@ public class CourseIndexer implements Indexer {
 		
 		if (mayAccessWholeTreeUp) {
 			CourseNodeIndexer courseNodeIndexer = CourseNodeIndexerFactory.getInstance().getCourseNodeIndexer(courseNode);
-			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles);		
+			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
+					&& super.checkAccess(bcContextEntry, businessControl, identity, roles);		
 		} else {
   		return false;
 		}

@@ -33,19 +33,18 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.search.SearchModule;
-import org.olat.core.commons.services.search.SearchService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.RepositoryEntryDocument;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
@@ -54,7 +53,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  * 
  */
-public class RepositoryIndexer implements Indexer {
+public class RepositoryIndexer extends DefaultIndexer {
 	
   private RepositoryManager repositoryManager;
 	private List<Long> repositoryBlackList;
@@ -78,10 +77,10 @@ public class RepositoryIndexer implements Indexer {
   	Roles roles = new Roles(true, true, true, true, false, true, false);
   	int counter = 0;
   	//fxdiff VCRP-1,2: access control of resources
-  	List repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(null,null,null,null,null,roles, null);
-  	if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("RepositoryIndexer repositoryList.size=" + repositoryList.size(), RepositoryIndexer.class);
+  	List<RepositoryEntry> repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(null,null,null,null,null,roles, null);
+  	if (isLogDebugEnabled()) logDebug("RepositoryIndexer repositoryList.size=" + repositoryList.size());
   	// loop over all repository-entries
-		Iterator iter = repositoryList.iterator();
+		Iterator<RepositoryEntry> iter = repositoryList.iterator();
 		RepositoryEntry repositoryEntry = null;
 
 		// committing here to make sure the loadBusinessGroup below does actually
@@ -92,17 +91,17 @@ public class RepositoryIndexer implements Indexer {
 		
 		while(iter.hasNext()) {
 			try {
-				repositoryEntry = (RepositoryEntry)iter.next();
+				repositoryEntry = iter.next();
 				
 				// reload the repositoryEntry here before indexing it to make sure it has not been deleted in the meantime
 				RepositoryEntry reloadedRepositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntry.getKey());
 				if (reloadedRepositoryEntry==null) {
-					Tracing.logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry, RepositoryIndexer.class);
+					logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
 					continue;
 				}
 				repositoryEntry = reloadedRepositoryEntry;
 
-				if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("Index repositoryEntry=" + repositoryEntry + "  counter=" + counter++ + " with ResourceableId=" + repositoryEntry.getOlatResource().getResourceableId(), RepositoryIndexer.class);
+				if (isLogDebugEnabled()) logDebug("Index repositoryEntry=" + repositoryEntry + "  counter=" + counter++ + " with ResourceableId=" + repositoryEntry.getOlatResource().getResourceableId());
 				if (!isOnBlacklist(repositoryEntry.getOlatResource().getResourceableId()) ) {
 					SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 					searchResourceContext.setBusinessControlFor(repositoryEntry);
@@ -117,10 +116,10 @@ public class RepositoryIndexer implements Indexer {
 					if (repositoryEntryIndexer != null) {
 					  repositoryEntryIndexer.doIndex(searchResourceContext, repositoryEntry, indexWriter);
 					} else {
-						if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("No RepositoryEntryIndexer for " + repositoryEntry.getOlatResource(),RepositoryIndexer.class); // e.g. RepositoryEntry				
+						if (isLogDebugEnabled()) logDebug("No RepositoryEntryIndexer for " + repositoryEntry.getOlatResource()); // e.g. RepositoryEntry				
 					}
 				} else {
-					Tracing.logWarn("RepositoryEntry is on black-list and excluded from search-index, repositoryEntry=" + repositoryEntry, RepositoryIndexer.class);
+					logWarn("RepositoryEntry is on black-list and excluded from search-index, repositoryEntry=" + repositoryEntry, null);
 				}
 			} catch (Throwable ex) {
 				// create meaninfull debugging output to find repo entry that is somehow broken
@@ -128,11 +127,11 @@ public class RepositoryIndexer implements Indexer {
 				if (repositoryEntry != null) {
 					entryDebug = "resId::" + repositoryEntry.getResourceableId() + " resTypeName::" + repositoryEntry.getResourceableTypeName() + " resName::" + repositoryEntry.getResourcename();
 				}
-				Tracing.logWarn("Exception=" + ex.getMessage() + " for repo entry " + entryDebug, ex, RepositoryIndexer.class);
+				logWarn("Exception=" + ex.getMessage() + " for repo entry " + entryDebug, ex);
 				DBFactory.getInstance(false).rollbackAndCloseSession();
 			}
 		}
-		if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("RepositoryIndexer finished.  counter=" + counter, RepositoryIndexer.class);
+		if (isLogDebugEnabled()) logDebug("RepositoryIndexer finished.  counter=" + counter);
 	}
 
 	private boolean isOnBlacklist(Long key) {
@@ -145,15 +144,15 @@ public class RepositoryIndexer implements Indexer {
 	 * Bean setter method used by spring. 
 	 * @param indexerList
 	 */
-	public void setIndexerList(List indexerList) {
+	public void setIndexerList(List<Indexer> indexerList) {
 		if (indexerList == null)
 			throw new AssertException("null value for indexerList not allowed.");
 
 		try {
-			for (Iterator iter = indexerList.iterator(); iter.hasNext();) {
-				Indexer reporsitoryEntryIndexer = (Indexer) iter.next();
+			for (Iterator<Indexer> iter = indexerList.iterator(); iter.hasNext();) {
+				Indexer reporsitoryEntryIndexer = iter.next();
 				RepositoryEntryIndexerFactory.getInstance().registerIndexer(reporsitoryEntryIndexer);
-				if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("Adding indexer from configuraton:: ", RepositoryIndexer.class);
+				if (isLogDebugEnabled()) logDebug("Adding indexer from configuraton:: ");
 			} 
 		}	catch (ClassCastException cce) {
 				throw new StartupException("Configured indexer is not of type RepositoryEntryIndexer", cce);
@@ -173,7 +172,7 @@ public class RepositoryIndexer implements Indexer {
 	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry, org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity, org.olat.core.id.Roles)
 	 */
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles, RepositoryIndexer.class);
+		if (isLogDebugEnabled()) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
 		if (repositoryEntry != null) {
@@ -186,12 +185,13 @@ public class RepositoryIndexer implements Indexer {
 				}
   			isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
 			}
-			if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch, RepositoryIndexer.class);
+			if (isLogDebugEnabled()) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
   		if (isOwner || isAllowedToLaunch) {
 				Indexer repositoryEntryIndexer = RepositoryEntryIndexerFactory.getInstance().getRepositoryEntryIndexer(repositoryEntry);
-				if (Tracing.isDebugEnabled(RepositoryIndexer.class)) Tracing.logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer, RepositoryIndexer.class);
+				if (isLogDebugEnabled()) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
 				if (repositoryEntryIndexer != null) {
-				  return repositoryEntryIndexer.checkAccess(contextEntry, businessControl, identity, roles);
+				  return super.checkAccess(contextEntry, businessControl, identity, roles)
+				  		&& repositoryEntryIndexer.checkAccess(contextEntry, businessControl, identity, roles);
 				} else {
 					// No Indexer => no access
 					return false;
@@ -200,7 +200,7 @@ public class RepositoryIndexer implements Indexer {
 	  		return false;
 			}
 		} else {
-			Tracing.logWarn("Can not found RepositoryEntry with key=" + repositoryKey, RepositoryIndexer.class);
+			logWarn("Can not found RepositoryEntry with key=" + repositoryKey, null);
 			return false;
 		}
 	}

@@ -28,11 +28,6 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -61,7 +56,7 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	}
 	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (Tracing.isDebugEnabled(BCCourseNodeIndexer.class)) Tracing.logDebug("Index Briefcase..." , BCCourseNodeIndexer.class);
+		if (isLogDebugEnabled()) logDebug("Index Briefcase..." );
 
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
@@ -78,9 +73,4 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
-	}
-	
 }

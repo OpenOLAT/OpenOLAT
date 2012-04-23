@@ -101,102 +101,154 @@
 	<bean id="mainIndexer" class="org.olat.search.service.indexer.MainIndexer" lazy-init="true">
 		<property name="indexerList">
 			<list>
-				<bean id="groupIndexer"	class="org.olat.search.service.indexer.group.GroupIndexer" scope="prototype">
-				  <property name="indexerList">
-						<list>
-							<bean id="groupForumIndexer"	class="org.olat.search.service.indexer.group.GroupForumIndexer" scope="prototype"/>
-							<bean id="groupFolderIndexer"	class="org.olat.search.service.indexer.group.GroupFolderIndexer" scope="prototype"/>
-							<bean id="groupWikiIndexer"	    class="org.olat.search.service.indexer.group.GroupWikiIndexer" scope="prototype"/>
-							<bean id="groupPortfolioIndexer" class="org.olat.search.service.indexer.group.GroupPortfolioIndexer">
-								<property name="frontendManager" ref="epFrontendManager"/>
-								<property name="portfolioModule" ref="portfolioModule"/>
-							</bean>
-						</list>
-		      </property>
-				</bean>
-				<bean id="repositoryIndexer" class="org.olat.search.service.indexer.repository.RepositoryIndexer" scope="prototype">
-				<constructor-arg index="0" ref="repositoryManager" />
-				<constructor-arg index="1" ref="searchModule" />
-				  <property name="indexerList">
-						<list>
-							<bean id="courseIndexer" class="org.olat.search.service.indexer.repository.CourseIndexer" scope="prototype">
-								<property name="indexerList">
-									<list>
-										<bean id="spCourseNodeIndexer" 	   class="org.olat.search.service.indexer.repository.course.SPCourseNodeIndexer"     scope="prototype"/>
-										<bean id="foCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.FOCourseNodeIndexer"     scope="prototype"/>
-										<bean id="stCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.STCourseNodeIndexer"     scope="prototype"/>
-										<bean id="bcCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.BCCourseNodeIndexer"     scope="prototype"/>
-										<bean id="wikiCourseNodeIndexer"   class="org.olat.search.service.indexer.repository.course.WikiCourseNodeIndexer"   scope="prototype"/>
-										<bean id="blogCourseNodeIndexer" class="org.olat.modules.webFeed.search.indexer.BlogCourseNodeIndexer" scope="prototype"/>
-										<bean id="podcastCourseNodeIndexer" class="org.olat.modules.webFeed.search.indexer.PodcastCourseNodeIndexer" scope="prototype"/>
-										<bean id="cpCourseNodeIndexer"     class="org.olat.search.service.indexer.repository.course.CPCourseNodeIndexer"     scope="prototype"/>
-										<bean id="dialogCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.DialogCourseNodeIndexer" scope="prototype"/>
-										<bean id="projectBrokerCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ProjectBrokerCourseNodeIndexer" scope="prototype"/>
-										<bean id="scormCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ScormCourseNodeIndexer" scope="prototype"/>
-										<bean id="portfolioCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.PortfolioCourseNodeIndexer" scope="prototype">
-											<property name="structureManager" ref="epStructureManager"/>
-											<property name="portfolioModule" ref="portfolioModule"/>
-										</bean>
-										<bean id="infoCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.InfoCourseNodeIndexer" scope="prototype">
-											<property name="infoMessageManager" ref="infoMessageManager"/>
-										</bean>
-										<!-- DO NOT INDEX TA COURSE NODES   
-										    <bean id="taCourseNodeIndexer"     class="org.olat.search.service.indexer.repository.course.TACourseNodeIndexer"     scope="prototype"/>
-										-->
-									</list>
-		          				</property>
-							</bean>
-							<bean id="wikiRepositoryIndexer" class="org.olat.search.service.indexer.repository.WikiRepositoryIndexer" scope="prototype">
-							</bean>
-							<bean id="blogRepositoryIndexer" class="org.olat.modules.webFeed.search.indexer.BlogRepositoryIndexer" scope="prototype">
-							</bean>
-							<bean id="podcastRepositoryIndexer" class="org.olat.modules.webFeed.search.indexer.PodcastRepositoryIndexer" scope="prototype">
-							</bean> 
-							<bean id="glossaryRepositoryIndexer" class="org.olat.modules.glossary.GlossaryRepositoryIndexer" scope="prototype">
-							</bean> 
-							<bean id="imsCpRepositoryIndexer" class="org.olat.search.service.indexer.repository.ImsCPRepositoryIndexer" scope="prototype">
-							</bean> 
-							<bean id="sharedFolderRepositoryIndexer" class="org.olat.search.service.indexer.repository.SharedFolderRepositoryIndexer" scope="prototype">
-							</bean> 
-							<bean id="scormRepositoryIndexer" class="org.olat.search.service.indexer.repository.ScormRepositoryIndexer" scope="prototype">
-							</bean>
-							<bean id="portfolioRepositoryIndexer" class="org.olat.search.service.indexer.repository.PortfolioRepositoryIndexer" scope="prototype">
-								<property name="structureManager" ref="epStructureManager"/>
-								<property name="portfolioModule" ref="portfolioModule"/>
-							</bean>
-						</list>
-		          </property>
-				</bean>
-				<bean id="helpIndexer" class="org.olat.search.service.indexer.ContextHelpIndexer"	scope="prototype">
-				</bean>
-				<bean id="identityIndexer" class="org.olat.search.service.indexer.identity.IdentityIndexer" >
-					<property name="indexerList">
-						<list>
-							<bean id="profileIndexer"	class="org.olat.search.service.indexer.identity.ProfileIndexer"     />
-							<bean id="publicFolderIndexer"	class="org.olat.search.service.indexer.identity.PublicFolderIndexer" />
-							<bean id="artefactIndexer" class="org.olat.search.service.indexer.identity.PortfolioArtefactIndexer">
-								<property name="frontendManager" ref="epFrontendManager"/>
-								<property name="portfolioModule" ref="portfolioModule"/>
-							</bean>
-						</list>
-					</property>				
-				</bean>
-				<bean id="epDefaultMapIndexer" class="org.olat.search.service.indexer.PortfolioMapIndexer">
-					<property name="frontendManager" ref="epFrontendManager"/>
-					<property name="portfolioModule" ref="portfolioModule"/>
-				</bean>
-				<bean id="epStructuredMapIndexer" class="org.olat.search.service.indexer.PortfolioStructuredMapIndexer">
-					<property name="frontendManager" ref="epFrontendManager"/>
-					<property name="portfolioModule" ref="portfolioModule"/>
-				</bean>	 
-				<!--	 NOT IMPLEMENTED YET
-				<bean id="homeIndexer" class="org.olat.search.service.indexer.HomeIndexer"	scope="prototype">
-				</bean>
-			  -->
+				<ref bean="groupIndexer" />
+				<ref bean="repositoryIndexer" />
+				<ref bean="helpIndexer" />
+				<ref bean="identityIndexer" />
+				<ref bean="epDefaultMapIndexer" />
+				<ref bean="epStructuredMapIndexer" />
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="helpIndexer" class="org.olat.search.service.indexer.ContextHelpIndexer" />
+	
+	<!-- Repository -->
+	<bean id="repositoryIndexer" class="org.olat.search.service.indexer.repository.RepositoryIndexer">
+		<constructor-arg index="0" ref="repositoryManager" />
+		<constructor-arg index="1" ref="searchModule" />
+		<property name="indexerList">
+			<list>
+				<ref bean="courseIndexer" />
+				<ref bean="wikiRepositoryIndexer" />
+				<ref bean="blogRepositoryIndexer" />
+				<ref bean="podcastRepositoryIndexer" /> 
+				<ref bean="glossaryRepositoryIndexer" /> 
+				<ref bean="imsCpRepositoryIndexer" /> 
+				<ref bean="sharedFolderRepositoryIndexer" /> 
+				<ref bean="scormRepositoryIndexer" />
+				<ref bean="portfolioRepositoryIndexer" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="wikiRepositoryIndexer" class="org.olat.search.service.indexer.repository.WikiRepositoryIndexer" />
+	<bean id="blogRepositoryIndexer" class="org.olat.modules.webFeed.search.indexer.BlogRepositoryIndexer" />
+	<bean id="podcastRepositoryIndexer" class="org.olat.modules.webFeed.search.indexer.PodcastRepositoryIndexer" /> 
+	<bean id="glossaryRepositoryIndexer" class="org.olat.modules.glossary.GlossaryRepositoryIndexer" /> 
+	<bean id="imsCpRepositoryIndexer" class="org.olat.search.service.indexer.repository.ImsCPRepositoryIndexer" /> 
+	<bean id="sharedFolderRepositoryIndexer" class="org.olat.search.service.indexer.repository.SharedFolderRepositoryIndexer" /> 
+	<bean id="scormRepositoryIndexer" class="org.olat.search.service.indexer.repository.ScormRepositoryIndexer" />
+	
+	<!-- Course indexers -->
+	<bean id="courseIndexer" class="org.olat.search.service.indexer.repository.CourseIndexer" scope="prototype">
+		<property name="repositoryManager" ref="repositoryManager"/>
+		<property name="indexerList">
+			<list>
+				<ref bean="spCourseNodeIndexer" />
+				<ref bean="foCourseNodeIndexer"	/>
+				<ref bean="stCourseNodeIndexer"	/>
+				<ref bean="bcCourseNodeIndexer"	/>
+				<ref bean="wikiCourseNodeIndexer" />
+				<ref bean="blogCourseNodeIndexer" />
+				<ref bean="podcastCourseNodeIndexer" />
+				<ref bean="cpCourseNodeIndexer" />
+				<ref bean="dialogCourseNodeIndexer" />
+				<ref bean="projectBrokerCourseNodeIndexer" />
+				<ref bean="scormCourseNodeIndexer" />
+				<ref bean="portfolioCourseNodeIndexer" />
+				<ref bean="infoCourseNodeIndexer" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="spCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.SPCourseNodeIndexer" />
+	<bean id="foCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.FOCourseNodeIndexer" />
+	<bean id="stCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.STCourseNodeIndexer" />
+	<bean id="bcCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.BCCourseNodeIndexer" />
+	<bean id="wikiCourseNodeIndexer"   class="org.olat.search.service.indexer.repository.course.WikiCourseNodeIndexer" />
+	<bean id="blogCourseNodeIndexer" class="org.olat.modules.webFeed.search.indexer.BlogCourseNodeIndexer" />
+	<bean id="podcastCourseNodeIndexer" class="org.olat.modules.webFeed.search.indexer.PodcastCourseNodeIndexer" />
+	<bean id="cpCourseNodeIndexer"     class="org.olat.search.service.indexer.repository.course.CPCourseNodeIndexer" />
+	<bean id="dialogCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.DialogCourseNodeIndexer" />
+	<bean id="projectBrokerCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ProjectBrokerCourseNodeIndexer" />
+	<bean id="scormCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ScormCourseNodeIndexer" />
+	<bean id="infoCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.InfoCourseNodeIndexer">
+		<property name="infoMessageManager" ref="infoMessageManager"/>
+	</bean>
+	<!-- DO NOT INDEX TA COURSE NODES   
+	<bean id="taCourseNodeIndexer"     class="org.olat.search.service.indexer.repository.course.TACourseNodeIndexer" />
+	-->
+	
+	<!--  Groups indexers -->
+	<bean id="groupIndexer"	class="org.olat.search.service.indexer.group.GroupIndexer">
+	  <property name="indexerList">
+			<list>
+				<ref bean="groupForumIndexer" />
+				<ref bean="groupFolderIndexer" />
+				<ref bean="groupWikiIndexer"	/>
+				<ref bean="groupPortfolioIndexer" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="groupForumIndexer" class="org.olat.search.service.indexer.group.GroupForumIndexer" />
+	<bean id="groupFolderIndexer" class="org.olat.search.service.indexer.group.GroupFolderIndexer" >
+		<property name="collaborationManager" ref="collaborationManager"/>
+	</bean>
+	<bean id="groupWikiIndexer" class="org.olat.search.service.indexer.group.GroupWikiIndexer" />
 
+	<!-- Portfolio indexers -->
+	<bean id="epDefaultMapIndexer" class="org.olat.search.service.indexer.PortfolioMapIndexer">
+		<property name="frontendManager" ref="epFrontendManager"/>
+		<property name="portfolioModule" ref="portfolioModule"/>
+	</bean>
+	<bean id="epStructuredMapIndexer" class="org.olat.search.service.indexer.PortfolioStructuredMapIndexer">
+		<property name="frontendManager" ref="epFrontendManager"/>
+		<property name="portfolioModule" ref="portfolioModule"/>
+	</bean>
+	<bean id="portfolioRepositoryIndexer" class="org.olat.search.service.indexer.repository.PortfolioRepositoryIndexer" scope="prototype">
+		<property name="structureManager" ref="epStructureManager"/>
+		<property name="portfolioModule" ref="portfolioModule"/>
+	</bean>
+	<bean id="portfolioCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.PortfolioCourseNodeIndexer" scope="prototype">
+		<property name="structureManager" ref="epStructureManager"/>
+		<property name="portfolioModule" ref="portfolioModule"/>
+	</bean>
+	<bean id="groupPortfolioIndexer" class="org.olat.search.service.indexer.group.GroupPortfolioIndexer">
+		<property name="frontendManager" ref="epFrontendManager"/>
+		<property name="portfolioModule" ref="portfolioModule"/>
+	</bean>
+	
+	<!-- Identity indexers -->
+	<bean id="identityIndexer" class="org.olat.search.service.indexer.identity.IdentityIndexer" >
+		<property name="indexerList">
+			<list>
+				<ref bean="profileIndexer" />
+				<ref bean="publicFolderIndexer"	/>
+				<ref bean="artefactIndexer" />
+			</list>
+		</property>				
+	</bean>
+	
+	<!-- Inject security callback to IdentityIndexer which reduce the visibility of users 
+	     via the full text search to admin and user managers -->
+	<!--
+	<bean id="identityIndexerSecurityCallback" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="identityIndexer" />
+		<property name="targetMethod" value="setSecurityCallback" />
+		<property name="arguments">
+			<bean class="org.olat.search.service.indexer.identity.UserManagerSecurityCallback" />
+		</property>
+	</bean>
+	-->
+	
+	<bean id="profileIndexer"	class="org.olat.search.service.indexer.identity.ProfileIndexer"     />
+	<bean id="publicFolderIndexer"	class="org.olat.search.service.indexer.identity.PublicFolderIndexer" />
+	<bean id="artefactIndexer" class="org.olat.search.service.indexer.identity.PortfolioArtefactIndexer">
+		<property name="frontendManager" ref="epFrontendManager"/>
+		<property name="portfolioModule" ref="portfolioModule"/>
+	</bean>
 
 
 	<!-- SEARCH PROXY SIDE CONFIGURATION -->

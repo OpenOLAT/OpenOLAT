@@ -26,14 +26,11 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.AbstractIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
@@ -47,10 +44,9 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * 
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
-public class IdentityIndexer extends AbstractIndexer {
+public class IdentityIndexer extends AbstractHierarchicalIndexer {
 	private static final OLog log = Tracing.createLoggerFor(IdentityIndexer.class);
 	public final static String TYPE = "type.identity";
-	private List<Indexer> indexerList;
 
 
 	/**
@@ -95,7 +91,7 @@ public class IdentityIndexer extends AbstractIndexer {
 				searchResourceContext.setParentContextType(TYPE);
 
 				// delegate indexing work to all configured indexers
-				for (Indexer indexer : indexerList) {
+				for (Indexer indexer : getChildIndexers().values()) {
 					indexer.doIndex(searchResourceContext, identity, indexWriter);
 				}
 				
@@ -106,26 +102,5 @@ public class IdentityIndexer extends AbstractIndexer {
 			}
 		}
   	if (log.isDebug()) log.debug("IdentityIndexer finished with counter::" + counter);
-  	
-  	
-	}
-
-	/**
-	 * Bean setter method used by spring.
-	 * 
-	 * @param indexerList
-	 */
-	public void setIndexerList(List<Indexer> indexerList) {
-		this.indexerList = indexerList;
-		super.setIndexerList(indexerList);
-	}
-
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity,
-	 *      org.olat.core.id.Roles)
-	 */
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
 	}
 }
