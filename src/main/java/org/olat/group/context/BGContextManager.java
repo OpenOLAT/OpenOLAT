@@ -180,7 +180,7 @@ public interface BGContextManager {
 	 *          participant
 	 * @return true if user is in any group with ghe given role, false otherwhise
 	 */
-	public abstract boolean isIdentityInBGContext(Identity identity, BGContext bgContext, boolean asOwner, boolean asParticipant);
+	public abstract boolean isIdentityInBGContext(Identity identity, List<BGContext> bgContexts, boolean asOwner, boolean asParticipant);
 
 	/**
 	 * Find a business group in the given business group context
@@ -239,7 +239,7 @@ public interface BGContextManager {
 	 * @param nonDefaultContexts true: find non-default contexts
 	 * @return A list of business group contexts
 	 */
-	public abstract List findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts);
+	public abstract List<BGContext> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts);
 
 	/**
 	 * Find all business group contexts for the given OLATResource with the given
@@ -267,7 +267,7 @@ public interface BGContextManager {
 	 * @param nonDefaultContexts true: find non-default contexts
 	 * @return A list of business group contexts
 	 */
-	public abstract List findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts);
+	public abstract List<BGContext> findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts);
 
 	/**
 	 * Find all OLATResources that are associated with the given business group

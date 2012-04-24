@@ -72,8 +72,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	private static final String RIGHTGROUPARCHIVE_XLS = "rightgroup_archiv.xls";
 
 	private OLATResource courseResource;
-	private List learningGroupContexts;
-	private List rightGroupContexts;
+	private List<BGContext> learningGroupContexts;
+	private List<BGContext> rightGroupContexts;
 
 	private PersistingCourseGroupManager(OLATResourceable course) {
 		this.courseResource = OLATResourceManager.getInstance().findOrPersistResourceable(course);
@@ -262,36 +262,33 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public boolean isIdentityInGroupContext(Identity identity, String groupContextName) {
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		Iterator iter = learningGroupContexts.iterator();
-		while (iter.hasNext()) {
-			BGContext context = (BGContext) iter.next();
+		List<BGContext> contexts = new ArrayList<BGContext>();
+		for(BGContext context : learningGroupContexts) {
 			if (groupContextName == null || context.getName().equals(groupContextName)) {
-				boolean inContext = contextManager.isIdentityInBGContext(identity, context, true, true);
-				if (inContext) return true; // finished
+				contexts.add(context);
 			}
 		}
-		iter = rightGroupContexts.iterator();
-		while (iter.hasNext()) {
-			BGContext context = (BGContext) iter.next();
+		for(BGContext context : rightGroupContexts) {
 			if (groupContextName == null || context.getName().equals(groupContextName)) {
-				boolean inContext = contextManager.isIdentityInBGContext(identity, context, true, true);
-				if (inContext) return true; // finished
+				contexts.add(context);
 			}
 		}
-		return false;
+
+		boolean inContext = contextManager.isIdentityInBGContext(identity, contexts, true, true);
+		return inContext;
 	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getLearningGroupContexts()
 	 */
-	public List getLearningGroupContexts() {
+	public List<BGContext> getLearningGroupContexts() {
 		return learningGroupContexts;
 	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getRightGroupContexts()
 	 */
-	public List getRightGroupContexts() {
+	public List<BGContext> getRightGroupContexts() {
 		return rightGroupContexts;
 	}
 
@@ -550,10 +547,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public boolean isIdentityParticipantInAnyLearningGroup(Identity identity) {
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		Iterator iterator = learningGroupContexts.iterator();
-		while (iterator.hasNext()) {
-			BGContext bgContext = (BGContext) iterator.next();
-			if (contextManager.isIdentityInBGContext(identity, bgContext, false, true)) return true;
+		if (contextManager.isIdentityInBGContext(identity, learningGroupContexts, false, true)) {
+			return true;
 		}
 		return false;
 	}
@@ -563,10 +558,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public boolean isIdentityParticipantInAnyRightGroup(Identity identity) {
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		Iterator iterator = rightGroupContexts.iterator();
-		while (iterator.hasNext()) {
-			BGContext bgContext = (BGContext) iterator.next();
-			if (contextManager.isIdentityInBGContext(identity, bgContext, false, true)) return true;
+		if (contextManager.isIdentityInBGContext(identity, rightGroupContexts, false, true)) {
+			return true;
 		}
 		return false;
 	}

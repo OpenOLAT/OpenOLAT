@@ -397,12 +397,14 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#isIdentityInBGContext(org.olat.core.id.Identity,
 	 *      org.olat.group.context.BGContext, boolean, boolean)
 	 */
-	public boolean isIdentityInBGContext(Identity identity, BGContext bgContext, boolean asOwner, boolean asParticipant) {
+	@Override
+	public boolean isIdentityInBGContext(Identity identity, List<BGContext> bgContexts, boolean asOwner, boolean asParticipant) {
+		if(bgContexts == null || bgContexts.isEmpty()) return false;
+		
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
-
-		q.append(" select count(grp) from" + " org.olat.group.BusinessGroupImpl as grp,"
-				+ " org.olat.basesecurity.SecurityGroupMembershipImpl as secgmemb where grp.groupContext = :context" + " and ");
+		q.append(" select count(grp) from ").append(BusinessGroupImpl.class.getName()).append(" as grp,")
+		 .append(SecurityGroupMembershipImpl.class.getName()).append(" as secgmemb where grp.groupContext in (:contexts) and ");
 		// restricting where clause for participants
 		String partRestr = "(grp.partipiciantGroup = secgmemb.securityGroup and secgmemb.identity = :id) ";
 		// restricting where clause for owners
@@ -420,12 +422,13 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 
 		DBQuery query = db.createQuery(q.toString());
 		query.setEntity("id", identity);
-		query.setEntity("context", bgContext);
+		query.setParameterList("contexts", bgContexts);
 		query.setCacheable(true);
+	
+		@SuppressWarnings("rawtypes")
 		List result = query.list();
-
 		if (result.size() == 0) return false;
-		return (((Long) result.get(0)).intValue() > 0);
+		return (((Number) result.get(0)).intValue() > 0);
 	}
 
 	/**
@@ -464,7 +467,8 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#findBGContextsForResource(org.olat.resource.OLATResource,
 	 *      boolean, boolean)
 	 */
-	public List findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts) {
+	@Override
+	public List<BGContext> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts) {
 		return findBGContextsForResource(resource, null, defaultContexts, nonDefaultContexts);
 	}
 
@@ -472,7 +476,8 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#findBGContextsForResource(org.olat.resource.OLATResource,
 	 *      java.lang.String, boolean, boolean)
 	 */
-	public List findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts, boolean nonDefaultContexts) {
+	@Override
+	public List<BGContext> findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts, boolean nonDefaultContexts) {
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
 		q.append(" select context from org.olat.group.context.BGContextImpl as context,");
@@ -491,14 +496,17 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		if (checkDefault){
 			query.setBoolean("isDefault", defaultContexts ? true : false);
 		}
-		return query.list();
+		@SuppressWarnings("unchecked")
+		List<BGContext> contexts = query.list();
+		return contexts;
 	}
 
 	/**
 	 * @see org.olat.group.context.BGContextManager#findBGContextsForIdentity(org.olat.core.id.Identity,
 	 *      boolean, boolean)
 	 */
-	public List findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts) {
+	@Override
+	public List<BGContext> findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts) {
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
 		q.append(" select context from org.olat.group.context.BGContextImpl as context,");
@@ -516,7 +524,9 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 			query.setBoolean("isDefault", defaultContexts ? true : false);
 		}
 		
-		return query.list();
+		@SuppressWarnings("unchecked")
+		List<BGContext> contexts = query.list();
+		return contexts;
 	}
 
 	/**
