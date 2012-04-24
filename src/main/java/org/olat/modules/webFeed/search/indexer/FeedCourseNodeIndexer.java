@@ -22,10 +22,6 @@ package org.olat.modules.webFeed.search.indexer;
 import java.io.IOException;
 
 import org.olat.core.commons.services.search.OlatDocument;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
@@ -40,8 +36,8 @@ import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.modules.webFeed.search.document.FeedNodeDocument;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
 
 /**
@@ -52,17 +48,14 @@ import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
  * 
  * @author gwassmann
  */
-public abstract class FeedCourseNodeIndexer implements CourseNodeIndexer {
+public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements CourseNodeIndexer {
 
 	private static final OLog log = Tracing.createLoggerFor(FeedRepositoryIndexer.class);
 
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity,
-	 *      org.olat.core.id.Roles)
-	 */
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
+	@Override
+	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
+	throws IOException, InterruptedException {
+		//
 	}
 
 	/**
@@ -102,10 +95,6 @@ public abstract class FeedCourseNodeIndexer implements CourseNodeIndexer {
 		} catch (NullPointerException e) {
 			log.error("Error indexing feed:" + repoEntryName, e);
 		}
-
-		// go further, index my child nodes
-		CourseIndexer courseIdexer = new CourseIndexer();
-		courseIdexer.doIndexCourse(searchResourceContext, course, node, indexer);
 	}
 
 	/**

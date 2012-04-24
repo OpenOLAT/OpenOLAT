@@ -29,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
@@ -46,18 +44,11 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class ImsCPRepositoryIndexer extends FolderIndexer {
-	private static final OLog log = Tracing.createLoggerFor(ImsCPRepositoryIndexer.class);
-	
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public final static String TYPE = "type.repository.entry.imscp";
 
 	public final static String ORES_TYPE_CP = ImsCPFileResource.TYPE_NAME;
-	
-	public ImsCPRepositoryIndexer() {
-		// Repository types
-		
-	}
 	
 	/**
 	 * 
@@ -72,7 +63,7 @@ public class ImsCPRepositoryIndexer extends FolderIndexer {
 	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		if (log.isDebug()) log.debug("Analyse IMS CP RepositoryEntry...");
+		if (isLogDebugEnabled()) logDebug("Analyse IMS CP RepositoryEntry...");
 
 		resourceContext.setDocumentType(TYPE);
     

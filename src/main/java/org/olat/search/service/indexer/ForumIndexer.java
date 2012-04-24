@@ -41,10 +41,6 @@ import org.olat.search.service.document.ForumMessageDocument;
  * @author Christian Guretzki
  */
 public abstract class ForumIndexer extends AbstractHierarchicalIndexer {
-	
-	public ForumIndexer() {
-		//
-	}
 		
 	public void doIndexAllMessages(SearchResourceContext parentResourceContext, Forum forum, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		if (forum == null) {

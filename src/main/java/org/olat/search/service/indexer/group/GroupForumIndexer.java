@@ -59,11 +59,6 @@ public class GroupForumIndexer extends ForumIndexer{
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.group.forum.message";
 
-	public GroupForumIndexer() {
-    super();
-	}
-		
-
 	/**
 	 * Index a forum in a group.
 	 * @param parentResourceContext
@@ -123,10 +118,7 @@ public class GroupForumIndexer extends ForumIndexer{
 		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 
-
 	public String getSupportedTypeName() {
 		return BusinessGroupMainRunController.ORES_TOOLFORUM.getResourceableTypeName();
 	}
-
-
 }

@@ -45,7 +45,6 @@ public class ScormCourseNodeIndexer extends ScormRepositoryIndexer implements Co
 	public final static String NODE_TYPE = "type.course.node.scorm";
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.ScormCourseNode";
 
-
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 			throws IOException, InterruptedException {

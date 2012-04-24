@@ -48,19 +48,11 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class ProjectBrokerCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
 	private OLog log = Tracing.createLoggerFor(this.getClass()); 
-	
-	// Must correspond with LocalString_xx.properties
-	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
-//	public final static String TYPE_DROPBOX     = "type.course.node.projectbroker.dropbox";
-//	public final static String TYPE_RETURNBOX   = "type.course.node.projectbroker.returnbox";
+
 	public static final String TYPE = "type.course.node.projectbroker";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.ProjectBrokerCourseNode";
 
-	
-	public ProjectBrokerCourseNodeIndexer() {
-	}
-	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
@@ -76,31 +68,11 @@ public class ProjectBrokerCourseNodeIndexer extends FolderIndexer implements Cou
 				Project project = iterator.next();
 				Document document = ProjectBrokerProjectDocument.createDocument(courseNodeResourceContext, project);
 				indexWriter.addDocument(document);
-				doIndexFolders(courseNodeResourceContext, project, indexWriter);
 		  }
 		} else {
 			log.debug("projectBrokerId is null, courseNode=" + courseNode + " , course=" + course);
 		}
 	}
-
-
-	private void doIndexFolders(SearchResourceContext searchResourceContext, Project project, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
-		log.debug("DOES NOT INDEX DROPBOX AND RETURNBOX");
-		// RPOBLEM : How we could check access to the projects in checkAccess method (missing courseNode to get project-broker)
-		// Index Dropbox
-//	    String dropboxFilePath = FolderConfig.getCanonicalRoot() + DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
-//	    File fDropboxFolder = new File(dropboxFilePath);
-//	    VFSContainer dropboxRootContainer = new LocalFolderImpl(fDropboxFolder);
-//	    projectResourceContext.setDocumentType(TYPE_DROPBOX);
-//	    doIndexVFSContainer(projectResourceContext, dropboxRootContainer, indexWriter, "");
-	    
-	    // Index Returnbox
-//	    String returnboxFilePath = FolderConfig.getCanonicalRoot() + ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), courseNode);
-//	    File fResturnboxFolder = new File(returnboxFilePath);
-//	    VFSContainer returnboxRootContainer = new LocalFolderImpl(fResturnboxFolder);
-//	    projectResourceContext.setDocumentType(TYPE_RETURNBOX);
-//	    doIndexVFSContainer(projectResourceContext, returnboxRootContainer, indexWriter, "");
-    }
 
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;

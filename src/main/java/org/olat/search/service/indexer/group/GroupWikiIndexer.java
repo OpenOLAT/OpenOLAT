@@ -33,8 +33,6 @@ import org.apache.lucene.document.Document;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.modules.wiki.Wiki;
@@ -50,22 +48,18 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class GroupWikiIndexer extends FolderIndexer{
-	private static final OLog log = Tracing.createLoggerFor(GroupWikiIndexer.class);
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.group.wiki";
 
-	public GroupWikiIndexer() {
-		//
-	}
-
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		if (!(businessObj instanceof BusinessGroup) )
 			throw new AssertException("businessObj must be BusinessGroup");
 		BusinessGroup businessGroup = (BusinessGroup)businessObj;
 		
 		// Index Group Wiki
-		if (log.isDebug()) log.debug("Analyse Wiki for Group=" + businessGroup);
+		if (isLogDebugEnabled()) logDebug("Analyse Wiki for Group=" + businessGroup);
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) ) {
 			try {
@@ -83,15 +77,14 @@ public class GroupWikiIndexer extends FolderIndexer{
 					  indexWriter.addDocument(document);
 					}
 			} catch (NullPointerException nex) {
-				log.warn("NullPointerException in GroupWikiIndexer.doIndex.", nex);
+				logWarn("NullPointerException in GroupWikiIndexer.doIndex.", nex);
 			}
 		} else {
-			if (log.isDebug()) log.debug("Group=" + businessGroup + " has no Wiki.");
+			if (isLogDebugEnabled()) logDebug("Group=" + businessGroup + " has no Wiki.");
 		}
-
-		
 	}
 	
+	@Override
 	public String getSupportedTypeName() {
 		return BusinessGroupMainRunController.ORES_TOOLWIKI.getResourceableTypeName();
 	}

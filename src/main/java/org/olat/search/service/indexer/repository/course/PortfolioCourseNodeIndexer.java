@@ -22,10 +22,6 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -36,6 +32,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.PortfolioMapDocument;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 
@@ -47,7 +44,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * Initial Date:  12 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PortfolioCourseNodeIndexer implements CourseNodeIndexer {
+public class PortfolioCourseNodeIndexer extends DefaultIndexer implements CourseNodeIndexer {
 	
 	public final static String NODE_TYPE = "type.course.node.ep";
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.PortfolioCourseNode";
@@ -77,6 +74,12 @@ public class PortfolioCourseNodeIndexer implements CourseNodeIndexer {
 	}
 
 	@Override
+	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
+			throws IOException, InterruptedException {
+		//
+	}
+
+	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 	throws IOException, InterruptedException {
 		if(!portfolioModule.isEnabled()) return;
@@ -97,10 +100,5 @@ public class PortfolioCourseNodeIndexer implements CourseNodeIndexer {
 			Document document = PortfolioMapDocument.createDocument(courseNodeResourceContext, element);
 			indexWriter.addDocument(document);
 		}
-	}
-
-	@Override
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return true;
 	}
 }

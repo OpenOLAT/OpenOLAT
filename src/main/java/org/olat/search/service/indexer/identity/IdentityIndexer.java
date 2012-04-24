@@ -26,8 +26,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
@@ -45,9 +43,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class IdentityIndexer extends AbstractHierarchicalIndexer {
-	private static final OLog log = Tracing.createLoggerFor(IdentityIndexer.class);
 	public final static String TYPE = "type.identity";
-
 
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
@@ -56,17 +52,14 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 		return Identity.class.getSimpleName();	
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
-
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,
 			InterruptedException {
 		
   	int counter = 0;
   	BaseSecurity secMgr = BaseSecurityManager.getInstance();
   	List<Identity> identities = secMgr.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_ACTIV);
-  	if (log.isDebug()) log.debug("Found " + identities.size() + " active identities to index");
+  	if (isLogDebugEnabled()) logDebug("Found " + identities.size() + " active identities to index");
 
   	// committing here to make sure the loadBusinessGroup below does actually
   	// reload from the database and not only use the session cache 
@@ -79,28 +72,28 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 				// reload the businessGroup here before indexing it to make sure it has not been deleted in the meantime
   			Identity reloadedIdentity = secMgr.findIdentityByName(identity.getName());
 				if (reloadedIdentity==null || (reloadedIdentity.getStatus()>=Identity.STATUS_VISIBLE_LIMIT)) {
-					log.info("doIndex: identity was deleted while we were indexing. The deleted identity was: "+identity);
+					logInfo("doIndex: identity was deleted while we were indexing. The deleted identity was: "+identity);
 					continue;
 				}
 				identity = reloadedIdentity;
 
-  			if (log.isDebug()) log.debug("Indexing identity::" + identity.getName() + " and counter::" + counter);  	  	
+  			if (isLogDebugEnabled()) logDebug("Indexing identity::" + identity.getName() + " and counter::" + counter);  	  	
   	  	// Create a search context for this identity. The search context will open the users visiting card in a new tab
 				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 				searchResourceContext.setBusinessControlFor(OresHelper.createOLATResourceableInstance(Identity.class, identity.getKey()));
 				searchResourceContext.setParentContextType(TYPE);
 
 				// delegate indexing work to all configured indexers
-				for (Indexer indexer : getChildIndexers().values()) {
+				for (Indexer indexer : getChildIndexers()) {
 					indexer.doIndex(searchResourceContext, identity, indexWriter);
 				}
 				
   			counter++;
 			} catch (Exception ex) {
-				log.warn("Exception while indexing identity::" + identity.getName() + ". Skipping this user, try next one.", ex);
+				logWarn("Exception while indexing identity::" + identity.getName() + ". Skipping this user, try next one.", ex);
 				DBFactory.getInstance(false).rollbackAndCloseSession();
 			}
 		}
-  	if (log.isDebug()) log.debug("IdentityIndexer finished with counter::" + counter);
+  	if (isLogDebugEnabled()) logDebug("IdentityIndexer finished with counter::" + counter);
 	}
 }

@@ -27,8 +27,6 @@ package org.olat.search.service.indexer.repository;
 
 import java.io.IOException;
 
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.sharedfolder.SharedFolderManager;
@@ -43,7 +41,6 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class SharedFolderRepositoryIndexer extends FolderIndexer {
-	private static final OLog log = Tracing.createLoggerFor(SharedFolderRepositoryIndexer.class);
 	// fxdiff: see LibraryManager
 	private static final String NO_FOLDER_INDEXING_LOCKFILE = ".noFolderIndexing";
 	
@@ -52,11 +49,6 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer {
 	public final static String TYPE = "type.repository.entry.sharedfolder";
 
 	public final static String ORES_TYPE_SHAREDFOLDER = SharedFolderFileResource.TYPE_NAME;
-	
-	public SharedFolderRepositoryIndexer() {
-		// Repository types
-		
-	}
 
 	public String getSupportedTypeName() {	
 		return ORES_TYPE_SHAREDFOLDER; 
@@ -68,7 +60,7 @@ public class SharedFolderRepositoryIndexer extends FolderIndexer {
 	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		if (log.isDebug()) log.debug("Analyse Shared Folder RepositoryEntry...");
+		if (isLogDebugEnabled()) logDebug("Analyse Shared Folder RepositoryEntry...");
 
 		resourceContext.setDocumentType(TYPE);
     resourceContext.setParentContextType(TYPE);

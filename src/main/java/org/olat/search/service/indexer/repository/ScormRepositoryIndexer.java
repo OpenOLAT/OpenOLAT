@@ -29,8 +29,6 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.dom4j.Element;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -56,7 +54,6 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author srosse
  */
 public class ScormRepositoryIndexer extends FolderIndexer {
-	private static final OLog log = Tracing.createLoggerFor(ScormRepositoryIndexer.class);
 	public static Set<String> stopWords = new HashSet<String>();
 	static {
 		stopWords.add("LOMv1.0");
@@ -94,7 +91,7 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 	 */
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException  {
-		if (log.isDebug()) log.debug("Index Scorm package...");
+		if (isLogDebugEnabled()) logDebug("Index Scorm package...");
 		
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		OLATResource ores = repositoryEntry.getOlatResource();
@@ -125,7 +122,7 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 	private Document createManifestDocument(VFSLeaf fManifest, Element rootElement, SearchResourceContext resourceContext) {
 		IMSMetadataDocument document = new IMSMetadataDocument();
 		document.setResourceUrl(resourceContext.getResourceUrl());
-		if (log.isDebug()) log.debug("MM: URL=" + document.getResourceUrl());
+		if (isLogDebugEnabled()) logDebug("MM: URL=" + document.getResourceUrl());
 		document.setLastChange(new Date(fManifest.getLastModified()));
 		document.setDocumentType(resourceContext.getDocumentType());
 		if (StringHelper.containsNonWhitespace(resourceContext.getTitle())) {

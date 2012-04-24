@@ -39,9 +39,8 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.InfoMessageDocument;
-import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * 
@@ -51,7 +50,7 @@ import org.olat.search.service.indexer.repository.CourseIndexer;
  * Initial Date:  29 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoCourseNodeIndexer extends AbstractHierarchicalIndexer implements CourseNodeIndexer {
+public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNodeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(InfoCourseNodeIndexer.class);
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -59,12 +58,7 @@ public class InfoCourseNodeIndexer extends AbstractHierarchicalIndexer implement
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.InfoCourseNode";
 	
-	private CourseIndexer courseNodeIndexer;
 	private InfoMessageManager infoMessageManager;
-	
-	public InfoCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-	}
 	
 	/**
 	 * [used by Spring]
@@ -74,6 +68,12 @@ public class InfoCourseNodeIndexer extends AbstractHierarchicalIndexer implement
 		this.infoMessageManager = infoMessageManager;
 	}
 
+	@Override
+	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
+	throws IOException, InterruptedException {
+		//
+	}
+
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		try {
 			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
@@ -81,8 +81,6 @@ public class InfoCourseNodeIndexer extends AbstractHierarchicalIndexer implement
 	    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
 	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 	    doIndexInfos(courseNodeResourceContext, course, courseNode, indexWriter);
-	    // go further, index my child nodes
-	    courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 		} catch(Exception ex) {
 			log.error("Exception indexing courseNode=" + courseNode, ex);
 		} catch (Error err) {

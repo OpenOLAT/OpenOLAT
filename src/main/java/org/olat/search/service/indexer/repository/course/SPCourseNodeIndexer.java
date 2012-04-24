@@ -47,7 +47,6 @@ import org.olat.course.nodes.sp.SPEditController;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for SP (SinglePage) course-node.
@@ -65,12 +64,7 @@ public class SPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
   
   private static final Pattern HREF_PATTERN = Pattern.compile("href=\\\"([^\\\"]*)\\\"", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
   private static final String HTML_SUFFIXES = "html htm xhtml xml";
-	private CourseIndexer courseNodeIndexer;
 
-	public SPCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-	}
-	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (log.isDebug()) log.debug("Index SinglePage...");
 
@@ -100,8 +94,6 @@ public class SPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
   	} else {
   		if (log.isDebug()) log.debug("Can not found choosen file in SP => Nothing indexed.");
   	}
-    // go further, index my child nodes
-		courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 	}
 
 	public String getSupportedTypeName() {

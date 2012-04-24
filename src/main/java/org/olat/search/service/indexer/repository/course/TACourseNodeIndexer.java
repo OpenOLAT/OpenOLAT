@@ -41,7 +41,6 @@ import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for TA (task) course-node.
@@ -57,12 +56,7 @@ public class TACourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.TACourseNode";
 
-	private CourseIndexer courseNodeIndexer;
-
-	public TACourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-	}
-	
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
@@ -95,11 +89,9 @@ public class TACourseNodeIndexer extends FolderIndexer implements CourseNodeInde
     VFSContainer solutionRootContainer = new LocalFolderImpl(fSolutionFolder);
     courseNodeResourceContext.setDocumentType(TYPE_SOLUTIONBOX);
     doIndexVFSContainer(courseNodeResourceContext, solutionRootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
-    
-    // go further, index my child nodes
-    courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}

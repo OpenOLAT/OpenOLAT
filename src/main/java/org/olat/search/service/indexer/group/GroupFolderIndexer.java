@@ -50,10 +50,6 @@ public class GroupFolderIndexer extends FolderIndexer{
 	public static final String TYPE = "type.group.folder";
 	
 	private CollaborationManager collaborationManager;
-
-	public GroupFolderIndexer() {
-		//
-	}
 	
 	/**
 	 * [used by Spring]

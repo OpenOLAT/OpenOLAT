@@ -27,8 +27,8 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -47,7 +47,6 @@ import org.olat.properties.Property;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.ForumIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for FO (forum) course-node.
@@ -61,12 +60,6 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.FOCourseNode";
 	
-	private CourseIndexer courseNodeIndexer;
-	
-	public FOCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-	}
-	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		try {
 			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
@@ -74,8 +67,6 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
 	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 	    doIndexForum(courseNodeResourceContext, course, courseNode, indexWriter);
-	    // go further, index my child nodes
-	    courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 		} catch(Exception ex) {
 			log.error("Exception indexing courseNode=" + courseNode, ex);
 		} catch (Error err) {

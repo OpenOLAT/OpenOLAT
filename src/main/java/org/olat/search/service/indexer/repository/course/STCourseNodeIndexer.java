@@ -28,24 +28,24 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.st.STCourseNodeEditController;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.CourseNodeDocument;
+import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for ST (Structure) course-node. 
  * @author Christian Guretzki
  */
-public class STCourseNodeIndexer implements CourseNodeIndexer {
+public class STCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(STCourseNodeIndexer.class);
 	
 	// Must correspond with LocalString_xx.properties
@@ -54,28 +54,34 @@ public class STCourseNodeIndexer implements CourseNodeIndexer {
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.STCourseNode";
 
-	private CourseIndexer courseNodeIndexer;
-	
-	public STCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
+	@Override
+	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
+	throws IOException, InterruptedException {
+		//
 	}
-	
-	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
+
+	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
+	throws IOException,InterruptedException {
 		if (log.isDebug()) log.debug("Index StructureNode...");
 		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
 		courseNodeResourceContext.setBusinessControlFor(courseNode);
     courseNodeResourceContext.setDocumentType(TYPE);
+    
 	  Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
 		indexWriter.addDocument(document);
-		//	 go further, index my child nodes
-    courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
+		
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE);
+		String relPath = STCourseNodeEditController.getFileName(config);
+		if (relPath != null && displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
+			VFSItem displayPage = course.getCourseFolderContainer().resolve(relPath);
+			if(displayPage instanceof VFSLeaf) {
+				doIndexVFSLeafByMySelf(courseNodeResourceContext, (VFSLeaf)displayPage, indexWriter, relPath);
+			}
+		}
 	}
 
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
-
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles)  {
-		return true;
-	}	
 }

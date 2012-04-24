@@ -40,7 +40,6 @@ import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.WikiPageDocument;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for Wiki course-node.
@@ -54,14 +53,8 @@ public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIn
 	public final static String TYPE = "type.course.node.wiki";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.WikiCourseNode";
-
-	private CourseIndexer courseNodeIndexer;
 	
-	
-	public WikiCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-	}
-	
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		if (log.isDebug()) log.debug("Index wiki...");
 		String repoEntryName = "*name not available*";
@@ -87,13 +80,6 @@ public class WikiCourseNodeIndexer extends FolderIndexer implements CourseNodeIn
 			}
 		} catch (Exception e) {
 			log.error("Error indexing wiki:" + repoEntryName, e);
-		}
-
-    // go further, index my child nodes
-		try {
-			courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
-		} catch (Exception e) {
-			log.error("Error indexing child of courseNode=" + courseNode, e);
 		}
 	}
 

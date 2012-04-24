@@ -29,8 +29,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.ElementType;
@@ -49,9 +47,7 @@ import org.olat.search.service.document.PortfolioMapDocument;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public abstract class AbstractPortfolioMapIndexer extends AbstractHierarchicalIndexer {
-	
-	private static final OLog log = Tracing.createLoggerFor(AbstractPortfolioMapIndexer.class);
-	
+
 	private PortfolioModule portfolioModule;
 	private EPFrontendManager frontendManager;
 	
@@ -121,7 +117,7 @@ public abstract class AbstractPortfolioMapIndexer extends AbstractHierarchicalIn
 			OLATResourceable ores = contextEntry.getOLATResourceable();
 			return frontendManager.isMapVisible(identity, ores) && super.checkAccess(contextEntry, businessControl, identity, roles);
 		} catch (Exception e) {
-			log.warn("Couldn't ask if map is visible: " + contextEntry, e);
+			logWarn("Couldn't ask if map is visible: " + contextEntry, e);
 			return false;
 		}
 	}

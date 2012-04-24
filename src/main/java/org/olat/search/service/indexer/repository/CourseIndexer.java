@@ -35,9 +35,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -52,25 +50,19 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.DefaultIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
+import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
-import org.olat.search.service.indexer.repository.course.CourseNodeIndexerFactory;
 
 /**
  * Index a hole course.
  * @author Christian Guretzki
  */
-public class CourseIndexer extends DefaultIndexer {
-	private static final OLog log = Tracing.createLoggerFor(CourseIndexer.class);
-	
+public class CourseIndexer extends AbstractHierarchicalIndexer {
 	public final static String TYPE = "type.repository.entry.CourseModule"; 
 	
 	private RepositoryManager repositoryManager;
-	
-	public CourseIndexer() {
-		//
-	}
 	
 	/**
 	 * [used by Spring]
@@ -87,17 +79,14 @@ public class CourseIndexer extends DefaultIndexer {
 		return CourseModule.getCourseTypeName(); 
 	}
 	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
-
+	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		if (log.isDebug()) log.debug("Analyse Course... repositoryEntry=" + repositoryEntry);
+		if (isLogDebugEnabled()) logDebug("Analyse Course... repositoryEntry=" + repositoryEntry);
 		try {
 			RepositoryEntryStatus status = RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode());
 			if(status.isClosed()) {
-				if(log.isDebug()) log.debug("Course not indexed because it's closed: repositoryEntry=" + repositoryEntry);
+				if(isLogDebugEnabled()) logDebug("Course not indexed because it's closed: repositoryEntry=" + repositoryEntry);
 				return;
 			}
 
@@ -107,34 +96,44 @@ public class CourseIndexer extends DefaultIndexer {
 			parentResourceContext.setParentContextName(course.getCourseTitle());
 			doIndexCourse( parentResourceContext, course,  course.getRunStructure().getRootNode(), indexWriter);			
 		} catch (Exception ex) {
-			log.warn("Can not index repositoryEntry=" + repositoryEntry,ex);
+			logWarn("Can not index repositoryEntry=" + repositoryEntry,ex);
 		}
 	}
 
-	public void doIndexCourse(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		// loop over all child nodes
-		int childCount = courseNode.getChildCount();
-		for (int i=0;i<childCount; i++) {
-			INode childCourseNode = courseNode.getChildAt(i);
-			if (childCourseNode instanceof CourseNode) {
-				if (log.isDebug()) log.debug("Analyse CourseNode child ... childCourseNode=" + childCourseNode);
-  			// go further with resource
-  			CourseNodeIndexer courseNodeIndexer = CourseNodeIndexerFactory.getInstance().getCourseNodeIndexer( (CourseNode)childCourseNode);
-  			if (courseNodeIndexer != null) {
-  				if (log.isDebug()) log.debug("courseNodeIndexer=" + courseNodeIndexer);
-   				try {
-						courseNodeIndexer.doIndex(repositoryResourceContext, course, (CourseNode)childCourseNode, indexWriter);
-					} catch (Exception e) {
-						log.warn("Can not index course node=" + childCourseNode.getIdent(), e);
-					}
-  			} else {
-  				if (log.isDebug()) log.debug("No CourseNodeIndexer for " + childCourseNode);				
-  		    // go further, index my child nodes
-  				doIndexCourse(repositoryResourceContext, course, (CourseNode)childCourseNode, indexWriter);
-  			}
-			} else {
-				if (log.isDebug()) log.debug("ChildNode is no CourseNode, " + childCourseNode);
+	/**
+	 * 
+	 * @param repositoryResourceContext
+	 * @param course
+	 * @param courseNode
+	 * @param indexWriter
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	private void doIndexCourse(SearchResourceContext repositoryResourceContext, ICourse course, INode node, OlatFullIndexer indexWriter)
+	throws IOException,InterruptedException  {
+		//try to index the course node
+		if(node instanceof CourseNode) {
+			if (isLogDebugEnabled()) logDebug("Analyse CourseNode child ... childCourseNode=" + node);
+			// go further with resource
+			CourseNode childCourseNode = (CourseNode)node;
+			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(childCourseNode);
+			if (courseNodeIndexer != null) {
+				if (isLogDebugEnabled()) logDebug("courseNodeIndexer=" + courseNodeIndexer);
+ 				try {
+					courseNodeIndexer.doIndex(repositoryResourceContext, course, (CourseNode)childCourseNode, indexWriter);
+				} catch (Exception e) {
+					logWarn("Can not index course node=" + childCourseNode.getIdent(), e);
+				}
 			}
+		} else if (isLogDebugEnabled()) {
+			logDebug("ChildNode is no CourseNode, " + node);
+		}
+		
+		//loop over all child nodes
+		int childCount = node.getChildCount();
+		for (int i=0;i<childCount; i++) {
+			INode childNode = node.getChildAt(i);
+  		doIndexCourse(repositoryResourceContext, course, childNode, indexWriter);
 		}
 	}
 
@@ -142,18 +141,14 @@ public class CourseIndexer extends DefaultIndexer {
 	 * Bean setter method used by spring. 
 	 * @param indexerList
 	 */
-	public void setIndexerList(List<CourseNodeIndexer> indexerList) {
-		if (indexerList == null)
-			throw new AssertException("null value for indexerList not allowed.");
-
-		try {
-			for (CourseNodeIndexer courseNodeIndexer : indexerList) {
-				CourseNodeIndexerFactory.getInstance().registerIndexer(courseNodeIndexer);
-				if (log.isDebug()) log.debug("Adding indexer from configuraton: ");
-			} 
-		}	catch (ClassCastException cce) {
-				throw new StartupException("Configured indexer is not of type RepositoryEntryIndexer", cce);
+	@Override
+	public void setIndexerList(List<Indexer> indexerList) {
+		for (Indexer courseNodeIndexer : indexerList) {
+			if(!(courseNodeIndexer instanceof CourseNodeIndexer)) {
+				throw new StartupException("Configured indexer is not of type RepositoryEntryIndexer: " + courseNodeIndexer);
+			}
 		}
+		super.setIndexerList(indexerList);
 	}
 
 	@Override
@@ -164,30 +159,30 @@ public class CourseIndexer extends DefaultIndexer {
 			// not a course node of course we have access to the course metadata
 			return true;
 		}
-		if (log.isDebug()) log.debug("Start identity=" + identity + "  roles=" + roles);
+		if (isLogDebugEnabled()) logDebug("Start identity=" + identity + "  roles=" + roles);
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
-		if (log.isDebug()) log.debug("repositoryEntry=" + repositoryEntry );
+		if (isLogDebugEnabled()) logDebug("repositoryEntry=" + repositoryEntry );
 
 		Long nodeId = bcContextEntry.getOLATResourceable().getResourceableId();
-		if (log.isDebug()) log.debug("nodeId=" + nodeId );
+		if (isLogDebugEnabled()) logDebug("nodeId=" + nodeId );
 		
 		ICourse course = CourseFactory.loadCourse(repositoryEntry.getOlatResource());
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(identity);
 		ienv.setRoles(roles);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-		if (log.isDebug()) log.debug("userCourseEnv=" + userCourseEnv + "ienv=" + ienv );
+		if (isLogDebugEnabled()) logDebug("userCourseEnv=" + userCourseEnv + "ienv=" + ienv );
 		
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 
 		String nodeIdS = nodeId.toString();
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdS);
-		if (log.isDebug()) log.debug("courseNode=" + courseNode );
+		if (isLogDebugEnabled()) logDebug("courseNode=" + courseNode );
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
 		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
-		if (log.isDebug()) log.debug("rootNodeEval=" + rootNodeEval );
+		if (isLogDebugEnabled()) logDebug("rootNodeEval=" + rootNodeEval );
 
 		TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
 		if (newCalledTreeNode == null) {
@@ -196,20 +191,30 @@ public class CourseIndexer extends DefaultIndexer {
 		}
 		// go further
 		NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-		if (log.isDebug()) log.debug("nodeEval=" + nodeEval );
+		if (isLogDebugEnabled()) logDebug("nodeEval=" + nodeEval );
 		if (nodeEval.getCourseNode() != courseNode) throw new AssertException("error in structure");
 		if (!nodeEval.isVisible()) throw new AssertException("node eval not visible!!");
-		if (log.isDebug()) log.debug("call mayAccessWholeTreeUp..." );
+		if (isLogDebugEnabled()) logDebug("call mayAccessWholeTreeUp..." );
 		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);	
-		if (log.isDebug()) log.debug("call mayAccessWholeTreeUp=" + mayAccessWholeTreeUp );
+		if (isLogDebugEnabled()) logDebug("call mayAccessWholeTreeUp=" + mayAccessWholeTreeUp );
 		
 		if (mayAccessWholeTreeUp) {
-			CourseNodeIndexer courseNodeIndexer = CourseNodeIndexerFactory.getInstance().getCourseNodeIndexer(courseNode);
+			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
 			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
 					&& super.checkAccess(bcContextEntry, businessControl, identity, roles);		
 		} else {
   		return false;
 		}
 	}
-
+	
+	private CourseNodeIndexer getCourseNodeIndexer(CourseNode node) {
+		String courseNodeName = node.getClass().getName();
+		List<Indexer> courseNodeIndexer = getIndexerByType(courseNodeName);
+    if (courseNodeIndexer != null && !courseNodeIndexer.isEmpty()) {
+    	return (CourseNodeIndexer)courseNodeIndexer.get(0);
+    } else if (isLogDebugEnabled()) {
+    	logDebug("No indexer found for node=" + node);
+    }
+    return null;
+	}
 }

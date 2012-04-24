@@ -28,7 +28,6 @@ package org.olat.search.service.indexer.group;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
@@ -65,7 +64,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		//-> OLAT-3367 CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, ores);
 	}
 	
-
+	@Override
   public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		long startTime = System.currentTimeMillis();
   	List<BusinessGroup> groupList = businessGroupManager.getAllBusinessGroups();
@@ -108,7 +107,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		if (isLogDebugEnabled()) logDebug("GroupIndexer finished in " + indexTime + " ms");
 	}
 
-
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		Long key = contextEntry.getOLATResourceable().getResourceableId();
 		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
@@ -131,7 +130,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		}
 	}
 
-
+	@Override
 	public String getSupportedTypeName() {
 		return OresHelper.calculateTypeName(BusinessGroup.class);
 	}

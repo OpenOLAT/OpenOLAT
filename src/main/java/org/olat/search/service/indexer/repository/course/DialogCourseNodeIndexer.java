@@ -31,16 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.Constants;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -63,15 +61,14 @@ import org.olat.search.service.document.file.DocumentAccessException;
 import org.olat.search.service.document.file.DocumentException;
 import org.olat.search.service.document.file.DocumentNotImplementedException;
 import org.olat.search.service.document.file.FileDocumentFactory;
+import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for dialog course-node.
  * @author Christian Guretzki
  */
-public class DialogCourseNodeIndexer implements CourseNodeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(DialogCourseNodeIndexer.class);
+public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNodeIndexer {
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public final static String TYPE_MESSAGE = "type.course.node.dialog.forum.message";
@@ -79,17 +76,12 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.DialogCourseNode";
 	
-	private DialogElementsPropertyManager dialogElmsMgr;
-
-	private CourseIndexer courseNodeIndexer;
-
-
-	
-	public DialogCourseNodeIndexer() {
-		dialogElmsMgr = DialogElementsPropertyManager.getInstance();
-		courseNodeIndexer = new CourseIndexer();
+	@Override
+	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
+			throws IOException, InterruptedException {
+		//
 	}
-	
+
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
@@ -97,6 +89,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
     courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
     CoursePropertyManager coursePropMgr = course.getCourseEnvironment().getCoursePropertyManager();
+    DialogElementsPropertyManager dialogElmsMgr = DialogElementsPropertyManager.getInstance();
 		DialogPropertyElements elements = dialogElmsMgr.findDialogElements(coursePropMgr, courseNode);
 		List<DialogElement> list = new ArrayList<DialogElement>();
 		if (elements != null) list = elements.getDialogPropertyElements();
@@ -110,10 +103,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 			doIndexAllMessages(courseNodeResourceContext, forum, indexWriter );
 			// do Index File
 			doIndexFile(element.getFilename(), element.getForumKey(), courseNodeResourceContext, indexWriter);
-		}    
-    
-    // go further, index my child nodes
-    courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
+		}
 	}
 
 	/**
@@ -128,7 +118,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 	private void doIndexFile(String filename, Long forumKey, SearchResourceContext leafResourceContext, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		OlatRootFolderImpl forumContainer = DialogElementsController.getForumContainer(forumKey);
 		VFSLeaf leaf = (VFSLeaf) forumContainer.getItems(new VFSLeafFilter()).get(0);
-		if (log.isDebug()) log.debug("Analyse VFSLeaf=" + leaf.getName());
+		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
 		try {
 			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
 				leafResourceContext.setFilePath(filename);
@@ -138,20 +128,20 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
   			Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
 	  		indexWriter.addDocument(document);
 			} else {
-				if (log.isDebug()) log.debug("Documenttype not supported. file=" + leaf.getName());
+				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
-			if (log.isDebug()) log.debug("Can not access document." + e.getMessage());
+			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
 		} catch (DocumentNotImplementedException e) {
-			if (log.isDebug()) log.debug("Documenttype not implemented.");
+			if (isLogDebugEnabled()) logDebug("Documenttype not implemented.");
 		} catch (DocumentException dex) {
-			if (log.isDebug()) log.debug("DocumentException: Can not index leaf=" + leaf.getName());
+			if (isLogDebugEnabled()) logDebug("DocumentException: Can not index leaf=" + leaf.getName());
 		} catch (IOException ioEx) {
-			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
+			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {
 			throw new InterruptedException(iex.getMessage());
 	  } catch (Exception ex) {
-			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
+			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
 		//fxdiff FXOLAT-97: high CPU load tracker
 		} finally {
   		WorkThreadInformations.unset();
@@ -178,7 +168,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles)  {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
 		OLATResourceable ores = ce.getOLATResourceable();
-		if(log.isDebug()) log.debug("OLATResourceable=" + ores);
+		if(isLogDebugEnabled()) logDebug("OLATResourceable=" + ores);
 		if ( (ores != null) && (ores.getResourceableTypeName().startsWith("path=")) ) {
 			// => it is a file element, typeName format: 'path=/test1/test2/readme.txt'
 			return true;
@@ -199,7 +189,7 @@ public class DialogCourseNodeIndexer implements CourseNodeIndexer {
 			}		
 			return true;
 		} else {
-			log.warn("In DialogCourseNode unkown OLATResourceable=" + ores);
+			logWarn("In DialogCourseNode unkown OLATResourceable=" + ores, null);
 			return false;
 		}
 	}

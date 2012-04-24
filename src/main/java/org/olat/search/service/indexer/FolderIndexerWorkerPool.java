@@ -32,7 +32,6 @@ import java.util.Vector;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.service.SearchServiceFactory;
-import org.olat.search.service.SearchServiceImpl;
 
 /**
  * Pool of folder indexer worker. 

@@ -40,7 +40,6 @@ import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for BC (content-package) course-node.
@@ -53,18 +52,9 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public final static String TYPE = "type.course.node.cp";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.CPCourseNode";
-
-	private CourseIndexer courseNodeIndexer;
-	
-	private int courseNodeCounter = 0;
-
-	public CPCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-		
-	}
 	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (isLogDebugEnabled()) logDebug("Index Content Package... courseNodeCounter=" + courseNodeCounter++ );
+		if (isLogDebugEnabled()) logDebug("Index Content Package...");
 
     SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
     courseNodeResourceContext.setBusinessControlFor(courseNode);
@@ -77,9 +67,6 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
     VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
     doIndexVFSContainer(courseNodeResourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
-    
-    // go further, index my child nodes
-		courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 	}
 
 	public String getSupportedTypeName() {

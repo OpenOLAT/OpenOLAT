@@ -24,8 +24,6 @@ import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
@@ -42,7 +40,6 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class PublicFolderIndexer extends FolderIndexer {
-	private static final OLog log = Tracing.createLoggerFor(PublicFolderIndexer.class);
 	public static final String TYPE = "type.identity.publicfolder";
 	public static final OLATResourceable BUSINESS_CONTROL_TYPE = OresHelper.createOLATResourceableTypeWithoutCheck(FolderRunController.class
 			.getSimpleName());
@@ -73,11 +70,10 @@ public class PublicFolderIndexer extends FolderIndexer {
 			// now index the folder
 			doIndexVFSContainer(searchResourceContext, rootContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
 		} catch (Exception ex) {
-			log
-					.warn("Exception while indexing public folder of identity::" + parentObject.toString() + ". Skipping this user, try next one.",
+			logWarn("Exception while indexing public folder of identity::" + parentObject.toString() + ". Skipping this user, try next one.",
 							ex);
 		}
-		if (log.isDebug()) log.debug("PublicFolder finished for user::" + parentObject.toString());
+		if (isLogDebugEnabled()) logDebug("PublicFolder finished for user::" + parentObject.toString());
 
 	}
 }

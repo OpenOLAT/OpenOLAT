@@ -26,17 +26,13 @@
 package org.olat.search.service.indexer;
 
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.WorkThreadInformations;
-import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;

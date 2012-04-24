@@ -265,7 +265,7 @@ public class OlatFullIndexer implements Runnable {
 		boolean runAgain = true;
 		try {
 		  //TODO: Workround : does not start immediately
-			Thread.currentThread().sleep(10000);
+			Thread.sleep(10000);
 			while (runAgain && !this.stopIndexing) {
 				log.info("full indexing starts... Lucene-version:" + LucenePackage.get().getImplementationVersion());
 				fullIndexerStatus.indexingStarted();

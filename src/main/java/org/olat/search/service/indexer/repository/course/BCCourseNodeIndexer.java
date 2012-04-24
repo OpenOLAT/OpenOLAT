@@ -35,7 +35,6 @@ import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.olat.search.service.indexer.repository.CourseIndexer;
 
 /**
  * Indexer for (BC) brief case course-node.
@@ -48,12 +47,6 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public static final String TYPE = "type.course.node.bc";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.BCCourseNode";
-
-	private CourseIndexer courseNodeIndexer;
-
-	public BCCourseNodeIndexer() {
-		courseNodeIndexer = new CourseIndexer();
-	}
 	
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (isLogDebugEnabled()) logDebug("Index Briefcase..." );
@@ -66,8 +59,6 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer((BCCourseNode) courseNode, course.getCourseEnvironment());
 		doIndexVFSContainer(courseNodeResourceContext,namedContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
-    // go further, index my child nodes
-		courseNodeIndexer.doIndexCourse(repositoryResourceContext, course, courseNode, indexWriter);
 	}
 
 	public String getSupportedTypeName() {

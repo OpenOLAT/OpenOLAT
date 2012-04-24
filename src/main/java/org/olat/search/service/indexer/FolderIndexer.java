@@ -30,8 +30,6 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -48,12 +46,7 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  * @author Christian Guretzki
  */
 public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
-	
-	protected OLog log = Tracing.createLoggerFor(FolderIndexer.class);
-	
-	protected FolderIndexer() {
-	}
-	
+
 	protected void doIndexVFSContainer(SearchResourceContext parentResourceContext, VFSContainer container, OlatFullIndexer indexWriter, String filePath, FolderIndexerAccess accessRule)
 	throws IOException, InterruptedException {
 		if (FolderIndexerWorkerPool.getInstance().isDisabled()) {
@@ -81,18 +74,18 @@ public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 		for (VFSItem item : container.getItems()) {
 			if (item instanceof VFSContainer) {
 				// ok it is a container go further
-				if (log.isDebug()) log.debug(item.getName() + " is a VFSContainer => go further ");
+				if (isLogDebugEnabled()) logDebug(item.getName() + " is a VFSContainer => go further ");
 				if(accessRule.allowed(item)) {
 					doIndexVFSContainerByMySelf(parentResourceContext, (VFSContainer)item, indexWriter, myFilePath + "/" + ((VFSContainer)item).getName(), accessRule);
 				}
 			} else if (item instanceof VFSLeaf) {
 				// ok it is a file => analyse it
-				if (log.isDebug()) log.debug(item.getName() + " is a VFSLeaf => analyse file");
+				if (isLogDebugEnabled()) logDebug(item.getName() + " is a VFSLeaf => analyse file");
 				if(accessRule.allowed(item)) {
 					doIndexVFSLeafByMySelf(parentResourceContext, (VFSLeaf)item, indexWriter, myFilePath);
 				}
 			} else {
-				log.warn("Unkown element in item-list class=" + item.getClass());
+				logWarn("Unkown element in item-list class=" + item.getClass(), null);
 			}
 			// TODO:cg/27.10.2010		try to fix Indexer ERROR 'Overdue resource check-out stack trace.' on OLATNG
 			DBFactory.getInstance().commitAndCloseSession();
@@ -100,7 +93,7 @@ public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 	}
 	
 	protected void doIndexVFSLeafByMySelf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer indexWriter, String filePath) throws InterruptedException {
-		if (log.isDebug()) log.debug("Analyse VFSLeaf=" + leaf.getName());
+		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
 		try {
 			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
 				String myFilePath = "";
@@ -115,20 +108,20 @@ public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 				Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
 	  		indexWriter.addDocument(document);
 			} else {
-				if (log.isDebug()) log.debug("Documenttype not supported. file=" + leaf.getName());
+				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
-			if (log.isDebug()) log.debug("Can not access document." + e.getMessage());
+			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
 		} catch (DocumentNotImplementedException e) {
-			if (log.isDebug()) log.debug("Documenttype not implemented." + e.getMessage());
+			if (isLogDebugEnabled()) logDebug("Documenttype not implemented." + e.getMessage());
 		} catch (DocumentException dex) {
-			if (log.isDebug()) log.debug("DocumentException: Can not index leaf=" + leaf.getName() + " exception=" + dex.getMessage());
+			if (isLogDebugEnabled()) logDebug("DocumentException: Can not index leaf=" + leaf.getName() + " exception=" + dex.getMessage());
 		} catch (IOException ioEx) {
-			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
+			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {
 			throw new InterruptedException(iex.getMessage());
 	  } catch (Exception ex) {
-			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
+			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
 		//fxdiff FXOLAT-97: high CPU load tracker
 		} finally {
   		WorkThreadInformations.unset();

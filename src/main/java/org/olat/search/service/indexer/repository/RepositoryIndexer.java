@@ -27,24 +27,23 @@ package org.olat.search.service.indexer.repository;
 
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.search.SearchModule;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.StartupException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.RepositoryEntryDocument;
-import org.olat.search.service.indexer.DefaultIndexer;
+import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
@@ -53,7 +52,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  * 
  */
-public class RepositoryIndexer extends DefaultIndexer {
+public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	
   private RepositoryManager repositoryManager;
 	private List<Long> repositoryBlackList;
@@ -80,19 +79,14 @@ public class RepositoryIndexer extends DefaultIndexer {
   	List<RepositoryEntry> repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(null,null,null,null,null,roles, null);
   	if (isLogDebugEnabled()) logDebug("RepositoryIndexer repositoryList.size=" + repositoryList.size());
   	// loop over all repository-entries
-		Iterator<RepositoryEntry> iter = repositoryList.iterator();
-		RepositoryEntry repositoryEntry = null;
-
 		// committing here to make sure the loadBusinessGroup below does actually
 		// reload from the database and not only use the session cache 
 		// (see org.hibernate.Session.get(): 
 		//  If the instance, or a proxy for the instance, is already associated with the session, return that instance or proxy.)
 		DBFactory.getInstance().commitAndCloseSession();
 		
-		while(iter.hasNext()) {
+		for(RepositoryEntry repositoryEntry:repositoryList) {
 			try {
-				repositoryEntry = iter.next();
-				
 				// reload the repositoryEntry here before indexing it to make sure it has not been deleted in the meantime
 				RepositoryEntry reloadedRepositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntry.getKey());
 				if (reloadedRepositoryEntry==null) {
@@ -112,7 +106,7 @@ public class RepositoryIndexer extends DefaultIndexer {
 					searchResourceContext.setLastModified(repositoryEntry.getLastModified());
 					searchResourceContext.setCreatedDate(repositoryEntry.getCreationDate());
 					// go further with resource
-					Indexer repositoryEntryIndexer = RepositoryEntryIndexerFactory.getInstance().getRepositoryEntryIndexer(repositoryEntry);
+					Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
 					if (repositoryEntryIndexer != null) {
 					  repositoryEntryIndexer.doIndex(searchResourceContext, repositoryEntry, indexWriter);
 					} else {
@@ -136,27 +130,6 @@ public class RepositoryIndexer extends DefaultIndexer {
 
 	private boolean isOnBlacklist(Long key) {
 		return repositoryBlackList.contains(key);
-		
-	}
-
-
-	/**
-	 * Bean setter method used by spring. 
-	 * @param indexerList
-	 */
-	public void setIndexerList(List<Indexer> indexerList) {
-		if (indexerList == null)
-			throw new AssertException("null value for indexerList not allowed.");
-
-		try {
-			for (Iterator<Indexer> iter = indexerList.iterator(); iter.hasNext();) {
-				Indexer reporsitoryEntryIndexer = iter.next();
-				RepositoryEntryIndexerFactory.getInstance().registerIndexer(reporsitoryEntryIndexer);
-				if (isLogDebugEnabled()) logDebug("Adding indexer from configuraton:: ");
-			} 
-		}	catch (ClassCastException cce) {
-				throw new StartupException("Configured indexer is not of type RepositoryEntryIndexer", cce);
-		}
 	}
 
 	/**
@@ -187,7 +160,7 @@ public class RepositoryIndexer extends DefaultIndexer {
 			}
 			if (isLogDebugEnabled()) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
   		if (isOwner || isAllowedToLaunch) {
-				Indexer repositoryEntryIndexer = RepositoryEntryIndexerFactory.getInstance().getRepositoryEntryIndexer(repositoryEntry);
+				Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
 				if (isLogDebugEnabled()) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
 				if (repositoryEntryIndexer != null) {
 				  return super.checkAccess(contextEntry, businessControl, identity, roles)
@@ -204,5 +177,28 @@ public class RepositoryIndexer extends DefaultIndexer {
 			return false;
 		}
 	}
-
+	
+	/**
+	 * Get the repository handler for this repository entry.
+	 * @param re
+	 * @return the handler or null if no appropriate handler could be found
+	 */
+	public Indexer getRepositoryEntryIndexer(RepositoryEntry re) {
+		OLATResourceable ores = re.getOlatResource();
+		if (ores == null) throw new AssertException("RepositoryEntry has no OlatResource [re.getOlatResource()==null].");
+		return getRepositoryEntryIndexer(ores.getResourceableTypeName());
+	}
+	
+	/**
+	 * Get a repository handler which supports the given resourceable type.
+	 * @param resourceableTypeName
+	 * @return the handler or null if no appropriate handler could be found
+	 */
+	public Indexer getRepositoryEntryIndexer(String resourceableTypeName) {
+		List<Indexer> indexers = getIndexerByType(resourceableTypeName);
+		if(indexers != null && !indexers.isEmpty()) {
+			return indexers.get(0);
+		}
+		return null;
+	}
 }

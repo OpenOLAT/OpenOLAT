@@ -28,32 +28,18 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
 /**
  * 
  * @author Christian Guretzki
  */
-public interface CourseNodeIndexer {
+public interface CourseNodeIndexer extends Indexer {
 	
 	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode node, OlatFullIndexer indexWriter) throws IOException,InterruptedException;
 
-	public String getSupportedTypeName();
-	
-	/**
-	 * Check access for certain business-control (resourceUrl) and user with roles.
-	 * @param contextEntry
-	 * @param businessControl
-	 * @param identity
-	 * @param roles
-	 * @return
-	 */
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles);
 }

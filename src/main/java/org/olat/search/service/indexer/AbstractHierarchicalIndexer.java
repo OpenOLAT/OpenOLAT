@@ -26,10 +26,8 @@
 package org.olat.search.service.indexer;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -46,7 +44,12 @@ import org.olat.search.service.SearchResourceContext;
  */
 public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 	
-	private final Map<String,Indexer> childIndexers = new HashMap<String,Indexer>();
+	private final List<Indexer> childIndexers = new ArrayList<Indexer>();
+	
+	
+	public List<Indexer> getChildIndexers() {
+		return childIndexers;
+	}
 	
 	/**
 	 * Bean setter method used by spring. 
@@ -58,7 +61,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 
 		try {
 			for (Indexer indexer:indexerList) {
-				childIndexers.put(indexer.getSupportedTypeName(), indexer);
+				childIndexers.add(indexer);
 				logDebug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
 			} 
 		}	catch (ClassCastException cce) {
@@ -68,7 +71,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 	
 	public void addIndexer(Indexer indexer) {
 		try {
-			childIndexers.put(indexer.getSupportedTypeName(), indexer);
+			childIndexers.add(indexer);
 			logDebug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
 		}	catch (ClassCastException cce) {
 				throw new StartupException("Configured indexer is not of type Indexer", cce);
@@ -81,7 +84,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 	 */
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object object, OlatFullIndexer indexerWriter) throws IOException, InterruptedException {
-		for (Indexer indexer : childIndexers.values()) {
+		for (Indexer indexer : childIndexers) {
 			if (isLogDebugEnabled()) logDebug("Start doIndex for indexer.typeName=" + indexer.getSupportedTypeName());
 			try {
 			  indexer.doIndex(searchResourceContext, object, indexerWriter);
@@ -108,30 +111,48 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 			// there is an other context-entry => go further
 			OLATResourceable ores = contextEntry.getOLATResourceable();
 		  String type = ores.getResourceableTypeName();
-			Indexer indexer = this.childIndexers.get(type);
-			if (indexer == null) {
+		  List<Indexer> indexers = getIndexerByType(type);
+			if (indexers.isEmpty()) {
 				// loop in child-indexers to check access for businesspath not stacked as on index-run
-				for (Entry<String, Indexer> entSet : childIndexers.entrySet()) {
-					AbstractHierarchicalIndexer childIndexer = entSet.getValue() instanceof AbstractHierarchicalIndexer ? (AbstractHierarchicalIndexer) entSet.getValue() : null;					
-					Indexer foundSubChildIndexer = childIndexer == null ? null : childIndexer.getChildIndexers().get(type);
-					if (foundSubChildIndexer != null) {
+				for (Indexer childIndexer: childIndexers) {
+					List<Indexer> foundSubChildIndexers = childIndexer instanceof  AbstractHierarchicalIndexer ? ((AbstractHierarchicalIndexer)childIndexer).getIndexerByType(type) : null;
+					if (foundSubChildIndexers != null) {
 						if (isLogDebugEnabled()) logDebug("took a childindexer for ores= " + ores + " not directly linked (means businesspath is not the same stack as indexer -> childindexer). type= " +type + " . indexer parent-type not on businesspath=" + childIndexer.getSupportedTypeName());
-						return foundSubChildIndexer.checkAccess(contextEntry, businessControl, identity, roles)
-								&& super.checkAccess(contextEntry, businessControl, identity, roles);
+						for(Indexer foundSubChildIndexer:foundSubChildIndexers) {
+							boolean allow = foundSubChildIndexer.checkAccess(contextEntry, businessControl, identity, roles)
+									&& super.checkAccess(contextEntry, businessControl, identity, roles);
+							if(allow) {
+								return true;
+							}
+						}
 					}
 				}				
 				logError("could not find an indexer for type="+type + " businessControl="+businessControl + " identity=" + identity, null);
-				return false;
+			} else {
+				for(Indexer indexer:indexers) {
+					boolean allow = indexer.checkAccess(contextEntry, businessControl, identity, roles)
+						&& super.checkAccess(contextEntry, businessControl, identity, roles);
+					if(allow) {
+						return true;
+					}
+				}
 			}
-			return indexer.checkAccess(contextEntry, businessControl, identity, roles)
-					&& super.checkAccess(contextEntry, businessControl, identity, roles);
+			return false;
 		} else {
 			// rearch the end context entry list 
 			return super.checkAccess(contextEntry, businessControl, identity, roles);
 		}
 	}
-
-	public Map<String, Indexer> getChildIndexers(){
-		return childIndexers;
+	
+	public List<Indexer> getIndexerByType(String type) {
+		List<Indexer> indexerByType = new ArrayList<Indexer>();
+		if(childIndexers != null && !childIndexers.isEmpty()) {
+			for(Indexer childIndexer:childIndexers) {
+				if(type.equals(childIndexer.getSupportedTypeName())) {
+					indexerByType.add(childIndexer);
+				}
+			}
+		}
+		return indexerByType;
 	}
 }
