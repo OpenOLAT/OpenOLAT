@@ -131,53 +131,56 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 				return;									
 			}
 			
-			// Login user, set up everything
-			int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
-			if (loginStatus == AuthHelper.LOGIN_OK) {
-				// redirect to authenticated environment
-				UserDeletionManager.getInstance().setIdentityAsActiv(identity);
-				
-				final String origUri = request.getRequestURI();
-				String restPart = origUri.substring(uriPrefix.length());
-				if(request.getParameter("redirect") != null) {
-					//redirect parameter like: /olat/url/RepositoryEntry/917504/CourseNode/81254724902921
-					String redirect = request.getParameter("redirect");
-					DispatcherAction.redirectTo(response, redirect);
-				} else if(StringHelper.containsNonWhitespace(restPart)) {
-					//redirect like: http://www.frentix.com/olat/remotelogin/RepositoryEntry/917504/CourseNode/81254724902921
-					try {
-						restPart = URLDecoder.decode(restPart, "UTF8");
-					} catch (UnsupportedEncodingException e) {
-						log.error("Unsupported encoding", e);
-					}
+			UserSession usess = ureq.getUserSession();
+			//sync over the UserSession Instance to prevent double logins
+			synchronized (usess) {
+				// Login user, set up everything
+				int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+				if (loginStatus == AuthHelper.LOGIN_OK) {
+					// redirect to authenticated environment
+					UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 					
-					String[] split = restPart.split("/");
-					assert(split.length % 2 == 0);
-					String businessPath = "";
-					for (int i = 0; i < split.length; i=i+2) {
-						String key = split[i];
-						if(key != null && key.startsWith("path=")) {
-							key = key.replace("~~", "/");
+					final String origUri = request.getRequestURI();
+					String restPart = origUri.substring(uriPrefix.length());
+					if(request.getParameter("redirect") != null) {
+						//redirect parameter like: /olat/url/RepositoryEntry/917504/CourseNode/81254724902921
+						String redirect = request.getParameter("redirect");
+						DispatcherAction.redirectTo(response, redirect);
+					} else if(StringHelper.containsNonWhitespace(restPart)) {
+						//redirect like: http://www.frentix.com/olat/remotelogin/RepositoryEntry/917504/CourseNode/81254724902921
+						try {
+							restPart = URLDecoder.decode(restPart, "UTF8");
+						} catch (UnsupportedEncodingException e) {
+							log.error("Unsupported encoding", e);
 						}
-						String value = split[i+1];
-						businessPath += "[" + key + ":" + value +"]";
+						
+						String[] split = restPart.split("/");
+						assert(split.length % 2 == 0);
+						String businessPath = "";
+						for (int i = 0; i < split.length; i=i+2) {
+							String key = split[i];
+							if(key != null && key.startsWith("path=")) {
+								key = key.replace("~~", "/");
+							}
+							String value = split[i+1];
+							businessPath += "[" + key + ":" + value +"]";
+						}
+						
+						//UserSession usess = UserSession.getUserSession(request);
+						usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
+						String url = getRedirectToURL(usess);
+						DispatcherAction.redirectTo(response, url);
+					} else {
+						//redirect
+						ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
 					}
-					
-					UserSession usess = UserSession.getUserSession(request);
-					usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
-					String url = getRedirectToURL(usess);
-					DispatcherAction.redirectTo(response, url);
+				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+						DispatcherAction.redirectToServiceNotAvailable(response);
 				} else {
-					//redirect
-					ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
-				}
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-					DispatcherAction.redirectToServiceNotAvailable(response);
-			} else {
-				// error, redirect to login screen
-				DispatcherAction.redirectToDefaultDispatcher(response); 
-			}	
-
+					// error, redirect to login screen
+					DispatcherAction.redirectToDefaultDispatcher(response); 
+				}	
+			}
 		} catch (Throwable th) {
 			try {
 				ChiefController msgcc = MsgFactory.createMessageChiefController(ureq, th);
