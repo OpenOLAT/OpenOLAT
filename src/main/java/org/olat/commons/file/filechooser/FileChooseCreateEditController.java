@@ -186,7 +186,7 @@ public class FileChooseCreateEditController extends BasicController{
 		
 		this.chosenFile = file;		
 		this.rootContainer = rContainer;
-		this.allowRelativeLinks = allowRelLinks;
+		this.allowRelativeLinks = allowRelLinks == null ? false : allowRelLinks.booleanValue();
 		this.myContent = createVelocityContainer("chosenfile");
 		editButton = LinkFactory.createButtonSmall("command.edit", myContent, this);
 		deleteButton = LinkFactory.createButtonSmall("command.delete", myContent, this);
