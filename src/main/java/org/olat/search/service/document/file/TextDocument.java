@@ -40,13 +40,13 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class TextDocument extends FileDocument {
-	
+	private static final long serialVersionUID = 9188038452431819507L;
 	private static final OLog log = Tracing.createLoggerFor(TextDocument.class);
 
 	public final static String FILE_TYPE = "type.file.text";
 
 	public TextDocument() {
-		super();
+		//
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {

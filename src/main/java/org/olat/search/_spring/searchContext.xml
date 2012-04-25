@@ -55,6 +55,10 @@
 		<property name="searchQueue" ref="searchQueue"/>
 		<property name="receiveTimeout" value="45000"/>
 	</bean>
+	
+	<bean id="fileDocumentFactory" class="org.olat.search.service.document.file.FileDocumentFactory">
+		<constructor-arg index="0" ref="searchModule" />
+	</bean>
 		
 	<!-- The metadata fields that are supported in the search engine -->
 	<bean id="SearchMetadataFieldsProvider" class="org.olat.search.service.SimpleDublinCoreMetadataFieldsProvider" />               

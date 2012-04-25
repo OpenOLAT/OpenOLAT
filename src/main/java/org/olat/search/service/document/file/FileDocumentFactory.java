@@ -33,7 +33,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.search.service.SearchResourceContext;
 
 /**
@@ -52,8 +51,6 @@ import org.olat.search.service.SearchResourceContext;
 public class FileDocumentFactory {
 	
 	private static OLog log = Tracing.createLoggerFor(FileDocumentFactory.class);
-
-	static FileDocumentFactory instance;
 
 	private final static String PDF_SUFFIX = "pdf";
 	private final static String EXCEL_SUFFIX = "xls";
@@ -85,73 +82,79 @@ public class FileDocumentFactory {
 	 * @param searchModule
 	 */
 	public FileDocumentFactory(SearchModule module) {
-		instance = this;
 		searchModule = module;
 	}
 	
-	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
-	throws DocumentNotImplementedException, IOException, DocumentException, DocumentAccessException {
-		
-		String fileName = leaf.getName();
-		String suffix = FileTypeDetector.getSuffix(leaf);
-		if (log.isDebug()) log.debug("suffix=" + suffix);
+	public Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
+	throws IOException, DocumentAccessException {
+		try {
+			String fileName = leaf.getName();
+			String suffix = FileTypeDetector.getSuffix(leaf);
+			if (log.isDebug()) log.debug("suffix=" + suffix);
 
-		if (PDF_SUFFIX.indexOf(suffix) >= 0) {
-			if(searchModule.getPdfFileEnabled())
-				return PdfDocument.createDocument(leafResourceContext, leaf);
-			return null;
-		}
-		if (HTML_SUFFIX.indexOf(suffix) >= 0) {
-			return HtmlDocument.createDocument(leafResourceContext, leaf);
-		}
-		if (XML_SUFFIX.indexOf(suffix) >= 0) {
-			if(IMS_MANIFEST_FILE.equals(fileName)) {
-				return IMSMetadataDocument.createDocument(leafResourceContext, leaf);
+			Document doc = null;
+			if (PDF_SUFFIX.indexOf(suffix) >= 0) {
+				if(searchModule.getPdfFileEnabled()) {
+					doc = PdfDocument.createDocument(leafResourceContext, leaf);
+				}
+			} else if (HTML_SUFFIX.indexOf(suffix) >= 0) {
+				doc = HtmlDocument.createDocument(leafResourceContext, leaf);
+			} else if (XML_SUFFIX.indexOf(suffix) >= 0) {
+				if(IMS_MANIFEST_FILE.equals(fileName)) {
+					doc = IMSMetadataDocument.createDocument(leafResourceContext, leaf);
+				} else {
+					doc = XmlDocument.createDocument(leafResourceContext, leaf);
+				}
+			} else if (TEXT_SUFFIX.indexOf(suffix) >= 0) {
+				doc = TextDocument.createDocument(leafResourceContext, leaf);
+			//microsoft openxml
+			} else if (suffix.indexOf(WORD_X_SUFFIX) >= 0) {	
+				doc = WordOOXMLDocument.createDocument(leafResourceContext, leaf);
+			} else if (suffix.indexOf(EXCEL_X_SUFFIX) >= 0) {
+				if (searchModule.getExcelFileEnabled()) {
+					doc = ExcelOOXMLDocument.createDocument(leafResourceContext, leaf);
+				}
+			} else if (suffix.indexOf(POWERPOINT_X_SUFFIX) >= 0) {
+				if(searchModule.getPptFileEnabled()) {
+					doc = PowerPointOOXMLDocument.createDocument(leafResourceContext, leaf);
+				}
+			//microsoft
+			} else if (WORD_SUFFIX.indexOf(suffix) >= 0) {
+				doc = WordDocument.createDocument(leafResourceContext, leaf);
+			} else if (POWERPOINT_SUFFIX.indexOf(suffix) >= 0) {
+				if(searchModule.getPptFileEnabled()) {
+					doc = PowerPointDocument.createDocument(leafResourceContext, leaf);
+				}
+			} else if (EXCEL_SUFFIX.indexOf(suffix) >= 0) {
+				if (searchModule.getExcelFileEnabled()) {
+					doc = ExcelDocument.createDocument(leafResourceContext, leaf);
+				}
+			//open document
+			} else if (OD_TEXT_SUFFIX.indexOf(suffix) >= 0 || OD_SPREADSHEET_SUFFIX.indexOf(suffix) >= 0
+					|| OD_PRESENTATION_SUFFIX.indexOf(suffix) >= 0 || OD_FORMULA_SUFFIX.indexOf(suffix) >= 0
+					|| OD_GRAPHIC_SUFFIX.indexOf(suffix) >= 0) {
+				doc = OpenDocument.createDocument(leafResourceContext, leaf);
 			}
-			return XmlDocument.createDocument(leafResourceContext, leaf);
+			
+			if(doc == null) {
+				doc = createUnkownDocument(leafResourceContext, leaf);
+			}
+			return doc;
+		} catch(DocumentNotImplementedException e) {
+			log.warn("Cannot index document (no indexer for it):" + leaf, e);
+			return createUnkownDocument(leafResourceContext, leaf);
+		} catch (DocumentException e) {
+			log.warn("Cannot index document:" + leaf, e);
+			return createUnkownDocument(leafResourceContext, leaf);
 		}
-		if (TEXT_SUFFIX.indexOf(suffix) >= 0) {
-			return TextDocument.createDocument(leafResourceContext, leaf);
-		}
-
-		//microsoft openxml
-		if (suffix.indexOf(WORD_X_SUFFIX) >= 0) {
-			return WordOOXMLDocument.createDocument(leafResourceContext, leaf);
-		}
-		if (suffix.indexOf(EXCEL_X_SUFFIX) >= 0) {
-			if (searchModule.getExcelFileEnabled())
-				return ExcelOOXMLDocument.createDocument(leafResourceContext, leaf);
+	}
+	
+	private Document createUnkownDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) {
+		try {
+			return UnkownDocument.createDocument(leafResourceContext, leaf);
+		} catch (Exception e) {
 			return null;
 		}
-		if (suffix.indexOf(POWERPOINT_X_SUFFIX) >= 0) {
-			if(searchModule.getPptFileEnabled())
-				return PowerPointOOXMLDocument.createDocument(leafResourceContext, leaf);
-			return null;
-		}
-
-		//microsoft
-		if (WORD_SUFFIX.indexOf(suffix) >= 0) {
-			return WordDocument.createDocument(leafResourceContext, leaf);
-		}
-		if (POWERPOINT_SUFFIX.indexOf(suffix) >= 0) {
-			if(searchModule.getPptFileEnabled())
-				return PowerPointDocument.createDocument(leafResourceContext, leaf);
-			return null;
-		}
-		if (EXCEL_SUFFIX.indexOf(suffix) >= 0) {
-			if (searchModule.getExcelFileEnabled())
-				return ExcelDocument.createDocument(leafResourceContext, leaf);
-			return null;
-		}
-		
-		//open document
-		if (OD_TEXT_SUFFIX.indexOf(suffix) >= 0 || OD_SPREADSHEET_SUFFIX.indexOf(suffix) >= 0
-				|| OD_PRESENTATION_SUFFIX.indexOf(suffix) >= 0 || OD_FORMULA_SUFFIX.indexOf(suffix) >= 0
-				|| OD_GRAPHIC_SUFFIX.indexOf(suffix) >= 0) {
-			return OpenDocument.createDocument(leafResourceContext, leaf);
-		}
-		
-		return UnkownDocument.createDocument(leafResourceContext, leaf);
 	}
 	
 	/**

@@ -44,12 +44,13 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class WordDocument extends FileDocument {
+	private static final long serialVersionUID = 1827194935338994490L;
 	private static final OLog log = Tracing.createLoggerFor(WordDocument.class);
 
 	public final static String FILE_TYPE = "type.file.word";
 
 	public WordDocument() {
-		super();
+		//
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {

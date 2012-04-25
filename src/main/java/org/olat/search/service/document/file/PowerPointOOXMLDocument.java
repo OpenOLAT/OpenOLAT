@@ -61,12 +61,13 @@ import org.openxmlformats.schemas.presentationml.x2006.main.CTSlideIdListEntry;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class PowerPointOOXMLDocument extends FileDocument {
+	private static final long serialVersionUID = 2322994231200065526L;
 	private static final OLog log = Tracing.createLoggerFor(PowerPointOOXMLDocument.class);
 
 	public final static String FILE_TYPE = "type.file.ppt";
 
 	public PowerPointOOXMLDocument() {
-		super();
+		//
 	}
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,

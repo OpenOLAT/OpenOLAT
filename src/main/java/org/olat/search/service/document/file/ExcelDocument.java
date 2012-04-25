@@ -46,12 +46,13 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class ExcelDocument extends FileDocument {
+	private static final long serialVersionUID = 1592080527374169362L;
 	private static final OLog log = Tracing.createLoggerFor(ExcelDocument.class);
 
 	public final static String FILE_TYPE = "type.file.excel";
 
 	public ExcelDocument() {
-		super();
+		//
 	}
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,

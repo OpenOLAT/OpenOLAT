@@ -29,7 +29,8 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.olat.search.service.SearchServiceFactory;
+import org.olat.core.CoreSpringFactory;
+import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
  * Status of full indexer.
@@ -130,7 +131,7 @@ public class FullIndexerStatus {
 		}
 		documentCounters = new Hashtable<String,Integer>();
 		fileTypeCounters = new Hashtable<String,Integer>();
-		SearchServiceFactory.getFileDocumentFactory().resetExcludedFileSizeCount();
+		CoreSpringFactory.getImpl(FileDocumentFactory.class).resetExcludedFileSizeCount();
 	}
 
   /**
@@ -279,7 +280,7 @@ public class FullIndexerStatus {
 	}
 
 	public int getExcludedDocumentCount() {
-		return SearchServiceFactory.getFileDocumentFactory().getExcludedFileSizeCount();
+		return CoreSpringFactory.getImpl(FileDocumentFactory.class).getExcludedFileSizeCount();
 	}
 
 }

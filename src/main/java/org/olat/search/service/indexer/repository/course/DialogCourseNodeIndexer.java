@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -55,11 +56,8 @@ import org.olat.modules.fo.ForumManager;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.Status;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.document.ForumMessageDocument;
 import org.olat.search.service.document.file.DocumentAccessException;
-import org.olat.search.service.document.file.DocumentException;
-import org.olat.search.service.document.file.DocumentNotImplementedException;
 import org.olat.search.service.document.file.FileDocumentFactory;
 import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -120,22 +118,18 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		VFSLeaf leaf = (VFSLeaf) forumContainer.getItems(new VFSLeafFilter()).get(0);
 		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
 		try {
-			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
+			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
 				leafResourceContext.setFilePath(filename);
 				leafResourceContext.setDocumentType(TYPE_FILE);
 				//fxdiff FXOLAT-97: high CPU load tracker
 				WorkThreadInformations.set("Index Dialog VFSLeaf=" + filename + " at " + leafResourceContext.getResourceUrl());
-  			Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
+  			Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
 	  		indexWriter.addDocument(document);
 			} else {
 				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
 			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
-		} catch (DocumentNotImplementedException e) {
-			if (isLogDebugEnabled()) logDebug("Documenttype not implemented.");
-		} catch (DocumentException dex) {
-			if (isLogDebugEnabled()) logDebug("DocumentException: Can not index leaf=" + leaf.getName());
 		} catch (IOException ioEx) {
 			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {

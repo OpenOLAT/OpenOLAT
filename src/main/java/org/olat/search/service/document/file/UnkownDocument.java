@@ -34,7 +34,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
 public class UnkownDocument extends FileDocument {
-	
+	private static final long serialVersionUID = 7032285703715695914L;
 	private final static OLog log = Tracing.createLoggerFor(UnkownDocument.class);
 
 	public final static String UNKOWN_TYPE = "type.file.unkown";

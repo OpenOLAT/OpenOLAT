@@ -185,7 +185,7 @@ public class RemoteGroupCreationOverXMPP implements InstantMessagingGroupSynchro
 			collector.cancel();
 			
 			if (response == null) {
-				log.error("Error while trying to create/delete group at IM server. Response was null! packet type: "+packet.getClass());
+				log.warn("Error while trying to create/delete group at IM server. Response was null! packet type: "+packet.getClass());
 				return false;
 			}
 			if (response.getError() != null) {

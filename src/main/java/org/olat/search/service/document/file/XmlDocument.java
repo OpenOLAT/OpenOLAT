@@ -41,12 +41,13 @@ import org.olat.search.service.SearchResourceContext;
  * @author Christian Guretzki
  */
 public class XmlDocument extends FileDocument {
+	private static final long serialVersionUID = -5486191227086694167L;
 	private static final OLog log = Tracing.createLoggerFor(XmlDocument.class);
 
 	public static final String FILE_TYPE = "type.file.html";
 
 	public XmlDocument() {
-		super();
+		//
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
@@ -62,9 +63,15 @@ public class XmlDocument extends FileDocument {
 	protected String readContent(VFSLeaf leaf) throws IOException {
 		InputStream is = leaf.getInputStream();
     // Remove all HTML and &nbsp; Tags
-    String output = new NekoHTMLFilter().filter(is);
-    if (log.isDebug() ) log.debug("HTML content without tags :" + output);
-  	FileUtils.closeSafely(is);
+    String output;
+		try {
+			output = new NekoHTMLFilter().filter(is);
+	    if (log.isDebug() ) log.debug("HTML content without tags :" + output);
+		} catch (Exception e) {
+			throw new IOException(e);
+		} finally {
+			FileUtils.closeSafely(is);
+		}
 		return output;
 	}
 

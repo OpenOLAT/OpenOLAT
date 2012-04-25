@@ -26,7 +26,6 @@
 package org.olat.search.service.document.file;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,6 +47,7 @@ import org.olat.search.service.SearchServiceFactory;
  * @author Christian Guretzki
  */
 public class PdfDocument extends FileDocument {
+	private static final long serialVersionUID = 6432923202585881794L;
 	private static OLog log = Tracing.createLoggerFor(PdfDocument.class);
 
 	public final static String FILE_TYPE = "type.file.pdf";
@@ -59,7 +59,6 @@ public class PdfDocument extends FileDocument {
 	private String filePath;
 
 	public PdfDocument() {
-		super();
 		pdfTextBuffering = SearchServiceFactory.getService().getSearchModuleConfig().getPdfTextBuffering();
 		pdfTextBufferPath = SearchServiceFactory.getService().getSearchModuleConfig().getPdfTextBufferPath(); 
 	}
@@ -91,7 +90,7 @@ public class PdfDocument extends FileDocument {
 		return pdfTextTmpFilePath;
 	}
 
-	protected String readContent(VFSLeaf leaf) throws DocumentException,DocumentAccessException {
+	protected String readContent(VFSLeaf leaf) throws DocumentException, DocumentAccessException {
 		try {
 			long startTime = 0;
 			if (log.isDebug()) startTime = System.currentTimeMillis();
@@ -117,7 +116,7 @@ public class PdfDocument extends FileDocument {
 		  return pdfText;
 		} catch (DocumentAccessException ex) {
 			// pass exception
-			throw new DocumentAccessException(ex.getMessage());
+			throw ex;
 		} catch (Exception ex) {
 			throw new DocumentException("Can not read PDF content. File=" + leaf.getName() + ";" + ex.getMessage() );
 		} 

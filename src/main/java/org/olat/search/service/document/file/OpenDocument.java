@@ -48,6 +48,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class OpenDocument extends FileDocument {
+	private static final long serialVersionUID = 7285894180135411850L;
 	private static final OLog log = Tracing.createLoggerFor(OpenDocument.class);
 	
 	public final static String TEXT_FILE_TYPE = "type.file.odt";
@@ -99,7 +100,6 @@ public class OpenDocument extends FileDocument {
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
-			log.error("", e);
 			throw new DocumentException(e.getMessage());
 		} finally {
 			FileUtils.closeSafely(zip);

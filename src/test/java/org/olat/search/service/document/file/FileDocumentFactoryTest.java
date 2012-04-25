@@ -50,8 +50,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.SearchServiceFactory;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Lucene document mapper.
@@ -61,7 +61,9 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 
 	private static Logger log = Logger.getLogger(FileDocumentFactoryTest.class.getName());
 	// variables for test fixture
-	FileDocumentFactory fileDocumentFactory;
+	
+	@Autowired
+	private FileDocumentFactory fileDocumentFactory;
 	private String rootPath;
 	
 	/**
@@ -70,7 +72,6 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 	@Before public void setup()throws Exception {
 		//clear database from errors
 		rootPath = "/search_junit_test_folder";
-		fileDocumentFactory = SearchServiceFactory.getFileDocumentFactory();
 	}
 
 	/**
@@ -143,7 +144,7 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 			SearchResourceContext resourceContext = new SearchResourceContext();
 			resourceContext.setBusinessControlFor(OresHelper.createOLATResourceableType("FileDocumentFactoryTest"));
 			resourceContext.setFilePath(filePath + "/" + leaf.getName());
-			Document htmlDocument = FileDocumentFactory.createDocument(resourceContext, leaf);
+			Document htmlDocument = fileDocumentFactory.createDocument(resourceContext, leaf);
 			// 1. Check content
 			String content = htmlDocument.get(OlatDocument.CONTENT_FIELD_NAME);
 			assertEquals("Wrong HTML content=" + content.trim() + " , must be =" + text.trim(), text.trim(), content.trim());
@@ -154,12 +155,8 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 			String fileType = htmlDocument.get(OlatDocument.FILETYPE_FIELD_NAME);
 			assertEquals("Wrong file-type", "type.file.html", fileType); 
 			
-		} catch (DocumentNotImplementedException e) {
-			fail("DocumentNotImplementedException=" + e.getMessage());
 		} catch (IOException e) {
 			fail("IOException=" + e.getMessage());
-		} catch (DocumentException e) {
-			fail("DocumentException=" + e.getMessage());
 		} catch (DocumentAccessException e) {
 			fail("DocumentAccessException=" + e.getMessage());
 		}

@@ -52,12 +52,13 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class WordOOXMLDocument extends FileDocument {
+	private static final long serialVersionUID = 3684533132759600322L;
 	private static final OLog log = Tracing.createLoggerFor(WordOOXMLDocument.class);
 
 	public final static String FILE_TYPE = "type.file.word";
 
 	public WordOOXMLDocument() {
-		super();
+		//
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {

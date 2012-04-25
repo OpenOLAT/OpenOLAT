@@ -21,6 +21,7 @@
 package org.olat.portfolio.model.artefacts;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
@@ -41,7 +42,6 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.ui.artefacts.view.details.FileArtefactDetailsController;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
@@ -166,8 +166,9 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 		VFSItem file = ePFManager.getArtefactContainer(artefact).resolve(filename);
 		if (file != null && file instanceof VFSLeaf) {
 			try {
-				if (SearchServiceFactory.getFileDocumentFactory().isFileSupported((VFSLeaf)file)) {
-					Document doc = FileDocumentFactory.createDocument(context, (VFSLeaf)file);
+				FileDocumentFactory docFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
+				if (docFactory.isFileSupported((VFSLeaf)file)) {
+					Document doc = docFactory.createDocument(context, (VFSLeaf)file);
 					String content = doc.get(AbstractOlatDocument.CONTENT_FIELD_NAME);
 					sb.append(content);
 				}

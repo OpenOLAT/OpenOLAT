@@ -29,6 +29,7 @@ package org.olat.search.service.indexer;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -37,10 +38,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.document.file.DocumentAccessException;
-import org.olat.search.service.document.file.DocumentException;
-import org.olat.search.service.document.file.DocumentNotImplementedException;
 import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
@@ -125,13 +123,13 @@ public class FolderIndexerWorker implements Runnable{
 	protected void doIndexVFSLeaf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer writer, String fPath) {
 		if (log.isDebug()) log.debug("Analyse VFSLeaf=" + leaf.getName());
 		try {
-			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
+			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
 				String myFilePath = fPath + "/" + leaf.getName();
 				leafResourceContext.setFilePath(myFilePath);
 				//fxdiff FXOLAT-97: high CPU load tracker
 				WorkThreadInformations.setInfoFiles(myFilePath, leaf);
 				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
-  			Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
+  			Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
   			if(document != null) {//document wihich are disabled return null
   				writer.addDocument(document);
   			}
@@ -140,12 +138,8 @@ public class FolderIndexerWorker implements Runnable{
 			}
 		} catch (DocumentAccessException e) {
 			if (log.isDebug()) log.debug("Can not access document." + e.getMessage());
-		} catch (DocumentNotImplementedException e) {
-			if (log.isDebug()) log.debug("Documenttype not implemented." + e.getMessage());
 		} catch (InterruptedException e) {
 			if (log.isDebug()) log.debug("InterruptedException: Can not index leaf=" + leaf.getName() + ";" + e.getMessage());
-		}catch (DocumentException dex) {
-			log.debug("DocumentException: Can not index leaf=" + leaf.getName() + " , exception=" + dex);
 		} catch (IOException ioEx) {
 			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (Exception ex) {

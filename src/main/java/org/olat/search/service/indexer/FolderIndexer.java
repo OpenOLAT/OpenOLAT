@@ -29,16 +29,14 @@ package org.olat.search.service.indexer;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.document.file.DocumentAccessException;
-import org.olat.search.service.document.file.DocumentException;
-import org.olat.search.service.document.file.DocumentNotImplementedException;
 import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
@@ -95,7 +93,7 @@ public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 	protected void doIndexVFSLeafByMySelf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer indexWriter, String filePath) throws InterruptedException {
 		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
 		try {
-			if (SearchServiceFactory.getFileDocumentFactory().isFileSupported(leaf)) {
+			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
 				String myFilePath = "";
 				if (filePath.endsWith("/")) {
 					myFilePath = filePath + leaf.getName();
@@ -105,17 +103,13 @@ public abstract class FolderIndexer extends AbstractHierarchicalIndexer {
 				leafResourceContext.setFilePath(myFilePath);
 				//fxdiff FXOLAT-97: high CPU load tracker
 				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
-				Document document = FileDocumentFactory.createDocument(leafResourceContext, leaf);
+				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
 	  		indexWriter.addDocument(document);
 			} else {
 				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
 			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
-		} catch (DocumentNotImplementedException e) {
-			if (isLogDebugEnabled()) logDebug("Documenttype not implemented." + e.getMessage());
-		} catch (DocumentException dex) {
-			if (isLogDebugEnabled()) logDebug("DocumentException: Can not index leaf=" + leaf.getName() + " exception=" + dex.getMessage());
 		} catch (IOException ioEx) {
 			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {

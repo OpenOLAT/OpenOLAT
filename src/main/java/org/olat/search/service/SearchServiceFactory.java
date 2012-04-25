@@ -26,7 +26,6 @@
 package org.olat.search.service;
 
 import org.olat.core.commons.services.search.SearchService;
-import org.olat.search.service.document.file.FileDocumentFactory;
 
 /**
  * 
@@ -35,16 +34,12 @@ import org.olat.search.service.document.file.FileDocumentFactory;
 public class SearchServiceFactory {
 	
 	private static SearchService searchService_;
-	private static FileDocumentFactory fileDocumentFactory;
 		
 	/**
 	 * [used by spring]
 	 */
 	private SearchServiceFactory(SearchService searchService) {
 		searchService_ = searchService;
-		if (searchService.getSearchModuleConfig() != null) {
-			fileDocumentFactory = new FileDocumentFactory(searchService.getSearchModuleConfig());
-		}
 	}
 
 
@@ -55,8 +50,4 @@ public class SearchServiceFactory {
 	public static boolean isServiceEnabled() {
 		return searchService_.isEnabled();
 	}
-	
-  public static FileDocumentFactory getFileDocumentFactory() {
-  	return fileDocumentFactory;
-  }
 }

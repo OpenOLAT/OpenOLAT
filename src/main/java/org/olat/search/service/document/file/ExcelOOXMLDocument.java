@@ -28,30 +28,16 @@ package org.olat.search.service.document.file;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
-import org.apache.poi.POIXMLDocument;
-import org.apache.poi.POIXMLTextExtractor;
-import org.apache.poi.extractor.ExtractorFactory;
-import org.apache.poi.hssf.extractor.ExcelExtractor;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.HeaderFooter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -61,7 +47,6 @@ import org.olat.search.service.SearchResourceContext;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTHeaderFooter;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -75,12 +60,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class ExcelOOXMLDocument extends FileDocument {
+	private static final long serialVersionUID = -7566825844774480380L;
 	private static final OLog log = Tracing.createLoggerFor(ExcelOOXMLDocument.class);
 
 	public final static String FILE_TYPE = "type.file.excel";
 
 	public ExcelOOXMLDocument() {
-		super();
+		//
 	}
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,
