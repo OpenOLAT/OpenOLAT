@@ -74,7 +74,7 @@ public class UserNameAndPasswordSyntaxChecker {
 		// Allow only alphanumeric login names - must be like this to generate
 		// valid jabber user ID's. No support for generic UTF-8 login names...
 		//if you want to user email adresses as login names check the instant messaging config as you have to replace the @ for jabber names
-		return login.matches("[0-9a-z\\.\\-_]{3,32}");
+		return login.matches("[0-9a-z\\.\\-_]{3,64}");
 	}
 
 }
