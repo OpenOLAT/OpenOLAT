@@ -100,10 +100,9 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 			// OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
 			List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
 			if (guiPropertyList != null && guiPropertyList.size() > 0) {
-				 logError("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
-				 guiProperty = guiPropertyList.get(0);
+				 logWarn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for user " + identity.getName() + ". Use first of them, deleting the others!", e); 
 				 Iterator<Property> iterator = guiPropertyList.iterator();
-				 iterator.next();
+				 guiProperty = iterator.next();
 				 while (iterator.hasNext()) { 
 					 Property property = iterator.next(); 
 					 PropertyManager.getInstance().deleteProperty(property); 				 
