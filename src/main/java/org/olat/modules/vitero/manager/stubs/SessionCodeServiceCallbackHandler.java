@@ -76,6 +76,38 @@
             public void receiveErrorgetSessionCodeInformation(java.lang.Exception e) {
             }
                 
+           /**
+            * auto generated Axis2 call back method for createBookingSessionCode method
+            * override this method for handling normal response from createBookingSessionCode operation
+            */
+           public void receiveResultcreateBookingSessionCode(
+                    org.olat.modules.vitero.manager.stubs.SessionCodeServiceStub.CreateBookingSessionCodeResponse result
+                        ) {
+           }
+
+          /**
+           * auto generated Axis2 Error handler
+           * override this method for handling error response from createBookingSessionCode operation
+           */
+            public void receiveErrorcreateBookingSessionCode(java.lang.Exception e) {
+            }
+                
+           /**
+            * auto generated Axis2 call back method for getTestroomSessionCode method
+            * override this method for handling normal response from getTestroomSessionCode operation
+            */
+           public void receiveResultgetTestroomSessionCode(
+                    org.olat.modules.vitero.manager.stubs.SessionCodeServiceStub.GetTestroomSessionCodeResponse result
+                        ) {
+           }
+
+          /**
+           * auto generated Axis2 Error handler
+           * override this method for handling error response from getTestroomSessionCode operation
+           */
+            public void receiveErrorgetTestroomSessionCode(java.lang.Exception e) {
+            }
+                
                // No methods generated for meps other than in-out
                 
            /**
@@ -108,6 +140,22 @@
            * override this method for handling error response from createPersonalBookingSessionCode operation
            */
             public void receiveErrorcreatePersonalBookingSessionCode(java.lang.Exception e) {
+            }
+                
+           /**
+            * auto generated Axis2 call back method for createVmsSessionCode method
+            * override this method for handling normal response from createVmsSessionCode operation
+            */
+           public void receiveResultcreateVmsSessionCode(
+                    org.olat.modules.vitero.manager.stubs.SessionCodeServiceStub.CreateVmsSessionCodeResponse result
+                        ) {
+           }
+
+          /**
+           * auto generated Axis2 Error handler
+           * override this method for handling error response from createVmsSessionCode operation
+           */
+            public void receiveErrorcreateVmsSessionCode(java.lang.Exception e) {
             }
                 
            /**

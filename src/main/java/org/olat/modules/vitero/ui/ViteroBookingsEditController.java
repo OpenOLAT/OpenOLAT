@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,6 +67,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private ViteroBookingEditController bookingController;
 	private ViteroRoomsOverviewController roomsOverviewController;
 	private ViteroUserToGroupController usersController;
+	private VelocityContainer viteroGroupVC;
 	
 	private final String resourceName;
 	private final BusinessGroup group;
@@ -108,6 +110,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 				display.setDeleteButton(uifactory.addFormLink("delete_" + i++, "delete", "delete", flc, Link.BUTTON));
 				display.setEditButton(uifactory.addFormLink("edit_" + i++, "edit", "edit", flc, Link.BUTTON));
 				display.setUsersButton(uifactory.addFormLink("users_" + i++, "users", "users", flc, Link.BUTTON));
+				display.setGroupButton(uifactory.addFormLink("group_" + i++, "group.open", "group.open", flc, Link.BUTTON));
 				bookingDisplays.add(display);
 			}
 			flc.contextPut("bookingDisplays", bookingDisplays);
@@ -140,6 +143,10 @@ public class ViteroBookingsEditController extends FormBasicController {
 					ViteroBooking viteroBooking = display.getMeeting();
 					usersBooking(ureq, viteroBooking);
 					break;
+				} else if(display.getGroupButton() == source) {
+					ViteroBooking viteroBooking = display.getMeeting();
+					openGroup(ureq, viteroBooking);
+					break;
 				}
 			}
 			reloadModel();
@@ -165,6 +172,20 @@ public class ViteroBookingsEditController extends FormBasicController {
 				ViteroBooking booking = (ViteroBooking)dialogCtr.getUserObject();
 				deleteBooking(ureq, booking);
 			}
+		}
+	}
+	
+	protected void openGroup(UserRequest ureq, ViteroBooking booking) {
+		try {
+			String url = viteroManager.getURLToGroup(ureq.getIdentity(), booking);
+			viteroGroupVC = createVelocityContainer("opengroup");
+			viteroGroupVC.contextPut("groupUrl", url);
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
+			listenTo(cmc);
+			cmc.activate();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
 		}
 	}
 	
@@ -242,6 +263,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		private FormLink deleteButton;
 		private FormLink editButton;
 		private FormLink usersButton;
+		private FormLink groupButton;
 		
 		public BookingDisplay(ViteroBooking meeting) {
 			this.meeting = meeting;
@@ -289,6 +311,14 @@ public class ViteroBookingsEditController extends FormBasicController {
 
 		public void setUsersButton(FormLink usersButton) {
 			this.usersButton = usersButton;
+		}
+
+		public FormLink getGroupButton() {
+			return groupButton;
+		}
+
+		public void setGroupButton(FormLink groupButton) {
+			this.groupButton = groupButton;
 		}
 	}
 }

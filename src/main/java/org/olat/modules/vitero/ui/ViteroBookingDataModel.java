@@ -111,6 +111,16 @@ public class ViteroBookingDataModel implements TableDataModel {
 				}
 				return Sign.no;
 			}
+			case group: {
+				if(signedInBookings != null) {
+					for(ViteroBooking signedInBooking: signedInBookings) {
+						if(booking.getBookingId() == signedInBooking.getBookingId()) {
+							return Boolean.TRUE;
+						}
+					}
+				}
+				return Boolean.FALSE;
+			}
 			default: return "";
 		}
 	}
@@ -129,6 +139,7 @@ public class ViteroBookingDataModel implements TableDataModel {
 		name,
 		begin,
 		end,
+		group,
 		roomSize,
 		resource,
 		open,

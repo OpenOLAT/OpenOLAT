@@ -177,8 +177,15 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	
 	public String getURLToBooking(Identity identity, ViteroBooking booking)
 	throws VmsNotAvailableException {
-		String sessionCode = createSessionCode(identity, booking);
+		String sessionCode = createPersonalBookingSessionCode(identity, booking);
 		String url = getStartPoint(sessionCode);
+		return url;
+	}
+	
+	public String getURLToGroup(Identity identity, ViteroBooking booking)
+	throws VmsNotAvailableException {
+		String sessionCode = createVMSSessionCode(identity);
+		String url = getGroupURL(sessionCode, booking.getGroupId());
 		return url;
 	}
 	
@@ -188,7 +195,61 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	 * @param booking
 	 * @return
 	 */
-	protected String createSessionCode(Identity identity, ViteroBooking booking)
+	protected String createVMSSessionCode(Identity identity)
+	throws VmsNotAvailableException {
+		try {
+			int userId = getVmsUserId(identity, true);
+			
+			//update user information
+			try {
+				updateVmsUser(identity, userId);
+				storePortrait(identity, userId);
+			} catch (Exception e) {
+				logError("Cannot update user on vitero system:" + identity.getName(), e);
+			}
+
+			SessionCodeServiceStub sessionCodeWs = getSessionCodeWebService();
+			SessionCodeServiceStub.CreateVmsSessionCodeRequest codeRequest = new SessionCodeServiceStub.CreateVmsSessionCodeRequest();
+			
+			SessionCodeServiceStub.Sessioncode_type1 code = new SessionCodeServiceStub.Sessioncode_type1();
+			code.setUserid(userId);
+			code.setTimezone(viteroModule.getTimeZoneId());
+		
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(new Date());
+			cal.add(Calendar.HOUR, 1);
+			code.setExpirationdate(format(cal.getTime()));
+
+			codeRequest.setSessioncode(code);
+			
+			SessionCodeServiceStub.CreateVmsSessionCodeResponse response = sessionCodeWs.createVmsSessionCode(codeRequest);
+			SessionCodeServiceStub.Codetype myCode = response.getCreateVmsSessionCodeResponse();
+			return myCode.getCode();
+		} catch(AxisFault f) {
+			ErrorCode code = handleAxisFault(f);
+			switch(code) {
+				case userDoesntExist: logError("User does not exist.", f); break;
+				case userNotAssignedToGroup: logError("User not assigned to group.", f); break;
+				case invalidAttribut: logError("Invalid attribute.", f); break; 
+				case invalidTimezone: logError("Invalid time zone.", f); break;
+				case bookingDoesntExist:
+				case bookingDoesntExistPrime: logError("Booking does not exist.", f); break;
+				default: logAxisError("Cannot create session code.", f);
+			}
+			return null;
+		} catch (RemoteException e) {
+			logError("Cannot create session code.", e);
+			return null;
+		}
+	}
+	
+	/**
+	 * Create a session code with a one hour expiration date
+	 * @param identity
+	 * @param booking
+	 * @return
+	 */
+	protected String createPersonalBookingSessionCode(Identity identity, ViteroBooking booking)
 	throws VmsNotAvailableException {
 		try {
 			int userId = getVmsUserId(identity, true);
@@ -1048,7 +1109,7 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 				case userDoesntExist: logError("The user does not exist!", f); break;
 				case invalidAttribut: logError("ids <= 0!", f); break;
 				case invalidTimezone: logError("Invalid time zone!", f); break;
-				default: logAxisError("Cannot get booking in future for custom: " + userId, f);
+				default: logAxisError("Cannot get booking in future for user: " + userId, f);
 			}
 			return null;
 		} catch (RemoteException e) {
@@ -1315,6 +1376,15 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	    if(StringHelper.containsNonWhitespace(sessionCode)) {
 	    	builder.queryParam("sessionCode", sessionCode);
 	    }
+	    return builder.build().toString();
+	}
+	
+	private final String getGroupURL(String sessionCode, int groupId) {
+		UriBuilder builder = UriBuilder.fromUri(viteroModule.getVmsURI() );
+	    builder.path("/user/cms/groupfolder.htm");
+	    builder.queryParam("code", sessionCode);
+    	builder.queryParam("fl", "1");
+    	builder.queryParam("groupId", Integer.toString(groupId));
 	    return builder.build().toString();
 	}
 	

@@ -22,6 +22,7 @@ package org.olat.modules.vitero.ui;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.admin.user.UserSearchController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroup;
@@ -56,6 +58,8 @@ public class ViteroBookingsController extends BasicController {
 
 	private final VelocityContainer runVC;
 	private final TableController tableCtr;
+	private CloseableModalController cmc;
+	private VelocityContainer viteroGroupVC;
 	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
@@ -77,7 +81,8 @@ public class ViteroBookingsController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("group.name", ViteroBookingDataModel.Column.name.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.begin", ViteroBookingDataModel.Column.begin.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
-		
+		tableCtr.addColumnDescriptor(new OpenGroupColumnDescriptor("booking.group", ViteroBookingDataModel.Column.group.ordinal(), ureq.getLocale(), getTranslator()));
+
 		StartColumnDescriptor startRoom = new StartColumnDescriptor("start", "start", ureq.getLocale(), viteroManager, getTranslator());
 		startRoom.setIsPopUpWindowAction(true, "");
 		tableCtr.addColumnDescriptor(startRoom);
@@ -118,8 +123,14 @@ public class ViteroBookingsController extends BasicController {
 					signInVitero(ureq, booking);
 				} else if("signout".equals(e.getActionId())) {
 					signOutVitero(ureq, booking);
+				} else if("opengroup".equals(e.getActionId())) {
+					openGroup(ureq, booking);
 				}
 			}
+		} else if (source == cmc) {
+			removeAsListenerAndDispose(cmc);
+			viteroGroupVC = null;
+			cmc = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -139,6 +150,21 @@ public class ViteroBookingsController extends BasicController {
 		}
 	}
 	
+	protected void openGroup(UserRequest ureq, ViteroBooking booking) {
+		try {
+			String url = viteroManager.getURLToGroup(ureq.getIdentity(), booking);
+			viteroGroupVC = createVelocityContainer("opengroup");
+			viteroGroupVC.contextPut("groupUrl", url);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
+			listenTo(cmc);
+			cmc.activate();
+		} catch (VmsNotAvailableException e) {
+			showError(VmsNotAvailableException.I18N_KEY);
+		}
+	}
+	
 	protected void signInVitero(UserRequest ureq, ViteroBooking booking) {
 		try {
 			boolean ok = viteroManager.addToRoom(booking, ureq.getIdentity(), null);
@@ -151,7 +177,6 @@ public class ViteroBookingsController extends BasicController {
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}
-		
 	}
 	
 	protected void signOutVitero(UserRequest ureq, ViteroBooking booking) {
