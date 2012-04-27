@@ -98,6 +98,13 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 			throw new StartupException("Error getting canonical context root.", e);
 		}
 		servletContextPath = servletContext.getContextPath();
+
+		File fil = new File(fullPathToSrc);
+		if(fil.exists()){
+			log.info("Path to source set to: " + fullPathToSrc);
+		} else {
+			log.info("Path to source doesn't exist (only needed for debugging purpose): " + fullPathToSrc);
+		}
 		
 		testUtf8FileSystem();
 		logStartup();
@@ -182,7 +189,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		//String srcPath = getContextRoot() + "/" + relPathToSrc;
 		File fil = new File(fullPathToSrc);
 		if(fil.exists()){
-			log.info("Path to source set to: " + fullPathToSrc);
+			log.debug("Path to source set to: " + fullPathToSrc);
 		}else{
 			if (Settings.isDebuging() || I18nModule.isTransToolEnabled()) {
 				log.error("Path to source wrong, debugging may not work as expected: " + fullPathToSrc, new Exception("getSourcePath"));
