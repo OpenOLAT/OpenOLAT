@@ -28,8 +28,6 @@ package org.olat.core.gui.components.form.flexible.impl;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.render.StringOutput;
@@ -37,7 +35,6 @@ import org.olat.core.logging.OLATRuntimeException;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for FormJSHelper
  * 
  * <P>
  * Initial Date: 11.01.2007 <br>
@@ -104,15 +101,15 @@ public class FormJSHelper {
 	 * @param acceptedInstructions
 	 */
 	public static void appendRenderInstructions(StringOutput sb,
-			String jsonRenderInstruction, Set acceptedInstructions) {
+			String jsonRenderInstruction, Set<String> acceptedInstructions) {
 		JSONObject instr;
 		try {
 			instr = new JSONObject(jsonRenderInstruction);
 			sb.append(" ");// ensure blank before appending instructions -> '
 							// '...
-			for (Iterator iter = acceptedInstructions.iterator(); iter
+			for (Iterator<String> iter = acceptedInstructions.iterator(); iter
 					.hasNext();) {
-				String accepted = (String) iter.next();
+				String accepted = iter.next();
 				if (instr.get(accepted) != null) {
 					// generates i.e. 'class=\"thevalueclass\" '
 					sb.append(accepted);// accepted key is also use as attribute
@@ -243,10 +240,20 @@ public class FormJSHelper {
 	 */
 	public static String submitOnKeypressEnter(String formName) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getJSStart());
-		sb.append("Ext.get(document.forms['").append(formName).append("']).on('keypress', function(event) {if (13 == event.keyCode) {if (document.forms['").append(formName).append("'].onsubmit()) {document.forms['").append(formName).append("'].submit();}}})");
-		sb.append(getJSEnd());
+		sb.append(getJSStart())
+		  .append("var myExtForm = Ext.get(document.forms['").append(formName).append("']);")
+		  .append("if(myExtForm) {")
+		  .append(" myExtForm.on('keypress', function(event) {if (13 == event.keyCode) {if (this.onsubmit()) {this.submit();}}}, myExtForm.dom);")
+		  .append("} else {")
+		  .append(" Ext.each(document.forms['").append(formName).append("'], function(formEl) {")
+		  .append("  Ext.get(formEl).on('keypress', function(event) {")
+		  .append("   if (13 == event.keyCode) {")
+		  .append("    if (this.onsubmit && this.onsubmit()) { this.submit(); }")
+		  .append("   }")
+		  .append("  }, formEl)")
+		  .append(" });")
+		  .append("}")
+		  .append(getJSEnd());
 		return sb.toString();
 	}
-	
 }
