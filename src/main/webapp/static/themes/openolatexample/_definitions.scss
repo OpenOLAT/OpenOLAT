@@ -13,6 +13,8 @@
 *  =================================================
 */
 
+/* use default values from openolat theme */
+@import "../openolat/all/_definitions.scss";
 
 /* the base-color and variations */
 $basecolor: red;
@@ -25,8 +27,8 @@ $basegray_light: #777;
 $basegray_ultra_light: #eee;
 
 /* here you can define the two small icons used in trees:  + and - */ 
-$ico_plus : '../openolat/images/toggle-small-expand.png' ;
-$ico_minus : '../openolat/images/toggle-small.png' ;
+$ico_plus : '../openolat/images/tree_parent_closed.gif';
+$ico_minus : '../openolat/images/tree_parent_open.gif';
 
 /* enable business / kmu mode */
 $enablebiz: false;
