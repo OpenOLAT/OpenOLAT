@@ -33,29 +33,29 @@ import java.util.List;
  * 
  * @author Felix Jost
  */
-public interface TableDataModel {
+public interface TableDataModel<T> {
 
 	/**
 	 * @return
 	 */
-	int getColumnCount();
+	public int getColumnCount();
 
 	/**
 	 * @return
 	 */
-	int getRowCount();
+	public int getRowCount();
 
 	/**
 	 * @param row
 	 * @param col
 	 * @return
 	 */
-	Object getValueAt(int row, int col);
+	public Object getValueAt(int row, int col);
 
-	Object getObject(int row);
+	public T getObject(int row);
 
-	void setObjects(List objects);
+	public void setObjects(List<T> objects);
 
-	Object createCopyWithEmptyList();
+	public Object createCopyWithEmptyList();
 	
 }

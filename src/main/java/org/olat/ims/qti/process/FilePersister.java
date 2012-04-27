@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -43,6 +44,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -52,6 +54,8 @@ import org.olat.ims.resources.IMSEntityResolver;
 /**
  */
 public class FilePersister implements Persister {
+	private static OLog log = Tracing.createLoggerFor(FilePersister.class);
+	
 	private static final String QTI_SER = "qtiser";
 	private static final String RES_REPORTING = "resreporting";
 	private static final String QTI_FILE = "qti.ser";
@@ -72,6 +76,21 @@ public class FilePersister implements Persister {
 		this.resourcePathInfo = resourcePathInfo;
 		this.subjectName = subj.getName();
 	}
+	
+	@Override
+	public boolean exists() {
+		File fSerial = new File(getFullQtiPath(), QTI_FILE);
+		return fSerial.exists();
+	}
+
+	@Override
+	public Date getLastModified() {
+		File fSerial = new File(getFullQtiPath(), QTI_FILE);
+		if(fSerial.exists()) {
+			return new Date(fSerial.lastModified());
+		}
+		return null;
+	}
 
 	/**
 	 * serialize the current test in case of a stop and later resume (e.g. the
@@ -80,12 +99,13 @@ public class FilePersister implements Persister {
 	 * 
 	 * @see org.olat.ims.qti.process.Persister#persist(Object, String)
 	 */
+	@Override
 	public void persist(Object o, String info) {
 		File fSerialDir = new File(getFullQtiPath());
 		OutputStream os = null;
 		try {
 			long start = -1;
-			boolean debugOn = Tracing.isDebugEnabled(FilePersister.class);
+			boolean debugOn = log.isDebug();
 			if (debugOn) {
 				start = System.currentTimeMillis();
 			}
@@ -102,7 +122,7 @@ public class FilePersister implements Persister {
 			os.close();
 			if (debugOn) {
 				long stop = System.currentTimeMillis();
-				Tracing.logDebug("time in ms to save ims qti ser file:"+(stop-start),FilePersister.class);
+				log.debug("time in ms to save ims qti ser file:"+(stop-start));
 			}
 		} catch (Exception e) {
 			try {
@@ -117,9 +137,10 @@ public class FilePersister implements Persister {
 	/**
 	 * returns (at the moment) only AssessmentInstances, see persist()
 	 */
+	@Override
 	public Object toRAM() {
 		// File path e.g. qtiser/<Unique_Course_ID>/<Node_ID>/test/qti.ser
-		File fSerialDir = new File( getFullQtiPath());		
+		File fSerialDir = new File( getFullQtiPath());
 		if ( !fSerialDir.exists() ) {
 			// file not found => try older path version ( < V5.1) e.g. qtiser/test/360459/qti.ser
 			String path = QTI_SER + File.separator + subjectName + File.separator + resourcePathInfo;
@@ -129,7 +150,7 @@ public class FilePersister implements Persister {
 		InputStream is = null;
 		try {
 			long start = -1;
-			boolean debugOn = Tracing.isDebugEnabled(FilePersister.class);
+			boolean debugOn = log.isDebug();
 			if (debugOn) {
 				start = System.currentTimeMillis();
 			}
@@ -141,7 +162,7 @@ public class FilePersister implements Persister {
 			is.close();
 			if (debugOn) {
 				long stop = System.currentTimeMillis();
-				Tracing.logDebug("time in ms to load ims qti ser file:"+(stop-start),FilePersister.class);
+				log.debug("time in ms to load ims qti ser file:"+(stop-start));
 			}
 
 		} catch (Exception e) {
@@ -248,7 +269,7 @@ public class FilePersister implements Persister {
 						File userDir = new File(subDirs[j],identity.getName());
 						if (userDir.exists()) {
 							FileUtils.deleteDirsAndFiles(userDir, true, true);
-							Tracing.logDebug("Delete qti.ser Userdata dir=" + userDir.getAbsolutePath(), FilePersister.class);
+							log.debug("Delete qti.ser Userdata dir=" + userDir.getAbsolutePath());
 						}
 					}
 				}
@@ -258,13 +279,13 @@ public class FilePersister implements Persister {
 			File qtiserDir = new File(WebappHelper.getUserDataRoot() + File.separator + QTI_SER + File.separator + identity.getName());
 			if (qtiserDir != null) {
 				FileUtils.deleteDirsAndFiles(qtiserDir, true, true);
-				Tracing.logDebug("Delete qti.ser Userdata dir=" + qtiserDir.getAbsolutePath(), FilePersister.class);
+				log.debug("Delete qti.ser Userdata dir=" + qtiserDir.getAbsolutePath());
 			}
 			// 3. Delete resreporting @ /resreporting/<USER_NAME>
 			File resReportingDir = new File(WebappHelper.getUserDataRoot() + File.separator + RES_REPORTING + File.separator + identity.getName());
 			if (resReportingDir != null) {
 				FileUtils.deleteDirsAndFiles(resReportingDir, true, true);
-				Tracing.logDebug("Delete qti resreporting Userdata dir=" + qtiserDir.getAbsolutePath(), FilePersister.class);
+				log.debug("Delete qti resreporting Userdata dir=" + qtiserDir.getAbsolutePath());
 			}
 		} catch (Exception e) {
 			throw new OLATRuntimeException(FilePersister.class, "could not delete QTI resreporting dir for identity=" + identity, e);

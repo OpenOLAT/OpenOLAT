@@ -41,7 +41,6 @@ import org.hibernate.Hibernate;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.IdentityManagerImpl;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -88,7 +87,6 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserDataDeletable;
-import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -229,9 +227,9 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	 * @param ureq
 	 * @return
 	 */
-	public Document getResultsReporting(AssessmentInstance ai, UserRequest ureq) {
+	public Document getResultsReporting(AssessmentInstance ai, Identity assessedIdentity, Locale locale) {
 		ResultsBuilder resB = new ResultsBuilder();
-		return resB.getResDoc(ai, ureq.getLocale(), ureq.getIdentity());
+		return resB.getResDoc(ai, locale, assessedIdentity);
 	}
 
 	/**
@@ -319,7 +317,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	 * @param ureq
 	 */
 
-	public void persistResults(AssessmentInstance ai, long resId, String resDetail, UserRequest ureq) {
+	public void persistResults(AssessmentInstance ai, long resId, String resDetail, Identity assessedIdentity, String remoteAddr) {
 		AssessmentContext ac = ai.getAssessmentContext();
 		
 		QTIResultSet qtiResultSet = new QTIResultSet();
@@ -327,7 +325,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		qtiResultSet.setOlatResource(resId);
 		qtiResultSet.setOlatResourceDetail(resDetail);
 		qtiResultSet.setRepositoryRef(ai.getRepositoryEntryKey());
-		qtiResultSet.setIdentity(ureq.getIdentity());
+		qtiResultSet.setIdentity(assessedIdentity);
 		qtiResultSet.setQtiType(ai.getType());
 		qtiResultSet.setAssessmentID(ai.getAssessID());
 		
@@ -361,7 +359,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 				else qtiResult.setScore(ic.getScore());
 				qtiResult.setTstamp(new Date(ic.getLatestAnswerTime()));
 				qtiResult.setLastModified(new Date(System.currentTimeMillis()));
-				qtiResult.setIp(ureq.getHttpReq().getRemoteAddr());
+				qtiResult.setIp(remoteAddr);
 				
 				// Get user answers for this item
 				StringBuilder sb = new StringBuilder();

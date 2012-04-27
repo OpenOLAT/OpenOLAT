@@ -126,7 +126,7 @@ public class QTIResultDetailsController extends BasicController {
 
 		QTIResultManager qrm = QTIResultManager.getInstance();
 		tableModel = new QTIResultTableModel(
-				qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), identity));
+				qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), identity), getTranslator());
 		tableCtr.setTableDataModel(tableModel);
 		listenTo(tableCtr);
 		

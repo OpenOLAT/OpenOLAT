@@ -39,12 +39,14 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -54,6 +56,8 @@ import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.QTIConstants;
@@ -75,7 +79,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * @author Felix Jost
  */
-public class IQDisplayController extends DefaultController implements Activateable2 {
+public class IQDisplayController extends DefaultController implements GenericEventListener, Activateable2 {
 
 	private static final String PACKAGE = Util.getPackageName(IQDisplayController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(IQDisplayController.class);
@@ -88,6 +92,8 @@ public class IQDisplayController extends DefaultController implements Activateab
 	private String repositorySoftkey = null;
 	private Resolver resolver = null;
 	private Persister persister = null;
+	private final Identity assessedIdentity;
+	private volatile boolean retrievedFlag = false;
 
 	private ProgressBar qtiscoreprogress, qtiquestionprogress;
 	private IQComponent qticomp;
@@ -100,6 +106,7 @@ public class IQDisplayController extends DefaultController implements Activateab
 	private String callingResDetail = "";
 	private boolean ready;
 	private Link closeButton;
+	private OLATResourceable retrieveListenerOres; 
 
 	/**
 	 * IMS QTI Display Controller used by the course nodes
@@ -118,6 +125,8 @@ public class IQDisplayController extends DefaultController implements Activateab
 	IQDisplayController(ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq,
 			WindowControl wControl, long callingResId, String callingResDetail) {
 		super(wControl);
+		
+		this.assessedIdentity = ureq.getIdentity();
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 
@@ -147,6 +156,7 @@ public class IQDisplayController extends DefaultController implements Activateab
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 
+		this.assessedIdentity = ureq.getIdentity();
 		this.modConfig = new ModuleConfiguration();
 		modConfig.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.TRUE);
 		modConfig.set(IQEditController.CONFIG_KEY_TYPE, type);
@@ -166,6 +176,9 @@ public class IQDisplayController extends DefaultController implements Activateab
 		this.iqsec = secCallback;
 		this.translator = new PackageTranslator(PACKAGE, ureq.getLocale());
 		this.ready = false;
+
+		retrieveListenerOres =  new IQRetrievedEvent(ureq.getIdentity(), callingResId, callingResDetail);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), retrieveListenerOres);
 
 		iqm = IQManager.getInstance();
 
@@ -371,12 +384,36 @@ public class IQDisplayController extends DefaultController implements Activateab
 
 	}
 
+	@Override
+	public void event(Event event) {
+		if(event instanceof IQRetrievedEvent) {
+			IQRetrievedEvent e = (IQRetrievedEvent)event;
+			if(e.isConcerned(assessedIdentity, callingResId, callingResDetail)) {
+				//it's me -> it's finished
+				retrievedFlag = true;
+			}
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(retrievedFlag) {
+			fireEvent(ureq, new Event("test_stopped"));
+		} else {
+			super.event(ureq, source, event);
+		}
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		
+		if(retrievedFlag) {
+			fireEvent(ureq, new Event("test_stopped"));
+			return;
+		}
+
 		if (source == myContent || source == qticomp) { // those must be links
 			String wfCommand = event.getCommand();
 			// process workflow
@@ -491,7 +528,7 @@ public class IQDisplayController extends DefaultController implements Activateab
 	 */
 	protected void postSubmitAssessment(UserRequest ureq, AssessmentInstance ai) {
 		if (!qtistatus.isPreview()) {
-			iqm.persistResults(ai, callingResId, callingResDetail, ureq);
+			iqm.persistResults(ai, callingResId, callingResDetail, ureq.getIdentity(), ureq.getHttpReq().getRemoteAddr());
 			getWindowControl().setInfo(translator.translate("status.results.saved"));
 		} else {
 			getWindowControl().setInfo(translator.translate("status.results.notsaved"));
@@ -507,7 +544,7 @@ public class IQDisplayController extends DefaultController implements Activateab
 	}
 	
 	protected void generateDetailsResults(UserRequest ureq, AssessmentInstance ai) {
-		Document docResReporting = iqm.getResultsReporting(ai, ureq);
+		Document docResReporting = iqm.getResultsReporting(ai, ureq.getIdentity(), ureq.getLocale());
 		if (!iqsec.isPreview()) {
 			FilePersister.createResultsReporting(docResReporting, ureq.getIdentity(), ai.getFormattedType(), ai.getAssessID());
 			// Send score and passed to parent controller. Maybe it is necessary
@@ -537,10 +574,10 @@ public class IQDisplayController extends DefaultController implements Activateab
 	 * @param ureq
 	 */
 	private void logAudit(UserRequest ureq) {
-		Set params = ureq.getParameterSet();
+		Set<String> params = ureq.getParameterSet();
 		StringBuilder sb = new StringBuilder();
-		for (Iterator iter = params.iterator(); iter.hasNext();) {
-			String paramName = (String) iter.next();
+		for (Iterator<String> iter = params.iterator(); iter.hasNext();) {
+			String paramName = iter.next();
 			sb.append("|");
 			sb.append(paramName);
 			sb.append("=");
@@ -560,6 +597,6 @@ public class IQDisplayController extends DefaultController implements Activateab
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		//
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, retrieveListenerOres);
 	}
 }

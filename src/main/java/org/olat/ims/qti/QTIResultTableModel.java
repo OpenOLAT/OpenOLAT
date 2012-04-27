@@ -26,28 +26,45 @@
 package org.olat.ims.qti;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.ims.qti.process.Persister;
 
 /**
  * Initial Date:  12.01.2005
  *
  * @author Mike Stock
  */
-public class QTIResultTableModel extends BaseTableDataModelWithoutFilter implements TableDataModel {
+public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 
 	private static final int COLUMN_COUNT = 3;
-	private List resultSets;
+	private List<QTIResultSet> resultSets;
+	private Persister persister;
+	private final Translator translator;
 	
 	/**
 	 * @param resultSets
 	 */
-	public QTIResultTableModel(List resultSets) {
+	public QTIResultTableModel(List<QTIResultSet> resultSets, Translator translator) {
+		this(resultSets, null, translator);
+	}
+	
+	/**
+	 * @param resultSets
+	 */
+	public QTIResultTableModel(List<QTIResultSet> resultSets, Persister persister, Translator translator) {
 		this.resultSets = resultSets;
+		this.persister = persister;
+		this.translator = translator;
+	}
+	
+	private boolean isTestReleased() {
+		return persister == null || !persister.exists();
 	}
 	
 	/**
@@ -61,14 +78,38 @@ public class QTIResultTableModel extends BaseTableDataModelWithoutFilter impleme
 	 * @see org.olat.core.gui.components.table.TableDataModel#getRowCount()
 	 */
 	public int getRowCount() {
-		return resultSets.size();
+		return resultSets.size() + (isTestReleased() ? 0 : 1);
+	}
+	
+	@Override
+	public QTIResultSet getObject(int row) {
+		return resultSets.get(row);
+	}
+
+	@Override
+	public void setObjects(List<QTIResultSet> objects) {
+		this.resultSets = objects;
+	}
+
+	@Override
+	public QTIResultTableModel createCopyWithEmptyList() {
+		return new QTIResultTableModel(new ArrayList<QTIResultSet>(), persister, translator);
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		QTIResultSet resultSet = (QTIResultSet)resultSets.get(row);
+		if(!isTestReleased() && (row+1 == getRowCount())) {
+			switch (col) {
+				case 0: return persister.getLastModified();
+				case 1: return translator.translate("notReleased");
+				case 2: return translator.translate("open");
+				case 3: return Boolean.FALSE;
+				default: return "error";
+			}	
+		}
+		QTIResultSet resultSet = getObject(row);
 		switch (col) {
 			case 0: return resultSet.getLastModified();
 			case 1: {
@@ -80,6 +121,7 @@ public class QTIResultTableModel extends BaseTableDataModelWithoutFilter impleme
 				}
 			}
 			case 2: return "" + AssessmentHelper.getRoundedScore(resultSet.getScore());
+			case 3: return Boolean.TRUE;
 			default: return "error";
 		}	
 	}
@@ -91,5 +133,17 @@ public class QTIResultTableModel extends BaseTableDataModelWithoutFilter impleme
 	public QTIResultSet getResultSet(int rowId) {
 		return (QTIResultSet)resultSets.get(rowId);
 	}
+	
+	public static class Wrapper {
+		
+		private QTIResultSet resultSet;
+		
+		public Wrapper(QTIResultSet resultSet) {
+			this.resultSet = resultSet;
+		}
 
+		public QTIResultSet getResultSet() {
+			return resultSet;
+		}
+	}
 }

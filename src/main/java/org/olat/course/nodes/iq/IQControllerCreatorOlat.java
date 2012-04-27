@@ -195,7 +195,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 
 	public Controller createIQTestDetailsEditController(Long courseResourceableId, String ident, Identity identity,
 			RepositoryEntry referencedRepositoryEntry, String qmdEntryTypeAssess, UserRequest ureq, WindowControl wControl) {
-		return new QTIResultDetailsController(courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess, ureq, wControl);
+		return new QTIResultDetailsController(ureq, wControl, courseResourceableId, ident, identity, referencedRepositoryEntry, qmdEntryTypeAssess);
 	}
 
 

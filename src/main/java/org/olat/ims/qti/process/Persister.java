@@ -25,10 +25,19 @@
 
 package org.olat.ims.qti.process;
 
+import java.util.Date;
+
 /**
  */
 public interface Persister {
+	
+	public boolean exists();
+	
+	public Date getLastModified();
+	
 	public void persist(Object o, String info);
+	
 	public Object toRAM();
+	
 	public void cleanUp();
 }

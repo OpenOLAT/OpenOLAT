@@ -84,7 +84,7 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @param identity May be null
 	 * @return List of resultsets
 	 */
-	public List getResultSets(Long olatResource, String olatResourceDetail, Long repositoryRef, Identity identity) {
+	public List<QTIResultSet> getResultSets(Long olatResource, String olatResourceDetail, Long repositoryRef, Identity identity) {
 		Long olatRes = olatResource;
 		String olatResDet = olatResourceDetail;
 		Long repRef = repositoryRef;

@@ -348,10 +348,10 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 	}
 	
-	private List allChats;
 	private void checkChats (UserRequest ureq) {
+		List<?> allChats = null;
 		if (ureq != null) {
-			allChats = (List) ureq.getUserSession().getEntry("chats");
+			allChats = (List<?>)ureq.getUserSession().getEntry("chats");
 		}
 		if (allChats == null || allChats.size() == 0) {
 			startButton.setEnabled (true);
@@ -395,7 +395,6 @@ public class IQRunController extends BasicController implements GenericEventList
 				listenTo(displayController);
 				if(displayController.isClosed()) {
 					//do nothing
-					System.out.println();
 				} else  if (displayController.isReady()) {
 					// in case displayController was unable to initialize, a message was set by displayController
 					// this is the case if no more attempts or security check was unsuccessfull
@@ -508,26 +507,31 @@ public class IQRunController extends BasicController implements GenericEventList
 				else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)){
 					am.incrementNodeAttempts(courseNode, urequest.getIdentity(), userCourseEnv);
 				}
-			}
-			else if (event.equals(Event.DONE_EVENT)) {
-				if(displayContainerController != null) {
-					displayContainerController.deactivate(urequest);
-				} else {
-					getWindowControl().pop();
-				}	
-				removeHistory(urequest);
-				OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
-				addToHistory(urequest, ores, null);
-				if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) && !assessmentStopped ) {
-					assessmentStopped = true;					
-					AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
-					singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
-					singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
-				}
-				fireEvent(urequest, Event.DONE_EVENT);
-				
+			} else if (event.equals(Event.DONE_EVENT)) {
+				stopAssessment(urequest, event);
+			} else if ("test_stopped".equals(event.getCommand())) {
+				stopAssessment(urequest, event);
+				showWarning("error.assessment.stopped");
 			}
 		}
+	}
+	
+	private void stopAssessment(UserRequest ureq, Event event) {
+		if(displayContainerController != null) {
+			displayContainerController.deactivate(ureq);
+		} else {
+			getWindowControl().pop();
+		}	
+		removeHistory(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
+		addToHistory(ureq, ores, null);
+		if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS) && !assessmentStopped ) {
+			assessmentStopped = true;					
+			AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
+			singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
+			singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
+		}
+		fireEvent(ureq, event);
 	}
 
 	private void exposeUserTestDataToVC(UserRequest ureq) {
