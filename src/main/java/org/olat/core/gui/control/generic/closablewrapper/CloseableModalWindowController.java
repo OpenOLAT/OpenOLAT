@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.control.generic.closablewrapper;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -54,7 +55,10 @@ public class CloseableModalWindowController extends BasicController {
 	public CloseableModalWindowController(UserRequest ureq, WindowControl wControl, String title, Component modalContent, String id) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("modalwindow");
-		if (title != null) mainVC.contextPut("title", title);
+		if (title != null) {
+			String escapedTitle = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(title));
+			mainVC.contextPut("title", escapedTitle);
+		}
 		mainVC.put("content", modalContent);
 		setCloseable(true);
 		setIgnoreCookie(false);
