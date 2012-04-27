@@ -793,6 +793,20 @@ var ProtoMultiSelect = Class.create(TextboxList, {
 				);
 			}
 			
+			if(matches && !this.options.get('allowDuplicates')) {
+				var toDelete = new Array();
+				var count = 0;
+				for(var i=0; i<matches.length; i++) {
+					var val = matches[i].evalJSON(true).value;
+					if(this.foundInSelectedValues(val)) {
+						toDelete[count++] = matches[i];
+					}	
+				}
+				for(var i=0;i<toDelete.length; i++) {
+					matches.remove(toDelete[i]);
+				}
+			}
+			
 			if (this.options.get('sortResults')) {
 				matches = matches.sortBy(function(el) { return el.evalJSON(true).caption });
 			}
