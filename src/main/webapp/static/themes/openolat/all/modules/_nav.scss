@@ -122,9 +122,9 @@ div.b_tree {
 	ul { 
 		position: relative;
 		padding: 0;
-		margin: 0 0 0 1em;
+		margin: 0 0 0 $tree_level_margin; 
 		list-style: none; 
-		white-space: nowrap;
+		white-space: nowrap; 
 		
 		li {
 			position:relative;
@@ -134,7 +134,14 @@ div.b_tree {
 			line-height:1.7em;
 			
 			// a tree element with icon
-			a.b_tree_icon {padding-left: 20px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}	
+			// reset icon width in case no icons are shown
+			@if $tree_show_icons == false { 
+				$treeicon_width_px : 0; 
+				a.b_tree_icon { background-image: none !important; }				
+			}
+			// standard icon rule
+			a.b_tree_icon {padding-left: $treeicon_width_px; padding-top:2px; position: relative; background-position: 0 50%; background-repeat: no-repeat;}				
+			
 			
 			a {
 				color:$basegray;
@@ -155,34 +162,15 @@ div.b_tree {
 			a:focus, a:hover { color: $basecolor; background-color: transparent; text-decoration:underline; }	
 			a.b_tree_selected,a:active { color: $basecolor; background-color: transparent; text-decoration:none; }	
 			li a.b_tree_selected_parents,a.b_tree_l0,strong { color: $basecolor; font-weight: bold; }
-			
-			
+						
 			/*  icon positioning */
-			.b_tree_oc_l1  { position:absolute; top:0px; left:1px; z-index:9; }
-			.b_tree_oc_l2  { position:absolute; top:0px; left:11px; z-index:9; }
-			.b_tree_oc_l3  { position:absolute; top:0px; left:21px; z-index:9; }
-			.b_tree_oc_l4  { position:absolute; top:0px; left:31px; z-index:9; }
-			.b_tree_oc_l5  { position:absolute; top:0px; left:41px; z-index:9; }
-			.b_tree_oc_l6  { position:absolute; top:0px; left:51px; z-index:9; }
-			.b_tree_oc_l7  { position:absolute; top:0px; left:61px; z-index:9; }
-			.b_tree_oc_l8  { position:absolute; top:0px; left:71px; z-index:9; }
-			.b_tree_oc_l9  { position:absolute; top:0px; left:81px; z-index:9; }
-			.b_tree_oc_l10 { position:absolute; top:0px; left:91px; z-index:9; }
-			.b_tree_oc_l11 { position:absolute; top:0px; left:101px; z-index:9; }	
-			
-			
-			a.b_tree_l0  { padding-left: 5px; }
-			a.b_tree_l1  { padding-left: 15px; }
-			a.b_tree_l2  { padding-left: 25px; }
-			a.b_tree_l3  { padding-left: 35px; }
-			a.b_tree_l4  { padding-left: 45px; }
-			a.b_tree_l5  { padding-left: 55px; }
-			a.b_tree_l6  { padding-left: 65px; }
-			a.b_tree_l7  { padding-left: 75px; }
-			a.b_tree_l8  { padding-left: 85px; }
-			a.b_tree_l9  { padding-left: 95px; }
-			a.b_tree_l10 { padding-left: 105px; }
-			a.b_tree_l11 { padding-left: 115px; }
+			@for $i from 1 through 11 {
+				.b_tree_oc_l#{$i}  { position:absolute; top:0px; left: 1px + ( ($i - 1) * $tree_padding_steps_px); z-index:9; }
+			}
+
+			@for $i from 0 through 11 {
+				a.b_tree_l#{$i}  { padding-left: $tree_padding_opener_px + ($i * $tree_padding_steps_px); }
+			}			
 			
 			
 			/*   decorators in tree (e.g. course-editor ) */
@@ -204,27 +192,16 @@ div.b_tree {
 		} // end li
 		
 		/* link to select the item with icon */
-		$treeicon_spread_px: 6px;
-		
-		&.b_tree_l0  a.b_tree_icon { padding-left:$treeicon_spread_px+20px;  background-position:$treeicon-spread_px+2px 50%; }
-		&.b_tree_l1  a.b_tree_icon { padding-left:$treeicon_spread_px+30px;  background-position:$treeicon-spread_px+12px 50%; }
-		&.b_tree_l2  a.b_tree_icon { padding-left:$treeicon_spread_px+40px;  background-position:$treeicon-spread_px+22px 50%; }
-		&.b_tree_l3  a.b_tree_icon { padding-left:$treeicon_spread_px+50px;  background-position:$treeicon-spread_px+32px 50%; }
-		&.b_tree_l4  a.b_tree_icon { padding-left:$treeicon_spread_px+60px;  background-position:$treeicon-spread_px+42px 50%; }
-		&.b_tree_l5  a.b_tree_icon { padding-left:$treeicon_spread_px+70px;  background-position:$treeicon-spread_px+52px 50%; }
-		&.b_tree_l6  a.b_tree_icon { padding-left:$treeicon_spread_px+80px; background-position:$treeicon-spread_px+62px 50%; }
-		&.b_tree_l7  a.b_tree_icon { padding-left:$treeicon_spread_px+90px; background-position:$treeicon-spread_px+72px 50%; }
-		&.b_tree_l8  a.b_tree_icon { padding-left:$treeicon_spread_px+100px; background-position:$treeicon-spread_px+82px 50%; }
-		&.b_tree_l9  a.b_tree_icon { padding-left:$treeicon_spread_px+110px; background-position:$treeicon-spread_px+92px 50%; }
-		&.b_tree_l10 a.b_tree_icon { padding-left:$treeicon_spread_px+120px; background-position:$treeicon-spread_px+102px 50%; }
-		&.b_tree_l11 a.b_tree_icon { padding-left:$treeicon_spread_px+130px; background-position:$treeicon-spread_px+112px 50%; }
+		@for $i from 0 through 11 {
+			&.b_tree_l#{$i}  a.b_tree_icon { padding-left: ($tree_opener_spread_px + $treeicon_width_px  + $tree_padding_steps_px * $i);  background-position:($tree_opener_spread_px + 2px + $tree_padding_steps_px * $i)  50%; }
+		}
 	
 	}// end ul
 	
 	
 	/* the open/close node icons */
-	a.b_tree_level_close span { background: url('../openolat/images/toggle-small.png') no-repeat 0% 50%; padding-right:8px;}
-	a.b_tree_level_open span { background: url('../openolat/images/toggle-small-expand.png') no-repeat 0% 50%; padding-right:8px;}
+	a.b_tree_level_close span { background: url($ico_minus) no-repeat 0% 50%; padding-right:$tree_opener_width_px;}
+	a.b_tree_level_open span { background: url($ico_plus) no-repeat 0% 50%; padding-right:$tree_opener_width_px;}
 	a.b_tree_level_close:hover,a.b_tree_level_open:hover {text-decoration:none;}
 	
 }// end b_tree

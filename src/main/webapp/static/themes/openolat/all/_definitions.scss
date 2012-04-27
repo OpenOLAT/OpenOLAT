@@ -15,7 +15,7 @@
 
 
 /* the base-color and variations (for openolat-theme this is the openolat-blue) */
-$basecolor: #025D8C !default;
+$basecolor : #025D8C !default;
 $basecolor_light : #94bed3 !default;
 $basecolor_ultra_light : #f3feff !default;
 
@@ -24,8 +24,16 @@ $basegray: #555 !default;
 $basegray_light: #777 !default;
 $basegray_ultra_light: #eee !default;
 
-
+/* menu navigation */
+$tree_level_margin : 1em !default;
+$tree_padding_steps_px : 10px !default;
+$tree_padding_opener_px : 6px !default;
+/* show or hide tree icons, if yes, width of icons */
+$tree_show_icons : true !default; 
+$treeicon_width_px : 20px !default;
 /* here you can define the two small icons used in trees:  + and - */ 
+$tree_opener_spread_px : 6px !default;
+$tree_opener_width_px : 8px !default;
 $ico_plus : '../openolat/images/toggle-small-expand.png'  !default;
 $ico_minus : '../openolat/images/toggle-small.png'  !default;
 
@@ -38,7 +46,7 @@ $defaultfontsize : 75% !default;
 
 
 /* enable business / kmu mode */
-$enablebiz: false;
+$enablebiz : false;
 
 /* defines the body-background */
 @mixin bodybg(){
@@ -48,5 +56,3 @@ $enablebiz: false;
 		background: #ECECEC url('../openolat/images/sky.png') repeat-x left 175px;
 	}
 }
-
-
