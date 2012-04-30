@@ -34,3 +34,17 @@ div.b_access_method_list div.b_form_element_wrapper:nth-last-of-type(4) label { 
 
 /* access panel */
 #b_main_access_control { margin:0 20% 0 20%; padding: 20px 0 0 20px;}
+
+/* overview icons */
+.b_order_status_new_icon { background-image: url(../openolat/images/new-text.png); }
+.b_order_status_prepayment_icon { background-image: url(../openolat/images/ac/prepayment.png); }
+.b_order_status_payed_icon { background-image: url(../openolat/images/tick.png); }
+.b_order_status_canceled_icon { background-image: url(../openolat/images/ac/canceled.png); }
+.b_order_status_error_icon { background-image: url(../images/olat/cross.png); }
+.b_order_status_warning_icon { background-image: url(../openolat/images/exclamation.png); }
+	
+.b_transaction_status_success_icon { background-image: url(../openolat/images/tick.png); }
+.b_transaction_status_waiting_icon { background-image: url(../openolat/images/exclamation.png); }
+.b_transaction_status_error_icon { background-image: url(../openolat/images/cross.png); }
+.b_transaction_status_canceled_icon { background-image: url(../openolat/images/ac/canceled.png); }
+.b_transaction_status_new_icon { background-image: url(../openolat/images/new-text.png); }
