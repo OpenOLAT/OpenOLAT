@@ -96,6 +96,7 @@ public class RegistrationAdminController extends FormBasicController {
 		domainsContainer.contextPut("off_title", translate("admin.registration.domains.title"));
 		formLayout.add(domainsContainer);
 		
+		uifactory.addStaticTextElement("admin.registration.domains.error", null, translate("admin.registration.domains.desc"), domainsContainer);
 		String domainsList = registrationModule.getDomainListRaw();
 		domainListElement = uifactory.addTextAreaElement("registration.domain.list", "admin.registration.domains", 2000, 10, 65, true, domainsList, domainsContainer);
 
