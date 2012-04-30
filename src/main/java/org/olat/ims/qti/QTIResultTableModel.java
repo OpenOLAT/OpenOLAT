@@ -103,8 +103,8 @@ public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 		if(!isTestReleased() && (row+1 == getRowCount())) {
 			switch (col) {
 				case 0: return persister.getLastModified();
-				case 1: return translator.translate("notReleased");
-				case 2: return translator.translate("open");
+				case 1: return "<span class='o_ochre'>" + translator.translate("notReleased") + "</span>";
+				case 2: return "<span class='o_ochre'>" + translator.translate("open") + "</span>";
 				case 3: return Boolean.FALSE;
 				default: return "error";
 			}	

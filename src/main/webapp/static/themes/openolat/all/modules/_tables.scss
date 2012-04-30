@@ -46,6 +46,14 @@ div.b_table_wrapper {
 	a.b_table_prefs {background-image: url(../openolat/images/table_gear.png);}
 	a.b_table_download {background-image: url(../openolat/images/table_download.png);}
 	div.b_table_buttons { text-align: center; margin: 1.5em 0 1em 0; }	/* bottom-margin to fix IE6 overflow issue */
+	
+	/* emtpy table - some margin to render similar to existing table */
+	div.b_table_empty {
+		@extend .b_with_small_icon_left;
+		@extend .b_warn_icon;
+		margin: 1em 0;
+	}
+	
 }
 	
 /* table paging */
