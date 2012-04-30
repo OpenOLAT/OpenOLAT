@@ -35,7 +35,7 @@ import org.olat.properties.Property;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ViteroBookingDataModel implements TableDataModel {
+public class ViteroBookingDataModel implements TableDataModel<ViteroBooking> {
 	
 	private List<ViteroBooking> bookings;
 	private List<ViteroBooking> signedInBookings;
@@ -126,7 +126,7 @@ public class ViteroBookingDataModel implements TableDataModel {
 	}
 
 	@Override
-	public void setObjects(List objects) {
+	public void setObjects(List<ViteroBooking> objects) {
 		this.bookings = objects;
 	}
 

@@ -22,7 +22,6 @@ package org.olat.modules.vitero.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.admin.user.UserSearchController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -141,10 +140,10 @@ public class ViteroBookingsController extends BasicController {
 			List<ViteroBooking> myBookings = viteroManager.getBookingInFutures(getIdentity());
 			FilterBookings.filterMyFutureBookings(bookings, myBookings);
 			Collections.sort(bookings, new StartBookingComparator());
-			TableDataModel tableData = new ViteroBookingDataModel(bookings, myBookings);
+			TableDataModel<ViteroBooking> tableData = new ViteroBookingDataModel(bookings, myBookings);
 			tableCtr.setTableDataModel(tableData);
 		} catch (VmsNotAvailableException e) {
-			TableDataModel tableData = new ViteroBookingDataModel();
+			TableDataModel<ViteroBooking> tableData = new ViteroBookingDataModel();
 			tableCtr.setTableDataModel(tableData);
 			showError(VmsNotAvailableException.I18N_KEY);
 		}

@@ -20,6 +20,7 @@
 package org.olat.modules.vitero.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -64,6 +65,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private DialogBoxController dialogCtr;
+	private DialogBoxController warningGroupCtr;
 	private ViteroBookingEditController bookingController;
 	private ViteroRoomsOverviewController roomsOverviewController;
 	private ViteroUserToGroupController usersController;
@@ -172,18 +174,28 @@ public class ViteroBookingsEditController extends FormBasicController {
 				ViteroBooking booking = (ViteroBooking)dialogCtr.getUserObject();
 				deleteBooking(ureq, booking);
 			}
+		} else if (source == warningGroupCtr) {
+			removeAsListenerAndDispose(warningGroupCtr);
+			warningGroupCtr = null;
 		}
 	}
 	
 	protected void openGroup(UserRequest ureq, ViteroBooking booking) {
 		try {
-			String url = viteroManager.getURLToGroup(ureq.getIdentity(), booking);
-			viteroGroupVC = createVelocityContainer("opengroup");
-			viteroGroupVC.contextPut("groupUrl", url);
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
-			listenTo(cmc);
-			cmc.activate();
+			if(viteroManager.isUserOf(booking, getIdentity())) {
+				String url = viteroManager.getURLToGroup(ureq.getIdentity(), booking);
+				viteroGroupVC = createVelocityContainer("opengroup");
+				viteroGroupVC.contextPut("groupUrl", url);
+				removeAsListenerAndDispose(cmc);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
+				listenTo(cmc);
+				cmc.activate();
+			} else {
+				String title = translate("booking.group");
+				String text = translate("booking.group.warning");
+				List<String> buttonLabels = Collections.singletonList(translate("ok"));
+				warningGroupCtr = activateGenericDialog(ureq, title, text, buttonLabels, warningGroupCtr);
+			}
 		} catch (VmsNotAvailableException e) {
 			showError(VmsNotAvailableException.I18N_KEY);
 		}

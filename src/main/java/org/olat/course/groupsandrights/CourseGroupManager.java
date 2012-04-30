@@ -368,7 +368,7 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return a list with all coaches of this course
 	 */
-	public List getCoachesFromLearningGroup(String groupName);
+	public List<Identity> getCoachesFromLearningGroup(String groupName);
 	
 	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getCoaches();
@@ -380,7 +380,7 @@ public interface CourseGroupManager {
 	 * @param areaName
 	 * @return a list with all coaches of this course
 	 */
-	public List getCoachesFromArea(String areaName);
+	public List<Identity> getCoachesFromArea(String areaName);
 
 	/**
 	 * List with identities being participants in the learning groups of this course. If
@@ -389,7 +389,7 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return a list with all participants of this course
 	 */
-	public List getParticipantsFromLearningGroup(String groupName);
+	public List<Identity> getParticipantsFromLearningGroup(String groupName);
 	
 	//fxdiff VCRP-1,2: access control of resources
 	public List<Identity> getParticipants();
@@ -401,7 +401,7 @@ public interface CourseGroupManager {
 	 * @param areaName
 	 * @return a list with participants of this course
 	 */
-	public List getParticipantsFromArea(String areaName);
+	public List<Identity> getParticipantsFromArea(String areaName);
 
 	/**
 	 * @param identity

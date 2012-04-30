@@ -350,6 +350,23 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 		}	
 	}
 	
+	public boolean isUserOf(ViteroBooking booking, Identity identity)
+	throws VmsNotAvailableException {
+		boolean member = false;
+		int userId = getVmsUserId(identity, false);
+		if(userId > 0) {
+			Usertype[] users = getVmsUsersByGroup(booking.getGroupId());
+			if(users != null) {
+				for(Usertype user:users) {
+					if(userId == user.getId()) {
+						member = true;
+					}
+				}
+			}
+		}
+		return member;
+	}
+	
 	public List<ViteroUser> getUsersOf(ViteroBooking booking) 
 	throws VmsNotAvailableException {
 		return convert(getVmsUsersByGroup(booking.getGroupId()));

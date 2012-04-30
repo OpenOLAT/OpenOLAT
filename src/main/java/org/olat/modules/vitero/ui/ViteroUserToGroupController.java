@@ -326,7 +326,7 @@ public class ViteroUserToGroupController extends BasicController {
 		}
 	}
 	
-	public class UserToGroupDataModel implements TableDataModel {
+	public class UserToGroupDataModel implements TableDataModel<Identity> {
 		
 		private ResourceMembers members;
 		private List<Identity> identities;
@@ -396,7 +396,7 @@ public class ViteroUserToGroupController extends BasicController {
 		}
 
 		@Override
-		public void setObjects(List objects) {
+		public void setObjects(List<Identity> objects) {
 			this.identities = objects;
 		}
 

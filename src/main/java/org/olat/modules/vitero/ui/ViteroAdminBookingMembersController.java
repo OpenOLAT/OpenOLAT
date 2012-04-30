@@ -168,7 +168,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 		}
 	}
 
-	public class UserToGroupDataModel implements TableDataModel {
+	public class UserToGroupDataModel implements TableDataModel<ViteroUser> {
 		
 		private List<ViteroUser> members;
 		
@@ -207,7 +207,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 		}
 
 		@Override
-		public void setObjects(List objects) {
+		public void setObjects(List<ViteroUser> objects) {
 			this.members = objects;
 		}
 
