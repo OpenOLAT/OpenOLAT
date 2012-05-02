@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.control.generic.title;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,7 +36,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
@@ -48,7 +53,7 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  21.06.2007 <br>
  * @author Lavinia Dumitrescu, Florian Gnägi
  */
-public class TitledWrapperController extends BasicController implements CloneableController {
+public class TitledWrapperController extends BasicController implements CloneableController, Activateable2 {
 	
 	private static final String COMPONENT_NAME = "child";
 	//Velocity variable
@@ -136,6 +141,13 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		contentController = null;
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(contentController instanceof Activateable2) {
+			((Activateable2)contentController).activate(ureq, entries, state);
+		}
+	}
+
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to catch	
 	}
