@@ -25,6 +25,7 @@
 
 package org.olat.registration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -128,7 +129,10 @@ public class RegistrationModule extends AbstractOLATModule {
 	}
 	
 	public List<String> getDomainList() {
-		return Arrays.asList(domainList.split(","));
+		if(StringHelper.containsNonWhitespace(domainList)) {
+			return Arrays.asList(domainList.split(","));
+		}
+		return new ArrayList<String>(1);
 	}
 	
 	public List<String> getDomainList(String list) {
