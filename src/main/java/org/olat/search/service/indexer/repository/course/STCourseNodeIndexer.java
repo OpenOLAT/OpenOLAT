@@ -73,7 +73,7 @@ public class STCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE);
 		String relPath = STCourseNodeEditController.getFileName(config);
-		if (relPath != null && displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
+		if (relPath != null && displayType != null && displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
 			VFSItem displayPage = course.getCourseFolderContainer().resolve(relPath);
 			if(displayPage instanceof VFSLeaf) {
 				doIndexVFSLeafByMySelf(courseNodeResourceContext, (VFSLeaf)displayPage, indexWriter, relPath);
