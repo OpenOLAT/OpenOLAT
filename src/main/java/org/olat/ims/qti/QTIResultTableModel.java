@@ -45,6 +45,7 @@ public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 	private static final int COLUMN_COUNT = 3;
 	private List<QTIResultSet> resultSets;
 	private Persister persister;
+	private boolean inTest;
 	private final Translator translator;
 	
 	/**
@@ -60,12 +61,23 @@ public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 	public QTIResultTableModel(List<QTIResultSet> resultSets, Persister persister, Translator translator) {
 		this.resultSets = resultSets;
 		this.persister = persister;
+		this.inTest = (persister == null ? false : persister.exists());
 		this.translator = translator;
 	}
 	
-	private boolean isTestReleased() {
-		return persister == null || !persister.exists();
+	public boolean updateStatus() {
+		boolean newStatus = (persister == null ? false : persister.exists());
+		if(newStatus == inTest) {
+			return false;
+		}
+		inTest = newStatus;
+		return true;
 	}
+	
+	public boolean isTestRunning() {
+		return (persister == null ? false : persister.exists());
+	}
+	
 	
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
@@ -78,7 +90,7 @@ public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getRowCount()
 	 */
 	public int getRowCount() {
-		return resultSets.size() + (isTestReleased() ? 0 : 1);
+		return resultSets.size() + (inTest ? 1 : 0);
 	}
 	
 	@Override
@@ -100,7 +112,7 @@ public class QTIResultTableModel implements TableDataModel<QTIResultSet> {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
-		if(!isTestReleased() && (row+1 == getRowCount())) {
+		if(inTest && (row + 1 == getRowCount())) {
 			switch (col) {
 				case 0: return persister.getLastModified();
 				case 1: return "<span class='o_ochre'>" + translator.translate("notReleased") + "</span>";

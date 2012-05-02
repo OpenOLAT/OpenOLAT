@@ -110,7 +110,6 @@ public class QTIResultDetailsController extends BasicController {
 		
 		String resourcePath = courseResourceableId + File.separator + nodeIdent;
 		qtiPersister = new FilePersister(assessedIdentity, resourcePath);
-		System.out.println("qti.ser: " + qtiPersister.exists());
 		
 		init(ureq);
 	}
@@ -171,20 +170,36 @@ public class QTIResultDetailsController extends BasicController {
 				
 				cmc.activate();
 			} else if(tEvent.getActionId().equals("ret")) {
-				String fullname = UserManager.getInstance().getUserDisplayName(assessedIdentity.getUser());
-				String title = translate("retrievetest.confirm.title");
-				String text = translate("retrievetest.confirm.text", new String[]{fullname});
-				retrieveConfirmationCtr = activateYesNoDialog(ureq, title, text, retrieveConfirmationCtr);
+				updateTableModel();
+				if(tableModel.isTestRunning()) {
+					String fullname = UserManager.getInstance().getUserDisplayName(assessedIdentity.getUser());
+					String title = translate("retrievetest.confirm.title");
+					String text = translate("retrievetest.confirm.text", new String[]{fullname});
+					retrieveConfirmationCtr = activateYesNoDialog(ureq, title, text, retrieveConfirmationCtr);
+				}
 			}
+		} else if (source == cmc) {
+			updateTableModel();
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
 		} else if (source == retrieveConfirmationCtr) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseResourceableId, nodeIdent);
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
-				doRetrieveTest(ureq);
+				updateTableModel();
+				if(tableModel.isTestRunning()) {
+					IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseResourceableId, nodeIdent);
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
+					doRetrieveTest(ureq);
+				}
 			}
 			removeAsListenerAndDispose(retrieveConfirmationCtr);
 			retrieveConfirmationCtr = null;
 		}
+	}
+	
+	private void updateTableModel() {
+		List<QTIResultSet> resultSets = qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), assessedIdentity);
+		tableModel = new QTIResultTableModel(resultSets, qtiPersister, getTranslator());
+		tableCtr.setTableDataModel(tableModel);
 	}
 
 	/**
