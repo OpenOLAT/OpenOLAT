@@ -429,7 +429,11 @@ public class FolderRunController extends BasicController implements Activateable
 	}
 
 	private void enableDisableQuota(UserRequest ureq) {
-		if (!ureq.getUserSession().getRoles().isOLATAdmin()) {
+		//prevent a timing condition if the user logout while a thumbnail is generated
+		if (ureq.getUserSession() == null || ureq.getUserSession().getRoles() == null) {
+			folderContainer.contextPut("editQuota", Boolean.FALSE);
+			return;
+		} else if (!ureq.getUserSession().getRoles().isOLATAdmin()) {
 			if (!ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
 				folderContainer.contextPut("editQuota", Boolean.FALSE);
 				return;
