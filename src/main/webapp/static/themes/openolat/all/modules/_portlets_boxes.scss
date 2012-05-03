@@ -77,16 +77,26 @@ div.o_home_rsslink {
 	
 	
 	/* generic table in portlets: override styles from b_table definition */	
-	div.b_portlet_table table  {
-		background: none; 
-		border:none;
-		th, td {padding:0;}
-		tbody{
-			tr { background: transparent; }	
-			tr.b_table_odd td { background: transparent; }
-			tr td { border: 0 ! important}
-			tr:hover,tr:hover td, tr:focus,tr:focus td { background: transparent;}
-		}	
+	div.b_portlet_table {
+		
+		table  {
+			background: none; 
+			border:none;
+			th, td {padding:0;}
+			tbody{
+				tr { background: transparent; }	
+				tr.b_table_odd td { background: transparent; }
+				tr td { border: 0 ! important}
+				tr:hover,tr:hover td, tr:focus,tr:focus td { background: transparent;}
+			}	
+		}
+		
+		/* do not show warning icon as in standard table style */
+		div.b_table_empty {
+			background: none;
+			padding: 0;
+			margin: 0;
+		}			
 	}
 	
 }
