@@ -25,9 +25,9 @@ var s = 0;
 var q = 1100;
 // flow text at right side: plain text - no html allowed!
 var t = "thank you for using the \nlearning management\nsystem OpenOLAT\n\n" 
-	+ "OpenOLAT contains \ncode contributed by:\n\nroberto bagnoli\nhanspeter brun\npatrick brunner\nlavinia dumitrescu\n"
+	+ "OpenOLAT contains \ncode contributed by:\n\nroberto bagnoli\nhanspeter brun\npatrick brunner\nstephan clemenz\nlavinia dumitrescu\n"
 	+ "lars eberle\nstefan egli\nclaudia ehrle\njoel fisler\nflorian gnaegi\nchristian guretzki\nroman haag\n"
-	+ "stefan hofstetter\nkristina isacson\ndesiree iturbide\nsabina jeger\nfelix jost\nandreas kapp\nmartin kernland\ningmar kroll\n"
+	+ "stefan hofstetter\nkristina isacson\ndesiree iturbide\nsabina jeger\nfelix jost\nandreas kapp\nmartin kernland\ningmar kroll\nmatthai kurian\n"
 	+ "tiziana perini\nmaurus rohrer\nstéphane rossé\nsandra roth\nalexander schneider\nfranziska schneider\nguido schnider\nmaya schuessler\nruth schuermann\n"
 	+ "renata sevcikova\nconi steinemann\nmike stock\nalexandra stucki\nsergio trentini\ngregor wassmann\nmarion weber\ncarsten weisse\ntimo wuersch\nhans-joerg zuberbuehler\n"
 	+ "\n\nfor more information please visit:\nwww.openolat.org"
