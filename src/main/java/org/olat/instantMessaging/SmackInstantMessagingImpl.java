@@ -117,7 +117,11 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	 * @see org.olat.instantMessaging.InstantMessaging#getGroupChatManagerController()
 	 */
 	public GroupChatManagerController getGroupChatManagerController(UserRequest ureq) {
-		return clientManager.getInstantMessagingClient(ureq.getIdentity().getName()).getGroupChatManagerController();
+		InstantMessagingClient client = clientManager.getInstantMessagingClient(ureq.getIdentity().getName());
+		if(client == null) {
+			return null;
+		}
+		return client.getGroupChatManagerController();
 	}
 
 	/**
