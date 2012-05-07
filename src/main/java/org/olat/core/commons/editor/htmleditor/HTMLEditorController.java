@@ -105,6 +105,7 @@ public class HTMLEditorController extends FormBasicController {
 	private CustomLinkTreeModel customLinkTreeModel;
 	
 	private VelocityContainer metadataVC;
+	private boolean editable = true;
 	private boolean newFile = true;
 	private boolean editorCheckEnabled = true; // default
 
@@ -147,6 +148,7 @@ public class HTMLEditorController extends FormBasicController {
 			setTranslator(Util.createPackageTranslator(PlainTextEditorController.class, getLocale(),getTranslator()));
 			getWindowControl().setError(translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""}));
 			this.body = "";
+			this.editable = false;
 			//initForm(ureq);
 			return;
 		}		
@@ -165,6 +167,7 @@ public class HTMLEditorController extends FormBasicController {
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
 				vc.contextPut("lockOwner", lock.getOwner().getName());
+				this.editable = false;
 				return;
 			} else {
 				vc.contextPut("locked", Boolean.FALSE);				
@@ -242,6 +245,10 @@ public class HTMLEditorController extends FormBasicController {
 		metadataVC.contextPut("lastModified", Formatter.getInstance(ureq.getLocale()).formatDateAndTime(new Date(lm)));
 		metadataVC.contextPut("charSet", charSet);
 		metadataVC.contextPut("fileName", fileName);
+	}
+	
+	public boolean isEditable() {
+		return editable;
 	}
 
 	/**

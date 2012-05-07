@@ -137,9 +137,11 @@ public class CPContentController extends BasicController {
 			VFSContainer pseudoContainer = new VFSRootCPContainer(virtualRootFolderName, cp, rootDir, getTranslator());
 
 			mceCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), pseudoContainer, filePath, false);
-			mceCtr.setCancelButtonEnabled(false);
-			mceCtr.setSaveCloseButtonEnabled(false);
-			mceCtr.setShowMetadataEnabled(false);
+			if(mceCtr.isEditable()) {
+				mceCtr.setCancelButtonEnabled(false);
+				mceCtr.setSaveCloseButtonEnabled(false);
+				mceCtr.setShowMetadataEnabled(false);
+			}
 			listenTo(mceCtr);
 			contentVC.put("content", mceCtr.getInitialComponent());
 		} else {
