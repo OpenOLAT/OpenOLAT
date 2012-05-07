@@ -29,6 +29,7 @@ package org.olat.instantMessaging;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.Roster;
@@ -38,7 +39,6 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.RosterPacket;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -124,14 +124,15 @@ public class InstantMessagingClient extends LogDelegator {
 		connection = new XMPPConnection(InstantMessagingModule.getConnectionConfiguration());
 
 		// connecting to server is done by thread pool
-		
-		
-		
-		logDebug("Connecting to server by thread pool with user: "+username);
-		
-		TaskExecutorManager.getInstance().runTask(new ConnectToServerTask(this));
-		connectionTimestamp = System.currentTimeMillis();
-
+		try {
+			logDebug("Connecting to server by thread pool with user: "+username);
+			TaskExecutorManager.getInstance().runTask(new ConnectToServerTask(this));
+			connectionTimestamp = System.currentTimeMillis();
+		} catch (IllegalStateException e) {
+			logWarn("Cannot connect to the IM server", e);
+		} catch (RejectedExecutionException e) {
+			logWarn("Cannot connect to the IM server", e);
+		}
 	}
 
 	/**
@@ -407,8 +408,8 @@ public class InstantMessagingClient extends LogDelegator {
 	public String buddyCountOnline() {
 			int onlineBuddyEntries = connection.getRoster().getEntryCount();
 			int allBuddies = onlineBuddyEntries;
-			for (Iterator l = connection.getRoster().getEntries().iterator(); l.hasNext();) {
-				RosterEntry entry = (RosterEntry) l.next();
+			for (Iterator<RosterEntry> l = connection.getRoster().getEntries().iterator(); l.hasNext();) {
+				RosterEntry entry = l.next();
 				Presence presence = connection.getRoster().getPresence(entry.getUser());
 				if (presence.getType() == Presence.Type.unavailable) onlineBuddyEntries--;
 			}
@@ -433,8 +434,8 @@ public class InstantMessagingClient extends LogDelegator {
 			RosterGroup rosterGroup = connection.getRoster().getGroup(groupname);
 			int buddyEntries = rosterGroup.getEntryCount();
 			int allBuddies = buddyEntries;
-			for (Iterator I = rosterGroup.getEntries().iterator(); I.hasNext();) {
-				RosterEntry entry = (RosterEntry) I.next();
+			for (Iterator<RosterEntry> I = rosterGroup.getEntries().iterator(); I.hasNext();) {
+				RosterEntry entry = I.next();
 				Presence presence = connection.getRoster().getPresence(entry.getUser());
 				if (presence.getType() == Presence.Type.unavailable) buddyEntries--;
 			}

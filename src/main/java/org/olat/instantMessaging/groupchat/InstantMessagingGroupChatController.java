@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -268,7 +269,9 @@ public class InstantMessagingGroupChatController extends BasicController impleme
 				TaskExecutorManager.getInstance().runTask(roomJoinTask);		
 			} catch (IllegalStateException e) {
 				logWarn("Error while trying to create group chat room for user"+getIdentity().getName()+" and course resource: +ores", e);
-			}	
+			}	catch (RejectedExecutionException e) {
+				logWarn("Error while trying to create group chat room for user"+getIdentity().getName()+" and course resource: +ores", e);
+			}
 			
 		} else {
 			return false;
