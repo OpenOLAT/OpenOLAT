@@ -20,19 +20,20 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -199,20 +200,23 @@ public class ContactsTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetContactsRest() throws IOException {
-		HttpClient c = loginWithCookie("rest-contacts-two", "A6B7C8");
+	public void testGetContactsRest() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-contacts-two", "A6B7C8"));
+
 		UriBuilder uri = UriBuilder.fromUri(getContextURI()).path("contacts").queryParam("start", "0").queryParam("limit", "10");
-		GetMethod method = createGet(uri.build(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		UserVOes contacts = parse(body, UserVOes.class);
-		method.releaseConnection();
 		assertNotNull(contacts);
 		assertNotNull(contacts.getUsers());
 		assertEquals(1, contacts.getUsers().length);
 		assertEquals(1, contacts.getTotalCount());
 		//owner3 -> g4
 		assertEquals(part3.getKey(), contacts.getUsers()[0].getKey());
+		
+		conn.shutdown();
 	}
 }

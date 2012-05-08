@@ -21,6 +21,7 @@ package org.olat.restapi;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,11 +40,14 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonFactory;
@@ -116,7 +120,7 @@ public class RestConnection {
 		return null;
 	}
 	
-	public void addEntity(HttpPut put, NameValuePair... pairs)
+	public void addEntity(HttpEntityEnclosingRequestBase put, NameValuePair... pairs)
 	throws UnsupportedEncodingException {
 		if(pairs == null || pairs.length == 0) return;
 		
@@ -126,6 +130,27 @@ public class RestConnection {
 		}
 		HttpEntity myEntity = new UrlEncodedFormEntity(pairList, "UTF-8");
 		put.setEntity(myEntity);
+	}
+	
+	/**
+	 * Add an object (application/json)
+	 * @param put
+	 * @param obj
+	 * @throws UnsupportedEncodingException
+	 */
+	public void addJsonEntity(HttpEntityEnclosingRequestBase put, Object obj)
+	throws UnsupportedEncodingException {
+		if(obj == null) return;
+		
+		String objectStr = stringuified(obj);
+		HttpEntity myEntity = new StringEntity(objectStr, MediaType.APPLICATION_JSON, "UTF-8");
+		put.setEntity(myEntity);
+	}
+	
+	public HttpPut createPut(URI uri, String accept, boolean cookie) {
+		HttpPut put = new HttpPut(uri);
+		decorateHttpMessage(put,accept, "en", cookie);
+		return put;
 	}
 	
 	public HttpPut createPut(URI uri, String accept, String langage, boolean cookie) {
@@ -144,6 +169,12 @@ public class RestConnection {
 		HttpPost get = new HttpPost(uri);
 		decorateHttpMessage(get,accept, "en", cookie);
 		return get;
+	}
+	
+	public HttpDelete createDelete(URI uri, String accept, boolean cookie) {
+		HttpDelete del = new HttpDelete(uri);
+		decorateHttpMessage(del, accept, "en", cookie);
+		return del;
 	}
 	
 	private void decorateHttpMessage(HttpMessage msg, String accept, String langage, boolean cookie) {
@@ -177,6 +208,18 @@ public class RestConnection {
 	 */
 	public UriBuilder getContextURI()  throws URISyntaxException {
 		return getBaseURI().path(CONTEXT_PATH);
+	}
+	
+	public String stringuified(Object obj) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			StringWriter w = new StringWriter();
+			mapper.writeValue(w, obj);
+			return w.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	public <U> U parse(HttpResponse response, Class<U> cl) {

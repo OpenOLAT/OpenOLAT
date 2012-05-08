@@ -40,17 +40,12 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -169,7 +164,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		String body = EntityUtils.toString(response.getEntity());
+		InputStream body = response.getEntity().getContent();
 		List<CatalogEntryVO> vos = parseEntryArray(body);
 		assertNotNull(vos);
 		assertEquals(1, vos.size());//Root-1
@@ -178,92 +173,99 @@ public class CatalogTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetRootsWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetRootsWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVOes vos = parse(body, CatalogEntryVOes.class);
-		method.releaseConnection();
+
 		assertNotNull(vos);
 		assertNotNull(vos.getCatalogEntries());
 		assertEquals(1, vos.getCatalogEntries().length);//Root-1
 		assertEquals(1, vos.getTotalCount());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetChild() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetChild() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		assertEquals(entry1.getName(), vo.getName());
 		assertEquals(entry1.getDescription(), vo.getDescription());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetChildren() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetChildren() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children").build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<CatalogEntryVO> vos = parseEntryArray(body);
 		assertNotNull(vos);
 		assertTrue(vos.size() >= 2);
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetChildrenWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetChildrenWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(root1.getKey().toString()).path("children")
 				.queryParam("start", "0").queryParam("limit", "2").build();
 		
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVOes vos = parse(body, CatalogEntryVOes.class);
-		method.releaseConnection();
 		assertNotNull(vos);
 		assertNotNull(vos.getCatalogEntries());
 		assertTrue(vos.getCatalogEntries().length <= 2);
 		assertTrue(vos.getTotalCount() >= 2);
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testPutCategoryJson() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testPutCategoryJson() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		CatalogEntryVO subEntry = new CatalogEntryVO();
 		subEntry.setName("Sub-entry-1");
 		subEntry.setDescription("Sub-entry-description-1");
 		subEntry.setType(CatalogEntry.TYPE_NODE);
-		String entity = stringuified(subEntry);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.APPLICATION_JSON);
-    RequestEntity requestEntity = new StringRequestEntity(entity, MediaType.APPLICATION_JSON, "UTF-8");
-		method.setRequestEntity(requestEntity);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, subEntry);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -278,24 +280,23 @@ public class CatalogTest extends OlatJerseyTestCase {
 		}
 		
 		assertTrue(saved);
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testPutCategoryQuery() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testPutCategoryQuery() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 
-		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[] {
-				new NameValuePair("name", "Sub-entry-2"),
-				new NameValuePair("description", "Sub-entry-description-2"),
-				new NameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE))
-		});
-
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
+				.queryParam("name", "Sub-entry-2")
+				.queryParam("description", "Sub-entry-description-2")
+				.queryParam("type", String.valueOf(CatalogEntry.TYPE_NODE)).build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -310,31 +311,31 @@ public class CatalogTest extends OlatJerseyTestCase {
 		}
 		
 		assertTrue(saved);
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testPutCatalogEntryJson() throws IOException {
+	public void testPutCatalogEntryJson() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("put-cat-entry-json", 6458438l);
-		
-		HttpClient c = loginWithCookie("administrator", "openolat");
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		CatalogEntryVO subEntry = new CatalogEntryVO();
 		subEntry.setName("Sub-entry-1");
 		subEntry.setDescription("Sub-entry-description-1");
 		subEntry.setType(CatalogEntry.TYPE_NODE);
 		subEntry.setRepositoryEntryKey(re.getKey());
-		String entity = stringuified(subEntry);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.APPLICATION_JSON);
-    RequestEntity requestEntity = new StringRequestEntity(entity, MediaType.APPLICATION_JSON, "UTF-8");
-		method.setRequestEntity(requestEntity);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, subEntry);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -351,27 +352,26 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertNotNull(ce);
 		assertNotNull(ce.getRepositoryEntry());
 		assertEquals(re.getKey(), ce.getRepositoryEntry().getKey());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testPutCatalogEntryQuery() throws IOException {
+	public void testPutCatalogEntryQuery() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("put-cat-entry-query", 6458439l);
-		
-		HttpClient c = loginWithCookie("administrator", "openolat");
 
-		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[] {
-				new NameValuePair("name", "Sub-entry-2"),
-				new NameValuePair("description", "Sub-entry-description-2"),
-				new NameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE)),
-				new NameValuePair("repoEntryKey", re.getKey().toString())
-		});
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
+				.queryParam("name", "Sub-entry-2")
+				.queryParam("description", "Sub-entry-description-2")
+				.queryParam("type", String.valueOf(CatalogEntry.TYPE_NODE))
+				.queryParam("repoEntryKey", re.getKey().toString()).build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -388,28 +388,28 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertNotNull(ce);
 		assertNotNull(ce.getRepositoryEntry());
 		assertEquals(re.getKey(), ce.getRepositoryEntry().getKey());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testUpdateCatalogEntryJson() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUpdateCatalogEntryJson() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		CatalogEntryVO entry = new CatalogEntryVO();
 		entry.setName("Entry-1-b");
 		entry.setDescription("Entry-description-1-b");
 		entry.setType(CatalogEntry.TYPE_NODE);
-		String entity = stringuified(entry);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
-		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.APPLICATION_JSON);
-    RequestEntity requestEntity = new StringRequestEntity(entity, MediaType.APPLICATION_JSON, "UTF-8");
-		method.setRequestEntity(requestEntity);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
+    conn.addJsonEntity(method, entry);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -417,29 +417,29 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entry1);
 		assertEquals("Entry-1-b", updatedEntry.getName());
 		assertEquals("Entry-description-1-b", updatedEntry.getDescription());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testUpdateAndMoveCatalogEntryJson() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUpdateAndMoveCatalogEntryJson() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		CatalogEntryVO entry = new CatalogEntryVO();
 		entry.setName("Entry-2-moved-down");
 		entry.setDescription("Entry-description-2-moved-down");
 		entry.setType(CatalogEntry.TYPE_NODE);
-		String entity = stringuified(entry);
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entryToMove2.getKey().toString()).queryParam("newParentKey", subEntry13move.getKey().toString()).build();
 
-		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.APPLICATION_JSON);
-    RequestEntity requestEntity = new StringRequestEntity(entity, MediaType.APPLICATION_JSON, "UTF-8");
-		method.setRequestEntity(requestEntity);
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, entry);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -449,24 +449,24 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertEquals("Entry-description-2-moved-down", updatedEntry.getDescription());
 		assertNotNull(updatedEntry.getParent());
 		assertTrue(updatedEntry.getParent().equalsByPersistableKey(subEntry13move));
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testUpdateCatalogEntryQuery() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUpdateCatalogEntryQuery() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
-		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[] {
-				new NameValuePair("name", "Entry-2-b"),
-				new NameValuePair("description", "Entry-description-2-b"),
-				new NameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE))
-		});
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(method, new BasicNameValuePair("name", "Entry-2-b"),
+				new BasicNameValuePair("description", "Entry-description-2-b"),
+				new BasicNameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE)));
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -474,24 +474,24 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entry2);
 		assertEquals("Entry-2-b", updatedEntry.getName());
 		assertEquals("Entry-description-2-b", updatedEntry.getDescription());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testUpdateCatalogEntryForm() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUpdateCatalogEntryForm() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
-		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
-		method.addParameters(new NameValuePair[] {
-				new NameValuePair("name", "Entry-2-c"),
-				new NameValuePair("description", "Entry-description-2-c"),
-				new NameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE))
-		});
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(method, new BasicNameValuePair("name", "Entry-2-c"),
+				new BasicNameValuePair("description", "Entry-description-2-c"),
+				new BasicNameValuePair("type", String.valueOf(CatalogEntry.TYPE_NODE)));
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -499,22 +499,22 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entry2);
 		assertEquals("Entry-2-c", updatedEntry.getName());
 		assertEquals("Entry-description-2-c", updatedEntry.getDescription());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testMoveCatalogEntryForm() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testMoveCatalogEntryForm() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entryToMove1.getKey().toString()).build();
-		PostMethod method = createPost(uri, MediaType.APPLICATION_JSON, true);
-		method.addParameters(new NameValuePair[] {
-				new NameValuePair("newParentKey", subEntry13move.getKey().toString())
-		});
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(method, new BasicNameValuePair("newParentKey", subEntry13move.getKey().toString()));
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CatalogEntryVO vo = parse(body, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
@@ -524,37 +524,41 @@ public class CatalogTest extends OlatJerseyTestCase {
 		assertEquals("Entry-description-1-to-move", updatedEntry.getDescription());
 		assertNotNull(updatedEntry.getParent());
 		assertTrue(updatedEntry.getParent().equalsByPersistableKey(subEntry13move));
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testDeleteCatalogEntry() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testDeleteCatalogEntry() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry2.getKey().toString()).build();
-		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON, true);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> entries = catalogManager.getChildrenOf(root1);
 		for(CatalogEntry entry:entries) {
 			assertFalse(entry.getKey().equals(entry2.getKey()));
 		}
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetOwners() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetOwners() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).path("owners").build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<UserVO> voes = parseUserArray(body);
 		assertNotNull(voes);
 		
@@ -563,44 +567,48 @@ public class CatalogTest extends OlatJerseyTestCase {
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		assertNotNull(identities);
 		assertEquals(identities.size(), voes.size());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testGetOwner() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetOwner() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//admin is owner
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(admin.getKey().toString()).build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		UserVO vo = parse(body, UserVO.class);
 		assertNotNull(vo);
 		
 		//id1 is not owner
 		uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getKey().toString()).build();
-		method = createGet(uri, MediaType.APPLICATION_JSON, true);
+		method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 
-		code = c.executeMethod(method);
-		assertEquals(404, code);
+		response = conn.execute(method);
+		assertEquals(404, response.getStatusLine().getStatusCode());
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testAddOwner() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testAddOwner() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getKey().toString()).build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 
-		int code = c.executeMethod(method);
-		method.releaseConnection();
-		assertEquals(200, code);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
@@ -612,19 +620,21 @@ public class CatalogTest extends OlatJerseyTestCase {
 			}
 		}
 		assertTrue(found);
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testRemoveOwner() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testRemoveOwner() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 			.path("owners").path(id1.getUser().getKey().toString()).build();
-		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON, true);
 	
-		int code = c.executeMethod(method);
-		method.releaseConnection();
-		assertEquals(200, code);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
@@ -636,22 +646,24 @@ public class CatalogTest extends OlatJerseyTestCase {
 			}
 		}
 		assertFalse(found);
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testBasicSecurityPutCall() throws IOException {
-		HttpClient c = loginWithCookie("rest-catalog-two", "A6B7C8");
+	public void testBasicSecurityPutCall() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-catalog-two", "A6B7C8"));
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString())
 				.queryParam("name", "Not-sub-entry-3")
 				.queryParam("description", "Not-sub-entry-description-3")
 				.queryParam("type", String.valueOf(CatalogEntry.TYPE_NODE))
 				.build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 
-		int code = c.executeMethod(method);
-		assertEquals(401, code);
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(401, response.getStatusLine().getStatusCode());
 		
 		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
@@ -664,9 +676,11 @@ public class CatalogTest extends OlatJerseyTestCase {
 		}
 		
 		assertFalse(saved);
+
+		conn.shutdown();
 	}
 	
-	protected List<CatalogEntryVO> parseEntryArray(String body) {
+	protected List<CatalogEntryVO> parseEntryArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<CatalogEntryVO>>(){/* */});
@@ -676,7 +690,7 @@ public class CatalogTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	protected List<UserVO> parseUserArray(String body) {
+	protected List<UserVO> parseUserArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
