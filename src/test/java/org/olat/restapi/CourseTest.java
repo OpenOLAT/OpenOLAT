@@ -50,6 +50,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -78,6 +79,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	private Identity admin, auth0, auth1, auth2;
 	private ICourse course1;
+	private RestConnection conn;
 
 	/**
 	 * SetUp is called before each test.
@@ -85,6 +87,7 @@ public class CourseTest extends OlatJerseyTestCase {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
@@ -100,9 +103,20 @@ public class CourseTest extends OlatJerseyTestCase {
 		}
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testGetCourse() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue("Cannot login as administrator", conn.login("administrator", "openolat"));
 		
 		URI uri = conn.getContextURI().path("repo").path("courses").path(course1.getResourceableId().toString()).build();
@@ -117,7 +131,6 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseRunStructure() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/runstructure").build();
@@ -132,7 +145,6 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseEditorTreeModel() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/editortreemodel").build();
@@ -150,7 +162,6 @@ public class CourseTest extends OlatJerseyTestCase {
 		ICourse course = CoursesWebService.createEmptyCourse(admin, "courseToDel", "course to delete", null);
 		DBFactory.getInstance().intermediateCommit();
 		
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId()).build();
@@ -172,7 +183,6 @@ public class CourseTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testAddAuthor() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/authors/" + auth0.getKey()).build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -219,7 +229,6 @@ public class CourseTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 		
 		//get them
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/authors").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
@@ -257,7 +266,6 @@ public class CourseTest extends OlatJerseyTestCase {
 		//end setup
 		
 		//test
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course1.getResourceableId() + "/authors/" + auth1.getKey()).build();
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);

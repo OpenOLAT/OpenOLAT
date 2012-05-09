@@ -48,6 +48,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -78,10 +79,12 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	private static Identity userAndForumSubscriberId;
 	
 	private static Forum forum;
+	private RestConnection conn;
 	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		
 		userSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-1");
 		userAndForumSubscriberId = JunitTestHelper.createAndPersistIdentityAsUser("rest-notifications-test-2");
@@ -120,10 +123,20 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
 	
 	@Test
 	public void testGetNotifications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-notifications-test-1", "A6B7C8"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("notifications").build();
@@ -147,7 +160,6 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetUserNotifications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-notifications-test-1", "A6B7C8"));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "User");
@@ -171,7 +183,6 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetUserForumNotifications() throws URISyntaxException, IOException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
 		
 		Calendar cal = Calendar.getInstance();
@@ -190,7 +201,6 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetUserForumNotificationsByType() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
@@ -214,7 +224,6 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetNoNotifications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-notifications-test-3", "A6B7C8"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/notifications").build();

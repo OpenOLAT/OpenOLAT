@@ -50,6 +50,8 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -84,9 +86,27 @@ import org.olat.test.OlatJerseyTestCase;
 
 public class CoursesElementsTest extends OlatJerseyTestCase {
 
+	private RestConnection conn;
+	
+	@Before
+	public void startup() {
+		conn = new RestConnection();
+	}
+	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testCreateCoursePost() throws IOException, URISyntaxException{
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		
@@ -287,7 +307,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateCoursePut() throws IOException, URISyntaxException{
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		
@@ -773,7 +792,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	@Test
 	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePost() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an empty course
@@ -825,7 +843,6 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	@Test
 	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePostWithFile() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an empty course

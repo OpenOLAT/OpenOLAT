@@ -47,6 +47,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -67,9 +69,27 @@ import org.olat.test.OlatJerseyTestCase;
  */
 public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
+	private RestConnection conn;
+	
+	@Before
+	public void startup() {
+		conn = new RestConnection();
+	}
+	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testGetAuthentications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
@@ -97,7 +117,6 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		}
 		DBFactory.getInstance().commitAndCloseSession();
 		
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 
 		AuthenticationVO vo = new AuthenticationVO();
@@ -132,7 +151,6 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteAuthentications() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an authentication token

@@ -46,6 +46,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -71,10 +72,13 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	private static ICourse course1;
 	private static CourseNode bcNode;
 	private static Identity admin, user;
+
+	private RestConnection conn;
 	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		
 		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 		user = JunitTestHelper.createAndPersistIdentityAsUser("rest-cf-one");
@@ -94,9 +98,20 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testGetFolderInfo() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
 
@@ -115,7 +130,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testGetFolderInfoByUser() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login(user.getName(), "A6B7C8");
 		assertTrue(loggedIN);
 
@@ -129,7 +143,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetFoldersInfo() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
 
@@ -146,7 +159,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUploadFile() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").build();
@@ -169,7 +181,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateFolder() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder").build();
@@ -185,7 +196,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateFolders() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("NewFolder1").path("NewFolder2").build();
@@ -213,7 +223,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 			folder.createChildContainer("FolderToDelete");
 		}
 		
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("FolderToDelete").build();

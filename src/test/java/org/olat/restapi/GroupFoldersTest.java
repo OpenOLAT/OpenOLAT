@@ -49,6 +49,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -94,6 +95,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	private Identity owner1, owner2, part1, part2;
 	private BusinessGroup g1, g2;
 	private OLATResource course;
+	private RestConnection conn;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -104,6 +106,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		//create a course with learn group
 		
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-one");
@@ -180,9 +183,20 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
     	DBFactory.getInstance().closeSession(); // simulate user clicks
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testGetFolder() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder").build();
@@ -191,8 +205,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		InputStream body = response.getEntity().getContent();
 		assertNotNull(body);
-		
-		
 	}
 	
 	@Test
@@ -211,9 +223,8 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 			newFolder11 = (VFSContainer)newFolder1.resolve("New folder 1_1");
 		}
 		assertNotNull(newFolder11);
-
-
-		RestConnection conn = new RestConnection();
+		
+		
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		
 		//get root folder
@@ -289,7 +300,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		}
 		
 		// get the file
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g2.getKey() + "/folder/New_folder_2/portrait.jpg").build();
 		HttpGet method = conn.createGet(request, "*/*", true);
@@ -303,7 +313,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateFolder() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/New_folder_1_1_1").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -315,7 +324,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 
 	//@Test not working -> Jersey ignore the request and return 200 (why?)
 	public void testCreateFoldersWithSpecialCharacter() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/New_folder_1 1 2").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -328,7 +336,6 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateFoldersWithSpecialCharacter2() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);

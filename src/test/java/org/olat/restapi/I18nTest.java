@@ -50,10 +50,6 @@ import org.olat.test.OlatJerseyTestCase;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class I18nTest extends OlatJerseyTestCase {
-
-	public I18nTest() {
-		super();
-  }	
 	
 	@Test
 	public void testExecuteService() throws IOException, URISyntaxException {
@@ -65,5 +61,7 @@ public class I18nTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		String out = EntityUtils.toString(response.getEntity());
 		assertEquals("OK", out);
+		
+		conn.shutdown();
   }
 }

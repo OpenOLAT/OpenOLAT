@@ -39,6 +39,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -69,6 +70,7 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	
 	private Identity admin, id1, auth1, auth2;
 	private ICourse course;
+	private RestConnection conn;
 	
 	/**
 	 * SetUp is called before each test.
@@ -76,6 +78,7 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
@@ -96,10 +99,21 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 			log.error("Exception in setUp(): " + e);
 		}
 	}
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+			log.error("Exception in tearDown(): " + e);
+      e.printStackTrace();
+      throw e;
+		}
+	}
 	
 	@Test
 	public void testAdminCanEditCourse() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an structure node
@@ -115,7 +129,6 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testIdCannotEditCourse() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("id-c-s-0", "A6B7C8"));
 		
 		//create an structure node
@@ -132,7 +145,6 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	@Test
 	public void testAuthorCannotEditCourse() throws IOException, URISyntaxException {
 		//author but not owner
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("id-c-s-1", "A6B7C8"));
 		
 		//create an structure node
@@ -149,7 +161,6 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	@Test
 	public void testAuthorCanEditCourse() throws IOException, URISyntaxException {
 		//author and owner
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("id-c-s-2", "A6B7C8"));
 		
 		//create an structure node
@@ -162,7 +173,6 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 	}
-	
 	
 	private UriBuilder getCoursesUri() {
 		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses");

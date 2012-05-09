@@ -89,6 +89,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private BusinessGroup g1, g2;
 	private BusinessGroup g3, g4;
 	private OLATResource course;
+
+	private RestConnection conn;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -98,6 +100,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		//create a course with learn group
 		
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-1");
@@ -144,6 +147,9 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
   @After
 	public void tearDown() throws Exception {
 		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
       DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
@@ -152,10 +158,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	
 	@Test
 	public void testGetCourseGroups() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups").build();
@@ -173,7 +177,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey()).build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
@@ -188,7 +191,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testPutCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		GroupVO vo = new GroupVO();
@@ -221,7 +223,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUpdateCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		GroupVO vo = new GroupVO();
@@ -249,7 +250,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g1.getKey()).build();
@@ -265,7 +265,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testBasicSecurityDeleteCall() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-c-g-3", "A6B7C8"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses/" + course.getResourceableId() + "/groups/" + g2.getKey()).build();
@@ -277,7 +276,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testBasicSecurityPutCall() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("rest-c-g-3", "A6B7C8"));
 		
 		GroupVO vo = new GroupVO();

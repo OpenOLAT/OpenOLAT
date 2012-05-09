@@ -33,6 +33,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -64,9 +65,12 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	private static CourseNode forumNode;
 	private static Identity admin;
 	
+	private RestConnection conn;
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		
 		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 		course1 = CoursesWebService.createEmptyCourse(admin, "Course forum 1", "Course forum 1 long name", null);
@@ -85,9 +89,20 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testGetForumInfo() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
 
@@ -101,7 +116,6 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetForumsInfo() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
 
@@ -118,7 +132,6 @@ public class CoursesForumsTest  extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetForum() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
 

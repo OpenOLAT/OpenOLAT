@@ -65,24 +65,30 @@ import org.olat.test.OlatJerseyTestCase;
 
 public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
-	public RepositoryEntriesTest() {
-		super();
-  }
+	private RestConnection conn;
 	
 	@Before @Override
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		DBFactory.getInstance().intermediateCommit();
 	}
 
-	@After
+  @After
 	public void tearDown() throws Exception {
-		DBFactory.getInstance().commitAndCloseSession();
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+			DBFactory.getInstance().commitAndCloseSession();
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
 	}
 
 	@Test
 	public void testGetEntries() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
@@ -98,7 +104,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetEntriesWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.queryParam("start", "0").queryParam("limit", "25").build();
@@ -120,7 +125,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	public void testGetEntry() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("Test GET repo entry");
 		
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
@@ -140,7 +144,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
@@ -176,7 +179,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
@@ -213,7 +215,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
@@ -250,7 +251,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -286,7 +286,6 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();

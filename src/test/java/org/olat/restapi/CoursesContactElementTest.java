@@ -46,6 +46,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -75,10 +76,13 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	private Identity admin;
 	private ICourse course1;
 	private String rootNodeId;
+
+	private RestConnection conn;
 	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		
 		admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 		course1 = CoursesWebService.createEmptyCourse(admin, "course-rest-contacts", "Course to test the contacts elements", null);
@@ -87,9 +91,20 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 		rootNodeId = course1.getEditorTreeModel().getRootNode().getIdent();
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testBareBoneConfig() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an contact node
@@ -115,7 +130,6 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testFullConfig() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an contact node

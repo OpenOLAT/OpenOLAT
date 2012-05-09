@@ -45,6 +45,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -67,6 +68,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	private Identity admin;
 	private ICourse course1, course2;
+	private RestConnection conn;
 
 	/**
 	 * SetUp is called before each test.
@@ -74,6 +76,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
+		conn = new RestConnection();
 		try {
 			// create course and persist as OLATResourceImpl
 			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
@@ -86,9 +89,20 @@ public class CoursesTest extends OlatJerseyTestCase {
 		}
 	}
 	
+  @After
+	public void tearDown() throws Exception {
+		try {
+			if(conn != null) {
+				conn.shutdown();
+			}
+		} catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+		}
+	}
+	
 	@Test
 	public void testGetCourses() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").build();
@@ -117,7 +131,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCoursesWithPaging() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -134,7 +147,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateEmptyCourse() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
@@ -156,7 +168,6 @@ public class CoursesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetCourseInfos() throws IOException, URISyntaxException {
-		RestConnection conn = new RestConnection();
 		boolean loggedIN = conn.login("administrator", "openolat");
 		assertTrue(loggedIN);
 
