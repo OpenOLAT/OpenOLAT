@@ -19,8 +19,8 @@
  */
 package org.olat.restapi;
 
-import static org.olat.core.util.vfs.restapi.VFSWebservice.normalize;
 import static org.junit.Assert.assertEquals;
+import static org.olat.core.util.vfs.restapi.VFSWebservice.normalize;
 
 import org.junit.Test;
 /**

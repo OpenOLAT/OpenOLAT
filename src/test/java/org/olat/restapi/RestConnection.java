@@ -19,6 +19,7 @@
  */
 package org.olat.restapi;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -31,7 +32,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
@@ -46,8 +47,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonFactory;
@@ -55,6 +61,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.restapi.security.RestSecurityHelper;
 
 /**
  * 
@@ -79,6 +86,8 @@ public class RestConnection {
 	private final DefaultHttpClient httpclient;
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
+	private String securityToken;
+	
 	public RestConnection() {
 		httpclient = new DefaultHttpClient();
 		HttpClientParams.setCookiePolicy(httpclient.getParams(), CookiePolicy.RFC_2109);
@@ -91,25 +100,48 @@ public class RestConnection {
 		return httpclient.getCookieStore();
 	}
 	
+	public String getSecurityToken() {
+		return securityToken;
+	}
+	
+	public String getSecurityToken(HttpResponse response) {
+		if(response == null) return null;
+		
+		Header header = response.getFirstHeader(RestSecurityHelper.SEC_TOKEN);
+		return header == null ? null : header.getValue();
+	}
+
 	public void shutdown() {
 		httpclient.getConnectionManager().shutdown();
 	}
 	
+	public void setCredentials(String username, String password) {
+		httpclient.getCredentialsProvider().setCredentials(
+        new AuthScope("localhost", PORT),
+        new UsernamePasswordCredentials(username, password));
+	}
+	
 	public boolean login(String username, String password) throws IOException, URISyntaxException {
 		httpclient.getCredentialsProvider().setCredentials(
-        new AuthScope("localhost", 9998),
+        new AuthScope("localhost", PORT),
         new UsernamePasswordCredentials(username, password));
 
 		URI uri = getContextURI().path("auth").path(username).queryParam("password", password).build();
 		HttpGet httpget = new HttpGet(uri);
 		HttpResponse response = httpclient.execute(httpget);
+		
+		Header header = response.getFirstHeader(RestSecurityHelper.SEC_TOKEN);
+		if(header != null) {
+			securityToken = header.getValue();
+		}
+		
     HttpEntity entity = response.getEntity();
     int code = response.getStatusLine().getStatusCode();
     EntityUtils.consume(entity);
     return code == 200;
 	}
 	
-	public <T> T get(URI uri, Class<T> cl) throws IOException {
+	public <T> T get(URI uri, Class<T> cl) throws IOException, URISyntaxException {
 		HttpGet get = createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = execute(get);
 		if(200 == response.getStatusLine().getStatusCode()) {
@@ -147,6 +179,16 @@ public class RestConnection {
 		put.setEntity(myEntity);
 	}
 	
+	public void addMultipart(HttpEntityEnclosingRequestBase post, String filename, File file)
+	throws UnsupportedEncodingException {
+		
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("filename", new StringBody(filename));
+		FileBody fileBody = new FileBody(file, "application/octet-stream");
+		entity.addPart("file", fileBody);
+		post.setEntity(entity);
+	}
+	
 	public HttpPut createPut(URI uri, String accept, boolean cookie) {
 		HttpPut put = new HttpPut(uri);
 		decorateHttpMessage(put,accept, "en", cookie);
@@ -164,7 +206,7 @@ public class RestConnection {
 		decorateHttpMessage(get,accept, "en", cookie);
 		return get;
 	}
-	
+
 	public HttpPost createPost(URI uri, String accept, boolean cookie) {
 		HttpPost get = new HttpPost(uri);
 		decorateHttpMessage(get,accept, "en", cookie);
@@ -190,7 +232,7 @@ public class RestConnection {
 	}
 	
 	public HttpResponse execute(HttpUriRequest request)
-	throws IOException {
+	throws IOException, URISyntaxException {
 		HttpResponse response = httpclient.execute(request);
 		return response;
 	}

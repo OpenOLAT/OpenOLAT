@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -39,17 +40,16 @@ import java.net.URL;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -86,16 +86,17 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testCreateCoursePost() throws IOException, URISyntaxException{
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course3").queryParam("title", "course3 long name").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		CourseVO course = parse(body, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
@@ -103,15 +104,16 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create an structure node
 		URI newStructureUri = getElementsUri(course).path("structure").build();
-		PostMethod newStructureMethod = createPost(newStructureUri, MediaType.APPLICATION_JSON, true);
-		newStructureMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newStructureMethod.addParameter("position", "0");
-		newStructureMethod.addParameter("shortTitle", "Structure-0");
-		newStructureMethod.addParameter("longTitle", "Structure-long-0");
-		newStructureMethod.addParameter("objectives", "Structure-objectives-0");
-		int newStructureCode = c.executeMethod(newStructureMethod);
-		assertTrue(newStructureCode == 200 || newStructureCode == 201);
-		String newStructureBody = newStructureMethod.getResponseBodyAsString();
+		HttpPost newStructureMethod = conn.createPost(newStructureUri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(newStructureMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "0"),
+				new BasicNameValuePair("shortTitle", "Structure-0"),
+				new BasicNameValuePair("longTitle", "Structure-long-0"),
+				new BasicNameValuePair("objectives", "Structure-objectives-0"));
+
+		HttpResponse newStructureCode = conn.execute(newStructureMethod);
+		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
+		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
 		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
@@ -127,22 +129,22 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		File page = new File(pageUrl.toURI());
 		
 		URI newPageUri = getElementsUri(course).path("singlepage").build();
-		PostMethod newPageMethod = createPost(newPageUri, MediaType.APPLICATION_JSON, true);
-		newPageMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", page),
-				new StringPart("filename", page.getName()),
-				new StringPart("parentNodeId",course.getEditorRootNodeId()),
-				new StringPart("position","1"),
-				new StringPart("shortTitle", "Single-Page-0"),
-				new StringPart("longTitle", "Single-Page-long-0"),
-				new StringPart("objectives", "Single-Page-objectives-0")
-		};
-		newPageMethod.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		HttpPost newPageMethod = conn.createPost(newPageUri, MediaType.APPLICATION_JSON, true);
+		newPageMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(page));
+		entity.addPart("filename", new StringBody(page.getName()));
+		entity.addPart("parentNodeId", new StringBody(course.getEditorRootNodeId()));
+		entity.addPart("position", new StringBody("1"));
+		entity.addPart("shortTitle", new StringBody("Single-Page-0"));
+		entity.addPart("longTitle", new StringBody("Single-Page-long-0"));
+		entity.addPart("objectives", new StringBody("Single-Page-objectives-0"));
+		newPageMethod.setEntity(entity);
 		
-		int newPageCode = c.executeMethod(newPageMethod);
-		assertTrue(newPageCode == 200 || newPageCode == 201);
-		String newPageBody = newPageMethod.getResponseBodyAsString();
+		HttpResponse newPageCode = conn.execute(newPageMethod);
+		assertTrue(newPageCode.getStatusLine().getStatusCode() == 200 || newPageCode.getStatusLine().getStatusCode() == 201);
+		String newPageBody = EntityUtils.toString(newPageCode.getEntity());
 		CourseNodeVO pageNode = parse(newPageBody, CourseNodeVO.class);
 		assertNotNull(pageNode);
 		assertNotNull(pageNode.getId());
@@ -154,20 +156,21 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create a folder node
 		URI newFolderUri = getElementsUri(course).path("folder").build();
-		PostMethod newFolderMethod = createPost(newFolderUri, MediaType.APPLICATION_JSON, true);
-		newFolderMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newFolderMethod.addParameter("position", "2");
-		newFolderMethod.addParameter("shortTitle", "Folder-0");
-		newFolderMethod.addParameter("longTitle", "Folder-long-0");
-		newFolderMethod.addParameter("objectives", "Folder-objectives-0");
+		HttpPost newFolderMethod = conn.createPost(newFolderUri, MediaType.APPLICATION_JSON, true);
+		
 		String rule = "hasLanguage(\"de\")";
-		newFolderMethod.addParameter("visibilityExpertRules", rule);
-		newFolderMethod.addParameter("downloadExpertRules", rule);
-		newFolderMethod.addParameter("uploadExpertRules", rule);
+		conn.addEntity(newFolderMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "2"),
+				new BasicNameValuePair("shortTitle", "Folder-0"),
+				new BasicNameValuePair("longTitle", "Folder-long-0"),
+				new BasicNameValuePair("objectives", "Folder-objectives-0"),
+				new BasicNameValuePair("visibilityExpertRules", rule),
+				new BasicNameValuePair("downloadExpertRules", rule),
+				new BasicNameValuePair("uploadExpertRules", rule));
 
-		int newFolderCode = c.executeMethod(newFolderMethod);
-		assertTrue(newFolderCode == 200 || newFolderCode == 201);
-		String newFolderBody = newFolderMethod.getResponseBodyAsString();
+		HttpResponse newFolderCode = conn.execute(newFolderMethod);
+		assertTrue(newFolderCode.getStatusLine().getStatusCode() == 200 || newFolderCode.getStatusLine().getStatusCode() == 201);
+		String newFolderBody = EntityUtils.toString(newFolderCode.getEntity());
 		CourseNodeVO folderNode = parse(newFolderBody, CourseNodeVO.class);
 		assertNotNull(folderNode);
 		assertNotNull(folderNode.getId());
@@ -179,15 +182,15 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create a forum node
 		URI newForumUri = getElementsUri(course).path("forum").build();
-		PostMethod newForumMethod = createPost(newForumUri, MediaType.APPLICATION_JSON, true);
-		newForumMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newForumMethod.addParameter("position", "3");
-		newForumMethod.addParameter("shortTitle", "Forum-0");
-		newForumMethod.addParameter("longTitle", "Forum-long-0");
-		newForumMethod.addParameter("objectives", "Forum-objectives-0");
-		int newForumCode = c.executeMethod(newForumMethod);
-		assertTrue(newForumCode == 200 || newForumCode == 201);
-		String newForumBody = newForumMethod.getResponseBodyAsString();
+		HttpPost newForumMethod = conn.createPost(newForumUri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(newForumMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "3"),
+				new BasicNameValuePair("shortTitle", "Forum-0"),
+				new BasicNameValuePair("longTitle", "Forum-long-0"),
+				new BasicNameValuePair("objectives", "Forum-objectives-0"));
+		HttpResponse newForumCode = conn.execute(newForumMethod);
+		assertTrue(newForumCode.getStatusLine().getStatusCode() == 200 || newForumCode.getStatusLine().getStatusCode() == 201);
+		String newForumBody = EntityUtils.toString(newForumCode.getEntity());
 		CourseNodeVO forumNode = parse(newForumBody, CourseNodeVO.class);
 		assertNotNull(forumNode);
 		assertNotNull(forumNode.getId());
@@ -199,17 +202,17 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create a task node
 		URI newTaskUri = getElementsUri(course).path("task").build();
-		PostMethod newTaskMethod = createPost(newTaskUri, MediaType.APPLICATION_JSON, true);
-		newTaskMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newTaskMethod.addParameter("position", "4");
-		newTaskMethod.addParameter("shortTitle", "Task-0");
-		newTaskMethod.addParameter("longTitle", "Task-long-0");
-		newTaskMethod.addParameter("objectives", "Task-objectives-0");
-		newTaskMethod.addParameter("points", "25");
-		newTaskMethod.addParameter("text", "A very difficult test");
-		int newTaskCode = c.executeMethod(newTaskMethod);
-		assertTrue(newTaskCode == 200 || newTaskCode == 201);
-		String newTaskBody = newTaskMethod.getResponseBodyAsString();
+		HttpPost newTaskMethod = conn.createPost(newTaskUri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(newTaskMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "4"),
+				new BasicNameValuePair("shortTitle", "Task-0"),
+				new BasicNameValuePair("longTitle", "Task-long-0"),
+				new BasicNameValuePair("objectives", "Task-objectives-0"),
+				new BasicNameValuePair("points", "25"),
+				new BasicNameValuePair("text", "A very difficult test"));
+		HttpResponse newTaskCode = conn.execute(newTaskMethod);
+		assertTrue(newTaskCode.getStatusLine().getStatusCode() == 200 || newTaskCode.getStatusLine().getStatusCode() == 201);
+		String newTaskBody = EntityUtils.toString(newTaskCode.getEntity());
 		CourseNodeVO taskNode = parse(newTaskBody, CourseNodeVO.class);
 		assertNotNull(taskNode);
 		assertNotNull(taskNode.getId());
@@ -221,15 +224,17 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 
 		//create a test node
 		URI newTestUri = getElementsUri(course).path("test").build();
-		PostMethod newTestMethod = createPost(newTestUri, MediaType.APPLICATION_JSON, true);
-		newTestMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newTestMethod.addParameter("testResourceableId", course.getEditorRootNodeId());
-		newTestMethod.addParameter("position", "5");
-		newTestMethod.addParameter("shortTitle", "Test-0");
-		newTestMethod.addParameter("longTitle", "Test-long-0");
-		newTestMethod.addParameter("objectives", "Test-objectives-0");
-		int newTestCode = c.executeMethod(newTestMethod);
-		assertTrue(newTestCode == 404);//must bind a real test
+		HttpPost newTestMethod = conn.createPost(newTestUri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(newTestMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("testResourceableId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "5"),
+				new BasicNameValuePair("shortTitle", "Test-0"),
+				new BasicNameValuePair("longTitle", "Test-long-0"),
+				new BasicNameValuePair("objectives", "Test-objectives-0"));
+		HttpResponse newTestCode = conn.execute(newTestMethod);
+		assertTrue(newTestCode.getStatusLine().getStatusCode() == 404);//must bind a real test
+		EntityUtils.consume(newTestCode.getEntity());
+		
 		/*
 		assertTrue(newTestCode == 200 || newTestCode == 201);
 		String newTestBody = newTestMethod.getResponseBodyAsString();
@@ -242,15 +247,15 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create an assessment node
 		URI newAssessmentUri = getElementsUri(course).path("assessment").build();
-		PostMethod newAssessmentMethod = createPost(newAssessmentUri, MediaType.APPLICATION_JSON, true);
-		newAssessmentMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newAssessmentMethod.addParameter("position", "5");
-		newAssessmentMethod.addParameter("shortTitle", "Assessment-0");
-		newAssessmentMethod.addParameter("longTitle", "Assessment-long-0");
-		newAssessmentMethod.addParameter("objectives", "Assessment-objectives-0");
-		int newAssessmentCode = c.executeMethod(newAssessmentMethod);
-		assertTrue(newAssessmentCode == 200 || newAssessmentCode == 201);
-		String newAssessmentBody = newAssessmentMethod.getResponseBodyAsString();
+		HttpPost newAssessmentMethod = conn.createPost(newAssessmentUri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(newAssessmentMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "5"),
+				new BasicNameValuePair("shortTitle", "Assessment-0"),
+				new BasicNameValuePair("longTitle", "Assessment-long-0"),
+				new BasicNameValuePair("objectives", "Assessment-objectives-0"));
+		HttpResponse newAssessmentCode = conn.execute(newAssessmentMethod);
+		assertTrue(newAssessmentCode.getStatusLine().getStatusCode() == 200 || newAssessmentCode.getStatusLine().getStatusCode() == 201);
+		String newAssessmentBody = EntityUtils.toString(newAssessmentCode.getEntity());
 		CourseNodeVO assessmentNode = parse(newAssessmentBody, CourseNodeVO.class);
 		assertNotNull(assessmentNode);
 		assertNotNull(assessmentNode.getId());
@@ -261,16 +266,16 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course).path("contact").build();
-		PostMethod newContactMethod = createPost(newContactUri, MediaType.APPLICATION_JSON, true);
-		newContactMethod.addParameter("parentNodeId", course.getEditorRootNodeId());
-		newContactMethod.addParameter("position", "6");
-		newContactMethod.addParameter("shortTitle", "Contact-0");
-		newContactMethod.addParameter("longTitle", "Contact-long-0");
-		newContactMethod.addParameter("objectives", "Contact-objectives-0");
+		HttpPost newContactMethod = conn.createPost(newContactUri, MediaType.APPLICATION_JSON, true);
+		conn.addEntity(newContactMethod, new BasicNameValuePair("parentNodeId", course.getEditorRootNodeId()),
+				new BasicNameValuePair("position", "6"),
+				new BasicNameValuePair("shortTitle", "Contact-0"),
+				new BasicNameValuePair("longTitle", "Contact-long-0"),
+				new BasicNameValuePair("objectives", "Contact-objectives-0"));
 
-		int newContactCode = c.executeMethod(newContactMethod);
-		assertEquals(200, newContactCode);
-		String newContactBody = newContactMethod.getResponseBodyAsString();
+		HttpResponse newContactCode = conn.execute(newContactMethod);
+		assertEquals(200, newContactCode.getStatusLine().getStatusCode());
+		String newContactBody = EntityUtils.toString(newContactCode.getEntity());
 		CourseNodeVO contactNode = parse(newContactBody, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
@@ -282,16 +287,17 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCreateCoursePut() throws IOException, URISyntaxException{
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course3").queryParam("title", "course3 long name").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		CourseVO course = parse(body, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
@@ -311,15 +317,14 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		groupVo.setMinParticipants(new Integer(-1));
 		groupVo.setMaxParticipants(new Integer(-1));
 		
-		String stringuifiedAuth = stringuified(groupVo);
-    RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
 		URI newGroupUri = getCoursesUri().path(course.getKey().toString()).path("groups").build();
-		PutMethod newGrpMethod = createPut(newGroupUri, MediaType.APPLICATION_JSON, true);
-		newGrpMethod.setRequestEntity(entity);
-		int newGrpCode = c.executeMethod(newGrpMethod);
-		assertEquals(200, newGrpCode);
-		String newGrpBody = newGrpMethod.getResponseBodyAsString();
-		newGrpMethod.releaseConnection();
+		HttpPut newGrpMethod = conn.createPut(newGroupUri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(newGrpMethod, groupVo);
+		
+		HttpResponse newGrpCode = conn.execute(newGrpMethod);
+		assertEquals(200, newGrpCode.getStatusLine().getStatusCode());
+		InputStream newGrpBody = newGrpCode.getEntity().getContent();
+
 		GroupVO group = parse(newGrpBody, GroupVO.class);
 		assertNotNull(group);
 		assertNotNull(group.getKey());
@@ -331,10 +336,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position", "0").queryParam("shortTitle", "Structure-0")
 			.queryParam("longTitle", "Structure-long-0")
 			.queryParam("objectives", "Structure-objectives-0").build();
-		PutMethod newStructureMethod = createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		int newStructureCode = c.executeMethod(newStructureMethod);
-		assertTrue(newStructureCode == 200 || newStructureCode == 201);
-		String newStructureBody = newStructureMethod.getResponseBodyAsString();
+		HttpPut newStructureMethod = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newStructureCode = conn.execute(newStructureMethod);
+		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
+		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
 		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
@@ -354,17 +359,13 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position","1").queryParam("shortTitle", "Single-Page-0")
 			.queryParam("longTitle", "Single-Page-long-0")
 			.queryParam("objectives", "Single-Page-objectives-0").build();
-		PutMethod newPageMethod = createPut(newPageUri, MediaType.APPLICATION_JSON, true);
-		newPageMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", page),
-				new StringPart("filename", page.getName())
-		};
-		newPageMethod.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		HttpPut newPageMethod = conn.createPut(newPageUri, MediaType.APPLICATION_JSON, true);
+		newPageMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		conn.addMultipart(newPageMethod, page.getName(), page);
 		
-		int newPageCode = c.executeMethod(newPageMethod);
-		assertTrue(newPageCode == 200 || newPageCode == 201);
-		String newPageBody = newPageMethod.getResponseBodyAsString();
+		HttpResponse newPageCode = conn.execute(newPageMethod);
+		assertTrue(newPageCode.getStatusLine().getStatusCode() == 200 || newPageCode.getStatusLine().getStatusCode() == 201);
+		String newPageBody = EntityUtils.toString(newPageCode.getEntity());
 		CourseNodeVO pageNode = parse(newPageBody, CourseNodeVO.class);
 		assertNotNull(pageNode);
 		assertNotNull(pageNode.getId());
@@ -380,10 +381,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position", "2").queryParam("shortTitle", "Folder-0")
 			.queryParam("longTitle", "Folder-long-0")
 			.queryParam("objectives", "Folder-objectives-0").build();
-		PutMethod newFolderMethod = createPut(newFolderUri, MediaType.APPLICATION_JSON, true);
-		int newFolderCode = c.executeMethod(newFolderMethod);
-		assertTrue(newFolderCode == 200 || newFolderCode == 201);
-		String newFolderBody = newFolderMethod.getResponseBodyAsString();
+		HttpPut newFolderMethod = conn.createPut(newFolderUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newFolderCode = conn.execute(newFolderMethod);
+		assertTrue(newFolderCode.getStatusLine().getStatusCode() == 200 || newFolderCode.getStatusLine().getStatusCode() == 201);
+		String newFolderBody = EntityUtils.toString(newFolderCode.getEntity());
 		CourseNodeVO folderNode = parse(newFolderBody, CourseNodeVO.class);
 		assertNotNull(folderNode);
 		assertNotNull(folderNode.getId());
@@ -399,10 +400,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position", "3").queryParam("shortTitle", "Forum-0")
 			.queryParam("longTitle", "Forum-long-0")
 			.queryParam("objectives", "Forum-objectives-0").build();
-		PutMethod newForumMethod = createPut(newForumUri, MediaType.APPLICATION_JSON, true);
-		int newForumCode = c.executeMethod(newForumMethod);
-		assertTrue(newForumCode == 200 || newForumCode == 201);
-		String newForumBody = newForumMethod.getResponseBodyAsString();
+		HttpPut newForumMethod = conn.createPut(newForumUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newForumCode = conn.execute(newForumMethod);
+		assertTrue(newForumCode.getStatusLine().getStatusCode() == 200 || newForumCode.getStatusLine().getStatusCode() == 201);
+		String newForumBody = EntityUtils.toString(newForumCode.getEntity());
 		CourseNodeVO forumNode = parse(newForumBody, CourseNodeVO.class);
 		assertNotNull(forumNode);
 		assertNotNull(forumNode.getId());
@@ -419,10 +420,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("longTitle", "Task-long-0")
 			.queryParam("objectives", "Task-objectives-0")
 			.queryParam("points", "25").queryParam("text", "A very difficult test").build();
-		PutMethod newTaskMethod = createPut(newTaskUri, MediaType.APPLICATION_JSON, true);
-		int newTaskCode = c.executeMethod(newTaskMethod);
-		assertTrue(newTaskCode == 200 || newTaskCode == 201);
-		String newTaskBody = newTaskMethod.getResponseBodyAsString();
+		HttpPut newTaskMethod = conn.createPut(newTaskUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newTaskCode = conn.execute(newTaskMethod);
+		assertTrue(newTaskCode.getStatusLine().getStatusCode() == 200 || newTaskCode.getStatusLine().getStatusCode() == 201);
+		String newTaskBody = EntityUtils.toString(newTaskCode.getEntity());
 		CourseNodeVO taskNode = parse(newTaskBody, CourseNodeVO.class);
 		assertNotNull(taskNode);
 		assertNotNull(taskNode.getId());
@@ -439,14 +440,15 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		.queryParam("scoreMin", new Float(1.5))
 		.queryParam("scoreMax", 10)
 		.build();
-		PutMethod taskConfigMethod = createPut(taskConfigUri, MediaType.APPLICATION_JSON, true);
-		int taskConfigCode = c.executeMethod(taskConfigMethod);
-		assertTrue(taskConfigCode == 200 || taskConfigCode == 201);
+		HttpPut taskConfigMethod = conn.createPut(taskConfigUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse taskConfigCode = conn.execute(taskConfigMethod);
+		assertTrue(taskConfigCode.getStatusLine().getStatusCode() == 200 || taskConfigCode.getStatusLine().getStatusCode() == 201);
+		EntityUtils.consume(taskConfigCode.getEntity());
 
-		GetMethod getTaskConfig = createGet(taskConfigUri, MediaType.APPLICATION_JSON, true);
-		taskConfigCode = c.executeMethod(getTaskConfig);
-		assertTrue(taskConfigCode == 200 || taskConfigCode == 201);
-		String taskConfigBody = getTaskConfig.getResponseBodyAsString();
+		HttpGet getTaskConfig = conn.createGet(taskConfigUri, MediaType.APPLICATION_JSON, true);
+		taskConfigCode = conn.execute(getTaskConfig);
+		assertTrue(taskConfigCode.getStatusLine().getStatusCode() == 200 || taskConfigCode.getStatusLine().getStatusCode() == 201);
+		String taskConfigBody = EntityUtils.toString(taskConfigCode.getEntity());
 		TaskConfigVO taskConfig = parse(taskConfigBody, TaskConfigVO.class);
 		assertNotNull(taskConfig);
 		assertTrue(!taskConfig.getIsAssignmentEnabled());//default is true
@@ -460,10 +462,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position", "5").queryParam("shortTitle", "Assessment-0")
 			.queryParam("longTitle", "Assessment-long-0")
 			.queryParam("objectives", "Assessment-objectives-0").build();
-		PutMethod newAssessmentMethod = createPut(newAssessmentUri, MediaType.APPLICATION_JSON, true);
-		int newAssessmentCode = c.executeMethod(newAssessmentMethod);
-		assertTrue(newAssessmentCode == 200 || newAssessmentCode == 201);
-		String newAssessmentBody = newAssessmentMethod.getResponseBodyAsString();
+		HttpPut newAssessmentMethod = conn.createPut(newAssessmentUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newAssessmentCode = conn.execute(newAssessmentMethod);
+		assertTrue(newAssessmentCode.getStatusLine().getStatusCode() == 200 || newAssessmentCode.getStatusLine().getStatusCode() == 201);
+		String newAssessmentBody = EntityUtils.toString(newAssessmentCode.getEntity());
 		CourseNodeVO assessmentNode = parse(newAssessmentBody, CourseNodeVO.class);
 		assertNotNull(assessmentNode);
 		assertNotNull(assessmentNode.getId());
@@ -478,10 +480,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position", "6").queryParam("shortTitle", "Contact-0")
 			.queryParam("longTitle", "Contact-long-0")
 			.queryParam("objectives", "Contact-objectives-0").build();
-		PutMethod newContactMethod = createPut(newContactUri, MediaType.APPLICATION_JSON, true);
-		int newContactCode = c.executeMethod(newContactMethod);
-		assertEquals(200, newContactCode);
-		String newContactBody = newContactMethod.getResponseBodyAsString();
+		HttpPut newContactMethod = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newContactCode = conn.execute(newContactMethod);
+		assertEquals(200, newContactCode.getStatusLine().getStatusCode());
+		String newContactBody = EntityUtils.toString(newContactCode.getEntity());
 		CourseNodeVO contactNode = parse(newContactBody, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
@@ -496,27 +498,26 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("position", "7").queryParam("shortTitle", "Enrollment-0")
 			.queryParam("longTitle", "Enrollment-long-0")
 			.queryParam("objectives", "Enrollment-objectives-0").build();
-		PutMethod newENMethod = createPut(newENUri, MediaType.APPLICATION_JSON, true);
-		int newENCode = c.executeMethod(newENMethod);
-		assertEquals(406, newENCode);
+		HttpPut newENMethod = conn.createPut(newENUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newENCode = conn.execute(newENMethod);
+		assertEquals(406, newENCode.getStatusLine().getStatusCode());
+		EntityUtils.consume(newENCode.getEntity());
 
 		//create an enrollment node
-		newENUri = getElementsUri(course).path("enrollment").build();
-		newENMethod = createPut(newENUri, MediaType.APPLICATION_JSON, true);
-		newENMethod.setQueryString(new NameValuePair[]{
-				new NameValuePair("parentNodeId", course.getEditorRootNodeId()),
-				new NameValuePair("position", "7"),
-				new NameValuePair("shortTitle", "Enrollment-0"),
-				new NameValuePair("longTitle", "Enrollment-long-0"),
-				new NameValuePair("objectives", "Enrollment-objectives-0"),
-				new NameValuePair("groups",group.getKey().toString()),
-				new NameValuePair("cancelEnabled","true")
-		});
+		newENUri = getElementsUri(course).path("enrollment")
+				.queryParam("parentNodeId", course.getEditorRootNodeId())
+				.queryParam("position", "7")
+				.queryParam("shortTitle", "Enrollment-0")
+				.queryParam("longTitle", "Enrollment-long-0")
+				.queryParam("objectives", "Enrollment-objectives-0")
+				.queryParam("groups",group.getKey().toString())
+				.queryParam("cancelEnabled","true").build();
+		newENMethod = conn.createPut(newENUri, MediaType.APPLICATION_JSON, true);
 		
-		newENCode = c.executeMethod(newENMethod);
-		assertEquals(200, newENCode);
+		newENCode = conn.execute(newENMethod);
+		assertEquals(200, newENCode.getStatusLine().getStatusCode());
 		
-		String newENBody = newENMethod.getResponseBodyAsString();
+		String newENBody = EntityUtils.toString(newENCode.getEntity());
 		CourseNodeVO enNode = parse(newENBody, CourseNodeVO.class);
 		assertNotNull(enNode);
 		assertNotNull(enNode.getId());
@@ -530,21 +531,20 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		PutMethod qtiRepoMethod = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		qtiRepoMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] qtiRepoParts = { 
-				new FilePart("file", cp),
-				new StringPart("filename","qti-demo.zip"),
-				new StringPart("resourcename","QTI demo"),
-				new StringPart("displayname","QTI demo")
-		};
-		qtiRepoMethod.setRequestEntity(new MultipartRequestEntity(qtiRepoParts, qtiRepoMethod.getParams()));
+		URI repoEntriesUri = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpPut qtiRepoMethod = conn.createPut(repoEntriesUri, MediaType.APPLICATION_JSON, true);
+		qtiRepoMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(cp));
+		entity.addPart("filename", new StringBody("qti-demo.zip"));
+		entity.addPart("resourcename", new StringBody("QTI demo"));
+		entity.addPart("displayname", new StringBody("QTI demo"));
+		qtiRepoMethod.setEntity(entity);
 		
-		int qtiRepoCode = c.executeMethod(qtiRepoMethod);
-		assertTrue(qtiRepoCode == 200 || qtiRepoCode == 201);
+		HttpResponse qtiRepoCode = conn.execute(qtiRepoMethod);
+		assertTrue(qtiRepoCode.getStatusLine().getStatusCode() == 200 || qtiRepoCode.getStatusLine().getStatusCode() == 201);
 		
-		String qtiRepoBody = qtiRepoMethod.getResponseBodyAsString();
-		qtiRepoMethod.releaseConnection();
+		String qtiRepoBody = EntityUtils.toString(qtiRepoCode.getEntity());
 		RepositoryEntryVO newTestVO = parse(qtiRepoBody, RepositoryEntryVO.class);
 		assertNotNull(newTestVO);
 		
@@ -561,10 +561,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 			.queryParam("longTitle", "Test-long-0")
 			.queryParam("objectives", "Test-objectives-0")
 			.queryParam("testResourceableId", key).build();
-		PutMethod newTestMethod = createPut(newTestUri, MediaType.APPLICATION_JSON, true);
-		int newTestCode = c.executeMethod(newTestMethod);
-		assertTrue(newTestCode == 200 || newTestCode == 201);
-		String newTestBody = newTestMethod.getResponseBodyAsString();
+		HttpPut newTestMethod = conn.createPut(newTestUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newTestCode = conn.execute(newTestMethod);
+		assertTrue(newTestCode.getStatusLine().getStatusCode() == 200 || newTestCode.getStatusLine().getStatusCode() == 201);
+		String newTestBody = EntityUtils.toString(newTestCode.getEntity());
 		CourseNodeVO testNode = parse(newTestBody, CourseNodeVO.class);
 		assertNotNull(testNode);
 		assertNotNull(testNode.getId());
@@ -573,31 +573,32 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		// configure test node
 		URI testConfigUri = getElementsUri(course).path("test/"+testNode.getId()+"/configuration")
-		.queryParam("allowCancel", Boolean.TRUE)
-		.queryParam("allowNavigation", Boolean.TRUE)
-		.queryParam("allowSuspend", Boolean.TRUE)
-		.queryParam("numAttempts", 10)
-		.queryParam("sequencePresentation", AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM)
-		.queryParam("showNavigation", Boolean.TRUE)
-		.queryParam("showQuestionTitle", Boolean.TRUE)
-		.queryParam("showResultsAfterFinish", Boolean.TRUE)
-		.queryParam("showResultsDependendOnDate", Boolean.TRUE)
-		.queryParam("showResultsOnHomepage", key)
-		.queryParam("showScoreInfo", Boolean.TRUE)
-		.queryParam("showScoreProgress", Boolean.TRUE)
-		.queryParam("showSectionsOnly", Boolean.TRUE)
-		.queryParam("summaryPresentation", AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED)
-		.queryParam("startDate", new Long(1280444400))//new Date(1280444400))
-		.queryParam("endDate", new Long(1293667200))//new Date(1293667200))
-		.build();
-		PutMethod testConfigMethod = createPut(testConfigUri, MediaType.APPLICATION_JSON, true);
-		int testConfigCode = c.executeMethod(testConfigMethod);
-		assertTrue(testConfigCode == 200 || testConfigCode == 201);
+			.queryParam("allowCancel", Boolean.TRUE)
+			.queryParam("allowNavigation", Boolean.TRUE)
+			.queryParam("allowSuspend", Boolean.TRUE)
+			.queryParam("numAttempts", 10)
+			.queryParam("sequencePresentation", AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM)
+			.queryParam("showNavigation", Boolean.TRUE)
+			.queryParam("showQuestionTitle", Boolean.TRUE)
+			.queryParam("showResultsAfterFinish", Boolean.TRUE)
+			.queryParam("showResultsDependendOnDate", Boolean.TRUE)
+			.queryParam("showResultsOnHomepage", key)
+			.queryParam("showScoreInfo", Boolean.TRUE)
+			.queryParam("showScoreProgress", Boolean.TRUE)
+			.queryParam("showSectionsOnly", Boolean.TRUE)
+			.queryParam("summaryPresentation", AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED)
+			.queryParam("startDate", new Long(1280444400))//new Date(1280444400))
+			.queryParam("endDate", new Long(1293667200))//new Date(1293667200))
+			.build();
+		HttpPut testConfigMethod = conn.createPut(testConfigUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse testConfigCode = conn.execute(testConfigMethod);
+		assertTrue(testConfigCode.getStatusLine().getStatusCode() == 200 || testConfigCode.getStatusLine().getStatusCode() == 201);
+		EntityUtils.consume(testConfigCode.getEntity());
 		
-		GetMethod getTestConfig = createGet(testConfigUri, MediaType.APPLICATION_JSON, true);
-		testConfigCode = c.executeMethod(getTestConfig);
-		assertTrue(testConfigCode == 200 || testConfigCode == 201);
-		String testConfigBody = getTestConfig.getResponseBodyAsString();
+		HttpGet getTestConfig = conn.createGet(testConfigUri, MediaType.APPLICATION_JSON, true);
+		testConfigCode = conn.execute(getTestConfig);
+		assertTrue(testConfigCode.getStatusLine().getStatusCode() == 200 || testConfigCode.getStatusLine().getStatusCode() == 201);
+		String testConfigBody = EntityUtils.toString(testConfigCode.getEntity());
 		TestConfigVO testConfig = parse(testConfigBody, TestConfigVO.class);
 		assertTrue(testConfig.getNumAttempts() == 10);
 		assertTrue(testConfig.getAllowCancel());
@@ -608,19 +609,19 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertNotNull(newSurveyUrl);
 		File surveyFile = new File(newSurveyUrl.toURI());
 
-		PutMethod surveyRepoMethod = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		surveyRepoMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] newSurveyParts = { 
-				new FilePart("file", surveyFile),
-				new StringPart("filename","questionnaire-demo.zip"),
-				new StringPart("resourcename","Questionnaire demo"),
-				new StringPart("displayname","Questionnaire demo")
-		};
-		surveyRepoMethod.setRequestEntity(new MultipartRequestEntity(newSurveyParts, surveyRepoMethod.getParams()));
-		int surveyRepoCode = c.executeMethod(surveyRepoMethod);
-		assertTrue(surveyRepoCode == 200 || surveyRepoCode == 201);
+		URI repoEntriesUri2 = UriBuilder.fromUri(getContextURI()).path("repo").path("entries").build();
+		HttpPut surveyRepoMethod = conn.createPut(repoEntriesUri2, MediaType.APPLICATION_JSON, true);
+		surveyRepoMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity surveyEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		surveyEntity.addPart("file", new FileBody(surveyFile));
+		surveyEntity.addPart("filename", new StringBody("questionnaire-demo.zip"));
+		surveyEntity.addPart("resourcename", new StringBody("Questionnaire demo"));
+		surveyEntity.addPart("displayname", new StringBody("Questionnaire demo"));
+		surveyRepoMethod.setEntity(surveyEntity);
+		HttpResponse surveyRepoCode = conn.execute(surveyRepoMethod);
+		assertTrue(surveyRepoCode.getStatusLine().getStatusCode() == 200 || surveyRepoCode.getStatusLine().getStatusCode() == 201);
 		
-		String surveyRepoBody = surveyRepoMethod.getResponseBodyAsString();
+		String surveyRepoBody = EntityUtils.toString(surveyRepoCode.getEntity());
 		RepositoryEntryVO newSurveyVO = parse(surveyRepoBody, RepositoryEntryVO.class);
 		assertNotNull(newSurveyVO);
 		
@@ -637,10 +638,10 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		.queryParam("longTitle", "Survey-long-0")
 		.queryParam("objectives", "Survey-objectives-0")
 		.queryParam("surveyResourceableId", surveyKey).build();
-		PutMethod newSurveyMethod = createPut(newSurveyUri, MediaType.APPLICATION_JSON, true);
-		int newSurveyCode = c.executeMethod(newSurveyMethod);
-		assertTrue(newSurveyCode == 200 || newSurveyCode == 201);
-		String newSurveyBody = newSurveyMethod.getResponseBodyAsString();
+		HttpPut newSurveyMethod = conn.createPut(newSurveyUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse newSurveyCode = conn.execute(newSurveyMethod);
+		assertTrue(newSurveyCode.getStatusLine().getStatusCode() == 200 || newSurveyCode.getStatusLine().getStatusCode() == 201);
+		String newSurveyBody = EntityUtils.toString(newSurveyCode.getEntity());
 		CourseNodeVO surveyNode = parse(newSurveyBody, CourseNodeVO.class);
 		assertNotNull(surveyNode);
 		assertNotNull(surveyNode.getId());
@@ -657,34 +658,33 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		.queryParam("showQuestionTitle", Boolean.TRUE)
 		.queryParam("showSectionsOnly", Boolean.TRUE)
 		.build();
-		PutMethod surveyConfigMethod = createPut(surveykConfigUri, MediaType.APPLICATION_JSON, true);
-		int surveyConfigCode = c.executeMethod(surveyConfigMethod);
-		assertTrue(surveyConfigCode == 200 || surveyConfigCode == 201);
+		HttpPut surveyConfigMethod = conn.createPut(surveykConfigUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse surveyConfigCode = conn.execute(surveyConfigMethod);
+		assertTrue(surveyConfigCode.getStatusLine().getStatusCode() == 200 || surveyConfigCode.getStatusLine().getStatusCode() == 201);
+		EntityUtils.consume(surveyConfigCode.getEntity());
 
-		GetMethod getSurveyConfig = createGet(surveykConfigUri, MediaType.APPLICATION_JSON, true);
-		surveyConfigCode = c.executeMethod(getSurveyConfig);
-		assertTrue(surveyConfigCode == 200 || surveyConfigCode == 201);
-		String surveyConfigBody = getSurveyConfig.getResponseBodyAsString();
+		HttpGet getSurveyConfig = conn.createGet(surveykConfigUri, MediaType.APPLICATION_JSON, true);
+		surveyConfigCode = conn.execute(getSurveyConfig);
+		assertTrue(surveyConfigCode.getStatusLine().getStatusCode() == 200 || surveyConfigCode.getStatusLine().getStatusCode() == 201);
+		String surveyConfigBody =EntityUtils.toString(surveyConfigCode.getEntity());
 		SurveyConfigVO surveyConfig = parse(surveyConfigBody, SurveyConfigVO.class);
 		assertNotNull(surveyConfig);
 		assertTrue(surveyConfig.getAllowCancel());
 		
 		//create an external page node
-		URI newTUUri = getElementsUri(course).path("externalpage").build();
-		PutMethod newTUMethod = createPut(newTUUri, MediaType.APPLICATION_JSON, true);
-		newTUMethod.setQueryString(new NameValuePair[]{
-				new NameValuePair("parentNodeId", course.getEditorRootNodeId()),
-				new NameValuePair("position", "10"),
-				new NameValuePair("shortTitle", "ExternalPage-0"),
-				new NameValuePair("longTitle", "ExternalPage-long-0"),
-				new NameValuePair("objectives", "ExternalPage-objectives-0"),
-				new NameValuePair("url","http://www.olat.org")
-		});
+		URI newTUUri = getElementsUri(course).path("externalpage")
+				.queryParam("parentNodeId", course.getEditorRootNodeId())
+				.queryParam("position", "10")
+				.queryParam("shortTitle", "ExternalPage-0")
+				.queryParam("longTitle", "ExternalPage-long-0")
+				.queryParam("objectives", "ExternalPage-objectives-0")
+				.queryParam("url","http://www.olat.org").build();
+		HttpPut newTUMethod = conn.createPut(newTUUri, MediaType.APPLICATION_JSON, true);
+
+		HttpResponse newTUCode = conn.execute(newTUMethod);
+		assertEquals(200, newTUCode.getStatusLine().getStatusCode());
 		
-		int newTUCode = c.executeMethod(newTUMethod);
-		assertEquals(200, newTUCode);
-		
-		String newTUBody = newTUMethod.getResponseBodyAsString();
+		String newTUBody = EntityUtils.toString(newTUCode.getEntity());
 		CourseNodeVO tuNode = parse(newTUBody, CourseNodeVO.class);
 		assertNotNull(tuNode);
 		assertNotNull(tuNode.getId());
@@ -758,15 +758,12 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		childNode = child.getCourseNode();
 		URI attachTaskFileUri = getElementsUri(course).path("task").path(childNode.getIdent()).path("file")
 			.queryParam("filename", "singlepage.html").build();
-		PutMethod taskFileMethod = createPut(attachTaskFileUri, MediaType.APPLICATION_JSON, true);
-		taskFileMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] taskFileParts = { 
-				new FilePart("file", page),
-				new StringPart("filename", page.getName())
-		};
-		taskFileMethod.setRequestEntity(new MultipartRequestEntity(taskFileParts, method.getParams()));
-		int taskFileCode = c.executeMethod(taskFileMethod);
-		assertEquals(200, taskFileCode);
+		HttpPut taskFileMethod = conn.createPut(attachTaskFileUri, MediaType.APPLICATION_JSON, true);
+		taskFileMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		conn.addMultipart(taskFileMethod, page.getName(), page);
+		
+		HttpResponse taskFileCode = conn.execute(taskFileMethod);
+		assertEquals(200, taskFileCode.getStatusLine().getStatusCode());
 		String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(realCourse, childNode);
 		OlatRootFolderImpl taskFolder = new OlatRootFolderImpl(taskFolderPath, null);
 		VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + "singlepage.html");
@@ -775,16 +772,17 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	
 	@Test
 	//fxdiff FXOLAT-122: course management
-	public void testUpdateRootNodeCoursePost() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUpdateRootNodeCoursePost() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course4").queryParam("title", "course4 long name").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		CourseVO course = parse(body, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
@@ -792,19 +790,18 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
-		PostMethod updateMethod = createPost(rootUri, MediaType.APPLICATION_JSON, true);
-		updateMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = {
-				new StringPart("shortTitle", "Structure-0b"),
-				new StringPart("longTitle", "Structure-long-0b"),
-				new StringPart("objectives", "Structure-objectives-0b")
-		};
-		updateMethod.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		HttpPost updateMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
+		updateMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("shortTitle", new StringBody("Structure-0b"));
+		entity.addPart("longTitle", new StringBody("Structure-long-0b"));
+		entity.addPart("objectives", new StringBody("Structure-objectives-0b"));
+		updateMethod.setEntity(entity);
 		
-		int newStructureCode = c.executeMethod(updateMethod);
-		assertTrue(newStructureCode == 200 || newStructureCode == 201);
+		HttpResponse newStructureCode = conn.execute(updateMethod);
+		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
 		//check the response
-		String newStructureBody = updateMethod.getResponseBodyAsString();
+		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
 		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());
@@ -828,15 +825,16 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 	@Test
 	//fxdiff FXOLAT-122: course management
 	public void testUpdateRootNodeCoursePostWithFile() throws IOException, URISyntaxException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an empty course
 		URI uri = getCoursesUri().queryParam("shortTitle", "course5").queryParam("title", "course5 long name").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		CourseVO course = parse(body, CourseVO.class);
 		assertNotNull(course);
 		assertNotNull(course.getKey());
@@ -849,25 +847,24 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		//update the root node
 		URI rootUri = getElementsUri(course).path("structure").path(course.getEditorRootNodeId()).build();
-		PostMethod newStructureMethod = createPost(rootUri, MediaType.APPLICATION_JSON, true);
-		newStructureMethod.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = {
-				new FilePart("file", page),
-				new StringPart("filename", page.getName()),
-				new StringPart("parentNodeId",course.getEditorRootNodeId()),
-				new StringPart("position","1"),
-				new StringPart("shortTitle", "Structure-0-with-file"),
-				new StringPart("longTitle", "Structure-long-0-with-file"),
-				new StringPart("objectives", "Structure-objectives-0-with-file"),
-				new StringPart("displayType", "file")
-		};
-		newStructureMethod.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		HttpPost newStructureMethod = conn.createPost(rootUri, MediaType.APPLICATION_JSON, true);
+		newStructureMethod.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(page));
+		entity.addPart("filename", new StringBody(page.getName()));
+		entity.addPart("parentNodeId", new StringBody(course.getEditorRootNodeId()));
+		entity.addPart("position", new StringBody("1"));
+		entity.addPart("shortTitle", new StringBody("Structure-0-with-file"));
+		entity.addPart("longTitle", new StringBody("Structure-long-0-with-file"));
+		entity.addPart("objectives", new StringBody("Structure-objectives-0-with-file"));
+		entity.addPart("displayType", new StringBody("file"));
+		newStructureMethod.setEntity(entity);
 		
 		
-		int newStructureCode = c.executeMethod(newStructureMethod);
-		assertTrue(newStructureCode == 200 || newStructureCode == 201);
+		HttpResponse newStructureCode = conn.execute(newStructureMethod);
+		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
 		//check the response
-		String newStructureBody = newStructureMethod.getResponseBodyAsString();
+		String newStructureBody = EntityUtils.toString(newStructureCode.getEntity());
 		CourseNodeVO structureNode = parse(newStructureBody, CourseNodeVO.class);
 		assertNotNull(structureNode);
 		assertNotNull(structureNode.getId());

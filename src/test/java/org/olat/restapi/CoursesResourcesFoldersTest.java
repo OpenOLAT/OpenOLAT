@@ -35,14 +35,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -90,28 +92,30 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetFiles() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetFiles() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		String body = method.getResponseBodyAsString();
+		InputStream body = response.getEntity().getContent();
 		List<LinkVO> links = parseLinkArray(body);
 		assertNotNull(links);
 		assertEquals(3, links.size());
 	}
 	
 	@Test
-	public void testGetFilesDeeper() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetFilesDeeper() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir").build();
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		String body = method.getResponseBodyAsString();
+		InputStream body = response.getEntity().getContent();
 		List<LinkVO> links = parseLinkArray(body);
 		assertNotNull(links);
 		assertEquals(1, links.size());
@@ -119,20 +123,21 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetFileDeep() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetFileDeep() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getCourseFolderURI()).path("SubDir").path("SubSubDir").path("SubSubSubDir")
 			.path("3_singlepage.html").build();
-		GetMethod method = createGet(uri, "*/*", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpGet method = conn.createGet(uri, "*/*", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		String body = method.getResponseBodyAsString();
+		String body = EntityUtils.toString(response.getEntity());
 		assertNotNull(body);
 		assertTrue(body.startsWith("<html>"));
 		
 		String contentType = null;
-		for(Header header:method.getResponseHeaders()){
+		for(Header header:response.getAllHeaders()){
 			if("Content-Type".equals(header.getName())) {
 				contentType = header.getValue();
 				break;

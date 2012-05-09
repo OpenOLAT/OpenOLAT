@@ -27,17 +27,18 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPut;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -97,73 +98,69 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAdminCanEditCourse() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testAdminCanEditCourse() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an structure node
-		URI newStructureUri = getElementsUri(course).path("structure").build();
-		PutMethod method = createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("position", "0"),
-				new NameValuePair("shortTitle", "Structure-admin-0"),
-				new NameValuePair("longTitle", "Structure-long-admin-0"),
-				new NameValuePair("objectives", "Structure-objectives-admin-0")
-		});
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
+		URI newStructureUri = getElementsUri(course).path("structure")
+				.queryParam("position", "0")
+				.queryParam("shortTitle", "Structure-admin-0")
+				.queryParam("longTitle", "Structure-long-admin-0")
+				.queryParam("objectives", "Structure-objectives-admin-0").build();
+		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
-	public void testIdCannotEditCourse() throws IOException {
-		HttpClient c = loginWithCookie("id-c-s-0", "A6B7C8");
+	public void testIdCannotEditCourse() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("id-c-s-0", "A6B7C8"));
 		
 		//create an structure node
-		URI newStructureUri = getElementsUri(course).path("structure").build();
-		PutMethod method = createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("position", "0"),
-				new NameValuePair("shortTitle", "Structure-id-0"),
-				new NameValuePair("longTitle", "Structure-long-id-0"),
-				new NameValuePair("objectives", "Structure-objectives-id-0")
-		});
-		int code = c.executeMethod(method);
-		assertEquals(401, code);
+		URI newStructureUri = getElementsUri(course).path("structure")
+				.queryParam("position", "0")
+				.queryParam("shortTitle", "Structure-id-0")
+				.queryParam("longTitle", "Structure-long-id-0")
+				.queryParam("objectives", "Structure-objectives-id-0").build();
+		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
-	public void testAuthorCannotEditCourse() throws IOException {
+	public void testAuthorCannotEditCourse() throws IOException, URISyntaxException {
 		//author but not owner
-		HttpClient c = loginWithCookie("id-c-s-1", "A6B7C8");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("id-c-s-1", "A6B7C8"));
 		
 		//create an structure node
-		URI newStructureUri = getElementsUri(course).path("structure").build();
-		PutMethod method = createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("position", "0"),
-				new NameValuePair("shortTitle", "Structure-id-0"),
-				new NameValuePair("longTitle", "Structure-long-id-0"),
-				new NameValuePair("objectives", "Structure-objectives-id-0")
-		});
-		int code = c.executeMethod(method);
-		assertEquals(401, code);
+		URI newStructureUri = getElementsUri(course).path("structure")
+				.queryParam("position", "0")
+				.queryParam("shortTitle", "Structure-id-0")
+				.queryParam("longTitle", "Structure-long-id-0")
+				.queryParam("objectives", "Structure-objectives-id-0").build();
+		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
-	public void testAuthorCanEditCourse() throws IOException {
+	public void testAuthorCanEditCourse() throws IOException, URISyntaxException {
 		//author and owner
-		HttpClient c = loginWithCookie("id-c-s-2", "A6B7C8");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("id-c-s-2", "A6B7C8"));
 		
 		//create an structure node
-		URI newStructureUri = getElementsUri(course).path("structure").build();
-		PutMethod method = createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("position", "0"),
-				new NameValuePair("shortTitle", "Structure-id-0"),
-				new NameValuePair("longTitle", "Structure-long-id-0"),
-				new NameValuePair("objectives", "Structure-objectives-id-0")
-		});
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
+		URI newStructureUri = getElementsUri(course).path("structure")
+				.queryParam("position", "0")
+				.queryParam("shortTitle", "Structure-id-0")
+				.queryParam("longTitle", "Structure-long-id-0")
+				.queryParam("objectives", "Structure-objectives-id-0").build();
+		HttpPut method = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 	}
 	
 	

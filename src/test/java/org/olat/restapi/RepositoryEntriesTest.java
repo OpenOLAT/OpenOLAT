@@ -41,14 +41,13 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -56,8 +55,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.id.OLATResourceable;
-import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -78,38 +75,40 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 
-	@After @Override
+	@After
 	public void tearDown() throws Exception {
-		super.tearDown();
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 
 	@Test
-	public void testGetEntries() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetEntries() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		GetMethod method = createGet("repo/entries", MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		
 		List<RepositoryEntryVO> entryVoes = parseRepoArray(body);
 		assertNotNull(entryVoes);
 	}
 	
 	@Test
-	public void testGetEntriesWithPaging() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetEntriesWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
 				.queryParam("start", "0").queryParam("limit", "25").build();
 		
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		RepositoryEntryVOes entryVoes = parse(body, RepositoryEntryVOes.class);
-		method.releaseConnection();
+		
 
 		assertNotNull(entryVoes);
 		assertNotNull(entryVoes.getRepositoryEntries());
@@ -118,43 +117,47 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetEntry() throws HttpException, IOException {
+	public void testGetEntry() throws IOException, URISyntaxException {
 		RepositoryEntry re = createRepository("Test GET repo entry");
 		
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		GetMethod method = createGet("repo/entries/" + re.getKey(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(200, code);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries/" + re.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		
 		RepositoryEntryVO entryVo = parse(body, RepositoryEntryVO.class);
 		assertNotNull(entryVo);
 	}
 	
 	@Test
-	public void testImportCp() throws HttpException, IOException, URISyntaxException {
+	public void testImportCp() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("cp-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", cp),
-				new StringPart("filename","cp-demo.zip"),
-				new StringPart("resourcename","CP demo"),
-				new StringPart("displayname","CP demo")
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(cp));
+		entity.addPart("filename", new StringBody("cp-demo.zip"));
+		entity.addPart("resourcename", new StringBody("CP demo"));
+		entity.addPart("displayname", new StringBody("CP demo"));
+		method.setEntity(entity);
 		
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		InputStream body = response.getEntity().getContent();
+		
 		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
@@ -167,28 +170,30 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testImportTest() throws HttpException, IOException, URISyntaxException {
+	public void testImportTest() throws IOException, URISyntaxException {
 		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("qti-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", cp),
-				new StringPart("filename","qti-demo.zip"),
-				new StringPart("resourcename","QTI demo"),
-				new StringPart("displayname","QTI demo")
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(cp));
+		entity.addPart("filename", new StringBody("qti-demo.zip"));
+		entity.addPart("resourcename", new StringBody("QTI demo"));
+		entity.addPart("displayname", new StringBody("QTI demo"));
+		method.setEntity(entity);
 		
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		InputStream body = response.getEntity().getContent();
+		
 		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
@@ -202,28 +207,30 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testImportQuestionnaire() throws HttpException, IOException, URISyntaxException {
+	public void testImportQuestionnaire() throws IOException, URISyntaxException {
 		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("questionnaire-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", cp),
-				new StringPart("filename","questionnaire-demo.zip"),
-				new StringPart("resourcename","Questionnaire demo"),
-				new StringPart("displayname","Questionnaire demo")
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(cp));
+		entity.addPart("filename", new StringBody("questionnaire-demo.zip"));
+		entity.addPart("resourcename", new StringBody("Questionnaire demo"));
+		entity.addPart("displayname", new StringBody("Questionnaire demo"));
+		method.setEntity(entity);
 		
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		InputStream body = response.getEntity().getContent();
+		
 		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
@@ -237,28 +244,29 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testImportWiki() throws HttpException, IOException, URISyntaxException {
+	public void testImportWiki() throws IOException, URISyntaxException {
 		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("wiki-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", cp),
-				new StringPart("filename","wiki-demo.zip"),
-				new StringPart("resourcename","Wiki demo"),
-				new StringPart("displayname","Wiki demo")
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(cp));
+		entity.addPart("filename", new StringBody("wiki-demo.zip"));
+		entity.addPart("resourcename", new StringBody("Wiki demo"));
+		entity.addPart("displayname", new StringBody("Wiki demo"));
+		method.setEntity(entity);
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		InputStream body = response.getEntity().getContent();
+		
 		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
@@ -272,28 +280,30 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testImportBlog() throws HttpException, IOException, URISyntaxException {
+	public void testImportBlog() throws IOException, URISyntaxException {
 		Logger log = Logger.getLogger(getClass().getName());
 		URL cpUrl = RepositoryEntriesTest.class.getResource("blog-demo.zip");
 		assertNotNull(cpUrl);
 		File cp = new File(cpUrl.toURI());
 
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		PutMethod method = createPut("repo/entries", MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", cp),
-				new StringPart("filename","blog-demo.zip"),
-				new StringPart("resourcename","Blog demo"),
-				new StringPart("displayname","Blog demo")
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo/entries").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+		entity.addPart("file", new FileBody(cp));
+		entity.addPart("filename", new StringBody("blog-demo.zip"));
+		entity.addPart("resourcename", new StringBody("Blog demo"));
+		entity.addPart("displayname", new StringBody("Blog demo"));
+		method.setEntity(entity);
 		
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		
+		InputStream body = response.getEntity().getContent();
+		
 		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
@@ -306,7 +316,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		log.info(re.getOlatResource().getResourceableTypeName());
 	}
 	
-	protected List<RepositoryEntryVO> parseRepoArray(String body) {
+	protected List<RepositoryEntryVO> parseRepoArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<RepositoryEntryVO>>(){/* */});

@@ -42,15 +42,10 @@ import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -151,7 +146,8 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUploadFile() throws IOException, URISyntaxException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").build();
 		
@@ -160,15 +156,11 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		assertNotNull(fileUrl);
 		File file = new File(fileUrl.toURI());
 		
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", file),
-				new StringPart("filename", file.getName())
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		conn.addMultipart(method, file.getName(), file);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 
 		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());
@@ -176,13 +168,14 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testCreateFolder() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testCreateFolder() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve("RootFolder");
@@ -191,13 +184,14 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testCreateFolders() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testCreateFolders() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("NewFolder1").path("NewFolder2").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve("NewFolder1");
@@ -211,7 +205,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void deleteFolder() throws IOException {
+	public void deleteFolder() throws IOException, URISyntaxException {
 		//add some folders
 		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve("FolderToDelete");
@@ -219,12 +213,13 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 			folder.createChildContainer("FolderToDelete");
 		}
 		
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("FolderToDelete").build();
-		DeleteMethod method = createDelete(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		VFSItem deletedItem = folder.resolve("FolderToDelete");
 		assertNull(deletedItem);

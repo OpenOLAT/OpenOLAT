@@ -33,20 +33,21 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -248,9 +249,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
   @After
-	@Override
 	public void tearDown() throws Exception {
-		super.tearDown();
 		try {
       DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
@@ -262,15 +261,16 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	
 	
 	@Test
-	public void testGetGroupsAdmin() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetGroupsAdmin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		String request = "/groups";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
 		assertTrue(groups.size() >= 4);//g1, g2, g3 and g4 + from olat
@@ -287,15 +287,16 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetGroups() throws IOException {
-		HttpClient c = loginWithCookie("rest-four", "A6B7C8");
+	public void testGetGroups() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-four", "A6B7C8"));
 		
-		String request = "/groups";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
 		assertTrue(groups.size() >= 2);//g1, g2, g3 and g4 + from olat
@@ -312,30 +313,32 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetGroupAdmin() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetGroupAdmin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		String request = "/groups/" + g1.getKey();
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").path(g1.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		GroupVO vo = parse(body, GroupVO.class);
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), g1.getKey());
 	}
 	
 	@Test
-	public void testGetGroupInfos() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetGroupInfos() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		String request = "/groups/" + g1.getKey() + "/infos";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/infos").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		GroupInfoVO vo = parse(body, GroupInfoVO.class);
 		assertNotNull(vo);
 		assertEquals(Boolean.TRUE, vo.getHasWiki());
@@ -345,15 +348,16 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	
 	//the web service generate the forum key
 	@Test
-	public void testGetGroupInfos2() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetGroupInfos2() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		String request = "/groups/" + g2.getKey() + "/infos";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g2.getKey() + "/infos").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		GroupInfoVO vo = parse(body, GroupInfoVO.class);
 		assertNotNull(vo);
 		assertEquals(Boolean.FALSE, vo.getHasWiki());
@@ -363,15 +367,16 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	
 	
 	@Test
-	public void testGetThreads() throws IOException {
-		HttpClient c = loginWithCookie("rest-one", "A6B7C8");
+	public void testGetThreads() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-one", "A6B7C8"));
 		
-		String request = "/groups/" + g1.getKey() + "/forum/threads";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/forum/threads").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		List<MessageVO> messages = parseMessageArray(body);
 		
 		assertNotNull(messages);
@@ -379,15 +384,16 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetMessages() throws IOException {
-		HttpClient c = loginWithCookie("rest-one", "A6B7C8");
+	public void testGetMessages() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-one", "A6B7C8"));
 		
-		String request = "/groups/" + g1.getKey() + "/forum/posts/" + m1.getKey();
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/forum/posts/" + m1.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		List<MessageVO> messages = parseMessageArray(body);
 		
 		assertNotNull(messages);
@@ -397,8 +403,9 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	
 	
 	@Test
-	public void testUpdateCourseGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUpdateCourseGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		GroupVO vo = new GroupVO();
 		vo.setKey(g1.getKey());
@@ -408,13 +415,12 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		vo.setMaxParticipants(g1.getMaxParticipants());
 		vo.setType(g1.getType());
 		
-		String stringuifiedAuth = stringuified(vo);
-    RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
-		String request = "/groups/" + g1.getKey();
-		PostMethod method = createPost(request, MediaType.APPLICATION_JSON, true);
-		method.setRequestEntity(entity);
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey()).build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
     BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
     BusinessGroup bg = bgm.loadBusinessGroup(g1.getKey(), false);
@@ -425,13 +431,14 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testDeleteCourseGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testDeleteCourseGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		String request = "/groups/" + g1.getKey();
-		DeleteMethod method = createDelete(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
     BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
     BusinessGroup bg = bgm.loadBusinessGroup(g1.getKey(), false);
@@ -439,14 +446,15 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetParticipantsAdmin() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetParticipantsAdmin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		String request = "/groups/" + g1.getKey() + "/participants";
-		HttpMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<UserVO> participants = parseUserArray(body);
 		assertNotNull(participants);
 		assertEquals(participants.size(), 2);
@@ -465,25 +473,27 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetParticipants() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-four", "A6B7C8");
+	public void testGetParticipants() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-four", "A6B7C8"));
 		
-		String request = "/groups/" + g1.getKey() + "/participants";
-		HttpMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
 		
 		//g1 not authorized
-		assertEquals(code, 401);
+		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
-	public void testGetOwnersAdmin() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		String request = "/groups/" + g1.getKey() + "/owners";
-		HttpMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
+	public void testGetOwnersAdmin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<UserVO> owners = parseUserArray(body);
 		assertNotNull(owners);
 		assertEquals(owners.size(), 2);
@@ -502,24 +512,26 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetOwners() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-four", "A6B7C8");
-		String request = "/groups/" + g1.getKey() + "/owners";
-		HttpMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
+	public void testGetOwners() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-four", "A6B7C8"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
 		//not authorized
-		assertEquals(code, 401);
+		assertEquals(401, response.getStatusLine().getStatusCode());
 	}
 	
 	@Test
-	public void testAddParticipant() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		String request = "/groups/" + g1.getKey() + "/participants/" + part3.getKey();
-		HttpMethod method = createPut(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		method.releaseConnection();
+	public void testAddParticipant() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants/" + part3.getKey()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
 		
-		assertTrue(code == 200 || code == 201);
+		
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
 		BaseSecurity secm = BaseSecurityManager.getInstance();
 		List<Identity> participants = secm.getIdentitiesOfSecurityGroup(g1.getPartipiciantGroup());
@@ -534,14 +546,15 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testRemoveParticipant() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		String request = "/groups/" + g1.getKey() + "/participants/" + part2.getKey();
-		HttpMethod method = createDelete(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		method.releaseConnection();
+	public void testRemoveParticipant() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/participants/" + part2.getKey()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		
 
-		assertTrue(code == 200);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		BaseSecurity secm = BaseSecurityManager.getInstance();
 		List<Identity> participants = secm.getIdentitiesOfSecurityGroup(g1.getPartipiciantGroup());
@@ -556,14 +569,15 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testAddTutor() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		String request = "/groups/" + g1.getKey() + "/owners/" + owner3.getKey();
-		HttpMethod method = createPut(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		method.releaseConnection();
+	public void testAddTutor() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners/" + owner3.getKey()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
 		
-		assertTrue(code == 200 || code == 201);
+		
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
 		BaseSecurity secm = BaseSecurityManager.getInstance();
 		List<Identity> owners = secm.getIdentitiesOfSecurityGroup(g1.getOwnerGroup());
@@ -578,14 +592,15 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testRemoveTutor() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
-		String request = "/groups/" + g1.getKey() + "/owners/" + owner2.getKey();
-		HttpMethod method = createDelete(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		method.releaseConnection();
+	public void testRemoveTutor() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/owners/" + owner2.getKey()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		
 
-		assertTrue(code == 200);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		
 		BaseSecurity secm = BaseSecurityManager.getInstance();
 		List<Identity> owners = secm.getIdentitiesOfSecurityGroup(g1.getOwnerGroup());
@@ -599,7 +614,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertFalse(found);
 	}
 	
-	protected List<UserVO> parseUserArray(String body) {
+	protected List<UserVO> parseUserArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
@@ -609,7 +624,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	protected List<GroupVO> parseGroupArray(String body) {
+	protected List<GroupVO> parseGroupArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<GroupVO>>(){/* */});
@@ -619,7 +634,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	protected List<MessageVO> parseMessageArray(String body) {
+	protected List<MessageVO> parseMessageArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<MessageVO>>(){/* */});

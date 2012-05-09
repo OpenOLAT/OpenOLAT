@@ -47,7 +47,6 @@ import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.restapi.repository.course.CoursesWebService;
-import org.olat.restapi.support.vo.CourseInfoVOes;
 import org.olat.test.OlatJerseyTestCase;
 
 /**

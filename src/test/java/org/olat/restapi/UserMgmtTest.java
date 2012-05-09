@@ -48,21 +48,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -277,9 +270,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
   @After
-	@Override
 	public void tearDown() throws Exception {
-		super.tearDown();
 		try {
       DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
@@ -290,15 +281,17 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 
 	@Test
-	public void testGetUsers() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetUsers() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		HttpMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<UserVO> vos = parseUserArray(body);
-		method.releaseConnection();
+		
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 
 		assertNotNull(vos);
@@ -307,19 +300,19 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testFindUsersByLogin() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testFindUsersByLogin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		GetMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("login","administrator"),
-				new NameValuePair("authProvider","OLAT")
-		});
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("login","administrator")
+				.queryParam("authProvider","OLAT").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<UserVO> vos = parseUserArray(body);
-		method.releaseConnection();
+		
 		String[] authProviders = new String[]{"OLAT"};
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch("administrator", null, true, null, null, authProviders, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 
@@ -336,39 +329,38 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testFindUsersByProperty() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testFindUsersByProperty() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		GetMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("telMobile","39847592"),
-				new NameValuePair("gender","Female"),
-				new NameValuePair("birthDay", "12/12/2009")
-		});
-		method.addRequestHeader("Accept-Language", "en");
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("telMobile","39847592")
+				.queryParam("gender","Female")
+				.queryParam("birthDay", "12/12/2009").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Accept-Language", "en");
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<UserVO> vos = parseUserArray(body);
-		method.releaseConnection();
 	
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
 	}
 	
 	@Test
-	public void testFindAdminByAuth() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testFindAdminByAuth() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		GetMethod method = createGet("/users", MediaType.APPLICATION_JSON, true);
-		method.setQueryString(new NameValuePair[]{
-				new NameValuePair("authUsername","administrator"),
-				new NameValuePair("authProvider","OLAT")
-		});
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("authUsername","administrator")
+				.queryParam("authProvider","OLAT").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		List<UserVO> vos = parseUserArray(body);
 	
 		assertNotNull(vos);
@@ -378,14 +370,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		HttpMethod method = createGet("/users/" + id1.getKey(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		UserVO vo = parse(body, UserVO.class);
 
 		assertNotNull(vo);
@@ -396,14 +390,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetUserNotAdmin() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testGetUserNotAdmin() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
-		HttpMethod method = createGet("/users/" + id2.getKey(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		UserVO vo = parse(body, UserVO.class);
 
 		assertNotNull(vo);
@@ -418,13 +414,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 * @throws IOException
 	 */
 	@Test	
-	public void testGetRawJsonUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetRawJsonUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		HttpMethod method = createGet("/users/" + id1.getKey(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String bodyJson = method.getResponseBodyAsString();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String bodyJson = EntityUtils.toString(response.getEntity());
 		System.out.println("User");
 		System.out.println(bodyJson);
 		System.out.println("User");
@@ -435,20 +433,24 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 * @throws IOException
 	 */
 	@Test	
-	public void testGetRawXmlUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");	
-		HttpMethod method = createGet("/users/" + id1.getKey(), MediaType.APPLICATION_XML, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String bodyXml = method.getResponseBodyAsString();
+	public void testGetRawXmlUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_XML, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String bodyXml = EntityUtils.toString(response.getEntity());
 		System.out.println("User");
 		System.out.println(bodyXml);
 		System.out.println("User");
 	}
 	
 	@Test
-	public void testCreateUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testCreateUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -462,16 +464,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		vo.putProperty("gender", "Female");//male or female
 		vo.putProperty("birthDay", "12/12/2009");
 
-		String stringuifiedAuth = stringuified(vo);
-		PutMethod method = createPut("/users", MediaType.APPLICATION_JSON, true);
-    RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
-    method.setRequestEntity(entity);
-		method.addRequestHeader("Accept-Language", "en");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		InputStream body = response.getEntity().getContent();
+		
 		UserVO savedVo = parse(body, UserVO.class);
 		
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
@@ -489,8 +490,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	 * Test machine format for gender and date
 	 */
 	@Test
-	public void testCreateUser2() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testCreateUser2() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		UserVO vo = new UserVO();
 		String username = UUID.randomUUID().toString();
@@ -504,16 +506,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		vo.putProperty("gender", "female");//male or female
 		vo.putProperty("birthDay", "20091212");
 
-		String stringuifiedAuth = stringuified(vo);
-		PutMethod method = createPut("/users", MediaType.APPLICATION_JSON, true);
-    RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
-    method.setRequestEntity(entity);
-		method.addRequestHeader("Accept-Language", "en");
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+    conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 200 || code == 201);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		InputStream body = response.getEntity().getContent();
+		
 		UserVO savedVo = parse(body, UserVO.class);
 		
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
@@ -528,8 +529,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testCreateUserWithValidationError() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testCreateUserWithValidationError() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		UserVO vo = new UserVO();
 		vo.setLogin("rest-809");
@@ -538,15 +540,14 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		vo.setEmail("");
 		vo.putProperty("gender", "lu");
 
-		String stringuifiedAuth = stringuified(vo);
-		PutMethod method = createPut("/users", MediaType.APPLICATION_JSON, true);
-    RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
-    method.setRequestEntity(entity);
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
 		
-		int code = c.executeMethod(method);
-		assertTrue(code == 406);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpResponse response = conn.execute(method);
+		assertEquals(406, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
+		
 		List<ErrorVO> errors = parseErrorArray(body);
  		assertNotNull(errors);
 		assertFalse(errors.isEmpty());
@@ -561,15 +562,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testDeleteUser() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testDeleteUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//delete an authentication token
-		String request = "/users/" + id2.getKey();
-		DeleteMethod method = createDelete(request, MediaType.APPLICATION_XML, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getKey()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
 		
 		Identity deletedIdent = BaseSecurityManager.getInstance().loadIdentityByKey(id2.getKey());
 		assertNotNull(deletedIdent);//Identity aren't deleted anymore
@@ -577,16 +579,17 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserForums() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testUserForums() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
 				.queryParam("start", 0).queryParam("limit", 20).build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		ForumVOes forums = parse(body, ForumVOes.class);
 		
 		assertNotNull(forums);
@@ -613,17 +616,18 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserGroupForum() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testUserGroupForum() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
 				.path("group").path(g1.getKey().toString())
 				.path("threads").queryParam("start", "0").queryParam("limit", "25").build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		MessageVOes threads = parse(body, MessageVOes.class);
 		
 		assertNotNull(threads);
@@ -632,17 +636,18 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserCourseForum() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testUserCourseForum() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("forums")
 				.path("course").path(demoCourse.getResourceableId().toString()).path(demoForumNode.getIdent())
 				.path("threads").queryParam("start", "0").queryParam("limit", 25).build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		MessageVOes threads = parse(body, MessageVOes.class);
 		
 		assertNotNull(threads);
@@ -651,15 +656,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserFolders() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testUserFolders() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		FolderVOes folders = parse(body, FolderVOes.class);
 		
 		assertNotNull(folders);
@@ -693,16 +699,17 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserGroupFolder() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testUserGroupFolder() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
 				.path("group").path(g2.getKey().toString()).build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<FileVO> folders = parseFileArray(body);
 
 		assertNotNull(folders);
@@ -714,16 +721,17 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserBCCourseNodeFolder() throws IOException {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+	public void testUserBCCourseNodeFolder() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders")
 				.path("course").path(demoCourse.getResourceableId().toString()).path(demoBCCourseNode.getIdent()).build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<FileVO> folders = parseFileArray(body);
 
 		assertNotNull(folders);
@@ -736,14 +744,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testUserPersonalFolder() throws Exception {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("folders").path("personal").build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<FileVO> files = parseFileArray(body);
 		
 		assertNotNull(files);
@@ -753,14 +762,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testOtherUserPersonalFolder() throws Exception {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString()).path("folders").path("personal").build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<FileVO> files = parseFileArray(body);
 		
 		assertNotNull(files);
@@ -770,14 +780,15 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testOtherUserPersonalFolderOfId3() throws Exception {
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("users").path(id3.getKey().toString()).path("folders").path("personal").build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<FileVO> files = parseFileArray(body);
 		
 		assertNotNull(files);
@@ -789,36 +800,38 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserGroup() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUserGroup() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//retrieve all groups
-		String request = "/users/" + id1.getKey() + "/groups";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/groups").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		String body = method.getResponseBodyAsString();
+		InputStream body = response.getEntity().getContent();
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
 		assertEquals(2, groups.size());//g1 and g2 as g3 and g4 are right groups which are not returned
 	}
 	
 	@Test
-	public void testUserGroupWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUserGroupWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups")
 			.queryParam("start", 0).queryParam("limit", 1).build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = method.getResponseBodyAsStream();
+		InputStream body = response.getEntity().getContent();
 		GroupVOes groups = parse(body, GroupVOes.class);
-		method.releaseConnection();
+		
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
@@ -826,20 +839,21 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testUserGroupInfosWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testUserGroupInfosWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//retrieve all groups
 		URI uri =UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).path("groups").path("infos")
 			.queryParam("start", 0).queryParam("limit", 1).build();
 
-		GetMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		InputStream body = method.getResponseBodyAsStream();
+		InputStream body = response.getEntity().getContent();
 		GroupInfoVOes groups = parse(body, GroupInfoVOes.class);
-		method.releaseConnection();
+		
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
@@ -851,21 +865,19 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
-		
-		HttpClient c = loginWithCookie(id1.getName(), "A6B7C8");
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
 		
 		//upload portrait
-		String request = "/users/" + id1.getKey() + "/portrait";
-		PostMethod method = createPost(request, MediaType.APPLICATION_JSON, true);
-		method.addRequestHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
-		Part[] parts = { 
-				new FilePart("file", portrait),
-				new StringPart("filename","portrait.jpg")
-		};
-		method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/portrait").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON, true);
+		method.addHeader("Content-Type", MediaType.MULTIPART_FORM_DATA);
+		conn.addMultipart(method, "portrait.jpg", portrait);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+
 		
 		//check if big and small portraits exist
 		DisplayPortraitManager dps = DisplayPortraitManager.getInstance();
@@ -875,17 +887,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertTrue(bigPortrait.exists());
 		
 		//check get portrait
-		String getRequest = "/users/" + id1.getKey() + "/portrait";
-		GetMethod getMethod = createGet(getRequest, MediaType.APPLICATION_OCTET_STREAM, true);
-		int getCode = c.executeMethod(getMethod);
-		assertEquals(getCode, 200);
-		InputStream in = getMethod.getResponseBodyAsStream();
+		URI getRequest = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getKey() + "/portrait").build();
+		HttpGet getMethod = conn.createGet(getRequest, MediaType.APPLICATION_OCTET_STREAM, true);
+		HttpResponse getResponse = conn.execute(getMethod);
+		assertEquals(200, getResponse.getStatusLine().getStatusCode());
+		InputStream in = getResponse.getEntity().getContent();
 		int b = 0;
 		int count = 0;
 		while((b = in.read()) > -1) {
 			count++;
 		}
-		getMethod.releaseConnection();
 		
 		assertEquals(-1, b);//up to end of file
 		assertTrue(count > 1000);//enough bytes
@@ -895,12 +906,11 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		//check get portrait as Base64
 		UriBuilder getRequest2 = UriBuilder.fromUri(getContextURI()).path("users").path(id1.getKey().toString()).queryParam("withPortrait", "true");
-		GetMethod getMethod2 = createGet(getRequest2.build(), MediaType.APPLICATION_JSON, true);
-		int getCode2 = c.executeMethod(getMethod2);
-		assertEquals(getCode2, 200);
-		InputStream in2 = getMethod2.getResponseBodyAsStream();
+		HttpGet getMethod2 = conn.createGet(getRequest2.build(), MediaType.APPLICATION_JSON, true);
+		HttpResponse getCode2 = conn.execute(getMethod2);
+		assertEquals(200, getCode2.getStatusLine().getStatusCode());
+		InputStream in2 = getCode2.getEntity().getContent();
 		UserVO userVo = parse(in2, UserVO.class);
-		getMethod2.releaseConnection();
 		assertNotNull(userVo);
 		assertNotNull(userVo.getPortrait());
 		byte[] datas = Base64.decodeBase64(userVo.getPortrait().getBytes());
@@ -918,16 +928,6 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	protected List<UserVO> parseUserArray(String body) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
-			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
 	protected List<UserVO> parseUserArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
@@ -938,7 +938,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	protected List<GroupVO> parseGroupArray(String body) {
+	protected List<GroupVO> parseGroupArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<GroupVO>>(){/* */});

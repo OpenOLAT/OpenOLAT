@@ -28,6 +28,7 @@ package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOADRESSES;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS;
@@ -35,14 +36,16 @@ import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_MBODY_DEFAULT
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_MSUBJECT_DEFAULT;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPut;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -85,8 +88,9 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testBareBoneConfig() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testBareBoneConfig() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course1).path("contact")
@@ -94,12 +98,12 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 			.queryParam("position", "0").queryParam("shortTitle", "Contact-0")
 			.queryParam("longTitle", "Contact-long-0")
 			.queryParam("objectives", "Contact-objectives-0").build();
-		PutMethod method = createPut(newContactUri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpPut method = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		InputStream body = response.getEntity().getContent();
 		
-		assertEquals(200, code);
+		
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		CourseNodeVO contactNode = parse(body, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
@@ -110,8 +114,9 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testFullConfig() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testFullConfig() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an contact node
 		URI newContactUri = getElementsUri(course1).path("contact")
@@ -127,13 +132,13 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 			.queryParam("defaultSubject", "Hello by contact 1")
 			.queryParam("defaultBody", "Hello by contact 1 body")
 			.build();
-		PutMethod method = createPut(newContactUri, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		String body = method.getResponseBodyAsString();
-		method.releaseConnection();
+		HttpPut method = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		InputStream body = response.getEntity().getContent();
+		
 		
 		//check the return values
-		assertEquals(200, code);
+		assertEquals(200, response.getStatusLine().getStatusCode());
 		CourseNodeVO contactNode = parse(body, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());

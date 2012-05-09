@@ -40,11 +40,9 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
@@ -89,13 +87,15 @@ public class CoursesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetCourses() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetCourses() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		HttpMethod method = createGet("/repo/courses", MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/repo/courses").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<CourseVO> courses = parseCourseArray(body);
 		assertNotNull(courses);
 		assertTrue(courses.size() >= 2);
@@ -116,16 +116,16 @@ public class CoursesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetCoursesWithPaging() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetCoursesWithPaging() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.queryParam("start", "0").queryParam("limit", "1").build();
-		
-		HttpMethod method = createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CourseVOes courses = parse(body, CourseVOes.class);
 		assertNotNull(courses);
 		assertNotNull(courses.getCourses());
@@ -133,16 +133,17 @@ public class CoursesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testCreateEmptyCourse() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testCreateEmptyCourse() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 			.queryParam("shortTitle", "course3").queryParam("title", "course3 long name").build();
-		PutMethod method = createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		CourseVO course = parse(body, CourseVO.class);
 		assertNotNull(course);
 		assertEquals("course3", course.getTitle());
@@ -168,7 +169,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		assertNotNull(infos);
 	}
 	
-	protected List<CourseVO> parseCourseArray(String body) {
+	protected List<CourseVO> parseCourseArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<CourseVO>>(){/* */});

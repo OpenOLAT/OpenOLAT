@@ -26,19 +26,25 @@
 
 package org.olat.restapi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Test;
@@ -62,21 +68,23 @@ import org.olat.test.OlatJerseyTestCase;
 public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
 	@Test
-	public void testGetAuthentications() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testGetAuthentications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
-		GetMethod method = createGet("/users/administrator/auth", MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		String body = method.getResponseBodyAsString();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<AuthenticationVO> vos = parseAuthenticationArray(body);
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
-		method.releaseConnection();
+		
 	}
 	
 	@Test
-	public void testCreateAuthentications() throws IOException {
+	public void testCreateAuthentications() throws IOException, URISyntaxException {
 		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
 		Identity adminIdent = baseSecurity.findIdentityByName("administrator");
 		try {
@@ -89,7 +97,8 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		}
 		DBFactory.getInstance().commitAndCloseSession();
 		
-		HttpClient c = loginWithCookie("administrator", "openolat");
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 
 		AuthenticationVO vo = new AuthenticationVO();
 		vo.setAuthUsername("administrator");
@@ -97,17 +106,16 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		vo.setProvider("REST-API");
 		vo.setCredential("credentials");
 		
-		String stringuifiedAuth = stringuified(vo);
-		PutMethod method = createPut("/users/administrator/auth", MediaType.APPLICATION_JSON, true);
-    RequestEntity entity = new StringRequestEntity(stringuifiedAuth, MediaType.APPLICATION_JSON, "UTF-8");
-    method.setRequestEntity(entity);
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
 
-    int code = c.executeMethod(method);
-    assertTrue(code == 200 || code == 201);
-    String body = method.getResponseBodyAsString();
+    HttpResponse response = conn.execute(method);
+    assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+    InputStream body = response.getEntity().getContent();
     AuthenticationVO savedAuth = parse(body, AuthenticationVO.class);
     Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-API");
-    method.releaseConnection();
+    
 
 		assertNotNull(refAuth);
 		assertNotNull(refAuth.getKey());
@@ -123,8 +131,9 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testDeleteAuthentications() throws IOException {
-		HttpClient c = loginWithCookie("administrator", "openolat");
+	public void testDeleteAuthentications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an authentication token
 		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
@@ -134,17 +143,17 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 		
 		//delete an authentication token
-		String request = "/users/administrator/auth/" + authentication.getKey().toString();
-		DeleteMethod method = createDelete(request, MediaType.APPLICATION_XML, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		method.releaseConnection();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth/" + authentication.getKey()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
 		
 		Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-A-2");
 		assertNull(refAuth);
 	}
 	
-	private List<AuthenticationVO> parseAuthenticationArray(String body) {
+	private List<AuthenticationVO> parseAuthenticationArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<AuthenticationVO>>(){/* */});

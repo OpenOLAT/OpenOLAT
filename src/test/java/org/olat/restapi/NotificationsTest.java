@@ -44,9 +44,6 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -125,16 +122,17 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	
 	
 	@Test
-	public void testGetNotifications() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-notifications-test-1", "A6B7C8");
+	public void testGetNotifications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-notifications-test-1", "A6B7C8"));
 		
-		String request = "/notifications";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		URI request = UriBuilder.fromUri(getContextURI()).path("notifications").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<SubscriptionInfoVO> infos = parseUserArray(body);
-		method.releaseConnection();
+		
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
 		
@@ -148,16 +146,17 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetUserNotifications() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-notifications-test-1", "A6B7C8");
+	public void testGetUserNotifications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-notifications-test-1", "A6B7C8"));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "User");
-		GetMethod method = createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<SubscriptionInfoVO> infos = parseUserArray(body);
-		method.releaseConnection();
+		
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
 		
@@ -171,7 +170,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetUserForumNotifications() throws HttpException, URISyntaxException, IOException {
+	public void testGetUserForumNotifications() throws URISyntaxException, IOException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
 		
@@ -190,16 +189,17 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetUserForumNotificationsByType() throws HttpException, IOException {
-		HttpClient c = loginWithCookie(userAndForumSubscriberId.getName(), "A6B7C8");
+	public void testGetUserForumNotificationsByType() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(userAndForumSubscriberId.getName(), "A6B7C8"));
 		
 		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications").queryParam("type", "Forum");
-		GetMethod method = createGet(request.build(), MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<SubscriptionInfoVO> infos = parseUserArray(body);
-		method.releaseConnection();
+		
 		assertNotNull(infos);
 		assertTrue(1 <= infos.size());
 		
@@ -213,21 +213,22 @@ public class NotificationsTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void testGetNoNotifications() throws HttpException, IOException {
-		HttpClient c = loginWithCookie("rest-notifications-test-3", "A6B7C8");
+	public void testGetNoNotifications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("rest-notifications-test-3", "A6B7C8"));
 		
-		String request = "/notifications";
-		GetMethod method = createGet(request, MediaType.APPLICATION_JSON, true);
-		int code = c.executeMethod(method);
-		assertEquals(code, 200);
-		InputStream body = method.getResponseBodyAsStream();
+		URI request = UriBuilder.fromUri(getContextURI()).path("/notifications").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		InputStream body = response.getEntity().getContent();
 		List<SubscriptionInfoVO> infos = parseUserArray(body);
-		method.releaseConnection();
+		
 		assertNotNull(infos);
 		assertTrue(infos.isEmpty());
 	}
 	
-	protected List<SubscriptionInfoVO> parseUserArray(HttpResponse response) throws IOException {
+	protected List<SubscriptionInfoVO> parseUserArray(HttpResponse response) throws IOException, URISyntaxException {
 		InputStream body = response.getEntity().getContent();
 		return parseUserArray(body);
 	}

@@ -26,19 +26,22 @@
 
 package org.olat.restapi;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.cookie.Cookie;
 import org.junit.Test;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -66,11 +69,12 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 * @throws IOException
 	 */
 	@Test
-	public void testCookieAuthentication() throws HttpException, IOException {
-		HttpClient c = getAuthenticatedCookieBasedClient("administrator", "openolat");
-		Cookie[] cookies = c.getState().getCookies();
+	public void testCookieAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		List<Cookie> cookies = conn.getCookieStore().getCookies();
 		assertNotNull(cookies);
-		assertTrue(cookies.length > 0);
+		assertFalse(cookies.isEmpty());
 	}
 	
 	/**
@@ -79,8 +83,11 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 * @throws IOException
 	 */
 	@Test
-	public void testTokenAuthentication() throws HttpException, IOException {
-		String securityToken = getAuthenticatedTokenBasedClient("administrator", "openolat");
+	public void testTokenAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		String securityToken = conn.getSecurityToken();
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 	}
 	
@@ -91,70 +98,82 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 	 * @throws IOException
 	 */
 	@Test
-	public void testFollowTokenBasedDiscussion() throws HttpException, IOException {
-		String securityToken = getAuthenticatedTokenBasedClient("administrator", "openolat");
+	public void testFollowTokenBasedDiscussion() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		String securityToken = conn.getSecurityToken();
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		conn.shutdown();
 		
 		//path is protected
-		GetMethod method1 = createGet("/users/version", MediaType.TEXT_PLAIN, false);
-		method1.setRequestHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
-		int code1 = getHttpClient().executeMethod(method1);
-		method1.releaseConnection();
-		securityToken = getToken(method1);
-		assertEquals(code1, 200);
+		RestConnection c1 = new RestConnection();
+		URI uri1 = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
+		HttpGet method1 = c1.createGet(uri1, MediaType.TEXT_PLAIN, false);
+		method1.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
+		HttpResponse r1 = c1.execute(method1);
+		securityToken = c1.getSecurityToken(r1);
+		assertEquals(200, r1.getStatusLine().getStatusCode());
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		c1.shutdown();
 		
 		//path is protected
-		GetMethod method2 = createGet("/repo/entries", MediaType.TEXT_HTML, false);
-		method2.setRequestHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
-		int code2 = getHttpClient().executeMethod(method2);
-		method2.releaseConnection();
-		securityToken = getToken(method2);
-		assertEquals(code2, 200);
+		RestConnection c2 = new RestConnection();
+		URI uri2 = UriBuilder.fromUri(getContextURI()).path("/repo/entries").build();
+		HttpGet method2 = c2.createGet(uri2, MediaType.TEXT_HTML, false);
+		method2.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
+		HttpResponse r2 = c2.execute(method2);
+		securityToken = c2.getSecurityToken(r2);
+		assertEquals(200, r2.getStatusLine().getStatusCode());
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		c2.shutdown();
 		
 		//path is not protected
-		GetMethod method3 = createGet("/api/copyright", MediaType.TEXT_PLAIN, false);
-		method3.setRequestHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
-		int code3 = getHttpClient().executeMethod(method3);
-		method3.releaseConnection();
-		securityToken = getToken(method3);
-		assertEquals(code3, 200);
+		RestConnection c3 = new RestConnection();
+		URI uri3 = UriBuilder.fromUri(getContextURI()).path("/api/copyright").build();
+		HttpGet method3 = c3.createGet(uri3, MediaType.TEXT_PLAIN, false);
+		method3.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
+		HttpResponse r3 = c3.execute(method3);
+		securityToken = c3.getSecurityToken(r3);
+		assertEquals(200, r3.getStatusLine().getStatusCode());
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		c3.shutdown();
 		
 		//path is protected
-		GetMethod method4 = createGet("/repo/entries", MediaType.TEXT_HTML, false);
-		method4.setRequestHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
-		int code4 = getHttpClient().executeMethod(method4);
-		method4.releaseConnection();
-		securityToken = getToken(method4);
-		assertEquals(code4, 200);
+		RestConnection c4 = new RestConnection();
+		URI uri4 = UriBuilder.fromUri(getContextURI()).path("/repo/entries").build();
+		HttpGet method4 = c4.createGet(uri4, MediaType.TEXT_HTML, false);
+		method4.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
+		HttpResponse r4 = c4.execute(method4);
+		securityToken = c4.getSecurityToken(r4);
+		assertEquals(200, r4.getStatusLine().getStatusCode());
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
+		c4.shutdown();
 	}
 	
 	@Test
-	public void testBasicAuthentication() throws HttpException, IOException {
+	public void testBasicAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		//path is protected
-		GetMethod method1 = createGet("/users/version", MediaType.TEXT_PLAIN, false);
-		method1.setRequestHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:openolat"));
-		int code1 = getHttpClient().executeMethod(method1);
-		method1.releaseConnection();
-		assertEquals(code1, 200);
-		String securityToken = getToken(method1);
+		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
+		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
+		method.setHeader("Authorization", "Basic " + Base64Encoder.encode("administrator:openolat"));
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 	}
 	
 	@Test
-	public void testWebStandardAuthentication() throws HttpException, IOException {
-		HttpClient c = getHttpClient();
-		Credentials creds = new UsernamePasswordCredentials("administrator", "openolat");
-		c.getState().setCredentials(AuthScope.ANY, creds);
-    
-		GetMethod method = createGet("/users/version", MediaType.TEXT_PLAIN, false);
-		int code = c.executeMethod(method);
-		method.releaseConnection();
-		assertEquals(code, 200);
-		String securityToken = getToken(method);
+	public void testWebStandardAuthentication() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		conn.setCredentials("administrator", "openolat");
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("/users/version").build();
+		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
+		HttpResponse response = conn.execute(method);
+		
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String securityToken = conn.getSecurityToken(response);
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 	}
 }

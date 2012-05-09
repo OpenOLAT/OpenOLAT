@@ -30,12 +30,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.olat.test.OlatJerseyTestCase;
 
@@ -54,12 +56,14 @@ public class I18nTest extends OlatJerseyTestCase {
   }	
 	
 	@Test
-	public void testExecuteService() throws HttpException, IOException {
+	public void testExecuteService() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("i18n").path("org.olat.core").path("ok").build();
-		GetMethod method = createGet(uri, MediaType.TEXT_PLAIN, false);
-		int code = getHttpClient().executeMethod(method);
-		assertEquals(200, code);
-		String response = method.getResponseBodyAsString();
-		assertEquals("OK", response);
+		HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		String out = EntityUtils.toString(response.getEntity());
+		assertEquals("OK", out);
   }
 }

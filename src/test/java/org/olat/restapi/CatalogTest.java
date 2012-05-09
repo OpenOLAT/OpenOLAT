@@ -149,9 +149,8 @@ public class CatalogTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
-	@After @Override
+	@After
 	public void tearDown() throws Exception {
-		super.tearDown();
 		DBFactory.getInstance().closeSession();
 	}
 	
