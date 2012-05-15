@@ -82,7 +82,11 @@ public class MSNPropertyHandler extends Generic127CharTextPropertyHandler {
 			return false;
 		}
 		if (StringHelper.containsNonWhitespace(value)) {
-			return value.length() <= MSN_NAME_MAX_LENGTH;
+			boolean valid = value.length() <= MSN_NAME_MAX_LENGTH;
+			if(!valid && validationError != null) {
+				validationError.setErrorKey("form.name.msn.error");
+			}
+			return valid;
 		}
 		return true;
 	}

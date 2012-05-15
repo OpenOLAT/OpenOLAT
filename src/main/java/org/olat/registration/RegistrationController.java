@@ -55,6 +55,7 @@ import org.olat.core.id.User;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -63,6 +64,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.manager.MailManager;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -405,6 +407,24 @@ public class RegistrationController extends BasicController implements Activatea
 			// update other user properties from form
 			List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 			User persistedUser = persistedIdentity.getUser();
+			
+			//add eventually static value
+			UserPropertiesConfig userPropertiesConfig = CoreSpringFactory.getImpl(UserPropertiesConfig.class);
+			RegistrationModule registrationModule = CoreSpringFactory.getImpl(RegistrationModule.class);
+			if(registrationModule.isStaticPropertyMappingEnabled()) {
+				String propertyName = registrationModule.getStaticPropertyMappingName();
+				String propertyValue = registrationModule.getStaticPropertyMappingValue();
+				if(StringHelper.containsNonWhitespace(propertyName)
+						&& StringHelper.containsNonWhitespace(propertyValue)
+						&& userPropertiesConfig.getPropertyHandler(propertyName) != null) {
+					try {
+						persistedUser.setProperty(propertyName, propertyValue);
+					} catch (Exception e) {
+						logError("Cannot set the static property value", e);
+					}
+				}
+			}
+
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				FormItem fi = registrationForm.getPropFormItem(userPropertyHandler.getName());
 				userPropertyHandler.updateUserFromFormItem(persistedUser, fi);

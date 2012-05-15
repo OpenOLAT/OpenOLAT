@@ -50,6 +50,9 @@ import org.olat.core.util.mail.EmailAddressValidator;
 public class RegistrationModule extends AbstractOLATModule {
 	// registration config
 	private static final String CONFIG_SELFREGISTRATION = "enableSelfregistration";
+	private static final String CONFIG_STATIC_PROPERTY_MAPPING = "enableStaticPropertyMapping";
+	private static final String CONFIG_STATIC_PROPERTY_MAPPING_KEY = "staticPropertyMapping";
+	private static final String CONFIG_STATIC_PROPERTY_MAPPING_VAL = "staticPropertyMappingValue";
 	private static final String CONFIG_SELFREGISTRATION_LINK = "enableSelfregistrationLink";
 	private static final String CONFIG_SELFREGISTRATION_LOGIN = "enableSelfregistrationLogin";
 	private static final String CONFIG_REGISTRATION_NOTIFICATION ="registrationNotificationEnabled";
@@ -57,8 +60,11 @@ public class RegistrationModule extends AbstractOLATModule {
 	private boolean selfRegistrationEnabled;
 	private boolean selfRegistrationLinkEnabled;
 	private boolean selfRegistrationLoginEnabled;
+	private boolean staticPropertyMappingEnabled;
 	private String registrationNotificationEmail;
 	private String domainList;
+	private String staticPropertyMappingName;
+	private String staticPropertyMappingValue;
 	
 	// disclaimer config
 	private static final String CONFIG_DISCLAIMER = "disclaimerEnabled";
@@ -95,6 +101,36 @@ public class RegistrationModule extends AbstractOLATModule {
 	public void setSelfRegistrationEnabled(boolean enable) {
 		String value = enable ? "true" : "false";
 		setStringProperty("registration.enabled", value, true);
+	}
+	
+	/**
+	 * @return true if self registration is turned on, false otherwhise
+	 */
+	public boolean isStaticPropertyMappingEnabled(){
+	    return staticPropertyMappingEnabled;
+	}
+	
+	public void setStaticPropertyMappingEnabled(boolean enable) {
+		String value = enable ? "true" : "false";
+		setStringProperty("static.prop.mapping.enabled", value, true);
+	}
+	
+	public String getStaticPropertyMappingName() {
+    return staticPropertyMappingName;
+	}
+
+	public void setStaticPropertyMappingName(String value) {
+		value = StringHelper.containsNonWhitespace(value) ? value : "";
+		setStringProperty("static.prop.mapping", value, true);
+	}
+	
+	public String getStaticPropertyMappingValue() {
+    return staticPropertyMappingValue;
+	}
+
+	public void setStaticPropertyMappingValue(String value) {
+		value = StringHelper.containsNonWhitespace(value) ? value : "";
+		setStringProperty("static.prop.mapping.value", value, true);
 	}
 	
 	public boolean isSelfRegistrationLinkEnabled(){
@@ -195,6 +231,20 @@ public class RegistrationModule extends AbstractOLATModule {
 		if(StringHelper.containsNonWhitespace(domainObj)) {
 			domainList = domainObj;
 		}
+
+		//static property mapping enabled/disabled
+		String enabledPropObj = getStringPropertyValue("static.prop.mapping.enabled", true);
+		if(StringHelper.containsNonWhitespace(enabledPropObj)) {
+			staticPropertyMappingEnabled = "true".equals(enabledPropObj);
+		}
+		String propKeyObj = getStringPropertyValue("static.prop.mapping", true);
+		if(StringHelper.containsNonWhitespace(propKeyObj)) {
+			staticPropertyMappingName = propKeyObj;
+		}
+		String propValueObj = getStringPropertyValue("static.prop.mapping.value", true);
+		if(StringHelper.containsNonWhitespace(propValueObj)) {
+			staticPropertyMappingValue = propValueObj;
+		}
 	}
 
 	@Override
@@ -229,6 +279,10 @@ public class RegistrationModule extends AbstractOLATModule {
 		// optional disclaimer elements
 		additionalCheckbox = getBooleanConfigParameter(CONFIG_ADDITIONAL_CHECKBOX, false);
 		additionaLinkText = getBooleanConfigParameter(CONFIG_ADDITIONAL_LINK, false);
+
+		staticPropertyMappingEnabled = getBooleanConfigParameter(CONFIG_STATIC_PROPERTY_MAPPING, false);
+		staticPropertyMappingName = getStringConfigParameter(CONFIG_STATIC_PROPERTY_MAPPING_KEY, "", true);
+		staticPropertyMappingValue = getStringConfigParameter(CONFIG_STATIC_PROPERTY_MAPPING_VAL, "", true);
 	}
 
 	@Override

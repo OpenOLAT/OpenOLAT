@@ -19,13 +19,16 @@
  */
 package org.olat.registration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -34,6 +37,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
+import org.olat.user.UserPropertiesConfig;
+import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * Admin panel to configure the registration settings: should link appear on the login page...
@@ -45,23 +51,51 @@ public class RegistrationAdminController extends FormBasicController {
 	private MultipleSelectionElement registrationElement;
 	private MultipleSelectionElement registrationLinkElement;
 	private MultipleSelectionElement registrationLoginElement;
+	private MultipleSelectionElement staticPropElement;
+	private SingleSelection propertyElement;
+	private TextElement propertyValueElement;
 	private TextElement exampleElement;
 	private TextElement domainListElement;
 	private FormLayoutContainer domainsContainer;
+	private FormLayoutContainer staticPropContainer;
 	
 	private static final String[] enableRegistrationKeys = new String[]{ "on" };
 	private static final String[] enableRegistrationValues = new String[1];
+	private String[] propertyKeys, propertyValues;
 	
 	private final RegistrationModule registrationModule;
 	private final RegistrationManager registrationManager;
+	private final UserPropertiesConfig userPropertiesConfig;
 	
 	public RegistrationAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin");
 		
 		registrationModule = CoreSpringFactory.getImpl(RegistrationModule.class);
 		registrationManager = CoreSpringFactory.getImpl(RegistrationManager.class);
-		
+		userPropertiesConfig = CoreSpringFactory.getImpl(UserPropertiesConfig.class);
+		//decorate the translator
+		setTranslator(userPropertiesConfig.getTranslator(getTranslator()));
+
 		enableRegistrationValues[0] = translate("admin.enableRegistration.on");
+		
+		List<UserPropertyHandler> allPropertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
+		List<UserPropertyHandler> propertyHandlers = new ArrayList<UserPropertyHandler>(allPropertyHandlers.size());
+		for(UserPropertyHandler handler:allPropertyHandlers) {
+			if(handler instanceof Generic127CharTextPropertyHandler) {
+				propertyHandlers.add(handler);
+			}
+		}
+
+		propertyKeys = new String[propertyHandlers.size() + 1];
+		propertyValues = new String[propertyHandlers.size() + 1];
+		int count = 0;
+		//Translator translator = userPropertiesConfig.getTranslator(getTranslator());
+		propertyKeys[0] = "";
+		propertyValues[0] = "";
+		for(UserPropertyHandler propertyHandler:propertyHandlers) {
+			propertyKeys[1 + count] = propertyHandler.getName();
+			propertyValues[1 + count++] = translate(propertyHandler.i18nFormElementLabelKey());
+		}
 		
 		initForm(ureq);
 	}
@@ -105,8 +139,32 @@ public class RegistrationAdminController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		formLayout.add(buttonGroupLayout);
 		
-		updateUI();
+		//static property
+		staticPropContainer = FormLayoutContainer.createDefaultFormLayout("domains", getTranslator());
+		staticPropContainer.setRootForm(mainForm);
+		staticPropContainer.contextPut("off_title", translate("admin.registration.staticprop.title"));
+		formLayout.add(staticPropContainer);
 		
+		uifactory.addStaticTextElement("admin.registration.staticprop.error", null, translate("admin.registration.staticprop.desc"), staticPropContainer);
+		
+		staticPropElement = uifactory.addCheckboxesHorizontal("enable.staticprop", "admin.enableStaticProp", staticPropContainer, enableRegistrationKeys, enableRegistrationValues, null);
+		staticPropElement.addActionListener(this, FormEvent.ONCHANGE);
+		staticPropElement.select("on", registrationModule.isStaticPropertyMappingEnabled());
+
+		propertyElement = uifactory.addDropdownSingleselect("property", "admin.registration.property", staticPropContainer, propertyKeys, propertyValues, null);
+		String propertyName = registrationModule.getStaticPropertyMappingName();
+		UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(propertyName);
+		if(handler != null) {
+			propertyElement.select(handler.getName(), true);
+		} else {
+			propertyElement.select("", true);
+		}
+		propertyElement.addActionListener(this, FormEvent.ONCHANGE);
+		
+		String propertyValue = registrationModule.getStaticPropertyMappingValue();
+		propertyValueElement = uifactory.addTextElement("admin.registration.prop.value", "admin.registration.propertyValue", 255, propertyValue, staticPropContainer);
+		
+		updateUI();	
 	}
 	
 	@Override
@@ -126,6 +184,9 @@ public class RegistrationAdminController extends FormBasicController {
 		} else if(source == registrationLoginElement) {
 			registrationModule.setSelfRegistrationLoginEnabled(registrationLoginElement.isSelected(0));
 			updateUI();
+		} else if (source == staticPropElement) {
+			registrationModule.setStaticPropertyMappingEnabled(staticPropElement.isSelected(0));
+			updateUI();
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -141,9 +202,13 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		boolean enableDomains = enableMain && (registrationLinkElement.isSelected(0) || registrationLoginElement.isSelected(0));
 		domainsContainer.setVisible(enableDomains);
+		
+		//static prop
+		staticPropContainer.setVisible(enableMain);
+		boolean enabledProp = staticPropElement.isSelected(0);
+		propertyElement.setVisible(enableMain && enabledProp);
+		propertyValueElement.setVisible(enableMain && enabledProp);
 	}
-	
-	
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -164,6 +229,24 @@ public class RegistrationAdminController extends FormBasicController {
 				allOk &= false;
 			}
 		}
+		
+		if(staticPropElement.isSelected(0)) {
+			if(propertyElement.isOneSelected()) {
+				String propertyName = propertyElement.getSelectedKey();
+				String value = propertyValueElement.getValue();
+				UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(propertyName);
+				ValidationError validationError = new ValidationError();
+				boolean valid = handler.isValidValue(value, validationError, getLocale());
+				if(!valid) {
+					String errorKey = validationError.getErrorKey();
+					if(errorKey == null) {
+						propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
+					} else {
+						propertyValueElement.setErrorKey(errorKey, null);
+					}
+				}
+			}
+		}
 
 		return allOk && super.validateFormLogic(ureq);
 	}
@@ -176,6 +259,14 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		String domains = domainListElement.getValue();
 		registrationModule.setDomainListRaw(domains);
+		
+		registrationModule.setStaticPropertyMappingEnabled(staticPropElement.isSelected(0));
+		if(propertyElement.isOneSelected()) {
+			registrationModule.setStaticPropertyMappingName(propertyElement.getSelectedKey());
+		} else {
+			registrationModule.setStaticPropertyMappingName(null);
+		}
+		registrationModule.setStaticPropertyMappingValue(propertyValueElement.getValue());
 	}
 	
 	private String generateExampleCode() {
