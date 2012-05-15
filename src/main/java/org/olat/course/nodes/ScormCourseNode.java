@@ -318,14 +318,14 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
 	public boolean hasPassedConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, false);
+		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
 	 */
 	public boolean hasScoreConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, false);
+		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	/**
@@ -339,7 +339,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
 	 */
 	public boolean isEditableConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, false);
+		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	/**
@@ -423,7 +423,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
 	public boolean hasAttemptsConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, false);
+		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	/**
@@ -475,7 +475,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
 	 */
 	public boolean hasDetails() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, false);
+		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	////////////////////////////// fix it
