@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserPropertiesConfig;
@@ -66,6 +67,7 @@ public class RegistrationAdminController extends FormBasicController {
 	private final RegistrationModule registrationModule;
 	private final RegistrationManager registrationManager;
 	private final UserPropertiesConfig userPropertiesConfig;
+	private final Translator userPropTranslator;
 	
 	public RegistrationAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin");
@@ -74,7 +76,7 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationManager = CoreSpringFactory.getImpl(RegistrationManager.class);
 		userPropertiesConfig = CoreSpringFactory.getImpl(UserPropertiesConfig.class);
 		//decorate the translator
-		setTranslator(userPropertiesConfig.getTranslator(getTranslator()));
+		userPropTranslator = userPropertiesConfig.getTranslator(getTranslator());
 
 		enableRegistrationValues[0] = translate("admin.enableRegistration.on");
 		
@@ -89,12 +91,11 @@ public class RegistrationAdminController extends FormBasicController {
 		propertyKeys = new String[propertyHandlers.size() + 1];
 		propertyValues = new String[propertyHandlers.size() + 1];
 		int count = 0;
-		//Translator translator = userPropertiesConfig.getTranslator(getTranslator());
 		propertyKeys[0] = "";
 		propertyValues[0] = "";
 		for(UserPropertyHandler propertyHandler:propertyHandlers) {
 			propertyKeys[1 + count] = propertyHandler.getName();
-			propertyValues[1 + count++] = translate(propertyHandler.i18nFormElementLabelKey());
+			propertyValues[1 + count++] = userPropTranslator.translate(propertyHandler.i18nFormElementLabelKey());
 		}
 		
 		initForm(ureq);
@@ -238,12 +239,8 @@ public class RegistrationAdminController extends FormBasicController {
 				ValidationError validationError = new ValidationError();
 				boolean valid = handler.isValidValue(value, validationError, getLocale());
 				if(!valid) {
-					String errorKey = validationError.getErrorKey();
-					if(errorKey == null) {
-						propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
-					} else {
-						propertyValueElement.setErrorKey(errorKey, null);
-					}
+					propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
+					allOk &= false;
 				}
 			}
 		}
