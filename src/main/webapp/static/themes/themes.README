@@ -91,3 +91,18 @@ will appear in the themes list. Select your theme to apply it.
 Note that the theme will be applied to the whole OpenOLAT installation. All users that log into
 the system will work with the selected right away.
 
+
+Using Sass
+==========
+installing on a Fedora-like-System
+ensure, that "/etc/yum.repos.d/fedora.repo" includes "Everything"
+yum install ruby
+yum install ruby-devel
+yum install rubygem-rake
+gem install sass
+
+Compiling a theme
+=================
+sh compiletheme.sh [theme-folder]
+or using the command-line sass --style [compressed|compact|nested|expanded] --update [theme-folder]/layout.scss:[theme-folder]/layout.css --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile
+Note: if you made changes to a .scss other than _definitions.scss i.e. content.scss, those changes are not recognized by sass. So you have to make a change to _definitions.scss for compiling the theme.

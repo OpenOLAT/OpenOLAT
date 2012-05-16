@@ -5,12 +5,11 @@
 #
 
 style=compressed
+#style=compact
 
-echo "compiling SASS: $style"
+echo "compiling SASS: $1 $style"
 sass --version
 
-sass --style $style --update --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile .
+sass --style $style --update $1/layout.scss:$1/layout.css --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile
 
 echo "done"
-
-
