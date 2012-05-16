@@ -32,7 +32,7 @@
 				<!-- Restrict sending document to links to enforce authentication -->
 				SendDocLinkOnly=${folder.sendDocumentLinkOnly}
 				<!--   max edit filesize for online-editing in Bytes -->
-				EditFileSizeLimit=524288
+				EditFileSizeLimit=${folder.editFileSizeLimitBytes}
              </value>
       </property>
 </bean>

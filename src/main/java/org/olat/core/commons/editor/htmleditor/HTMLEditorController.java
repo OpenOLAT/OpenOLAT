@@ -108,6 +108,7 @@ public class HTMLEditorController extends FormBasicController {
 	private boolean editable = true;
 	private boolean newFile = true;
 	private boolean editorCheckEnabled = true; // default
+	private String fileToLargeError = null;
 
 	/**
 	 * Factory method to create a file based HTML editor instance that uses
@@ -146,10 +147,10 @@ public class HTMLEditorController extends FormBasicController {
 		if ( size > FolderConfig.getMaxEditSizeLimit()) {
 			// limit to reasonable size, see OO-57
 			setTranslator(Util.createPackageTranslator(PlainTextEditorController.class, getLocale(),getTranslator()));
-			getWindowControl().setError(translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""}));
+			fileToLargeError = translate("plaintext.error.tolarge", new String[]{(size / 1000) + "", (FolderConfig.getMaxEditSizeLimit()/1000)+""});
 			this.body = "";
 			this.editable = false;
-			//initForm(ureq);
+			initForm(ureq);
 			return;
 		}		
 		
@@ -222,29 +223,34 @@ public class HTMLEditorController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, false, baseContainer, fileName, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
-		//
-		// Add resize handler
-		RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
-		editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor");
-		editorConfiguration.setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
-		//
-		// The buttons
-		save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
-		save.addActionListener(this, FormEvent.ONCLICK);
-		cancel = uifactory.addFormLink("cancel", formLayout, Link.BUTTON);
-		cancel.addActionListener(this, FormEvent.ONCLICK);
-		saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
-		saveClose.addActionListener(this, FormEvent.ONCLICK);
-		//
-		// Add some file metadata		
-		VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
-		metadataVC = createVelocityContainer("metadata");		
-		vc.put("metadata", metadataVC);		
-		long lm = fileLeaf.getLastModified();
-		metadataVC.contextPut("lastModified", Formatter.getInstance(ureq.getLocale()).formatDateAndTime(new Date(lm)));
-		metadataVC.contextPut("charSet", charSet);
-		metadataVC.contextPut("fileName", fileName);
+		if (fileToLargeError != null) {
+			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
+			vc.contextPut("fileToLargeError", fileToLargeError);
+		} else {
+			htmlElement = uifactory.addRichTextElementForFileData("rtfElement", null, body, -1, -1, false, baseContainer, fileName, customLinkTreeModel, formLayout, ureq.getUserSession(), getWindowControl());
+			//
+			// Add resize handler
+			RichTextConfiguration editorConfiguration = htmlElement.getEditorConfiguration(); 
+			editorConfiguration.addOnInitCallbackFunction("b_resizetofit_htmleditor");
+			editorConfiguration.setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
+			//
+			// The buttons
+			save = uifactory.addFormLink("savebuttontext", formLayout, Link.BUTTON);
+			save.addActionListener(this, FormEvent.ONCLICK);
+			cancel = uifactory.addFormLink("cancel", formLayout, Link.BUTTON);
+			cancel.addActionListener(this, FormEvent.ONCLICK);
+			saveClose = uifactory.addFormLink("saveandclosebuttontext", formLayout, Link.BUTTON);
+			saveClose.addActionListener(this, FormEvent.ONCLICK);
+			//
+			// Add some file metadata		
+			VelocityContainer vc = (VelocityContainer) formLayout.getComponent();
+			metadataVC = createVelocityContainer("metadata");		
+			vc.put("metadata", metadataVC);		
+			long lm = fileLeaf.getLastModified();
+			metadataVC.contextPut("lastModified", Formatter.getInstance(ureq.getLocale()).formatDateAndTime(new Date(lm)));
+			metadataVC.contextPut("charSet", charSet);
+			metadataVC.contextPut("fileName", fileName);			
+		}
 	}
 	
 	public boolean isEditable() {
