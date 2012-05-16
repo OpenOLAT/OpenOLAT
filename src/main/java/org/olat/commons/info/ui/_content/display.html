@@ -25,7 +25,7 @@
 			<p class="o_item_info">$info.getInfos()#if($info.isModified()), <span class="o_item_info_mod">$info.getModifier()</span>#end</p>
 			<p></p>
 			#if($info.getMessage())
-				<p>$info.getMessage()</p>
+				<p>$r.formatURLsAsLinks($info.getMessage())</p>
 			#end
 		</div>
 	#end

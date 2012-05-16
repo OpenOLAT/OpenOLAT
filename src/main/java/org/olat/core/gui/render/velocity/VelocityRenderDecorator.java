@@ -595,6 +595,17 @@ public class VelocityRenderDecorator {
 		return Formatter.formatLatexFormulas(htmlFragment);
 	}
 	
+	/**
+	 * Search in given text fragment for URL's and surround them with clickable
+	 * HTML link objects.
+	 * 
+	 * @param textFragment
+	 * @return text with clickable links
+	 */
+	public static String formatURLsAsLinks(String textFragment) {
+		return Formatter.formatURLsAsLinks(textFragment);
+	}	
+	
  	/**
 	 * Strips all HTML tags from the source string.
 	 * 

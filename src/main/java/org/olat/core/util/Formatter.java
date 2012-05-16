@@ -35,9 +35,12 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogDelegator;
 
 /**
@@ -513,6 +516,55 @@ public class Formatter extends LogDelegator {
 			return sb.toString();
 		}			
 		return htmlFragment;
+	}
+	
+	
+	// Pattern to find URL's in text
+	private static final Pattern urlPattern = Pattern.compile("((http[s]*://|www\\.)[-A-Za-z0-9+&@#/%?=~_|!:,\\.;]+[-A-Za-z0-9+&@#/%=~_|]*)");
+	
+	/**
+	 * Search in given text fragment for URL's and surround them with clickable
+	 * HTML link objects.
+	 * 
+	 * @param textFragment
+	 * @return text with clickable links
+	 */
+	public static String formatURLsAsLinks(String textFragment) {
+		Matcher matcher = urlPattern.matcher(textFragment); 		
+		
+		StringBuffer sb = new StringBuffer();
+		int pos = 0;
+		while (matcher.find()) {
+			// Add text since last match and set end of current patch as new end
+			// of this match
+			sb.append(textFragment.substring(pos, matcher.start()));
+			pos = matcher.end();
+			// The URL is in group1, the other groups are ignored
+			String url = matcher.group(1);
+			// Fix URL's without protocol, assume http
+			if (!url.startsWith("http")) {
+				url = "http://" + url; 
+			}
+			// Fix URL's at end of a sentence
+			if (url.endsWith(",") || url.endsWith(".")) {
+				url = url.substring(0, url.length()-1);
+				pos--;
+			}
+			sb.append("<a href=\"");
+			sb.append(url);
+			sb.append("\"");
+			// OpenOLAT URL's are opened in same window, all other URL's in separate window
+			if (!url.startsWith(Settings.getServerContextPathURI())) {
+				sb.append(" target=\"_blank\" class=\"b_link_extern\"");				
+			}
+			sb.append(">");
+			sb.append(url);
+			sb.append("</a>");
+		}
+		// Add rest of text
+		sb.append(textFragment.substring(pos));
+		//
+		return sb.toString();
 	}
 	
 	/**
