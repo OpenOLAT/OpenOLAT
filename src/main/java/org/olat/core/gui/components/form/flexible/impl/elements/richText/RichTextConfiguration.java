@@ -598,7 +598,6 @@ public class RichTextConfiguration implements Disposable {
 		theme_advanced_buttons3.add(SEPARATOR_BUTTON);
 		setPrintEnabled(true, 3);
 		setFullscreenEnabled(true, false, 3);
-		setPreviewEnabled(true, 3);
 		theme_advanced_buttons3.add(CODE_BUTTON);		
 		theme_advanced_buttons3.add(SEPARATOR_BUTTON);
 		setInsertDateTimeEnabled(true, usess.getLocale(), 3);
@@ -1025,7 +1024,9 @@ public class RichTextConfiguration implements Disposable {
 	}
 
 	/**
-	 * Enable / disable the preview plugin
+	 * Enable / disable the preview plugin. Be aware that this can cause side
+	 * effects when used with special link providers! Do not use if not really
+	 * necessary
 	 * 
 	 * @param previewEnabled
 	 *            true: plugin enabled; false: plugin disabled
