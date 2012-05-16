@@ -91,7 +91,7 @@ public class RegistrationAdminController extends FormBasicController {
 		propertyKeys = new String[propertyHandlers.size() + 1];
 		propertyValues = new String[propertyHandlers.size() + 1];
 		int count = 0;
-		propertyKeys[0] = "";
+		propertyKeys[0] = "-";
 		propertyValues[0] = "";
 		for(UserPropertyHandler propertyHandler:propertyHandlers) {
 			propertyKeys[1 + count] = propertyHandler.getName();
@@ -152,8 +152,6 @@ public class RegistrationAdminController extends FormBasicController {
 		UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(propertyName);
 		if(handler != null) {
 			propertyElement.select(handler.getName(), true);
-		} else {
-			propertyElement.select("", true);
 		}
 		propertyElement.addActionListener(this, FormEvent.ONCHANGE);
 		
@@ -237,11 +235,13 @@ public class RegistrationAdminController extends FormBasicController {
 				String propertyName = propertyElement.getSelectedKey();
 				String value = propertyValueElement.getValue();
 				UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(propertyName);
-				ValidationError validationError = new ValidationError();
-				boolean valid = handler.isValidValue(value, validationError, getLocale());
-				if(!valid) {
-					propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
-					allOk &= false;
+				if(handler != null) {
+					ValidationError validationError = new ValidationError();
+					boolean valid = handler.isValidValue(value, validationError, getLocale());
+					if(!valid) {
+						propertyValueElement.setErrorKey("admin.registration.propertyValue.error", null);
+						allOk &= false;
+					}
 				}
 			}
 		}
@@ -262,7 +262,7 @@ public class RegistrationAdminController extends FormBasicController {
 		if(propertyElement.isOneSelected()) {
 			registrationModule.setStaticPropertyMappingName(propertyElement.getSelectedKey());
 		} else {
-			registrationModule.setStaticPropertyMappingName(null);
+			registrationModule.setStaticPropertyMappingName("-");
 		}
 		registrationModule.setStaticPropertyMappingValue(propertyValueElement.getValue());
 	}
