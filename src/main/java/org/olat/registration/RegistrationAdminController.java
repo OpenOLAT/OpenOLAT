@@ -135,13 +135,8 @@ public class RegistrationAdminController extends FormBasicController {
 		String domainsList = registrationModule.getDomainListRaw();
 		domainListElement = uifactory.addTextAreaElement("registration.domain.list", "admin.registration.domains", 2000, 10, 65, true, domainsList, domainsContainer);
 
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonGroupLayout.setRootForm(mainForm);
-		uifactory.addFormSubmitButton("save", buttonGroupLayout);
-		formLayout.add(buttonGroupLayout);
-		
 		//static property
-		staticPropContainer = FormLayoutContainer.createDefaultFormLayout("domains", getTranslator());
+		staticPropContainer = FormLayoutContainer.createDefaultFormLayout("propertiesmapping", getTranslator());
 		staticPropContainer.setRootForm(mainForm);
 		staticPropContainer.contextPut("off_title", translate("admin.registration.staticprop.title"));
 		formLayout.add(staticPropContainer);
@@ -164,6 +159,11 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		String propertyValue = registrationModule.getStaticPropertyMappingValue();
 		propertyValueElement = uifactory.addTextElement("admin.registration.prop.value", "admin.registration.propertyValue", 255, propertyValue, staticPropContainer);
+		
+		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonGroupLayout.setRootForm(mainForm);
+		uifactory.addFormSubmitButton("save", buttonGroupLayout);
+		formLayout.add(buttonGroupLayout);
 		
 		updateUI();	
 	}
@@ -205,10 +205,11 @@ public class RegistrationAdminController extends FormBasicController {
 		domainsContainer.setVisible(enableDomains);
 		
 		//static prop
-		staticPropContainer.setVisible(enableMain);
+		boolean enableProps = enableMain && (registrationLinkElement.isSelected(0) || registrationLoginElement.isSelected(0));
+		staticPropContainer.setVisible(enableProps);
 		boolean enabledProp = staticPropElement.isSelected(0);
-		propertyElement.setVisible(enableMain && enabledProp);
-		propertyValueElement.setVisible(enableMain && enabledProp);
+		propertyElement.setVisible(enableProps && enabledProp);
+		propertyValueElement.setVisible(enableProps && enabledProp);
 	}
 
 	@Override
