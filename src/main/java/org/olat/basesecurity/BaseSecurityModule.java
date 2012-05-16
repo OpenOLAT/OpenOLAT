@@ -44,6 +44,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String CONFIG_USERMANAGER_CAN_CREATE_PWD = "sysGroupUsermanager.canCreatePassword";
 	private static final String CONFIG_USERMANAGER_CAN_MODIFY_PWD = "sysGroupUsermanager.canModifyPassword";
 	private static final String CONFIG_USERMANAGER_CAN_START_GROUPS = "sysGroupUsermanager.canStartGroups";
+	private static final String CONFIG_USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = "sysGroupUsermanager.canModifySubscriptions";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_QUOTA = "sysGroupUsermanager.accessToQuota";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_PROP = "sysGroupUsermanager.accessToProperties";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_POLICIES = "sysGroupUsermanager.accessToPolicies";
@@ -63,6 +64,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_CREATE_PWD = true;
 	public static Boolean USERMANAGER_CAN_MODIFY_PWD = true;
 	public static Boolean USERMANAGER_CAN_START_GROUPS = true;
+	public static Boolean USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = true;
 	public static Boolean USERMANAGER_ACCESS_TO_QUOTA = true;
 	public static Boolean USERMANAGER_ACCESS_TO_PROP = false;
 	public static Boolean USERMANAGER_ACCESS_TO_POLICIES = false;
@@ -103,6 +105,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		USERMANAGER_CAN_CREATE_PWD = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_CREATE_PWD, USERMANAGER_CAN_CREATE_PWD);
 		USERMANAGER_CAN_MODIFY_PWD = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MODIFY_PWD, USERMANAGER_CAN_MODIFY_PWD);
 		USERMANAGER_CAN_START_GROUPS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_START_GROUPS, USERMANAGER_CAN_START_GROUPS);
+		USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS, USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS);
 		
 		USERMANAGER_ACCESS_TO_QUOTA = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_QUOTA, USERMANAGER_ACCESS_TO_QUOTA);
 		USERMANAGER_ACCESS_TO_PROP = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_PROP, USERMANAGER_ACCESS_TO_PROP);

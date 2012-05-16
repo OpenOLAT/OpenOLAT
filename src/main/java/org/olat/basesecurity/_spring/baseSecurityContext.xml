@@ -40,6 +40,7 @@ depends-on="database, i18nModule, triggerI18nModuleInit">
 						sysGroupUsermanager.canCreatePassword=true
 						sysGroupUsermanager.canModifyPassword=true
 						sysGroupUsermanager.canStartGroups=true
+						sysGroupUsermanager.canModifySubscriptions=true
 						sysGroupUsermanager.accessToQuota=true
 						sysGroupUsermanager.accessToProperties=false
 						sysGroupUsermanager.accessToPolicies=false
@@ -82,6 +83,10 @@ depends-on="database, i18nModule, triggerI18nModuleInit">
 				  groupmanagers. Groupmanagers can manage course comprehensive groups using the top
 				  navigation site Groupmanagement. When set to false, the user manager is not allowed 
 				  to modify any profile information or password from a user that is within such a group.
+				- canModifySubscriptions: Allows the user to list all the subscriptions the users has, 
+				  launch the corresponding resource and allow the user to delete unwanted subscriptions.
+				  This is e.g. usefull to delete subscriptions where the user has no more access or to 
+				  manage users that are inactive at the moment but you do not yet want to delete them.
 				- canManageAuthors: Allows the user to add a user to the system group authors. Authors
 				  are allowed to create new learning resources in the learning resources repository. Note
 				  that beeing added as a co-author to a learning resource grants also the right to create

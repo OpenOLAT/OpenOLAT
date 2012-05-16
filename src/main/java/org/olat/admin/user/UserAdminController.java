@@ -59,6 +59,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.notifications.NotificationUIFactory;
 import org.olat.properties.Property;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
@@ -94,6 +95,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS 		= "view.groups";
+	private static final String NLS_VIEW_SUBSCRIPTIONS 		= "view.subscriptions";
 	
 	private VelocityContainer myContent;
 		
@@ -326,7 +328,14 @@ public class UserAdminController extends BasicController implements Activateable
 		grpCtr = new GroupOverviewController(ureq, getWindowControl(), identity, canStartGroups);
 		listenTo(grpCtr);
 		userTabP.addTab(translate(NLS_VIEW_GROUPS), grpCtr.getInitialComponent());
-				
+
+		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
+		if (canSubscriptions.booleanValue() || isOlatAdmin) {
+			Controller subscriptionsCtr = NotificationUIFactory.createSubscriptionListingController(identity, ureq, getWindowControl());
+			listenTo(subscriptionsCtr); // auto-dispose
+			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS), subscriptionsCtr.getInitialComponent());			
+		}
+		
 		rolesCtr = new SystemRolesAndRightsController(getWindowControl(), ureq, identity);
 		userTabP.addTab(translate(NLS_EDIT_UROLES), rolesCtr.getInitialComponent());
 		
