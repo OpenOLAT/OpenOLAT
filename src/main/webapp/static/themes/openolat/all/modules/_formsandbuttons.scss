@@ -203,12 +203,19 @@ span.b_toggle_slide_legend {font-size: 90%; }
 
 
 /** ----------------- FORMS + LOGIN  ----------------- **/
-div.o_login_form li {
-	list-style:none;
+div.o_login {
+	div.o_login_form {
+		margin-bottom: 2em;
+		
+		li {
+			list-style:none;
+		}
+		fieldset legend {
+			display: none;
+		}
+	}
 }
-div.o_login div.o_login_form fieldset legend {
-	display: none;
-}
+
 div.b_form div.b_form_desc {
 	padding-bottom: 1em;
 	font-style: italic;
