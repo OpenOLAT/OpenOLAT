@@ -93,7 +93,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		
 		if (LoginModule.isGuestLoginLinksEnabled()) {
 			anoLink = LinkFactory.createLink("menu.guest", loginComp, this);
-			anoLink.setCustomEnabledLinkCSS("o_login_guests");
+			anoLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
 		}
 		SwitchShibbolethAuthenticationConfigurator config = (SwitchShibbolethAuthenticationConfigurator)CoreSpringFactory.getBean(SwitchShibbolethAuthenticationConfigurator.class);
 		loginComp.contextPut("wayfSPEntityID", config.getWayfSPEntityID());
