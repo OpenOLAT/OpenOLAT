@@ -113,14 +113,20 @@ div.o_peekview_author { padding: 3px 0 5px 0; font-style: italic; color: #aaaaaa
 body.b_full_screen {
 	 background-color: white; background-image:none; 
 	#b_page_margins {display:none;}
+		
+	div.b_modal_area { 
+		margin: $fullScreenModalMarginPercents;
+		width : 100% - (2 * $fullScreenModalMarginPercents);
+	}
 	 
 	div#b_preview_wrapper {
-		margin: 5px; border:1px solid #ddd; padding:0; 
-		@include o-border-radius(5px);
-		@include o-box-shadow(0,1px,2px,lightGrey);
-	 	// old legacy olat: background: #ebebeb url(../images/brasato/eportfolio/artefaktbg.png) top left repeat-x; 
-	 	@include o-gradient-white();
-	 	div.b_preview_link { border:none; }
+		margin: 0; border:0; padding:0; 
+	 	@include o-gradient-glassy($glossColor1,$glossColor2,$glossColor3,$glossColor4); 
+	 	
+		div.b_preview_link { 
+	 		border:none; 
+			a.b_link_back { margin: 0.5em;}
+	 	}
 	 	div.b_preview_link div.b_preview_wrapper_loading { background:transparent url(../openolat/images/ajax-loader.gif) no-repeat top left; }
 	}
 }
