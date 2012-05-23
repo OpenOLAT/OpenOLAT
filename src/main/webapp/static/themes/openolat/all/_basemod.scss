@@ -47,9 +47,11 @@ body {
 //	@include o-border-radius(6px);
 	border-bottom: 1px solid lightGrey;
 }
+
+$mainMinHeight: 550px;
 #b_main {
 	background:#fff;
-	min-height:550px; /* min height, should prevent "flashing" of OO sky-banner on slow connections */
+	min-height: $mainMinHeight; /* min height, should prevent "flashing" of OO sky-banner on slow connections */
 	clear:both;
 	@include o-box-shadow(0,0,14px,#D3D3D3);
 }
@@ -85,7 +87,7 @@ body {
 	border-right: 1px #DDD dotted;
 }
 #b_col3_content {
-	min-height: 450px;
+	min-height: $mainMinHeight;
 	padding: 20px 20px 30px 20px;
 }
 
