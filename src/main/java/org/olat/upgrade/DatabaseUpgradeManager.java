@@ -137,6 +137,7 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	@SuppressWarnings("unchecked")
 	protected void initUpgradesHistories() {
 		File upgradesDir = new File(WebappHelper.getUserDataRoot(), SYSTEM_DIR);
+		upgradesDir.mkdirs();
 		File upgradesHistoriesFile = new File(upgradesDir, INSTALLED_UPGRADES_XML);
 		if (upgradesHistoriesFile.exists()) {
 			upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesHistoriesFile);
