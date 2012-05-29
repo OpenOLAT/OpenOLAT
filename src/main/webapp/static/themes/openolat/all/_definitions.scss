@@ -55,7 +55,7 @@ $defaultfontsize : 75% !default;
 
 
 /* enable business / kmu mode */
-$enablebiz : false;
+$enablebiz : false !default;
 
 /* defines the body-background */
 @mixin bodybg(){
