@@ -196,7 +196,7 @@ public class EpisodeFormController extends FormBasicController {
 				Quota feedQuota = baseDir.getLocalSecurityCallback().getQuota();
 				Long remainingQuotaKb = feedQuota.getRemainingSpace();
 				if (remainingQuotaKb != -1 && file.getUploadFile().length() / 1024 > remainingQuotaKb) {
-					String supportAddr = WebappHelper.getMailConfig("mailSupport");
+					String supportAddr = WebappHelper.getMailConfig("mailQuota");
 					Long uploadLimitKB = feedQuota.getUlLimitKB();
 					getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));
 				}
@@ -267,7 +267,7 @@ public class EpisodeFormController extends FormBasicController {
 		file.addActionListener(this, FormEvent.ONCHANGE);
 		if(baseDir.getLocalSecurityCallback() != null && baseDir.getLocalSecurityCallback().getQuota() != null) {
 			Long uploadLimitKB = baseDir.getLocalSecurityCallback().getQuota().getUlLimitKB();
-			String supportAddr = WebappHelper.getMailConfig("mailSupport");
+			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			file.setMaxUploadSizeKB(uploadLimitKB.intValue(), "ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB.floatValue()) / 1024f, 1), supportAddr });
 		}
 		

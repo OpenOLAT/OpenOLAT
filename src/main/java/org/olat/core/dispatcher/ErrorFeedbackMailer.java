@@ -86,7 +86,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 					out.append(iter.next());
 				}
 			}
-			String to = WebappHelper.getMailConfig("mailSupport");
+			String to = WebappHelper.getMailConfig("mailError");
 			String subject = "Feedback from Error Nr.: " + errorNr;
 			String body = feedback + "\n------------------------------------------\n\n --- from user: " + username
 					+ " ---" + out.toString();
@@ -102,7 +102,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	private void handleException(HttpServletRequest request, Exception e) {
 		String feedback = request.getParameter("textarea");
 		String username = request.getParameter("username");
-		Tracing.logError("Error sending error feedback mail to olat support (" + WebappHelper.getMailConfig("mailSupport") + ") from: "
+		Tracing.logError("Error sending error feedback mail to OpenOLAT error support (" + WebappHelper.getMailConfig("mailError") + ") from: "
 				+ username + " with content: " + feedback, e, this.getClass());
 
 	}

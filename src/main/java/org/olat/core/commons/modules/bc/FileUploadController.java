@@ -733,7 +733,7 @@ public class FileUploadController extends FormBasicController {
 	 */
 	public void setMaxUploadSizeKB(int uploadLimitKB) {
 		this.uploadLimitKB = uploadLimitKB;
-		String supportAddr = WebappHelper.getMailConfig("mailSupport");
+		String supportAddr = WebappHelper.getMailConfig("mailQuota");
 		fileEl.setMaxUploadSizeKB(uploadLimitKB, "ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr });
 	}
 
@@ -822,7 +822,7 @@ public class FileUploadController extends FormBasicController {
 		if (remainingQuotKB != -1) {
 			if (fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
 				fileEl.clearError();
-				String supportAddr = WebappHelper.getMailConfig("mailSupport");
+				String supportAddr = WebappHelper.getMailConfig("mailQuota");
 				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr }));
 				return false;
 			}				

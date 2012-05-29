@@ -189,7 +189,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		msg.contextPut("detailedmessage", detailedmessage);
 		// Cluster NodeId + E-Nr
 		msg.contextPut("errnum", Settings.getNodeInfo() + "-E"+ refNum);
-		msg.contextPut("supportaddress", WebappHelper.getMailConfig("mailSupport"));
+		msg.contextPut("supportaddress", WebappHelper.getMailConfig("mailError"));
 		msg.contextPut("time", formatter.formatDateAndTime(new Date()));
 
 		WindowBackOffice wbo = ws.getWindowManager().createWindowBackOffice("errormessagewindow", this);

@@ -63,7 +63,7 @@ public class CmdCopyFile extends BasicController implements FolderCommand {
 		//check for quota
 		long quotaLeft = VFSManager.getQuotaLeftKB(folderComponent.getCurrentContainer());
 		if (quotaLeft < -2) {
-			String supportAddr = WebappHelper.getMailConfig("mailSupport");
+			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
 			getWindowControl().setError(msg);
 			return null;

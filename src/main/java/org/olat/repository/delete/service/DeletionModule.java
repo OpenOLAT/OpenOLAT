@@ -79,7 +79,7 @@ public class DeletionModule extends AbstractOLATModule {
 	 */
 	public void init() {
 		archiveRootPath = getStringConfigParameter(CONF_ARCHIVE_ROOT_PATH, System.getProperty("java.io.tmpdir") + File.separator+"olatdata"+File.separator + "deleted_archive", false);
-		emailResponseTo = getStringConfigParameter(CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME, WebappHelper.getMailConfig("mailSupport"), false);
+		emailResponseTo = getStringConfigParameter(CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME, WebappHelper.getMailConfig("mailDeleteUser"), false);
 		
 		if (!emailResponseTo.contains("@")) {
 			Identity identity = baseSecurityManager.findIdentityByName(emailResponseTo);

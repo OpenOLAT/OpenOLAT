@@ -225,7 +225,7 @@ public class FileChooseCreateEditController extends BasicController{
 			mainPanel.pushContent(uploadComp);
 			fileChooser.put(mainPanel.getComponentName(), mainPanel);
 		} else { // quota exceeded or no valid upload comp.
-			String supportAddr = WebappHelper.getMailConfig("mailSupport");
+			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
 			myContent.contextPut("quotaover", msg);
 			fileChooser.contextPut("quotaover", msg);

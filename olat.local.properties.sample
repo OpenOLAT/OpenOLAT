@@ -60,8 +60,15 @@ smtp.pwd=
 fromemail=no-reply@your.domain
 # set this email to a mail address in your domain (used as reply-to address)
 adminemail=webmaster@your.domain
-# set this email to a mail address in your domain (for RS-reports)
+# set this email to a mail address in your domain (used for 'ask for help here' type of messages that do not have special address)
 supportemail=${adminemail}
+# set this email to a mail address in your domain (used to tell users how to apply for more quote disk space)
+quotaemail=${supportemail}
+# set this email to a mail address in your domain (used to notify when users are deleted from the system)
+deleteuseremail=${supportemail}
+# set this email to a mail address in your domain (used for red-screen error reports)
+erroremail=${adminemail}
+
 
 ########################################################################
 # OLAT identity settings

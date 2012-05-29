@@ -24,6 +24,9 @@
 						<entry key="mailFrom" value="${fromemail}"/>
 						<entry key="mailReplyTo" value="${adminemail}"/>
 						<entry key="mailSupport" value="${supportemail}"/>
+						<entry key="mailQuota" value="${quotaemail}"/>
+						<entry key="mailDeleteUser" value="${deleteuseremail}"/>
+						<entry key="mailError" value="${erroremail}"/>
 						<entry key="mailAttachmentMaxSize" value="${mail.attachment.maxsize}"/>
 					</map>
 				</property>

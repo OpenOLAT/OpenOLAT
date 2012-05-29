@@ -148,7 +148,7 @@ public class CalendarFileUploadController extends BasicController {
 			// exceeded UL limit
 			Tracing.logWarn("IOException in CalendarFileUploadController: ", ioe, this.getClass());
 			String slimitKB = String.valueOf(fileUploadLimit);
-			String supportAddr = WebappHelper.getMailConfig("mailSupport");//->{0} für e-mail support e-mail adresse
+			String supportAddr = WebappHelper.getMailConfig("mailQuota");//->{0} für e-mail support e-mail adresse
 			getWindowControl().setError(translator.translate("cal.import.form.limit.error", new String[] { slimitKB, supportAddr }));
 			return;
 		} catch (OLATRuntimeException e) {

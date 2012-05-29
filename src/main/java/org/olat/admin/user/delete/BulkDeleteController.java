@@ -150,8 +150,8 @@ public class BulkDeleteController extends BasicController {
 		String subject = translate("mail.subject");
 		String body = getTranslator().translate("mail.body", bodyArgs);
 		
-		ContactList cl = new ContactList(WebappHelper.getMailConfig("mailSupport"));
-		cl.add(WebappHelper.getMailConfig("mailSupport"));
+		ContactList cl = new ContactList(WebappHelper.getMailConfig("mailDeleteUser"));
+		cl.add(WebappHelper.getMailConfig("mailDeleteUser"));
 		cl.add(ureq.getIdentity());
 		List<ContactList> lstAddrTO = new ArrayList<ContactList>();
 		lstAddrTO.add(cl);

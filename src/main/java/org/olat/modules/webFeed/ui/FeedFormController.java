@@ -162,7 +162,7 @@ class FeedFormController extends FormBasicController {
 			Long remainingQuotaKb = feedQuota.getRemainingSpace();
 			if (remainingQuotaKb != -1 && newFile.length() / 1024 > remainingQuotaKb) {
 				unsetImage();
-				String supportAddr = WebappHelper.getMailConfig("mailSupport");
+				String supportAddr = WebappHelper.getMailConfig("mailQuota");
 				Long uploadLimitKB = feedQuota.getUlLimitKB();
 				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));				
 			}
@@ -293,7 +293,7 @@ class FeedFormController extends FormBasicController {
 		file.limitToMimeType(mimeTypes, "feed.form.file.type.error.images", null);
 		
 		int maxFileSizeKB = feedQuota.getUlLimitKB().intValue();
-		String supportAddr = WebappHelper.getMailConfig("mailSupport");
+		String supportAddr = WebappHelper.getMailConfig("mailQuota");
 		file.setMaxUploadSizeKB(maxFileSizeKB, "ULLimitExceeded", new String[]{ new Long(maxFileSizeKB / 1024).toString(), supportAddr });
 
 		// if external feed, display feed-url text-element:
