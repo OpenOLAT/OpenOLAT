@@ -167,4 +167,13 @@ public abstract class QuotaManager extends BasicManager{
 	 * @return
 	 */
 	public abstract Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode);
+	
+	/**
+	 * Check if a user has the rights to launch the quota editor tool
+	 * 
+	 * @param identity The identity that requests to change a quota
+	 * @return true: user is allowed to launch quota editor ; false: user is not
+	 *         allowed to launch quota editor
+	 */
+	public abstract boolean hasQuotaEditRights(Identity identity);
 }

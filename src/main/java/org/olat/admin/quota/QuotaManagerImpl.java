@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -401,6 +402,16 @@ public class QuotaManagerImpl extends QuotaManager {
 	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
 		Controller ctr = new GenericQuotaEditController(ureq, wControl, relPath, modalMode);
 		return ctr;
+	}
+
+	@Override
+	public boolean hasQuotaEditRights(Identity identity) {
+		BaseSecurity mgr = BaseSecurityManager.getInstance();
+		boolean hasQuoaRights = mgr.isIdentityPermittedOnResourceable(
+				identity, 
+				Constants.PERMISSION_ACCESS, 
+				OresHelper.lookupType(GenericQuotaEditController.class));
+		return hasQuoaRights;
 	}
 
 }

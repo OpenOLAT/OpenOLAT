@@ -25,9 +25,6 @@
 
 package org.olat.admin.quota;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,14 +42,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 
 /**
- *  Description:<br>
- *  is the controller for
- *
+ * Description:<br>
+ * This controller shows the list of all quotas in the system and offers an
+ * editor to edit the quotas or to create a new one.
+ * 
  * @author Felix Jost
  */
 public class QuotaController extends BasicController {
@@ -72,11 +69,8 @@ public class QuotaController extends BasicController {
 	public QuotaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		if (!mgr.isIdentityPermittedOnResourceable(
-				ureq.getIdentity(),
-				Constants.PERMISSION_ACCESS,
-				OresHelper.lookupType(this.getClass())))
+		QuotaManager qm = QuotaManager.getInstance();
+		if (!qm.hasQuotaEditRights(ureq.getIdentity()))
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
 
 		main = new Panel("quotamain");

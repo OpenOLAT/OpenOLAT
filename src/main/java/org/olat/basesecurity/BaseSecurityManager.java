@@ -38,7 +38,6 @@ import java.util.UUID;
 import org.hibernate.Hibernate;
 import org.hibernate.type.Type;
 import org.olat.admin.quota.GenericQuotaEditController;
-import org.olat.admin.quota.QuotaController;
 import org.olat.admin.sysinfo.SysinfoController;
 import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.UserChangePasswordController;
@@ -152,7 +151,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(UserAdminController.class));
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(UserChangePasswordController.class));
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(UserCreateController.class));
-		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(QuotaController.class));
 		createAndPersistPolicyIfNotExists(adminGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(GenericQuotaEditController.class));
 	}
 
@@ -217,7 +215,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			institutionalResourceManagerGroup = createAndPersistNamedSecurityGroup(Constants.GROUP_INST_ORES_MANAGER);
 		//manager have a author policy and access permissions to authoring tools
 		createAndPersistPolicyIfNotExists(institutionalResourceManagerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_INSTORESMANAGER);
-		createAndPersistPolicyIfNotExists(institutionalResourceManagerGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(QuotaController.class));
 		createAndPersistPolicyIfNotExists(institutionalResourceManagerGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(GenericQuotaEditController.class));
 	}
 

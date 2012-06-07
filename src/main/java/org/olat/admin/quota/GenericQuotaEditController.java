@@ -25,9 +25,6 @@
 
 package org.olat.admin.quota;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -39,7 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 
@@ -49,6 +45,9 @@ import org.olat.core.util.vfs.QuotaManager;
  * folder path. When finished the controller fires the following events:<BR>
  * Event.CANCELLED_EVENT
  * Event.CHANGED_EVENT
+ * <p>
+ * Check with QuotaManager.hasQuotaEditRights if you are allowed to use this
+ * controller. Fires an exception if user is not allowed to call controller.
  * <P>
  * Initial Date:  Dec 22, 2004
  *
@@ -88,7 +87,7 @@ public class GenericQuotaEditController extends BasicController {
 		// init velocity context
 		initMyContent(ureq);
 		if (currentQuota == null) {
-			this.currentQuota = QuotaManager.getInstance().createQuota(relPath, null, null);
+			this.currentQuota = qm.createQuota(relPath, null, null);
 			myContent.contextPut("editQuota", Boolean.FALSE);			
 		} else {
 			initQuotaForm(ureq, currentQuota);			
@@ -122,11 +121,8 @@ public class GenericQuotaEditController extends BasicController {
 	}
 
 	private void initMyContent(UserRequest ureq) {
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		if (!mgr.isIdentityPermittedOnResourceable(
-				ureq.getIdentity(), 
-				Constants.PERMISSION_ACCESS, 
-				OresHelper.lookupType(this.getClass())))
+		QuotaManager qm = QuotaManager.getInstance();
+		if (!qm.hasQuotaEditRights(ureq.getIdentity()))
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
 
 		myContent = createVelocityContainer("edit");
@@ -135,7 +131,6 @@ public class GenericQuotaEditController extends BasicController {
 		delQuotaButton = LinkFactory.createButtonSmall("qf.del", myContent, this);
 		cancelButton = LinkFactory.createButtonSmall("cancel", myContent, this);
 		
-		QuotaManager qm = QuotaManager.getInstance();
 		//TODO loop over QuotaManager.getDefaultQuotaIdentifyers instead
 		myContent.contextPut("users",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
 		myContent.contextPut("powerusers",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));

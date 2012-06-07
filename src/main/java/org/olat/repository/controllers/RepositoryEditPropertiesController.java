@@ -230,14 +230,20 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 			tabbedPane.addTab(translate("tab.glossary.edit"), glossEditCtr.getInitialComponent());
 		
 		} else if (ImsCPFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
-			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(repositoryEntry.getOlatResource());
-			Controller quotaCtrl = QuotaManager.getInstance().getQuotaEditorInstance(ureq, wControl, cpRoot.getRelPath(), false);
-			tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
+			QuotaManager qm = QuotaManager.getInstance();
+			if (qm.hasQuotaEditRights(ureq.getIdentity())) {
+				OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(repositoryEntry.getOlatResource());
+				Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, cpRoot.getRelPath(), false);
+				tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
+			}
 		} else if (BlogFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())
 				|| PodcastFileResource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
-			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(repositoryEntry.getOlatResource());
-			Controller quotaCtrl = QuotaManager.getInstance().getQuotaEditorInstance(ureq, wControl, feedRoot.getRelPath(), false);
-			tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
+			QuotaManager qm = QuotaManager.getInstance();
+			if (qm.hasQuotaEditRights(ureq.getIdentity())) {
+				OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(repositoryEntry.getOlatResource());
+				Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, feedRoot.getRelPath(), false);
+				tabbedPane.addTab(translate("tab.quota.edit"), quotaCtrl.getInitialComponent());
+			}
 		}
 
 		bgVC.put("descTB", tabbedPane);
