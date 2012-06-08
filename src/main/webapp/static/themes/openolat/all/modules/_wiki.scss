@@ -81,7 +81,13 @@
 	div.o_wikimod_editform_wrapper div.b_form div.b_form_element_wrapper div.b_form_element { clear: both; margin-left: 0; padding: 0 5px 0 0 }
 	div.o_wikimod_editform_wrapper div.b_form div.b_button_group { margin-left: 0; text-align: center;}
 	/* wiki run view of article */
-	div.o_wikimod-article-box { }	
+	/* wiki run view of article */
+	div.o_wikimod-article-box {
+		table[border="1"] {
+			border-collapse: collapse;
+			border: 1px solid #BFBFBF;
+		}
+	}	
 	h1.o_wikimod_heading, h3.o_wikimod_heading  { margin: 0 0 1em 0; padding: .5em 0 .17em 0; border-bottom: 1px solid #BFBFBF; }
 	#o_wikimod_uploader { margin: 1em 0 0 0;}	
 	.o_wikimod_version { border:1px solid #BFBFBF; padding:4px; margin-top:5px; }
