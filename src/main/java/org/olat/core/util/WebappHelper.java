@@ -230,11 +230,23 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	}
 
 	public void setFullPathToSrc(String fullPathToSrc) {
-		WebappHelper.fullPathToSrc = fullPathToSrc;
+		File path = new File(fullPathToSrc);
+		if (path.exists()) {
+			WebappHelper.fullPathToSrc = fullPathToSrc;			
+		} else {
+			log.debug("Invalid fullPathToSrc configuration, reset to empty path");
+			WebappHelper.fullPathToSrc = "";
+		}
  	}
 
 	public void setFullPathToWebappSrc(String fullPathToWebappSrc) {
-		WebappHelper.fullPathToWebappSrc = fullPathToWebappSrc;
+		File path = new File(fullPathToWebappSrc);
+		if (path.exists()) {
+			WebappHelper.fullPathToWebappSrc = fullPathToWebappSrc;
+		} else {
+			log.debug("Invalid fullPathToWebappSrc configuration, reset to empty path");
+			WebappHelper.fullPathToWebappSrc = "";
+		}
  	}
 	
 	/**

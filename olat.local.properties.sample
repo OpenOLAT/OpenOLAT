@@ -85,7 +85,7 @@ instance.id=myopenolat
 ########################################################################
 
 # for developers set to true - velocity pages are NOT cached
-olat.debug=true
+olat.debug=false
 # for developers set to false - i18n files are not cached
 localization.cache=false
 # path to the source code. Use this together with olat.debug=true in a 
