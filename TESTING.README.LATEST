@@ -67,20 +67,16 @@ junit and integration tests in OpenOLAT 8
 * Execute selenium functional integration tests
 -----------------------------------------
 - Selenium functional tests on GUI layer that load OpenOLAT with Arquillian in a Tomcat 7.0.27 managed by Arquillian
-	mvn -Parquillian clean package
-
-- The selenium test results can be found at target/failsafe-reports/SeleniumTesting72x/*
-
-- It is recommended to use a Jenkins setup to administrate the test results. The Selenium results have the same format as the junit test protocols
+	mvn package
+	mvn -Parquillian surefire:test
 
 
 * Execute a single selenium functional integration test in Eclipse
 -----------------------------------------
 - Start Eclipse, refresh project and wait until Eclipse is finished with refreshing and compiling
 
-- In a shell run the following command to start the test cluster:
-	mvn verify -Pseleniumtests,debug | tee /tmp/mvn72x.log | grep execution
-	
-- Wait until the servers have started (in the log /tmp/mvn72.log an information appears that the server can be stopped with Crl-C)
+- Run the maven build to fill the libraries (The deployment take all the libraries from the standard build process)
+  mvn clean package
 
-- In Eclipse right-click a selenium testcase form src/test/java/org/olat/test/functional/* and select "run in jUnit"
+- In Eclipse right-click a selenium testcase and select "run in jUnit"
+
