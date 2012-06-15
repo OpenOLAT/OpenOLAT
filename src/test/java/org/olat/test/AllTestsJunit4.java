@@ -43,6 +43,24 @@ import org.junit.runners.Suite;
  
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	org.olat.core.util.i18n.I18nTest.class,
+	// org.olat.core.util.mail.MailTest.class, // redisabled since mails are sent despite the fact that the whitelist is enabled
+	org.olat.core.util.locks.SynchManagerTest.class,
+	org.olat.core.gui.components.table.MultiSelectColumnDescriptorTest.class,
+	org.olat.core.gui.components.table.TableEventTest.class,
+	org.olat.core.gui.components.table.TableMultiSelectEventTest.class,
+	org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEventTest.class,
+	org.olat.core.util.vfs.VFSManagerTest.class,
+	org.olat.core.util.filter.impl.XSSFilterTest.class,
+	org.olat.core.util.filter.impl.AddBaseURLToMediaRelativeURLFilterTest.class,
+	org.olat.core.util.filter.impl.SimpleHTMLTagsFilterTest.class,
+	org.olat.core.util.filter.impl.NekoHTMLFilterTest.class,
+	org.olat.core.util.filter.impl.ConditionalHtmlCommentsFilterTest.class,
+	org.olat.core.helpers.SettingsTest.class,
+	org.olat.core.util.coordinate.LockEntryTest.class,
+	org.olat.core.util.StringHelperTest.class,
+	org.olat.core.id.context.BusinessControlFactoryTest.class,
+
 	org.olat.note.NoteTest.class,//ok
 	org.olat.user.UserPropertiesPerformanceTest.class,//ok
 	org.olat.user.EmailCheckPerformanceTest.class,//fail
@@ -135,6 +153,10 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.core.util.vfs.VersionManagerTest.class,
 	/**
+	 * Pure JUnit test without need of framework
+	 */
+	org.olat.modules.fo.WordCountTest.class,
+	/**
 	 * 
 	 * Place tests which load their own Spring context
 	 * with @ContextConfiguration below the others as they may taint the 
@@ -145,15 +167,10 @@ import org.junit.runners.Suite;
 	 * as well as the tests on hudson run agains a jar version of olatcore where the test source
 	 * tree is not available
 	 */
-	org.olat.modules.wiki.WikiMockUnitTest.class,
-	org.olat.modules.webFeed.FeedManagerTestWithMocking.class,
+	org.olat.core.commons.scheduler.SchedulerTest.class,
 	org.olat.instantMessaging.IMUnitTestWithoutOLAT.class,
 	org.olat.course.TestDeployableRepositoryExport.class,
-	org.olat.upgrade.UpgradeDefinitionTest.class,
-	org.olat.modules.fo.WordCountTest.class
-	
-	
-	
+	org.olat.upgrade.UpgradeDefinitionTest.class
 })
 public class AllTestsJunit4 {
 	//

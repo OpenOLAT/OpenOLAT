@@ -209,9 +209,7 @@ public class ArquillianDeployments {
 			if(pathStr.contains("/org/olat/core/test")) {
 				return false;
 			}
-			if(pathStr.contains("/org/olat/test/_spring") || pathStr.contains("/org/olat/test/file_resources")
-					|| pathStr.contains("/org/olat/test/functional") || pathStr.contains("/org/olat/test/load")
-					 || pathStr.contains("/org/olat/test/sandbox")) {
+			if(pathStr.contains("/org/olat/test/_spring") || pathStr.contains("/org/olat/test/file_resources")) {
 				return false;
 			}
 			if(pathStr.endsWith("Test.class]") || pathStr.endsWith("TestWithMocking.class]") || pathStr.endsWith("Junit4.class]")) {

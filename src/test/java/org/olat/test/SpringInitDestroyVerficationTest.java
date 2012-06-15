@@ -56,7 +56,7 @@ public class SpringInitDestroyVerficationTest extends OlatTestCase {
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 		
 		Map<String, Initializable> beans = applicationContext.getBeansOfType(Initializable.class);
-		for (Iterator iterator = beans.keySet().iterator(); iterator.hasNext();) {
+		for (Iterator<String> iterator = beans.keySet().iterator(); iterator.hasNext();) {
 			String beanName = (String) iterator.next();
 			try {
 				GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanName);
@@ -81,7 +81,7 @@ public class SpringInitDestroyVerficationTest extends OlatTestCase {
 			
 			
 			Map<String, Destroyable> beans = applicationContext.getBeansOfType(Destroyable.class);
-			for (Iterator iterator = beans.keySet().iterator(); iterator.hasNext();) {
+			for (Iterator<String> iterator = beans.keySet().iterator(); iterator.hasNext();) {
 				String beanName = (String) iterator.next();
 				try {
 					GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanName);

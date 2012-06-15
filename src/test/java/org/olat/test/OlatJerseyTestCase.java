@@ -28,7 +28,6 @@ package org.olat.test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URI;
 import java.util.List;
 
@@ -36,18 +35,14 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
 import org.junit.Before;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestApiLoginFilter;
-import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.OlatRestApplication;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.restapi.support.vo.FileVO;
@@ -56,7 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sun.grizzly.http.embed.GrizzlyWebServer;
 import com.sun.grizzly.http.servlet.ServletAdapter;
-import com.sun.jersey.test.framework.spi.container.TestContainer;
 
 /**
  * 

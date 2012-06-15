@@ -130,11 +130,11 @@ public class ForumManagerTest extends OlatTestCase {
 		ForumManager foma = ForumManager.getInstance();
 		long start = System.currentTimeMillis();
 		Forum forum = foma.loadForum(fo.getKey());
-		List messageList = foma.getMessagesByForum(forum);
+		List<Message> messageList = foma.getMessagesByForum(forum);
 		long stop = System.currentTimeMillis();		
 		assertNotNull(messageList);			
 		log.debug("time:"+(stop-start));
-		Iterator it = messageList.iterator();
+		Iterator<Message> it = messageList.iterator();
 		while (it.hasNext()) {
 			Object o =  it.next();
 			log.debug("object:"+o);
@@ -154,7 +154,7 @@ public class ForumManagerTest extends OlatTestCase {
 		log.debug("Start testGetThread()");
 		ForumManager foma = ForumManager.getInstance();
 		Long msgidTopThread = message1.getKey();
-		List threadMessageList = foma.getThread(msgidTopThread);
+		List<Message> threadMessageList = foma.getThread(msgidTopThread);
 		log.debug("threadMessageList.size()=" + threadMessageList.size());
 		assertEquals("Not the right number of messages for this forum",1,threadMessageList.size());
 		// lookup for 
@@ -169,7 +169,7 @@ public class ForumManagerTest extends OlatTestCase {
 		log.debug("Start testGetNewMessageInfo()");
 		ForumManager foma = ForumManager.getInstance();
 		Date now = new Date();
-		List msgList = foma.getNewMessageInfo(fo.getKey(), new Date() );
+		List<Message> msgList = foma.getNewMessageInfo(fo.getKey(), new Date() );
 		assertEquals(0,msgList.size());
 		Date before = new Date(now.getTime() - 3600);
 		msgList = foma.getNewMessageInfo(fo.getKey(), before );

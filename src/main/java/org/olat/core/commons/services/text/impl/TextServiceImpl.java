@@ -51,7 +51,7 @@ public class TextServiceImpl implements TextService {
 	/**
 	 * [spring only]
 	 */
-	private TextServiceImpl() {
+	public TextServiceImpl() {
 		//
 	}
 

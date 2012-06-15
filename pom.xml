@@ -198,8 +198,7 @@
 							</systemPropertyVariables>
               <testNGArtifactName>none:none</testNGArtifactName>
               <includes>
-                <include>**/AllTestsOlatCoreJunit4.java</include>
-                <include>**/AllTestsJunit4.java</include>
+                <include>org/olat/test/AllTestsJunit4.java</include>
               </includes>
             </configuration>
           </plugin>
@@ -422,8 +421,7 @@
 							</systemPropertyVariables>
               <testNGArtifactName>none:none</testNGArtifactName>
               <includes>
-                <include>**/AllTestsOlatCoreJunit4.java</include>
-                <include>**/AllTestsJunit4.java</include>
+                <include>org/olat/test/AllTestsJunit4.java</include>
               </includes>
             </configuration>
           </plugin>
@@ -1242,7 +1240,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<!-- Dependencies for onyx plugin -->
+			<!-- Dependencies for onyx plugin and vitero -->
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2</artifactId>
 			<version>1.4.1</version>
@@ -1316,12 +1314,6 @@
 			<artifactId>ical4j</artifactId>
 			<version>1.0.2</version>
 		</dependency>
-		<!-- fxdiff FXOLAT-243: ActiveMQ doesn't it anymore
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>10.4.2.0</version>
-		</dependency> -->
 		<dependency>
 			<groupId>javassist</groupId>
 			<artifactId>javassist</artifactId>
@@ -1352,11 +1344,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- <dependency>
-			<groupId>com.ibm.icu</groupId>
-			<artifactId>icu4j</artifactId>
-			<version>4.0.1</version>
-		</dependency> -->
 		<dependency>
 			<groupId>opensaml</groupId>
 			<artifactId>opensaml</artifactId>
@@ -1459,11 +1446,6 @@
 			<artifactId>rome</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<!-- <dependency>
-			<groupId>jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-			<version>1.0.1</version>
-		</dependency> -->
 		<dependency>
 			<groupId>ch.ethz</groupId>
 			<artifactId>pfplms-scorm</artifactId>
@@ -1475,18 +1457,8 @@
 			<groupId>gnu-regexp</groupId>
 			<artifactId>gnu-regexp</artifactId>
 			<version>1.1.4</version>
-		</dependency>
-		<!-- fxdiff: FXOLAT-243 library is in JDK
+		</dependency>	
 		<dependency>
-			<groupId>javax.sql</groupId>
-			<artifactId>jdbc-stdext</artifactId>
-			<version>2.0</version>
-		</dependency> -->		
-		<dependency>
-			<!-- DO NOT UPDATE! -->
-			<!-- Due to our special setup where we use the jdbc driver to convert 
-				from utf-8 to iso we cannot update this lib at the moment. -->
-			<!-- fxdiff: we use the new one, it works! -->
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.11</version>
@@ -1908,30 +1880,15 @@
 			<artifactId>jackson-xc</artifactId>
 			<version>1.5.1</version>
 		</dependency>
-
 		<!-- end jersey -->
+
+		<!-- Start test dependencies -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.1</version>
-			<!-- fxdiff: FXOLAT-243  only for testing purpose -->
 			<scope>test</scope>
 		</dependency>
-    <!-- START selenium tests dependencies 
-    <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <version>5.14</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.seleniumhq.selenium.client-drivers</groupId>
-      <artifactId>selenium-java-client-driver</artifactId>
-      <version>${selenium-client.version}</version>
-      <scope>test</scope>
-    </dependency>
-     END selenium tests dependencies -->
-    
     
 		<!-- Start test dependencies for Arquillian and Selenium -->
     	<dependency>

@@ -29,20 +29,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.Locale;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.olat.core.commons.services.text.TextService;
+import org.olat.core.commons.services.text.impl.TextServiceImpl;
 import org.olat.core.util.filter.Filter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@ContextConfiguration(locations={"classpath:/org/olat/modules/fo/textServiceMock.xml"})
-
-@RunWith(SpringJUnit4ClassRunner.class)
 public class WordCountTest {
 	
-	@Autowired
-	TextService languageService;
+
+	private static TextService languageService = new TextServiceImpl();
 	
 	
 	@Test
