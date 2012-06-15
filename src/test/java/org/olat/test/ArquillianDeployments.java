@@ -45,8 +45,6 @@ public class ArquillianDeployments {
 
 	public static WebArchive createDeployment(String name) {
 		WebArchive archive = ShrinkWrap.create(WebArchive.class, name);
-		
-
 
 		addClasses(archive);
 		addLibraries(archive);
@@ -65,17 +63,6 @@ public class ArquillianDeployments {
 		File[] libs = libDir.listFiles(new LibrariesFilter());
 		return archive.addAsLibraries(libs);
 	}
-	
-	/*
-	public static WebArchive addMavenDependencies(WebArchive archive) {
-		File[] jars = DependencyResolvers
-			.use(MavenDependencyResolver.class)
-			.loadEffectivePom("pom.xml")
-			.importAnyDependencies();
-		
-		return archive.addAsLibraries(jars);
-	}
-	*/
 	
 	public static WebArchive addClasses(WebArchive archive) {
 		return archive

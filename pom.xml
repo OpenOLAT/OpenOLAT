@@ -66,86 +66,25 @@
 		<targetJdk>1.6</targetJdk>
 		<org.springframework.version>3.1.1.RELEASE</org.springframework.version>
 
-    <!-- properties for testing and Q&A -->
-    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
-    <skipTests>true</skipTests>
-    <skipITs>true</skipITs>
-    <!-- properties to define the testing environment -->
-    <test.env>mysql</test.env>
-    <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
-    <test.env.db.name>olattest</test.env.db.name>
-    <test.env.db.user>olat</test.env.db.user>
-    <test.env.db.pass>olat</test.env.db.pass>
-    <test.env.db.host.port>3306</test.env.db.host.port>
-    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
-    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
-    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
-    <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
-    <test.env.instance.id>myolat</test.env.instance.id>
-    <test.env.jms.broker.port>61616</test.env.jms.broker.port>
-    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
-    <test.env.jmx.rmi.port.1>3001</test.env.jmx.rmi.port.1>
-    <test.env.jmx.rmi.port.2>3002</test.env.jmx.rmi.port.2>
+	    <!-- properties for testing and Q&A -->
+	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
+	    <skipTests>true</skipTests>
+	    <skipITs>true</skipITs>
+	    <!-- properties to define the testing environment -->
+	    <test.env>mysql</test.env>
+	    <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
+	    <test.env.db.name>olattest</test.env.db.name>
+	    <test.env.db.user>olat</test.env.db.user>
+	    <test.env.db.pass>olat</test.env.db.pass>
+	    <test.env.db.host.port>3306</test.env.db.host.port>
+	    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
+	    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
+	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
+	    <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
+	    <test.env.instance.id>myolat</test.env.instance.id>
 
-    <!-- this version is defined by the dependency <groupId>org.olat.testutils</groupId>   <artifactId>zipped-tomcat6x</artifactId> and the herein zipped tomcat installation -->
-    <container.tomcat.version>6.0.32</container.tomcat.version>
-    <!-- install dir is important for the -Pinstall-tomcats profile.
-         These few lines define the default tomcat installation variables for installation and running a local tomcat cluster.
-         If you want to reuse an existing tomcat installation, set the container.tomcat.*.home instead. -->
-    <container.tomcat.one.install.dir>${basedir}/cargo/tomcat/one/</container.tomcat.one.install.dir>
-    <container.tomcat.one.home>${container.tomcat.one.install.dir}/apache-tomcat-${container.tomcat.version}</container.tomcat.one.home>
-    <!-- The port.part is used in several places to create cluster which follows the template:
-         servlet port 8181
-         administration ports 8109, 8105
-         go to the src/test/profile/cluster/tomcat*/conf and lib/ to see the actual replacements.-->
-    <container.tomcat.one.port.part>81</container.tomcat.one.port.part>
-    <container.tomcat.one.port>${container.tomcat.one.port.part}${container.tomcat.one.port.part}</container.tomcat.one.port>
-    <container.tomcat.two.install.dir>${basedir}/cargo/tomcat/two/</container.tomcat.two.install.dir>
-    <container.tomcat.two.home>${container.tomcat.two.install.dir}/apache-tomcat-${container.tomcat.version}</container.tomcat.two.home>
-    <container.tomcat.two.port.part>82</container.tomcat.two.port.part>
-    <container.tomcat.two.port>${container.tomcat.two.port.part}${container.tomcat.two.port.part}</container.tomcat.two.port>
-
-    <!-- the selenium client version which is also by the maven-selenium-plugin, 
-        using the latest selenium a.k.a selenium 2.0 needs a migration of the tests and maven setup. -->
-    <selenium-client.version>1.0.2</selenium-client.version>
-    <!-- the selenium configuration needed to configure the tomcats, selenium context and maven failsafe (testng) runner.
-         The tomcat knows which user to add just for selenium testcases, see additionalUserContext.xml
-         The selenium context is defined in the defaultcontext.xml and has variable replacements as specified above.
-         The failsafe plugin uses the testng.xml file which comes from this folder.
-         In order to customize the selenium tests execution follow the steps:
-         1) copy the test/profile/selenium/config folder to a save place
-         2) edit the contents of the files (i.e. change executed seleniumtests, add firefox browser executable path to defaultcontext.xml etc.)
-         3) run maven among other parameters with -Dselenium.config.files.path="<your-path-without-special-chars>" -->
-    <selenium.config.files.path>src/test/profile/selenium/config</selenium.config.files.path>
-    <!-- proposal for setting the firefox executable path, which could be used as variable in the defaultcontext.xml
-         important if using a firefox script which does not allow to kill the firefoxes after usage. (e.g. Suse 64Bit)-->
-    <selenium.config.firefox.path>unused/by/default</selenium.config.firefox.path>
-
-    <!-- properties for debugging -->
-    <!-- for debugging reason it may be helpful to set this with 
-    -Dcargo.container.wait=true to see if the container is up and running for the seleniumtests. -->
-    <cargo.container.wait>false</cargo.container.wait>
-    <cargo.container.timeout>300000</cargo.container.timeout>
 	</properties>
 	<profiles>
-		<profile>
-		<!-- this serves as an example of how to run something whenever the os familiy matches unix (includes linux as well) -->
-			<id>linux</id>
-			<activation><os><family>unix</family></os></activation>
-			<properties>
-				<os.property.file>linux.properties</os.property.file>
-			</properties>
-			
-		</profile>
-		<profile>
-		<!-- this serves as an example of how to run something whenever the os familiy matches unix (includes linux as well) -->
-			<id>windows</id>
-			<activation><os><family>windows</family></os></activation>
-			<properties>
-				<os.property.file>win.properties</os.property.file>
-			</properties>
-		</profile>
-
 		<profile>
 			<id>documentation</id>
 			<build>
@@ -350,25 +289,6 @@
                   </srcFiles>
                 </configuration>
               </execution>
-<!--
-              <execution>
-                <id>create-data</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <orderFile>ascending</orderFile>
-                  <fileset>
-                    <basedir>${basedir}</basedir>
-                    <includes>
-                      <include>src/test/sql/test-data2.sql</include>
-                      <include>src/test/sql/test-data1.sql</include>
-                    </includes>
-                  </fileset>
-                </configuration>
-              </execution>
--->
               <!-- drop db after test -->
               <execution>
                 <id>drop-db-after-test</id>
@@ -386,9 +306,6 @@
               </execution>
             </executions>
           </plugin>
-
-
-
         </plugins>
       </build>
     </profile>
@@ -593,85 +510,17 @@
         </plugins>
       </build>
     </profile>
-    
-    <profile>
-      <!-- activate this profile to unzip two tomcats instances for cluster setup, which are the configured and used with profile seleniumtests
-      bind to phase initialize and execute goal unpack
-      ... initialize is an early phase, so that unpacking does not overwrite resources copied over to the tomcats. -->
-      <id>install-tomcats</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>2.2</version>
-            <executions>
-              <execution>
-                <id>install-tomcat-one</id>
-                <phase>validate</phase>
-                <goals>
-                  <goal>unpack
-                  </goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.openolat.testutils</groupId>
-                      <artifactId>zipped-tomcat6x</artifactId>
-                      <version>1.0</version>
-                      <type>zip</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>${container.tomcat.one.install.dir}</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
-                  <!-- other configurations here -->
-                </configuration>
-              </execution>
-              <execution>
-                <id>install-tomcat-two</id>
-                <!-- bind to initialize, that tomcats are unpacked before resources are copied over -->
-                <phase>validate</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.openolat.testutils</groupId>
-                      <artifactId>zipped-tomcat6x</artifactId>
-                      <version>1.0</version>
-                      <type>zip</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>${container.tomcat.two.install.dir}</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
-                  <!-- other configurations here -->
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
 
-    <profile>
-      <id>debug</id>
-      <properties>
-        <skipTests>true</skipTests>
-        <skipITs>true</skipITs>
-        <cargo.container.wait>true</cargo.container.wait>
-      </properties>
-    </profile>
-    
-    <profile>
-      <id>cluster</id>
-      <activation>
-        <property>
-          <name>cluster</name>
-        </property>
-      </activation>
-      <dependencies>
-	      <dependency>
+		<!-- Retain the dependency for cluster -->
+		<profile>
+			<id>cluster</id>
+			<activation>
+				<property>
+					<name>cluster</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
 					<groupId>org.jboss</groupId>
 					<artifactId>jboss-common-core</artifactId>
 					<version>2.2.8.GA</version>
@@ -692,8 +541,8 @@
 					<version>3.3.2.GA</version>
 					<scope>runtime</scope>
 				</dependency>
-      </dependencies>
-    </profile>
+			</dependencies>
+		</profile>
     
 	    <profile>
 	    	<id>arquillian</id>
@@ -738,14 +587,6 @@
 					</plugin>
 				</plugins>
 	    	</build>
-			<dependencies>
-				<dependency>
-		        	<groupId>org.jboss.arquillian.container</groupId>
-		        	<artifactId>arquillian-tomcat-managed-7</artifactId>
-		        	<version>1.0.0.Final-SNAPSHOT</version>
-		        	<scope>test</scope>
-		      	</dependency>
-			</dependencies>
 	    </profile>
 	</profiles>
 	<repositories>
@@ -780,7 +621,7 @@
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
+				<updatePolicy>daily</updatePolicy>
 			</snapshots>
 		</repository>	
 		<repository>
@@ -840,13 +681,6 @@
 					values -->
 				<filtering>false</filtering>
 			</resource>
-			<!-- TODO: RH: include static to react on changes during devel, target not working!
-			<resource>
-				<directory>src/main/webapp/static</directory>
-				<targetPath>${project.build.directory}/static</targetPath>
-				<filtering>false</filtering>
-			</resource>
-			 -->
 		</resources>
     <testResources>
       <!-- Same comment as for src/main/java also applies to src/test/java -->
@@ -864,41 +698,6 @@
       </testResource>
     </testResources>
 		<plugins>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.4.3</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<!-- hook in to generate and copy filtered resources when running eclipse:eclipse 
-							as this plugin runs in the generete-resources phase -->
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/classes</outputDirectory>
-							<resources>
-								<resource>
-									<!-- place resources you like to get filtered an copied -->
-									<directory>src/main/templates</directory>
-									<filtering>true</filtering>
-								</resource>
-								<resource>
-									<directory>src/main/profile</directory>
-									<includes>
-										<include>${os.property.file}</include>
-									</includes>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-							
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-
 
 		</plugins>
 		<pluginManagement>
@@ -908,14 +707,10 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>2.5.1</version>
 					<configuration>
 						<source>1.6</source>
 						<target>1.6</target>
-						<!-- These apparently harmless settings cause certain types of builds 
-							to fail (typically with a failure to find the "javac" program ) - this appears 
-							to be a Maven issue and is currently pending investigation <fork>true</fork> 
-							<meminitial>512m</meminitial> <maxmem>1024m</maxmem> -->
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
@@ -923,7 +718,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>2.1.1</version>
+					<version>2.2</version>
 					<configuration>
 						<attachClasses>true</attachClasses>
 						<directory>src/main/java</directory>
@@ -954,7 +749,7 @@
 						<wtpversion>2.0</wtpversion>
 						<!-- context name for servlet container e.g. localhost:8080/olat -->
 						<wtpContextName>olat</wtpContextName>
-						<downloadSources>false</downloadSources>
+						<downloadSources>true</downloadSources>
 								<additionalConfig>
 									<file>
 										<name>.settings/org.eclipse.core.resources.prefs</name>
@@ -970,7 +765,7 @@
 				<!-- reporting i.e., the site goal requires a more recent plugin version -->
 				<plugin>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>2.2</version>
+					<version>3.1</version>
 				</plugin>
 
 				<plugin>
@@ -1002,18 +797,6 @@
 						</execution>
 					</executions>
 				</plugin>
-
-				<!-- mvn org.mortbay.jetty:jetty-maven-plugin:run will start olat with jetty 
-					NOTE: when you get an "to many files error you can increase it with: ulimit -n 4096"
-					
-					You have to provide an empty olat.local.properties files in your classpath to run jetty!
-				-->
-				<plugin>
-					<groupId>org.mortbay.jetty</groupId>
-					<artifactId>maven-jetty-plugin</artifactId>
-					<version>6.1.10</version>
-				</plugin>
-
 
 				<!-- start rest api documentation: broken:  mvn javadoc:javadoc -->
 				<plugin>
@@ -1821,30 +1604,6 @@
 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-json</artifactId>
-			<version>1.1.5.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>stax</groupId>
-					<artifactId>stax-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.xml.bind</groupId>
-					<artifactId>jaxb-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jettison</groupId>
-					<artifactId>jettison</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.xml.bind</groupId>
-					<artifactId>jaxb-impl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-test-framework</artifactId>
 			<version>1.1.5.1</version>
 			<scope>test</scope>
@@ -1896,6 +1655,12 @@
 			<artifactId>arquillian-junit-container</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+        	<groupId>org.jboss.arquillian.container</groupId>
+        	<artifactId>arquillian-tomcat-managed-7</artifactId>
+        	<version>1.0.0.CR3</version>
+        	<scope>test</scope>
+      	</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.extension</groupId>
 			<artifactId>arquillian-drone-impl</artifactId>

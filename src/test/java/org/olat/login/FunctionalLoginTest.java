@@ -79,6 +79,10 @@ public class FunctionalLoginTest {
 		
     //check if administrator appears in the footer
     boolean loginAs = browser.isElementPresent("xpath=//div[@id='b_footer_user']//i[contains(text(), 'administrator')]");
-    Assert.assertTrue("User should be logged in!", loginAs);
+    if(!loginAs) {
+    	boolean acknowledge = browser.isElementPresent("xpath=//input[@name='acknowledge_checkbox']");
+    	Assert.assertTrue("Acknowledge first!", acknowledge);
+    	browser.click("name=acknowledge_checkbox");
+    } 
 	}
 }

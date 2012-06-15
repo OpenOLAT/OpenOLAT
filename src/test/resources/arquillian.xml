@@ -14,5 +14,9 @@
 			<property name="catalinaHome">target/arq-apache-tomcat-7.0.27</property>
         </configuration>
     </container>
+    
+	<extension qualifier="selenium">
+        <property name="browser">*googlechrome</property>
+    </extension>
 
 </arquillian>
