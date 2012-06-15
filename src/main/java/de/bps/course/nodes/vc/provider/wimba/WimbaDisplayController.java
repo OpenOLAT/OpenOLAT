@@ -297,17 +297,25 @@ public class WimbaDisplayController extends BasicController {
   }
 
   private void openWimbaUrl(UserRequest ureq, String target) {
-    boolean success = wimba.createModerator(ureq.getIdentity(), roomId);
-    if(success) {
-      wimba.login(ureq.getIdentity(), null);
-      String url = wimba.createServiceUrl(target, roomId);
-      RedirectMediaResource rmr = new RedirectMediaResource(url);
-      ureq.getDispatchResult().setResultingMediaResource(rmr);
-    } else {
-      // could not create moderator or update the rights
-      getWindowControl().setError(translate("error.update.rights"));
-      return;
-    }
+	  boolean success = false;
+	  if (target.equals(COMMAND_OPEN_WIZARD)) {
+		  String url = wimba.createServiceUrl(target, null);
+		  RedirectMediaResource rmr = new RedirectMediaResource(url);
+		  ureq.getDispatchResult().setResultingMediaResource(rmr);
+	  }
+	  else {
+		  success = wimba.createModerator(ureq.getIdentity(), roomId);
+		  if(success) {
+			  wimba.login(ureq.getIdentity(), null);
+			  String url = wimba.createServiceUrl(target, roomId);
+			  RedirectMediaResource rmr = new RedirectMediaResource(url);
+			  ureq.getDispatchResult().setResultingMediaResource(rmr);
+		  } else {
+			  // could not create moderator or update the rights
+			  getWindowControl().setError(translate("error.update.rights"));
+			  return;
+		  }
+	  }
   }
 
   private void joinMeeting(UserRequest ureq, boolean guest) {

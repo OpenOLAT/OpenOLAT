@@ -63,6 +63,8 @@ public class WimbaClassroomConfiguration extends DefaultVCConfiguration implemen
 	private boolean powerPointImportEnabled;
 	/** enable guest access */
 	private boolean guestAccessAllowed;
+	/** enable registered users access */
+	private boolean regUsersAccessAllowed;
 	
 	/* be compatible with old configuration versions */
 	@SuppressWarnings("unused")	private transient boolean chatEnabled;
@@ -116,6 +118,10 @@ public class WimbaClassroomConfiguration extends DefaultVCConfiguration implemen
 		return guestAccessAllowed;
 	}
 
+	public boolean isRegUsersAccessAllowed() {
+		return regUsersAccessAllowed;
+	}
+
 	public void setToolsToStudentsEnabled(boolean toolsToStudentsEnabled) {
 		this.toolsToStudentsEnabled = toolsToStudentsEnabled;
 	}
@@ -162,6 +168,10 @@ public class WimbaClassroomConfiguration extends DefaultVCConfiguration implemen
 
 	public void setGuestAccessAllowed(boolean guestAccessAllowed) {
 		this.guestAccessAllowed = guestAccessAllowed;
+	}
+
+	public void setRegUsersAccessAllowed(boolean regUsersAccessAllowed) {
+		this.regUsersAccessAllowed = regUsersAccessAllowed;
 	}
 
 	public void setStudentsChatAllowed(boolean studentsChatAllowed) {

@@ -26,14 +26,14 @@
 	
 	<!-- Definition of the providers -->
 	<bean id="wimbaProvider" class="de.bps.course.nodes.vc.provider.wimba.WimbaClassroomProvider">
-		<property name="enabled" value="${vc.winba.enabled}" />
+		<property name="enabled" value="${vc.wimba.enabled}" />
 		<property name="providerId" value="wimba" />
 		<property name="displayName" value="Wimba Classroom" />
-		<property name="protocol" value="${vc.winba.protocol}" />
-		<property name="port" value="${vc.winba.port}" />
-		<property name="baseUrl" value="${vc.winba.baseurl}" />
-		<property name="adminLogin" value="${vc.winba.adminlogin}" />
-		<property name="adminPassword" value="${vc.winba.adminpassword}" />
+		<property name="protocol" value="${vc.wimba.protocol}" />
+		<property name="port" value="${vc.wimba.port}" />
+		<property name="baseUrl" value="${vc.wimba.baseurl}" />
+		<property name="adminLogin" value="${vc.wimba.adminlogin}" />
+		<property name="adminPassword" value="${vc.wimba.adminpassword}" />
 		<!-- Options -->
 		<property name="defaultConfig">
 			<ref bean="wimbaDefaultConfig" />

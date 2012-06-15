@@ -24,7 +24,8 @@
   	<property name="appshareEnabled" value="true" />
   	<property name="powerPointImportEnabled" value="true" />
   	<property name="guestAccessAllowed" value="false" />
-  	<property name="studentsChatAllowed" value="true" />
+  	<property name="regUsersAccessAllowed" value="false" />  	
+	<property name="studentsChatAllowed" value="true" />
   	<property name="studentsPrivateChatAllowed" value="true" />
   </bean>
   

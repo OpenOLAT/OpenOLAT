@@ -159,7 +159,8 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		// set preview mode because this setting has no effect on creation
 		if(success) {
 			success = setPreviewMode(roomId, false, false);
-			updateRights("Guest", roomId, "Student", false);
+			updateRights(null, roomId, "Student", true, false);
+			updateGroupRights(null, roomId, "Student", "RegisteredUser", true);
 		}
 		return success;
 	}
@@ -207,10 +208,10 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		if(!success) handleError(response.getStatus(), null);
 		
 		if(wc.isGuestAccessAllowed()) {
-			updateRights("Guest", roomId, "Student", false);
+			updateRights(null, roomId, "Student", true, false);
 		} else if(function.equals("modifyClass")) {
 			// only delete guest access if this is an already existing meeting
-			updateRights("Guest", roomId, "Student", true);
+			updateRights(null, roomId, "Student", true, true);
 		}
 		
 		return success;
@@ -248,7 +249,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		try {
 			url = uri.toURL();
 		} catch (MalformedURLException e) {
-			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getName() + "\"", e);
+			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + PREFIX + roomId + "\" and user \"" + identity.getName() + "\" ("+identity.getKey()+")", e);
 		}
 		
 		return url;
@@ -291,8 +292,8 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("function", "getAuthToken");
-		parameters.put("target", PREFIX + identity.getName());
-		parameters.put("nickname", identity.getName());
+		parameters.put("target", PREFIX + identity.getKey());
+		parameters.put("nickname", identity.getUser().getProperty(UserConstants.FIRSTNAME, null).replaceAll("\\W", "_")+"_"+identity.getUser().getProperty(UserConstants.LASTNAME, null).replaceAll("\\W", "_"));
 		String raw = sendRequest(parameters);
 		WimbaResponse response = getResponseDocument(raw);
 		boolean success = evaluateOk(response);
@@ -337,7 +338,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		// create login if necessary
 		if(!exists) success = createLogin(identity);
 		// update access rights
-		if(exists | success) success = updateRights(identity.getName(), roomId, "Instructor", false);
+		if(exists | success) success = updateRights(identity, roomId, "Instructor", false, false);
 		
 		return success;
 	}
@@ -352,17 +353,51 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		// create login if necessary
 		if(!exists) success = createLogin(identity);
 		// update access rights
-		if(exists | success) success = updateRights(identity.getName(), roomId, "Student", false);
+		if(exists | success) success = updateRights(identity, roomId, "Student", false, false);
 		
 		return success;
 	}
 	
-	private boolean updateRights(String username, String roomId, String role, boolean delete) {
+		/**
+		 * 
+		 * @param identity
+		 * @param roomId
+		 * @param role
+		 * @param isGuest
+		 * @param delete
+		 * @return
+		 */
+	private boolean updateRights(Identity identity, String roomId, String role, boolean isGuest, boolean delete) {
+		if (identity==null && !isGuest) return false;
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("function", delete ? "deleteRole" : "createRole");
 		parameters.put("target", PREFIX + roomId);
-		parameters.put("user_id", username.equals("Guest") ? "Guest" : PREFIX + username);
+		parameters.put("user_id", isGuest ? "Guest" : PREFIX + identity.getKey());
 		parameters.put("role_id", role);
+		String raw = sendRequest(parameters);
+		WimbaResponse response = getResponseDocument(raw);
+		boolean success = evaluateOk(response);
+		
+		return success;
+	}
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param roomId
+	 * @param role
+	 * @param group_id
+	 * @param delete
+	 * @return
+	 */
+	private boolean updateGroupRights(Identity identity, String roomId, String role, String group_id, boolean delete) {
+		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("function", delete ? "deleteRole" : "createRole");
+		parameters.put("target", PREFIX + roomId);
+		parameters.put("group_id", group_id);
+		parameters.put("role_id", role);
+		if (identity != null)
+			parameters.put("user_id", PREFIX + identity.getKey());
 		String raw = sendRequest(parameters);
 		WimbaResponse response = getResponseDocument(raw);
 		boolean success = evaluateOk(response);
@@ -373,7 +408,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 	private boolean createLogin(Identity identity) {
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("function", "createUser");
-		parameters.put("target", PREFIX + identity.getName());
+		parameters.put("target", PREFIX + identity.getKey());
 		parameters.put("password_type", "P");// specified password, see Wimba Classroom 6.0 API Guide, page 8
 		parameters.put("password", Encoder.encrypt(identity.getName() + "@" + Settings.getApplicationName()));
 		parameters.put("first_name", identity.getUser().getProperty(UserConstants.FIRSTNAME, null));
@@ -390,7 +425,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		parameters.put("function", "listUser");
 		parameters.put("attribute", "user_id");
 		parameters.put("filter01", "user_id");
-		parameters.put("filter01value", PREFIX + identity.getName());
+		parameters.put("filter01value", PREFIX + identity.getKey());
 		String raw = sendRequest(parameters);
 		WimbaResponse response = getResponseDocument(raw);
 		boolean success = evaluateOk(response);
@@ -492,7 +527,7 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 		try {
 			url = uri.toURL();
 		} catch (MalformedURLException e) {
-			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + recordingId + "\" and user \"" + identity.getName() + "\"", e);
+			logWarn("Cannot create access URL to Wimba Classroom meeting for id \"" + recordingId + "\" and user \"" + identity.getName() + "\" ("+identity.getKey()+")", e);
 		}
 		
 		return url;
