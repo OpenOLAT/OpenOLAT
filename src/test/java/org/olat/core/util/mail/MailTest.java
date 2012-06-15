@@ -50,7 +50,7 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.test.OlatcoreTestCaseWithMocking;
+import org.olat.core.test.OlatcoreTestWithMocking;
 	
 /**
  * Description:<br>
@@ -61,7 +61,7 @@ import org.olat.core.test.OlatcoreTestCaseWithMocking;
  * @author Florian Gnaegi, frentix GmbH<br>
  *         http://www.frentix.com
  */
-public class MailTest extends OlatcoreTestCaseWithMocking {
+public class MailTest extends OlatcoreTestWithMocking {
 	private static Logger log = Logger.getLogger(MailTest.class);
 	private Identity id1, id2, id3, id4, id5, id6;
 

@@ -103,7 +103,7 @@
 		enableCourseChat=true
 		
 		<!-- Select exported demo courses to be deployed automatically. -->
-		deployCourseExportsEnabled=true
+		deployCourseExportsEnabled=${deploy.course.exports}
 		
 		<!-- whether the toolbox should display the current participant count or not -->
 		displayParticipantsCount=${course.display.participants.count}

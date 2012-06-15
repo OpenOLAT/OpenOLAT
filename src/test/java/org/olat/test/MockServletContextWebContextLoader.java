@@ -26,8 +26,10 @@ package org.olat.test;
 
 import org.springframework.beans.factory.support.BeanDefinitionReader;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.test.context.support.AbstractContextLoader;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -70,8 +72,12 @@ public class MockServletContextWebContextLoader extends AbstractContextLoader {
 		}
 
 		@Override
+		public ApplicationContext loadContext(MergedContextConfiguration config) throws Exception {
+			return this.loadContext(config.getLocations());
+		}
+
+		@Override
 		protected String getResourceSuffix() {
-			// TODO Auto-generated method stub
 			return "";
 		}
 

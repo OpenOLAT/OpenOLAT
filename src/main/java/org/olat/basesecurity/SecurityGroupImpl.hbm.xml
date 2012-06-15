@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping default-lazy="false">
- <class proxy="org.olat.basesecurity.SecurityGroup" name="org.olat.basesecurity.SecurityGroupImpl" table="o_bs_secgroup">
+ <class name="org.olat.basesecurity.SecurityGroupImpl" table="o_bs_secgroup">
      <!-- the default columns -->
     <id name="key" column="id" type="long" unsaved-value="null">
       <generator class="hilo"/>

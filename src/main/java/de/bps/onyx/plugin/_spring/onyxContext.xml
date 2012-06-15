@@ -5,7 +5,7 @@
   http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<bean id="onyxModule" class="de.bps.onyx.plugin.OnyxModule">
+<bean id="onyxModule" class="de.bps.onyx.plugin.OnyxModule" depends-on="coordinatorManager">
 	<property name="onyxPluginWSLocation" value="${onyx.plugin.wslocation}" />
 	<!-- <OLATCE-713> -->
 	<property name="onyxUserViewLocation" value="${onyx.plugin.userviewlocation}" />
