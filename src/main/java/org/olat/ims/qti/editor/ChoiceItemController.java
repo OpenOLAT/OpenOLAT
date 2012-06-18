@@ -153,7 +153,20 @@ public class ChoiceItemController extends DefaultController implements Controlle
 					}
 					choice.setPoints(ureq.getParameter("points_q" + i));
 				}
-				question.setSingleCorrectScore(ureq.getParameter("single_score"));
+				
+				String score = ureq.getParameter("single_score");
+				float sc;
+				try {
+					sc = Float.parseFloat(score);
+					if(sc <= 0.0001f) {
+						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+					}
+				} catch(Exception e) {
+					getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+					sc = 1.0f;
+				}
+				question.setSingleCorrectScore(sc);
+				
 			} else if (cmd.equals("smc")) { // submit mc
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 				List choices = question.getResponses();
@@ -168,7 +181,9 @@ public class ChoiceItemController extends DefaultController implements Controlle
 					choice.setPoints(ureq.getParameter("points_q" + i));
 					if (choice.getPoints() == 0) hasZeroPointChoice = true;
 				}
-				if (hasZeroPointChoice && !question.isSingleCorrect()) getWindowControl().setInfo(trnsltr.translate("editor.info.mc.zero.points"));
+				if (hasZeroPointChoice && !question.isSingleCorrect()) {
+					getWindowControl().setInfo(trnsltr.translate("editor.info.mc.zero.points"));
+				}
 
 				// set min/max before single_correct score
 				// will be corrected by single_correct score afterwards
