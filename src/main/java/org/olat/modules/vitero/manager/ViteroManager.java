@@ -185,8 +185,12 @@ public class ViteroManager extends BasicManager implements UserDataDeletable {
 	public String getURLToGroup(Identity identity, ViteroBooking booking)
 	throws VmsNotAvailableException {
 		String sessionCode = createVMSSessionCode(identity);
-		String url = getGroupURL(sessionCode, booking.getGroupId());
-		return url;
+		if(sessionCode == null) {
+			return null;
+		} else {
+			String url = getGroupURL(sessionCode, booking.getGroupId());
+			return url;
+		}
 	}
 	
 	/**

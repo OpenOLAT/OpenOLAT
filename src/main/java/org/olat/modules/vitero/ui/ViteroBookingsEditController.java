@@ -184,12 +184,16 @@ public class ViteroBookingsEditController extends FormBasicController {
 		try {
 			if(viteroManager.isUserOf(booking, getIdentity())) {
 				String url = viteroManager.getURLToGroup(ureq.getIdentity(), booking);
-				viteroGroupVC = createVelocityContainer("opengroup");
-				viteroGroupVC.contextPut("groupUrl", url);
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
-				listenTo(cmc);
-				cmc.activate();
+				if(url == null) {
+					showError("error.sessionCodeNull");
+				} else {
+					viteroGroupVC = createVelocityContainer("opengroup");
+					viteroGroupVC.contextPut("groupUrl", url);
+					removeAsListenerAndDispose(cmc);
+					cmc = new CloseableModalController(getWindowControl(), translate("close"), viteroGroupVC);
+					listenTo(cmc);
+					cmc.activate();
+				}
 			} else {
 				String title = translate("booking.group");
 				String text = translate("booking.group.warning");
