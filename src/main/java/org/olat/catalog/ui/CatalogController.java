@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -87,6 +88,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryIconRenderer;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryTableModel;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositoryEditDescriptionController;
 import org.olat.repository.controllers.RepositorySearchController;
@@ -146,16 +148,6 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  * @author Felix Jost
  */
 public class CatalogController extends BasicController implements Activateable, Activateable2 {
-	
-	// velocity form flags
-	
-	private static final String ENABLE_GROUPMNGMNT = "enableGroupMngmnt";
-	private static final String ENABLE_EDIT_CATEGORY = "enableEditCategory";
-	private static final String ENABLE_REPOSITORYSELECTION = "enableRepositorySelection";
-	private static final String ENABLE_ADD_SUBCATEGORY = "enableAddSubcategory";
-	private static final String ENABLE_EDIT_LINK = "enableLinkEdit";
-	private static final String ENABLE_EDIT_CATALOG_LINK = "enableEditCatalogLink";
-	private static final String ENABLE_REQUESTFORM = "enableRequestForm";
 
 	// catalog actions
 	
@@ -277,18 +269,6 @@ public class CatalogController extends BasicController implements Activateable, 
 		updateToolAccessRights(ureq, rootce, 0);
 
 		myContent = createVelocityContainer("catalog");
-		
-		if (isOLATAdmin) {
-			myContent.contextPut("RepoAccessVal", new Integer(RepositoryEntry.ACC_OWNERS));
-		}	else if (isAuthor) {
-			myContent.contextPut("RepoAccessVal", new Integer(RepositoryEntry.ACC_OWNERS_AUTHORS));
-		}	else if (isGuest) {
-			myContent.contextPut("RepoAccessVal", new Integer(RepositoryEntry.ACC_USERS_GUESTS));
-		} else {
-			// a daily user
-			myContent.contextPut("RepoAccessVal", new Integer(RepositoryEntry.ACC_USERS));
-		}
-
 		myContent.contextPut(CATENTRY_LEAF, new Integer(CatalogEntry.TYPE_LEAF));
 		myContent.contextPut(CATENTRY_NODE, new Integer(CatalogEntry.TYPE_NODE));
 		// access rights for use in the Velocity Container
@@ -582,8 +562,8 @@ public class CatalogController extends BasicController implements Activateable, 
 				 */
 				BaseSecurity mngr = BaseSecurityManager.getInstance();
 				ContactList caretaker = new ContactList(translate(NLS_CONTACT_TO_GROUPNAME_CARETAKER));
-				final List emptyList = new ArrayList();
-				List tmpIdent = new ArrayList();
+				final List<Identity> emptyList = new ArrayList<Identity>();
+				List<Identity> tmpIdent = new ArrayList<Identity>();
 				for (int i = historyStack.size() - 1; i >= 0 && tmpIdent.isEmpty(); i--) {
 					// start at the selected category, the root category is asserted to
 					// have the OLATAdministrator
@@ -1002,19 +982,34 @@ public class CatalogController extends BasicController implements Activateable, 
 				return myCollator.compare(c1Title, c2Title);
 			}
 		});
-		
+	
 		myContent.contextPut("children", childCe);
 		//fxdiff VCRP-1,2: access control of resources
 		List<Long> resourceKeys = new ArrayList<Long>();
-		for ( Object leaf : childCe ) {
-			CatalogEntry entry = (CatalogEntry)leaf;
+		List<Long> repositoryEntryKeys = new ArrayList<Long>();
+		for ( CatalogEntry entry : childCe ) {
 			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
 				resourceKeys.add(entry.getRepositoryEntry().getOlatResource().getKey());
+				repositoryEntryKeys.add(entry.getRepositoryEntry().getKey());
 			}
 		}
+		
+		if(!repositoryEntryKeys.isEmpty()) {
+			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+			params.setIdentity(getIdentity());
+			params.setRoles(ureq.getUserSession().getRoles());
+			params.setRepositoryEntryKeys(repositoryEntryKeys);
+			List<RepositoryEntry> allowedEntries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
+			for (Iterator<CatalogEntry> itEntry = childCe.iterator(); itEntry.hasNext(); ) {
+				CatalogEntry entry = itEntry.next();
+				if(entry.getRepositoryEntry() != null && !allowedEntries.contains(entry.getRepositoryEntry())) {
+					itEntry.remove();
+				}
+			}
+		}
+		
 		List<OLATResourceAccess> resourcesWithOffer = acFrontendManager.getAccessMethodForResources(resourceKeys, true, new Date());
-		for ( Object leaf : childCe ) {
-			CatalogEntry entry = (CatalogEntry)leaf;
+		for ( CatalogEntry entry : childCe ) {
 			if(entry.getType() == CatalogEntry.TYPE_NODE) continue;
 			//fxdiff VCRP-1,2: access control of resources
 			if(entry.getRepositoryEntry() != null && entry.getRepositoryEntry().getOlatResource() != null) {
@@ -1037,7 +1032,7 @@ public class CatalogController extends BasicController implements Activateable, 
 				}
 				
 				//fxdiff VCRP-1,2: access control of resources
-				String acName = "ac_" + childCe.indexOf(leaf);
+				String acName = "ac_" + childCe.indexOf(entry);
 				if(!types.isEmpty()) {
 					myContent.contextPut(acName, types);
 				} else {
@@ -1046,15 +1041,15 @@ public class CatalogController extends BasicController implements Activateable, 
 			}
 			
 			VFSLeaf image = repositoryManager.getImage(entry.getRepositoryEntry());
-			String name = "image" + childCe.indexOf(leaf);
+			String name = "image" + childCe.indexOf(entry);
 			if(image == null) {
 				myContent.remove(myContent.getComponent(name));
-				continue;
+			} else {
+				ImageComponent ic = new ImageComponent(name);
+				ic.setMediaResource(new VFSMediaResource(image));
+				ic.setMaxWithAndHeightToFitWithin(200, 100);
+				myContent.put(name, ic);
 			}
-			ImageComponent ic = new ImageComponent(name);
-			ic.setMediaResource(new VFSMediaResource(image));
-			ic.setMaxWithAndHeightToFitWithin(200, 100);
-			myContent.put(name, ic);
 		}
 		myContent.contextPut(CATCMD_HISTORY, historyStack);
 
@@ -1067,7 +1062,7 @@ public class CatalogController extends BasicController implements Activateable, 
 		// can also remove links. users who can remove all links do not need to be
 		// checked
 		if (canAddLinks && !canRemoveAllLinks) {
-			List ownedLinks = cm.filterOwnedLeafs(identity, childCe);
+			List<CatalogEntry> ownedLinks = cm.filterOwnedLeafs(identity, childCe);
 			if (ownedLinks.size() > 0) {
 				myContent.contextPut("hasOwnedLinks", Boolean.TRUE);
 				myContent.contextPut("ownedLinks", ownedLinks);
@@ -1095,10 +1090,10 @@ public class CatalogController extends BasicController implements Activateable, 
 		CatalogEntry oldRoot = (CatalogEntry) cm.getRootCatalogEntries().get(0);
 		SecurityGroup rootOwners = oldRoot.getOwnerGroup();
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		List olatAdminIdents = secMgr.getIdentitiesOfSecurityGroup(rootOwners);
+		List<Identity> olatAdminIdents = secMgr.getIdentitiesOfSecurityGroup(rootOwners);
 		SecurityGroup catalogAdmins = secMgr.createAndPersistSecurityGroup();
 		for (int i = 0; i < olatAdminIdents.size(); i++) {
-			secMgr.addIdentityToSecurityGroup((Identity) olatAdminIdents.get(i), catalogAdmins);
+			secMgr.addIdentityToSecurityGroup(olatAdminIdents.get(i), catalogAdmins);
 		} 
 		cm.deleteCatalogEntry(oldRoot);
 

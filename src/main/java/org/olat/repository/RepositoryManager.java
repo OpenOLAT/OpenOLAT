@@ -1298,6 +1298,9 @@ public class RepositoryManager extends BasicManager {
 		if (var_resourcetypes) {
 			query.append(" and res.resName in (:resourcetypes)");
 		}
+		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
+			query.append(" and v.key in (:entryKeys)");
+		}
 
 		if(!count && orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
@@ -1318,6 +1321,9 @@ public class RepositoryManager extends BasicManager {
 		}
 		if (var_resourcetypes) {
 			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+		}
+		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
+			dbQuery.setParameterList("entryKeys", params.getRepositoryEntryKeys());
 		}
 
 		if(setIdentity) {
