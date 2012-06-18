@@ -82,6 +82,7 @@
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
 	    <test.env.db.hibernate.ddl.auto>create</test.env.db.hibernate.ddl.auto>
 	    <test.env.instance.id>myolat</test.env.instance.id>
+	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
 
 	</properties>
 	<profiles>
