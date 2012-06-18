@@ -22,9 +22,8 @@ package org.olat.search.service.document.file;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import net.sf.jazzlib.ZipEntry;
-import net.sf.jazzlib.ZipInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
