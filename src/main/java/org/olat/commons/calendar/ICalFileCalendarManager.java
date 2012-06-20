@@ -63,6 +63,7 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Clazz;
 import net.fortuna.ical4j.model.property.Contact;
 import net.fortuna.ical4j.model.property.Created;
+import net.fortuna.ical4j.model.property.DtEnd;
 import net.fortuna.ical4j.model.property.Duration;
 import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.LastModified;
@@ -177,7 +178,6 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	protected Kalendar getCalendarFromCache(final String callType, final String callCalendarID) {
 		OLATResourceable calOres = OresHelper.createOLATResourceableType(getKeyFor(callType,callCalendarID));		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(calOres);
-		
 		String key = getKeyFor(callType,callCalendarID);
 		Kalendar cal = (Kalendar)calendarCache.get(key);
 		if (cal == null) {
@@ -364,8 +364,6 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			Date adjustedEndDate = new Date(kEvent.getEnd().getTime() + (1000 * 60 * 60 * 24));
 			net.fortuna.ical4j.model.Date dtEnd = CalendarUtils.createDate(adjustedEndDate);
 			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
-			vEvent.getProperties().getProperty(Property.DTSTART).getParameters().add(Value.DATE);
-			vEvent.getProperties().getProperty(Property.DTEND).getParameters().add(Value.DATE);
 		}
 		
 		if(kEvent.getCreated() > 0) {
@@ -494,6 +492,12 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		if (dateParameter != null) isAllDay = true;
 
 		if (isAllDay) {
+			//Make sure the time of the dates are 00:00 localtime because DATE fields in iCal are GMT 00:00 
+			//Note that start date and end date can have different offset because of daylight saving switch
+			java.util.TimeZone tz = java.util.GregorianCalendar.getInstance().getTimeZone();
+			start = new Date(start.getTime() - tz.getOffset(start.getTime()));
+			end   = new Date(end.getTime()   - tz.getOffset(end.getTime()));
+			
 			// adjust end date: ICal sets end dates to the next day
 			end = new Date(end.getTime() - (1000 * 60 * 60 * 24));
 		}
