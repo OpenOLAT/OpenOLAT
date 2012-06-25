@@ -221,6 +221,10 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 				if(anExt.isEnabled()){
 					GenericActionExtension gAe = (GenericActionExtension) ae;
 					gtnChild = gAe.createMenuNode(ureq);
+					
+					if(StringHelper.containsNonWhitespace(gAe.getNavigationKey())) {
+						gtnChild.setCssClass("o_sel_" + gAe.getNavigationKey());
+					}
 
 					if (gAe.getNodeIdentifierIfParent() != null) {
 						// it's a parent-node, set identifier
