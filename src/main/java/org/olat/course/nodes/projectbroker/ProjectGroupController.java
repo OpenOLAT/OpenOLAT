@@ -33,6 +33,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesMoveEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.WaitingGroupController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -52,7 +53,7 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 
 /**
@@ -69,6 +70,8 @@ public class ProjectGroupController extends BasicController {
 	private Project project;
 
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
+	
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * @param ureq
@@ -78,6 +81,7 @@ public class ProjectGroupController extends BasicController {
 	public ProjectGroupController(UserRequest ureq, WindowControl wControl, Project project, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
 		super(ureq, wControl);
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.project = project;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		
@@ -137,7 +141,6 @@ public class ProjectGroupController extends BasicController {
 	}
 
 	private void handleCandidateGroupEvent(UserRequest urequest, Event event) {
-		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddEvent = (IdentitiesAddEvent)event;
 			List<Identity> addedIdentities = ProjectBrokerManagerFactory.getProjectGroupManager().addCandidates(identitiesAddEvent.getAddIdentities(), project);
@@ -181,14 +184,14 @@ public class ProjectGroupController extends BasicController {
 		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = BusinessGroupManagerImpl.getInstance().addParticipantsAndFireEvent(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), flags);
+			BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), flags);
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 			getLogger().info("Add users as project-members");
 			fireEvent(urequest, Event.CHANGED_EVENT );			
 		} else if (event instanceof IdentitiesRemoveEvent) {
-			BusinessGroupManagerImpl.getInstance().removeParticipantsAndFireEvent(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), flags);
+			businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), flags);
 			getLogger().info("Remove users as account-managers");
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		}
@@ -198,14 +201,14 @@ public class ProjectGroupController extends BasicController {
 		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		if (event instanceof IdentitiesAddEvent) {
 			IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-			BusinessGroupAddResponse response = BusinessGroupManagerImpl.getInstance().addOwnersAndFireEvent(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), flags);
+			BusinessGroupAddResponse response = businessGroupService.addOwners(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), project.getProjectGroup(), flags);
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 			identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 			getLogger().info("Add users as project-leader");
 			fireEvent(urequest, Event.CHANGED_EVENT );			
 		} else if (event instanceof IdentitiesRemoveEvent) {
-			BusinessGroupManagerImpl.getInstance().removeOwnersAndFireEvent(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), flags);
+			businessGroupService.removeOwners(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), flags);
 			getLogger().info("Remove users as account-managers");
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		}

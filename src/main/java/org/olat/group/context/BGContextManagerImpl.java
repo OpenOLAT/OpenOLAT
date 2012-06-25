@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -39,7 +38,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -53,11 +51,6 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.area.BGArea;
-import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -69,9 +62,9 @@ import org.olat.resource.OLATResource;
  * 
  * @author gnaegi
  */
-public class BGContextManagerImpl extends BasicManager implements BGContextManager {
+public class BGContextManagerImpl extends BasicManager {
 
-	private static BGContextManager INSTANCE;
+	private static BGContextManagerImpl INSTANCE;
 	static {
 		INSTANCE = new BGContextManagerImpl();
 	}
@@ -79,7 +72,7 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	/**
 	 * @return singleton instance
 	 */
-	public static BGContextManager getInstance() {
+	public static BGContextManagerImpl getInstance() {
 		return INSTANCE;
 	}
 
@@ -167,11 +160,9 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 */
 	public void deleteBGContext(BGContext bgContext) {
 		bgContext = (BGContext) DBFactory.getInstance().loadObject(bgContext);
-		BusinessGroupManager bgManager = BusinessGroupManagerImpl.getInstance();
-		BGAreaManager areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		// 1) Delete all groups from group context
 		List groups = getGroupsOfBGContext(bgContext);
-		bgManager.deleteBusinessGroups(groups);
+		//bgManager.deleteBusinessGroups(groups);
 		// 2) Delete all group areas
 		/*
 		List areas = areaManager.findBGAreasOfBGContext(bgContext);

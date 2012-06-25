@@ -33,8 +33,6 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
@@ -81,7 +79,6 @@ public class GroupAddManager extends BasicManager {
 	 * @return
 	 */
 	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity){
-		final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
@@ -101,7 +98,7 @@ public class GroupAddManager extends BasicManager {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
 //				seems not to work, but would be the way to go!
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
-				bgm.addOwnerAndFireEvent(addingIdentity, ident, group, flags, false);
+				bgs.addOwner(addingIdentity, ident, group, flags);
 				ownerGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
 				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
@@ -120,7 +117,7 @@ public class GroupAddManager extends BasicManager {
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 					public void execute() {
-						bgm.addParticipantAndFireEvent(addingIdentity, ident, toAddGroup, flags, false);
+						bgs.addParticipant(addingIdentity, ident, toAddGroup, flags);
 					}});
 				participantGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;

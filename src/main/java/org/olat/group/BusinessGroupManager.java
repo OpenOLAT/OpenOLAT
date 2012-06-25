@@ -25,19 +25,6 @@
 
 package org.olat.group;
 
-import java.io.File;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
-import org.olat.group.context.BGContext;
-import org.olat.group.ui.BGConfigFlags;
 
 /**
  * Description: <br>
@@ -82,8 +69,8 @@ public interface BusinessGroupManager {
 	 * @param enableAutoCloseRanks
 	 * @return the created BusinessGroup
 	 */
-	public BusinessGroup createAndPersistBusinessGroup(String type, Identity identity, String name, String description, Integer minParticipants,
-			Integer maxParticipants, Boolean enableWaitinglist, Boolean enableAutoCloseRanks, BGContext groupContext);
+	//public BusinessGroup createAndPersistBusinessGroup(String type, Identity identity, String name, String description, Integer minParticipants,
+	//		Integer maxParticipants, Boolean enableWaitinglist, Boolean enableAutoCloseRanks, BGContext groupContext);
 
 	/**
 	 * find the BusinessGroups list of type <code>type</code> associated with
@@ -144,7 +131,7 @@ public interface BusinessGroupManager {
 	 * 
 	 * @param businessGroupTodelete
 	 */
-	public void deleteBusinessGroup(BusinessGroup businessGroupTodelete);
+	//public void deleteBusinessGroup(BusinessGroup businessGroupTodelete);
 
 	/**
 	 * delete a business group and send a mail to all users in the group
@@ -155,15 +142,15 @@ public interface BusinessGroupManager {
 	 * @param trans
 	 * @param contactLists
 	 */
-	public void deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, WindowControl wControl, UserRequest ureq, Translator trans,
-			List contactLists);
+	//public void deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, WindowControl wControl, UserRequest ureq, Translator trans,
+	//		List contactLists);
 
 	/**
 	 * delete all business groups from this list
 	 * 
 	 * @param businessGroups
 	 */
-	public void deleteBusinessGroups(List businessGroups);
+	//public void deleteBusinessGroups(List businessGroups);
 
 	/**
 	 * Checks if an identity is in a specific business group, either as owner or
@@ -236,9 +223,9 @@ public interface BusinessGroupManager {
 	 * @param copyMemberVisibility
 	 * @return BusinessGroup the copied group
 	 */
-	public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
-			Integer targetMax, BGContext targetBgContext, Map areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
-			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList);
+	//public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
+	//		Integer targetMax, BGContext targetBgContext, Map areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
+	//		boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList);
 
 	/**
 	 * Adds a user to a group as owner and does all the magic that needs to be
@@ -255,8 +242,8 @@ public interface BusinessGroupManager {
 	 *          security group, do only the other stuff, false: add user to
 	 *          security group first
 	 */
-	public void addOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
-			boolean doOnlyPostAddingStuff);
+	//public void addOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
+	//		boolean doOnlyPostAddingStuff);
 
 	/**
 	 * Adds a user to a group as participant and does all the magic that needs to
@@ -274,8 +261,8 @@ public interface BusinessGroupManager {
 	 *          security group, do only the other stuff, false: add user to
 	 *          security group first
 	 */
-	public void addParticipantAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
-			boolean doOnlyPostAddingStuff);
+	//public void addParticipantAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
+	//		boolean doOnlyPostAddingStuff);
 
 	/**
 	 * Remove a user from a group as owner and does all the magic that needs to be
@@ -293,8 +280,8 @@ public interface BusinessGroupManager {
 	 *          security group, do only the other stuff, false: remove user from
 	 *          security group first
 	 */
-	public void removeOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
-			boolean doOnlyPostRemovingStuff);
+	//public void removeOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
+	//		boolean doOnlyPostRemovingStuff);
 
 	/**
 	 * Remove a user from a group as participant and does all the magic that needs
@@ -312,8 +299,8 @@ public interface BusinessGroupManager {
 	 *          security group, do only the other stuff, false: remove user from
 	 *          security group first
 	 */
-	public void removeParticipantAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags,
-			boolean doOnlyPostRemovingStuff);
+	//public void removeParticipantAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags,
+		//	boolean doOnlyPostRemovingStuff);
 
 	/**
 	 * Export group definitions to file.
@@ -347,7 +334,7 @@ public interface BusinessGroupManager {
 	 *          security group, do only the other stuff, false: add user to
 	 *          security group first
 	 */
-	public void addToWaitingListAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, boolean b);
+	//public void addToWaitingListAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, boolean b);
 
 	/**
 	 * Remove a user from a waiting-list as participant and does all the magic that needs
@@ -365,7 +352,7 @@ public interface BusinessGroupManager {
 	 *          security group, do only the other stuff, false: remove user from
 	 *          security group first
 	 */
-	public void removeFromWaitingListAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup waitingListGroup, boolean b);
+	//public void removeFromWaitingListAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup waitingListGroup, boolean b);
 
 	/**
 	 * Move users from a waiting-list to participant-list.
@@ -378,7 +365,7 @@ public interface BusinessGroupManager {
 	 * @param flags
 	 * @param userActivityLogger
 	 */
-	public BusinessGroupAddResponse moveIdenityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	//public BusinessGroupAddResponse moveIdenityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
 	/**
 	 * Find all business-groups where the idenity is on the waiting-list.
@@ -400,7 +387,7 @@ public interface BusinessGroupManager {
 	 * @param businessGroup
 	 * @return 0=not found on waiting-list 
 	 */
-	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup);
+	//public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup);
 
 	/**
 	 * Get all business-groups.
@@ -417,7 +404,7 @@ public interface BusinessGroupManager {
    * @param userActivityLogger Use this logger to log event.
    * @return
    */
-	public BusinessGroupAddResponse addOwnersAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	//public BusinessGroupAddResponse addOwnersAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
   /**
    * Add a list of identity as participant to a business-group.
@@ -428,7 +415,7 @@ public interface BusinessGroupManager {
    * @param userActivityLogger Use this logger to log event.
    * @return
    */
-	public BusinessGroupAddResponse addParticipantsAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	//public BusinessGroupAddResponse addParticipantsAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
   /**
    * Remove a list of identity as owner from a business-group.
@@ -438,10 +425,10 @@ public interface BusinessGroupManager {
    * @param flags              Business-group configuration flags.
    * @param userActivityLogger Use this logger to log event.
    */
-	public void removeOwnersAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	//public void removeOwnersAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
 	//fxdiff VCRP-1,2: access control of resources
-	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
+	//public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 
 	
   /**
@@ -452,7 +439,7 @@ public interface BusinessGroupManager {
    * @param flags              Business-group configuration flags.
    * @param userActivityLogger Use this logger to log event.
    */
-  public void removeParticipantsAndFireEvent(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+  //public void removeParticipantsAndFireEvent(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
   /**
    * Add a list of identity to waiting-list of a business-group.
@@ -463,7 +450,7 @@ public interface BusinessGroupManager {
    * @param userActivityLogger Use this logger to log event.
    * @return
    */
-	public BusinessGroupAddResponse addToWaitingListAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	//public BusinessGroupAddResponse addToWaitingListAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
   /**
    * Remove a list of identity from waiting-list of a business-group.
@@ -473,10 +460,10 @@ public interface BusinessGroupManager {
    * @param flags               Business-group configuration flags.
    * @param userActivityLogger  Use this logger to log event.
    */
-	public void removeFromWaitingListAndFireEvent(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+	//public void removeFromWaitingListAndFireEvent(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
 	//fxdiff VCRP-1,2: access control of resources
-	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
+	//public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	//public void exportGroup(BusinessGroup businessGroup, File file);
 
@@ -507,9 +494,9 @@ public interface BusinessGroupManager {
 	 * Listener will be called in method deleteBusinessGroup.
 	 * @param listener
 	 */
-	public void registerDeletableGroupDataListener(DeletableGroupData listener);
+	//public void registerDeletableGroupDataListener(DeletableGroupData listener);
 
-	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
+	//public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
 
 }
 

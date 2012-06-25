@@ -57,10 +57,7 @@ public class BusinessGroupImportExport {
 	
 	
 
-	/**
-	 * @see org.olat.group.BusinessGroupManager#importGroups(org.olat.group.context.BGContext,
-	 *      java.io.File)
-	 */
+
 	public void importGroups(OLATResource resource, File fGroupExportXML) {
 		if (!fGroupExportXML.exists())
 			return;

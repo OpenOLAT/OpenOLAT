@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.right.BGRightManager;
@@ -60,12 +59,12 @@ public class CourseRights implements BGRights {
     /** course right for statistics tool */
     public static final String RIGHT_STATISTICS = BGRightManager.BG_RIGHT_PREFIX + "statistics";
     
-    private static List rights;
+    private static List<String> rights;
     private Translator trans;
 
     static {
         // initialize list of valid course rights
-        rights = new ArrayList();
+        rights = new ArrayList<String>();
         rights.add(RIGHT_GROUPMANAGEMENT);
         rights.add(RIGHT_COURSEEDITOR);
         rights.add(RIGHT_ARCHIVING);
@@ -80,7 +79,7 @@ public class CourseRights implements BGRights {
      * @param locale
      */
     public CourseRights(Locale locale) {
-        this.trans = new PackageTranslator(Util.getPackageName(CourseRights.class),locale);
+        this.trans = Util.createPackageTranslator(CourseRights.class,locale);
     }
     
     /**
@@ -119,7 +118,7 @@ public class CourseRights implements BGRights {
     /**
      * @see org.olat.group.right.BGRights#getRights()
      */
-    public List getRights() {
+    public List<String> getRights() {
         return rights;
    }
 

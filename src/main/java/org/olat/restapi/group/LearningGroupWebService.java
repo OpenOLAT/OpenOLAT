@@ -22,6 +22,7 @@ package org.olat.restapi.group;
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 import static org.olat.restapi.support.ObjectFactory.getInformation;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -64,8 +65,6 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
@@ -79,6 +78,7 @@ import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+
 
 /**
  * Description:<br>
@@ -248,12 +248,12 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		bgm.deleteBusinessGroup(bg);
+		bgs.deleteBusinessGroup(bg);
 		return Response.ok().build();
 	}
 	
@@ -483,9 +483,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
@@ -494,7 +493,7 @@ public class LearningGroupWebService {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.addOwnerAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.addOwner(ureq.getIdentity(), identity, group, flags);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -543,8 +542,8 @@ public class LearningGroupWebService {
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
@@ -553,7 +552,7 @@ public class LearningGroupWebService {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.removeOwnerAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), group, flags);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -600,9 +599,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
@@ -611,7 +609,7 @@ public class LearningGroupWebService {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.addParticipantAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.addParticipant(ureq.getIdentity(), identity, group, flags);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -658,9 +656,8 @@ public class LearningGroupWebService {
 			}
 			
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			
-			final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			final BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
+			final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			final BusinessGroup group = bgs.loadBusinessGroup(groupKey);
 			final Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey, false);
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
@@ -669,7 +666,7 @@ public class LearningGroupWebService {
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 				public void execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgm.removeParticipantAndFireEvent(ureq.getIdentity(), identity, group, flags, false);
+					bgs.removeParticipant(ureq.getIdentity(), identity, group, flags);
 				}
 			});
 

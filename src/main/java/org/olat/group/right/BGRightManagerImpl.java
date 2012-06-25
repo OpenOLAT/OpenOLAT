@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Policy;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -42,7 +41,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Description:<BR>
- * TODO: Class Description for BGRightManagerImpl Initial Date: Aug 24, 2004
+ * 
+ * Initial Date: Aug 24, 2004
  * 
  * @author gnaegi
  */
@@ -54,21 +54,14 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
 
-
 	/**
 	 * @see org.olat.group.right.BGRightManager#addBGRight(java.lang.String,
 	 *      org.olat.group.BusinessGroup)
 	 */
 	public void addBGRight(String bgRight, BusinessGroup rightGroup) {
-		if (bgRight.indexOf(BG_RIGHT_PREFIX) == -1) throw new AssertException("Groups rights must start with prefix '" + BG_RIGHT_PREFIX
-				+ "', but given right is ::" + bgRight);
-		if (BusinessGroup.TYPE_RIGHTGROUP.equals(rightGroup.getType())) {
-			List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
-			for(OLATResource resource:resources) {
-				securityManager.createAndPersistPolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
-			}
-		} else {
-			throw new AssertException("Only right groups can have bg rights, but type was ::" + rightGroup.getType());
+		List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
+		for(OLATResource resource:resources) {
+			securityManager.createAndPersistPolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
 		}
 	}
 
@@ -77,39 +70,18 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	 *      org.olat.group.BusinessGroup)
 	 */
 	public void removeBGRight(String bgRight, BusinessGroup rightGroup) {
-		if (BusinessGroup.TYPE_RIGHTGROUP.equals(rightGroup.getType())) {
-			List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
-			for(OLATResource resource:resources) {
-				securityManager.deletePolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
-			}
-		} else {
-			throw new AssertException("Only right groups can have bg rights, but type was ::" + rightGroup.getType());
+		List<OLATResource> resources = businessGroupRelationDAO.findResources(Collections.singletonList(rightGroup), 0, -1);
+		for(OLATResource resource:resources) {
+			securityManager.deletePolicy(rightGroup.getPartipiciantGroup(), bgRight, resource);
 		}
 	}
-
-	/**
-	 * @see org.olat.group.right.BGRightManager#hasBGRight(java.lang.String,
-	 *      org.olat.group.BusinessGroup)
-	 */
-	/*
-	 * public boolean hasBGRight(String bgRight, BusinessGroup rightGroup) { if
-	 * (BusinessGroup.TYPE_RIGHTGROUP.equals(rightGroup.getType())) { Manager secm =
-	 * ManagerFactory.getManager(); return
-	 * secm.isGroupPermittedOnResourceable(rightGroup.getPartipiciantGroup(),
-	 * bgRight, rightGroup.getGroupContext()); } throw new AssertException("Only
-	 * right groups can have bg rights, but type was ::" + rightGroup.getType()); }
-	 */
 
 	/**
 	 * @see org.olat.group.right.BGRightManager#hasBGRight(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
 	 */
 	public boolean hasBGRight(String bgRight, Identity identity, OLATResource resource) {
-		String groupType = "";
-		if (BusinessGroup.TYPE_RIGHTGROUP.equals(groupType)) {
-			return securityManager.isIdentityPermittedOnResourceable(identity, bgRight, resource);
-		}
-		throw new AssertException("Only right groups can have bg rights, but type was ::" + groupType);
+		return securityManager.isIdentityPermittedOnResourceable(identity, bgRight, resource);
 	}
 
 	/**

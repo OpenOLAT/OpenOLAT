@@ -42,7 +42,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -61,20 +60,16 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.util.Encoder;
-import org.olat.core.util.Util;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.ui.BGConfigFlags;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <BR/>TODO: Class Description for BusinessGroupManagerImplTest
@@ -121,13 +116,15 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	private String threeDesc = "some short description for second buddygroup";
 	// private String threeIntr = "notting more";
 	//
-	private static boolean isInitialized;
 	private static final int NROFTESTCASES = 3;
 	private static int nrOfTestCasesAlreadyRun = 0;
 	private static boolean suiteIsAborted = true;
 	// For WaitingGroup tests
-	private static Translator testTranslator = null;
 	private static BusinessGroup bgWithWaitingList = null;
+	
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	
 	/**
@@ -135,42 +132,41 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	 */
 	@Before
 	public void setUp() throws Exception {
-			BusinessGroupManagerImpl bgManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 			// Identities
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
 			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
 			id3 = JunitTestHelper.createAndPersistIdentityAsUser("id3");
 			id4 = JunitTestHelper.createAndPersistIdentityAsUser("id4");
 			// buddyGroups without waiting-list: groupcontext is null
-			List l = bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
 			if (l.size() == 0) {
-				one = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, id1, oneName, oneDesc, null, null, false, false, null);
+				one = businessGroupService.createBusinessGroup(id1, oneName, oneDesc, BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
 			} else {
-				List<BusinessGroup> groups = bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+				List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
 				for(BusinessGroup group:groups) {
 					if(oneName.equals(group.getName())) {
 						one = group;
 					}
 				}
 			}
-			l = bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+			l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 			if (l.size() == 0) {
-				two = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, id2, twoName, twoDesc, null, null, false, false, null);
+				two = businessGroupService.createBusinessGroup(id2, twoName, twoDesc, BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
 				SecurityGroup twoPartips = two.getPartipiciantGroup();
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id3, twoPartips);
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id4, twoPartips);
 			} else {
-				two = (BusinessGroup) bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null).get(0);
+				two = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null).get(0);
 			}
-			l = bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
+			l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
 			if (l.size() == 0) {
-				three = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, id3, threeName, threeDesc, null,	null, false, false, null);
+				three = businessGroupService.createBusinessGroup(id3, threeName, threeDesc, BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
 				SecurityGroup threeOwner = three.getOwnerGroup();
 				SecurityGroup threeOPartips = three.getPartipiciantGroup();
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id2, threeOPartips);
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id1, threeOwner);
 			} else {
-				three = (BusinessGroup) bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null).get(0);
+				three = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null).get(0);
 			}
 			/*
 			 * Membership in ParticipiantGroups............................. id1
@@ -181,7 +177,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 
 			DBFactory.getInstance().closeSession();
 
-			setupWaitingList(bgManager);
+			setupWaitingList(businessGroupService);
 			/*
 			 * phuuu finally initialized
 			 */	
@@ -191,10 +187,8 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	public void testCheckIfNamesExistsInContext() throws Exception {
 		suiteIsAborted = true;
 
-		BusinessGroupManagerImpl bgManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
-		BGContextManagerImpl bgContextManager = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-		BGContext ctxA = bgContextManager.createAndPersistBGContext("DefaultA", "Empty", BusinessGroup.TYPE_LEARNINGROUP, id1, true);
-		BGContext ctxB = bgContextManager.createAndPersistBGContext("DefaultB", "Empty", BusinessGroup.TYPE_LEARNINGROUP, id1, true);
+		OLATResource ctxA = JunitTestHelper.createRandomResource();
+		OLATResource ctxB = JunitTestHelper.createRandomResource();
 
 		String[] namesInCtxA = new String[] { "A-GroupOne", "A-GroupTwo", "A-GroupThree", "A-GroupFour", "A-GroupFive", "A-GroupSix" };
 		String[] namesInCtxB = new String[] { "B-GroupAAA", "B-GroupBBB", "B-GroupCCC", "B-GroupDDD", "B-GroupEEE", "B-GroupFFF" };
@@ -202,11 +196,11 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		BusinessGroup[] ctxBgroups = new BusinessGroup[namesInCtxB.length];
 
 		for (int i = 0; i < namesInCtxA.length; i++) {
-			ctxAgroups[i] = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, namesInCtxA[i], null, 0, 0, false,
+			ctxAgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxA[i], null, BusinessGroup.TYPE_LEARNINGROUP, 0, 0, false,
 					false, ctxA);
 		}
 		for (int i = 0; i < namesInCtxB.length; i++) {
-			ctxBgroups[i] = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, namesInCtxB[i], null, 0, 0, false,
+			ctxBgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxB[i], null, BusinessGroup.TYPE_LEARNINGROUP, 0, 0, false,
 					false, ctxB);
 		}
 		// first click created two context and each of them containg groups
@@ -215,72 +209,59 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		for (int i = 0; i < ctxAgroups.length; i++) {
 			System.out.println("Test: i=" + i);
 			System.out.println("Test: ctxAgroups[i]=" + ctxAgroups[i]);
-			DBFactory.getInstance().closeSession();
 		}
-		for (int i = 0; i < ctxBgroups.length; i++) {
-			DBFactory.getInstance().closeSession();
-		}
+		DBFactory.getInstance().closeSession();
+
 		// next click needs to check of a set of groupnames already exists.
-		Set subsetOkInA = new HashSet() {
-			{
-				add("A-GroupTwo");
-				add("A-GroupThree");
-				add("A-GroupFour");
-			}
-		};
-		Set subsetNOkInA = new HashSet() {
-			{
-				add("A-GroupTwo");
-				add("NOT-IN-A");
-				add("A-GroupThree");
-				add("A-GroupFour");
-			}
-		};
-		Set subsetOkInB = new HashSet() {
-			{
-				add("B-GroupCCC");
-				add("B-GroupDDD");
-				add("B-GroupEEE");
-				add("B-GroupFFF");
-			}
-		};
-		Set subsetNOkInB = new HashSet() {
-			{
-				add("B-GroupCCC");
-				add("NOT-IN-B");
-				add("B-GroupEEE");
-				add("B-GroupFFF");
-			}
-		};
-		Set setSpansAandBNok = new HashSet() {
-			{
-				add("B-GroupCCC");
-				add("A-GroupTwo");
-				add("A-GroupThree");
-				add("B-GroupEEE");
-				add("B-GroupFFF");
-			}
-		};
+		Set<String> subsetOkInA = new HashSet<String>();
+		subsetOkInA.add("A-GroupTwo");
+		subsetOkInA.add("A-GroupThree");
+		subsetOkInA.add("A-GroupFour");
+		
+		Set<String> subsetNOkInA = new HashSet<String>();
+		subsetNOkInA.add("A-GroupTwo");
+		subsetNOkInA.add("NOT-IN-A");
+		subsetNOkInA.add("A-GroupThree");
+		subsetNOkInA.add("A-GroupFour");
+
+		Set<String> subsetOkInB = new HashSet<String>();
+		subsetOkInB.add("B-GroupCCC");
+		subsetOkInB.add("B-GroupDDD");
+		subsetOkInB.add("B-GroupEEE");
+		subsetOkInB.add("B-GroupFFF");
+
+		Set<String> subsetNOkInB = new HashSet<String>();
+		subsetNOkInB.add("B-GroupCCC");
+		subsetNOkInB.add("NOT-IN-B");
+		subsetNOkInB.add("B-GroupEEE");
+		subsetNOkInB.add("B-GroupFFF");
+
+		Set<String> setSpansAandBNok = new HashSet<String>();
+		setSpansAandBNok.add("B-GroupCCC");
+		setSpansAandBNok.add("A-GroupTwo");
+		setSpansAandBNok.add("A-GroupThree");
+		setSpansAandBNok.add("B-GroupEEE");
+		setSpansAandBNok.add("B-GroupFFF");
 
 		boolean allExist = false;
-		allExist = bgManager.checkIfOneOrMoreNameExistsInContext(subsetOkInA, ctxA);
+		allExist = businessGroupService.checkIfOneOrMoreNameExistsInContext(subsetOkInA, ctxA);
 		assertTrue("Three A-Group.. should find all", allExist);
 		// Check : one name does not exist, 3 exist 
-		assertTrue("A 'NOT-IN-A'.. should not find all", bgManager.checkIfOneOrMoreNameExistsInContext(subsetNOkInA, ctxA));
+		assertTrue("A 'NOT-IN-A'.. should not find all", businessGroupService.checkIfOneOrMoreNameExistsInContext(subsetNOkInA, ctxA));
 		// Check : no name exist in context
-		assertFalse("A 'NOT-IN-A'.. should not find all", bgManager.checkIfOneOrMoreNameExistsInContext(subsetOkInB, ctxA));
+		assertFalse("A 'NOT-IN-A'.. should not find all", businessGroupService.checkIfOneOrMoreNameExistsInContext(subsetOkInB, ctxA));
 		//
-		allExist = bgManager.checkIfOneOrMoreNameExistsInContext(subsetOkInB, ctxB);
+		allExist = businessGroupService.checkIfOneOrMoreNameExistsInContext(subsetOkInB, ctxB);
 		assertTrue("Three B-Group.. should find all", allExist);
 		// Check : one name does not exist, 3 exist
-		assertTrue("A 'NOT-IN-B'.. should not find all", bgManager.checkIfOneOrMoreNameExistsInContext(subsetNOkInB, ctxB));
+		assertTrue("A 'NOT-IN-B'.. should not find all", businessGroupService.checkIfOneOrMoreNameExistsInContext(subsetNOkInB, ctxB));
 		// Check : no name exist in context
-		assertFalse("A 'NOT-IN-A'.. should not find all", bgManager.checkIfOneOrMoreNameExistsInContext(subsetOkInA, ctxB));
+		assertFalse("A 'NOT-IN-A'.. should not find all", businessGroupService.checkIfOneOrMoreNameExistsInContext(subsetOkInA, ctxB));
 		// Mix A (2x) and B (3x)
-		allExist = bgManager.checkIfOneOrMoreNameExistsInContext(setSpansAandBNok, ctxA);
+		allExist = businessGroupService.checkIfOneOrMoreNameExistsInContext(setSpansAandBNok, ctxA);
 		assertTrue("Groupnames spanning two context... should not find all in context A", allExist);
 		// Mix A (2x) and B (3x)
-		allExist = bgManager.checkIfOneOrMoreNameExistsInContext(setSpansAandBNok, ctxB);
+		allExist = businessGroupService.checkIfOneOrMoreNameExistsInContext(setSpansAandBNok, ctxB);
 		assertTrue("Groupnames spanning two context... should not find all in context B", allExist);
 		//
 
@@ -302,13 +283,12 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * 
 		 */
-		List sqlRes;
+		List<BusinessGroup> sqlRes;
 		BusinessGroup found;
 		/*
 		 * id1
 		 */
-		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
 		assertTrue("2 BuddyGroups owned by id1", sqlRes.size() == 2);
 		for (int i = 0; i < sqlRes.size(); i++) {
 			assertTrue("It's a BuddyGroup Object", sqlRes.get(i) instanceof BusinessGroup);
@@ -318,19 +298,19 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 			assertTrue("It's the correct BuddyGroup", ok);
 
 		}
-		sqlRes = myManager.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
 		assertTrue("0 BuddyGroup where id1 is partipicating", sqlRes.size() == 0);
 
 		/*
 		 * id2
 		 */
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
 		// equality by comparing PersistenObject.getKey()!!!
 		assertTrue("It's the correct BuddyGroup", two.getKey().longValue() == found.getKey().longValue());
-		sqlRes = myManager.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		assertTrue("1 BuddyGroup where id2 is partipicating", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -339,13 +319,13 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * id3
 		 */
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
 		assertTrue("1 BuddyGroup owned by id3", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
 		// equality by comparing PersistenObject.getKey()!!!
 		assertTrue("It's the correct BuddyGroup", three.getKey().longValue() == found.getKey().longValue());
-		sqlRes = myManager.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
 		assertTrue("1 BuddyGroup where id3 is partipicating", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -354,10 +334,10 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * id4
 		 */
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id4, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id4, null);
 		assertTrue("0 BuddyGroup owned by id4", sqlRes.size() == 0);
 		//
-		sqlRes = myManager.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id4, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id4, null);
 		assertTrue("1 BuddyGroup where id4 is partipicating", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -380,15 +360,13 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * 
 		 */
-		List sqlRes;
+		List<BusinessGroup> sqlRes;
 		BusinessGroup found;
 
 		/*
 		 * id2
 		 */
-		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
-
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
 		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
@@ -438,14 +416,13 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * 
 		 */
-		List sqlRes;
+		List<BusinessGroup> sqlRes;
 		BusinessGroup found;
 
 		/*
 		 * id2
 		 */
-		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
@@ -456,8 +433,8 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * 
 		 */
-		myManager.deleteBusinessGroup(found);
-		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		businessGroupService.deleteBusinessGroup(found);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		assertTrue("0 BuddyGroup owned by id2", sqlRes.size() == 0);
 		/*
 		 * 
@@ -476,33 +453,31 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	@Test
 	public void testAddToWaitingListAndFireEvent() throws Exception {
 		System.out.println("testAddToWaitingListAndFireEvent: start...");
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
-
 		// Add wg2
 		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg2);
-		myManager.addToWaitingListAndFireEvent(wg2, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg2, identities, bgWithWaitingList, flags);
 		// Add wg3
 		identities = new ArrayList<Identity>();
 		identities.add(wg3);
-		myManager.addToWaitingListAndFireEvent(wg3, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg3, identities, bgWithWaitingList, flags);
 		// Add wg4
 		identities = new ArrayList<Identity>();
 		identities.add(wg4);
-		myManager.addToWaitingListAndFireEvent(wg4, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg4, identities, bgWithWaitingList, flags);
 		System.out.println("testAddToWaitingListAndFireEvent: 3 user added to waiting list");
 
 		// Check position of 'wg2'
-		int pos = myManager.getPositionInWaitingListFor(wg2, bgWithWaitingList);
+		int pos = businessGroupService.getPositionInWaitingListFor(wg2, bgWithWaitingList);
 		System.out.println("testAddToWaitingListAndFireEvent: wg2 pos=" + pos);
 		assertTrue("pos must be 1, bit is=" + pos, pos == 1);
 		// Check position of 'wg3'
-		pos = myManager.getPositionInWaitingListFor(wg3, bgWithWaitingList);
+		pos = businessGroupService.getPositionInWaitingListFor(wg3, bgWithWaitingList);
 		System.out.println("testAddToWaitingListAndFireEvent wg3: pos=" + pos);
 		assertTrue("pos must be 2, bit is=" + pos, pos == 2);
 		// Check position of 'wg4'
-		pos = myManager.getPositionInWaitingListFor(wg4, bgWithWaitingList);
+		pos = businessGroupService.getPositionInWaitingListFor(wg4, bgWithWaitingList);
 		System.out.println("testAddToWaitingListAndFireEvent wg4: pos=" + pos);
 		assertTrue("pos must be 3, bit is=" + pos, pos == 3);
 	}
@@ -515,18 +490,17 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	@Test
 	public void testRemoveFromWaitingListAndFireEvent() throws Exception {
 		System.out.println("testRemoveFromWaitingListAndFireEvent: start...");
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
 		// Remove wg3
 		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg3);
-		myManager.removeFromWaitingListAndFireEvent(wg1, identities, bgWithWaitingList, flags);
+		businessGroupService.removeFromWaitingList(wg1, identities, bgWithWaitingList, flags);
 		// Check position of 'wg2'
-		int pos = myManager.getPositionInWaitingListFor(wg2, bgWithWaitingList);
+		int pos = businessGroupService.getPositionInWaitingListFor(wg2, bgWithWaitingList);
 		System.out.println("testRemoveFromWaitingListAndFireEvent: wg2 pos=" + pos);
 		assertTrue("pos must be 1, bit is=" + pos, pos == 1);
 		// Check position of 'wg4'
-		pos = myManager.getPositionInWaitingListFor(wg4, bgWithWaitingList);
+		pos = businessGroupService.getPositionInWaitingListFor(wg4, bgWithWaitingList);
 		System.out.println("testRemoveFromWaitingListAndFireEvent wg4: pos=" + pos);
 		assertTrue("pos must be 2, bit is=" + pos, pos == 2);
 
@@ -541,43 +515,41 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	@Test
 	public void testMoveIdenityFromWaitingListToParticipant() throws Exception {
 		System.out.println("testMoveIdenityFromWaitingListToParticipant: start...");
-		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 		// Check that 'wg4' is not in participant list
-		assertFalse("Identity is allready in participant-list, remove it(dbsetup?)", myManager
+		assertFalse("Identity is allready in participant-list, remove it(dbsetup?)", businessGroupService
 				.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
 
 		// Move wg4 from waiting-list to participant
 		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg4);
-		myManager.moveIdenityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList, flags);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList, flags);
 		// Check position of 'wg2'
-		int pos = myManager.getPositionInWaitingListFor(wg2, bgWithWaitingList);
+		int pos = businessGroupService.getPositionInWaitingListFor(wg2, bgWithWaitingList);
 		System.out.println("testMoveIdenityFromWaitingListToParticipant: wg2 pos=" + pos);
 		assertTrue("pos must be 1, bit is=" + pos, pos == 1);
 		// Check if 'wg4' is in participant-list
-		assertTrue("Identity is not in participant-list", myManager.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
+		assertTrue("Identity is not in participant-list", businessGroupService.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
 	}
 	@Test
 	public void testMoveRegisteredIdentityFromWaitingToParticipant() throws Exception {
 		System.out.println("testMoveRegisteredIdentityFromWaitingToParticipant: start...");
-		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 		// Add a user to waiting-list which is allready in participant-list and try
 		// and try to move this user => user will be removed from waiting-list
 		// Add again wg2
 		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		List<Identity> identities = new ArrayList<Identity>();
 		identities.add(wg1);
-		myManager.addToWaitingListAndFireEvent(wg4, identities, bgWithWaitingList, flags);
+		businessGroupService.addToWaitingList(wg4, identities, bgWithWaitingList, flags);
 		identities = new ArrayList<Identity>();
 		identities.add(wg4);
-		myManager.moveIdenityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList, flags);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(identities, wg1, bgWithWaitingList, flags);
 		// Check position of 'wg4'
-		int pos = myManager.getPositionInWaitingListFor(wg4, bgWithWaitingList);
+		int pos = businessGroupService.getPositionInWaitingListFor(wg4, bgWithWaitingList);
 		System.out.println("testMoveIdenityFromWaitingListToParticipant: wg4 pos=" + pos);
 		assertTrue("pos must be 0, bit is=" + pos, pos == 0);
 		// Check if 'wg4' is still in participant-list
-		assertTrue("Identity is not in participant-list", myManager.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
+		assertTrue("Identity is not in participant-list", businessGroupService.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
 	}
 	@Test
 	public void testDeleteBusinessGroupWithWaitingGroup() {
@@ -588,11 +560,10 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		doTestDeleteBusinessGroup(false);
 	}
 	private void doTestDeleteBusinessGroup(boolean withWaitingList) {
-		BGContextManagerImpl bgcm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-		BGContext groupContext = bgcm.createAndPersistBGContext("c1delete", "c1delete", BusinessGroup.TYPE_LEARNINGROUP, null, true);
+		OLATResource resource = JunitTestHelper.createRandomResource();
 
-		BusinessGroup deleteTestGroup = BusinessGroupManagerImpl.getInstance().createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, "deleteTestGroup-1",
-				"deleteTestGroup-1", null, null, withWaitingList, true, groupContext);
+		BusinessGroup deleteTestGroup = businessGroupService.createBusinessGroup(id1, "deleteTestGroup-1",
+				"deleteTestGroup-1", BusinessGroup.TYPE_LEARNINGROUP, -1, -1, withWaitingList, true, resource);
 		
 		Long ownerGroupKey = deleteTestGroup.getOwnerGroup().getKey();
 		Long partipiciantGroupKey = deleteTestGroup.getPartipiciantGroup().getKey();
@@ -601,7 +572,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		assertNotNull("Could not find owner-group",DBFactory.getInstance().findObject(SecurityGroupImpl.class, ownerGroupKey));
 		assertNotNull("Could not find partipiciant-group",DBFactory.getInstance().findObject(SecurityGroupImpl.class, partipiciantGroupKey));
 		assertNotNull("Could not find waiting-group",DBFactory.getInstance().findObject(SecurityGroupImpl.class, waitingGroupKey));
-		BusinessGroupManagerImpl.getInstance().deleteBusinessGroup(deleteTestGroup);
+		businessGroupService.deleteBusinessGroup(deleteTestGroup);
 		assertNull("owner-group still exist after delete",DBFactory.getInstance().findObject(SecurityGroupImpl.class, ownerGroupKey));
 		assertNull("partipiciant-group still exist after delete",DBFactory.getInstance().findObject(SecurityGroupImpl.class, partipiciantGroupKey));
 		assertNull("waiting-group still exist after delete",DBFactory.getInstance().findObject(SecurityGroupImpl.class, waitingGroupKey));
@@ -625,22 +596,18 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 
 	// Helper methods
 	// ///////////////
-	private void setupWaitingList(BusinessGroupManagerImpl bgManager) {
+	private void setupWaitingList(BusinessGroupService bgManager) {
 		if (bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, id1, null).size() == 0) {
 			// create business-group with waiting-list
 			String bgWithWaitingListName = "Group with WaitingList";
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
 			Boolean enableWaitinglist = new Boolean(true);
 			Boolean enableAutoCloseRanks = new Boolean(true);
-			BGContextManagerImpl bgcm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-			BGContext groupContext = bgcm.createAndPersistBGContext("c1name", "c1desc", BusinessGroup.TYPE_LEARNINGROUP, null, true);
-			System.out.println("testAddToWaitingListAndFireEvent: groupContext=" + groupContext);
-			bgWithWaitingList = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, bgWithWaitingListName,
-					bgWithWaitingListDesc, null, null, enableWaitinglist, enableAutoCloseRanks, groupContext);
+			OLATResource resource = JunitTestHelper.createRandomResource();
+			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
+			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
+					bgWithWaitingListDesc, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
-			// create mock objects
-			String PACKAGE = Util.getPackageName(BusinessGroupManagerImplTest.class);
-			testTranslator = new PackageTranslator(PACKAGE, new Locale("de"));
 			// Identities
 			User UserWg1 = UserManager.getInstance().createAndPersistUser("FirstName_wg1", "LastName_wg1", "wg1_junittest@olat.unizh.ch");
 			wg1 = BaseSecurityManager.getInstance().createAndPersistIdentity("wg1", UserWg1,

@@ -30,9 +30,9 @@ import java.util.Date;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.group.context.BGContext;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * Description: <br>
@@ -44,6 +44,10 @@ import org.olat.core.logging.Tracing;
  */
 
 public class BusinessGroupImpl extends PersistentObject implements BusinessGroup {
+
+	private static final long serialVersionUID = -6977108696910447781L;
+	private static final OLog log = Tracing.createLoggerFor(BusinessGroupImpl.class);
+	
 	private String description;
 	private String name;
 	private String type;
@@ -75,15 +79,13 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @param description
 	 * @param ownerGroup
 	 * @param partipiciantGroup
-	 * @param groupContext
 	 */
 	public BusinessGroupImpl(String type, String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
-			SecurityGroup waitingGroup, BGContext groupContext) {
+			SecurityGroup waitingGroup) {
 		this.setName(groupName);
 		this.setDescription(description);
 		this.setOwnerGroup(ownerGroup);
 		this.setPartipiciantGroup(partipiciantGroup);
-		this.setGroupContextKey(groupContext.getKey());
 		this.setWaitingGroup(waitingGroup);
 		this.setType(type);
 		// per default no waiting-list
@@ -236,7 +238,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 		int oldMaxParticipants = getMaxParticipants()!=null ? getMaxParticipants() : 0;
 		this.maxParticipants = maxParticipants;
 		if(maxParticipantsChanged) {
-		  Tracing.logAudit("Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants, BusinessGroupImpl.class);
+		  log.audit("Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants);
 		}
 	}
 

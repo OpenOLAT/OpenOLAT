@@ -27,6 +27,7 @@ package org.olat.group.delete;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -44,7 +45,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.delete.service.GroupDeletionManager;
+import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
 
@@ -65,6 +66,8 @@ public class StatusController extends BasicController {
 	private TableController tableCtr;
 	private GroupDeleteTableModel redtm;
 	private PackageTranslator tableModelTypeTranslator;
+	
+	private final BusinessGroupDeletionManager bgDeletionManager;
 
 
 	/**
@@ -74,6 +77,8 @@ public class StatusController extends BasicController {
 	 */
 	public StatusController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		
+		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
 
 		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_BG_MAIN_CONTROLLER, ureq.getLocale());
 		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
@@ -86,7 +91,7 @@ public class StatusController extends BasicController {
 		repositoryDeleteStatusPanel.addListener(this);
 		myContent.put("repositoryDeleteStatusPanel", repositoryDeleteStatusPanel);
 		myContent.contextPut("header", translate("status.delete.email.header", 
-				new String [] { Integer.toString(GroupDeletionManager.getInstance().getDeleteEmailDuration()) }));
+				new String [] { Integer.toString(bgDeletionManager.getDeleteEmailDuration()) }));
 		initializeTableController(ureq);
 
 		putInitialPanel(myContent);
@@ -97,7 +102,6 @@ public class StatusController extends BasicController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 		//no sources send events
 	}
@@ -106,14 +110,13 @@ public class StatusController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					GroupDeletionManager.getInstance().setLastUsageNowFor( (BusinessGroup) redtm.getObject(rowid) );
+					bgDeletionManager.setLastUsageNowFor( (BusinessGroup) redtm.getObject(rowid) );
 					updateGroupList();				
 				}
 			} 
@@ -142,7 +145,7 @@ public class StatusController extends BasicController {
 	}
 
 	protected void updateGroupList() {
-		List l = GroupDeletionManager.getInstance().getGroupsInDeletionProcess(GroupDeletionManager.getInstance().getDeleteEmailDuration());
+		List<BusinessGroup> l = bgDeletionManager.getGroupsInDeletionProcess(bgDeletionManager.getDeleteEmailDuration());
 		redtm = new GroupDeleteTableModel(l, tableModelTypeTranslator);
 		tableCtr.setTableDataModel(redtm);
 	}

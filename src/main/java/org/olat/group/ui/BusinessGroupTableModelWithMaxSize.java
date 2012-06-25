@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
@@ -38,8 +39,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 
 /**
  * Description:<BR>
@@ -57,7 +57,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 	private Identity identity;
 	private boolean cancelEnrollEnabled;
 	private BaseSecurity securityManager;
-	private BusinessGroupManager businessGroupManager;
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * @param groups List of business groups
@@ -71,7 +71,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 		this.trans = trans;
 		this.identity = identity;
 		securityManager =	BaseSecurityManager.getInstance();
-		businessGroupManager = BusinessGroupManagerImpl.getInstance();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.cancelEnrollEnabled = cancelEnrollEnabled;
 	}
 
@@ -125,7 +125,7 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel im
 				if (securityManager.isIdentityInSecurityGroup(this.identity,businessGroup.getPartipiciantGroup())) {
 					return trans.translate("grouplist.table.state.onPartipiciantList"); 
 				} else if (securityManager.isIdentityInSecurityGroup(this.identity,businessGroup.getWaitingGroup())) {
-					int pos = businessGroupManager.getPositionInWaitingListFor(identity,businessGroup);
+					int pos = businessGroupService.getPositionInWaitingListFor(identity,businessGroup);
 					String[] onWaitingListArgs = new String[] { Integer.toString(pos) };
 					return trans.translate("grouplist.table.state.onWaitingList",onWaitingListArgs); 
 				} else if (max != null && !businessGroup.getWaitingListEnabled().booleanValue() && (numbParts.intValue() >= max.intValue()) ) {

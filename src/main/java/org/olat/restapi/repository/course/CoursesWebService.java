@@ -60,7 +60,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
@@ -283,10 +282,7 @@ public class CoursesWebService {
 			addedEntry.setOlatResource(ores);
 
 			// create an empty course
-			ICourse course = CourseFactory.createEmptyCourse(oresable, shortTitle, longTitle, learningObjectives);
-			// initialize course group management
-			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-			cgm.createCourseGroupmanagement(course.getResourceableId().toString());
+			CourseFactory.createEmptyCourse(oresable, shortTitle, longTitle, learningObjectives);
 			prepareSecurityGroup(initialAuthor, addedEntry);
 			return prepareCourse(addedEntry, courseConfigVO);
 		} catch (Exception e) {

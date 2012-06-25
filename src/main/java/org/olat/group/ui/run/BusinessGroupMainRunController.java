@@ -84,8 +84,6 @@ import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
@@ -1028,7 +1026,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doShowResources(UserRequest ureq) {
 		// always refresh data model, maybe it has changed
 		RepositoryTableModel repoTableModel = new RepositoryTableModel(resourceTrans);
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		// init table controller only once

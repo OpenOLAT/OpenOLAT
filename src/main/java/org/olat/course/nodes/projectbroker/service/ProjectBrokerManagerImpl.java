@@ -39,6 +39,7 @@ import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -68,7 +69,7 @@ import org.olat.course.nodes.projectbroker.datamodel.ProjectImpl;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.DeletableReference;
 import org.olat.properties.Property;
@@ -88,7 +89,7 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	protected ProjectBrokerManagerImpl() {
 		// cache name should not be too long e.g. 'projectbroker' is too long, use 'pb' instead.
 		projectCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getOrCreateCache(ProjectBrokerManagerImpl.class, "pb");
-		BusinessGroupManagerImpl.getInstance().registerDeletableGroupDataListener(this);
+		CoreSpringFactory.getImpl(BusinessGroupService.class).registerDeletableGroupDataListener(this);
 		logDebug("ProjectBrokerManagerImpl created");
 	}
 

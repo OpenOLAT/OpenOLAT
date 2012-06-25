@@ -35,7 +35,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.main.BGMainController;
 import org.olat.group.ui.management.BGManagementController;
@@ -214,17 +213,16 @@ public class BGControllerFactory {
 	 * @param useBackLink
 	 * @return a business group management controller for this group context
 	 */
-	public BGManagementController createManagementController(UserRequest ureq, WindowControl wControl, BGContext bgContext,
+	public BGManagementController createManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			boolean useBackLink) {
-		if (bgContext == null) throw new AssertException("Group context must not be null");
 
-		if (BusinessGroup.TYPE_LEARNINGROUP.equals(bgContext.getGroupType())) {
-			return createLearningGroupManagementController(ureq, wControl, bgContext, useBackLink);
+		return createLearningGroupManagementController(ureq, wControl, resource, useBackLink);
+		/*
 		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgContext.getGroupType())) {
 			return createRightGroupManagementController(ureq, wControl, bgContext, useBackLink);
 		} else {
 			throw new AssertException("Can't handle group type ::" + bgContext.getGroupType());
-		}
+		}*/
 	}
 	
 	/**
@@ -259,19 +257,19 @@ public class BGControllerFactory {
 	}
 	
 
-	private BGManagementController createLearningGroupManagementController(UserRequest ureq, WindowControl wControl, BGContext bgContext,
+	private BGManagementController createLearningGroupManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			boolean useBackLink) {
 		// controller configuration
 		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
 		flags.setEnabled(BGConfigFlags.BACK_SWITCH, useBackLink);
-		return new BGManagementController(ureq, wControl, bgContext, flags);
+		return new BGManagementController(ureq, wControl, resource, flags);
 	}
 
-	private BGManagementController createRightGroupManagementController(UserRequest ureq, WindowControl wControl, BGContext bgContext,
+	private BGManagementController createRightGroupManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			boolean useBackLink) {
 		BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 		flags.setEnabled(BGConfigFlags.BACK_SWITCH, useBackLink);
-		return new BGManagementController(ureq, wControl, bgContext, flags);
+		return new BGManagementController(ureq, wControl, resource, flags);
 	}
 
 	/**

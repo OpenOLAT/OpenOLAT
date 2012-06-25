@@ -69,7 +69,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -82,7 +81,6 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
-import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
@@ -102,7 +100,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.group.ui.context.BGContextTableModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -668,7 +665,6 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 	 * @param ureq The user request
 	 */
 	private void doGroupChoose(UserRequest ureq) {
-		ICourse course = CourseFactory.loadCourse(ores);
 		removeAsListenerAndDispose(groupListCtr);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("groupchoose.nogroups"));
@@ -679,7 +675,6 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 0, CMD_CHOOSE_GROUP, ureq.getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.desc", 1, null, ureq.getLocale()));
 
-		Translator defaultContextTranslator = new PackageTranslator(Util.getPackageName(BGContextTableModel.class), ureq.getLocale());
 		// loop over all groups to filter depending on condition
 		List<BusinessGroup> currentGroups = new ArrayList<BusinessGroup>();
 		for (BusinessGroup group:coachedGroups) {
@@ -687,7 +682,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				currentGroups.add(group);
 			}
 		}
-		GroupAndContextTableModel groupTableDataModel = new GroupAndContextTableModel(currentGroups, defaultContextTranslator);
+		GroupAndContextTableModel groupTableDataModel = new GroupAndContextTableModel(currentGroups);
 		groupListCtr.setTableDataModel(groupTableDataModel);
 		groupChoose.put("grouplisttable", groupListCtr.getInitialComponent());
 		

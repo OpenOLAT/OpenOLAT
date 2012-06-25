@@ -47,7 +47,7 @@ public interface BGAreaManager {
 	 * 
 	 * @param areaName The visible area name
 	 * @param description The area description
-	 * @param groupContext The group context of this area
+	 * @param resource The resource of this area
 	 * @return The new area or null if no area has been created
 	 */
 	public abstract BGArea createAndPersistBGAreaIfNotExists(String areaName, String description, OLATResource resource);
@@ -67,7 +67,7 @@ public interface BGAreaManager {
 	 * Finds an area in the given context
 	 * 
 	 * @param areaName
-	 * @param groupContext
+	 * @param resource
 	 * @return The area or null if the area does not exists
 	 */
 	public abstract BGArea findBGArea(String areaName, OLATResource resource);
@@ -150,7 +150,7 @@ public interface BGAreaManager {
 	 * Counts the number of business group areas of the given business group
 	 * context
 	 * 
-	 * @param groupContext
+	 * @param resource
 	 * @return Number of business gropu areas
 	 */
 	public abstract int countBGAreasOfBGContext(OLATResource resource);
@@ -158,7 +158,7 @@ public interface BGAreaManager {
 	/**
 	 * Searches for all business group areas in the given business group context
 	 * 
-	 * @param groupContext
+	 * @param resource
 	 * @return A list of business group areas
 	 */
 	public List<BGArea> findBGAreasOfBGContext(OLATResource resource);
@@ -169,8 +169,8 @@ public interface BGAreaManager {
 	 * 
 	 * @param identity
 	 * @param areaName
-	 * @param groupContext
-	 * @return true if identity is in such an area, false otherwhise
+	 * @param resource
+	 * @return true if identity is in such an area, false otherwise
 	 */
 	public boolean isIdentityInBGArea(Identity identity, String areaName, OLATResource resource);
 

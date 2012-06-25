@@ -20,6 +20,7 @@
 package org.olat.admin.user.groups;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,8 +57,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
@@ -87,11 +86,15 @@ public class GroupOverviewController extends BasicController {
 	private DialogBoxController removeFromGrpDlg;
 	private DialogBoxController sendMailDlg;
 	private static String TABLE_ACTION_LAUNCH ;
+	
+	private final BusinessGroupService businessGroupService;
 
 	public GroupOverviewController(UserRequest ureq, WindowControl control, Identity identity, Boolean canStartGroups) {
 		super(ureq, control, Util.createPackageTranslator(BusinessGroupTableModel.class, ureq.getLocale()));
 		this.wControl = control;
 		this.identity = identity;
+		
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		if (canStartGroups){
 			TABLE_ACTION_LAUNCH = "bgTblLaunch";
 		} else {
@@ -124,8 +127,7 @@ public class GroupOverviewController extends BasicController {
 		tblCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_UNSUBSCRIBE, "table.user.unsubscribe", translate("table.user.unsubscribe")));
 
 		//build data model
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+
 		BaseSecurity sm = BaseSecurityManager.getInstance();
 		List<Object[]> userGroups = new ArrayList<Object[]>();
 			//loop over all kind of groups with all possible memberships
@@ -134,9 +136,9 @@ public class GroupOverviewController extends BasicController {
 			bgTypes.add(BusinessGroup.TYPE_LEARNINGROUP);
 			bgTypes.add(BusinessGroup.TYPE_RIGHTGROUP);
 			for (String bgType : bgTypes) {				
-				List<BusinessGroup> ownedGroups = bgs.findBusinessGroupsOwnedBy(bgType, identity, null);
-				List<BusinessGroup> attendedGroups = bgs.findBusinessGroupsAttendedBy(bgType, identity, null);
-				List<BusinessGroup> waitingGroups = bgs.findBusinessGroupsWithWaitingListAttendedBy(bgType, identity, null);
+				List<BusinessGroup> ownedGroups = businessGroupService.findBusinessGroupsOwnedBy(bgType, identity, null);
+				List<BusinessGroup> attendedGroups = businessGroupService.findBusinessGroupsAttendedBy(bgType, identity, null);
+				List<BusinessGroup> waitingGroups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(bgType, identity, null);
 				//using HashSet to remove duplicate entries
 				HashSet<BusinessGroup> allGroups = new HashSet<BusinessGroup>();
 				allGroups.addAll(ownedGroups);
@@ -163,7 +165,7 @@ public class GroupOverviewController extends BasicController {
 						joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getOwnerGroup(), identity);
 					}
 					else if(waitingGroups.contains(group)) {
-						int waitingListPosition = bgm.getPositionInWaitingListFor(identity, group);
+						int waitingListPosition = businessGroupService.getPositionInWaitingListFor(identity, group);
 						groupEntry[2] = translate("waiting", String.valueOf(waitingListPosition));
 						joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getWaitingGroup(), identity);
 					}
@@ -273,7 +275,6 @@ public class GroupOverviewController extends BasicController {
 	 */
 	private void removeUserFromGroup(UserRequest ureq, boolean doSendMail) {
 		// fxdiff: FXOLAT-101 see similar doBuddyGroupLeave() in BGMainController
-		final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		BusinessGroup currBusinessGroup = (BusinessGroup) removeFromGrpDlg.getUserObject();
 		String groupName = currBusinessGroup.getName();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -284,21 +285,23 @@ public class GroupOverviewController extends BasicController {
 
 		if ((ownerList.size() == 1 && partList.size() == 0) || (ownerList.size() == 0 && partList.size() == 1)) {
 			// really delete the group as it has no more owners/participants
-			if(doSendMail)
-				bgm.deleteBusinessGroupWithMail(currBusinessGroup, wControl, ureq, getTranslator(), null);
-			else
-				bgm.deleteBusinessGroup(currBusinessGroup);
+			if(doSendMail) {
+				String businessPath = getWindowControl().getBusinessControl().getAsString();
+				businessGroupService.deleteBusinessGroupWithMail(currBusinessGroup, businessPath, getIdentity(), getLocale());
+			} else {
+				businessGroupService.deleteBusinessGroup(currBusinessGroup);
+			}
 		} else {
 			// 1) remove as owner
 			if (securityManager.isIdentityInSecurityGroup(identity, owners)) {
-				bgm.removeOwnerAndFireEvent(ureq.getIdentity(), identity, currBusinessGroup, flags, false);
+				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(identity), currBusinessGroup, flags);
 			}
 
 			// 2) remove as participant
 			final BusinessGroup toRemFromGroup = currBusinessGroup;
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor() {
 				public void execute() {
-					bgm.removeParticipantAndFireEvent(getIdentity(), identity, toRemFromGroup, flags, false);
+					businessGroupService.removeParticipant(getIdentity(), identity, toRemFromGroup, flags);
 				}
 			});
 

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
@@ -113,7 +114,7 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		//this.trans = new PackageTranslator(PACKAGE, ureq.getLocale());
 		// init managers
-		this.enrollmentManager = EnrollmentManager.getInstance();
+		enrollmentManager = CoreSpringFactory.getImpl(EnrollmentManager.class);
 		this.courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		this.coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 

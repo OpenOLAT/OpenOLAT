@@ -36,19 +36,16 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Encoder;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Mar 11, 2004
@@ -62,27 +59,25 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 
 	private long RESOURCE_ID = 144;
 	private String RESOURCE_TYPE = "org.olat.commons.lifecycle.LifeCycleManagerTest";
-	private BusinessGroupManager gm;
 	private static Logger log = Logger.getLogger(LifeCycleManagerTest.class);
-	private static boolean isInitialized = false;
 	private static Identity identity = null;
 	private static BusinessGroup group = null;
 	private static org.olat.resource.OLATResource res = null;
 
-
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup() {
-
-				// identity with null User should be ok for test case
-				res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
-				OLATResourceManager.getInstance().saveOLATResource(res);
-				identity = JunitTestHelper.createAndPersistIdentityAsUser("foo");
-				gm = BusinessGroupManagerImpl.getInstance();
-				group = gm.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, 
-				identity, "a buddygroup", "a desc", null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, null);
-
+	@Before
+	public void setup() {
+		// identity with null User should be ok for test case
+		res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
+		OLATResourceManager.getInstance().saveOLATResource(res);
+		identity = JunitTestHelper.createAndPersistIdentityAsUser("foo");
+		group = businessGroupService.createBusinessGroup( identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
 	}
 	
 	/**
@@ -91,7 +86,7 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 	@After public void tearDown() {
 		try {
 			OLATResourceManager.getInstance().deleteOLATResource(res);
-			gm.deleteBusinessGroup(group);
+			businessGroupService.deleteBusinessGroup(group);
 			Tracing.logInfo("tearDown: DB.getInstance().closeSession()", this.getClass());
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {

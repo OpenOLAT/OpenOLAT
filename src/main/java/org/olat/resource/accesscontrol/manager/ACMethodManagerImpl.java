@@ -40,7 +40,6 @@ import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;

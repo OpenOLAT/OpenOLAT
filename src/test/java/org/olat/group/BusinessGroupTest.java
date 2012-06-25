@@ -26,7 +26,6 @@
 
 package org.olat.group;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -50,9 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
-import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.right.BGRightManager;
@@ -402,80 +399,34 @@ public class BusinessGroupTest extends OlatTestCase {
 	/** BGContextManagerImpl:getGroupsOfBGContext and countGroupsOfBGContext* */
 	@Test
 	public void testGroupsOfBGContext() {
-		BGContextManagerImpl bgcm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BGContext c1 = bgcm.createAndPersistBGContext("c1name4", "c1desc", BusinessGroup.TYPE_LEARNINGROUP, null, true);
-		BGContext c2 = bgcm.createAndPersistBGContext("c2name4", "c2desc", BusinessGroup.TYPE_LEARNINGROUP, id1, false);
+		OLATResource c1 = JunitTestHelper.createRandomResource();
+		OLATResource c2 = JunitTestHelper.createRandomResource();
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
-		assertTrue(bgcm.getGroupsOfBGContext(c1).size() == 0);
-		assertTrue(bgcm.countGroupsOfBGContext(c1) == 0);
+		assertTrue(businessGroupService.findBusinessGroups(null, null, false, false, c1, 0, -1).isEmpty());
+		assertTrue(businessGroupService.countBusinessGroups(null, null, false, false, c1) == 0);
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
-		BusinessGroup g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "g1", null, new Integer(0),
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0),
 				new Integer(10), false, false, c1);
 		assertNotNull(g1);
-		BusinessGroup g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "g2", null, new Integer(0),
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0),
 				new Integer(10), false, false, c1);
 		assertNotNull(g2);
-		BusinessGroup g3 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "g3", null, new Integer(0),
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0),
 				new Integer(10), false, false, c2);
 		assertNotNull(g3);
 
-		BusinessGroup g2douplicate = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "g2", null, new Integer(0),
+		BusinessGroup g2douplicate = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0),
 				new Integer(10), false, false, c1);
 		assertNull(g2douplicate); // name douplicate names allowed per group context
 
-		BusinessGroup g4 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "g2", null, new Integer(0),
+		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0),
 				new Integer(10), false, false, c2);
 		assertNotNull(g4); // name douplicate in other context allowed
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
-		assertTrue(bgcm.getGroupsOfBGContext(c1).size() == 2);
-		assertTrue(bgcm.countGroupsOfBGContext(c1) == 2);
+		assertTrue(businessGroupService.findBusinessGroups(null, null, false, false, c1, 0, -1).size() == 2);
+		assertTrue(businessGroupService.countBusinessGroups(null, null, false, false, c1) == 2);
 	}
-
-	/** BGContext2ResourceManager tests */
-	@Test
-	public void testFindContextMethods() {
-		BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-		BGContext c1 = cm.createAndAddBGContextToResource("c1name5", course1, BusinessGroup.TYPE_LEARNINGROUP, null, true);
-		cm.createAndAddBGContextToResource("c2name5", course1, BusinessGroup.TYPE_LEARNINGROUP, id4, false);
-		cm.createAndAddBGContextToResource("c3name5", course1, BusinessGroup.TYPE_RIGHTGROUP, id2, false);
-
-		DBFactory.getInstance().closeSession(); // simulate user clicks
-		assertTrue(cm.findBGContextsForResource(course1, true, true).size() == 3);
-		assertTrue(cm.findBGContextsForResource(course1, true, false).size() == 1);
-		assertTrue(cm.findBGContextsForResource(course1, false, true).size() == 2);
-		assertTrue(cm.findBGContextsForResource(course1, BusinessGroup.TYPE_LEARNINGROUP, true, true).size() == 2);
-		assertTrue(cm.findBGContextsForResource(course1, BusinessGroup.TYPE_RIGHTGROUP, true, true).size() == 1);
-
-		assertTrue(cm.findBGContextsForIdentity(id4, true, true).size() == 1);
-		assertTrue(cm.findBGContextsForIdentity(id4, true, false).size() == 0);
-		assertTrue(cm.findBGContextsForIdentity(id4, false, true).size() == 1);
-
-		DBFactory.getInstance().closeSession(); // simulate user clicks
-		cm.removeBGContextFromResource(c1, course1);
-		assertTrue(cm.findBGContextsForResource(course1, true, true).size() == 2);
-		assertTrue(cm.findBGContextsForResource(course1, BusinessGroup.TYPE_LEARNINGROUP, true, true).size() == 1);
-		assertTrue(cm.findBGContextsForResource(course1, BusinessGroup.TYPE_RIGHTGROUP, true, true).size() == 1);
-
-		DBFactory.getInstance().closeSession(); // simulate user clicks
-		// cm.removeAllBGContextsFromResource(course1);
-		CourseGroupManager cgm = PersistingCourseGroupManager.getInstance(course1);
-		cgm.deleteCourseGroupmanagement();
-		assertTrue(cm.findBGContextsForResource(course1, true, true).size() == 0);
-		assertTrue(cm.findBGContextsForResource(course1, BusinessGroup.TYPE_LEARNINGROUP, true, true).size() == 0);
-		assertTrue(cm.findBGContextsForResource(course1, BusinessGroup.TYPE_RIGHTGROUP, true, true).size() == 0);
-	}
-	
-	@Test
-	public void testRemoveBGFromArea() {
-		BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-		BGContext bgContext = cm.createAndAddBGContextToResource("c2name6", course1, BusinessGroup.TYPE_LEARNINGROUP, null, true);
-		assertEquals( 1,cm.findBGContextsForResource(course1, true, true).size() );
-    cm.removeBGContextFromResource(bgContext, course1);
-    assertEquals( 0,cm.findBGContextsForResource(course1, true, true).size() );
-	}
-
 }

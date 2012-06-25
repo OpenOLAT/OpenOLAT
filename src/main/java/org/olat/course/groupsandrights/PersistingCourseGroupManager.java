@@ -119,14 +119,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 *      java.lang.String)
 	 */
 	public boolean hasRight(Identity identity, String courseRight) {
-		return hasRight(identity, courseRight, null);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#hasRight(org.olat.core.id.Identity,
-	 *      java.lang.String, java.lang.String)
-	 */
-	public boolean hasRight(Identity identity, String courseRight, String groupContextName) {
 		boolean hasRight = rightManager.hasBGRight(courseRight, identity, courseResource);
 		return hasRight;
 	}
@@ -193,20 +185,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 *      java.lang.String)
 	 */
 	public boolean isIdentityInLearningArea(Identity identity, String areaName) {
-		return isIdentityInLearningArea(identity, areaName, null);
-	}
-
-	@Override
-	public boolean isIdentityInLearningArea(Identity identity, String areaName, String groupContextName) {
 		return areaManager.isIdentityInBGArea(identity, areaName, courseResource);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInGroupContext(org.olat.core.id.Identity,
-	 *      java.lang.String)
-	 */
-	public boolean isIdentityInGroupContext(Identity identity, String groupContextName) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, null, null, true, true, courseResource);
 	}
 
 	/**
@@ -389,62 +368,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public boolean isIdentityParticipantInAnyRightGroup(Identity identity) {
 		return businessGroupService.isIdentityInBusinessGroup(identity, null, BusinessGroup.TYPE_RIGHTGROUP, false, true, courseResource);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#createCourseGroupmanagement(java.lang.String)
-	 */
-	public void createCourseGroupmanagement(String courseTitle) {
-		//nothing to do
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#createCourseGroupmanagementAsCopy(org.olat.course.groupsandrights.CourseGroupManager,
-	 *      java.lang.String)
-	 */
-	public void createCourseGroupmanagementAsCopy(CourseGroupManager originalCourseGroupManager, String courseTitle) {
-		//TODO gm
-		// wrap as transatcion: do everything or nothing
-/*
-		// 1. do copy learning group contexts
-		int count = 0;
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		List<BGContext> origLgC = originalCourseGroupManager.getLearningGroupContexts();
-		for (BGContext origContext:origLgC) {
-			if (origContext.isDefaultContext()) {
-				// we found default context, copy this one
-				String learningGroupContextName = CourseGroupManager.DEFAULT_NAME_LC_PREFIX + courseTitle;
-				contextManager.copyAndAddBGContextToResource(learningGroupContextName, this.courseResource, origContext);
-				// no need to add it to list of contexts, already done by copyAndAddBGContextToResource
-			} else {
-				// not a course default context but an associated context - copy only
-				// reference
-				contextManager.addBGContextToResource(origContext, courseResource);
-				// no need to add it to list of contexts, already done by addBGContextToResource				
-			}
-			if(count++ % 2 == 0) {
-				DBFactory.getInstance().intermediateCommit();
-			}
-		}
-		
-		// 2. do copy right group contexts
-		List<BGContext> origRgC = originalCourseGroupManager.getRightGroupContexts();
-		for (BGContext origContext:origRgC) {
-			if (origContext.isDefaultContext()) {
-				// we found default context, copy this one
-				String rightGroupContextName = CourseGroupManager.DEFAULT_NAME_RC_PREFIX + courseTitle;
-				contextManager.copyAndAddBGContextToResource(rightGroupContextName, this.courseResource, origContext);
-				// no need to add it to list of contexts, already done by copyAndAddBGContextToResource
-			} else {
-				// not a course default context but an associated context - copy only
-				// reference
-				contextManager.addBGContextToResource(origContext, courseResource);
-				// no need to add it to list of contexts, already done by addBGContextToResource
-			}
-			if(count++ % 2 == 0) {
-				DBFactory.getInstance().intermediateCommit();
-			}
-		}*/
 	}
 
 	/**

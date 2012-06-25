@@ -69,17 +69,6 @@ public interface CourseGroupManager {
 	public boolean hasRight(Identity identity, String courseRight);
 
 	/**
-	 * Checks users course rights in the specified right group context of this
-	 * course
-	 * 
-	 * @param identity
-	 * @param courseRight
-	 * @param groupContextName
-	 * @return true if user has course right, false otherwhise
-	 */
-	public boolean hasRight(Identity identity, String courseRight, String groupContextName);
-
-	/**
 	 * Checks if an identity is in a learning group with the given name in any
 	 * contexts of this course, either as owner or as participant
 	 * 
@@ -89,17 +78,6 @@ public interface CourseGroupManager {
 	 */
 	public boolean isIdentityInLearningGroup(Identity identity, String groupName);
 
-	/**
-	 * Checks if an identity is in a learning group with the given name in the the
-	 * given group context of this course, either as owner or as participant
-	 * 
-	 * @param identity
-	 * @param groupName
-	 * @param groupContextName
-	 * @return true if user is in learning group, false otherwhise
-	 */
-	//public boolean isIdentityInLearningGroup(Identity identity, String groupName, String groupContextName);
-	
 	/**
 	 * Checks whether a set of learning groups with an identical name are full or not.
 	 * 
@@ -120,17 +98,6 @@ public interface CourseGroupManager {
 	public boolean isIdentityInRightGroup(Identity identity, String groupName);
 
 	/**
-	 * Checks if an identity is in a right group with the given name in the the
-	 * given group context of this course
-	 * 
-	 * @param identity
-	 * @param groupName
-	 * @param groupContextName
-	 * @return true if user is in right group, false otherwhise
-	 */
-	//public boolean isIdentityInRightGroup(Identity identity, String groupName, String groupContextName);
-
-	/**
 	 * Checks if an identity is in any learning areas with the given name in any
 	 * of the courses group contexts
 	 * 
@@ -139,26 +106,6 @@ public interface CourseGroupManager {
 	 * @return true if user is in such an area, false otherwhise
 	 */
 	public boolean isIdentityInLearningArea(Identity identity, String areaName);
-
-	/**
-	 * Checks if an identity is in a learning areas with the given name in the
-	 * given group context
-	 * 
-	 * @param identity
-	 * @param areaName
-	 * @param groupContextName
-	 * @return true if user is in such an area, false otherwhise
-	 */
-	public boolean isIdentityInLearningArea(Identity identity, String areaName, String groupContextName);
-
-	/**
-	 * Checks if an identity is in the given group context
-	 * 
-	 * @param identity
-	 * @param groupContextName
-	 * @return true if user is in this context, false otherwhise
-	 */
-	public boolean isIdentityInGroupContext(Identity identity, String groupContextName);
 
 	/**
 	 * Checks if user is coach in any of the courses learning groups
@@ -285,24 +232,6 @@ public interface CourseGroupManager {
 	 * care!
 	 */
 	public void deleteCourseGroupmanagement();
-
-	/**
-	 * Initializes the course groupmanagement. This will create the initial
-	 * default learning and right group contexts.
-	 * 
-	 * @param courseTitle
-	 */
-	public void createCourseGroupmanagement(String courseTitle);
-
-	/**
-	 * Initializes the course groupmanagement as a copy of another course. This
-	 * will copy the initial default learning and right group contexts and add the
-	 * references to all other group contexts.
-	 * 
-	 * @param originalCourseGroupManager
-	 * @param courseTitle
-	 */
-	public void createCourseGroupmanagementAsCopy(CourseGroupManager originalCourseGroupManager, String courseTitle);
 
 	/**
 	 * Method to count group memberships. Only participants will be counted, no

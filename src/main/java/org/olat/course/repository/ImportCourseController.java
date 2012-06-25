@@ -124,7 +124,6 @@ public class ImportCourseController extends BasicController implements IAddContr
 	public boolean transactionFinishBeforeCreate() {
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		cgm.createCourseGroupmanagement(course.getResourceableId().toString());
 		// import groups
 		cgm.importCourseLearningGroups(getExportDataDir(course));
 		cgm.importCourseRightGroups(getExportDataDir(course));

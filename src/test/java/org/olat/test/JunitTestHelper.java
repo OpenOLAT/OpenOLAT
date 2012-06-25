@@ -29,6 +29,7 @@
 package org.olat.test;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -36,14 +37,18 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.DeployableCourseExport;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -65,6 +70,14 @@ public class JunitTestHelper {
 		if (maildomain == null) {
 			maildomain = "mytrashmail.com";
 		}
+	}
+	
+	public static final OLATResource createRandomResource() {
+		String resName = UUID.randomUUID().toString().replace("-", "");
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, 0l);
+		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(ores);
+		OLATResourceManager.getInstance().saveOLATResource(resource);
+		return resource;
 	}
 
 	/**
@@ -120,18 +133,6 @@ public class JunitTestHelper {
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}
-	
-	/**
-	 * Remove identity from <code>Constants.GROUP_OLATUSERS</code> group.
-	 * @param identity
-	 */
-	/*public static void deleteIdentityFromUsersGroup(Identity identity) {
-		Manager securityManager = ManagerFactory.getManager();
-		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		if (group != null) {
-			securityManager.removeIdentityFromSecurityGroup(identity, group);
-		}
-	}*/
 	
 	/**
 	 * Deploys/imports the "Demo Course".

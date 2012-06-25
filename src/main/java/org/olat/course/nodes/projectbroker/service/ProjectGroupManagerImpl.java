@@ -50,7 +50,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -138,7 +137,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
   		if (groupKey != null) {
 				BusinessGroup accountManagerGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 				if (accountManagerGroup != null) {
-					BusinessGroupManagerImpl.getInstance().deleteBusinessGroup(accountManagerGroup);
+					BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+					bgs.deleteBusinessGroup(accountManagerGroup);
 					logAudit("ProjectBroker: Deleted accountManagerGroup=" + accountManagerGroup);
 				} else {
 					logDebug("deleteAccountManagerGroup: accountManagerGroup=" + accountManagerGroup + " has already been deleted");
@@ -188,7 +188,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 	
 	public void deleteProjectGroupFor(Project project) {
-		BusinessGroupManagerImpl.getInstance().deleteBusinessGroup(project.getProjectGroup());
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		bgs.deleteBusinessGroup(project.getProjectGroup());
 	}
 	
 	/**
@@ -258,13 +259,14 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 		final Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
+		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				for (final Identity identity : identities) {
 					if (!BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, reloadedProject.getProjectGroup().getPartipiciantGroup())) {
 						BaseSecurityManager.getInstance().removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
 						final BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
-						BusinessGroupManagerImpl.getInstance().addParticipantAndFireEvent(actionIdentity, identity, reloadedProject.getProjectGroup(), flags, false);
+						bgs.addParticipant(actionIdentity, identity, reloadedProject.getProjectGroup(), flags);
 						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 						response.getAddedIdentities().add(identity);
 					} else {

@@ -45,6 +45,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.Identity;
@@ -55,7 +56,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -264,7 +265,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		assertFalse("Can not be project leader of project B",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectB));
 		assertTrue("Must be project-leader of project A", ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id2, testProjectB));
 
-		BusinessGroupManagerImpl.getInstance().removeOwnersAndFireEvent(id1, projectManagerList, testProjectA.getProjectGroup(),flags);
+		CoreSpringFactory.getImpl(BusinessGroupService.class).removeOwners(id1, projectManagerList, testProjectA.getProjectGroup(),flags);
 		// check no project leader anymore
 		assertFalse("Can not be project leader of project A",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectA));
 		assertFalse("Can not be project leader of project B",ProjectBrokerManagerFactory.getProjectGroupManager().isProjectManager(id1, testProjectB));

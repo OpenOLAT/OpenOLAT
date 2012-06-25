@@ -140,14 +140,14 @@ public class BGMultipleCopyWizardController extends WizardController {
 	}
 	
 	private BusinessGroup doCopyGroup(String newGroupName, Integer max) {
-		BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		// reload original group to prevent context proxy problems
-		this.originalGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.originalGroup);
+		this.originalGroup = bgs.loadBusinessGroup(this.originalGroup);
 		//BGContext bgContext = this.originalGroup.getGroupContext();
 		boolean copyAreas = (flags.isEnabled(BGConfigFlags.AREAS) && copyForm.isCopyAreas());
 		//TODO gm copy relations to resources 
 
-		BusinessGroup newGroup = groupManager.copyBusinessGroup(this.originalGroup, newGroupName, this.originalGroup.getDescription(), null, max, null, null, copyAreas,
+		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, newGroupName, this.originalGroup.getDescription(), null, max, null, null, copyAreas,
 				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
 						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
 		return newGroup;

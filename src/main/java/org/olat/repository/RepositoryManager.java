@@ -72,8 +72,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext2Resource;
-import org.olat.group.context.BGContextImpl;
+import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.async.BackgroundTaskQueueManager;
 import org.olat.repository.async.IncrementDownloadCounterBackgroundTask;
@@ -618,15 +617,13 @@ public class RepositoryManager extends BasicManager {
 		     .append(" and ((")
 		     .append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity.key=:editorKey)")
 		     .append(" ) or (")
-		     .append("  reResource in (select context2res.resource from ").append(BGContext2Resource.class.getName()).append(" as context2res, ")
-		     .append("    ").append(BGContextImpl.class.getName()).append("  as context,")
+		     .append("  reResource in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
 		     .append("    ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
 				 .append("    ").append(PolicyImpl.class.getName()).append(" as poi,")
 				 .append("    ").append(OLATResourceImpl.class.getName()).append(" as ori")
 				 .append("     where sgmsi.identity.key = :editorKey and sgmsi.securityGroup = poi.securityGroup")
 				 .append("     and poi.permission = 'bgr.editor' and poi.olatResource = ori")
-				 .append("     and (ori.resId = context.key) and ori.resName = 'org.olat.group.context.BGContextImpl'")
-				 .append("     and context2res.groupContext=context")
+				 .append("     and groupRelation.resource=ori")
 		     .append("  )")
 		     .append(" ))");
 		//TODO gm

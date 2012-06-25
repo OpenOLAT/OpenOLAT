@@ -48,7 +48,6 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
-import org.olat.group.ui.context.BGContextManagementController;
 import org.olat.group.ui.main.BGMainController;
 import org.olat.home.HomeMainController;
 import org.olat.home.InviteeHomeMainController;
@@ -169,10 +168,6 @@ public class ControllerFactory {
 		} else if (OresHelper.isOfType(olatResourceable, UserAdminMainController.class)) {
 			if (!roles.isUserManager()) throw new OLATSecurityException("Tried to launch a UserAdminMainController, but is not in admin group " + roles);
 			return new UserAdminMainController(ureq, wControl);
-		} else if (OresHelper.isOfType(olatResourceable, BGContextManagementController.class)) {
-			if (!roles.isGroupManager()) throw new OLATSecurityException("Tried to launch a BGContextManagementController, but is not in group groupmanager "
-					+ roles);
-			return new BGContextManagementController(ureq, wControl);
 		} else if (OresHelper.isOfType(olatResourceable, InviteeHomeMainController.class)) {
 			if (!roles.isInvitee()) throw new OLATSecurityException("Tried to launch a InviteeMainController, but is not an invitee " + roles);
 			return new InviteeHomeMainController(ureq, wControl);

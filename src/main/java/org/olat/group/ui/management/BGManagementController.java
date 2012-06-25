@@ -26,6 +26,7 @@
 package org.olat.group.ui.management;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -82,15 +83,10 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGTranslatorFactory;
@@ -99,8 +95,6 @@ import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.group.ui.area.BGAreaEditController;
 import org.olat.group.ui.area.BGAreaTableModel;
-import org.olat.group.ui.context.BGContextEditController;
-import org.olat.group.ui.context.BGContextEvent;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
@@ -118,7 +112,6 @@ import org.olat.user.HomePageDisplayController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Description:<BR/> This controller provides a complete groupmanagement for a
@@ -163,12 +156,10 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private static final String CMD_LIST_MEMBERS_WITH_AREAS = "cmd.list.members.with.areas";
 
 	private Translator userTrans;
-	private OLATResource resource;
-	private String groupType;
+	private final OLATResource resource;
+	private final String groupType = BusinessGroup.TYPE_LEARNINGROUP;
 	private BGConfigFlags flags;
-	private boolean isContextOwner;
 	private static final int STATE_OVERVIEW = 1;
-	private static final int STATE_CONTEXT_EDIT = 2;
 	private static final int STATE_CONTEXT_REMOVED = 3;
 	private static final int STATE_GROUP_CREATE_FORM = 100;
 	private static final int STATE_GROUP_EDIT = 101;
@@ -182,7 +173,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private BusinessGroupEditController groupEditCtr;
 	private BGAreaEditController areaEditCtr;
-	private VelocityContainer overviewVC, newGroupVC, sendMessageVC, contextEditVC, vc_sendToChooserForm;
+	private VelocityContainer overviewVC, newGroupVC, sendMessageVC, vc_sendToChooserForm;
 	private BusinessGroupSendToChooserForm sendToChooserForm;
 	private Translator businessGroupTranslator;
 	private boolean isGMAdminOwner;
@@ -196,7 +187,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private ContactFormController contactCtr;
 	private BGCopyWizardController bgCopyWizardCtr;
 	private BGMultipleCopyWizardController bgMultipleCopyWizardCtr;
-	private BGContextEditController contextEditCtr;
 	private TableController resourcesCtr;
 	private GroupController contextOwnersCtr;
 
@@ -207,9 +197,8 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private ToolController toolC;
 
 	// Managers
-	private BGContextManager contextManager;
-	private BGAreaManager areaManager;
-	private BusinessGroupService businessGroupService;
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
 
 	// Workflow variables
 	private List<ShortName> areaFilters;
@@ -234,17 +223,14 @@ public class BGManagementController extends MainLayoutBasicController implements
 	 * @param bgContext
 	 * @param controllerFlags
 	 */
-	public BGManagementController(UserRequest ureq, WindowControl wControl, BGContext bgContext, BGConfigFlags controllerFlags) {
+	public BGManagementController(UserRequest ureq, WindowControl wControl, OLATResource resource, BGConfigFlags controllerFlags) {
 		super(ureq, wControl);
 		this.resource = resource;
-		this.groupType = bgContext.getGroupType();
 		this.flags = controllerFlags;
 
 		// Initialize managers
-		contextManager = BGContextManagerImpl.getInstance();
-		if (flags.isEnabled(BGConfigFlags.AREAS)) {
-			areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		}
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		businessGroupTranslator = Util.createPackageTranslator(BusinessGroupMainRunController.class, ureq.getLocale());
 		// Initialize translator
@@ -256,10 +242,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 		// initialize all velocity containers
 		initVC();
-
-		// check if user is owner of this group context
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		isContextOwner = businessGroupService.isIdentityInBusinessGroup(getIdentity(), null, null, true, false, resource);
 
 		// Layout is controlled with generic controller: menu - content - tools
 		// Navigation menu
@@ -275,7 +257,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// 2 set correct tools using setTools method (override step 1)
 		toolC = ToolFactory.createToolController(getWindowControl());
 		listenTo(toolC);
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, toolC.getInitialComponent(), content, "groupmngt" + bgContext.getKey());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, toolC.getInitialComponent(), content, "groupmngt");
 		listenTo(columnLayoutCtr);
 
 		doOverview(ureq);
@@ -287,7 +269,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 		Controller courseCloser = new DisposedBGAManagementController(ureq, wControl, this);
 		listenTo(courseCloser);
-		Controller disposedBGAManagementController = new LayoutMain3ColsController(ureq, wControl, empty, empty, courseCloser.getInitialComponent(), "disposed " + "groupmngt" + bgContext.getKey());
+		Controller disposedBGAManagementController = new LayoutMain3ColsController(ureq, wControl, empty, empty, courseCloser.getInitialComponent(), "disposedgroupmngt");
 		listenTo(disposedBGAManagementController);
 		setDisposedMsgController(disposedBGAManagementController);
 
@@ -608,11 +590,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 					doUserDetails(ureq);
 				}
 			}
-		} else if (source == contextEditCtr) {
-			if (event == Event.CHANGED_EVENT) {
-				// reload context, maybe updated title or something
-				//this.bgContext = contextManager.loadBGContext(this.bgContext);
-			}
 		} else if (source == groupCreateController){
 			if (event == Event.DONE_EVENT) {
 				releaseAdminLockAndGroupMUE();
@@ -812,8 +789,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 		overviewVC = createVelocityContainer("overview");
 		overviewVC.contextPut("flags", flags);
 		overviewVC.contextPut("type", this.groupType);
-		// Context edit container - init anyway, maybe not used
-		contextEditVC = createVelocityContainer("contextedit");
 		// Create new group form
 		newGroupVC = createVelocityContainer("newgroup");
 		newGroupVC.contextPut("type", this.groupType);
@@ -1150,7 +1125,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		if(group != null) {
 			List<Identity> identities = new ArrayList<Identity>(1);
 			identities.add(toRemoveIdentity);
-			businessGroupService.removeParticipantsAndFireEvent(ureqIdentity, identities, group, flags);
+			businessGroupService.removeParticipants(ureqIdentity, identities, group, flags);
 		}
 	}
 
@@ -1158,7 +1133,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		Long key = Long.valueOf(groupKey);
 		BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(key);
 		if(group != null) {
-			businessGroupService.removeOwnerAndFireEvent(ureq.getIdentity(), currentIdentity, group, flags, false);
+			businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(currentIdentity), group, flags);
 		}
 	}
 	

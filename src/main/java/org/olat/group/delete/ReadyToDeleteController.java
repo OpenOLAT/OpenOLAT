@@ -27,6 +27,7 @@ package org.olat.group.delete;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -48,7 +49,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.delete.service.GroupDeletionManager;
+import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
 
@@ -69,9 +70,11 @@ public class ReadyToDeleteController extends BasicController {
 	private TableController tableCtr;
 	private GroupDeleteTableModel redtm;
 	private Link feedbackBackLink;
-	private List groupsReadyToDelete;
+	private List<BusinessGroup> groupsReadyToDelete;
 	private DialogBoxController deleteConfirmController;
 	private PackageTranslator tableModelTypeTranslator;
+	
+	private final BusinessGroupDeletionManager bgDeletionManager;
 
 	/**
 	 * @param ureq
@@ -80,6 +83,7 @@ public class ReadyToDeleteController extends BasicController {
 	 */
 	public ReadyToDeleteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
 
 		/*
 		 * createBGPackageTranslator creates a Translator for Business Groups and the provided package, e.g. ReadyToDelete.class
@@ -109,7 +113,6 @@ public class ReadyToDeleteController extends BasicController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	@SuppressWarnings("unused")
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == feedbackBackLink) {
 			initializeTableController(ureq);
@@ -126,7 +129,7 @@ public class ReadyToDeleteController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					GroupDeletionManager.getInstance().setLastUsageNowFor( (BusinessGroup) redtm.getObject(rowid) );
+					bgDeletionManager.setLastUsageNowFor( (BusinessGroup) redtm.getObject(rowid) );
 					updateGroupList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {
@@ -137,7 +140,7 @@ public class ReadyToDeleteController extends BasicController {
 			} 
 		} else if (source == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				GroupDeletionManager.getInstance().deleteGroups(groupsReadyToDelete);
+				bgDeletionManager.deleteGroups(groupsReadyToDelete);
 				showInfo("readyToDelete.deleted.msg");
 			}
 			updateGroupList();
@@ -178,13 +181,13 @@ public class ReadyToDeleteController extends BasicController {
 		VelocityContainer readyToDeleteContent = createVelocityContainer("readyToDelete");
 		readyToDeleteContent.put("readyToDelete", tableCtr.getInitialComponent());
 		readyToDeleteContent.contextPut("header", translate("ready.to.delete.header", 
-				Integer.toString(GroupDeletionManager.getInstance().getDeleteEmailDuration()) ));
+				Integer.toString(bgDeletionManager.getDeleteEmailDuration()) ));
 		readyToDeletePanel.setContent(readyToDeleteContent);
 		
 	}
 
 	protected void updateGroupList() {
-		List l = GroupDeletionManager.getInstance().getGroupsReadyToDelete(GroupDeletionManager.getInstance().getDeleteEmailDuration());
+		List<BusinessGroup> l = bgDeletionManager.getGroupsReadyToDelete(bgDeletionManager.getDeleteEmailDuration());
 		redtm = new GroupDeleteTableModel(l,tableModelTypeTranslator);
 		tableCtr.setTableDataModel(redtm);
 	}

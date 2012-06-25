@@ -105,7 +105,6 @@ import org.olat.course.run.preview.PreviewConfigController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
-import org.olat.group.ui.context.BGContextEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -503,10 +502,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (event.getCommand().equals(BGContextEvent.RESOURCE_ADDED)) {
-			return;
-		}
-
 		try {
 		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 		

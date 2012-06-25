@@ -80,7 +80,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.context.BGContext;
-import org.olat.group.delete.service.GroupDeletionManager;
+import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
@@ -147,7 +147,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
   /** 
    * @see org.olat.group.BusinessGroupManager#createAndPersistBusinessGroup(java.lang.String, org.olat.core.id.Identity, java.lang.String, java.lang.String, java.lang.Integer, java.lang.Integer, java.lang.Boolean, java.lang.Boolean, org.olat.group.context.BGContext)
    */
-	public BusinessGroup createAndPersistBusinessGroup(String type, Identity identity, String name, String description,
+	/*public BusinessGroup createAndPersistBusinessGroup(String type, Identity identity, String name, String description,
 			Integer minParticipants, Integer maxParticipants, Boolean enableWaitinglist, Boolean enableAutoCloseRanks, BGContext groupContext) {
 		BusinessGroup grp = BusinessGroupFactory.createAndPersistBusinessGroup(type, identity, name, description, minParticipants,
 				maxParticipants, enableWaitinglist, enableAutoCloseRanks, groupContext);
@@ -156,7 +156,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		}
 		// else no group created
 		return grp;
-	}
+	}*/
 
 	/**
 	 * check if all given names in context exists.
@@ -608,7 +608,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      org.olat.core.gui.translator.Translator, java.util.List)
 	 */
 	public void deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, WindowControl wControl, UserRequest ureq, Translator trans,
-			List contactLists) {
+			List contactLi) {
 		Codepoint.codepoint(this.getClass(), "deleteBusinessGroupWithMail");
 		
 		// collect data for mail
@@ -797,8 +797,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		// 1. create group
 		String bgType = sourceBusinessGroup.getType();
 		// create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
-		BusinessGroup newGroup = createAndPersistBusinessGroup(bgType, null, targetName, targetDescription, targetMin, targetMax, 
-				sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(), targetBgContext);
+		BusinessGroup newGroup = null;//createAndPersistBusinessGroup(bgType, null, targetName, targetDescription, targetMin, targetMax, 
+			//	sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(), targetBgContext);
 		// return immediately with null value to indicate an already take groupname
 		if (newGroup == null) { return null; }
 		// 2. copy tools
@@ -1343,8 +1343,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 						// check if idenity is allready in participant
 						if (!securityManager.isIdentityInSecurityGroup(identity,currBusinessGroup.getPartipiciantGroup()) ) {
 							// Idenity is not in participant-list => move idenity from waiting-list to participant-list
-							BusinessGroupManagerImpl.this.addParticipantAndFireEvent(ureqIdentity, identity, currBusinessGroup, flags, false);
-							BusinessGroupManagerImpl.this.removeFromWaitingListAndFireEvent(ureqIdentity, identity, currBusinessGroup, false);
+							addParticipantAndFireEvent(ureqIdentity, identity, currBusinessGroup, flags, false);
+							removeFromWaitingListAndFireEvent(ureqIdentity, identity, currBusinessGroup, false);
 							response.getAddedIdentities().add(identity);
 							// notification mail is handled in controller
 						} else {
@@ -1373,7 +1373,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		return pos;
 	}
 	
-	@Override
+
 	//fxdiff VCRP-1,2: access control of resources
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup) {
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
@@ -1471,7 +1471,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 							response.getIdentitiesAlreadyInGroup().add(identity);
 						} else {
 							// identity has permission and is not already in group => add it
-							BusinessGroupManagerImpl.this.addToWaitingListAndFireEvent(ureqIdentity, identity, currBusinessGroup, false);
+							addToWaitingListAndFireEvent(ureqIdentity, identity, currBusinessGroup, false);
 							response.getAddedIdentities().add(identity);
 							Tracing.logAudit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey(), this.getClass());
 						}
@@ -1480,7 +1480,6 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		return response;
 	}
 	
-	@Override
 	//fxdiff VCRP-1,2: access control of resources
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> identities, SecurityGroup secGroup) {
 		for (Identity identity : identities) {
@@ -1710,7 +1709,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 				try {
 					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(currBusinessGroup);
 					reloadedBusinessGroup.setLastUsage(new Date());
-					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
+					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
 					updateBusinessGroup(reloadedBusinessGroup);
 					return reloadedBusinessGroup;
 				} catch(DBRuntimeException e) {
@@ -1740,8 +1739,8 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 						Set<BusinessGroup> newGroups = new HashSet<BusinessGroup>();
 						for (Iterator<String> iter = allNames.iterator(); iter.hasNext();) {
 							String bgName = iter.next();
-							BusinessGroup newGroup = createAndPersistBusinessGroup(bgContext.getGroupType(), null, bgName, bgDesc, bgMin, bgMax,
-									enableWaitinglist, enableAutoCloseRanks, bgContext);
+							BusinessGroup newGroup = null;// createAndPersistBusinessGroup(bgContext.getGroupType(), null, bgName, bgDesc, bgMin, bgMax,
+									//enableWaitinglist, enableAutoCloseRanks, bgContext);
 							newGroups.add(newGroup);
 						}
 						return newGroups;

@@ -25,6 +25,7 @@
 
 package org.olat.group.delete;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,30 +34,41 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
-import org.olat.group.delete.service.GroupDeletionManager;
+import org.olat.group.manager.BusinessGroupDeletionManager;
 
 /**
  * The repository-entry table data model for repository deletion. 
  * 
  * @author Christian Guretzki
  */
-public class GroupDeleteTableModel extends DefaultTableDataModel {
-
-	
+public class GroupDeleteTableModel extends DefaultTableDataModel<BusinessGroup> {
 	private Translator translator;
+	
 	/**
 	 * @param objects
 	 */
-	public GroupDeleteTableModel(List objects, Translator translator) {
+	public GroupDeleteTableModel(List<BusinessGroup> objects, Translator translator) {
 		super(objects);
 		this.translator = translator;
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
+	 */
+	public int getColumnCount() {
+		return 5;
+	}
+
+	@Override
+	public Object createCopyWithEmptyList() {
+		return new GroupDeleteTableModel(new ArrayList<BusinessGroup>(), translator);
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public final Object getValueAt(int row, int col) {
-		BusinessGroup businessGroup = (BusinessGroup) getObject(row);
+		BusinessGroup businessGroup = getObject(row);
 		switch (col) {
 			case 0 :
 				return businessGroup.getName();
@@ -71,16 +83,10 @@ public class GroupDeleteTableModel extends DefaultTableDataModel {
 				Date lastUsage= businessGroup.getLastUsage();
 				return (lastUsage == null ? "n/a" : lastUsage);
 			case 4 :
-				Date deleteEmail= LifeCycleManager.createInstanceFor(businessGroup).lookupLifeCycleEntry(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION).getLcTimestamp();
+				Date deleteEmail= LifeCycleManager.createInstanceFor(businessGroup).lookupLifeCycleEntry(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION).getLcTimestamp();
 				return (deleteEmail == null ? "n/a" : deleteEmail);
 			default :
 				return "error";
 		}
-	}
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
-	public int getColumnCount() {
-		return 5;
 	}
 }

@@ -34,7 +34,6 @@ import org.olat.core.id.User;
 import org.olat.core.util.ObjectCloner;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 
 public class JmsTestSer {
@@ -139,10 +138,6 @@ public class JmsTestSer {
 				return null;
 			}
 
-			public BGContext getGroupContext() {
-				return null;
-			}
-
 			public Date getLastUsage() {
 				return null;
 			}
@@ -184,10 +179,6 @@ public class JmsTestSer {
 			}
 
 			public void setDescription(String description) {
-				//
-			}
-
-			public void setGroupContext(BGContext groupContext) {
 				//
 			}
 

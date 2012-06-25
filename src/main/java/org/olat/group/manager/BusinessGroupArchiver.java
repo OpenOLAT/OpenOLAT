@@ -167,8 +167,8 @@ public class BusinessGroupArchiver {
 		if (group != null) {
 		appendTitle(buf, title );
 		appendIdentityTableHeader(buf);
-		for (Iterator iter = securityManager.getIdentitiesAndDateOfSecurityGroup(group).iterator(); iter.hasNext();) {
-			Object[] element = (Object[]) iter.next();
+		for (Iterator<Object[]> iter = securityManager.getIdentitiesAndDateOfSecurityGroup(group).iterator(); iter.hasNext();) {
+			Object[] element = iter.next();
 			Identity identity = (Identity) element[0];
 			Date addedTo = (Date) element[1];
 			appendIdentity(buf, identity, addedTo );
@@ -269,15 +269,15 @@ public class BusinessGroupArchiver {
  				List<BusinessGroup> areaBusinessGroupList = areaManager.findBusinessGroupsOfArea(area);
 				for (BusinessGroup group : areaBusinessGroupList) {
 					if(group.getOwnerGroup()!=null) {
-					  Iterator ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
+					  Iterator<Object[]> ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
 					  addMembers(area.getKey(), ownerIterator, owners, OWNER);
 					}
 					if(group.getPartipiciantGroup()!=null) {
-					  Iterator participantsIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getPartipiciantGroup()).iterator();
+					  Iterator<Object[]> participantsIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getPartipiciantGroup()).iterator();
 					  addMembers(area.getKey(), participantsIterator, participants, PARTICIPANT);
 					}
 					if(group.getWaitingGroup()!=null) {
-					  Iterator waitingIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup()).iterator();
+					  Iterator<Object[]> waitingIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup()).iterator();
 					  addMembers(area.getKey(), waitingIterator, waitings, WAITING);
 					}
 				}
@@ -285,7 +285,7 @@ public class BusinessGroupArchiver {
 		}
 
 		Translator trans = getPackageTranslator(locale);
-		List<OrganisationalEntity> organisationalEntityList = getOrganisationalEntityList(areaList);
+		List<OrganisationalEntity> organisationalEntityList = getOrganisationalEntityListFromAreas(areaList);
 		return generateArchiveFile(resource, owners, participants, waitings, columnList, organisationalEntityList, 
 				trans.translate("archive.areas"), archiveType, locale, charset);
 	}
@@ -315,22 +315,22 @@ public class BusinessGroupArchiver {
 		for (BusinessGroup group: groups) {
 			if (groupList.contains(group)) { //rely on the equals() method of the BusinessGroup impl			
 				if(group.getOwnerGroup()!=null) {
-					Iterator ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
+					Iterator<Object[]> ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
 				  addMembers(group.getKey(), ownerIterator, owners, OWNER);
 				}
 				if(group.getPartipiciantGroup()!=null) {
-				  Iterator participantsIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getPartipiciantGroup()).iterator();
+				  Iterator<Object[]> participantsIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getPartipiciantGroup()).iterator();
 				  addMembers(group.getKey(), participantsIterator, participants, PARTICIPANT);
 				}
 				if(group.getWaitingGroup()!=null) {
-				  Iterator waitingIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup()).iterator();
+				  Iterator<Object[]> waitingIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup()).iterator();
 				  addMembers(group.getKey(), waitingIterator, waitings, WAITING);
 				}
 			}
 		}
 
 		Translator trans = getPackageTranslator(locale);
-		List<OrganisationalEntity> organisationalEntityList = getOrganisationalEntityList(groupList);
+		List<OrganisationalEntity> organisationalEntityList = getOrganisationalEntityListFromGroups(groupList);
 		return generateArchiveFile(resource, owners, participants, waitings, columnList, organisationalEntityList, 
 				trans.translate("archive.groups"), archiveType, locale, charset);
 	}
@@ -670,12 +670,12 @@ public class BusinessGroupArchiver {
 	 * @param members
 	 * @param roleName
 	 */
-	private void addMembers(Long entityKey, Iterator identityIterator, List<Member> members, String roleName) {
+	private void addMembers(Long entityKey, Iterator<Object[]> identityIterator, List<Member> members, String roleName) {
 		while (identityIterator.hasNext()) {
-			Object[] element = (Object[]) identityIterator.next();
+			Object[] element = identityIterator.next();
 			Identity identity = (Identity) element[0];
 			OrganisationalEntityRole role = new OrganisationalEntityRole(entityKey, roleName);
-			Member member = new Member(identity,new ArrayList());
+			Member member = new Member(identity, new ArrayList<OrganisationalEntityRole>());
 			member.getOrganisationalEntityRoleList().add(role);
 			if(!members.contains(member)) {
 				members.add(member);
@@ -688,8 +688,8 @@ public class BusinessGroupArchiver {
 					}
 				}
 			}
-					}
-				}
+		}
+	}
 
 	/**
 	 * Appends course names and archive date.
@@ -824,18 +824,18 @@ public class BusinessGroupArchiver {
 	 * @param itemList
 	 * @return
 	 */
-	private List<OrganisationalEntity> getOrganisationalEntityList(List itemList) {
+	private List<OrganisationalEntity> getOrganisationalEntityListFromGroups(List<BusinessGroup> itemList) {
 		List<OrganisationalEntity> entryList = new ArrayList<OrganisationalEntity>();
-		Iterator itemIterator = itemList.iterator();
-		while (itemIterator.hasNext()) {
-			Object item = itemIterator.next();
-			if (item instanceof BusinessGroup) {
-				BusinessGroup group = (BusinessGroup) item;
-				entryList.add(new OrganisationalEntity(group.getKey(), group.getName()));
-			} else if (item instanceof BGArea) {
-				BGArea area = (BGArea) item;
-				entryList.add(new OrganisationalEntity(area.getKey(), area.getName()));
-			}
+		for (BusinessGroup group : itemList){
+			entryList.add(new OrganisationalEntity(group.getKey(), group.getName()));
+		}
+		return entryList;
+	}
+	
+	private List<OrganisationalEntity> getOrganisationalEntityListFromAreas(List<BGArea> areas) {
+		List<OrganisationalEntity> entryList = new ArrayList<OrganisationalEntity>();
+		for (BGArea area : areas){
+			entryList.add(new OrganisationalEntity(area.getKey(), area.getName()));
 		}
 		return entryList;
 	}
@@ -863,16 +863,8 @@ public class BusinessGroupArchiver {
 			return roleInGroup;
 		}
 
-		public void setRoleInGroup(String roleInGroup) {
-			this.roleInGroup = roleInGroup;
-		}
-
 		public Long getEntityKey() {
 			return entityKey;
-		}
-
-		public void setEntityKey(Long groupKey) {
-			this.entityKey = groupKey;
 		}
 		
 		public boolean equals(Object obj) {
@@ -908,14 +900,8 @@ public class BusinessGroupArchiver {
 			return organisationalEntityRoleList;
 		}
 
-		public void setOrganisationalEntityRoleList(List<OrganisationalEntityRole> groupRoleList) {
-			this.organisationalEntityRoleList = groupRoleList;
-		}
 		public Identity getIdentity() {
 			return identity;
-		}
-		public void setIdentity(Identity identity) {
-			this.identity = identity;
 		}
 		
 		/**
@@ -936,7 +922,7 @@ public class BusinessGroupArchiver {
 		public int hashCode() {
 			return this.identity.hashCode();
 		}
-		}
+	}
 
 	private class OrganisationalEntity {
 		private Long key;
@@ -953,17 +939,8 @@ public class BusinessGroupArchiver {
 			return key;
 		}
 
-		public void setKey(Long key) {
-			this.key = key;
-		}
-
 		public String getName() {
 			return name;
 		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
 	}
-
 }

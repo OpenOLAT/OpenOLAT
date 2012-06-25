@@ -24,9 +24,11 @@
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
 	
-	<bean id="areaManager" class="org.olat.group.area.BGAreaManagerImpl">
+	<bean id="areaManager" class="org.olat.group.area.BGAreaManagerImpl"/>
 	
-	
+	<bean id="groupDeletionManager" class="org.olat.group.manager.BusinessGroupDeletionManager">
+		<constructor-arg index="0" ref="deletionModule" />
+		<property name="businessGroupService" ref="businessGroupService"/>
 	</bean>
 
 </beans>

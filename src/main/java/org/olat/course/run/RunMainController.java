@@ -26,7 +26,6 @@
 package org.olat.course.run;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,7 +73,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -113,8 +111,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -171,13 +167,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private boolean isInEditor = false;
 
-	private Map courseRightsCache = new HashMap();
+	private Map<String, Boolean> courseRightsCache = new HashMap<String, Boolean>();
 	private boolean isCourseAdmin = false;
 	private boolean isCourseCoach = false;
-	private List ownedGroups;
-	private List participatedGroups;
-	private List waitingListGroups;
-	private List rightGroups;
+	private List<BusinessGroup> ownedGroups;
+	private List<BusinessGroup> participatedGroups;
+	private List<BusinessGroup> waitingListGroups;
+	private List<BusinessGroup> rightGroups;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -250,7 +246,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// log shows who entered which course, this can then be further used to jump
 		// to the courselog
-		Tracing.logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString(), RunMainController.class);
+		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
 		all = new Panel("allofcourse");
@@ -1160,9 +1156,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 2) add coached groups
 		if (ownedGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.ownerGroups"));
-			Iterator iter = ownedGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
+			for (BusinessGroup group:ownedGroups) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
@@ -1170,9 +1164,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 3) add participating groups
 		if (participatedGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.participatedGroups"));
-			Iterator iter = participatedGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
+			for (BusinessGroup group: participatedGroups) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
@@ -1180,9 +1172,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 4) add right groups
 		if (rightGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.rightGroups"));
-			Iterator iter = rightGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
+			for (BusinessGroup group : rightGroups) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
 		}
@@ -1190,11 +1180,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// 5) add waiting-list groups
 		if (waitingListGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.waitingListGroups"));
-			Iterator iter = waitingListGroups.iterator();
-			while (iter.hasNext()) {
-				BusinessGroup group = (BusinessGroup) iter.next();
-				BusinessGroupManager businessGroupManager = BusinessGroupManagerImpl.getInstance();
-				int pos = businessGroupManager.getPositionInWaitingListFor(identity, group);
+			for (BusinessGroup group:waitingListGroups) {
+				int pos = businessGroupService.getPositionInWaitingListFor(identity, group);
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName() + "(" + pos + ")", group
 						.getKey().toString(), null);
 				myTool.setEnabled(group.getKey().toString(), false);

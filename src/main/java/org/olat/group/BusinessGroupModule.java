@@ -24,8 +24,6 @@ import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseModule;
-import org.olat.group.site.GroupsManagementSite;
 import org.olat.group.site.GroupsSite;
 
 /**
@@ -58,9 +56,6 @@ public class BusinessGroupModule extends AbstractOLATModule {
 				new BusinessGroupContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(GroupsSite.class));
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(GroupsManagementSite.class.getSimpleName(),
-				new SiteContextEntryControllerCreator(GroupsManagementSite.class));
-		
 	}
 
 	/**

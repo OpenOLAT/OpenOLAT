@@ -77,7 +77,7 @@ public class BusinessGroupDAO {
 		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
 		SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 
-		businessgroup = new BusinessGroupImpl(type, name, description, ownerGroup, participantGroup, waitingGroup, null);
+		businessgroup = new BusinessGroupImpl(type, name, description, ownerGroup, participantGroup, waitingGroup);
 		businessgroup.setMinParticipants(minParticipants);
 		businessgroup.setMaxParticipants(maxParticipants);
 		businessgroup.setWaitingListEnabled(waitingListEnabled);
@@ -159,6 +159,11 @@ public class BusinessGroupDAO {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		BusinessGroup mergedGroup = em.merge(group);
 		return mergedGroup;
+	}
+	
+	public void delete(BusinessGroup group) {
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		em.remove(group);
 	}
 	
 	/**
@@ -293,7 +298,7 @@ public class BusinessGroupDAO {
 			where = where(query, where);
 			query.append("bgi in (")
 			     .append("  select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
-			     .append("");
+			     .append(")");
 		}
 		
 		if(params.getTypes() != null && !params.getTypes().isEmpty()) {

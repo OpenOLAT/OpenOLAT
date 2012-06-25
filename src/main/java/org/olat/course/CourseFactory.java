@@ -512,9 +512,6 @@ public class CourseFactory extends BasicManager {
 					DBFactory.getInstance(false).intermediateCommit();
 				}
 			}
-			CourseGroupManager sourceCgm = sourceCourse.getCourseEnvironment().getCourseGroupManager();
-			CourseGroupManager targetCgm = targetCourse.getCourseEnvironment().getCourseGroupManager();
-			targetCgm.createCourseGroupmanagementAsCopy(sourceCgm, sourceCourse.getCourseTitle());
 		}
 		return targetRes;			
 	}
@@ -626,7 +623,6 @@ public class CourseFactory extends BasicManager {
 		course = openCourseEditSession(course.getResourceableId());
 		// create group management
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		cgm.createCourseGroupmanagement(course.getResourceableId().toString());
 		// import groups
 		cgm.importCourseLearningGroups(courseExportData);
 		cgm.importCourseRightGroups(courseExportData);

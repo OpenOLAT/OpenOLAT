@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.group.delete.service;
+package org.olat.group.manager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,8 +31,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
@@ -41,7 +41,6 @@ import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -55,9 +54,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupArchiver;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.delete.service.DeletionModule;
@@ -67,7 +64,7 @@ import org.olat.repository.delete.service.DeletionModule;
  * Manager for group deletion. Handle deletion-email and db-access for group-deletion lists. 
  * @author Chreistian Guretzki
  */
-public class GroupDeletionManager extends BasicManager {
+public class BusinessGroupDeletionManager extends BasicManager {
 
 	private static final String GROUP_ARCHIVE_DIR = "archive_deleted_groups";
 
@@ -79,8 +76,6 @@ public class GroupDeletionManager extends BasicManager {
 	
 	private static final String  GROUPEXPORT_XML  = "groupexport.xml";
 	private static final String  GROUPARCHIVE_XLS = "grouparchive.xls";
-	
-	private static GroupDeletionManager INSTANCE;
 
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	private static final String GROUP_DELETED_ACTION = "groupDeleted";
@@ -91,9 +86,8 @@ public class GroupDeletionManager extends BasicManager {
 	 * [used by spring]
 	 * @param deletionModule
 	 */
-	private GroupDeletionManager(DeletionModule deletionModule) {
+	private BusinessGroupDeletionManager(DeletionModule deletionModule) {
 		this.module = deletionModule;
-		INSTANCE = this;
 	}
 
 	/**
@@ -101,13 +95,6 @@ public class GroupDeletionManager extends BasicManager {
 	 */
 	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
 		this.businessGroupService = businessGroupService;
-	}
-
-	/**
-	 * @return Singleton.
-	 */
-	public static GroupDeletionManager getInstance() { 
-		return INSTANCE; 
 	}
 
 	public void setLastUsageDuration(int lastUsageDuration) {
@@ -126,46 +113,42 @@ public class GroupDeletionManager extends BasicManager {
 		return getPropertyByName(DELETE_EMAIL_DURATION_PROPERTY_NAME, DEFAULT_DELETE_EMAIL_DURATION);
 	}
 
-	public String sendDeleteEmailTo(List selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
-			String keyEmailBody, Identity sender, PackageTranslator pT) {
+	public String sendDeleteEmailTo(List<BusinessGroup> selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
+			String keyEmailBody, Identity sender, Translator pT) {
 		StringBuffer warningMessage = new StringBuffer();
 		if (mailTemplate != null) {
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
-			HashMap identityGroupList = new HashMap();
-			for (Iterator iter = selectedGroups.iterator(); iter.hasNext();) {
-				BusinessGroup group = (BusinessGroup)iter.next();
-			
+			Map<Identity,List<BusinessGroup>> identityGroupList = new HashMap<Identity,List<BusinessGroup>>();
+			for (BusinessGroup group: selectedGroups) {
 				// Build owner group, list of identities
 				SecurityGroup ownerGroup = group.getOwnerGroup();
-				List ownerIdentities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(ownerGroup);
+				List<Identity> ownerIdentities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(ownerGroup);
 				// loop over this list and send email
-				for (Iterator iterator = ownerIdentities.iterator(); iterator.hasNext();) {
-					Identity identity = (Identity) iterator.next();
+				for (Identity identity : ownerIdentities) {
 					if (identityGroupList.containsKey(identity) ) {
-						List groupsOfIdentity = (List)identityGroupList.get(identity);
+						List<BusinessGroup> groupsOfIdentity = identityGroupList.get(identity);
 						groupsOfIdentity.add(group);
 					} else {
-						List groupsOfIdentity = new ArrayList();
+						List<BusinessGroup> groupsOfIdentity = new ArrayList<BusinessGroup>();
 						groupsOfIdentity.add(group);
 						identityGroupList.put(identity, groupsOfIdentity);
 					}				
 				}
 			}
 	    //	 loop over identity list and send email
-			for (Iterator iterator = identityGroupList.keySet().iterator(); iterator.hasNext();) {
-				Identity identity = (Identity) iterator.next(); 
-						
+			for (Identity identity : identityGroupList.keySet()) {		
 				mailTemplate.addToContext("responseTo", module.getEmailResponseTo());
 				if (!isTemplateChanged) {
 					// Email template has NOT changed => take translated version of subject and body text
-					Translator identityTranslator = Util.createPackageTranslator(this.getClass(), I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()));
+					String language = identity.getUser().getPreferences().getLanguage();
+					Translator identityTranslator = Util.createPackageTranslator(BusinessGroupService.class, I18nManager.getInstance().getLocaleOrDefault(language));
 					mailTemplate.setSubjectTemplate(identityTranslator.translate(keyEmailSubject));
 					mailTemplate.setBodyTemplate(identityTranslator.translate(keyEmailBody));
 				} 
+				
 				// loop over all repositoriesOfIdentity to build email message
 				StringBuilder buf = new StringBuilder();
-				for (Iterator groupIterator = ((List)identityGroupList.get(identity)).iterator(); groupIterator.hasNext();) {
-					BusinessGroup group = (BusinessGroup) groupIterator.next();
+				for (BusinessGroup group : identityGroupList.get(identity)) {
 					buf.append("\n  ").append( group.getName() ).append(" / ").append(FilterFactory.getHtmlTagsFilter().filter(group.getDescription()));
 				}
 				mailTemplate.addToContext("groupList", buf.toString());
@@ -180,8 +163,7 @@ public class GroupDeletionManager extends BasicManager {
 				MailerResult mailerResult = mailer.sendMailUsingTemplateContext(identity, ccIdentities, null, mailTemplate, sender);
 				if (mailerResult.getReturnCode() == MailerResult.OK) {
 					// Email sended ok => set deleteEmailDate
-					for (Iterator groupIterator = ((List)identityGroupList.get(identity)).iterator(); groupIterator.hasNext();) {
-						BusinessGroup group = (BusinessGroup) groupIterator.next();
+					for (BusinessGroup group : identityGroupList.get(identity)) {
 						logAudit("Group-Deletion: Delete-email send to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null) + " for group=" + group);
 						markSendEmailEvent(group);
 					}
@@ -191,8 +173,7 @@ public class GroupDeletionManager extends BasicManager {
 			}
 		} else {
 			// no template => User decides to sending no delete-email, mark only in lifecycle table 'sendEmail'
-			for (Iterator iter = selectedGroups.iterator(); iter.hasNext();) {
-				BusinessGroup group = (BusinessGroup)iter.next();
+			for (BusinessGroup group : selectedGroups) {
 				logAudit("Group-Deletion: Move in 'Email sent' section without sending email, group=" + group);
 				markSendEmailEvent(group);
 			}
@@ -208,7 +189,7 @@ public class GroupDeletionManager extends BasicManager {
 		group = bgs.mergeBusinessGroup(group);
 	}
 
-	public List getDeletableGroups(int lastLoginDuration) {
+	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration) {
 		Calendar lastUsageLimit = Calendar.getInstance();
 		lastUsageLimit.add(Calendar.MONTH, - lastLoginDuration);
 		logDebug("lastLoginLimit=" + lastUsageLimit);
@@ -233,7 +214,8 @@ public class GroupDeletionManager extends BasicManager {
 		return groups;
 	}
 
-	public List getGroupsInDeletionProcess(int deleteEmailDuration) {
+	//TODO gm ONLY BUDDY????
+	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration) {
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
 		logDebug("deleteEmailLimit=" + deleteEmailLimit);
@@ -249,7 +231,8 @@ public class GroupDeletionManager extends BasicManager {
 		return dbq.list();
 	}
 
-	public List getGroupsReadyToDelete(int deleteEmailDuration) {
+	//TODO gm ONLY BUDDY????
+	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration) {
 		Calendar deleteEmailLimit = Calendar.getInstance();
 		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
 		logDebug("deleteEmailLimit=" + deleteEmailLimit);
@@ -265,13 +248,12 @@ public class GroupDeletionManager extends BasicManager {
 		return dbq.list();
 	}
 
-	public void deleteGroups(List objects) {
-		for (Iterator iter = objects.iterator(); iter.hasNext();) {
-			BusinessGroup businessGroup = (BusinessGroup) iter.next();
+	public void deleteGroups(List<BusinessGroup> groups) {
+		for (BusinessGroup businessGroup : groups) {
 			String archiveFileName = archive(getArchivFilePath(businessGroup), businessGroup);
 			logAudit("Group-Deletion: archived businessGroup=" + businessGroup + " , archive-file-name=" + archiveFileName);
 			CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).deleteTools(businessGroup);
-			BusinessGroupManagerImpl.getInstance().deleteBusinessGroup(businessGroup);
+			businessGroupService.deleteBusinessGroup(businessGroup);
 			LifeCycleManager.createInstanceFor(businessGroup).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 			LifeCycleManager.createInstanceFor(businessGroup).markTimestampFor(GROUP_DELETED_ACTION, createLifeCycleLogDataFor(businessGroup));
 			logAudit("Group-Deletion: deleted businessGroup=" + businessGroup);
@@ -325,7 +307,7 @@ public class GroupDeletionManager extends BasicManager {
 	// Private Methods
 	//////////////////
 	private int getPropertyByName(String name, int defaultValue) {
-		List properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
+		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
 		if (properties.size() == 0) {
 			return defaultValue;
 		} else {
@@ -334,7 +316,7 @@ public class GroupDeletionManager extends BasicManager {
 	}
 
 	private void setProperty(String propertyName, int value) {
-		List properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
+		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
 		Property property = null;
 		if (properties.size() == 0) {
 			property = PropertyManager.getInstance().createPropertyInstance(null, null, null, PROPERTY_CATEGORY, propertyName, null,  new Long(value), null, null);

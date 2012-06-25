@@ -29,12 +29,12 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -74,7 +74,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.modules.ModuleConfiguration;
@@ -129,6 +129,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	private CloseableModalController cmc;
 	private Long projectBrokerId;
 	
+	private final BusinessGroupService businessGroupService;
+	
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -139,6 +141,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	protected ProjectBrokerCourseEditorController(UserRequest ureq, WindowControl wControl, ICourse course, ProjectBrokerCourseNode node,
 			CourseGroupManager groupMgr, UserCourseEnvironment euce) {
 		super(ureq, wControl);
+		
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		this.node = node;
 		//o_clusterOk by guido: save to hold reference to course inside editor
@@ -298,14 +302,14 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 			if (event instanceof IdentitiesAddEvent) {
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent)event;
-				BusinessGroupAddResponse response = BusinessGroupManagerImpl.getInstance().addParticipantsAndFireEvent(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup, flags);
+				BusinessGroupAddResponse response = businessGroupService.addParticipants(urequest.getIdentity(), identitiesAddedEvent.getAddIdentities(), accountManagerGroup, flags);
 				identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 				identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
 				identitiesAddedEvent.setIdentitiesAlreadyInGroup(response.getIdentitiesAlreadyInGroup());
 				getLogger().info("Add users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );			
 			} else if (event instanceof IdentitiesRemoveEvent) {
-				BusinessGroupManagerImpl.getInstance().removeParticipantsAndFireEvent(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup, flags);
+				businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), accountManagerGroup, flags);
 				getLogger().info("Remove users as account-managers");
 				fireEvent(urequest, Event.CHANGED_EVENT );
 			}

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.model.BusinessGroupAccess;
 import org.olat.resource.accesscontrol.model.Offer;
 
 /**

@@ -80,16 +80,13 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.delete.service.GroupDeletionManager;
+import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
-import org.olat.group.right.BGRightManagerImpl;
 import org.olat.group.right.BGRights;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
@@ -116,8 +113,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private static final String PACKAGE = Util.getPackageName(BusinessGroupEditController.class);
 	private final BGRightManager rightManager;
 	private final BGAreaManager areaManager;
-	private final BusinessGroupManager bgm;
-	private final BusinessGroupService bgs;
+	private final BusinessGroupService businessGroupService;
 	
 	private BusinessGroupFormController modifyBusinessGroupController;
 	private BusinessGroup currBusinessGroup;
@@ -170,10 +166,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		
 		// Initialize managers
-		this.areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		this.rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
-		this.bgm = BusinessGroupManagerImpl.getInstance();
-		this.bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		// Initialize other members
 
 		// group
@@ -195,7 +190,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		if (lockEntry.isSuccess()) {
 			// reload group to minimize stale object exception and update last usage
 			// timestamp
-			currBusinessGroup = bgs.setLastUsageFor(businessGroup);
+			currBusinessGroup = businessGroupService.setLastUsageFor(businessGroup);
 			if(currBusinessGroup == null) {
 				VelocityContainer vc = createVelocityContainer("deleted");
 				vc.contextPut("name", businessGroup.getName());
@@ -335,11 +330,11 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			BusinessGroupAddResponse response = null;
 			addLoggingResourceable(LoggingResourceable.wrap(currBusinessGroup));
 			if (source == ownerGrpCntrllr) {
-			  response = bgm.addOwnersAndFireEvent(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);
+			  response = businessGroupService.addOwners(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);
 			} else if (source == partipGrpCntrllr) {
-				response = bgm.addParticipantsAndFireEvent(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);					
+				response = businessGroupService.addParticipants(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);					
 			} else if (source == waitingGruppeController) {
-				response = bgm.addToWaitingListAndFireEvent(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);									
+				response = businessGroupService.addToWaitingList(ureq.getIdentity(), identitiesAddedEvent.getAddIdentities(), currBusinessGroup, flags);									
 			}
 			identitiesAddedEvent.setIdentitiesAddedEvent(response.getAddedIdentities());
 			identitiesAddedEvent.setIdentitiesWithoutPermission(response.getIdentitiesWithoutPermission());
@@ -348,22 +343,22 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	  }	else if (event instanceof IdentitiesRemoveEvent) {
 	  	List<Identity> identities = ((IdentitiesRemoveEvent) event).getRemovedIdentities();
 			if (source == ownerGrpCntrllr) {
-			  bgm.removeOwnersAndFireEvent(ureq.getIdentity(), identities, currBusinessGroup, flags);
+			  businessGroupService.removeOwners(ureq.getIdentity(), identities, currBusinessGroup, flags);
 			} else if (source == partipGrpCntrllr) {
-			  bgm.removeParticipantsAndFireEvent(ureq.getIdentity(), identities, currBusinessGroup, flags);
+			  businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup, flags);
 			  if (currBusinessGroup.getWaitingListEnabled().booleanValue()) {
           // It is possible that a user is transfered from waiting-list to participants => reload data to see transfered user in right group.
 			  	partipGrpCntrllr.reloadData();
 			    waitingGruppeController.reloadData();
 			  }
 			} else if (source == waitingGruppeController) {
-			  bgm.removeFromWaitingListAndFireEvent(ureq.getIdentity(), identities, currBusinessGroup, flags);
+			  businessGroupService.removeFromWaitingList(ureq.getIdentity(), identities, currBusinessGroup, flags);
 			}
 	  	fireEvent(ureq, Event.CHANGED_EVENT );
 		} else if (source == waitingGruppeController) {
 			if (event instanceof IdentitiesMoveEvent) {
 				IdentitiesMoveEvent identitiesMoveEvent = (IdentitiesMoveEvent) event;
-				BusinessGroupAddResponse response = bgm.moveIdenityFromWaitingListToParticipant(identitiesMoveEvent.getChosenIdentities(), ureq.getIdentity(), currBusinessGroup, flags);
+				BusinessGroupAddResponse response = businessGroupService.moveIdentityFromWaitingListToParticipant(identitiesMoveEvent.getChosenIdentities(), ureq.getIdentity(), currBusinessGroup, flags);
 				identitiesMoveEvent.setNotMovedIdentities(response.getIdentitiesAlreadyInGroup());
 				identitiesMoveEvent.setMovedIdentities(response.getAddedIdentities());
 				// Participant and waiting-list were changed => reload both
@@ -450,7 +445,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				}
 				bg.setAutoCloseRanksEnabled(autoCloseRanksEnabled);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
-				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(GroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
+				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
 				// switch on/off waiting-list in member tab
 				vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
 				

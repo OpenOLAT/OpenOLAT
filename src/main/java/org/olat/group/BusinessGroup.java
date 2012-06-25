@@ -115,16 +115,6 @@ public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OL
 	public Date getLastUsage();
 
 	/**
-	 * @return the business group context for this group
-	 */
-	//public BGContext getGroupContext();
-
-	/**
-	 * @param groupContext the business group context
-	 */
-	//public void setGroupContext(BGContext groupContext);
-
-	/**
 	 * @return the maximal number of participants
 	 */
 	public Integer getMaxParticipants();

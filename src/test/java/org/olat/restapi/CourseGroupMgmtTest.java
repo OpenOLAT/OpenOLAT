@@ -60,12 +60,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.GroupVO;
@@ -121,16 +116,13 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().closeSession();
 		
 		//create learn group
-
-    BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
     BaseSecurity secm = BaseSecurityManager.getInstance();
 		
     // 1) context one: learning groups
-    BGContext c1 = cm.createAndAddBGContextToResource("c1name-learn", course, BusinessGroup.TYPE_LEARNINGROUP, id1, true);
+    OLATResource c1 = JunitTestHelper.createRandomResource();
     // create groups without waiting list
-    g1 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
-    g2 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, null, "rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
     // members
     secm.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
     secm.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
@@ -139,10 +131,10 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
     
     
     // 2) context two: right groups
-    BGContext c2 = cm.createAndAddBGContextToResource("c2name-area", course, BusinessGroup.TYPE_RIGHTGROUP, id2, true);
+    OLATResource c2 =  JunitTestHelper.createRandomResource();
     // groups
-    g3 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "rest-g3", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
-    g4 = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_RIGHTGROUP, null, "rest-g4", null, null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, c2);
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());

@@ -37,11 +37,6 @@
 		<constructor-arg index="1" ref="deletionModule" />
 	</bean>
 
-	<bean id="groupDeletionManager" class="org.olat.group.delete.service.GroupDeletionManager">
-		<constructor-arg index="0" ref="deletionModule" />
-		<property name="businessGroupService" ref="businessGroupService"/>
-	</bean>
-
 	<bean id="userDeletionManager" class="org.olat.admin.user.delete.service.UserDeletionManager">
 		<constructor-arg index="0" ref="deletionModule" />
 		<constructor-arg index="1" ref="coordinatorManager" />

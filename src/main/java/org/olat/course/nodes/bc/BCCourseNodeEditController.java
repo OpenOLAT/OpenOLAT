@@ -51,7 +51,6 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.ui.context.BGContextEvent;
 
 /**
  * Initial Date: Apr 28, 2004

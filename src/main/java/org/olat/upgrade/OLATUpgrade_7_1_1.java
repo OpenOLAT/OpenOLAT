@@ -38,7 +38,6 @@ import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;

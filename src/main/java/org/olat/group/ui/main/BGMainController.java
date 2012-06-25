@@ -43,7 +43,6 @@ import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -84,23 +83,17 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.delete.TabbedPaneController;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGConfigFlags;
@@ -162,11 +155,10 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private BusinessGroupFormController createBuddyGroupController;
 	private BusinessGroup currBusinessGroup;
 	private final Identity identity;
-	private final BusinessGroupManager bgm;
 	private final BusinessGroupService businessGroupService;
+	private final BaseSecurity securityManager;
 	//fxdiff VCRP-1,2: access control of resources
 	private final ACFrontendManager acFrontendManager;
-	private final BGContextManager contextManager;
 	private TabbedPaneController deleteTabPaneCtr;
 	private CloseableModalController cmc;
 	private DialogBoxController deleteDialogBox;
@@ -203,11 +195,10 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		super(ureq, wControl);
 		
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 
 		identity = ureq.getIdentity();
 		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, BusinessGroup.TYPE_BUDDYGROUP, ureq.getLocale()));
-		bgm = BusinessGroupManagerImpl.getInstance();
-		contextManager = BGContextManagerImpl.getInstance();
 		//fxdiff VCRP-1,2: access control of resources
 		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 
@@ -475,24 +466,16 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 */
 	private void doBuddyGroupDelete(UserRequest ureq, boolean doSendMail) {
 		// 1) send notification mails to users
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		ContactList owners = new ContactList(translate("userlist.owners.title"));
-		List<Identity> ow = securityManager.getIdentitiesOfSecurityGroup(currBusinessGroup.getOwnerGroup());
-		owners.addAllIdentites(ow);
-		ContactList participants = new ContactList(translate("userlist.participants.title"));
-		participants.addAllIdentites(securityManager.getIdentitiesOfSecurityGroup(currBusinessGroup.getPartipiciantGroup()));
+		boolean ow = securityManager.isIdentityInSecurityGroup(getIdentity(), currBusinessGroup.getOwnerGroup());
 		// check if user is in owner group (could fake link in table)
-		if (!PersistenceHelper.listContainsObjectByKey(ow, ureq.getIdentity())) {
-			Tracing.logWarn("User tried to delete a group but he was not owner of the group", null, BGMainController.class);
+		if (ow) {
+			logWarn("User tried to delete a group but he was not owner of the group", null);
 			return;
 		}
 
-		List<ContactList> everybody = new ArrayList<ContactList>();
-		everybody.add(owners);
-		everybody.add(participants);
 		// inform Indexer about change
 		// 3) delete the group
-		currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(currBusinessGroup);
+		currBusinessGroup = businessGroupService.loadBusinessGroup(currBusinessGroup);
 		
 		//change state of publisher so that notifications of deleted group calendars make no problems
 		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
@@ -507,9 +490,10 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		
 		// fxdiff: FXOLAT-138
 		if (doSendMail) {
-			bgm.deleteBusinessGroupWithMail(currBusinessGroup, getWindowControl(), ureq, getTranslator(), everybody);
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
+			businessGroupService.deleteBusinessGroupWithMail(currBusinessGroup, businessPath, getIdentity(), getLocale());
 		} else {
-			bgm.deleteBusinessGroup(currBusinessGroup);
+			businessGroupService.deleteBusinessGroup(currBusinessGroup);
 		}
 		// do Logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_DELETED, getClass(), LoggingResourceable.wrap(currBusinessGroup));
@@ -531,9 +515,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		// 1) remove as owner
 		SecurityGroup owners = currBusinessGroup.getOwnerGroup();
 		if (securityManager.isIdentityInSecurityGroup(identity, owners)) {
-			List ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
+			List<Identity> ownerList = securityManager.getIdentitiesOfSecurityGroup(owners);
 			if (ownerList.size() > 1) {
-				bgm.removeOwnerAndFireEvent(ureq.getIdentity(), ureq.getIdentity(), currBusinessGroup, flags, false);
+				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(ureq.getIdentity()), currBusinessGroup, flags);
 				// update model
 				updateGroupListModelAll();
 			} else {
@@ -549,7 +533,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		// 2) remove as participant
 		List<Identity> identities = new ArrayList<Identity>(1);
 		identities.add(ureq.getIdentity());
-		bgm.removeParticipantsAndFireEvent(ureq.getIdentity(), identities, currBusinessGroup, flags);
+		businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup, flags);
 		
 		// update Tables
 		doAllGroupList(ureq, getWindowControl());
@@ -571,14 +555,14 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		 * description and also the CollaborationTools are enabled during creation.
 		 * The GroupContext is null in the case of BuddyGroups.
 		 */
-		BusinessGroup newGroup = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, identity, bgName, bgDesc, bgMin, bgMax, null, null, null);
+		BusinessGroup newGroup = businessGroupService.createBusinessGroup(identity, bgName, bgDesc, BusinessGroup.TYPE_BUDDYGROUP, bgMin, bgMax, false, false, null);
 		// create buddylist for group
 		// 2. Add user to group, fire events, do loggin etc.
 		BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 		// do Logging
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(newGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CREATED, getClass());
-		bgm.addOwnerAndFireEvent(ureq.getIdentity(), ureq.getIdentity(), newGroup, flags, true);
+		businessGroupService.addOwner(ureq.getIdentity(), ureq.getIdentity(), newGroup, flags);
 		return newGroup;
 	}
 

@@ -74,7 +74,8 @@ public class BusinessGroupFactory {
 	 * @return The newly created group or null if this groupname is already taken
 	 *         by another group in the given context.
 	 */
-	static BusinessGroup createAndPersistBusinessGroup(String type, Identity identity, String name, String description,
+	/*
+	protected static BusinessGroup createAndPersistBusinessGroup(String type, Identity identity, String name, String description,
 			Integer minParticipants, Integer maxParticipants, Boolean waitingListEnabled,Boolean autoCloseRanksEnabled, BGContext groupContext) {
 		if (BusinessGroup.TYPE_BUDDYGROUP.equals(type)) {
 			return BusinessGroupFactory.createAndPersistBuddyGroup(identity, name, description, minParticipants, maxParticipants);
@@ -86,7 +87,7 @@ public class BusinessGroupFactory {
 		} else {
 			throw new AssertException("Unknown business group type::" + type);
 		}
-	}
+	}*/
 
 	/**
 	 * Create a group of type buddy group
@@ -111,7 +112,7 @@ public class BusinessGroupFactory {
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
 		SecurityGroup partipiciantGroup = securityManager.createAndPersistSecurityGroup();
 
-		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_BUDDYGROUP, name, description, ownerGroup, partipiciantGroup,null/* no waitingGroup*/, null);
+		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_BUDDYGROUP, name, description, ownerGroup, partipiciantGroup,null/* no waitingGroup*/);
 		businessgroup.setMinParticipants(minParticipants);
 		businessgroup.setMaxParticipants(maxParticipants);
 
@@ -177,7 +178,7 @@ public class BusinessGroupFactory {
 		SecurityGroup partipiciantGroup = securityManager.createAndPersistSecurityGroup();
 		SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 		//
-		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_LEARNINGROUP, name, description, ownerGroup, partipiciantGroup, waitingGroup, groupContext);
+		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_LEARNINGROUP, name, description, ownerGroup, partipiciantGroup, waitingGroup);
 		businessgroup.setMinParticipants(minParticipants);
 		businessgroup.setMaxParticipants(maxParticipants);
 		businessgroup.setWaitingListEnabled(waitingListEnabled);
@@ -248,7 +249,7 @@ public class BusinessGroupFactory {
 		// group
 		SecurityGroup partipiciantGroup = securityManager.createAndPersistSecurityGroup();
 		//
-		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_RIGHTGROUP, name, description, null, partipiciantGroup,null/* no waitingGroup */, groupContext);
+		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_RIGHTGROUP, name, description, null, partipiciantGroup,null/* no waitingGroup */);
 		businessgroup.setMinParticipants(minParticipants);
 		businessgroup.setMaxParticipants(maxParticipants);
 		//

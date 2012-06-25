@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -50,12 +49,13 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.properties.Property;
 import org.olat.testutils.codepoints.server.Codepoint;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<BR>
@@ -67,28 +67,14 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * 
  * @author Christian Guretzki
  */
-public class EnrollmentManager  extends BasicManager {
-	// TODO with spring
-	static final EnrollmentManager enrollmentManager = new EnrollmentManager();
-	// Managers TODO inject with spring
+@Service("enrollmentManager")
+public class EnrollmentManager extends BasicManager {
+
+	@Autowired
 	private BaseSecurity securityManager;
-	private BusinessGroupManager businessGroupManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
-	/**
-	 * @param moduleConfiguration
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnv
-	 * @param enNode
-	 */
-	private EnrollmentManager() {
-		this.securityManager = BaseSecurityManager.getInstance();
-		this.businessGroupManager = BusinessGroupManagerImpl.getInstance();
-	}
-
-	public static EnrollmentManager getInstance() {
-		return enrollmentManager;
-	}
 
 	public EnrollStatus doEnroll(final Identity identity, final BusinessGroup group, final ENCourseNode enNode, final CoursePropertyManager coursePropertyManager,
 			final WindowControl wControl, final Translator trans, List groupNames, List areaNames, CourseGroupManager cgm) {
@@ -156,8 +142,8 @@ public class EnrollmentManager  extends BasicManager {
 			public void execute() {
 				// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 				// and move the users accordingly
-				businessGroupManager.removeParticipantAndFireEvent(identity, identity, enrolledGroup, flags, false);
-				Tracing.logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName() , EnrollmentManager.class);
+				businessGroupService.removeParticipant(identity, identity, enrolledGroup, flags);
+				logInfo("doCancelEnrollment in group " + enrolledGroup, identity.getName());
 				// 2. Remove enrollmentdate property
 				// only remove last time date, not firsttime
 				Property lastTime = coursePropertyManager
@@ -182,7 +168,7 @@ public class EnrollmentManager  extends BasicManager {
 		// 1. Remove group membership, fire events, do loggin etc.
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(enrolledWaitingListGroup, new SyncerExecutor(){
 			public void execute() {
-				businessGroupManager.removeFromWaitingListAndFireEvent(identity, identity, enrolledWaitingListGroup, false);
+				businessGroupService.removeFromWaitingList(identity, identity, enrolledWaitingListGroup);
 				// 2. Remove enrollmentdate property
 				// only remove last time date, not firsttime
 				Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null,
@@ -316,7 +302,7 @@ public class EnrollmentManager  extends BasicManager {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		// 1. Add user to group, fire events, do loggin etc.
 		BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-		businessGroupManager.addParticipantAndFireEvent(identity, identity, group, flags, false);
+		businessGroupService.addParticipant(identity, identity, group, flags);
 		// 2. Set first enrollment date
 		String nowString = Long.toString(System.currentTimeMillis());
 		Property firstTime = coursePropertyManager
@@ -354,7 +340,7 @@ public class EnrollmentManager  extends BasicManager {
 			CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
 		// 1. Add user to group, fire events, do loggin etc.
-		businessGroupManager.addToWaitingListAndFireEvent(identity, identity, group, false);
+		businessGroupService.addToWaitingList(identity, identity, group);
 		// 2. Set first waiting-list date
 		String nowString = Long.toString(System.currentTimeMillis());
 		Property firstTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null,

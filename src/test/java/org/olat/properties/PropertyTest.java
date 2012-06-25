@@ -37,18 +37,16 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Mar 11, 2004
@@ -67,6 +65,9 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	private static BusinessGroup group = null;
 	private static org.olat.resource.OLATResource res = null;
 	private static PropertyManager pm;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 
 	/**
@@ -86,12 +87,10 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 					res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
 					OLATResourceManager.getInstance().saveOLATResource(res);
 				}
-				BusinessGroupManager gm = BusinessGroupManagerImpl.getInstance();
-				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-				List<BusinessGroup> l = bgs.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
+				
+				List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
 				if (l.size() == 0) {
-					group = gm.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, 
-							identity, "a buddygroup", "a desc", null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, null);
+					group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
 				} else {
 					group =  (BusinessGroup) l.get(0);
 				}

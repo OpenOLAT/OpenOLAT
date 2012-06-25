@@ -84,5 +84,5 @@ public interface BGRightManager {
 	 * @return a list of all business group rights associated with the given
 	 *         business group
 	 */
-	public abstract List findBGRights(BusinessGroup rightGroup);
+	public List<String> findBGRights(BusinessGroup rightGroup);
 }

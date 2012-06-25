@@ -23,13 +23,13 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
-import org.olat.group.context.BGContext;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.repository.RepositoryEntry;
@@ -43,6 +43,10 @@ import org.olat.resource.OLATResource;
  */
 public interface BusinessGroupService {
 	
+	public void registerDeletableGroupDataListener(DeletableGroupData listener);
+
+	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
+	
 	
 	
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String type,
@@ -55,6 +59,8 @@ public interface BusinessGroupService {
 	
 	public void deleteBusinessGroup(BusinessGroup group);
 	
+	public MailerResult deleteBusinessGroupWithMail(BusinessGroup group, String businessPath, Identity deletedBy, Locale locale);
+	
 	public BusinessGroup setLastUsageFor(BusinessGroup group);
 		
 	public BusinessGroup loadBusinessGroup(BusinessGroup group);
@@ -66,6 +72,10 @@ public interface BusinessGroupService {
 	public List<BusinessGroup> loadAllBusinessGroups();
 	
 	public BusinessGroup loadBusinessGroup(OLATResource resource);
+	
+	public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
+			Integer targetMax, OLATResource targetResource, Map<BGArea,BGArea> areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
+			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList);
 	
 	
 	
@@ -107,7 +117,40 @@ public interface BusinessGroupService {
 	
 	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee);
 	
+	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup);
 	
+	//memberships
+	public void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags);
+
+	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group, BGConfigFlags flags);
+	
+	public void removeOwners(Identity ureqIdentity, Collection<Identity> identitiesToRemove, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+
+	
+	public void addParticipant(Identity ureqIdentity, Identity identityToAdd, BusinessGroup group, BGConfigFlags flags);
+	
+	public BusinessGroupAddResponse addParticipants(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+
+	public void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags);
+	
+	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, BGConfigFlags flags);
+
+	
+	public void addToWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup group);
+	
+	public BusinessGroupAddResponse addToWaitingList(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+
+	public void removeFromWaitingList(Identity ureqIdentity, Identity identity, BusinessGroup waitingListGroup);
+	
+	public void removeFromWaitingList(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+
+	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup, BGConfigFlags flags);
+
+	
+	
+	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
+	
+	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 
 	
 	//security
@@ -121,15 +164,9 @@ public interface BusinessGroupService {
 	 */
 	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, String groupType, boolean ownedById, boolean attendedById, OLATResource resource);
 
+
 	
-	
-	//memberships
 
-	public void removeParticipantsAndFireEvent(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, BGConfigFlags flags);
-
-	public void removeOwnerAndFireEvent(Identity identity, Identity currentIdentity, BusinessGroup group, BGConfigFlags flags, boolean b);
-
-	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
 
 	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, OLATResource resource, String bgDesc, Integer bgMin,
 			Integer bgMax, Boolean enableWaitingList, Boolean enableAutoCloseRanks);

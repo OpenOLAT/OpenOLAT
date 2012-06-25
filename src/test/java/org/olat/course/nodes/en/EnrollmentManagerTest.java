@@ -68,12 +68,8 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +99,8 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	
 	@Autowired
 	private BusinessGroupService businessGroupService;
-
+	@Autowired
+	private EnrollmentManager enrollmentManager;
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -112,17 +109,15 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 			// Identities
 			id1 =  JunitTestHelper.createAndPersistIdentityAsUser("id1");
 			DBFactory.getInstance().closeSession();				
-			BusinessGroupManager bgManager = BusinessGroupManagerImpl.getInstance();
 			// create business-group with waiting-list
 			String bgWithWaitingListName = "Group with WaitingList";
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
 			Boolean enableWaitinglist = new Boolean(true);
 			Boolean enableAutoCloseRanks = new Boolean(true);
-			BGContextManagerImpl bgcm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
-			BGContext groupContext = bgcm.createAndPersistBGContext("c1name", "c1desc", BusinessGroup.TYPE_LEARNINGROUP, null, true);
-			System.out.println("testAddToWaitingListAndFireEvent: groupContext=" + groupContext);
-			bgWithWaitingList = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, bgWithWaitingListName,
-					bgWithWaitingListDesc, null, null, enableWaitinglist, enableAutoCloseRanks, groupContext);
+			OLATResource resource = JunitTestHelper.createRandomResource();
+			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
+			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
+					bgWithWaitingListDesc, BusinessGroup.TYPE_LEARNINGROUP,  -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
 			System.out.println("TEST bgWithWaitingList=" + bgWithWaitingList);
 			System.out.println("TEST bgWithWaitingList.getMaxParticipants()=" + bgWithWaitingList.getMaxParticipants() );
@@ -147,7 +142,6 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 	 */
 	@Test public void testEnroll() throws Exception {
 		System.out.println("testEnroll: start...");
-		EnrollmentManager enrollmentManager = EnrollmentManager.getInstance();
 		ENCourseNode enNode = new ENCourseNode();
 		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("TestCourse");
 		CourseEnvironment cenv = CourseFactory.createEmptyCourse(ores, "Test", "Test", "learningObjectives").getCourseEnvironment();
