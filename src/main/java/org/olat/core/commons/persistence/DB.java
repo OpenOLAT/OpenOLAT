@@ -28,7 +28,8 @@ package org.olat.core.commons.persistence;
 
 import java.util.List;
 
-import org.hibernate.Query;
+import javax.persistence.EntityManager;
+
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
 import org.olat.core.id.Persistable;
@@ -127,7 +128,7 @@ public interface DB {
 	 * @param key
 	 * @return Object.
 	 */
-	public Object loadObject(Class theClass, Long key);
+	public Object loadObject(Class<?> theClass, Long key);
 
 	/**
 	 * Save an object.
@@ -215,6 +216,8 @@ public interface DB {
 	 * @return Return Hibernates statistics object.
 	 */
 	public Statistics getStatistics();
+	
+	public String getDbVendor();
 
 	/**
 	 * Call this to intermediate commit current changes.
@@ -243,5 +246,13 @@ public interface DB {
 	 * @return the query or NULL if no such named query exists
 	 */
 	public DBQuery createNamedQuery(final String queryName, boolean vendorSpecific);
+	
+	/**
+	 * 
+	 * Return the current entity manager to work with JPA2
+	 * 
+	 * @return
+	 */
+	public EntityManager getCurrentEntityManager();
 
 }

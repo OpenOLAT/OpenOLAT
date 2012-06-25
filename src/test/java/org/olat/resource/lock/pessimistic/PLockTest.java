@@ -168,6 +168,8 @@ public class PLockTest extends OlatTestCase {
 		//Ignore Test if DB is PostgreSQL. PostgreSQL has not lock timeout
 		assumeTrue(!isPostgresqlConfigured());
 		
+		final String asset = "testLockWaitTimout";
+		
 		System.out.println("testing if holding a lock timeouts");
 		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
 		// applied on lock-row-creation cannot support row-level-locking by definition. 
@@ -197,7 +199,7 @@ public class PLockTest extends OlatTestCase {
 			public void run() {
 				try {
 					sleep(2500);
-					PLock p3 = PessimisticLockManager.getInstance().findOrPersistPLock("blibli");
+					PLock p3 = PessimisticLockManager.getInstance().findOrPersistPLock(asset);
 					assertNotNull(p3);					
 				} catch (Exception e) {
 					exceptionHolder.add(e);
@@ -214,7 +216,7 @@ public class PLockTest extends OlatTestCase {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					PLock p2 = PessimisticLockManager.getInstance().findOrPersistPLock("blibli");
+					PLock p2 = PessimisticLockManager.getInstance().findOrPersistPLock(asset);
 					assertNotNull(p2);
 					sleep(60000);
 					// holding the lock for more than the transaction timeout (normally 30secs, configured where? hib) should cause a lock timeout

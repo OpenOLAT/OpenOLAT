@@ -26,9 +26,12 @@
 
 package org.olat.core.commons.persistence;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.ejb.HibernateEntityManager;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -40,18 +43,18 @@ import org.olat.testutils.codepoints.server.Codepoint;
  * @author Felix Jost
  */
 class DBSession {
-	private Session hibernateSession;
+	private EntityManager em;
 	private DBTransaction trxWrapper = null;
 	
-	protected DBSession(Session hibernateSession) {
-		this.hibernateSession = hibernateSession;
+	protected DBSession(EntityManager em) {
+		this.em = em;
 	}
 	
 	/**
 	 * OLAT-3652: allow clearing of transaction - needed to avoid side-effects of subsequent session usage with error-in-transaction
 	 */
 	protected void clearTransaction() {
-		if ( (hibernateSession != null) && hibernateSession.isOpen()) {
+		if ( (em != null) && em.isOpen()) {
 			throw new DBRuntimeException("clearTransaction expected session to be closed at this point!");
 		}
 		trxWrapper = null;
@@ -60,7 +63,8 @@ class DBSession {
 	protected DBTransaction beginDbTransaction() {
 		if (trxWrapper == null || trxWrapper.isCommitted()) {
 			try {
-				Transaction trx = hibernateSession.beginTransaction();
+				EntityTransaction trx = em.getTransaction();
+				trx.begin();
 				trxWrapper = new DBTransaction(trx);
 				return trxWrapper;
 			} catch (HibernateException e) {
@@ -73,12 +77,16 @@ class DBSession {
 				);
 		}
 	}
+	
+	protected EntityManager getEntityManager() {
+		return em;
+	}
 
 	/**
 	 * @return Session
 	 */
 	protected Session getHibernateSession() {
-		return hibernateSession;
+		return em.unwrap(HibernateEntityManager.class).getSession();
 	}
 
 
@@ -87,13 +95,13 @@ class DBSession {
 	 */
 	protected void close() {
 		try {
-			if ( (hibernateSession != null) && hibernateSession.isOpen()) {
+			if ( (em != null) && em.isOpen()) {
 				Codepoint.codepoint(DBImpl.class, "closeSession");
 				if ( (getTransaction() != null) && getTransaction().isInTransaction()
 						&& !getTransaction().isRolledBack()) {
 					throw new AssertException("Try to close un-committed session");
 				}
-				hibernateSession.close();
+				em.close();
 			}
 		} catch (HibernateException e) {
 			throw new DBRuntimeException("Close Session error.", e);
@@ -101,8 +109,8 @@ class DBSession {
 			throw new DBRuntimeException("Error in dbsession.close: ", e);
 		} finally {
 			try {
-				if (hibernateSession != null) {
-					if (hibernateSession.isOpen())	hibernateSession.close();
+				if (em != null) {
+					if (em.isOpen())	em.close();
 				}
 			} catch (Exception e) {
 				// we did our best to close the hibernate session
@@ -112,7 +120,7 @@ class DBSession {
 	}
 
 	boolean contains(Object object) {
-		return this.hibernateSession.contains(object);
+		return this.em.contains(object);
 	}
 
 	/**
@@ -126,7 +134,7 @@ class DBSession {
 	 * @return true if session is open
 	 */
 	boolean isOpen() {
-		return hibernateSession.isOpen();
+		return em.isOpen();
 	}	
 	
 }

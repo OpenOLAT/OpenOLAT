@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0"
+   xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="
+        http://java.sun.com/xml/ns/persistence
+        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+	<persistence-unit name="default">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+		<mapping-file>de/bps/olat/modules/cl/Checklist.hbm.xml</mapping-file>
+		<mapping-file>de/bps/olat/modules/cl/CheckpointResult.hbm.xml</mapping-file>
+		<mapping-file>de/bps/olat/modules/cl/Checkpoint.hbm.xml</mapping-file>
+		<mapping-file>org/olat/ims/qti/QTIResult.hbm.xml</mapping-file>
+		<mapping-file>org/olat/ims/qti/QTIResultSet.hbm.xml</mapping-file>
+		<mapping-file>org/olat/note/NoteImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/user/UserImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/commons/lifecycle/LifeCycleEntry.hbm.xml</mapping-file>
+		<mapping-file>org/olat/commons/coordinate/cluster/lock/LockImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/commons/info/model/InfoMessageImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/area/BGAreaImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/area/BGtoAreaRelationImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/context/BGContextImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/context/BGContext2Resource.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/BusinessGroupImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/group/model/BGResourceRelation.hbm.xml</mapping-file>
+		<mapping-file>org/olat/resource/lock/pessimistic/PLockImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/resource/references/ReferenceImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/resource/OLATResourceImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/PolicyImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/InvitationImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/IdentityImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/basesecurity/SecurityGroupMembershipImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/repository/RepositoryEntry.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/assessment/model/UserCourseInfosImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/modules/fo/ForumImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/modules/fo/MessageImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/modules/fo/ReadMessage.hbm.xml</mapping-file>
+		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
+		<mapping-file>org/olat/catalog/CatalogEntryImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/bookmark/BookmarkImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/notifications/PublisherImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/notifications/SubscriberImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/registration/TemporaryKeyImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/daily/DailyStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/dayofweek/DayOfWeekStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/hourofday/HourOfDayStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/studylevel/StudyLevelStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/studybranch3/StudyBranch3Stat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/weekly/WeeklyStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/homeorg/HomeOrgStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/course/statistic/orgtype/OrgTypeStat.hbm.xml</mapping-file>
+		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserCommentImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/core/commons/services/commentAndRating/impl/UserRatingImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/core/commons/services/mark/impl/MarkImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/core/commons/services/tagging/model/TagImpl.hbm.xml</mapping-file>
+		<mapping-file>org/olat/core/logging/activity/LoggingObject.hbm.xml</mapping-file>
+
+		<properties>
+			<property name="hibernate.archive.autodetection" value=""/>
+			<property name="hibernate.ejb.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
+		</properties>
+	</persistence-unit>
+</persistence>

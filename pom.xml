@@ -1393,7 +1393,7 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>3.3.2.GA</version>
+			<version>4.1.4.Final</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -1403,13 +1403,23 @@
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-jmx</artifactId>
-			<version>3.3.2.GA</version>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>4.1.4.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-c3p0</artifactId>
+			<artifactId>hibernate-ehcache</artifactId>
+			<version>4.1.4.Final</version>
+		</dependency>
+		<!-- <dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-jmx</artifactId>
 			<version>3.3.2.GA</version>
+		</dependency> -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>4.1.1.Final</version>
 			<exclusions>
 				<!-- includes an old version of c3p0 -->
 				<exclusion>
@@ -1432,15 +1442,12 @@
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
 			<version>1.6.4</version>
-		</dependency>
+		</dependency><!-- 
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 			<version>1.3.0</version>
-			<!-- Needed by axis2 -->
-			<!-- <exclusions> <exclusion> <groupId>backport-util-concurrent</groupId> 
-				<artifactId>backport-util-concurrent</artifactId> </exclusion> </exclusions> -->
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
