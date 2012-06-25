@@ -5,7 +5,7 @@
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<bean id="restModule" class="org.olat.restapi.RestModule">
-		<property name="defaultEnabled" value="false"/>
+		<property name="defaultEnabled" value="${restapi.enable}"/>
 		<property name="coordinator" ref="coordinatorManager" />
 		<property name="persistedProperties">
 			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy"
