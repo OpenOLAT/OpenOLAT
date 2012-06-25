@@ -17,7 +17,7 @@
  * 2011 by frentix GmbH, http://www.frentix.com
  * <p>
 **/
-package org.olat.group;
+package org.olat.group.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,12 @@ public class SearchBusinessGroupParams {
 	
 	private List<String> types;
 	private List<String> tools;
+	private String nameOrDesc;
+	private Long key;
+	private String name;
+	private String exactName;
+	private String description;
+	private String owner;
 	
 	public List<String> getTypes() {
 		return types;
@@ -68,5 +74,53 @@ public class SearchBusinessGroupParams {
 		for(String tool:tools) {
 			this.tools.add(tool);
 		}
+	}
+
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getExactName() {
+		return exactName;
+	}
+
+	public void setExactName(String exactName) {
+		this.exactName = exactName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
+
+	public String getNameOrDesc() {
+		return nameOrDesc;
+	}
+
+	public void setNameOrDesc(String nameOrDesc) {
+		this.nameOrDesc = nameOrDesc;
 	}
 }

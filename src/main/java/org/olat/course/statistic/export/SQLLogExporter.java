@@ -32,8 +32,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 

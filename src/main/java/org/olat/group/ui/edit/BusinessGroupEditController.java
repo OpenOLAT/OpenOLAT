@@ -43,6 +43,7 @@ import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.collaboration.CollaborationToolsSettingsController;
 import org.olat.commons.lifecycle.LifeCycleManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
@@ -81,10 +82,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
 import org.olat.group.delete.service.GroupDeletionManager;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
@@ -113,17 +114,20 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class BusinessGroupEditController extends BasicController implements ControllerEventListener, GenericEventListener, Activateable2 {
 	//needed for complicated fall back translator chaining
 	private static final String PACKAGE = Util.getPackageName(BusinessGroupEditController.class);
-
-	private BusinessGroupManager bgm;
+	private final BGRightManager rightManager;
+	private final BGAreaManager areaManager;
+	private final BusinessGroupManager bgm;
+	private final BusinessGroupService bgs;
+	
 	private BusinessGroupFormController modifyBusinessGroupController;
 	private BusinessGroup currBusinessGroup;
 	private CollaborationToolsSettingsController ctc;
 	private GroupController ownerGrpCntrllr;
 	private GroupController partipGrpCntrllr;
 	private WaitingGroupController waitingGruppeController;
-	private BGAreaManager areaManager;
+
 	private AreasToGroupDataModel areaDataModel;
-	private BGRightManager rightManager;
+
 	private RightsToGroupDataModel rightDataModel;
 	private Choice areasChoice, rightsChoice;
 	private List<BGArea> selectedAreas;
@@ -166,9 +170,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		
 		// Initialize managers
-		this.areaManager = BGAreaManagerImpl.getInstance();
-		this.rightManager = BGRightManagerImpl.getInstance();
+		this.areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		this.rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
 		this.bgm = BusinessGroupManagerImpl.getInstance();
+		this.bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		// Initialize other members
 
 		// group
@@ -190,7 +195,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		if (lockEntry.isSuccess()) {
 			// reload group to minimize stale object exception and update last usage
 			// timestamp
-			currBusinessGroup = BusinessGroupManagerImpl.getInstance().setLastUsageFor(businessGroup);
+			currBusinessGroup = bgs.setLastUsageFor(businessGroup);
 			if(currBusinessGroup == null) {
 				VelocityContainer vc = createVelocityContainer("deleted");
 				vc.contextPut("name", businessGroup.getName());
@@ -423,7 +428,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		currBusinessGroup = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(businessGroup, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
-				BusinessGroup bg = bgm.loadBusinessGroup(businessGroup);
+				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				BusinessGroup bg = bgs.loadBusinessGroup(businessGroup);
 				String bgName = modifyBusinessGroupController.getGroupName();
 				String bgDesc = modifyBusinessGroupController.getGroupDescription();
 				Integer bgMax = modifyBusinessGroupController.getGroupMax();
@@ -448,8 +454,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				// switch on/off waiting-list in member tab
 				vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
 				
-				bgm.updateBusinessGroup(bg);
-				return bg;
+				return bgs.mergeBusinessGroup(bg);
 			}
 		});
 	}
@@ -459,7 +464,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private void updateGroupAreaRelations() {
 		// refresh group to prevent stale object exception and context proxy issues
-		this.currBusinessGroup = bgm.loadBusinessGroup(this.currBusinessGroup);
+		this.currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.currBusinessGroup);
 		// 1) add areas to group
 		List addedAreas = areasChoice.getAddedRows();
 		Iterator iterator = addedAreas.iterator();
@@ -485,7 +490,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private void updateGroupRightsRelations() {
 		// refresh group to prevent stale object exception and context proxy issues
-		this.currBusinessGroup = bgm.loadBusinessGroup(this.currBusinessGroup);
+		this.currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.currBusinessGroup);
 		// 1) add rights to group
 		List addedRights = rightsChoice.getAddedRows();
 		Iterator iterator = addedRights.iterator();
@@ -533,7 +538,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private VelocityContainer createTabAreas() {
 		VelocityContainer tmp = createVelocityContainer("tab_bgAreas");
-		List allAreas = areaManager.findBGAreasOfBGContext(currBusinessGroup.getGroupContext());
+		List<BGArea> allAreas = areaManager.findBGAreasOfBusinessGroup(currBusinessGroup); //TODO gm areaManager.findBGAreasOfBGContext(currBusinessGroup.getGroupContext());
 		selectedAreas = areaManager.findBGAreasOfBusinessGroup(currBusinessGroup);
 		areaDataModel = new AreasToGroupDataModel(allAreas, selectedAreas);
 

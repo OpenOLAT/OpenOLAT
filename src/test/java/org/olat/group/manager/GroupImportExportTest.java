@@ -22,13 +22,15 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.group;
+package org.olat.group.manager;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
 import org.junit.Test;
+import org.olat.group.manager.GroupXStream;
 
 /**
  * 

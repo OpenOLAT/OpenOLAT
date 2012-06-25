@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR>
@@ -77,7 +77,7 @@ public interface BGRightManager {
 	 * @return true if an identity is in a group that has this business group
 	 *         right in the given group context
 	 */
-	public abstract boolean hasBGRight(String bgRight, Identity identity, BGContext bgContext);
+	public abstract boolean hasBGRight(String bgRight, Identity identity, OLATResource resource);
 
 	/**
 	 * @param rightGroup

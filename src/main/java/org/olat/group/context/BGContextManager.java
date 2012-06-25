@@ -61,8 +61,8 @@ public interface BGContextManager {
 	 *          regular context
 	 * @return The persisted business group context
 	 */
-	public abstract BGContext createAndPersistBGContext(String name, String description, String groupType, Identity owner,
-			boolean defaultContext);
+	//public abstract BGContext createAndPersistBGContext(String name, String description, String groupType, Identity owner,
+	//		boolean defaultContext);
 
 	/**
 	 * Creates and persists a business group context as a copy of an existing
@@ -78,21 +78,21 @@ public interface BGContextManager {
 	 *          for the copy process
 	 * @return The new copied business group context
 	 */
-	public abstract BGContext copyAndAddBGContextToResource(String contextName, OLATResource resource, BGContext originalBgContext);
+	//public abstract BGContext copyAndAddBGContextToResource(String contextName, OLATResource resource, BGContext originalBgContext);
 
 	/**
 	 * Updates a business group context in the database
 	 * 
 	 * @param bgContext
 	 */
-	public abstract void updateBGContext(BGContext bgContext);
+	//public abstract void updateBGContext(BGContext bgContext);
 
 	/**
 	 * Deletes a business group context from the database
 	 * 
 	 * @param bgContext
 	 */
-	public abstract void deleteBGContext(BGContext bgContext);
+	//public abstract void deleteBGContext(BGContext bgContext);
 
 	/**
 	 * Find all groups from a business group context
@@ -101,7 +101,7 @@ public interface BGContextManager {
 	 *          not within a business group context (e.b. buddygroups)
 	 * @return A list containing business group contexts
 	 */
-	public abstract List<BusinessGroup> getGroupsOfBGContext(BGContext bgContext);
+	//public abstract List<BusinessGroup> getGroupsOfBGContext(BGContext bgContext);
 	
 	/**
 	 * Find all groups from a list of group contexts
@@ -110,7 +110,7 @@ public interface BGContextManager {
 	 *          not within a business group context (e.b. buddygroups)
 	 * @return A list containing business group contexts
 	 */
-	public abstract List<BusinessGroup> getGroupsOfBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults);
+	//public abstract List<BusinessGroup> getGroupsOfBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults);
 
 	/**
 	 * Count the number of groups within a business group context
@@ -118,14 +118,14 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return The number of groups
 	 */
-	public abstract int countGroupsOfBGContext(BGContext bgContext);
+	//public abstract int countGroupsOfBGContext(BGContext bgContext);
 
 	/**
 	 * Count the number of groups of a certain group type
 	 * @param groupType
 	 * @return
 	 */
-	public abstract int countGroupsOfType(String groupType);
+	//public abstract int countGroupsOfType(String groupType);
 
 	/**
 	 * Find the identities that are owners of any group in the given business
@@ -134,10 +134,10 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return A list of identities
 	 */
-	public abstract List getBGOwnersOfBGContext(BGContext bgContext);
+	//public abstract List getBGOwnersOfBGContext(BGContext bgContext);
 	
 	//fxdiff VCRP-2: access control
-	public List<BusinessGroup> getBusinessGroupAsOwnerOfBGContext(Identity owner, BGContext bgContext);
+	//public List<BusinessGroup> getBusinessGroupAsOwnerOfBGContext(Identity owner, BGContext bgContext);
 
 
 	/**
@@ -147,7 +147,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return The number of identities
 	 */
-	public abstract int countBGOwnersOfBGContext(BGContext bgContext);
+	//public abstract int countBGOwnersOfBGContext(BGContext bgContext);
 
 	/**
 	 * Find the identities that are participants of any group in the given
@@ -156,10 +156,10 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return A list of identities
 	 */
-	public abstract List getBGParticipantsOfBGContext(BGContext bgContext);
+	//public abstract List getBGParticipantsOfBGContext(BGContext bgContext);
 	
 	//fxdiff VCRP-2: access control
-	public List<BusinessGroup> getBusinessGroupAsParticipantOfBGContext(Identity participant, BGContext bgContext);
+	//public List<BusinessGroup> getBusinessGroupAsParticipantOfBGContext(Identity participant, BGContext bgContext);
 
 	/**
 	 * Count the number of identities that are participants of any group in the
@@ -168,7 +168,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return The number of identities
 	 */
-	public abstract int countBGParticipantsOfBGContext(BGContext bgContext);
+	//public abstract int countBGParticipantsOfBGContext(BGContext bgContext);
 
 	/**
 	 * Check if the given identity is in this business group context
@@ -180,7 +180,7 @@ public interface BGContextManager {
 	 *          participant
 	 * @return true if user is in any group with ghe given role, false otherwhise
 	 */
-	public abstract boolean isIdentityInBGContext(Identity identity, List<BGContext> bgContexts, boolean asOwner, boolean asParticipant);
+	//public abstract boolean isIdentityInBGContext(Identity identity, List<BGContext> bgContexts, boolean asOwner, boolean asParticipant);
 
 	/**
 	 * Find a business group in the given business group context
@@ -189,7 +189,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return The business group or null if no group found
 	 */
-	public abstract BusinessGroup findGroupOfBGContext(String groupName, BGContext bgContext);
+	//public abstract BusinessGroup findGroupOfBGContext(String groupName, BGContext bgContext);
 
 	/**
 	 * Find a business group in the given business group context where the given
@@ -200,7 +200,7 @@ public interface BGContextManager {
 	 * @param context
 	 * @return The business group or null if no group found
 	 */
-	public abstract BusinessGroup findGroupAttendedBy(Identity identity, String groupName, BGContext context);
+	//public abstract BusinessGroup findGroupAttendedBy(Identity identity, String groupName, BGContext context);
 
 	// context to resource relation
 
@@ -218,8 +218,8 @@ public interface BGContextManager {
 	 *          regular context
 	 * @return The new created business group context
 	 */
-	public abstract BGContext createAndAddBGContextToResource(String contextName, OLATResource resource, String groupType,
-			Identity initialOwner, boolean defaultContext);
+	//public abstract BGContext createAndAddBGContextToResource(String contextName, OLATResource resource, String groupType,
+	//		Identity initialOwner, boolean defaultContext);
 
 	/**
 	 * Add a business group context to an OLATResource
@@ -227,7 +227,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @param resource
 	 */
-	public abstract void addBGContextToResource(BGContext bgContext, OLATResource resource);
+	//public abstract void addBGContextToResource(BGContext bgContext, OLATResource resource);
 
 	/**
 	 * Find all business group contexts for the given OLATResource defaultContexts
@@ -239,7 +239,7 @@ public interface BGContextManager {
 	 * @param nonDefaultContexts true: find non-default contexts
 	 * @return A list of business group contexts
 	 */
-	public abstract List<BGContext> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts);
+	//public abstract List<BGContext> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts);
 
 	/**
 	 * Find all business group contexts for the given OLATResource with the given
@@ -252,8 +252,8 @@ public interface BGContextManager {
 	 * @param nonDefaultContexts true: find non-default contexts
 	 * @return A list of business group contexts
 	 */
-	public abstract List<BGContext> findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts,
-			boolean nonDefaultContexts);
+	//public abstract List<BGContext> findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts,
+		//	boolean nonDefaultContexts);
 
 	/**
 	 * Find all business group contexts for a specific user. This will find all
@@ -267,7 +267,7 @@ public interface BGContextManager {
 	 * @param nonDefaultContexts true: find non-default contexts
 	 * @return A list of business group contexts
 	 */
-	public abstract List<BGContext> findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts);
+	//public abstract List<BGContext> findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts);
 
 	/**
 	 * Find all OLATResources that are associated with the given business group
@@ -276,7 +276,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return A list of OLATResources
 	 */
-	public abstract List findOLATResourcesForBGContext(BGContext bgContext);
+	//public abstract List findOLATResourcesForBGContext(BGContext bgContext);
 
 	/**
 	 * Find all repository entries of the OLAT resources that have a relation to
@@ -285,7 +285,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return List of repository entries
 	 */
-	public List<RepositoryEntry> findRepositoryEntriesForBGContext(BGContext bgContext);
+	//public List<RepositoryEntry> findRepositoryEntriesForBGContext(BGContext bgContext);
 	
 	/**
 	 * Find all repository entries of the OLAT resources that have a relation to
@@ -297,7 +297,7 @@ public interface BGContextManager {
 	 * @return
 	 */
 	//fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContext, int firstResult, int maxResults);
+	//public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContext, int firstResult, int maxResults);
 	
 	/**
 	 * Find all repository entries of the OLAT resources that have a relation to
@@ -312,8 +312,8 @@ public interface BGContextManager {
 	 * @return
 	 */
 	//fxdiff VCRP-1,2: access control of resources
-	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int access, boolean asOwner, boolean asCoach,
-			boolean asParticipant,  Identity identity);
+	//public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int access, boolean asOwner, boolean asCoach,
+	//		boolean asParticipant,  Identity identity);
 
 	/**
 	 * Remove the given business group context from this OLATResource
@@ -321,7 +321,7 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @param resource
 	 */
-	public abstract void removeBGContextFromResource(BGContext bgContext, OLATResource resource);
+	//public abstract void removeBGContextFromResource(BGContext bgContext, OLATResource resource);
 
 	/**
 	 * Refresh the given bgContext
@@ -329,6 +329,6 @@ public interface BGContextManager {
 	 * @param bgContext
 	 * @return BGContext the updated context
 	 */
-	public BGContext loadBGContext(BGContext bgContext);
+	//public BGContext loadBGContext(BGContext bgContext);
 
 }

@@ -20,6 +20,7 @@
 		<!-- creating instance depending on config in olat.properties -->
 		<property name="sessionCountService" ref="org.olat.im.IMSessionCount${cluster.mode}"/>
 		<property name="buddyGroupService" ref="org.olat.im.IMBuddyGroupService" />
+		<property name="businessGroupService" ref="businessGroupService" />
 		
 		<!-- creating instance depending on config in olat.properties -->
 		<property name="sessionItemsService" ref="org.olat.im.IMSessionItemsService${cluster.mode}" />

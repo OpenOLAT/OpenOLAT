@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DB;
@@ -100,11 +101,11 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 		slct.append("and rset.repositoryRef=? ");
 		if (identity != null) {
 			slct.append("and rset.identity.key=? ");
-			return db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef, identity.getKey() }, new Type[] { Hibernate.LONG, Hibernate.STRING,
-					Hibernate.LONG, Hibernate.LONG });
+			return db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef, identity.getKey() }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
+				StandardBasicTypes.LONG, StandardBasicTypes.LONG });
 		} else {
-			return db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { Hibernate.LONG, Hibernate.STRING,
-					Hibernate.LONG });
+			return db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
+				StandardBasicTypes.LONG });
 		}
 	}
 
@@ -145,8 +146,8 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 		    slct.append("order by rset.creationDate, rset.assessmentID, res.itemIdent");
 
 		List results = null;
-		results = db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { Hibernate.LONG, Hibernate.STRING,
-				Hibernate.LONG });
+		results = db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
+			StandardBasicTypes.LONG });
 		
 		return results;
 	}
@@ -171,8 +172,8 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 		slct.append("and rset.repositoryRef=? ");
 
 		List results = null;
-		results = db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { Hibernate.LONG, Hibernate.STRING,
-				Hibernate.LONG });
+		results = db.find(slct.toString(), new Object[] { olatRes, olatResDet, repRef }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING,
+			StandardBasicTypes.LONG });
 
 		String delRes = "from res in class org.olat.ims.qti.QTIResult where res.resultSet.key = ?";
 		String delRset = "from rset in class org.olat.ims.qti.QTIResultSet where rset.key = ?";
@@ -182,8 +183,8 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 		for (Iterator iter = results.iterator(); iter.hasNext();) {
 			QTIResultSet rSet = (QTIResultSet) iter.next();
 			Long rSetKey = rSet.getKey();
-			db.delete(delRes, rSetKey, Hibernate.LONG);
-			db.delete(delRset, rSetKey, Hibernate.LONG);
+			db.delete(delRes, rSetKey, StandardBasicTypes.LONG);
+			db.delete(delRset, rSetKey, StandardBasicTypes.LONG);
 			deletedRset++;
 		}
 		return deletedRset;
@@ -290,7 +291,7 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	 * @return
 	 */
 	public List findQtiResultSets(Identity identity) {
-		return DBFactory.getInstance().find("from q in class org.olat.ims.qti.QTIResultSet where q.identity =?", identity.getKey(), Hibernate.LONG);
+		return DBFactory.getInstance().find("from q in class org.olat.ims.qti.QTIResultSet where q.identity =?", identity.getKey(), StandardBasicTypes.LONG);
 	}
 
 	/**
@@ -312,8 +313,8 @@ public class QTIResultManager extends BasicManager implements UserDataDeletable 
 	private void deleteResultSet(QTIResultSet rSet) {
 		Long rSetKey = rSet.getKey();
 		DB db = DBFactory.getInstance();
-		db.delete("from res in class org.olat.ims.qti.QTIResult where res.resultSet.key = ?", rSetKey, Hibernate.LONG);
-		db.delete("from rset in class org.olat.ims.qti.QTIResultSet where rset.key = ?", rSetKey, Hibernate.LONG);
+		db.delete("from res in class org.olat.ims.qti.QTIResult where res.resultSet.key = ?", rSetKey, StandardBasicTypes.LONG);
+		db.delete("from rset in class org.olat.ims.qti.QTIResultSet where rset.key = ?", rSetKey, StandardBasicTypes.LONG);
 	}
 	
 }

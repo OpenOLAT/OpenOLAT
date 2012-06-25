@@ -40,6 +40,7 @@ import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -66,9 +67,8 @@ import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.SearchBusinessGroupParams;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -133,14 +133,14 @@ public class HomeCalendarController extends BasicController implements Activatea
 		calendars.add(calendarWrapper);
 		
 		// get group calendars
-		BusinessGroupManager bgManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams();
 		groupParams.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP, BusinessGroup.TYPE_RIGHTGROUP);
 		groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
-		List<BusinessGroup> ownerGroups = bgManager.findBusinessGroups(groupParams, ureq.getIdentity(), true, false, null, 0, -1);
+		List<BusinessGroup> ownerGroups = bgs.findBusinessGroups(groupParams, ureq.getIdentity(), true, false, null, 0, -1);
 		addCalendars(ureq, ownerGroups, true, calendars);
-		List<BusinessGroup> attendedGroups = bgManager.findBusinessGroups(groupParams, ureq.getIdentity(), false, true, null, 0, -1);
+		List<BusinessGroup> attendedGroups = bgs.findBusinessGroups(groupParams, ureq.getIdentity(), false, true, null, 0, -1);
 		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
 			BusinessGroup ownerGroup = ownerGroupsIterator.next();
 			if (attendedGroups.contains(ownerGroup))

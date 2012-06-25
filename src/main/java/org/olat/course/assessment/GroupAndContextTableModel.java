@@ -80,7 +80,7 @@ public class GroupAndContextTableModel extends DefaultTableDataModel implements 
                 tmp = Formatter.truncate(tmp, 256);
                 return tmp;
             case 2 : 
-            	String name = DefaultContextTranslationHelper.translateIfDefaultContextName(businessGroup.getGroupContext(), trans);
+            	String name = "no-context";//TODO gm DefaultContextTranslationHelper.translateIfDefaultContextName(businessGroup.getGroupContext(), trans);
       				name = StringEscapeUtils.escapeHtml(name).toString();
       				return name;
             default :

@@ -39,8 +39,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -56,18 +55,12 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class GroupIndexer extends AbstractHierarchicalIndexer {
 	
-	private BusinessGroupManager businessGroupManager;
-
-	public GroupIndexer() {
-		businessGroupManager = BusinessGroupManagerImpl.getInstance();
-		//-> OLAT-3367 OLATResourceable ores = OresHelper.lookupType(BusinessGroup.class);
-		//-> OLAT-3367 CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, ores);
-	}
-	
 	@Override
   public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
 		long startTime = System.currentTimeMillis();
-  	List<BusinessGroup> groupList = businessGroupManager.getAllBusinessGroups();
+		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
+  	List<BusinessGroup> groupList = bgs.loadAllBusinessGroups();
   	if (isLogDebugEnabled()) logDebug("GroupIndexer groupList.size=" + groupList.size());
   	
 		// committing here to make sure the loadBusinessGroup below does actually
@@ -81,7 +74,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 			try {
 				
 				// reload the businessGroup here before indexing it to make sure it has not been deleted in the meantime
-				BusinessGroup reloadedBusinessGroup = businessGroupManager.loadBusinessGroup(businessGroup.getKey(), false);
+				BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(businessGroup);
 				if (reloadedBusinessGroup==null) {
 					logInfo("doIndex: businessGroup was deleted while we were indexing. The deleted businessGroup was: "+businessGroup);
 					continue;
@@ -110,9 +103,9 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		Long key = contextEntry.getOLATResourceable().getResourceableId();
-		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup group = bman.loadBusinessGroup(key, false);
-		boolean inGroup = bman.isIdentityInBusinessGroup(identity, group);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup group = bgs.loadBusinessGroup(key);
+		boolean inGroup = bgs.isIdentityInBusinessGroup(identity, group);
 		if (inGroup) {
 			return super.checkAccess(contextEntry, businessControl, identity, roles)
 					&& super.checkAccess(businessControl, identity, roles);

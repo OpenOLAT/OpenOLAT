@@ -31,7 +31,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
+import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.resource.OLATResource;
 
@@ -46,11 +46,11 @@ import org.olat.resource.OLATResource;
 public class EPPolicyManager extends BasicManager {
 
 	private final BaseSecurity securityManager;
-	private final BusinessGroupManager groupManager;
+	private final BusinessGroupService businessGroupService;
 
-	public EPPolicyManager(BaseSecurity securityManager, BusinessGroupManager groupManager){
+	public EPPolicyManager(BaseSecurity securityManager, BusinessGroupService businessGroupService){
 		this.securityManager = securityManager;
-		this.groupManager = groupManager;
+		this.businessGroupService = businessGroupService;
 	}
 	
 	/**
@@ -83,7 +83,7 @@ public class EPPolicyManager extends BasicManager {
 				wrapper.addIdentities(identities);
 			} else if (permission.startsWith(EPMapPolicy.Type.group.name())) {
 				wrapper.addPolicy(policy);
-				BusinessGroup group = groupManager.findBusinessGroup(policy.getSecurityGroup());
+				BusinessGroup group = businessGroupService.findBusinessGroup(policy.getSecurityGroup());
 				wrapper.addGroup(group);
 				wrapper.setType(EPMapPolicy.Type.group);
 			} else if (permission.startsWith(EPMapPolicy.Type.invitation.name())) {

@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
@@ -43,14 +44,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -77,11 +75,11 @@ public class BGAreaEditController extends BasicController {
 	private Choice groupsChoice;
 	// area, context and group references
 	private BGArea area;
-	private BGContext bgContext;
+	private OLATResource resource;
 	private List allGroups, inAreaGroups;
 	// managers
-	private BGAreaManager areaManager;
-	private BGContextManager contextManager;
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the business group area edit controller
@@ -95,9 +93,9 @@ public class BGAreaEditController extends BasicController {
 
 		this.trans = new PackageTranslator(PACKAGE, ureq.getLocale());
 		this.area = area;
-		this.areaManager = BGAreaManagerImpl.getInstance();
-		this.bgContext = area.getGroupContext();
-		this.contextManager = BGContextManagerImpl.getInstance();
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		resource = area.getResource();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		// tabbed pane
 		tabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
@@ -143,7 +141,7 @@ public class BGAreaEditController extends BasicController {
 		groupsTabVC = new VelocityContainer("groupstab", VELOCITY_ROOT + "/groupstab.html", trans, this);
 		tabbedPane.addTab(trans.translate("tab.groups"), groupsTabVC);
 
-		this.allGroups = contextManager.getGroupsOfBGContext(this.bgContext);
+		this.allGroups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
 		this.inAreaGroups = areaManager.findBusinessGroupsOfArea(this.area);
 		this.groupsDataModel = new GroupsToAreaDataModel(this.allGroups, this.inAreaGroups);
 
@@ -230,7 +228,7 @@ public class BGAreaEditController extends BasicController {
 			BusinessGroup group = groupsDataModel.getGroup(position.intValue());
 			// refresh group to prevent stale object exception and context proxy
 			// issues
-			group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(group);
+			group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(group);
 			// refresh group also in table model
 			this.allGroups.set(position.intValue(), group);
 			// add group now to area and update in area group list

@@ -70,7 +70,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -145,7 +144,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 		
 		//create learn group
-	    BGContextManager cm = BGContextManagerImpl.getInstance();
+	    BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 	    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 	    BaseSecurity secm = BaseSecurityManager.getInstance();
 			

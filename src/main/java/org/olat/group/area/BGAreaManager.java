@@ -31,7 +31,7 @@ import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/> Manager to handle business group areas. A business group
@@ -50,7 +50,7 @@ public interface BGAreaManager {
 	 * @param groupContext The group context of this area
 	 * @return The new area or null if no area has been created
 	 */
-	public abstract BGArea createAndPersistBGAreaIfNotExists(String areaName, String description, BGContext groupContext);
+	public abstract BGArea createAndPersistBGAreaIfNotExists(String areaName, String description, OLATResource resource);
 
 	/**
 	 * Copies all group areas from the original context to the target context. The
@@ -61,7 +61,7 @@ public interface BGAreaManager {
 	 * @param targetBgContext Context where the areas should be created
 	 * @return Map mapping the original to the new areas
 	 */
-	public abstract Map copyBGAreasOfBGContext(BGContext origBgContext, BGContext targetBgContext);
+	public abstract Map<BGArea,BGArea> copyBGAreasOfBGContext(OLATResource sourceResource, OLATResource targetResource);
 
 	/**
 	 * Finds an area in the given context
@@ -70,7 +70,7 @@ public interface BGAreaManager {
 	 * @param groupContext
 	 * @return The area or null if the area does not exists
 	 */
-	public abstract BGArea findBGArea(String areaName, BGContext groupContext);
+	public abstract BGArea findBGArea(String areaName, OLATResource resource);
 
 	/**
 	 * Update the given area in the database
@@ -119,7 +119,8 @@ public interface BGAreaManager {
 	 * @param area
 	 * @return A list of business groups
 	 */
-	public abstract List findBusinessGroupsOfArea(BGArea area);
+	public List<BusinessGroup> findBusinessGroupsOfArea(BGArea area);
+	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas);
 
 	/**
 	 * Searches for all business groups that are associated with the given
@@ -130,7 +131,7 @@ public interface BGAreaManager {
 	 * @param context
 	 * @return A list of business groups
 	 */
-	public abstract List findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, BGContext context);
+	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, OLATResource resource);
 
 	/**
 	 * Searches for all business group areas associated with the given business
@@ -139,7 +140,11 @@ public interface BGAreaManager {
 	 * @param group
 	 * @return A list of business group area
 	 */
-	public abstract List findBGAreasOfBusinessGroup(BusinessGroup group);
+	public List<BGArea> findBGAreasOfBusinessGroup(BusinessGroup group);
+	
+	public List<BGArea> findBGAreasOfBusinessGroups(List<BusinessGroup> groups);
+	
+	
 
 	/**
 	 * Counts the number of business group areas of the given business group
@@ -148,7 +153,7 @@ public interface BGAreaManager {
 	 * @param groupContext
 	 * @return Number of business gropu areas
 	 */
-	public abstract int countBGAreasOfBGContext(BGContext groupContext);
+	public abstract int countBGAreasOfBGContext(OLATResource resource);
 
 	/**
 	 * Searches for all business group areas in the given business group context
@@ -156,7 +161,7 @@ public interface BGAreaManager {
 	 * @param groupContext
 	 * @return A list of business group areas
 	 */
-	public abstract List findBGAreasOfBGContext(BGContext groupContext);
+	public List<BGArea> findBGAreasOfBGContext(OLATResource resource);
 
 	/**
 	 * Checks if an identity is in a business group areas with a given name in the
@@ -167,7 +172,7 @@ public interface BGAreaManager {
 	 * @param groupContext
 	 * @return true if identity is in such an area, false otherwhise
 	 */
-	public boolean isIdentityInBGArea(Identity identity, String areaName, BGContext groupContext);
+	public boolean isIdentityInBGArea(Identity identity, String areaName, OLATResource resource);
 
 	/**
 	 * Reloads the business group area from the database or the hibernate second
@@ -184,5 +189,5 @@ public interface BGAreaManager {
 	 * @param bgContext
 	 * @return
 	 */
-	public abstract boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, BGContext bgContext);
+	public abstract boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, OLATResource resource);
 }

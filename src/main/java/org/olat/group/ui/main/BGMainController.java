@@ -97,11 +97,12 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.delete.TabbedPaneController;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGTranslatorFactory;
@@ -162,6 +163,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private BusinessGroup currBusinessGroup;
 	private final Identity identity;
 	private final BusinessGroupManager bgm;
+	private final BusinessGroupService businessGroupService;
 	//fxdiff VCRP-1,2: access control of resources
 	private final ACFrontendManager acFrontendManager;
 	private final BGContextManager contextManager;
@@ -199,6 +201,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 */
 	public BGMainController(UserRequest ureq, WindowControl wControl, String initialViewIdentifier) {
 		super(ureq, wControl);
+		
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		identity = ureq.getIdentity();
 		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, BusinessGroup.TYPE_BUDDYGROUP, ureq.getLocale()));
@@ -320,7 +324,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			int rowid = te.getRowId();
 			BusinessGroup selectedBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
 			//reload the group
-			currBusinessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(selectedBusinessGroup.getKey(), false);
+			currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(selectedBusinessGroup.getKey());
 			if(currBusinessGroup == null) {
 				groupListModel.removeBusinessGroup(selectedBusinessGroup);
 				groupListCtr.modelChanged();
@@ -349,7 +353,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	}
 	//fxdiff VCRP-1,2: access control of resources
 	private void handleAccess(UserRequest ureq) {
-		if(bgm.isIdentityInBusinessGroup(getIdentity(), currBusinessGroup)) {
+		if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), currBusinessGroup)) {
 			BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
 			return;
 		}
@@ -488,7 +492,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		everybody.add(participants);
 		// inform Indexer about change
 		// 3) delete the group
-		currBusinessGroup = bgm.loadBusinessGroup(currBusinessGroup);
+		currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(currBusinessGroup);
 		
 		//change state of publisher so that notifications of deleted group calendars make no problems
 		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
@@ -782,16 +786,16 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		// buddy groups
 		collectGroupListModelBuddygroups(wrapped);
 		// learning groups
-		List<BusinessGroup> groups = bgm.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
-		groups = bgm.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
+		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
 		// right groups
-		groups = bgm.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
+		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
@@ -813,12 +817,12 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	//fxdiff VCRP-1,2: access control of resources
 	private void collectGroupListModelBuddygroups(List<BGTableItem> wrapped) {
 		// buddy groups
-		List<BusinessGroup> groups = bgm.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			BGTableItem item = wrapGroup(group, true, Boolean.TRUE, Boolean.TRUE, false, null);
 			wrapped.add(item);
 		}
-		groups = bgm.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
+		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			BGTableItem item = wrapGroup(group, true, Boolean.TRUE, null, false, null);
 			wrapped.add(item);
@@ -832,11 +836,11 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private void updateGroupListModelLearninggroups() {
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
 		// learning groups
-		List<BusinessGroup> groups = bgm.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
-		groups = bgm.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
+		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
@@ -852,7 +856,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
 		// buddy groups
 		// right groups
-		List<BusinessGroup> groups = bgm.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
 		for(BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
@@ -866,7 +870,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		List<BusinessGroupAccess> bgAccess = acFrontendManager.getOfferAccessForBusinessGroup(true, new Date());
 		for(BusinessGroupAccess bga:bgAccess) {
 			BusinessGroup group = bga.getGroup();
-			boolean member = bgm.isIdentityInBusinessGroup(getIdentity(), group);
+			boolean member = businessGroupService.isIdentityInBusinessGroup(getIdentity(), group);
 			if(bga.getMethods() != null && !bga.getMethods().isEmpty()) {
 				wrapped.add(wrapGroup(group, member, Boolean.TRUE, null, true, bga.getMethods()));
 			}
@@ -884,7 +888,13 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			String name = searchController.getName();
 			String description = searchController.getDescription();
 			String owner = searchController.getOwner();
-			groups = bgm.findBusinessGroups(null, getIdentity(), id, name, description, owner);
+			
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			params.setKey(id);
+			params.setName(name);
+			params.setDescription(description);
+			params.setOwner(owner);
+			groups = businessGroupService.findBusinessGroups(params, null, false, false, null, 0, -1);
 		}
 
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
@@ -893,7 +903,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		for(BusinessGroup group:groups) {
 			OLATResource ores = OLATResourceManager.getInstance().findResourceable(group);
 			resourceKeys.put(group.getKey(), ores.getKey());
-			if(bgm.isIdentityInBusinessGroup(this.getIdentity(), group)) {
+			if(businessGroupService.isIdentityInBusinessGroup(this.getIdentity(), group)) {
 				membership.add(group.getKey());
 			}
 		}
@@ -930,13 +940,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private BGTableItem wrapGroup(BusinessGroup group, boolean member, Boolean allowLeave, Boolean allowDelete, boolean accessControl,
 			List<PriceMethodBundle> access) {
 		BGTableItem tableItem = new BGTableItem(group, member, allowLeave, allowDelete, accessControl, access);
-		
-		if(group.getGroupContext() != null) {
-			List<BGContext> contexts = Collections.singletonList(group.getGroupContext());
-			List<RepositoryEntry> resources = contextManager.findRepositoryEntriesForBGContext(contexts, 0, 3);
-			tableItem.setResources(resources);
-		}
-		
+		List<RepositoryEntry> resources = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, 3);
+		tableItem.setResources(resources);
 		return tableItem;
 	}
 

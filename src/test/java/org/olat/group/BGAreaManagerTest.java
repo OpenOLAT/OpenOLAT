@@ -34,22 +34,26 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.area.BGArea;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
-import org.olat.test.JunitTestHelper;
+import org.olat.group.area.BGAreaManager;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,21 +61,23 @@ import org.olat.test.OlatTestCase;
  */
 public class BGAreaManagerTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(BGAreaManagerTest.class.getName());
-	private Identity id1;
-	private BGContext c1,c2;
+	private static OLog log = Tracing.createLoggerFor(BGAreaManagerTest.class);
+
+	private OLATResource c1, c2;
+	
+	@Autowired
+	private BGAreaManager areaManager;
 
 
 	@Before
 	public void setUp() {
 		try {
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("one");
+			OLATResourceable ores1 = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
+			c1 = OLATResourceManager.getInstance().createOLATResourceInstance(ores1);
+			OLATResourceable ores2 = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
+			c2 = OLATResourceManager.getInstance().createOLATResourceInstance(ores2);
+			Assert.assertNotNull(c2);
 
-			// create two test context
-			BGContextManager bgcm = BGContextManagerImpl.getInstance();
-			c1 = bgcm.createAndPersistBGContext("c1name", "c1desc", BusinessGroup.TYPE_LEARNINGROUP, null, true);
-			c2 = bgcm.createAndPersistBGContext("c2name", "c2desc", BusinessGroup.TYPE_LEARNINGROUP, id1, false);
-			
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
@@ -105,7 +111,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final CountDownLatch finfishCount = new CountDownLatch(3);
 		
-		BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
+		BGArea bgArea = areaManager.findBGArea(areaName, c1);
 		assertNull(bgArea);
 		
 		startThreadCreateDeleteBGArea(areaName, maxLoop, exceptionHolder, 100, 20, finfishCount);
@@ -146,12 +152,12 @@ public class BGAreaManagerTest extends OlatTestCase {
 				
 				for (int i=0; i<maxLoop; i++) {
 					try {
-						BGArea bgArea = BGAreaManagerImpl.getInstance().createAndPersistBGAreaIfNotExists(areaName, "description:" + areaName, c1);
+						BGArea bgArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, "description:" + areaName, c1);
 						if (bgArea != null) {
 							DBFactory.getInstance().closeSession();
 							// created a new bg area
 							sleep(sleepAfterCreate);
-							BGAreaManagerImpl.getInstance().deleteBGArea(bgArea);
+							areaManager.deleteBGArea(bgArea);
 						}
 					} catch (Exception e) {
 						exceptionHolder.add(e);
@@ -189,9 +195,9 @@ public class BGAreaManagerTest extends OlatTestCase {
 		final CountDownLatch finfishCount = new CountDownLatch(3);
 		
 		
-		BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
+		BGArea bgArea = areaManager.findBGArea(areaName, c1);
 		assertNull(bgArea);
-		bgArea = BGAreaManagerImpl.getInstance().createAndPersistBGAreaIfNotExists(areaName, "description:" + areaName, c1);
+		bgArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, "description:" + areaName, c1);
 		assertNotNull(bgArea);
 		
 		startThreadUpdateBGArea(areaName, maxLoop, exceptionHolder, 20, finfishCount);
@@ -222,11 +228,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 				try {
 					for (int i=0; i<maxLoop; i++) {
 						try {
-							BGArea bgArea = BGAreaManagerImpl.getInstance().findBGArea(areaName, c1);
+							BGArea bgArea = areaManager.findBGArea(areaName, c1);
 							DBFactory.getInstance().closeSession();// Detached the bg-area object with closing session 
 							if (bgArea != null) {
 								bgArea.setDescription("description:" + areaName + i);
-								BGAreaManagerImpl.getInstance().updateBGArea(bgArea);
+								areaManager.updateBGArea(bgArea);
 							}
 						} catch (Exception e) {
 							exceptionHolder.add(e);

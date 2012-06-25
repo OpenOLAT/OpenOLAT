@@ -32,7 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -68,6 +68,7 @@ public class ACFrontendManager extends BasicManager {
 	private ACMethodManager methodManager;
 	private ACOrderManager orderManager;
 	private ACTransactionManager transactionManager;
+	private BusinessGroupService businessGroupService;
 	
 	private ACFrontendManager() {
 		//
@@ -127,6 +128,14 @@ public class ACFrontendManager extends BasicManager {
 	 */
 	public void setTransactionManager(ACTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
 	}
 
 	/**
@@ -354,7 +363,7 @@ public class ACFrontendManager extends BasicManager {
 				return true;
 			}
 		} else if("BusinessGroup".equals(resourceType)) {
-			BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(resource, false);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				if(!securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
 					securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
@@ -387,7 +396,7 @@ public class ACFrontendManager extends BasicManager {
 				return true;
 			}
 		} else if("BusinessGroup".equals(resourceType)) {
-			BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(resource, false);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				if(securityManager.isIdentityInSecurityGroup(identity, group.getPartipiciantGroup())) {
 					securityManager.removeIdentityFromSecurityGroup(identity, group.getPartipiciantGroup());
@@ -406,7 +415,7 @@ public class ACFrontendManager extends BasicManager {
 				return entry.getDisplayname();
 			}
 		} else if("BusinessGroup".equals(resourceType)) {
-			BusinessGroup group = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(resource, false);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
 			if(group != null) {
 				return group.getName();
 			}

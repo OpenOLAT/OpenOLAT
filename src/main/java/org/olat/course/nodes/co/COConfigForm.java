@@ -28,7 +28,6 @@ package org.olat.course.nodes.co;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -52,13 +51,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.condition.GroupOrAreaSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/> Configuration form for the contact form building block
@@ -113,6 +111,8 @@ public class COConfigForm extends FormBasicController {
 	private List eList;
 	private ModuleConfiguration config;
 	private CourseEditorEnv cev;
+	
+	
 	/**
 	 * Form constructor
 	 * 
@@ -221,8 +221,6 @@ public class COConfigForm extends FormBasicController {
 						"errorgroupitem", getTranslator(), vc_errorPage
 				);
 
-				boolean hasDefaultContext = getDefaultBGContext() != null;
-				if (hasDefaultContext) {
 					groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
 					// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 					fixGroupError = new FormLinkImpl("error.fix", "create");
@@ -243,13 +241,7 @@ public class COConfigForm extends FormBasicController {
 					} else {
 						fixGroupError.setUserObject(new String[] { csvMissGrps });
 					}
-				} else {
-					// fix helper link not possible -> errortext only
-					groupChooseSubContainer.setErrorKey(labelKey, params);
-				}
-				/*
-				 * 
-				 */
+
 				groupChooseSubContainer.showError(true);
 			} else {
 				// no more errors
@@ -282,8 +274,6 @@ public class COConfigForm extends FormBasicController {
 						"errorareaitem", getTranslator(), vc_errorPage
 				);
 				
-				boolean hasDefaultContext = getDefaultBGContext() != null;
-				if (hasDefaultContext) {
 					areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
 					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 					fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
@@ -305,10 +295,6 @@ public class COConfigForm extends FormBasicController {
 					} else {
 						fixAreaError.setUserObject(new String[] { csvMissAreas });
 					}
-				} else {
-					// fixing help link not possible -> text only
-					areaChooseSubContainer.setErrorKey(labelKey, params);
-				}
 			
 				areaChooseSubContainer.showError(true);
 			} else {
@@ -390,22 +376,6 @@ public class COConfigForm extends FormBasicController {
 
 	protected boolean sendToPartips() {
 		return partips.isSelected(0);
-	}
-	
-	/*
-	 * find default context if one is present
-	 */
-	private BGContext getDefaultBGContext() {
-		CourseGroupManager courseGrpMngr = cev.getCourseGroupManager();
-		List courseLGContextes = courseGrpMngr.getLearningGroupContexts();
-		for (Iterator iter = courseLGContextes.iterator(); iter.hasNext();) {
-			BGContext bctxt = (BGContext) iter.next();
-			if (bctxt.isDefaultContext()) { return bctxt; }
-		}
-		return null;
-		// not found! -> disable easy creation of groups! (no workflows for choosing
-		// contexts
-
 	}
 	
 	@Override
@@ -575,11 +545,11 @@ public class COConfigForm extends FormBasicController {
 		} else if (source == createGroupsLink) {
 			// no groups in group management -> directly show group create dialog
 			String[] csvGroupName = easyGroupTE.isEmpty() ? new String[0] : easyGroupTE.getValue().split(",");
-			
+			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
 					ureq, getWindowControl(), 
-					true, getDefaultBGContext(),
+					true, courseResource,
 					true, easyGroupTE.getValue()
 			);
 			listenTo(groupCreateCntrllr);
@@ -618,11 +588,11 @@ public class COConfigForm extends FormBasicController {
 			
 		} else if (source == createAreasLink) {
 			// no areas -> directly show creation dialog
-			BGContext bgContext = getDefaultBGContext();
-			
+
+			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), bgContext, true, easyAreaTE.getValue()
+					ureq, getWindowControl(), courseResource, true, easyAreaTE.getValue()
 			);
 			listenTo(areaCreateCntrllr);
 			
@@ -641,15 +611,13 @@ public class COConfigForm extends FormBasicController {
 			 * user wants to fix problem with fixing group error link e.g. create one
 			 * or more group at once.
 			 */
-			BGContext bgContext = getDefaultBGContext();
 			
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
-			
+			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			easyGroupTE.setEnabled(false);
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-					ureq, getWindowControl(), true,
-					bgContext, true, csvGroupName[0]
+					ureq, getWindowControl(), true, courseResource, true, csvGroupName[0]
 			);
 			listenTo(groupCreateCntrllr);
 
@@ -668,14 +636,12 @@ public class COConfigForm extends FormBasicController {
 			 * user wants to fix problem with fixing area error link e.g. create one
 			 * or more areas at once.
 			 */
-			BGContext bgContext = getDefaultBGContext();
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
-			
+			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			easyAreaTE.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), 
-					bgContext, true, csvAreaName[0]
+					ureq, getWindowControl(), courseResource, true, csvAreaName[0]
 			);
 			listenTo(areaCreateCntrllr);
 			

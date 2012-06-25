@@ -99,7 +99,7 @@
 	
 	<bean name="epPolicyManager" class="org.olat.portfolio.manager.EPPolicyManager">
 		<constructor-arg index="0" ref="baseSecurityManager" />
-		<constructor-arg index="1" ref="businessGroupManager" />
+		<constructor-arg index="1" ref="businessGroupService" />
 	</bean>
 	
 		<!--   define notifications handler -->

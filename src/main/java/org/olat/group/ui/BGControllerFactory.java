@@ -34,13 +34,13 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.activity.IUserActivityLogger;
 import org.olat.group.BusinessGroup;
 import org.olat.group.context.BGContext;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.main.BGMainController;
 import org.olat.group.ui.management.BGManagementController;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
+import org.olat.resource.OLATResource;
 
 /**
  * Description: <BR>
@@ -237,8 +237,8 @@ public class BGControllerFactory {
 	 * @param groupManager
 	 * @return
 	 */
-	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, BGContext bgContext){
-		return createNewBGController(ureq, wControl, minMaxEnabled, bgContext, true, null);
+	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource){
+		return createNewBGController(ureq, wControl, minMaxEnabled, resource, true, null);
 	}
 	/**
 	 * create controller for (mass) creation of business groups (bulkmode) with
@@ -252,9 +252,9 @@ public class BGControllerFactory {
 	 * @param csvGroupNames
 	 * @return
 	 */
-	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, BGContext bgContext,boolean bulkMode, String csvGroupNames){
-		if (bgContext == null) throw new AssertException("Group context must not be null");
-		NewBGController retVal = new NewBGController(ureq, wControl, minMaxEnabled, bgContext, bulkMode, csvGroupNames);
+	public NewBGController createNewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource, boolean bulkMode, String csvGroupNames){
+		if (resource == null) throw new AssertException("Group context must not be null");
+		NewBGController retVal = new NewBGController(ureq, wControl, minMaxEnabled, resource, bulkMode, csvGroupNames);
 		return retVal;
 	}
 	
@@ -282,8 +282,8 @@ public class BGControllerFactory {
 	 * @param bgContext
 	 * @return
 	 */
-	public NewAreaController createNewAreaController(UserRequest ureq, WindowControl wControl, BGContext bgContext) {
-		return createNewAreaController(ureq, wControl, bgContext, true, null);
+	public NewAreaController createNewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
+		return createNewAreaController(ureq, wControl, resource, true, null);
 	}
 	
 	/**
@@ -296,9 +296,9 @@ public class BGControllerFactory {
 	 * @param csvNames
 	 * @return
 	 */
-	public NewAreaController createNewAreaController(UserRequest ureq, WindowControl wControl, BGContext bgContext, boolean bulkMode, String csvNames) {
-		if (bgContext == null) throw new AssertException("Group context must not be null");
-		NewAreaController nac = new NewAreaController(ureq, wControl, bgContext, bulkMode, csvNames);
+	public NewAreaController createNewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvNames) {
+		if (resource == null) throw new AssertException("Group resource must not be null");
+		NewAreaController nac = new NewAreaController(ureq, wControl, resource, bulkMode, csvNames);
 		return nac;
 	}
 	

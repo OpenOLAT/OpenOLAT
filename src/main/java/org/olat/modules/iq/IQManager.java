@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.dom4j.Document;
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -405,7 +405,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 	public List findQtiResults(long assessmentID) {
 		DB persister = DBFactory.getInstance();
 		return persister.find("from q in class org.olat.ims.qti.QTIResult where q.assessmentID = ?",
-				new Long(assessmentID), Hibernate.LONG);
+				new Long(assessmentID), StandardBasicTypes.LONG);
 	}
 
 	/**
@@ -418,7 +418,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		DB persister = DBFactory.getInstance();
 		return persister.find("from q in class org.olat.ims.qti.QTIResult where "
 				+ "q.assessmentID = ? and q.versionid = ?", new Object[]{new Long(assessmentID), new Long(versionID)},
-				new Type[]{Hibernate.LONG, Hibernate.LONG});
+				new Type[]{StandardBasicTypes.LONG, StandardBasicTypes.LONG});
 	}
 	
 	/**
@@ -432,7 +432,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		DB persister = DBFactory.getInstance();
 		return persister.find("from q in class org.olat.ims.qti.QTIResult where "
 				+ "q.assessmentID = ? and q.versionid = ? and q.itemident = ?", new Object[]{new Long(assessmentID),
-				new Long(versionID), itemIdent}, new Type[]{Hibernate.LONG, Hibernate.LONG, Hibernate.STRING});
+				new Long(versionID), itemIdent}, new Type[]{StandardBasicTypes.LONG, StandardBasicTypes.LONG, StandardBasicTypes.STRING});
 	}
 	
 	/**
@@ -542,7 +542,7 @@ public class IQManager extends BasicManager implements UserDataDeletable {
 		DB persister = DBFactory.getInstance();
 		List resultSetList =  persister.find("from q in class org.olat.ims.qti.QTIResultSet where "
 				+ "q.identity = ? and q.olatResource = ? and q.olatResourceDetail = ? order by q.creationDate desc", new Object[]{identity.getKey(), new Long(olatResource), new String(olatResourceDetail)},
-				new Type[]{Hibernate.LONG, Hibernate.LONG, Hibernate.STRING});
+				new Type[]{StandardBasicTypes.LONG, StandardBasicTypes.LONG, StandardBasicTypes.STRING});
 		Iterator resultSetIterator = resultSetList.iterator();
 		while(resultSetIterator.hasNext()) {
 			returnQTIResultSet = (QTIResultSet)resultSetIterator.next();

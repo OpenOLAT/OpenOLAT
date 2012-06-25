@@ -122,7 +122,7 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 		
 		// init content panel. current panel content will be set later in init process, use null for now
 		content = putInitialPanel(null);
-
+/*
 		if (BusinessGroup.TYPE_LEARNINGROUP.equals(groupType)) {
 			groupContexts = groupManager.getLearningGroupContexts();
 			defaultContextName = CourseGroupManager.DEFAULT_NAME_LC_PREFIX + course.getCourseTitle();
@@ -132,7 +132,7 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 		} else {
 			throw new AssertException("Invalid group type ::" + groupType);
 		}
-
+		
 		if (groupContexts.size() == 0) {
 			// create new default context if none exists
 			BGContextManager contextManager = BGContextManagerImpl.getInstance();
@@ -149,7 +149,7 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 			setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale(), fallback));
 			doInitContextListLayout(ureq);
 			doInitContextList(ureq, groupContexts);
-		}
+		}*/
 		
 	}
 
@@ -224,12 +224,15 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 				List groupContexts;
 				ICourse course = CourseFactory.loadCourse(ores);
 				CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
+				//TODO gm
+				/*
 				if (BusinessGroup.TYPE_LEARNINGROUP.equals(groupType)) {
 					groupContexts = groupManager.getLearningGroupContexts();
 				} else {
 					groupContexts = groupManager.getRightGroupContexts();
 				}
-				doInitContextList(ureq, groupContexts);
+				*/
+				//doInitContextList(ureq, groupContexts);
 				content.setContent(columnLayoutCtr.getInitialComponent());
 			}
 		} else if (source == contextListCtr) {

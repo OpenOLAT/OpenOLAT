@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -42,7 +43,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -50,18 +50,14 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
-import org.olat.group.BusinessGroupFactory;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.testutils.codepoints.server.Codepoint;
 
 
@@ -86,7 +82,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		} 
     logDebug("groupKey=" + groupKey);
     if (groupKey != null) {
-			accountManagerGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(groupKey, false);
+			accountManagerGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 			logDebug("load businessgroup=" + accountManagerGroup);
 			if (accountManagerGroup != null) {
 				return accountManagerGroup;
@@ -99,13 +95,13 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			}
     } else {
 			logDebug("No group for project-broker exist => create a new one");
-			BGContext context = createGroupContext(course);
-			
-			accountManagerGroup = BusinessGroupManagerImpl.getInstance().createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, identity, groupName, groupDescription, null, null, false, false, context);
+			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			OLATResource courseResource = cpm.getCourseResource();
+			accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, courseResource);
 			int i = 2;
 			while (accountManagerGroup == null) {
 				// group with this name exist already, try another name
-				accountManagerGroup = BusinessGroupManagerImpl.getInstance().createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, identity, groupName + " _" + i, groupDescription, null, null, false, false, context);
+				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, courseResource);
 				i++;
 			}
 			logDebug("createAndPersistBusinessGroup businessgroup=" + accountManagerGroup);			
@@ -126,7 +122,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
   	Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
   	if (accountManagerGroupProperty != null) {
   	 	Long groupKey = accountManagerGroupProperty.getLongValue();
-  		BusinessGroup accountManagerGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(groupKey, false);
+  		BusinessGroup accountManagerGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
   		if (accountManagerGroup != null) {
   			return isAccountManager(identity,  accountManagerGroup);
   		}
@@ -140,7 +136,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
   	if (accountManagerGroupProperty != null) {
   		Long groupKey = accountManagerGroupProperty.getLongValue();
   		if (groupKey != null) {
-				BusinessGroup accountManagerGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(groupKey, false);
+				BusinessGroup accountManagerGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 				if (accountManagerGroup != null) {
 					BusinessGroupManagerImpl.getInstance().deleteBusinessGroup(accountManagerGroup);
 					logAudit("ProjectBroker: Deleted accountManagerGroup=" + accountManagerGroup);
@@ -158,10 +154,11 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	public void updateAccountManagerGroupName(String groupName, String groupDescription, BusinessGroup accountManagerGroup) {
 		// group could have been deleted, see FXOLAT-295
 		if (accountManagerGroup != null){
-			BusinessGroup reloadedBusinessGroup = (BusinessGroup)DBFactory.getInstance().loadObject(BusinessGroupImpl.class, accountManagerGroup.getKey());
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(accountManagerGroup);
 			reloadedBusinessGroup.setName(groupName);
 			reloadedBusinessGroup.setDescription(groupDescription);
-			BusinessGroupManagerImpl.getInstance().updateBusinessGroup(reloadedBusinessGroup);
+			bgs.updateBusinessGroup(reloadedBusinessGroup);
 		}
 	}
 
@@ -170,17 +167,20 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	// PROJECT GROUP MANAGEMENT
 	////////////////////////////
 	public BusinessGroup createProjectGroupFor(Long projectBrokerId, Identity identity, String groupName, String groupDescription, Long courseId) {
-		List<Project> projects = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);
+		//List<Project> projects = ProjectBrokerManagerFactory.getProjectBrokerManager().getProjectListBy(projectBrokerId);
+		
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		OLATResource resource = CourseFactory.loadCourse(courseId).getCourseEnvironment().getCourseGroupManager().getCourseResource();
 
-		BGContext context = createGroupContext(CourseFactory.loadCourse(courseId));
+		//BGContext context = createGroupContext(CourseFactory.loadCourse(courseId));
 		logDebug("createProjectGroupFor groupName=" + groupName);
-		BusinessGroup projectGroup = BusinessGroupManagerImpl.getInstance().createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, identity, groupName, groupDescription, null, null, false, false, context);
+		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription,BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, resource);
 		// projectGroup could be null when a group with name already exists
 		int counter = 2;
 		while (projectGroup == null) {
 			// name alreday exist try another one
 			String newGroupName = groupName + " _" + counter ;
-			projectGroup = BusinessGroupManagerImpl.getInstance().createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, identity, newGroupName, groupDescription, null, null, false, false, context);
+			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, resource);
 			counter++;
 		}
 		logDebug("Created a new projectGroup=" + projectGroup);
@@ -196,25 +196,26 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	 * If the goup-name already exist, it will be automatically try another one with suffix e.g. ' _2'
 	 * @see org.olat.course.nodes.projectbroker.service.ProjectGroupManager#changeProjectGroupName(org.olat.group.BusinessGroup, java.lang.String, java.lang.String)
 	 */
-	public void changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription ) {
-		BusinessGroup reloadedBusinessGroup = (BusinessGroup)DBFactory.getInstance().loadObject(BusinessGroupImpl.class, projectGroup.getKey());
+	public void changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription, OLATResource courseResource) {
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
 		logDebug("initialGroupName=" + initialGroupName);
 		String groupName = initialGroupName;
-		Set names = new HashSet();
+		Set<String> names = new HashSet<String>();
 		names.add(groupName);
 		int counter = 2;
-		while (BusinessGroupFactory.checkIfOneOrMoreNameExistsInContext(names, reloadedBusinessGroup.getGroupContext())) {
+		while (bgs.checkIfOneOrMoreNameExistsInContext(names, courseResource)) {
 		// a group with name already exist => look for an other one, append a number
 			groupName = initialGroupName + " _" + counter++ ;
 			logDebug("try groupName=" + groupName);
-			names = new HashSet();
+			names = new HashSet<String>();
 			names.add(groupName);
 			
 		}
 		logDebug("groupName=" + groupName);
 		reloadedBusinessGroup.setName(groupName);
 		reloadedBusinessGroup.setDescription(groupDescription);
-		BusinessGroupManagerImpl.getInstance().updateBusinessGroup(reloadedBusinessGroup);
+		bgs.updateBusinessGroup(reloadedBusinessGroup);
 	}
 
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
@@ -312,39 +313,17 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		return BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, project.getCandidateGroup());
 	}
 
-   public void setProjectGroupMaxMembers(BusinessGroup projectGroup, int maxMembers ) {
-       BusinessGroup reloadedBusinessGroup = (BusinessGroup)DBFactory.getInstance().loadObject(BusinessGroupImpl.class, projectGroup.getKey());
-       logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
-       reloadedBusinessGroup.setMaxParticipants(maxMembers);
-      BusinessGroupManagerImpl.getInstance().updateBusinessGroup(reloadedBusinessGroup);
-   }
+	public void setProjectGroupMaxMembers(BusinessGroup projectGroup, int maxMembers ) {
+  	 BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+  	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
+  	 logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
+  	 reloadedBusinessGroup.setMaxParticipants(maxMembers);
+  	 bgs.updateBusinessGroup(reloadedBusinessGroup);
+	}
 
 	///////////////////
 	// PRIVATE METHODS
 	///////////////////
-	private BGContext createGroupContext(ICourse course) {
-		List<BGContext> groupContexts = course.getCourseEnvironment().getCourseGroupManager().getLearningGroupContexts();
-		logDebug("createGroupContext groupContexts.size=" + groupContexts.size());
-		for (Iterator<BGContext> iterator = groupContexts.iterator(); iterator.hasNext();) {
-			BGContext iterContext = iterator.next();
-			logDebug("createGroupContext loop iterContext=" + iterContext);
-			if (iterContext.isDefaultContext()) {
-				logDebug("createGroupContext default groupContexts=" + iterContext);
-				return iterContext;
-			}
-		}
-  	// found no default context
-		String defaultContextName = CourseGroupManager.DEFAULT_NAME_LC_PREFIX + course.getCourseTitle();
-		if (groupContexts.size() == 0) {
-			logDebug("no group context exists, create a new default defaultContextName=" + defaultContextName);
-		} else {
-			logDebug("Found no default group context, create a new default defaultContextName=" + defaultContextName);
-		}
-		// no context exists => create a new default context
-		OLATResource courseResource = OLATResourceManager.getInstance().findOrPersistResourceable(course);
-		BGContext context = BGContextManagerImpl.getInstance().createAndAddBGContextToResource(defaultContextName, courseResource, BusinessGroup.TYPE_LEARNINGROUP, null, true);
-		return context;
-	}
 
 	private boolean isAccountManager(Identity identity, BusinessGroup businessGroup) {
 		if ( (businessGroup == null) || (businessGroup.getPartipiciantGroup() == null) ) {

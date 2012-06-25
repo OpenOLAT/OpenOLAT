@@ -25,7 +25,9 @@
 
 package org.olat.group.ui.run;
 
+import java.util.Collections;
 import java.util.List;
+
 import org.olat.ControllerFactory;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
@@ -80,7 +82,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
@@ -105,6 +107,7 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
+
 
 /**
  * Description: <BR>
@@ -199,6 +202,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private BGConfigFlags flags;
 
 	private BusinessGroupPropertyManager bgpm;
+	private final BusinessGroupService businessGroupService;
 	private UserSession userSession;
 	private String adminNodeId; // reference to admin menu item
 
@@ -239,7 +243,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		 * on the group for a very short time. If this is not possible, then the
 		 * lastUsage is already up to date within one-day-precision.
 		 */
-		businessGroup = BusinessGroupManagerImpl.getInstance().setLastUsageFor(bGroup);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		businessGroup = businessGroupService.setLastUsageFor(bGroup);
 		if(businessGroup == null) {
 			VelocityContainer vc = createVelocityContainer("deleted");
 			vc.contextPut("name", bGroup.getName());
@@ -994,7 +999,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				// reset business group property manager
 				this.bgpm = new BusinessGroupPropertyManager(this.businessGroup);
 				// update reference to update business group object
-				this.businessGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(this.businessGroup);
+				this.businessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.businessGroup);
 				main.contextPut("BuddyGroup", this.businessGroup);
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);
@@ -1024,7 +1029,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// always refresh data model, maybe it has changed
 		RepositoryTableModel repoTableModel = new RepositoryTableModel(resourceTrans);
 		BGContextManager contextManager = BGContextManagerImpl.getInstance();
-		List<RepositoryEntry> repoTableModelEntries = contextManager.findRepositoryEntriesForBGContext(businessGroup.getGroupContext());
+		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
 		repoTableModel.setObjects(repoTableModelEntries);
 		// init table controller only once
 		if (resourcesCtr == null) {

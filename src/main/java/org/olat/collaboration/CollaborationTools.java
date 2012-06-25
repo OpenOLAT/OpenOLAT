@@ -30,8 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
@@ -79,7 +79,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.groupchat.GroupChatManagerController;
@@ -444,9 +444,8 @@ public class CollaborationTools implements Serializable {
 		calRenderWrapper.getKalendarConfig().setResId(businessGroup.getKey());
 		if (businessGroup.getType().equals(BusinessGroup.TYPE_LEARNINGROUP)) {
 			// add linking
-			List<OLATResource> resources = BGContextManagerImpl.getInstance().findOLATResourcesForBGContext(businessGroup.getGroupContext());
-			for (Iterator<OLATResource> iter = resources.iterator(); iter.hasNext();) {
-				OLATResource resource = iter.next();
+			List<OLATResource> resources = CoreSpringFactory.getImpl(BusinessGroupService.class).findResources(Collections.singleton(businessGroup), 0, -1);
+			for (OLATResource resource:resources) {
 				if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 					ICourse course = CourseFactory.loadCourse(resource);
 					CourseLinkProviderController clp = new CourseLinkProviderController(course, ureq, wControl);

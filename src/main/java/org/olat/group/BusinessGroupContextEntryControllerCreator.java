@@ -55,15 +55,17 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		OLATResourceable ores = ce.getOLATResourceable();
 
 		Long gKey = ores.getResourceableId();
-		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bgroup = bman.loadBusinessGroup(gKey, true);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Controller ctrl = null;
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		// check if allowed to start (must be member or admin)
-		//fxdiff VCRP-1,2: access control of resources
-		if (isOlatAdmin || bman.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
-			// only olatadmins or admins of this group can administer this group
-			ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup, isOlatAdmin, null);
+		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
+		if(bgroup != null) {
+			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+			// check if allowed to start (must be member or admin)
+			//fxdiff VCRP-1,2: access control of resources
+			if (isOlatAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
+				// only olatadmins or admins of this group can administer this group
+				ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup, isOlatAdmin, null);
+			}
 		}
 		return ctrl;
 	}
@@ -75,19 +77,18 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		OLATResourceable ores = ce.getOLATResourceable();
 		Long gKey = ores.getResourceableId();
-		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bgroup = bman.loadBusinessGroup(gKey, true);
-		return bgroup.getName();
+		BusinessGroup bgroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(gKey);
+		return bgroup == null ? "" : bgroup.getName();
 	}
 
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = ce.getOLATResourceable();
 		Long gKey = ores.getResourceableId();
-		BusinessGroupManager bman = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bgroup = bman.loadBusinessGroup(gKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
 		if (bgroup != null){
-			return bman.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
+			return bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
 		}
 		return false;
 	}

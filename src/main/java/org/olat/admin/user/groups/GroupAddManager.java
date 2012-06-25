@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -35,9 +35,9 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
-import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -82,6 +82,7 @@ public class GroupAddManager extends BasicManager {
 	 */
 	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity){
 		final BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 		String[] resultTextArgs = new String[2];
@@ -94,15 +95,16 @@ public class GroupAddManager extends BasicManager {
 		// add to owner groups
 		List<Long> ownerKeys = groupsEv.getOwnerGroupKeys();
 		String ownerGroupnames = "";
-		for (Long groupKey : ownerKeys) {
-			BusinessGroup group = bgm.loadBusinessGroup(groupKey, false);	
+
+		List<BusinessGroup> groups = bgs.loadBusinessGroups(ownerKeys);	
+		for (BusinessGroup group : groups) {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
 //				seems not to work, but would be the way to go!
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 				bgm.addOwnerAndFireEvent(addingIdentity, ident, group, flags, false);
 				ownerGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
-				if (!notifyAboutAdd.contains(groupKey) && mailKeys.contains(groupKey)) notifyAboutAdd.add(groupKey);
+				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
 			}
 		}
 		resultTextArgs[0] = ownerGroupnames.substring(0, ownerGroupnames.length() > 0 ? ownerGroupnames.length() - 2 : 0);
@@ -110,8 +112,8 @@ public class GroupAddManager extends BasicManager {
 		// add to participant groups
 		List<Long> participantKeys = groupsEv.getParticipantGroupKeys();
 		String participantGroupnames = "";
-		for (Long groupKey : participantKeys) {
-			BusinessGroup group = bgm.loadBusinessGroup(groupKey, false);
+		List<BusinessGroup> participantGroups = bgs.loadBusinessGroups(participantKeys);	
+		for (BusinessGroup group : participantGroups) {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getPartipiciantGroup())) {
 				final BusinessGroup toAddGroup = group;
 //				seems not to work, but would be the way to go!
@@ -122,14 +124,15 @@ public class GroupAddManager extends BasicManager {
 					}});
 				participantGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
-				if (!notifyAboutAdd.contains(groupKey) && mailKeys.contains(groupKey)) notifyAboutAdd.add(groupKey);
+				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
 			}			
 		}
 		resultTextArgs[1] = participantGroupnames.substring(0, participantGroupnames.length() > 0 ? participantGroupnames.length() - 2 : 0);
 		
 		// send notification mails
-		for (Long notifKey : notifyAboutAdd) {
-			BusinessGroup group = bgm.loadBusinessGroup(notifKey, false);
+
+		List<BusinessGroup> notifGroups = bgs.loadBusinessGroups(notifyAboutAdd);
+		for (BusinessGroup group : notifGroups) {
 			MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
 			MailerResult mailerResult = mailer.sendMail(null, ident, null, null, mailTemplate, null);

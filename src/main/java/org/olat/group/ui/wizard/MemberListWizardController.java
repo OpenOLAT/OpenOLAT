@@ -30,7 +30,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
@@ -50,11 +52,12 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupArchiver;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.manager.BusinessGroupArchiver;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -75,7 +78,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class MemberListWizardController extends BasicController {
 					
-	private BGContext context;
+	private OLATResource resource;
 	private ChoiceController colsChoiceController;
 	private Choice groupsOrAreaChoice;		
 	private ChoiceController outputChoiceController;
@@ -103,6 +106,8 @@ public class MemberListWizardController extends BasicController {
 	private static final String usageIdentifyer = MemberListWizardController.class.getCanonicalName();
 	private Translator propertyHandlerTranslator;
 	
+	private final BusinessGroupService businessGroupService;
+	private final BGAreaManager areaManager;
 	
 	/**
 	 * 
@@ -111,10 +116,12 @@ public class MemberListWizardController extends BasicController {
 	 * @param context
 	 * @param type
 	 */
-	public MemberListWizardController(UserRequest ureq, WindowControl wControl, BGContext context, String type) {
+	public MemberListWizardController(UserRequest ureq, WindowControl wControl, OLATResource resource, String type) {
 		super(ureq, wControl);
 		
-		this.context = context;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		this.resource = resource;
 		propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		
 		if(GROUPS_MEMBERS.equals(type) || AREAS_MEMBERS.equals(type)) {
@@ -128,7 +135,7 @@ public class MemberListWizardController extends BasicController {
 				
 		//init wizard step 1
 		groupsOrAreaChoice = new Choice("groupsOrAreaChoice", getTranslator());
-		groupsOrAreaChoice.setTableDataModel(getGroupOrAreaChoiceTableDataModel(context));
+		groupsOrAreaChoice.setTableDataModel(getGroupOrAreaChoiceTableDataModel(resource));
 		groupsOrAreaChoice.addListener(this);
 		groupsOrAreaChoice.setSubmitKey("next");
 		
@@ -214,10 +221,10 @@ public class MemberListWizardController extends BasicController {
 	 * @param context
 	 * @return a GenericObjectArrayTableDataModel instead of a TableDataModel since it has to provide a setValueAt method.
 	 */
-	private GenericObjectArrayTableDataModel getGroupOrAreaChoiceTableDataModel(BGContext context) {
-		List objectArrays = new ArrayList();
+	private GenericObjectArrayTableDataModel getGroupOrAreaChoiceTableDataModel(OLATResource resource) {
+		List<Object[]> objectArrays = new ArrayList<Object[]>();
 		if (GROUPS_MEMBERS.equals(wizardType)) {
-			List<BusinessGroup> groups = BGContextManagerImpl.getInstance().getGroupsOfBGContext(context);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
 			Collections.sort(groups, new Comparator() {
 				@Override
 				public int compare(Object o1, Object o2) {
@@ -226,15 +233,14 @@ public class MemberListWizardController extends BasicController {
 					return g1.getName().compareTo(g2.getName());
 				}
 			});
-			for (Iterator iter = groups.iterator(); iter.hasNext();) {
-				BusinessGroup group = (BusinessGroup) iter.next();
+			for (BusinessGroup group : groups) {
 				Object[] groupChoiceRowData = new Object[2];
 				groupChoiceRowData[0] = new Boolean(true);
 				groupChoiceRowData[1] = new ObjectWrapper(group);
 				objectArrays.add(groupChoiceRowData);
 			}
 		} else if (AREAS_MEMBERS.equals(wizardType)) {
-			List<BGArea> areas = BGAreaManagerImpl.getInstance().findBGAreasOfBGContext(context);
+			List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
 			Collections.sort(areas, new Comparator() {
 				@Override
 				public int compare(Object o1, Object o2) {
@@ -351,10 +357,13 @@ public class MemberListWizardController extends BasicController {
 		String archiveType = getArchiveType();
 		List<BGArea> areaList = getAreaList();
 		
+		Locale userLocale = ureq.getLocale();
+    String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
+		
 		if(GROUPS_MEMBERS.equals(wizardType)) {
-			outputFile = BusinessGroupArchiver.getInstance().archiveGroupMembers(context, columnList, groupList, archiveType, ureq);	
+			outputFile = businessGroupService.archiveGroupMembers(resource, columnList, groupList, archiveType, userLocale, charset);	
 		} else if(AREAS_MEMBERS.equals(wizardType)) {
-			outputFile = BusinessGroupArchiver.getInstance().archiveAreaMembers(context, columnList, areaList, archiveType, ureq);
+			outputFile = businessGroupService.archiveAreaMembers(resource, columnList, areaList, archiveType, userLocale, charset);
 		}			
 		return outputFile;
 	}	

@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import org.olat.admin.SystemAdminMainController;
 import org.olat.admin.UserAdminMainController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -45,13 +46,12 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.context.BGContextManagementController;
 import org.olat.group.ui.main.BGMainController;
-import org.olat.home.InviteeHomeMainController;
 import org.olat.home.HomeMainController;
+import org.olat.home.InviteeHomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
@@ -92,11 +92,11 @@ public class ControllerFactory {
 
 		} else if (OresHelper.isOfType(olatResourceable, BusinessGroup.class)) {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BusinessGroup, but is in guest group " + roles);
-			BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			BusinessGroup bg = bgm.loadBusinessGroup(olatResourceable.getResourceableId(), exceptIfNoneFound);
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			BusinessGroup bg = bgs.loadBusinessGroup(olatResourceable.getResourceableId());
 			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 			// check if allowed to start (must be member or admin)
-			if (isOlatAdmin || bgm.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
+			if (isOlatAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bg)) {	
 				// only olatadmins or admins of this group can administer this group
 				return BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bg, isOlatAdmin,
 						initialViewIdentifier);

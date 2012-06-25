@@ -64,13 +64,12 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.editor.CourseEditorEnv;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
+import org.olat.resource.OLATResource;
 import org.olat.shibboleth.ShibbolethModule;
 /**
  * Description:<br>
@@ -350,14 +349,14 @@ public class ConditionConfigEasyController extends FormBasicController implement
 
 		} else if (source == createGroupsLink) {
 			
-			BGContext bgContext = getDefaultBGContext();
+			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
 			String[] csvGroupName = easyGroupTE.isEmpty() ? new String[0] : easyGroupTE.getValue().split(",");
 			// determine if bulkmode or not
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
 					ureq, getWindowControl(),  true,
-					bgContext, true, easyGroupTE.getValue()
+					courseResource, true, easyGroupTE.getValue()
 			);
 			listenTo(groupCreateCntrllr);
 
@@ -390,11 +389,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		} else if (source == createAreasLink) {
 			
 			String[] csvAreaName = easyAreaTE.isEmpty() ? new String[0] : easyAreaTE.getValue().split(",");
-						
+			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
 					ureq, getWindowControl(), 
-					getDefaultBGContext(), true, easyAreaTE.getValue()
+					courseResource, true, easyAreaTE.getValue()
 			);
 			listenTo(areaCreateCntrllr);
 
@@ -414,11 +413,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			 */
 			
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
-			
+			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
 					ureq, getWindowControl(), true,
-					getDefaultBGContext(), true, csvGroupName[0]
+					courseResource, true, csvGroupName[0]
 			);
 			listenTo(groupCreateCntrllr);
 			
@@ -436,11 +435,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			 * or more areas at once.
 			 */
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
-			
+			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(areaCreateCntrllr);
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
 					ureq, getWindowControl(), 
-					getDefaultBGContext(), true, csvAreaName[0]
+					courseResource, true, csvAreaName[0]
 			);
 			listenTo(areaCreateCntrllr);
 			
@@ -453,22 +452,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			cmc.activate();
 			
 		}
-	}
-
-	/*
-	 * find default context if one is present
-	 */
-	private BGContext getDefaultBGContext() {
-		CourseGroupManager courseGrpMngr = courseEditorEnv.getCourseGroupManager();
-		List courseLGContextes = courseGrpMngr.getLearningGroupContexts();
-		for (Iterator iter = courseLGContextes.iterator(); iter.hasNext();) {
-			BGContext bctxt = (BGContext) iter.next();
-			if (bctxt.isDefaultContext()) { return bctxt; }
-		}
-		return null;
-		// not found! -> disable easy creation of groups! (no workflows for choosing
-		// contexts
-
 	}
 
 	@Override
@@ -672,8 +655,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 							"errorgroupitem", getTranslator(), vc_errorPage
 					);
 
-					boolean hasDefaultContext = getDefaultBGContext() != null;
-					if (hasDefaultContext) {
+
 						groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
 						// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 						fixGroupError = new FormLinkImpl("error.fix", "create");
@@ -694,13 +676,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 						} else {
 							fixGroupError.setUserObject(new String[] { csvMissGrps });
 						}
-					} else {
-						// fix helper link not possible -> errortext only
-						groupChooseSubContainer.setErrorKey(labelKey, params);
-					}
-					/*
-					 * 
-					 */
+
 					groupChooseSubContainer.showError(true);
 				} else {
 					// no more errors
@@ -734,8 +710,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 							"errorareaitem", getTranslator(), vc_errorPage
 					);
 					
-					boolean hasDefaultContext = getDefaultBGContext() != null;
-					if (hasDefaultContext) {
+
 						areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
 						// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 						fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
@@ -756,10 +731,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 						} else {
 							fixAreaError.setUserObject(new String[] { csvMissAreas });
 						}
-					} else {
-						// fixing help link not possible -> text only
-						areaChooseSubContainer.setErrorKey(labelKey, params);
-					}
+
 					/*
 					 * 
 					 */

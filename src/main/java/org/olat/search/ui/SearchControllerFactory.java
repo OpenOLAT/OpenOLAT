@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.search.ResultDocument;
 import org.olat.core.commons.services.search.ui.ResultController;
 import org.olat.core.commons.services.search.ui.ResultControllerCreator;
@@ -46,7 +47,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.service.document.ContextHelpDocument;
@@ -137,8 +138,8 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 					return user.getProperty(UserConstants.LASTNAME, locale) + " " + user.getProperty(UserConstants.FIRSTNAME, locale) ;
 				}
 				if ("BusinessGroup".equals(tokenType)) {
-					BusinessGroup bg =BusinessGroupManagerImpl.getInstance().loadBusinessGroup(Long.parseLong(tokenKey), true);
-					return bg.getName();
+					BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(Long.parseLong(tokenKey));
+					return bg == null ? "" : bg.getName();
 				}
 				
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);

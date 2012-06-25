@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -52,14 +53,11 @@ import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
@@ -100,15 +98,15 @@ public class CourseGroupWebService {
 	
 	@Path("{groupKey}/folder")
 	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return null;
 			}
 		}
@@ -140,15 +138,15 @@ public class CourseGroupWebService {
 	 */
 	@Path("{groupKey}/forum")
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
 		if(bg == null) {
 			return null;
 		}
 		
 		if(!isGroupManager(request)) {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			if(!bgm.isIdentityInBusinessGroup(identity, bg)) {
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return null;
 			}
 		}
@@ -175,19 +173,14 @@ public class CourseGroupWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@Context HttpServletRequest request) {
 		CourseGroupManager groupManager = PersistingCourseGroupManager.getInstance(course);
-		List<BGContext> groupContexts = groupManager.getLearningGroupContexts();
-		if(groupContexts.size() == 1) {
-			BGContextManager contextManager = BGContextManagerImpl.getInstance();
-			List<BusinessGroup> groups = contextManager.getGroupsOfBGContext(groupContexts.get(0));
+		List<BusinessGroup> groups = groupManager.getAllLearningGroupsFromAllContexts();
 			
-			int count = 0;
-			GroupVO[] vos = new GroupVO[groups.size()];
-			for(BusinessGroup group:groups) {
-				vos[count++] = ObjectFactory.get(group);
-			}
-			return Response.ok(vos).build();
+		int count = 0;
+		GroupVO[] vos = new GroupVO[groups.size()];
+		for(BusinessGroup group:groups) {
+			vos[count++] = ObjectFactory.get(group);
 		}
-		return Response.serverError().status(Status.NOT_FOUND).build();
+		return Response.ok(vos).build();
 	}
 	
 	/**
@@ -216,23 +209,17 @@ public class CourseGroupWebService {
 		}
 
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		CourseGroupManager groupManager = PersistingCourseGroupManager.getInstance(course);
-		List<BGContext> groupContexts = groupManager.getLearningGroupContexts();
-		if(groupContexts.size() == 1) {
-			BGContext context = groupContexts.get(0);
-			String name = group.getName();
-			String desc = group.getDescription();
-			Integer min = normalize(group.getMinParticipants());
-			Integer max = normalize(group.getMaxParticipants());
-			
-			BusinessGroup bg = bgm.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, ureq.getIdentity(), name, desc, min, max, false, false, context);
-			GroupVO savedVO = ObjectFactory.get(bg);
-			return Response.ok(savedVO).build();
-		} else {
-			//This case is ignored in the controller. Why???
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
+    BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
+
+		String name = group.getName();
+		String desc = group.getDescription();
+		Integer min = normalize(group.getMinParticipants());
+		Integer max = normalize(group.getMaxParticipants());
+		
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(course);
+		BusinessGroup bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, BusinessGroup.TYPE_LEARNINGROUP, min, max, false, false, resource);
+		GroupVO savedVO = ObjectFactory.get(bg);
+		return Response.ok(savedVO).build();
 	}
 	
 	/**

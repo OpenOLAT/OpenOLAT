@@ -135,7 +135,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	 */
 	@Before
 	public void setUp() throws Exception {
-			BusinessGroupManager bgManager = BusinessGroupManagerImpl.getInstance();
+			BusinessGroupManagerImpl bgManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 			// Identities
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
 			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
@@ -192,7 +192,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		suiteIsAborted = true;
 
 		BusinessGroupManagerImpl bgManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
-		BGContextManager bgContextManager = BGContextManagerImpl.getInstance();
+		BGContextManagerImpl bgContextManager = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 		BGContext ctxA = bgContextManager.createAndPersistBGContext("DefaultA", "Empty", BusinessGroup.TYPE_LEARNINGROUP, id1, true);
 		BGContext ctxB = bgContextManager.createAndPersistBGContext("DefaultB", "Empty", BusinessGroup.TYPE_LEARNINGROUP, id1, true);
 
@@ -307,7 +307,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * id1
 		 */
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
 		assertTrue("2 BuddyGroups owned by id1", sqlRes.size() == 2);
 		for (int i = 0; i < sqlRes.size(); i++) {
@@ -386,7 +386,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * id2
 		 */
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 
 		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -444,7 +444,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		/*
 		 * id2
 		 */
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 		sqlRes = myManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -541,7 +541,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	@Test
 	public void testMoveIdenityFromWaitingListToParticipant() throws Exception {
 		System.out.println("testMoveIdenityFromWaitingListToParticipant: start...");
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 		// Check that 'wg4' is not in participant list
 		assertFalse("Identity is allready in participant-list, remove it(dbsetup?)", myManager
 				.isIdentityInBusinessGroup(wg4, bgWithWaitingList));
@@ -561,7 +561,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	@Test
 	public void testMoveRegisteredIdentityFromWaitingToParticipant() throws Exception {
 		System.out.println("testMoveRegisteredIdentityFromWaitingToParticipant: start...");
-		BusinessGroupManager myManager = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupManagerImpl myManager = (BusinessGroupManagerImpl)BusinessGroupManagerImpl.getInstance();
 		// Add a user to waiting-list which is allready in participant-list and try
 		// and try to move this user => user will be removed from waiting-list
 		// Add again wg2
@@ -588,7 +588,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		doTestDeleteBusinessGroup(false);
 	}
 	private void doTestDeleteBusinessGroup(boolean withWaitingList) {
-		BGContextManager bgcm = BGContextManagerImpl.getInstance();
+		BGContextManagerImpl bgcm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 		BGContext groupContext = bgcm.createAndPersistBGContext("c1delete", "c1delete", BusinessGroup.TYPE_LEARNINGROUP, null, true);
 
 		BusinessGroup deleteTestGroup = BusinessGroupManagerImpl.getInstance().createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, "deleteTestGroup-1",
@@ -625,14 +625,14 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 
 	// Helper methods
 	// ///////////////
-	private void setupWaitingList(BusinessGroupManager bgManager) {
+	private void setupWaitingList(BusinessGroupManagerImpl bgManager) {
 		if (bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, id1, null).size() == 0) {
 			// create business-group with waiting-list
 			String bgWithWaitingListName = "Group with WaitingList";
 			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
 			Boolean enableWaitinglist = new Boolean(true);
 			Boolean enableAutoCloseRanks = new Boolean(true);
-			BGContextManager bgcm = BGContextManagerImpl.getInstance();
+			BGContextManagerImpl bgcm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 			BGContext groupContext = bgcm.createAndPersistBGContext("c1name", "c1desc", BusinessGroup.TYPE_LEARNINGROUP, null, true);
 			System.out.println("testAddToWaitingListAndFireEvent: groupContext=" + groupContext);
 			bgWithWaitingList = bgManager.createAndPersistBusinessGroup(BusinessGroup.TYPE_LEARNINGROUP, id1, bgWithWaitingListName,

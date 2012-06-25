@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.bookmark.AddAndEditBookmarkController;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.core.CoreSpringFactory;
@@ -117,6 +115,7 @@ import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -198,6 +197,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Link currentUserCountLink;
 	private int currentUserCount;
 	
+	private final BusinessGroupService businessGroupService;
+	
 	/**
 	 * Constructor for the run main controller
 	 * 
@@ -232,6 +233,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			final boolean offerBookmark, final boolean showCourseConfigLink, final boolean launchFromSite) {
 
 		super(ureq, wControl);
+		
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		this.course = course;
 		addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -768,13 +771,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// launch the group in a new top nav tab
 			String groupIdent = cmd.substring(CMD_START_GROUP_PREFIX.length());
 			Long groupKey = new Long(Long.parseLong(groupIdent));
-			BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
-			BusinessGroup group = groupManager.loadBusinessGroup(groupKey, false);
+			BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
 			// check if the group still exists and the user is really in this group
 			// (security, changed group)
-			if (group != null && groupManager.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
-				BaseSecurity securityManager = BaseSecurityManager.getInstance();
-				boolean isCoach = securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), group.getOwnerGroup());
+			if (group != null && businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
 				// create group without admin flag enabled eventhough the user might be
 				// coach. the flag is not needed here
 				// since the groups knows itself if the user is coach and the user sees

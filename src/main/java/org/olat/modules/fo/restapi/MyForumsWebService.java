@@ -63,9 +63,8 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
-import org.olat.group.SearchBusinessGroupParams;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -214,11 +213,11 @@ public class MyForumsWebService {
 		}
 		
 		//start found forums in groups
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		params.addTools(CollaborationTools.TOOL_FORUM);
-		List<BusinessGroup> groups = bgm.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
 		//list forum keys
 		List<Long> groupIds = new ArrayList<Long>();
 		Map<Long,BusinessGroup> groupsMap = new HashMap<Long,BusinessGroup>();

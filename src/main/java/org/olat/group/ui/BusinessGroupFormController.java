@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -39,7 +40,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupFactory;
+import org.olat.group.BusinessGroupService;
+import org.olat.resource.OLATResource;
 
 /**
  * Implements a Business group creation dialog using FlexiForms.
@@ -110,6 +112,10 @@ public class BusinessGroupFormController extends FormBasicController {
 
 	/** The value for the autoCloseRanks checkbox. */
 	String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
+	
+	
+	private OLATResource resource;//TODO gm
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * Creates this controller.
@@ -123,6 +129,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.businessGroup = businessGroup;
 		this.minMaxEnabled = minMaxEnabled;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq);
 	}
 	
@@ -139,6 +146,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		this.businessGroup = businessGroup;
 		this.minMaxEnabled = minMaxEnabled;
 		this.bulkMode = bulkMode;
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		initForm(ureq); // depends on bulkMode flag
 	}
 
@@ -347,11 +355,11 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @return
 	 */
 	private boolean checkIfDuplicateGroupName() {
-		Set names = new HashSet();
+		Set<String> names = new HashSet<String>();
 		names.add(businessGroupName.getValue());
 	  //group name changes to an already used name, and is a learning group
-		if(businessGroup!=null && businessGroup.getGroupContext()!=null && !businessGroup.getName().equals(businessGroupName.getValue())
-				&& BusinessGroupFactory.checkIfOneOrMoreNameExistsInContext(names, businessGroup.getGroupContext())) {	
+		if(businessGroup!=null && !businessGroup.getName().equals(businessGroupName.getValue())
+				&& businessGroupService.checkIfOneOrMoreNameExistsInContext(names, resource)) {	
 			return true;
 		}
 		return false;

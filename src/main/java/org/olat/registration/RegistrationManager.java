@@ -36,7 +36,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -219,7 +219,7 @@ public class RegistrationManager extends BasicManager {
 		// check if the user is already registered
 		// we also try to find it in the temporarykey list
 		List tks = db.find("from org.olat.registration.TemporaryKeyImpl as r where r.emailAddress = ?", email,
-				Hibernate.STRING);
+				StandardBasicTypes.STRING);
 		if ((tks == null) || (tks.size() != 1)) { // no user found, create a new one
 			tk = register(email, ip, action);
 		} else {
@@ -250,7 +250,7 @@ public class RegistrationManager extends BasicManager {
 	public TemporaryKeyImpl loadTemporaryKeyByEmail(String email) {
 		DB db = DBFactory.getInstance();
 		List tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.emailAddress = ?", email,
-				Hibernate.STRING);
+				StandardBasicTypes.STRING);
 		if (tks.size() == 1) {
 			return (TemporaryKeyImpl) tks.get(0);
 		} else {
@@ -268,7 +268,7 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public List<TemporaryKey> loadTemporaryKeyByAction(String action) {
 		DB db = DBFactory.getInstance();
-		List<TemporaryKey> tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.regAction = ?", action, Hibernate.STRING);
+		List<TemporaryKey> tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.regAction = ?", action, StandardBasicTypes.STRING);
 		if (tks.size() > 0) {
 			return tks;
 		} else {
@@ -286,7 +286,7 @@ public class RegistrationManager extends BasicManager {
 	public TemporaryKeyImpl loadTemporaryKeyByRegistrationKey(String regkey) {
 		DB db = DBFactory.getInstance();
 		List tks = db.find("from r in class org.olat.registration.TemporaryKeyImpl where r.registrationKey = ?", regkey,
-				Hibernate.STRING);
+				StandardBasicTypes.STRING);
 		if (tks.size() == 1) {
 			return (TemporaryKeyImpl) tks.get(0);
 		} else {

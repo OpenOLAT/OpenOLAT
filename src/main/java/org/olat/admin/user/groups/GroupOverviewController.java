@@ -28,6 +28,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -57,6 +58,7 @@ import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGMailHelper;
@@ -122,6 +124,7 @@ public class GroupOverviewController extends BasicController {
 		tblCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_UNSUBSCRIBE, "table.user.unsubscribe", translate("table.user.unsubscribe")));
 
 		//build data model
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		BaseSecurity sm = BaseSecurityManager.getInstance();
 		List<Object[]> userGroups = new ArrayList<Object[]>();
@@ -131,9 +134,9 @@ public class GroupOverviewController extends BasicController {
 			bgTypes.add(BusinessGroup.TYPE_LEARNINGROUP);
 			bgTypes.add(BusinessGroup.TYPE_RIGHTGROUP);
 			for (String bgType : bgTypes) {				
-				List<BusinessGroup> ownedGroups = bgm.findBusinessGroupsOwnedBy(bgType, identity, null);
-				List<BusinessGroup> attendedGroups = bgm.findBusinessGroupsAttendedBy(bgType, identity, null);
-				List<BusinessGroup> waitingGroups = bgm.findBusinessGroupsWithWaitingListAttendedBy(bgType, identity, null);
+				List<BusinessGroup> ownedGroups = bgs.findBusinessGroupsOwnedBy(bgType, identity, null);
+				List<BusinessGroup> attendedGroups = bgs.findBusinessGroupsAttendedBy(bgType, identity, null);
+				List<BusinessGroup> waitingGroups = bgs.findBusinessGroupsWithWaitingListAttendedBy(bgType, identity, null);
 				//using HashSet to remove duplicate entries
 				HashSet<BusinessGroup> allGroups = new HashSet<BusinessGroup>();
 				allGroups.addAll(ownedGroups);
@@ -211,8 +214,7 @@ public class GroupOverviewController extends BasicController {
 				int rowid = te.getRowId();
 				BusinessGroup currBusinessGroup = tableDataModel.getBusinessGroupAtRow(rowid);
 				if (actionid.equals(TABLE_ACTION_LAUNCH)) {
-					BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-					currBusinessGroup = bgm.loadBusinessGroup(currBusinessGroup.getKey(), false);
+					currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(currBusinessGroup);
 					if (currBusinessGroup==null) {
 						//group seems to be removed meanwhile, reload table and show error
 						showError("group.removed");

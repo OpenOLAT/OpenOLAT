@@ -23,6 +23,8 @@ import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseModule;
 import org.olat.group.site.GroupsManagementSite;
 import org.olat.group.site.GroupsSite;
 
@@ -36,6 +38,8 @@ import org.olat.group.site.GroupsSite;
  * @author gnaegi
  */
 public class BusinessGroupModule extends AbstractOLATModule {
+
+	public static String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
 	
 	/**
 	 * [used by spring]

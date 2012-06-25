@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC
 	"-//Hibernate/Hibernate Mapping DTD//EN"
-	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping default-lazy="false">
 	<class name="org.olat.group.BusinessGroupImpl" table="o_gp_business">
+	
 		<cache usage="read-write" />
 		<!--
 		key (see Interface org.olat.core.commons.persistence.Persistable),
@@ -27,36 +28,18 @@
   		lastUsage helps the SYSTEMADMIN to find the BusinessGroups
   		which were idle for some time.
   		-->
-  		<property  name="lastUsage" column="lastusage" type="timestamp" />   
- 		
-		<property name="type">
-			<column name="businessgrouptype" unique="false" length="15" not-null="true" index="gp_type_idx"/>	
-		</property>
-			 		
-		<property name="name" type="string">
-			<column name="groupname" unique="false" length="255" index="gp_name_idx"/>	
-		</property>
-			
-		<property name="description" type="string">
-			<column name="descr" length="16777210" not-null="false"/>
-		</property>
-
-		<property name="minParticipants">
-			<column name="minparticipants" not-null="false"/>
-		</property>
-
-		<property name="maxParticipants">
-			<column name="maxparticipants" not-null="false"/>
-		</property>
+  		<property name="lastUsage" column="lastusage" type="timestamp" />   
+		<property name="type" column="businessgrouptype" unique="false" length="15" not-null="true" index="gp_type_idx"/>		 		
+		<property name="name" type="string" column="groupname" unique="false" length="255" index="gp_name_idx"/>	
+		<property name="description" type="string" column="descr" length="16777210" not-null="false"/>
+		<property name="minParticipants" column="minparticipants" not-null="false"/>
+		<property name="maxParticipants" column="maxparticipants" not-null="false"/>
+		<property name="waitingListEnabled" type="boolean" column="waitinglist_enabled" unique="false" not-null="false"/>	
+		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>	
 		
-		<property name="waitingListEnabled" type="boolean">
-			<column name="waitinglist_enabled" unique="false" not-null="false"/>	
-		</property>
-
-		<property name="autoCloseRanksEnabled" type="boolean">
-			<column name="autocloseranks_enabled" unique="false" not-null="false"/>	
-		</property>
+		<property name="groupContextKey" type="long" column="groupcontext_fk" />	
 		
+		<!--
 		<many-to-one 
  		   	name="groupContext" 
     		class="org.olat.group.context.BGContextImpl"
@@ -67,6 +50,7 @@
 				not-null="false" 
 				unique="false" />    	
     	</many-to-one> 
+    	-->
 
 		<!--
 		Implementation Note:

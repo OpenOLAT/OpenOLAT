@@ -26,7 +26,6 @@
 package org.olat.group;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,7 +38,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.group.context.BGContext;
 import org.olat.group.ui.BGConfigFlags;
-import org.olat.resource.OLATResource;
 
 /**
  * Description: <br>
@@ -98,7 +96,7 @@ public interface BusinessGroupManager {
 	 *          applied
 	 * @return list of BusinessGroups, may be an empty list.
 	 */
-	public List findBusinessGroupsOwnedBy(String type, Identity identity, BGContext bgContext);
+	//public List findBusinessGroupsOwnedBy(String type, Identity identity, BGContext bgContext);
 
 	/**
 	 * find the list of BuddyGroups associated with the supplied identity, where
@@ -111,19 +109,19 @@ public interface BusinessGroupManager {
 	 *          applied
 	 * @return list of BuddyGroups, may be an empty list.
 	 */
-	public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identity, BGContext bgContext);
+	//public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identity, BGContext bgContext);
 
-	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext);
+	//public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext);
 	
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
-			int firstResult, int maxResults);
+	//public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity, boolean ownedById, boolean attendedById, BGContext bgContext,
+	//		int firstResult, int maxResults);
 
 	
 	/**
 	 * @param currBusinessGroup
 	 * @return The group or null if not found
 	 */
-	public BusinessGroup findBusinessGroup(SecurityGroup secGroup);
+	//public BusinessGroup findBusinessGroup(SecurityGroup secGroup);
 
 	/**
 	 * 
@@ -132,14 +130,14 @@ public interface BusinessGroupManager {
 	 *          specific type
 	 * @return
 	 */
-	public List<BusinessGroup> findBusinessGroup(String nameOrDesc, String type);
+	//public List<BusinessGroup> findBusinessGroup(String nameOrDesc, String type);
 	
 	/**
 	 * commit the changes on a BusinessGroup instance to the persistence store
 	 * 
 	 * @param updatedBusinessGroup
 	 */
-	public void updateBusinessGroup(BusinessGroup updatedBusinessGroup);
+	//public void updateBusinessGroup(BusinessGroup updatedBusinessGroup);
 
 	/**
 	 * delete a businessgroup from the persistence store
@@ -177,7 +175,7 @@ public interface BusinessGroupManager {
 	 *          group context (e.g. buddygroups)
 	 * @return true if identity is in group, false otherwhise
 	 */
-	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, BGContext groupContext);
+	//public boolean isIdentityInBusinessGroup(Identity identity, String groupName, BGContext groupContext);
 
 	/**
 	 * @param identity
@@ -185,17 +183,17 @@ public interface BusinessGroupManager {
 	 * @return true if the given identity is in one or both security groups
 	 *         (participants, owners)
 	 */
-	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
+	//public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
 
-	public int countContacts(Identity identity);
+	//public int countContacts(Identity identity);
 	
-	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults);
+	//public List<Identity> findContacts(Identity identity, int firstResult, int maxResults);
 
 	/**
 	 * @param currBusinessGroup
 	 * @return The reloaded group
 	 */
-	public BusinessGroup loadBusinessGroup(BusinessGroup currBusinessGroup);
+	//public BusinessGroup loadBusinessGroup(BusinessGroup currBusinessGroup);
 	
 
 
@@ -205,7 +203,7 @@ public interface BusinessGroupManager {
 	 *          null if not found
 	 * @return THe loaded group
 	 */
-	public BusinessGroup loadBusinessGroup(Long groupKey, boolean strict);
+	//public BusinessGroup loadBusinessGroup(Long groupKey, boolean strict);
 	
 	/**
 	 * @param resource The OLAT resource
@@ -214,7 +212,7 @@ public interface BusinessGroupManager {
 	 * @return The loaded group
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
-	public BusinessGroup loadBusinessGroup(OLATResource resource, boolean strict);
+	//public BusinessGroup loadBusinessGroup(OLATResource resource, boolean strict);
 
 	/**
 	 * Create and persist a new business group based on a source group.
@@ -323,7 +321,7 @@ public interface BusinessGroupManager {
 	 * @param context
 	 * @param fExportFile
 	 */
-	public void exportGroups(BGContext context, File fExportFile);
+	//public void exportGroups(BGContext context, File fExportFile);
 
 	/**
 	 * Import previousely exported group definitions.
@@ -331,7 +329,7 @@ public interface BusinessGroupManager {
 	 * @param context
 	 * @param fGroupExportXML
 	 */
-	public void importGroups(BGContext context, File fGroupExportXML);
+	//public void importGroups(BGContext context, File fGroupExportXML);
 
 	/**
 	 * Adds a user to a waiting-list of a group and does all the magic that needs to
@@ -389,12 +387,12 @@ public interface BusinessGroupManager {
 	 * @param bgContext
 	 * @return List of BusinessGroup objects
 	 */
-	public List findBusinessGroupsWithWaitingListAttendedBy(String groupType, Identity identity, BGContext bgContext);
+	//public List findBusinessGroupsWithWaitingListAttendedBy(String groupType, Identity identity, BGContext bgContext);
 
 	//fxdiff VCRP-1,2: access control of resources
-	public List<BusinessGroup> findBusinessGroups(Collection<String> types, Identity identityP, Long id, String name, String description, String owner);
+	//public List<BusinessGroup> findBusinessGroups(Collection<String> types, Identity identityP, Long id, String name, String description, String owner);
 	
-	public List<BusinessGroup> findBusinessGroups(Collection<Long> keys);
+	//public List<BusinessGroup> findBusinessGroups(Collection<Long> keys);
 	
 	/**
 	 * Get postion of an idenity on a certain waiting-list 
@@ -408,7 +406,7 @@ public interface BusinessGroupManager {
 	 * Get all business-groups.
 	 * @return List of BusinessGroup objects
 	 */
-	public List<BusinessGroup> getAllBusinessGroups();
+	//public List<BusinessGroup> getAllBusinessGroups();
 
   /**
    * Add a list of identity as owner to a business-group.
@@ -480,15 +478,15 @@ public interface BusinessGroupManager {
 	//fxdiff VCRP-1,2: access control of resources
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
-	public void exportGroup(BusinessGroup businessGroup, File file);
+	//public void exportGroup(BusinessGroup businessGroup, File file);
 
-	public void archiveGroups(BGContext context, File exportFile);
+	//public void archiveGroups(BGContext context, File exportFile);
 
 	/**
 	 * Set certain business-group as active (set last-usage and delete time stamp for 'SEND_DELETE_EMAIL_ACTION' in LifeCycleManager):
 	 * @param currBusinessGroup
 	 */
-	public BusinessGroup setLastUsageFor(BusinessGroup currBusinessGroup);
+	//public BusinessGroup setLastUsageFor(BusinessGroup currBusinessGroup);
 
 	/**
 	 * Creates business-groups with certain name when no group in a given BGContext with this names already exists.
@@ -501,8 +499,8 @@ public interface BusinessGroupManager {
 	 * @param enableAutoCloseRanks
 	 * @return  Returns list of created business-groups or null if any groups-name already exist.
 	 */
-	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, BGContext bgContext, String bgDesc, Integer bgMin, Integer bgMax,
-			Boolean enableWaitinglist, Boolean enableAutoCloseRanks);
+	//public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, BGContext bgContext, String bgDesc, Integer bgMin, Integer bgMax,
+	//		Boolean enableWaitinglist, Boolean enableAutoCloseRanks);
 
 	/**
 	 * Extension-point method to register objects which have deletable group-data.

@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.core.commons.persistence.DBFactory;
@@ -157,7 +158,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		List props = DBFactory.getInstance().find(
 			"from v in class org.olat.properties.Property where v.identity=? and v.category=? and v.name=? and v.grp is null and v.resourceTypeName is null and v.resourceTypeId is null", 
 			new Object[] {identity.getKey(), category, name},
-			new Type[] {Hibernate.LONG, Hibernate.STRING, Hibernate.STRING}
+			new Type[] {StandardBasicTypes.LONG, StandardBasicTypes.STRING, StandardBasicTypes.STRING}
 		);
 
 		if (props == null || props.size() != 1) {
@@ -208,7 +209,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		if (identity != null) {
 			query.append("v.identity = ?");
 			objs.add(identity.getKey());
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 			previousParam = true;
 		}
 		
@@ -216,7 +217,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.grp = ?");
 			objs.add(grp.getKey());
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 			previousParam = true;
 		}
 		
@@ -224,7 +225,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.resourceTypeName = ?");
 			objs.add(resourceTypeName);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 			previousParam = true;
 		}
 		
@@ -232,7 +233,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append(" v.resourceTypeId = ?");
 			objs.add(resourceTypeId);
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 			previousParam = true;
 		}
 				
@@ -240,7 +241,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.category = ?");
 			objs.add(category);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 			previousParam = true;
 		}
 		
@@ -248,7 +249,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.name = ?");
 			objs.add(name);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		}
 		
 		return DBFactory.getInstance().find(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));
@@ -273,7 +274,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		if (identity != null) {
 			query.append("v.identity = ?");
 			objs.add(identity.getKey());
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 			previousParam = true;
 		}
 		
@@ -281,7 +282,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.grp = ?");
 			objs.add(grp.getKey());
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 			previousParam = true;
 		}
 		
@@ -289,7 +290,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.resourceTypeName = ?");
 			objs.add(resourceable.getResourceableTypeName());
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 
 			query.append(" and v.resourceTypeId");
 			if (resourceable.getResourceableId() == null) {
@@ -297,7 +298,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			} else {
 				query.append(" = ?");
 				objs.add(resourceable.getResourceableId());
-				types.add(Hibernate.LONG);
+				types.add(StandardBasicTypes.LONG);
 			}
 			previousParam = true;
 		}
@@ -306,7 +307,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.category = ?");
 			objs.add(category);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 			previousParam = true;
 		}
 		
@@ -314,7 +315,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			if (previousParam) query.append(" and ");
 			query.append("v.name = ?");
 			objs.add(name);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		}
 		
 		DBFactory.getInstance().delete(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));	
@@ -358,21 +359,21 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		if (identity != null) {
 			query.append("v.identity = ?");
 			objs.add(identity.getKey());
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 		} else query.append("v.identity is null");
 
 		query.append(" and ");
 		if (grp != null) {
 			query.append("v.grp = ?");
 			objs.add(grp.getKey());
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 		} else query.append("v.grp is null");
 		
 		query.append(" and ");
 		if (resourceTypeName != null) {
 			query.append("v.resourceTypeName = ?");
 			objs.add(resourceTypeName);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		}
 		else query.append("v.resourceTypeName is null");
 
@@ -380,7 +381,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		if (resourceTypeId != null) {
 			query.append("v.resourceTypeId = ?");
 			objs.add(resourceTypeId);
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 		}
 		else query.append("v.resourceTypeId is null");
 		
@@ -388,14 +389,14 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		if (category != null) {
 			query.append("v.category = ?");
 			objs.add(category);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		} else query.append("v.category is null");
 		
 		query.append(" and ");
 		if (name != null) {
 			query.append("v.name = ?");
 			objs.add(name);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		} else query.append("v.name is null");
 		
 		return DBFactory.getInstance().find(query.toString(), objs.toArray(), (Type[])types.toArray(new Type[types.size()]));
@@ -441,7 +442,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			query.append(" and ");
 			query.append("p.resourceTypeName = ?");
 			objs.add(resourceTypeName);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		} else if (matchNullValues) {
 			query.append(" and p.resourceTypeName is null");
 		}
@@ -450,7 +451,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			query.append(" and ");
 			query.append("p.resourceTypeId = ?");
 			objs.add(resourceTypeId);
-			types.add(Hibernate.LONG);
+			types.add(StandardBasicTypes.LONG);
 		} else if (matchNullValues) {
 			query.append(" and p.resourceTypeId is null");
 		}
@@ -459,7 +460,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			query.append(" and ");
 			query.append("p.category = ?");
 			objs.add(category);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		} else if (matchNullValues) {
 			query.append(" and p.category is null");
 		}
@@ -468,7 +469,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 			query.append(" and ");
 			query.append("p.name = ?");
 			objs.add(name);
-			types.add(Hibernate.STRING);
+			types.add(StandardBasicTypes.STRING);
 		} else if (matchNullValues) {
 			query.append(" and p.name is null");
 		}

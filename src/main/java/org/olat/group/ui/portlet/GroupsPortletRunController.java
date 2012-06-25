@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -61,8 +62,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.site.GroupsSite;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -79,14 +79,15 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	
 	private static final String CMD_LAUNCH = "cmd.launch";
 
-	private Panel panel;
 	private TableController tableCtr;
 	//private GroupListMiniModel groupListModel;
 	private GroupTableDataModel groupListModel;
 	private VelocityContainer groupsVC;
-	private List groupList;
+	private List<BusinessGroup> groupList;
 	private Identity ident;
 	private Link showAllLink;
+	
+	private final BusinessGroupService businessGroupService;
 	
 
 	/**
@@ -97,6 +98,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 */
 	public GroupsPortletRunController(WindowControl wControl, UserRequest ureq, Translator trans, String portletName) {
 		super(wControl, ureq, trans, portletName);
+
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		sortingTermsList.add(SortingCriteria.TYPE_SORTING);
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);
@@ -129,7 +132,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 		reloadModel(this.sortingCriteria);
      
 		this.groupsVC.put("table", tableCtr.getInitialComponent());		
-		panel = this.putInitialPanel(groupsVC);
+		putInitialPanel(groupsVC);
 
 		// register for businessgroup type events
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), OresHelper.lookupType(BusinessGroup.class));
@@ -141,9 +144,9 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 * @return the PortletEntry list.
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		groupList = bgm.findBusinessGroupsAttendedBy(null, identity, null);
-		groupList.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
+		groupList = businessGroupService.findBusinessGroups(null, identity, true, true, null, 0, -1);
+		//TODO gm groupList = bgm.findBusinessGroupsAttendedBy(null, identity, null);
+		//TODO gm groupList.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
 		List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
 		return entries;
 	}
@@ -159,9 +162,9 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-			groupList = bgm.findBusinessGroupsAttendedBy(null, identity, null);
-			groupList.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
+			groupList = businessGroupService.findBusinessGroups(null, identity, true, true, null, 0, -1);
+			//TODO gm groupList = bgm.findBusinessGroupsAttendedBy(null, identity, null);
+			//TODO gm groupList.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
 
 			groupList = getSortedList(groupList, sortingCriteria);
 
@@ -206,7 +209,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowid = te.getRowId();
 					BusinessGroup currBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
-					boolean isInBusinessGroup = BusinessGroupManagerImpl.getInstance().isIdentityInBusinessGroup(ureq.getIdentity(), currBusinessGroup);
+					boolean isInBusinessGroup = businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), currBusinessGroup);
 					if(isInBusinessGroup) {
 					  BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
 					} else {
@@ -259,7 +262,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 			
 			List<PortletEntry> portletEntryList = getAllPortletEntries();			
 			PortletDefaultTableDataModel tableDataModel = new GroupsManualSortingTableDataModel(portletEntryList);
-			List sortedItems = getPersistentManuallySortedItems(); 
+			List<PortletEntry> sortedItems = getPersistentManuallySortedItems(); 
 			
 			portletToolsController = new PortletToolSortingControllerImpl(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
@@ -286,11 +289,9 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator getComparator(final SortingCriteria sortingCriteria) {
-		return new Comparator(){			
-			public int compare(final Object o1, final Object o2) {
-				BusinessGroup group1= (BusinessGroup)o1;
-				BusinessGroup group2 = (BusinessGroup)o2;		
+  protected Comparator<BusinessGroup> getComparator(final SortingCriteria sortingCriteria) {
+		return new Comparator<BusinessGroup>(){			
+			public int compare(final BusinessGroup group1, final BusinessGroup group2) {
 				int comparisonResult = 0;
 			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(group1.getName(), group2.getName());			  		  	

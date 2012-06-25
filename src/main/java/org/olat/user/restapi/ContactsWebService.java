@@ -36,9 +36,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 
 /**
  * 
@@ -69,9 +69,9 @@ public class ContactsWebService {
 		
 		Identity identity = getIdentity(httpRequest);
 		
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<Identity> contacts = bgm.findContacts(identity, start, limit);
-		int totalCount = bgm.countContacts(identity);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<Identity> contacts = bgs.findContacts(identity, start, limit);
+		int totalCount = bgs.countContacts(identity);
 		
 		int count = 0;
 		UserVO[] userVOs = new UserVO[contacts.size()];

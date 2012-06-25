@@ -69,6 +69,7 @@
 		<property name="orderManager" ref="acOrderManager"/>
 		<property name="transactionManager" ref="acTransactionManager"/>
 		<property name="repositoryManager" ref="repositoryManager"/>
+		<property name="businessGroupService" ref="businessGroupService"/>
 	</bean>
 	
 	<bean id="acMethodManager" class="org.olat.resource.accesscontrol.manager.ACMethodManagerImpl"
@@ -76,6 +77,7 @@
 		<constructor-arg index="0" ref="coordinatorManager" />
 		<constructor-arg index="1" ref="acModule" />
 		<property name="dbInstance" ref="database"/>
+		<property name="businessGroupService" ref="businessGroupService"/>
 	</bean>
 	
 	<bean id="acOrderManager" class="org.olat.resource.accesscontrol.manager.ACOrderManagerImpl">

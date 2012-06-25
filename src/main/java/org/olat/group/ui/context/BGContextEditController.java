@@ -102,6 +102,8 @@ public class BGContextEditController extends BasicController implements Controll
 	private Link addTabResourcesButton;
 	private LockResult lockEntry;
 	private DialogBoxController alreadyLockedDialogController;
+	
+	private final BGContextManagerImpl contextManager;
 
 	/**
 	 * Constructor for a business group edit controller
@@ -113,7 +115,9 @@ public class BGContextEditController extends BasicController implements Controll
 	public BGContextEditController(UserRequest ureq, WindowControl wControl, BGContext groupContext) {
 		super(ureq, wControl);
 		// reload context to minimize stale object exception
-		this.groupContext = BGContextManagerImpl.getInstance().loadBGContext(groupContext);
+		contextManager = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
+		this.groupContext = contextManager.loadBGContext(groupContext);
+		
 
 		// try to acquire edit lock on business group context
 		String lockSubKey = "contextEdit";
@@ -267,7 +271,6 @@ public class BGContextEditController extends BasicController implements Controll
 	 */
 	private void doUpdateContext(UserRequest ureq) {
 		// refresh group to prevent stale object exception and context proxy issues
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		this.groupContext = contextManager.loadBGContext(this.groupContext);
 		// update defaultContext switch changes
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
@@ -294,7 +297,6 @@ public class BGContextEditController extends BasicController implements Controll
 	
 	private void doRemoveResource(RepositoryEntry entry) {
 		// remove on db
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		contextManager.removeBGContextFromResource(this.groupContext, entry.getOlatResource());
 		// remove on table model
 		this.repoTableModelEntries.remove(entry);
@@ -303,7 +305,6 @@ public class BGContextEditController extends BasicController implements Controll
 
 	private void doAddRepositoryEntry(RepositoryEntry entry) {
 		// persist on db
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		contextManager.addBGContextToResource(this.groupContext, entry.getOlatResource());
 		// update table model
 		this.repoTableModelEntries.add(entry);
@@ -349,7 +350,6 @@ public class BGContextEditController extends BasicController implements Controll
 		}
 
 		this.repoTableModel = new RepositoryTableModel(resourceTrans);
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
 		this.repoTableModelEntries = contextManager.findRepositoryEntriesForBGContext(this.groupContext);
 		this.repoTableModel.setObjects(this.repoTableModelEntries);
 		if (!initOnlyModel) {

@@ -86,8 +86,8 @@ import org.olat.course.nodes.FOCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumManager;
@@ -109,6 +109,7 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.restapi.UserVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -131,6 +132,9 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 	private static boolean setuped = false;
 
 	private RestConnection conn;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	@Before
 	@Override
@@ -172,7 +176,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//create learn group
 
-    BGContextManager cm = BGContextManagerImpl.getInstance();
+    BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
     BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
     BaseSecurity secm = BaseSecurityManager.getInstance();
 		
@@ -584,11 +588,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(forums.getForums());
 		assertTrue(forums.getForums().length > 0);
 
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		for(ForumVO forum:forums.getForums()) {
 			Long groupKey = forum.getGroupKey();
 			if(groupKey != null) {
-				BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(groupKey);
 				assertNotNull(bg);
 				CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 				assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FORUM));
@@ -596,7 +599,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 				assertNotNull(forum.getForumKey());
 				assertEquals(bg.getName(), forum.getName());
 				assertEquals(bg.getKey(), forum.getGroupKey());
-				assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+				assertTrue(businessGroupService.isIdentityInBusinessGroup(id1, bg));
 			} else {
 				assertNotNull(forum.getCourseKey());
 			}
@@ -659,18 +662,17 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		boolean matchG2 = false;
 		
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 		for(FolderVO folder:folders.getFolders()) {
 			Long groupKey = folder.getGroupKey();
 			if(groupKey != null) {
-				BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(groupKey);
 				assertNotNull(bg);
 				CollaborationTools bgCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 				assertTrue(bgCTSMngr.isToolEnabled(CollaborationTools.TOOL_FOLDER));
 				
 				assertEquals(bg.getName(), folder.getName());
 				assertEquals(bg.getKey(), folder.getGroupKey());
-				assertTrue(bgm.isIdentityInBusinessGroup(id1, bg));
+				assertTrue(businessGroupService.isIdentityInBusinessGroup(id1, bg));
 				if(g2.getKey().equals(groupKey)) {
 					matchG2 = true;
 				}

@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -336,11 +336,11 @@ public class ForumManager extends BasicManager {
 		Long forumKey = forum.getKey();
 		DB db = DBFactory.getInstance();
 		//delete read messsages
-		db.delete("from readMsg in class org.olat.modules.fo.ReadMessageImpl where readMsg.forum = ? ", forumKey, Hibernate.LONG);
+		db.delete("from readMsg in class org.olat.modules.fo.ReadMessageImpl where readMsg.forum = ? ", forumKey, StandardBasicTypes.LONG);
 		// delete messages
-		db.delete("from message in class org.olat.modules.fo.MessageImpl where message.forum = ?", forumKey, Hibernate.LONG);
+		db.delete("from message in class org.olat.modules.fo.MessageImpl where message.forum = ?", forumKey, StandardBasicTypes.LONG);
 		// delete forum
-		db.delete("from forum in class org.olat.modules.fo.ForumImpl where forum.key = ?", forumKey, Hibernate.LONG);
+		db.delete("from forum in class org.olat.modules.fo.ForumImpl where forum.key = ?", forumKey, StandardBasicTypes.LONG);
 		// delete properties
 		
 		//delete all flags
@@ -455,7 +455,7 @@ public class ForumManager extends BasicManager {
 		DB db = DBFactory.getInstance();
 		Long message_id = m.getKey();
 		List messages = db
-				.find("select msg from msg in class org.olat.modules.fo.MessageImpl where msg.parent = ?", message_id, Hibernate.LONG);
+				.find("select msg from msg in class org.olat.modules.fo.MessageImpl where msg.parent = ?", message_id, StandardBasicTypes.LONG);
 
 		for (Iterator iter = messages.iterator(); iter.hasNext();) {
 			Message element = (Message) iter.next();
@@ -518,7 +518,7 @@ public class ForumManager extends BasicManager {
 		query.append("where readMsg.forum = ? ");
 		query.append("and readMsg.message = ? ");
 
-		db.delete(query.toString(), new Object[] { forumKey, messageKey }, new Type[] { Hibernate.LONG, Hibernate.LONG });
+		db.delete(query.toString(), new Object[] { forumKey, messageKey }, new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.LONG });
 	}
 
 	/**

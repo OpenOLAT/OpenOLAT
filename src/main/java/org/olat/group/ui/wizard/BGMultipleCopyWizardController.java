@@ -28,6 +28,7 @@ package org.olat.group.ui.wizard;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -40,6 +41,7 @@ import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.context.BGContext;
 import org.olat.group.ui.BGConfigFlags;
@@ -140,11 +142,12 @@ public class BGMultipleCopyWizardController extends WizardController {
 	private BusinessGroup doCopyGroup(String newGroupName, Integer max) {
 		BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
 		// reload original group to prevent context proxy problems
-		this.originalGroup = groupManager.loadBusinessGroup(this.originalGroup);
-		BGContext bgContext = this.originalGroup.getGroupContext();
+		this.originalGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.originalGroup);
+		//BGContext bgContext = this.originalGroup.getGroupContext();
 		boolean copyAreas = (flags.isEnabled(BGConfigFlags.AREAS) && copyForm.isCopyAreas());
+		//TODO gm copy relations to resources 
 
-		BusinessGroup newGroup = groupManager.copyBusinessGroup(this.originalGroup, newGroupName, this.originalGroup.getDescription(), null, max, bgContext, null, copyAreas,
+		BusinessGroup newGroup = groupManager.copyBusinessGroup(this.originalGroup, newGroupName, this.originalGroup.getDescription(), null, max, null, null, copyAreas,
 				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
 						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
 		return newGroup;

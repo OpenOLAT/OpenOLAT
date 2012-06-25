@@ -54,7 +54,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
@@ -63,7 +62,6 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.management.BGManagementController;
@@ -107,7 +105,7 @@ public class BGContextManagementController extends MainLayoutBasicController imp
 	private ToolController toolC;
 
 	// Managers
-	private BGContextManager contextManager;
+	private BGContextManagerImpl contextManager;
 
 	// components
 	private BGContextFormController newContextController;
@@ -127,7 +125,7 @@ public class BGContextManagementController extends MainLayoutBasicController imp
 		super(ureq, wControl);
 
 		// Initialize managers
-		this.contextManager = BGContextManagerImpl.getInstance();
+		this.contextManager = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 		// Initialize all velocity containers
 		initVC();
 

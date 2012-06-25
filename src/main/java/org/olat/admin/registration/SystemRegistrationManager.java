@@ -27,6 +27,7 @@ package org.olat.admin.registration;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,8 +56,8 @@ import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroup;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -88,6 +89,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	private final DB database;
 	private RepositoryManager repositoryManager;
 	private BaseSecurity securityManager;
+	private BusinessGroupService businessGroupService;
 
 	private static final String REGISTRATION_SERVER = "http://registration.openolat.org/registration/restapi/registration/openolat";
 	//private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
@@ -132,6 +134,14 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	 */
 	public void setSecurityManager(BaseSecurity securityManager) {
 		this.securityManager = securityManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
 	}
 
 	/**
@@ -295,12 +305,15 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		msgProperties.put("activeUsersLastMonth", String.valueOf(activeUsersLastMonth));
 		
 		// Groups
-		BGContextManager groupMgr = BGContextManagerImpl.getInstance();
-		int buddyGroups = groupMgr.countGroupsOfType(BusinessGroup.TYPE_BUDDYGROUP);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setTypes(Collections.singletonList(BusinessGroup.TYPE_BUDDYGROUP));
+		int buddyGroups = businessGroupService.countBusinessGroups(params, null, false, false, null);
 		msgProperties.put("buddyGroups", String.valueOf(buddyGroups));
-		int learningGroups = groupMgr.countGroupsOfType(BusinessGroup.TYPE_LEARNINGROUP);
+		params.setTypes(Collections.singletonList(BusinessGroup.TYPE_LEARNINGROUP));
+		int learningGroups = businessGroupService.countBusinessGroups(params, null, false, false, null);
 		msgProperties.put("learningGroups", String.valueOf(learningGroups));
-		int rightGroups = groupMgr.countGroupsOfType(BusinessGroup.TYPE_RIGHTGROUP);
+		params.setTypes(Collections.singletonList(BusinessGroup.TYPE_RIGHTGROUP));
+		int rightGroups = businessGroupService.countBusinessGroups(params, null, false, false, null);
 		msgProperties.put("rightGroups", String.valueOf(rightGroups));
 			
 		if (website) {

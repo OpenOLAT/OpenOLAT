@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group;
+package org.olat.group.manager;
 
 import java.io.File;
 import java.io.InputStream;

@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -184,7 +184,7 @@ public class OnyxResultManager {
 		slct.append("where ");
 		slct.append("rset.assessmentID=? ");
 
-		return db.find(slct.toString(), new Object[] { assessmentID }, new Type[] { Hibernate.LONG });
+		return db.find(slct.toString(), new Object[] { assessmentID }, new Type[] { StandardBasicTypes.LONG });
 	}
 
 	/**

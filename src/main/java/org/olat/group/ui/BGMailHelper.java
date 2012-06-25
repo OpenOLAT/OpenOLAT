@@ -34,11 +34,12 @@
 
 package org.olat.group.ui;
 
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -49,11 +50,9 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.context.BGContextManager;
-import org.olat.group.context.BGContextManagerImpl;
-import org.olat.repository.RepoJumpInHandlerFactory;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+
 
 public class BGMailHelper {
 
@@ -190,18 +189,18 @@ public class BGMailHelper {
 	private static MailTemplate createMailTemplate(BusinessGroup group, Identity actor, String subjectKey, String bodyKey) {
 		// build learning resources as list of url as string
 		StringBuilder learningResources = new StringBuilder();
-		if (group.getGroupContext() != null) {
-			BGContextManager contextManager = BGContextManagerImpl.getInstance();
-			List<RepositoryEntry> repoEntries = contextManager.findRepositoryEntriesForBGContext(group.getGroupContext());
-			for (RepositoryEntry entry: repoEntries) {
-				String title = entry.getDisplayname();
-				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
-				learningResources.append(title);
-				learningResources.append(" (");
-				learningResources.append(url);
-				learningResources.append(")\n");
-			}
+
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<RepositoryEntry> repoEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
+		for (RepositoryEntry entry: repoEntries) {
+			String title = entry.getDisplayname();
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+			learningResources.append(title);
+			learningResources.append(" (");
+			learningResources.append(url);
+			learningResources.append(")\n");
 		}
+
 		final String courselist = learningResources.toString();
 		// get group name and description
 		final String groupname = group.getName();
@@ -211,7 +210,7 @@ public class BGMailHelper {
 		String[] bodyArgs = new String[] { actor.getUser().getProperty(UserConstants.FIRSTNAME, null), actor.getUser().getProperty(UserConstants.LASTNAME, null), actor.getUser().getProperty(UserConstants.EMAIL, null),
 				actor.getName() };
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
-		Translator trans = BGTranslatorFactory.createBGPackageTranslator(Util.getPackageName(BusinessGroupManager.class), group.getType(),
+		Translator trans = BGTranslatorFactory.createBGPackageTranslator(Util.getPackageName(BusinessGroupService.class), group.getType(),
 				locale);
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);

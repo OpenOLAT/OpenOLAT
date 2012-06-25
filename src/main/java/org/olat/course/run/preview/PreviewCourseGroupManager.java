@@ -33,6 +33,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date:  08.02.2005
@@ -57,7 +58,12 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		this.isCourseAdmin = isCourseAdmin;
 		this.isCoach = isCoach;
 	}
-	
+
+	@Override
+	public OLATResource getCourseResource() {
+		return null;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#initGroupContextsList()
 	 */

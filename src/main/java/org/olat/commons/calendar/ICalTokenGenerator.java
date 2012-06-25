@@ -28,13 +28,13 @@ package org.olat.commons.calendar;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.commons.calendar.ICalFileCalendarManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -227,7 +227,7 @@ public class ICalTokenGenerator {
 
 		if (calendarType.equals(ICalFileCalendarManager.TYPE_GROUP)) {
 		 	// get the group
-		 	resourceable = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(new Long(Long.parseLong(calendarID)), false);
+		 	resourceable = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(new Long(calendarID));
 		 	if (resourceable == null) {
 		 		// error
 		 		Tracing.logError("Group not found for the Resourceableid: " + calendarID, ICalTokenGenerator.class);

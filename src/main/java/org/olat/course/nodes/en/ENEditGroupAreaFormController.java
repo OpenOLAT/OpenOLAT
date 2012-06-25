@@ -27,7 +27,6 @@ package org.olat.course.nodes.en;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +44,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
@@ -55,17 +57,12 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.GroupOrAreaSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.core.id.OLATResourceable;
-
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.Translator;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<br>
@@ -178,9 +175,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
-		boolean hasDefaultContext = getDefaultBGContext() != null;
-		
 		// groups
 		groupChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout(
 				"groupChooseSubContainer", getTranslator()
@@ -276,8 +270,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 						"errorgroupitem", getTranslator(), vc_errorPage
 				);
 
-				boolean hasDefaultContext = getDefaultBGContext() != null;
-				if (hasDefaultContext) {
 					groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
 					// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 					fixGroupError = new FormLinkImpl("error.fix", "create");
@@ -298,13 +290,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					} else {
 						fixGroupError.setUserObject(new String[] { csvMissGrps });
 					}
-				} else {
-					// fix helper link not possible -> errortext only
-					groupChooseSubContainer.setErrorKey(labelKey, params);
-				}
-				/*
-				 * 
-				 */
+
 				groupChooseSubContainer.showError(true);
 			} else {
 				// no more errors
@@ -339,8 +325,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 						"errorareaitem", getTranslator(), vc_errorPage
 				);
 				
-				boolean hasDefaultContext = getDefaultBGContext() != null;
-				if (hasDefaultContext) {
+
 					areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
 					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 					fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
@@ -362,10 +347,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					} else {
 						fixAreaError.setUserObject(new String[] { csvMissAreas });
 					}
-				} else {
-					// fixing help link not possible -> text only
-					areaChooseSubContainer.setErrorKey(labelKey, params);
-				}
+
 			
 				areaChooseSubContainer.showError(true);
 			} else {
@@ -424,10 +406,11 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			// no groups in group management -> directly show group create dialog
 			String[] csvGroupName = easyGroupTE.isEmpty() ? new String[0] : easyGroupTE.getValue().split(",");
 			
+			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
 			removeAsListenerAndDispose(groupCreateCntrllr);
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
 					ureq, getWindowControl(), 
-					true, getDefaultBGContext(),
+					true, courseResource,
 					true, easyGroupTE.getValue()
 			);
 			listenTo(groupCreateCntrllr);
@@ -466,11 +449,10 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			
 		} else if (source == createAreasLink) {
 			// no areas -> directly show creation dialog
-			BGContext bgContext = getDefaultBGContext();
-			
 			removeAsListenerAndDispose(areaCreateCntrllr);
+			OLATResource courseResource = cev.getCourseGroupManager().getCourseResource();
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), bgContext, true, easyAreaTE.getValue()
+					ureq, getWindowControl(), courseResource, true, easyAreaTE.getValue()
 			);
 			listenTo(areaCreateCntrllr);
 			
@@ -489,15 +471,14 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			 * user wants to fix problem with fixing group error link e.g. create one
 			 * or more group at once.
 			 */
-			BGContext bgContext = getDefaultBGContext();
-			
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
 			
 			easyGroupTE.setEnabled(false);
 			removeAsListenerAndDispose(groupCreateCntrllr);
+			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
 			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
 					ureq, getWindowControl(), true,
-					bgContext, true, csvGroupName[0]
+					courseResource, true, csvGroupName[0]
 			);
 			listenTo(groupCreateCntrllr);
 
@@ -516,14 +497,14 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			 * user wants to fix problem with fixing area error link e.g. create one
 			 * or more areas at once.
 			 */
-			BGContext bgContext = getDefaultBGContext();
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
 			
 			easyAreaTE.setEnabled(false);
 			removeAsListenerAndDispose(areaCreateCntrllr);
+			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
 			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
 					ureq, getWindowControl(), 
-					bgContext, true, csvAreaName[0]
+					courseResource, true, csvAreaName[0]
 			);
 			listenTo(areaCreateCntrllr);
 			
@@ -625,23 +606,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				easyAreaTE.getRootForm().submit(ureq);
 			} 
 		}
-	}
-
-
-	/*
-	 * find default context if one is present
-	 */
-	private BGContext getDefaultBGContext() {
-		CourseGroupManager courseGrpMngr = cev.getCourseGroupManager();
-		List courseLGContextes = courseGrpMngr.getLearningGroupContexts();
-		for (Iterator iter = courseLGContextes.iterator(); iter.hasNext();) {
-			BGContext bctxt = (BGContext) iter.next();
-			if (bctxt.isDefaultContext()) { return bctxt; }
-		}
-		return null;
-		// not found! -> disable easy creation of groups! (no workflows for choosing
-		// contexts
-
 	}
 
 	public ModuleConfiguration getModuleConfiguration() {

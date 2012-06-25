@@ -20,13 +20,14 @@
 
 package org.olat.modules.wiki.portfolio;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiPage;
@@ -92,7 +93,7 @@ public class WikiArtefactHandler extends EPAbstractHandler<WikiArtefact>  {
 		if (parts.length<2) return sourceInfo;
 		String id = parts[1].substring(0, parts[1].lastIndexOf("]"));
 		if (parts[0].indexOf("BusinessGroup")!=-1){
-			BusinessGroup bGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(new Long(id), false);
+			BusinessGroup bGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(new Long(id));
 			if (bGroup != null) sourceInfo = bGroup.getName();
 		} else if (parts[0].indexOf("RepositoryEntry") != -1){
 			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(ores, false);

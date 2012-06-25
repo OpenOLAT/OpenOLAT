@@ -282,7 +282,7 @@ public class BusinessGroupFactory {
 	 * @param groupContext
 	 * @return
 	 */
-	public static boolean checkIfOneOrMoreNameExistsInContext(Set names, BGContext groupContext) {
+	private static boolean checkIfOneOrMoreNameExistsInContext(Set names, BGContext groupContext) {
 		DB db = DBFactory.getInstance();
 		String query = "select count(bgs) from " 
 			+ "  org.olat.group.BusinessGroupImpl as bgs " 

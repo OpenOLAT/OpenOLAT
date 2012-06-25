@@ -39,6 +39,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
@@ -81,8 +82,8 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -110,11 +111,14 @@ import org.olat.group.ui.wizard.MemberListWizardController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryTableModel;
+import org.olat.resource.OLATResource;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManagerImpl;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Description:<BR/> This controller provides a complete groupmanagement for a
@@ -159,7 +163,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private static final String CMD_LIST_MEMBERS_WITH_AREAS = "cmd.list.members.with.areas";
 
 	private Translator userTrans;
-	private BGContext bgContext;
+	private OLATResource resource;
 	private String groupType;
 	private BGConfigFlags flags;
 	private boolean isContextOwner;
@@ -203,9 +207,9 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private ToolController toolC;
 
 	// Managers
-	private BusinessGroupManager groupManager;
 	private BGContextManager contextManager;
 	private BGAreaManager areaManager;
+	private BusinessGroupService businessGroupService;
 
 	// Workflow variables
 	private List<ShortName> areaFilters;
@@ -232,14 +236,15 @@ public class BGManagementController extends MainLayoutBasicController implements
 	 */
 	public BGManagementController(UserRequest ureq, WindowControl wControl, BGContext bgContext, BGConfigFlags controllerFlags) {
 		super(ureq, wControl);
-		this.bgContext = bgContext;
+		this.resource = resource;
 		this.groupType = bgContext.getGroupType();
 		this.flags = controllerFlags;
 
 		// Initialize managers
-		groupManager = BusinessGroupManagerImpl.getInstance();
 		contextManager = BGContextManagerImpl.getInstance();
-		if (flags.isEnabled(BGConfigFlags.AREAS)) areaManager = BGAreaManagerImpl.getInstance();
+		if (flags.isEnabled(BGConfigFlags.AREAS)) {
+			areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		}
 
 		businessGroupTranslator = Util.createPackageTranslator(BusinessGroupMainRunController.class, ureq.getLocale());
 		// Initialize translator
@@ -254,7 +259,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 		// check if user is owner of this group context
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		this.isContextOwner = securityManager.isIdentityInSecurityGroup(ureq.getIdentity(), this.bgContext.getOwnerGroup());
+		isContextOwner = businessGroupService.isIdentityInBusinessGroup(getIdentity(), null, null, true, false, resource);
 
 		// Layout is controlled with generic controller: menu - content - tools
 		// Navigation menu
@@ -277,8 +282,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 
-		
-		
 		//disposed message controller
 		//must be created beforehand
 		Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
@@ -288,10 +291,8 @@ public class BGManagementController extends MainLayoutBasicController implements
 		listenTo(disposedBGAManagementController);
 		setDisposedMsgController(disposedBGAManagementController);
 
-		
-		
 		// register for changes in this group context
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), this.bgContext);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), resource);
 	}
 
 	/**
@@ -325,7 +326,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
 	public void event(Event event) {
-		if (event instanceof BGContextEvent) {
+		/*if (event instanceof BGContextEvent) {
 			BGContextEvent contextEvent = (BGContextEvent) event;
 			if (contextEvent.getBgContextKey().equals(this.bgContext.getKey())) {
 				if (contextEvent.getCommand().equals(BGContextEvent.CONTEXT_DELETED)
@@ -336,10 +337,12 @@ public class BGManagementController extends MainLayoutBasicController implements
 				}
 			}
 
-		} else if (event instanceof BusinessGroupModifiedEvent) {
+		} else */
+			
+			if (event instanceof BusinessGroupModifiedEvent) {
 			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {
 				// update reference to updated business group object
-				BusinessGroup modifiedGroup = groupManager.loadBusinessGroup(this.currentGroup);
+				BusinessGroup modifiedGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(currentGroup);
 				if (groupListModel != null) {
 					List groups = groupListModel.getObjects();
 					if (groups.contains(this.currentGroup)) {
@@ -406,7 +409,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private void doUserMessage(UserRequest ureq) {
-		List users = new ArrayList();
+		List<Identity> users = new ArrayList<Identity>();
 		users.add(this.currentIdentity);
 		User user = this.currentIdentity.getUser();
 		Locale loc = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
@@ -415,7 +418,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 				this.currentIdentity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()) }));
 	}
 
-	private void doSendMessage(List identities, String mailToName, UserRequest ureq) {
+	private void doSendMessage(List<Identity> identities, String mailToName, UserRequest ureq) {
 		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 		ContactList contactList = new ContactList(mailToName);
 		contactList.addAllIdentites(identities);
@@ -433,7 +436,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private void doGroupDeleteConfirm(UserRequest ureq) {
 		String confirmDeleteGroupText;
-		List<String> deleteableList = groupManager.getDependingDeletablableListFor(currentGroup, ureq.getLocale());
+		List<String> deleteableList = businessGroupService.getDependingDeletablableListFor(currentGroup, ureq.getLocale());
 		if (deleteableList.isEmpty()) {
 			confirmDeleteGroupText = translate("group.delete", this.currentGroup.getName() );
 		} else {
@@ -449,6 +452,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private void doContextEdit(UserRequest ureq) {
+		/*
 		if (isContextOwner || ureq.getUserSession().getRoles().isOLATAdmin()) {
 			removeAsListenerAndDispose(contextEditCtr);
 			contextEditCtr = new BGContextEditController(ureq, getWindowControl(), this.bgContext);
@@ -466,24 +470,17 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 		setMainContent(contextEditVC);
 		setTools(STATE_CONTEXT_EDIT);
+		*/
 	}
 	
 	private void listMembers(UserRequest ureq, String cmd) {
 		if(CMD_LIST_MEMBERS_WITH_GROUPS.equals(cmd)) {
-			if(BGContextManagerImpl.getInstance().getGroupsOfBGContext(bgContext).size()==0) {
-				showError("tools.title.listmembers.warning.noGroups");
-				return;
-			}
 			removeAsListenerAndDispose(memberListWizardController);
-			memberListWizardController = new MemberListWizardController(ureq, getWindowControl(), bgContext, MemberListWizardController.GROUPS_MEMBERS);
+			memberListWizardController = new MemberListWizardController(ureq, getWindowControl(), resource, MemberListWizardController.GROUPS_MEMBERS);
 			listenTo(memberListWizardController);
 		} else if(CMD_LIST_MEMBERS_WITH_AREAS.equals(cmd)) {
-			if(BGAreaManagerImpl.getInstance().findBGAreasOfBGContext(bgContext).size()==0) {
-				showError("tools.title.listmembers.warning.noAreas");
-				return;
-			}
 			removeAsListenerAndDispose(memberListWizardController);
-			memberListWizardController = new MemberListWizardController(ureq, getWindowControl(), bgContext, MemberListWizardController.AREAS_MEMBERS);
+			memberListWizardController = new MemberListWizardController(ureq, getWindowControl(), resource, MemberListWizardController.AREAS_MEMBERS);
 			listenTo(memberListWizardController);
 		}
 		if(memberListWizardController!=null) {
@@ -567,7 +564,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 				String actionid = te.getActionId();
 				int rowid = te.getRowId();
 				BusinessGroup selectedGroup = groupListModel.getBusinessGroupAt(rowid);
-				currentGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(selectedGroup.getKey(), false);
+				currentGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(selectedGroup.getKey());
 				if(currentGroup == null) {
 					groupListModel.removeBusinessGroup(selectedGroup);
 					groupListCtr.modelChanged();
@@ -614,7 +611,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		} else if (source == contextEditCtr) {
 			if (event == Event.CHANGED_EVENT) {
 				// reload context, maybe updated title or something
-				this.bgContext = contextManager.loadBGContext(this.bgContext);
+				//this.bgContext = contextManager.loadBGContext(this.bgContext);
 			}
 		} else if (source == groupCreateController){
 			if (event == Event.DONE_EVENT) {
@@ -722,7 +719,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		root.setAltText(translate("menu.index.alt"));
 		gtm.setRootNode(root);
 
-		if (!this.bgContext.isDefaultContext() || ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.editcontext"));
 			gtn.setUserObject(CMD_EDITCONTEXT);
@@ -847,40 +844,29 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private void doOverview(UserRequest ureq) {
 		setMainContent(overviewVC);
+		
+		int numOfGroups = businessGroupService.countBusinessGroups(null, null, false, false, resource);
+		int numOfParticipants = businessGroupService.countMembersOf(resource, false, true);
+		int numOfOwners = businessGroupService.countMembersOf(resource, true, false);
+		
 		// number of groups
-		overviewVC.contextPut("numbGroups", new Integer(contextManager.countGroupsOfBGContext(bgContext)));
+		overviewVC.contextPut("numbGroups", new Integer(numOfGroups));
 		// number of owners
 		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS)) {
-			int total = (contextManager.countBGOwnersOfBGContext(bgContext) + contextManager.countBGParticipantsOfBGContext(bgContext));
-			overviewVC.contextPut("numbTotal", new Integer(total));
-			overviewVC.contextPut("numbOwners", new Integer(contextManager.countBGOwnersOfBGContext(bgContext)));
+			overviewVC.contextPut("numbTotal", new Integer(numOfOwners + numOfParticipants));
+			overviewVC.contextPut("numbOwners", new Integer(numOfOwners));
 		}
-		overviewVC.contextPut("numbParticipants", new Integer(contextManager.countBGParticipantsOfBGContext(bgContext)));
+		overviewVC.contextPut("numbParticipants", new Integer(numOfParticipants));
 		// number of areas
 		if (flags.isEnabled(BGConfigFlags.AREAS)) {
-			overviewVC.contextPut("numbAreas", new Integer(areaManager.countBGAreasOfBGContext(bgContext)));
+			overviewVC.contextPut("numbAreas", new Integer(areaManager.countBGAreasOfBGContext(resource)));
 		}
-		// context name
-		if (this.bgContext.isDefaultContext()) {
-			overviewVC.contextPut("showContextName", Boolean.FALSE);
-		} else {
-			overviewVC.contextPut("showContextName", Boolean.TRUE);
-			overviewVC.contextPut("contextName", bgContext.getName());
-			overviewVC.contextPut("contextDesc", bgContext.getDescription());
-		}
-		if (this.bgContext.isDefaultContext()) {
-			overviewVC.contextPut("isDefaultContext", Boolean.TRUE);
-		} else {
-			overviewVC.contextPut("isDefaultContext", Boolean.FALSE);
-			// other resources that also use this context
-			doAddOtherResourcesList(ureq);
-		}
-
 		setTools(STATE_OVERVIEW);
 	}
 
+	//TODO gm
 	private void doAddOtherResourcesList(UserRequest ureq) {
-		List<RepositoryEntry> repoTableModelEntries = contextManager.findRepositoryEntriesForBGContext(this.bgContext);
+		List<RepositoryEntry> repoTableModelEntries = Collections.emptyList();
 		if (repoTableModelEntries.size() > 1) {
 			Translator resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, ureq.getLocale(), getTranslator()); 
 			
@@ -905,7 +891,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	 */
 	private void createNewAreaController(UserRequest ureq, WindowControl wControl) {
 		removeAsListenerAndDispose(areaCreateController);
-		areaCreateController = BGControllerFactory.getInstance().createNewAreaController(ureq, wControl, bgContext);
+		areaCreateController = BGControllerFactory.getInstance().createNewAreaController(ureq, wControl, resource);
 		listenTo(areaCreateController);
 				
 		newAreaVC.put("areaCreateForm", areaCreateController.getInitialComponent());
@@ -916,7 +902,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private void createNewGroupController(UserRequest ureq, WindowControl wControl) {				
 		removeAsListenerAndDispose(groupCreateController);
 		groupCreateController = BGControllerFactory.getInstance().createNewBGController(ureq, wControl,
-				flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE), bgContext);
+				flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE), resource);
 		listenTo(groupCreateController);
 		
 		newGroupVC.put("groupCreateForm", groupCreateController.getInitialComponent());
@@ -967,7 +953,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// remove this controller as listener from the group
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, this.currentGroup);
 		// now delete group and update table model
-		groupManager.deleteBusinessGroup(this.currentGroup);
+		businessGroupService.deleteBusinessGroup(this.currentGroup);
 		if (groupListModel != null) {
 			groupListModel.getObjects().remove(this.currentGroup);
 			groupListCtr.modelChanged();
@@ -999,11 +985,11 @@ public class BGManagementController extends MainLayoutBasicController implements
 		if (groupListModel == null || initializeModel) {
 			// 1. group list model: if area filter is set use only groups from given
 			// area
-			List groups;
-			if (this.currentAreaFilter == null) {
-				groups = contextManager.getGroupsOfBGContext(bgContext); // all groups
+			List<BusinessGroup> groups;
+			if (currentAreaFilter == null) {
+				groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
 			} else {
-				groups = areaManager.findBusinessGroupsOfArea(this.currentAreaFilter); // filtered
+				groups = areaManager.findBusinessGroupsOfArea(currentAreaFilter); // filtered
 				// groups
 			}
 			groupListModel = new BusinessGroupTableModel(groups);
@@ -1011,8 +997,9 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 			// 2. find areas for group list filter
 			if (flags.isEnabled(BGConfigFlags.AREAS)) {
-				this.areaFilters = areaManager.findBGAreasOfBGContext(bgContext);
-				groupListCtr.setFilters(this.areaFilters, this.currentAreaFilter);
+				List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+				areaFilters = new ArrayList<ShortName>(areas);
+				groupListCtr.setFilters(this.areaFilters, currentAreaFilter);
 			}
 
 		}
@@ -1040,7 +1027,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private void doAreaList(UserRequest ureq, boolean initializeModel) {
 		if (areaListModel == null || initializeModel) {
-			List areas = areaManager.findBGAreasOfBGContext(bgContext);
+			List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
 			areaListModel = new BGAreaTableModel(areas, getTranslator());
 
 			if (areaListCtr != null) areaListCtr.dispose();
@@ -1067,8 +1054,8 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// 1. init owners list
 		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS)) {
 			if (ownerListModel == null || initializeModel) {
-				List owners = contextManager.getBGOwnersOfBGContext(bgContext);
-	
+				List<Identity> owners = businessGroupService.getMembersOf(resource, true, false);
+
 				TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 				tableConfig.setPreferencesOffered(true, "ownerListController");
 				tableConfig.setTableEmptyMessage(translate("userlist.owners.noOwners"));
@@ -1088,8 +1075,8 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 		// 2. init participants list
 		if (participantListModel == null || initializeModel) {
-			List participants = contextManager.getBGParticipantsOfBGContext(bgContext);
-
+			List<Identity> participants = businessGroupService.getMembersOf(resource, false, true);
+			
 			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 			tableConfig.setPreferencesOffered(true, "participantsListController");
 			tableConfig.setTableEmptyMessage(translate("userlist.participants.noParticipants"));
@@ -1119,7 +1106,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		userDetailsVC.put("userdetailsform", homePageDisplayController.getInitialComponent());
 		// 2. expose the owner groups of the identity
 		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS)) {
-			List ownerGroups = groupManager.findBusinessGroupsOwnedBy(bgContext.getGroupType(), this.currentIdentity, bgContext);
+			List<BusinessGroup> ownerGroups = businessGroupService.findBusinessGroupsOwnedBy(groupType, currentIdentity, resource);
 			
 			Link[] ownerGroupLinks= new Link[ownerGroups.size()];
 			int ownerNumber = 0;
@@ -1138,7 +1125,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 			userDetailsVC.contextPut("showOwnerGroups", Boolean.FALSE);
 		}
 		// 3. expose the participant groups of the identity
-		List participantGroups = groupManager.findBusinessGroupsAttendedBy(bgContext.getGroupType(), this.currentIdentity, bgContext);
+		List<BusinessGroup> participantGroups = businessGroupService.findBusinessGroupsAttendedBy(groupType, currentIdentity, resource);
 		
 		Link[] participantGroupLinks= new Link[participantGroups.size()];
 		int participantNumber = 0;
@@ -1159,16 +1146,20 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private void doRemoveUserFromParticipatingGroup(Identity ureqIdentity, Identity toRemoveIdentity, String groupKey) {
 		Long key = Long.valueOf(groupKey);
-		BusinessGroup group = groupManager.loadBusinessGroup(key, true);
-		List<Identity> identities = new ArrayList<Identity>(1);
-		identities.add(toRemoveIdentity);
-		groupManager.removeParticipantsAndFireEvent(ureqIdentity, identities, group, flags);
+		BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(key);
+		if(group != null) {
+			List<Identity> identities = new ArrayList<Identity>(1);
+			identities.add(toRemoveIdentity);
+			businessGroupService.removeParticipantsAndFireEvent(ureqIdentity, identities, group, flags);
+		}
 	}
 
 	private void doRemoveUserFromOwnedGroup(UserRequest ureq, String groupKey) {
 		Long key = Long.valueOf(groupKey);
-		BusinessGroup group = groupManager.loadBusinessGroup(key, true);
-		groupManager.removeOwnerAndFireEvent(ureq.getIdentity(), currentIdentity, group, flags, false);
+		BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(key);
+		if(group != null) {
+			businessGroupService.removeOwnerAndFireEvent(ureq.getIdentity(), currentIdentity, group, flags, false);
+		}
 	}
 	
 	/**
@@ -1298,7 +1289,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	@Override
 	protected void doDispose() {
 	
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, this.bgContext);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, resource);
 
 		releaseAdminLockAndGroupMUE();
 	}

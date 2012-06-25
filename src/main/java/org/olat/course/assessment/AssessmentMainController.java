@@ -678,17 +678,11 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 		listenTo(groupListCtr);
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 0, CMD_CHOOSE_GROUP, ureq.getLocale()));
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.desc", 1, null, ureq.getLocale()));
-		CourseGroupManager gm = course.getCourseEnvironment().getCourseGroupManager();
-		if (gm.getLearningGroupContexts().size() > 1) {
-		// show groupcontext row only if multiple contexts are found
-			groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.context", 2, null, ureq.getLocale()));
-		}
-		
+
 		Translator defaultContextTranslator = new PackageTranslator(Util.getPackageName(BGContextTableModel.class), ureq.getLocale());
 		// loop over all groups to filter depending on condition
 		List<BusinessGroup> currentGroups = new ArrayList<BusinessGroup>();
-		for (Iterator<BusinessGroup> iter = this.coachedGroups.iterator(); iter.hasNext();) {
-			BusinessGroup group = iter.next();
+		for (BusinessGroup group:coachedGroups) {
 			if ( !isFiltering || isVisibleAndAccessable(this.currentCourseNode, group) ) {
 				currentGroups.add(group);
 			}

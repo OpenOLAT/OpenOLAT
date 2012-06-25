@@ -36,6 +36,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.resource.OLATResource;
 
 public interface ProjectGroupManager {
 
@@ -109,7 +110,7 @@ public interface ProjectGroupManager {
 	 * @param initialGroupName  New group-name, if the group name already exists, append a number e.g. ' _2' for uniqueness 
 	 * @param groupDescription  New description of group
 	 */
-	public abstract void changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription );
+	public abstract void changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription, OLATResource courseResource);
 
 	/**
 	 * Accept candidates as participants, move identity from candidate-group to participant-group 

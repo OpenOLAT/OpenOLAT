@@ -32,13 +32,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
@@ -117,6 +118,7 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 *      org.olat.resource.OLATResource, org.olat.group.context.BGContext)
 	 */
 	public BGContext copyAndAddBGContextToResource(String contextName, OLATResource resource, BGContext originalBgContext) {
+		/*
 		BGAreaManager areaManager = BGAreaManagerImpl.getInstance();
 		BusinessGroupManager groupManager = BusinessGroupManagerImpl.getInstance();
 		if (!originalBgContext.isDefaultContext()) { throw new AssertException("Can only copy default contexts"); }
@@ -135,8 +137,8 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 			BusinessGroup origGroup = (BusinessGroup) iter.next();
 			groupManager.copyBusinessGroup(origGroup, origGroup.getName(), origGroup.getDescription(), origGroup.getMinParticipants(), origGroup
 					.getMaxParticipants(), targetContext, areas, true, true, true, false, false, true, false); 
-		}
-		return targetContext;
+		}*/
+		return null;
 	}
 
 	/**
@@ -166,16 +168,18 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	public void deleteBGContext(BGContext bgContext) {
 		bgContext = (BGContext) DBFactory.getInstance().loadObject(bgContext);
 		BusinessGroupManager bgManager = BusinessGroupManagerImpl.getInstance();
-		BGAreaManager areaManager = BGAreaManagerImpl.getInstance();
+		BGAreaManager areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		// 1) Delete all groups from group context
 		List groups = getGroupsOfBGContext(bgContext);
 		bgManager.deleteBusinessGroups(groups);
 		// 2) Delete all group areas
+		/*
 		List areas = areaManager.findBGAreasOfBGContext(bgContext);
 		for (Iterator iter = areas.iterator(); iter.hasNext();) {
 			BGArea area = (BGArea) iter.next();
 			areaManager.deleteBGArea(area);
 		}
+		*/
 		// 3) Delete group to resource relations
 		List referencingResources = findOLATResourcesForBGContext(bgContext);
 		for (Iterator iter = referencingResources.iterator(); iter.hasNext();) {
@@ -196,7 +200,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	/**
 	 * @see org.olat.group.context.BGContextManager#getGroupsOfBGContext(org.olat.group.context.BGContext)
 	 */
-	@Override
 	public List<BusinessGroup> getGroupsOfBGContext(BGContext bgContext) {
 		DB db = DBFactory.getInstance();
 		DBQuery query;
@@ -211,7 +214,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		return (List<BusinessGroup>) query.list();
 	}
 	
-	@Override
 	public List<BusinessGroup> getGroupsOfBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults) {
 		if(bgContexts == null || bgContexts.isEmpty()) {
 			return Collections.emptyList();
@@ -305,7 +307,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		return query.list();
 	}
 
-	@Override
 	//fxdiff VCRP-2: access control
 	public List<BusinessGroup> getBusinessGroupAsOwnerOfBGContext(Identity owner, BGContext bgContext) {
 		DB db = DBFactory.getInstance();
@@ -356,7 +357,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		return query.list();
 	}
 	
-	@Override
 	//fxdiff VCRP-2: access control
 	public List<BusinessGroup> getBusinessGroupAsParticipantOfBGContext(Identity participant, BGContext bgContext) {
 		DB db = DBFactory.getInstance();
@@ -397,7 +397,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#isIdentityInBGContext(org.olat.core.id.Identity,
 	 *      org.olat.group.context.BGContext, boolean, boolean)
 	 */
-	@Override
 	public boolean isIdentityInBGContext(Identity identity, List<BGContext> bgContexts, boolean asOwner, boolean asParticipant) {
 		if(bgContexts == null || bgContexts.isEmpty()) return false;
 		
@@ -438,8 +437,7 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 */
 	public BGContext createAndAddBGContextToResource(String contextName, OLATResource resource, String groupType, Identity initialOwner,
 			boolean defaultContext) {
-		BGContextManager cm = BGContextManagerImpl.getInstance();
-		BGContext context = cm.createAndPersistBGContext(contextName, null, groupType, initialOwner, defaultContext);
+		BGContext context = createAndPersistBGContext(contextName, null, groupType, initialOwner, defaultContext);
 		addBGContextToResource(context, resource);
 		return context;
 	}
@@ -467,7 +465,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#findBGContextsForResource(org.olat.resource.OLATResource,
 	 *      boolean, boolean)
 	 */
-	@Override
 	public List<BGContext> findBGContextsForResource(OLATResource resource, boolean defaultContexts, boolean nonDefaultContexts) {
 		return findBGContextsForResource(resource, null, defaultContexts, nonDefaultContexts);
 	}
@@ -476,7 +473,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#findBGContextsForResource(org.olat.resource.OLATResource,
 	 *      java.lang.String, boolean, boolean)
 	 */
-	@Override
 	public List<BGContext> findBGContextsForResource(OLATResource resource, String groupType, boolean defaultContexts, boolean nonDefaultContexts) {
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
@@ -505,7 +501,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 	 * @see org.olat.group.context.BGContextManager#findBGContextsForIdentity(org.olat.core.id.Identity,
 	 *      boolean, boolean)
 	 */
-	@Override
 	public List<BGContext> findBGContextsForIdentity(Identity identity, boolean defaultContexts, boolean nonDefaultContexts) {
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
@@ -560,7 +555,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		return findRepositoryEntriesForBGContext(Collections.singletonList(bgContext), 0, -1);
 	}
 	
-	@Override
 	//fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int firstResult, int maxResults) {
 		if(bgContexts == null || bgContexts.isEmpty()) return Collections.emptyList();
@@ -581,7 +575,6 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		return query.list();
 	}
 	
-	@Override
 	//fxdiff VCRP-1,2: access control of resources
 	public List<RepositoryEntry> findRepositoryEntriesForBGContext(Collection<BGContext> bgContexts, int access, boolean asOwner, boolean asCoach,
 			boolean asParticipant, Identity identity) {
@@ -646,7 +639,7 @@ public class BGContextManagerImpl extends BasicManager implements BGContextManag
 		// 1) delete references for this resource
 		String q = " from org.olat.group.context.BGContext2Resource as bgcr where bgcr.groupContext = ? and bgcr.resource = ?";
 		DBFactory.getInstance().delete(q, new Object[] { bgContext.getKey(), resource.getKey() },
-				new Type[] { Hibernate.LONG, Hibernate.LONG });
+				new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.LONG });
 		// 2) update course context list in this course resource
 		if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 			try {

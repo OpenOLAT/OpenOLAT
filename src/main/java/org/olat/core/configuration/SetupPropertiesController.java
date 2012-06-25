@@ -32,9 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.hibernate.cfg.Configuration;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.OLATLocalSessionFactoryBean;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -93,8 +90,6 @@ public class SetupPropertiesController extends BasicController {
 			content.contextPut("overwritePropertiesLocation", translate("overwrite.properties.not.found"));
 		}
 		
-		String hibernateConnectionURL = getHibernateConnectionUrl();
-		content.contextPut("hibernateConnectionUrl",hibernateConnectionURL);
 		content.contextPut("userDataRoot",WebappHelper.getUserDataRoot());
 
 		main.setContent(content);
@@ -104,17 +99,6 @@ public class SetupPropertiesController extends BasicController {
 		
 		
 	}
-	
-	
-
-	private String getHibernateConnectionUrl() {
-		OLATLocalSessionFactoryBean bean = (OLATLocalSessionFactoryBean)CoreSpringFactory.getBean(OLATLocalSessionFactoryBean.class);
-		Configuration configuration = bean.getConfiguration();
-		Properties properties = configuration.getProperties();
-		return (String)properties.get("hibernate.connection.url");
-	}
-
-
 
 	private void analyzeProperties() {
 		Set<Object> defaultKeySet = defaultProperties.keySet();

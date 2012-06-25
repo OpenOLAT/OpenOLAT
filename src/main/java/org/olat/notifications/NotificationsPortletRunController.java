@@ -36,6 +36,7 @@ import java.util.Map;
 import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.commons.calendar.ui.CalendarController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -73,7 +74,9 @@ import org.olat.core.util.notifications.Subscriber;
 import org.olat.core.util.notifications.SubscriptionInfo;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
+import org.olat.group.BusinessGroupService;
 
 /**
  * Description:<br>
@@ -250,7 +253,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 								resName = CourseModule.ORES_TYPE_COURSE;
 							}
 							if (subidentifier.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-								resName = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(pub.getResId(), true).getResourceableTypeName();
+								resName = BusinessGroupModule.ORES_TYPE_GROUP;
 							}
 							OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
 							String title = NotificationsManager.getInstance().getNotificationsHandler(pub).createTitleInfo(sub, getLocale());

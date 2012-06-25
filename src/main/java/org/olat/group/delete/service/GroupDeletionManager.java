@@ -28,6 +28,7 @@ package org.olat.group.delete.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.lifecycle.LifeCycleManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.PackageTranslator;
@@ -53,8 +55,9 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupArchiver;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupArchiver;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.delete.service.DeletionModule;
@@ -82,6 +85,7 @@ public class GroupDeletionManager extends BasicManager {
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	private static final String GROUP_DELETED_ACTION = "groupDeleted";
 	private DeletionModule module;
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * [used by spring]
@@ -92,6 +96,12 @@ public class GroupDeletionManager extends BasicManager {
 		INSTANCE = this;
 	}
 
+	/**
+	 * [used by Spring]
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
+	}
 
 	/**
 	 * @return Singleton.
@@ -192,9 +202,10 @@ public class GroupDeletionManager extends BasicManager {
 
 
 	private void markSendEmailEvent(BusinessGroup group) {
-		group = (BusinessGroup)DBFactory.getInstance().loadObject(group);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		group = bgs.loadBusinessGroup(group);
 		LifeCycleManager.createInstanceFor(group).markTimestampFor(SEND_DELETE_EMAIL_ACTION);
-		DBFactory.getInstance().updateObject(group);
+		group = bgs.mergeBusinessGroup(group);
 	}
 
 	public List getDeletableGroups(int lastLoginDuration) {
@@ -296,13 +307,10 @@ public class GroupDeletionManager extends BasicManager {
 		if (!exportRootDir.exists()) {
 			exportRootDir.mkdirs();
 		}
-		BusinessGroupArchiver.getInstance().archiveGroup(businessGroup, new File(archiveFilePath, GROUPARCHIVE_XLS));
+		businessGroupService.archiveGroups(Collections.singletonList(businessGroup), new File(archiveFilePath, GROUPARCHIVE_XLS));
 		File exportFile = new File(archiveFilePath, GROUPEXPORT_XML);
-		if (businessGroup.getGroupContext() == null) {
-			BusinessGroupManagerImpl.getInstance().exportGroup(businessGroup, exportFile);
-		} else {
-			BusinessGroupManagerImpl.getInstance().exportGroups(businessGroup.getGroupContext(), exportFile);			
-		}
+		businessGroupService.exportGroups(Collections.singletonList(businessGroup), exportFile);			
+
 		return GROUPEXPORT_XML;
 	}
 
@@ -341,15 +349,15 @@ public class GroupDeletionManager extends BasicManager {
 	public void setLastUsageNowFor(final BusinessGroup group) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
-				BusinessGroup bg =  (BusinessGroup) DBFactory.getInstance().loadObject(group, true);
+				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				BusinessGroup bg = bgs.loadBusinessGroup(group);
 				bg.setLastUsage(new Date());
 				LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(bg);
 				if (lcManager.lookupLifeCycleEntry(SEND_DELETE_EMAIL_ACTION) != null) {
 					logAudit("Group-Deletion: Remove from delete-list group=" + bg);
 					LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 				}
-				BusinessGroupManagerImpl.getInstance().updateBusinessGroup(bg);	
-				return bg;
+				return bgs.mergeBusinessGroup(bg);	
 			}
 		});
 	}

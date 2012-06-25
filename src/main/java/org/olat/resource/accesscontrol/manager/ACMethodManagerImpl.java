@@ -41,6 +41,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -73,6 +74,7 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 
 	private DB dbInstance;
 	private final AccessControlModule acModule;
+	private BusinessGroupService businessGroupService;
 	
 	public ACMethodManagerImpl(CoordinatorManager coordinatorManager, AccessControlModule acModule) {
 		this.acModule = acModule;
@@ -87,6 +89,14 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 		this.dbInstance = dbInstance;
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
+	}
+
 	@Override
 	public void event(Event event) {
 		if (event instanceof FrameworkStartedEvent && ((FrameworkStartedEvent) event).isEventOnThisNode()) {
@@ -271,7 +281,7 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			rawResultsMap.get(groupKey).add(new PriceMethodBundle(price, method));	
 		}
 		
-		List<BusinessGroup> groups = BusinessGroupManagerImpl.getInstance().findBusinessGroups(rawResultsMap.keySet());
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(rawResultsMap.keySet());
 		List<BusinessGroupAccess> groupAccess = new ArrayList<BusinessGroupAccess>();
 		for(BusinessGroup group:groups) {
 			List<PriceMethodBundle> methods = rawResultsMap.get(group.getKey());

@@ -44,13 +44,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 
@@ -239,10 +239,15 @@ public class COWebService extends AbstractCourseNodeWebService {
 			
 			if(StringHelper.containsNonWhitespace(groupIds)) {
 				String[] groupIdArr = groupIds.split(";");
-				BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+				BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				
+				List<Long> keys = new ArrayList<Long>();
 				for(String groupId:groupIdArr) {
 					Long groupKey = new Long(groupId);
-					BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+					keys.add(groupKey);
+				}
+				List<BusinessGroup> groups = bgm.loadBusinessGroups(keys);
+				for(BusinessGroup bg:groups) {
 					groupNames.add(bg.getName());
 				}
 			}

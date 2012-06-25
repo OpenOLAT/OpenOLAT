@@ -47,6 +47,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
@@ -58,6 +59,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVOes;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ContactsTest extends OlatJerseyTestCase {
 	
@@ -67,6 +69,9 @@ public class ContactsTest extends OlatJerseyTestCase {
 	private static BusinessGroup g1, g2;
 	private static BusinessGroup g3, g4;
 	private static OLATResource course;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	@Before
 	@Override
@@ -114,7 +119,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 			
 		//create learn group
-	    BGContextManager cm = BGContextManagerImpl.getInstance();
+	    BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 	    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
 	    BaseSecurity secm = BaseSecurityManager.getInstance();
 			
@@ -159,8 +164,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetContactsDirectOwner1() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<Identity> identities = bgm.findContacts(owner1, 0, -1);
+		List<Identity> identities = businessGroupService.findContacts(owner1, 0, -1);
 		
 		assertEquals(2, identities.size());
 		assertFalse(identities.contains(owner1));//not a contact of myself
@@ -173,15 +177,13 @@ public class ContactsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCountContactsDirectOwner1() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		int numOfContacts = bgm.countContacts(owner1);
+		int numOfContacts = businessGroupService.countContacts(owner1);
 		assertEquals(2, numOfContacts);
 	}
 	
 	@Test
 	public void testGetContactsDirectOwner2() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<Identity> identities = bgm.findContacts(owner2, 0, -1);
+		List<Identity> identities = businessGroupService.findContacts(owner2, 0, -1);
 		
 		assertEquals(1, identities.size());
 		assertFalse(identities.contains(owner1));//no
@@ -194,8 +196,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testCountContactsDirectOwner2() throws IOException {
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		int numOfContacts = bgm.countContacts(owner2);
+		int numOfContacts = businessGroupService.countContacts(owner2);
 		assertEquals(1, numOfContacts);
 	}
 	

@@ -18,7 +18,7 @@
  * <p>
  */ 
 
-package org.olat.group;
+package org.olat.group.manager;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +33,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -50,21 +49,22 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.ui.DefaultContextTranslationHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
-import org.olat.group.area.BGAreaManagerImpl;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.context.BGContext;
-import org.olat.group.context.BGContextManagerImpl;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author Christian Guretzki
  */
-
+@Service("businessGroupArchiver")
 public class BusinessGroupArchiver {
 
 	private static final String DELIMITER = "\t";
@@ -80,29 +80,29 @@ public class BusinessGroupArchiver {
 	private static String PARTICIPANT = "participant";
 	private static String WAITING = "waiting";
 	
-	private static BusinessGroupArchiver instance = new BusinessGroupArchiver();
-	private BaseSecurity securityManager;
-	private Translator translator;
-	private Map<Locale,PackageTranslator> translatorMap;
-	private List<UserPropertyHandler> userPropertyHandlers;
 
+	private Translator translator;
+	private Map<Locale,Translator> translatorMap;
+	
+	@Autowired
+	private BGAreaManager areaManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
 	 */
-	public BusinessGroupArchiver() {
-		securityManager = BaseSecurityManager.getInstance();
-		String groupCtrlPackage = Util.getPackageName(GroupController.class);
-		PackageTranslator fallBacktranslator = new PackageTranslator(groupCtrlPackage, I18nModule.getDefaultLocale());
-		String myPackage = Util.getPackageName(this.getClass());
-		translator = new PackageTranslator(myPackage, I18nModule.getDefaultLocale(), fallBacktranslator);
+	@PostConstruct
+	public void inti() {
+		Locale locale = I18nModule.getDefaultLocale();
+		Translator fallBacktranslator1 =  Util.createPackageTranslator(GroupController.class, locale);
+		Translator fallBacktranslator2 = Util.createPackageTranslator(BusinessGroupService.class, locale, fallBacktranslator1);
 		// fallback to translate user properties
-		translator = UserManager.getInstance().getPropertyHandlerTranslator(translator);
-		// get user property handlers used in this group archiver
-		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(BusinessGroupArchiver.class.getCanonicalName(), true);
-	}
-
-	public static BusinessGroupArchiver getInstance() {
-		return instance;
+		translator = userManager.getPropertyHandlerTranslator(fallBacktranslator2);
 	}
 
 	/**
@@ -116,19 +116,22 @@ public class BusinessGroupArchiver {
 			return translator;			
 		} else {
 			if(translatorMap==null) {
-				translatorMap = new HashMap<Locale,PackageTranslator>();
+				translatorMap = new HashMap<Locale,Translator>();
 			}				
 			if(translatorMap.containsKey(locale)) {
 				return translatorMap.get(locale);
 			} else {
-				String groupCtrlPackage = Util.getPackageName(GroupController.class);
-				PackageTranslator fallBacktranslator = new PackageTranslator(groupCtrlPackage, locale);
-				String myPackage = Util.getPackageName(this.getClass());
-				PackageTranslator trans = new PackageTranslator(myPackage, locale, fallBacktranslator);
+				Translator fallBacktranslator =  Util.createPackageTranslator(GroupController.class, locale);
+				Translator trans = Util.createPackageTranslator(BusinessGroupService.class, locale, fallBacktranslator);
 				translatorMap.put(locale, trans);
 				return trans;
 			}
 		}
+	}
+	
+	//get user property handlers used in this group archiver
+	private List<UserPropertyHandler> getUserPropertyHandlers() {
+		return userManager.getUserPropertyHandlersFor("org.olat.group.BusinessGroupArchiver", true);
 	}
 
 	public void archiveGroup(BusinessGroup businessGroup, File archiveFile) {
@@ -185,7 +188,7 @@ public class BusinessGroupArchiver {
 		buf.append(owner.getName());
 		buf.append(DELIMITER);
 		// add all user properties
-		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
+		for (UserPropertyHandler propertyHandler : getUserPropertyHandlers()) {
 			String value = propertyHandler.getUserProperty(owner.getUser(), loc);
 			if (StringHelper.containsNonWhitespace(value)) {
 				buf.append(value);
@@ -202,7 +205,7 @@ public class BusinessGroupArchiver {
 		buf.append( translator.translate("table.user.login") );
 		buf.append(DELIMITER);
 		// second the users properties
-		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
+		for (UserPropertyHandler propertyHandler : getUserPropertyHandlers()) {
 			String label = translator.translate(propertyHandler.i18nColumnDescriptorLabelKey());
 			buf.append(label);
 			buf.append(DELIMITER);
@@ -212,28 +215,28 @@ public class BusinessGroupArchiver {
 		buf.append(EOL);
 	}
 
-	public void archiveBGContext(BGContext context, File archiveFile) {
-		FileUtils.save(archiveFile, toXls(context), "utf-8");		
+	public void archiveBGContext(OLATResource resource, File archiveFile) {
+		FileUtils.save(archiveFile, toXls(resource), "utf-8");		
 	}
 
-	private String toXls(BGContext context) {
+	private String toXls(OLATResource resource) {
 		StringBuffer buf = new StringBuffer();
 		// Export Context Header
 		buf.append(translator.translate("archive.group.context.name"));
 		buf.append(DELIMITER);
-		buf.append(context.getName());
+		buf.append(resource.getResourceableTypeName());
 		buf.append(DELIMITER);
 		buf.append(translator.translate("archive.group.context.type"));
 		buf.append(DELIMITER);
-		buf.append(context.getGroupType());
+		buf.append("All");
 		buf.append(DELIMITER);
 		buf.append(translator.translate("archive.group.context.description"));
 		buf.append(DELIMITER);
-		buf.append(FilterFactory.getHtmlTagsFilter().filter(context.getDescription()));
+		buf.append(FilterFactory.getHtmlTagsFilter().filter("Description"));
 		buf.append(EOL);
-		List groups = BGContextManagerImpl.getInstance().getGroupsOfBGContext(context);
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			BusinessGroup group = (BusinessGroup) iter.next();
+
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
+		for (BusinessGroup group : groups) {
 			buf.append( toXls(group) );
 			buf.append(EOL);
 			buf.append(EOL);
@@ -254,19 +257,17 @@ public class BusinessGroupArchiver {
 	 * @return the output file which could be an CSV or a zip file depending on the input archiveType.
 	 * @see BGArea
 	 */
-	public File archiveAreaMembers(BGContext context, List<String> columnList, List<BGArea> areaList, String archiveType, UserRequest ureq) {
+	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset) {
 
 		List<Member> owners = new ArrayList<Member>();
 		List<Member> participants = new ArrayList<Member>();
 		List<Member> waitings = new ArrayList<Member>();
 
-		List areas = BGAreaManagerImpl.getInstance().findBGAreasOfBGContext(context);
-		for (Iterator areaIterator = areas.iterator(); areaIterator.hasNext();) {
-			BGArea area = (BGArea) areaIterator.next();
+		List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+		for (BGArea area :areas) {
 			if (areaList.contains(area)) { //rely on the equals() method of the BGArea impl
- 				List areaBusinessGroupList = BGAreaManagerImpl.getInstance().findBusinessGroupsOfArea(area);
-				for (Iterator groupIterator = areaBusinessGroupList.iterator(); groupIterator.hasNext();) {
-					BusinessGroup group = (BusinessGroup) groupIterator.next();
+ 				List<BusinessGroup> areaBusinessGroupList = areaManager.findBusinessGroupsOfArea(area);
+				for (BusinessGroup group : areaBusinessGroupList) {
 					if(group.getOwnerGroup()!=null) {
 					  Iterator ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
 					  addMembers(area.getKey(), ownerIterator, owners, OWNER);
@@ -282,12 +283,11 @@ public class BusinessGroupArchiver {
 				}
 			}
 		}
-    Locale userLocale = ureq.getLocale();
-    String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
-		Translator trans = getPackageTranslator(userLocale);
+
+		Translator trans = getPackageTranslator(locale);
 		List<OrganisationalEntity> organisationalEntityList = getOrganisationalEntityList(areaList);
-		return generateArchiveFile(context, owners, participants, waitings, columnList, organisationalEntityList, 
-				trans.translate("archive.areas"), archiveType, userLocale, charset);
+		return generateArchiveFile(resource, owners, participants, waitings, columnList, organisationalEntityList, 
+				trans.translate("archive.areas"), archiveType, locale, charset);
 	}
 	
 	
@@ -305,18 +305,17 @@ public class BusinessGroupArchiver {
 	 * @see BGContext
 	 * @see BusinessGroup
 	 */
-	public File archiveGroupMembers(BGContext context, List<String> columnList, List<BusinessGroup> groupList, String archiveType, UserRequest ureq) {
+	public File archiveGroupMembers(OLATResource resource, List<String> columnList, List<BusinessGroup> groupList, String archiveType, Locale locale, String charset) {
     
 		List<Member> owners = new ArrayList<Member>();
 		List<Member> participants = new ArrayList<Member>();
 		List<Member> waitings = new ArrayList<Member>();
 				
-		List<BusinessGroup> groups = BGContextManagerImpl.getInstance().getGroupsOfBGContext(context);
-		for (Iterator<BusinessGroup> iter = groups.iterator(); iter.hasNext();) {
-			BusinessGroup group = iter.next();
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
+		for (BusinessGroup group: groups) {
 			if (groupList.contains(group)) { //rely on the equals() method of the BusinessGroup impl			
 				if(group.getOwnerGroup()!=null) {
-				Iterator ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
+					Iterator ownerIterator = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getOwnerGroup()).iterator();
 				  addMembers(group.getKey(), ownerIterator, owners, OWNER);
 				}
 				if(group.getPartipiciantGroup()!=null) {
@@ -330,12 +329,10 @@ public class BusinessGroupArchiver {
 			}
 		}
 
-		Locale userLocale = ureq.getLocale();
-    String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
-		Translator trans = getPackageTranslator(userLocale);
+		Translator trans = getPackageTranslator(locale);
 		List<OrganisationalEntity> organisationalEntityList = getOrganisationalEntityList(groupList);
-		return generateArchiveFile(context, owners, participants, waitings, columnList, organisationalEntityList, 
-				trans.translate("archive.groups"), archiveType, userLocale, charset);
+		return generateArchiveFile(resource, owners, participants, waitings, columnList, organisationalEntityList, 
+				trans.translate("archive.groups"), archiveType, locale, charset);
 	}
 
 	/**
@@ -343,36 +340,30 @@ public class BusinessGroupArchiver {
 	 * @param context
 	 * @return a List with the course titles associated with the input BGContext.
 	 */
-	private List<String> getCourseTitles(BGContext context) {
+	private List<String> getCourseTitles(OLATResource resource) {
 		List<String> courseTitles = new ArrayList<String>();
-		List resources = BGContextManagerImpl.getInstance().findOLATResourcesForBGContext(context);
-		for (Iterator iter = resources.iterator(); iter.hasNext();) {
-			OLATResource resource = (OLATResource) iter.next();
-			if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-				ICourse course = CourseFactory.loadCourse(resource);
-				courseTitles.add(course.getCourseTitle());
-			}
-			}
+		ICourse course = CourseFactory.loadCourse(resource);
+		courseTitles.add(course.getCourseTitle());
 		return courseTitles;
-		}
+	}
 
-	private File generateArchiveFile(BGContext context, List<Member> owners, List<Member> participants, List<Member> waitings,
+	private File generateArchiveFile(OLATResource resource, List<Member> owners, List<Member> participants, List<Member> waitings,
 			List<String> columnList, List<OrganisationalEntity> organisationalEntityList, String orgEntityTitle, String archiveType,
 			Locale userLocale, String charset) {
 		//TODO: sort member lists
 		File outFile = null;
 		Translator trans = getPackageTranslator(userLocale);		
-		String archiveTitle = trans.translate("archive.title") + ": " + DefaultContextTranslationHelper.translateIfDefaultContextName(context, trans);
+		String archiveTitle = trans.translate("archive.title") + ":resource";
 		try {
 		if (ALL_IN_ONE.equals(archiveType)) {
 			//File tempDir = getTempDir();
-			outFile = archiveAllInOne(context, owners, participants, waitings, archiveTitle, columnList, organisationalEntityList,
+			outFile = archiveAllInOne(resource, owners, participants, waitings, archiveTitle, columnList, organisationalEntityList,
 					orgEntityTitle, userLocale, ALL_IN_ONE_FILE_NAME_PREFIX, null, charset);
 		} else if (FILE_PER_GROUP_OR_AREA_INCL_GROUP_MEMBERSHIP.equals(archiveType)) {
-			outFile = archiveFilePerGroupInclGroupmembership(context, owners, participants, waitings, archiveTitle, columnList,
+			outFile = archiveFilePerGroupInclGroupmembership(resource, owners, participants, waitings, archiveTitle, columnList,
 					organisationalEntityList, orgEntityTitle, userLocale, charset);
 		} else if (FILE_PER_GROUP_OR_AREA.equals(archiveType)) {
-			outFile = archiveFilePerGroup(context, owners, participants, waitings, columnList, organisationalEntityList,
+			outFile = archiveFilePerGroup(resource, owners, participants, waitings, columnList, organisationalEntityList,
 					orgEntityTitle, userLocale, charset);
 		}
 		} catch (IOException e) {
@@ -394,7 +385,7 @@ public class BusinessGroupArchiver {
 	 * @param userLocale
 	 * @return the generated file located into the temp dir.
 	 */
-	private File archiveAllInOne(BGContext context,List<Member> owners, List<Member> participants, List<Member> waitings, String contextName,
+	private File archiveAllInOne(OLATResource resource,List<Member> owners, List<Member> participants, List<Member> waitings, String contextName,
 			List<String> columnList, List<OrganisationalEntity> organisationalEntityList, String orgEntityTitle, Locale userLocale,
 			String fileNamePrefix, File tempDir, String charset) throws IOException {
 		File outFile = null;
@@ -402,7 +393,7 @@ public class BusinessGroupArchiver {
 
 		Translator trans = getPackageTranslator(userLocale);		
 		Translator propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(trans);
-		appendContextInfo(stringBuffer, context, userLocale);
+		appendContextInfo(stringBuffer, resource, userLocale);
 		if (owners.size() > 0) {
 			appendSection(stringBuffer, trans.translate("archive.header.owners"), owners, columnList, organisationalEntityList, orgEntityTitle,
 					propertyHandlerTranslator, OWNER);
@@ -471,7 +462,7 @@ public class BusinessGroupArchiver {
 	 * @param userLocale
 	 * @return the output zip file located into the temp dir.
 	 */
-	private File archiveFilePerGroupInclGroupmembership(BGContext context, List<Member> owners, List<Member> participants,
+	private File archiveFilePerGroupInclGroupmembership(OLATResource resource, List<Member> owners, List<Member> participants,
 			List<Member> waitings, String contextName, List<String> columnList, List<OrganisationalEntity> groupList, String orgEntityTitle,
 			Locale userLocale, String charset) {
 		Set<String> outFiles = new HashSet<String>();
@@ -486,7 +477,7 @@ public class BusinessGroupArchiver {
 				List<Member> groupParticipants = getFilteredList(participants, group, PARTICIPANT);
 				List<Member> groupWaiting = getFilteredList(waitings, group, WAITING);
 
-				File filePerGroup = archiveAllInOne(context, groupOwners, groupParticipants, groupWaiting, contextName, columnList, groupList,
+				File filePerGroup = archiveAllInOne(resource, groupOwners, groupParticipants, groupWaiting, contextName, columnList, groupList,
 						orgEntityTitle, userLocale, group.getName(), tempDir, charset);
 				if (root == null && filePerGroup != null) {
 					root = filePerGroup.getParentFile();
@@ -520,7 +511,7 @@ public class BusinessGroupArchiver {
 	 * @param userLocale
 	 * @return the output zip file located into the temp dir.
 	 */
-	private File archiveFilePerGroup(BGContext context, List<Member> owners, List<Member> participants,
+	private File archiveFilePerGroup(OLATResource resource, List<Member> owners, List<Member> participants,
 			List<Member> waitings, List<String> columnList, List<OrganisationalEntity> groupList, String orgEntityTitle, Locale userLocale,
 			String charset) {
 		Set<String> outFiles = new HashSet<String>();
@@ -535,7 +526,7 @@ public class BusinessGroupArchiver {
 				List<Member> groupParticipants = getFilteredList(participants, group, PARTICIPANT);
 				List<Member> groupWaiting = getFilteredList(waitings, group, WAITING);
 
-				File filePerGroup = archiveFileSingleGroup(context, groupOwners, groupParticipants, groupWaiting, columnList, groupList, orgEntityTitle,
+				File filePerGroup = archiveFileSingleGroup(resource, groupOwners, groupParticipants, groupWaiting, columnList, groupList, orgEntityTitle,
 						userLocale, group.getName(), tempDir, charset);
 				if (root == null && filePerGroup != null) {
 					root = filePerGroup.getParentFile();
@@ -573,7 +564,7 @@ public class BusinessGroupArchiver {
 	 * @return
 	 * @throws IOException
 	 */
-	private File archiveFileSingleGroup(BGContext context, List<Member> groupOwners, List<Member> groupParticipants, List<Member> groupWaiting,
+	private File archiveFileSingleGroup(OLATResource resource, List<Member> groupOwners, List<Member> groupParticipants, List<Member> groupWaiting,
 			List<String> columnList, List<OrganisationalEntity> organisationalEntityList, String orgEntityTitle, Locale userLocale, String fileNamePrefix,
 			File tempDir, String charset) throws IOException {
 		File outFile = null;
@@ -582,7 +573,7 @@ public class BusinessGroupArchiver {
 		Translator trans = getPackageTranslator(userLocale);
 		Translator propertyHandlerTranslator = UserManager.getInstance().getPropertyHandlerTranslator(trans);
 		// choice element has only one selected entry
-		List<String> titles = getCourseTitles (context);
+		List<String> titles = getCourseTitles (resource);
 		Iterator<String> titleIterator = titles.iterator();
 		DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, userLocale);
 		String formattedDate = dateFormat.format(new Date());
@@ -706,8 +697,8 @@ public class BusinessGroupArchiver {
 	 * @param context
 	 * @param userLocale
 	 */
-	private void appendContextInfo(StringBuffer buf, BGContext context, Locale userLocale) {
-		List<String> titles = getCourseTitles (context);
+	private void appendContextInfo(StringBuffer buf, OLATResource resource, Locale userLocale) {
+		List<String> titles = getCourseTitles (resource);
 		DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, userLocale);
 		String formattedDate = dateFormat.format(new Date());
 		Translator trans = getPackageTranslator(userLocale);

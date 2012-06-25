@@ -27,7 +27,7 @@ package org.olat.core.commons.services.commentAndRating.impl;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -238,11 +238,11 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		if (getOLATResourceableSubPath() == null) {
 			query = "from UserRatingImpl where resName=? AND resId=? AND resSubPath is NULL";
 			values = new Object[] { getOLATResourceable().getResourceableTypeName(),  getOLATResourceable().getResourceableId() };
-			types = new Type[] {Hibernate.STRING, Hibernate.LONG};
+			types = new Type[] {StandardBasicTypes.STRING, StandardBasicTypes.LONG};
 		} else {
 			query = "from UserRatingImpl where resName=? AND resId=? AND resSubPath=?";
 			values = new Object[] { getOLATResourceable().getResourceableTypeName(),  getOLATResourceable().getResourceableId(), getOLATResourceableSubPath() };
-			types = new Type[] {Hibernate.STRING, Hibernate.LONG, Hibernate.STRING};
+			types = new Type[] {StandardBasicTypes.STRING, StandardBasicTypes.LONG, StandardBasicTypes.STRING};
 		}
 		return db.delete(query, values, types);
 	}
@@ -255,7 +255,7 @@ public class UserRatingsManagerImpl extends UserRatingsManager {
 		// Don't limit to subpath. Ignore if null or not, just delete on the resource
 		String query = "from UserRatingImpl where resName=? AND resId=?";
 		Object[] values = new Object[] { getOLATResourceable().getResourceableTypeName(),  getOLATResourceable().getResourceableId() };
-		Type[] types = new Type[] {Hibernate.STRING, Hibernate.LONG};
+		Type[] types = new Type[] {StandardBasicTypes.STRING, StandardBasicTypes.LONG};
 		DB db = DBFactory.getInstance();
 		return db.delete(query, values, types);		
 	}

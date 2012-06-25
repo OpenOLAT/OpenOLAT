@@ -36,7 +36,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.EPAbstractHandler;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.ui.artefacts.view.details.FileArtefactDetailsController;
@@ -115,7 +115,7 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 				for (int i = 5; i < (pathElements.length - 1); i++) {
 					lastParts = lastParts + pathElements[i] + "/";
 				}
-				BusinessGroup bGroup = BusinessGroupManagerImpl.getInstance().loadBusinessGroup(new Long(pathElements[4]), false);
+				BusinessGroup bGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(new Long(pathElements[4]));
 				if (bGroup != null) {
 					sourceInfo = bGroup.getName() + " -> " + lastParts + " -> " + fileSource.getName();
 				}

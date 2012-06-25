@@ -32,7 +32,6 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
-import org.olat.group.context.BGContext;
 
 /**
  * Initial Date: Aug 2, 2004
@@ -113,17 +112,17 @@ public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OL
 	/**
 	 * @return last usage of this group
 	 */
-	java.util.Date getLastUsage();
+	public Date getLastUsage();
 
 	/**
 	 * @return the business group context for this group
 	 */
-	public BGContext getGroupContext();
+	//public BGContext getGroupContext();
 
 	/**
 	 * @param groupContext the business group context
 	 */
-	public void setGroupContext(BGContext groupContext);
+	//public void setGroupContext(BGContext groupContext);
 
 	/**
 	 * @return the maximal number of participants

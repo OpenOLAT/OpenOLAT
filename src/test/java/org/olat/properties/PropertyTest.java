@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -44,6 +45,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -85,7 +87,8 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 					OLATResourceManager.getInstance().saveOLATResource(res);
 				}
 				BusinessGroupManager gm = BusinessGroupManagerImpl.getInstance();
-				List l = gm.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
+				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				List<BusinessGroup> l = bgs.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
 				if (l.size() == 0) {
 					group = gm.createAndPersistBusinessGroup(BusinessGroup.TYPE_BUDDYGROUP, 
 							identity, "a buddygroup", "a desc", null, null, null/* enableWaitinglist */, null/* enableAutoCloseRanks */, null);

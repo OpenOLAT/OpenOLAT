@@ -53,7 +53,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	private SecurityGroup partipiciantGroup;
 	private SecurityGroup waitingGroup;
 	private Date lastUsage;
-	private BGContext groupContext;
+	private Long groupContextKey;
 	private Boolean waitingListEnabled;
 	private Boolean autoCloseRanksEnabled;
 	private Date lastModified;
@@ -83,7 +83,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 		this.setDescription(description);
 		this.setOwnerGroup(ownerGroup);
 		this.setPartipiciantGroup(partipiciantGroup);
-		this.setGroupContext(groupContext);
+		this.setGroupContextKey(groupContext.getKey());
 		this.setWaitingGroup(waitingGroup);
 		this.setType(type);
 		// per default no waiting-list
@@ -210,15 +210,15 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	/**
 	 * @see org.olat.group.BusinessGroup#getGroupContext()
 	 */
-	public BGContext getGroupContext() {
-		return this.groupContext;
+	public Long getGroupContextKey() {
+		return this.groupContextKey;
 	}
 
 	/**
 	 * @see org.olat.group.BusinessGroup#setGroupContext(org.olat.group.context.BGContext)
 	 */
-	public void setGroupContext(BGContext groupContext) {
-		this.groupContext = groupContext;
+	public void setGroupContextKey(Long groupContextKey) {
+		this.groupContextKey = groupContextKey;
 	}
 
 	/**

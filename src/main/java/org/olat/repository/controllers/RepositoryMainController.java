@@ -73,7 +73,8 @@ import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -149,7 +150,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private WizardController wc;
 	private RepositoryAddChooseStepsController chooseStepsController;
 	private Controller creationWizardController;
-	private PortfolioModule portfolioModule;
+	private final PortfolioModule portfolioModule;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * The check for author rights is executed on construction time and then
@@ -164,6 +166,7 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		if (log.isDebug()) {
 			log.debug("Constructing ReposityMainController for user::" + ureq.getIdentity());
 		}
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 
 		// use i18n from RepositoryManager level
@@ -282,7 +285,9 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		if (repoPortletOn) {
 			rootNode.addChild(new GenericTreeNode(translate("search.mycourses.student"), "search.mycourses.student"));
 			// for authors or users with group rights also show the teacher portlet
-			if (bIsAuthor || BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, getIdentity(), null).size() > 0) {
+			SearchBusinessGroupParams rightParams = new SearchBusinessGroupParams();
+			rightParams.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
+			if (bIsAuthor || businessGroupService.countBusinessGroups(rightParams, getIdentity(), true, false, null) > 0) {
 				rootNode.addChild(new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher"));
 			}
 		}

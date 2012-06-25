@@ -458,7 +458,7 @@ public class OLATUpgrade_7_1_1 extends OLATUpgrade {
 	
 	private void migrateRepoEntrySecurityGroups(RepositoryEntry entry) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		BGContextManager contextManager = BGContextManagerImpl.getInstance();
+		BGContextManagerImpl contextManager = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
 
 		List<BGContext> contexts = contextManager.findBGContextsForResource(entry.getOlatResource(), true, true);
 		for(BGContext context:contexts) {

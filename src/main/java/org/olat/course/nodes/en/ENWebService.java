@@ -42,14 +42,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
@@ -231,10 +231,15 @@ public class ENWebService extends AbstractCourseNodeWebService {
 			
 			if(StringHelper.containsNonWhitespace(groupIds)) {
 				String[] groupIdArr = groupIds.split(";");
-				BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+				BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				
+				List<Long> keys = new ArrayList<Long>();
 				for(String groupId:groupIdArr) {
 					Long groupKey = new Long(groupId);
-					BusinessGroup bg = bgm.loadBusinessGroup(groupKey, false);
+					keys.add(groupKey);
+				}
+				List<BusinessGroup> groups = bgm.loadBusinessGroups(keys);
+				for(BusinessGroup bg:groups) {
 					groupNames.add(bg.getName());
 				}
 			}

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
@@ -43,6 +44,7 @@ import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.group.model.SearchBusinessGroupParams;
 
 /**
  * 
@@ -117,8 +119,8 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-		List<BusinessGroup> groups = bgm.findBusinessGroups(params, identity, true, true, null, 0, -1);
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, identity, true, true, null, 0, -1);
 		Set<String> addedGroupNames = new HashSet<String>();
 		for(BusinessGroup group:groups) {
 			String name = nameIdentifier(group, addedGroupNames);
@@ -140,7 +142,7 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 	
 	private void init() {
 	// collect buddy groups
-		BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		Set<Long> addedGroupKeys = new HashSet<Long>();
 		Set<String> addedGroupNames = new HashSet<String>();
@@ -148,11 +150,11 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
-		List<BusinessGroup> tutorGroups = bgm.findBusinessGroups(params, identity, true, false, null, 0, -1);
+		List<BusinessGroup> tutorGroups = bgs.findBusinessGroups(params, identity, true, false, null, 0, -1);
 		for (BusinessGroup group : tutorGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, true);
 		}
-		List<BusinessGroup> participantsGroups = bgm.findBusinessGroups(params, identity, false, true, null, 0, -1);
+		List<BusinessGroup> participantsGroups = bgs.findBusinessGroups(params, identity, false, true, null, 0, -1);
 		for (BusinessGroup group : participantsGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, false);
 		}

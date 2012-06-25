@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/> The course group manager provides methods to access
@@ -48,6 +50,9 @@ public interface CourseGroupManager {
 	/** default course group context name for right groups */
 	static final String DEFAULT_NAME_RC_PREFIX = DEFAULT_CONTEXT_PREFIX + "rightgroups::";
 
+	
+	public OLATResource getCourseResource();
+	
 	/**
 	 * Initialize the group contexts list.
 	 */
@@ -93,7 +98,7 @@ public interface CourseGroupManager {
 	 * @param groupContextName
 	 * @return true if user is in learning group, false otherwhise
 	 */
-	public boolean isIdentityInLearningGroup(Identity identity, String groupName, String groupContextName);
+	//public boolean isIdentityInLearningGroup(Identity identity, String groupName, String groupContextName);
 	
 	/**
 	 * Checks whether a set of learning groups with an identical name are full or not.
@@ -123,7 +128,7 @@ public interface CourseGroupManager {
 	 * @param groupContextName
 	 * @return true if user is in right group, false otherwhise
 	 */
-	public boolean isIdentityInRightGroup(Identity identity, String groupName, String groupContextName);
+	//public boolean isIdentityInRightGroup(Identity identity, String groupName, String groupContextName);
 
 	/**
 	 * Checks if an identity is in any learning areas with the given name in any
@@ -196,16 +201,6 @@ public interface CourseGroupManager {
 	public boolean isIdentityParticipantInAnyLearningGroup(Identity identity);
 
 	/**
-	 * @return The list of learning group contexts of this course
-	 */
-	public List getLearningGroupContexts();
-
-	/**
-	 * @return The list of right group contexts of this course
-	 */
-	public List getRightGroupContexts();
-
-	/**
 	 * @return A list of all learning group from all learning group contexts of
 	 *         this course
 	 */
@@ -216,27 +211,27 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups with the given group name from all
 	 *         contexts of this course
 	 */
-	public List getLearningGroupsFromAllContexts(String groupName);
+	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName);
 	/**
 	 * 
 	 * @param groupName
 	 * @return
 	 */
-	public List getRightGroupsFromAllContexts(String groupName);
+	public List<BusinessGroup> getRightGroupsFromAllContexts(String groupName);
 
 	/**
 	 * @param areaName
 	 * @return A list of all learning groups from all contexts from this course
 	 *         that are in the given group area
 	 */
-	public List getLearningGroupsInAreaFromAllContexts(String areaName);
+	public List<BusinessGroup> getLearningGroupsInAreaFromAllContexts(String areaName);
 
 	/**
 	 * @param groupName
 	 * @return A list of all learning areas where the given group takes part. All
 	 *         course group contexts are considered in this search.
 	 */
-	public List getLearningAreasOfGroupFromAllContexts(String groupName);
+	public List<BGArea> getLearningAreasOfGroupFromAllContexts(String groupName);
 
 	/**
 	 * @param identity
@@ -244,7 +239,7 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups with the given name where this
 	 *         identity is participant
 	 */
-	public List getParticipatingLearningGroupsFromAllContexts(Identity identity, String groupName);
+	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity, String groupName);
 
 	/**
 	 * @param identity
@@ -252,25 +247,25 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups within the given group area where
 	 *         this identity is participant
 	 */
-	public List getParticipatingLearningGroupsInAreaFromAllContexts(Identity identity, String araName);
+	public List<BusinessGroup> getParticipatingLearningGroupsInAreaFromAllContexts(Identity identity, String araName);
 
 	/**
 	 * @param identity
 	 * @return A list of all learning groups where this identity is owner
 	 */
-	public List getOwnedLearningGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getOwnedLearningGroupsFromAllContexts(Identity identity);
 
 	/**
 	 * @param identity
 	 * @return A list of all learning groups where this identity is participant
 	 */
-	public List getParticipatingLearningGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity);
 
 	/**
 	 * @param identity
 	 * @return A list of right groups where this identity is participating
 	 */
-	public List getParticipatingRightGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getParticipatingRightGroupsFromAllContexts(Identity identity);
 
 	/**
 	 * @return A list of all right groups from this course
@@ -280,7 +275,7 @@ public interface CourseGroupManager {
 	/**
 	 * @return A list of all group areas from this course
 	 */
-	public List getAllAreasFromAllContexts();
+	public List<BGArea> getAllAreasFromAllContexts();
 
 	/**
 	 * Deletes the course group management. This will unlink all group contexts
@@ -317,21 +312,21 @@ public interface CourseGroupManager {
 	 * @return A list of Integers that show the number of members in a group for
 	 *         each of the group from the groups list.
 	 */
-	public List getNumberOfMembersFromGroups(List groups);
+	public List<Integer> getNumberOfMembersFromGroups(List<BusinessGroup> groups);
 
 	/**
 	 * @return A list with all group names used in all learning group contexts. If
 	 *         a group red is in more than one contexts, red will be only once in
 	 *         the list
 	 */
-	public List getUniqueLearningGroupNamesFromAllContexts();
+	public List<String> getUniqueLearningGroupNamesFromAllContexts();
 
 	/**
 	 * @return A list with all area names used in all learning group contexts. If
 	 *         an area red is in more than one contexts, red will be only once in
 	 *         the list
 	 */
-	public List getUniqueAreaNamesFromAllContexts();
+	public List<String> getUniqueAreaNamesFromAllContexts();
 
 	/**
 	 * Export all groups which are course internal to a file for later import.
@@ -407,5 +402,5 @@ public interface CourseGroupManager {
 	 * @param identity
 	 * @return A list of all waiting-list groups where this identity is in
 	 */
-	public List getWaitingListGroupsFromAllContexts(Identity identity);
+	public List<BusinessGroup> getWaitingListGroupsFromAllContexts(Identity identity);
 }

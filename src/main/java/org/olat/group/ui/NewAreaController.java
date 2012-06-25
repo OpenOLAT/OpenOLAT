@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -42,6 +43,7 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGAreaManagerImpl;
 import org.olat.group.context.BGContext;
 import org.olat.group.ui.area.BGAreaFormController;
+import org.olat.resource.OLATResource;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -59,7 +61,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class NewAreaController extends BasicController {
 
-	private BGContext bgContext;
+	private OLATResource resource;
 	private VelocityContainer contentVC;
 	private BGAreaFormController areaCreateController;
 	private boolean bulkMode = false;
@@ -76,12 +78,12 @@ public class NewAreaController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	NewAreaController(UserRequest ureq, WindowControl wControl, BGContext bgContext, boolean bulkMode, String csvAreaNames) {
+	NewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvAreaNames) {
 		super(ureq, wControl);
-		this.bgContext = bgContext;
+		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
-		this.areaManager = BGAreaManagerImpl.getInstance();
+		this.areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		this.contentVC = this.createVelocityContainer("areaform");
 		this.contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		//
@@ -127,7 +129,7 @@ public class NewAreaController extends BasicController {
 					allNames.add(this.areaCreateController.getAreaName());
 				}
 
-				if(areaManager.checkIfOneOrMoreNameExistsInContext(allNames, bgContext)){
+				if(areaManager.checkIfOneOrMoreNameExistsInContext(allNames, resource)){
 					// set error of non existing name
 					this.areaCreateController.setAreaNameExistsError(null);
 				} else {
@@ -137,7 +139,7 @@ public class NewAreaController extends BasicController {
 					newAreaNames = new HashSet<String>();
 					for (Iterator<String> iter = allNames.iterator(); iter.hasNext();) {
 						String areaName = iter.next();
-						BGArea newArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, bgContext);
+						BGArea newArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, areaDesc, resource);
 						newAreas.add(newArea);
 						newAreaNames.add(areaName);
 					}

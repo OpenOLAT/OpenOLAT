@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -70,12 +70,11 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContext2Resource;
 import org.olat.group.context.BGContextImpl;
-import org.olat.group.context.BGContextManagerImpl;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.async.BackgroundTaskQueueManager;
 import org.olat.repository.async.IncrementDownloadCounterBackgroundTask;
 import org.olat.repository.async.IncrementLaunchCounterBackgroundTask;
@@ -107,6 +106,7 @@ public class RepositoryManager extends BasicManager {
 	private ImageHelper imageHelper;
 	private static BackgroundTaskQueueManager taskQueueManager;
 	private UserCourseInformationsManager userCourseInformationsManager;
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * [used by spring]
@@ -131,6 +131,14 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public void setImageHelper(ImageHelper imageHelper) {
 		this.imageHelper = imageHelper;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param businessGroupService
+	 */
+	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
+		this.businessGroupService = businessGroupService;
 	}
 
 	/**
@@ -621,7 +629,7 @@ public class RepositoryManager extends BasicManager {
 				 .append("     and context2res.groupContext=context")
 		     .append("  )")
 		     .append(" ))");
-		
+		//TODO gm
 		if(resourceTypes != null && resourceTypes.length > 0) {
 			query.append(" and reResource.resName in (:resnames)");
 		}
@@ -905,7 +913,7 @@ public class RepositoryManager extends BasicManager {
 			dbquery.setString("desc", desc);
 		}
 		if (resourceTypes != null) {
-			dbquery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+			dbquery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
 		}
 		return dbquery.list();		
 		
@@ -1036,7 +1044,7 @@ public class RepositoryManager extends BasicManager {
 			dbQuery.setString("desc", desc);
 		}
 		if (var_resourcetypes) {
-			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+			dbQuery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
 		}
 		if(setIdentity) {
 			dbQuery.setEntity("identity", identity);
@@ -1194,7 +1202,7 @@ public class RepositoryManager extends BasicManager {
 				dbQuery.setString("desc", desc);
 			}
 			if (var_resourcetypes) {
-				dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+				dbQuery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
 			}
 			results.addAll(dbQuery.list());
 		}
@@ -1320,7 +1328,7 @@ public class RepositoryManager extends BasicManager {
 			dbQuery.setString("desc", desc);
 		}
 		if (var_resourcetypes) {
-			dbQuery.setParameterList("resourcetypes", resourceTypes, Hibernate.STRING);
+			dbQuery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
 		}
 		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
 			dbQuery.setParameterList("entryKeys", params.getRepositoryEntryKeys());
@@ -1623,21 +1631,18 @@ public class RepositoryManager extends BasicManager {
 		dbquery.setEntity("identity", identity);
 		dbquery.setCacheable(true);
 		List<RepositoryEntry> repoEntries = dbquery.list();
-		List<RepositoryEntry> allRepoEntries = new ArrayList<RepositoryEntry>(repoEntries);
-		
-		
+
 		// 2: search for all learning groups where user is coach
-		List<BGContext> bgContexts = new ArrayList<BGContext>();
-		List<BusinessGroup> rightGrougList = BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
-		for (BusinessGroup group : rightGrougList) {
-			BGContext bgContext = group.getGroupContext();
-			if (bgContext != null && !PersistenceHelper.listContainsObjectByKey(bgContexts, bgContext)) {
-				bgContexts.add(bgContext);
+		//TODO gm
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
+		List<BusinessGroup> rightGrougList = businessGroupService.findBusinessGroups(params, identity, false, true, null, 0, -1);
+		List<RepositoryEntry> repoEntriesRightGroup = businessGroupService.findRepositoryEntries(rightGrougList, 0, -1);
+		for(RepositoryEntry entry:repoEntriesRightGroup) {
+			if(!repoEntries.contains(entry)) {
+				repoEntries.add(entry);
 			}
 		}
-		
-		List<RepositoryEntry> repoEntriesRightGroup = BGContextManagerImpl.getInstance().findRepositoryEntriesForBGContext(bgContexts, RepositoryEntry.ACC_USERS, false, false, false, identity);
-		allRepoEntries.addAll(repoEntriesRightGroup);
-		return allRepoEntries;
+		return repoEntries;
 	}
 }

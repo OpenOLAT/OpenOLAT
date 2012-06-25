@@ -62,6 +62,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.context.BGContext;
 import org.olat.group.context.BGContextManager;
 import org.olat.group.context.BGContextManagerImpl;
@@ -70,6 +71,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -91,6 +93,10 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private OLATResource course;
 
 	private RestConnection conn;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -116,7 +122,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		
 		//create learn group
 
-    BGContextManager cm = BGContextManagerImpl.getInstance();
+    BGContextManagerImpl cm = (BGContextManagerImpl)BGContextManagerImpl.getInstance();
     BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
     BaseSecurity secm = BaseSecurityManager.getInstance();
 		
@@ -211,8 +217,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(responseVo);
 		assertEquals(vo.getName(), responseVo.getName());
 
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-    BusinessGroup bg = bgm.loadBusinessGroup(responseVo.getKey(), false);
+    BusinessGroup bg = businessGroupService.loadBusinessGroup(responseVo.getKey());
     assertNotNull(bg);
     assertEquals(bg.getKey(), responseVo.getKey());
     assertEquals(bg.getName(), vo.getName());
@@ -240,8 +245,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-    BusinessGroup bg = bgm.loadBusinessGroup(g1.getKey(), false);
+    BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
     assertNotNull(bg);
     assertEquals(bg.getKey(), vo.getKey());
     assertEquals("rest-g1-mod", bg.getName());
@@ -258,8 +262,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-    BusinessGroupManager bgm = BusinessGroupManagerImpl.getInstance();
-    BusinessGroup bg = bgm.loadBusinessGroup(g1.getKey(), false);
+    BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
     assertNull(bg);
 	}
 	

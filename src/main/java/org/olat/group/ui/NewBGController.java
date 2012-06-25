@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -37,10 +38,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
 import org.olat.group.BusinessGroupManagerImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.context.BGContext;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -57,13 +58,12 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class NewBGController extends BasicController {
 
-	private BGContext bgContext;
-	private BusinessGroupManager groupManager;
+	private OLATResource resource;
+	private BusinessGroupService businessGroupService;
 	private VelocityContainer contentVC;
 	private BusinessGroupFormController groupCreateController;
 	private boolean bulkMode = false;
 	private Set<BusinessGroup> newGroups;
-	private boolean minMaxEnabled = false;
 
 	/**
 	 * @param ureq
@@ -72,8 +72,8 @@ public class NewBGController extends BasicController {
 	 * @param bgContext
 	 * @param bulkMode
 	 */
-	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, BGContext bgContext){
-		this(ureq,wControl,minMaxEnabled,bgContext,true,null);
+	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource){
+		this(ureq,wControl,minMaxEnabled,resource,true,null);
 	}
 	/**
 	 * 
@@ -84,13 +84,12 @@ public class NewBGController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, BGContext bgContext, boolean bulkMode, String csvGroupNames) {
+	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource, boolean bulkMode, String csvGroupNames) {
 		super(ureq, wControl);
-		this.bgContext = bgContext;
-		this.minMaxEnabled  = minMaxEnabled;
+		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
-		this.groupManager = BusinessGroupManagerImpl.getInstance();
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.contentVC = this.createVelocityContainer("bgform");
 		this.contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		
@@ -131,7 +130,7 @@ public class NewBGController extends BasicController {
 					allNames.add(this.groupCreateController.getGroupName());
 				}
 
-				this.newGroups = this.groupManager.createUniqueBusinessGroupsFor(allNames, this.bgContext, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks);
+				this.newGroups = businessGroupService.createUniqueBusinessGroupsFor(allNames, resource, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks);
 				if(this.newGroups != null){
 						for (Iterator<BusinessGroup> iter = this.newGroups.iterator(); iter.hasNext();) {
 							BusinessGroup bg = iter.next();

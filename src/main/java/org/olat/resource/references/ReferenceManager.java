@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.hibernate.Hibernate;
+import org.hibernate.type.StandardBasicTypes;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
@@ -95,7 +95,7 @@ public class ReferenceManager extends BasicManager {
 		
 		return DBFactory.getInstance().find(
 				"select v from org.olat.resource.references.ReferenceImpl as v where v.source = ?",
-				sourceImpl.getKey(), Hibernate.LONG);
+				sourceImpl.getKey(), StandardBasicTypes.LONG);
 	}
 	
 	/**
@@ -110,7 +110,7 @@ public class ReferenceManager extends BasicManager {
 		
 		return DBFactory.getInstance().find(
 				"select v from org.olat.resource.references.ReferenceImpl as v where v.target = ?",
-				targetImpl.getKey(), Hibernate.LONG);
+				targetImpl.getKey(), StandardBasicTypes.LONG);
 	}
 
 	/**

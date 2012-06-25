@@ -24,7 +24,6 @@
 */
 package org.olat.course.condition;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +41,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
@@ -59,10 +57,8 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 
 	private MultipleSelectionElement entrySelector;
 	protected String[] entries;
-	private String title;
 	private FormLinkImpl createNew;
 	private CourseGroupManager courseGrpMngr;
-	private BGContext bgContext;
 	private boolean inGroupMode;
 	private NewBGController groupCreateCntrllr;
 	private NewAreaController areaCreateCntrllr;
@@ -77,8 +73,6 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		this.courseGrpMngr = courseGrpMngr;
 		// group or area mode
 		this.inGroupMode = groupOrArea == 0;
-		//
-		this.bgContext = getDefaultBGContext();
 		// unique names from list to arry
 		List<String> uniqueNames = null;
 		if (inGroupMode) {
@@ -89,7 +83,6 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		
 		entries = new String[uniqueNames.size()];
 		uniqueNames.toArray(entries);
-		this.title = title;
 		/*
 		 * init form elements
 		 */
@@ -103,22 +96,7 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		}
 	}
 
-	/*
-	 * find default context if one is present
-	 */
-	private BGContext getDefaultBGContext() {
-		List courseLGContextes = courseGrpMngr.getLearningGroupContexts();
-		for (Iterator iter = courseLGContextes.iterator(); iter.hasNext();) {
-			BGContext bctxt = (BGContext) iter.next();
-			if (bctxt.isDefaultContext()) { return bctxt; }
-		}
-		return null;
-		// not found! this is inacceptable! -> disable creation of groups!
-
-	}
-
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, org.olat.core.gui.components.form.flexible.FormItem source,
 			org.olat.core.gui.components.form.flexible.impl.FormEvent event) {
 		if (source == createNew) {
@@ -128,7 +106,7 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 				
 				removeAsListenerAndDispose(groupCreateCntrllr);
 				groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-						ureq, getWindowControl(), true, bgContext, true, null
+						ureq, getWindowControl(), true, courseGrpMngr.getCourseResource(), true, null
 				);
 				listenTo(groupCreateCntrllr);
 				
@@ -146,7 +124,7 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 				
 				removeAsListenerAndDispose(areaCreateCntrllr);
 				areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-						ureq, getWindowControl(), bgContext
+						ureq, getWindowControl(), courseGrpMngr.getCourseResource()
 				);
 				listenTo(areaCreateCntrllr);
 				
@@ -162,7 +140,6 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == groupCreateCntrllr) {
 			
@@ -207,13 +184,11 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void doDispose() {
 		//
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer boundTo, Controller listener, UserRequest ureq) {
 		/*
 		// | [] group 1 | create group |
@@ -222,7 +197,7 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		//
 		 * 
 		 */
-		if (bgContext != null) {
+
 			// easy creation only possible if a default group context available
 			if (inGroupMode) {
 				createNew = new FormLinkImpl("create");
@@ -234,7 +209,7 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 			createNew.setCustomDisabledLinkCSS("b_button b_disabled");
 			// create new group/area on the right side
 			boundTo.add(createNew);
-		} 
+
 		
 
 		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, entries, entries, null, 1);
@@ -256,7 +231,7 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	public Set getSelectedEntries() {
+	public Set<String> getSelectedEntries() {
 		return entrySelector.getSelectedKeys();
 	}
 

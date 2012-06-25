@@ -145,7 +145,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.UserMgmtTest.class,
 	org.olat.restapi.ContactsTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,
-	org.olat.group.GroupImportExportTest.class,
+	org.olat.group.manager.GroupImportExportTest.class,
 	org.olat.resource.accesscontrol.ACFrontendManagerTest.class,
 	org.olat.resource.accesscontrol.ACMethodManagerTest.class,
 	org.olat.resource.accesscontrol.ACOfferManagerTest.class,
