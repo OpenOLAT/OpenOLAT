@@ -264,43 +264,75 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 	private TreeModel buildTreeModel(boolean bIsAuthor) {
 		GenericTreeModel gtm = new GenericTreeModel();
 		GenericTreeNode rootNode = new GenericTreeNode(translate("search.home"), "search.home");
+		rootNode.setCssClass("o_sel_repo_home");
 		gtm.setRootNode(rootNode);
 
 		// TODO:catalog not yet finished :
-		rootNode.addChild(new GenericTreeNode(translate("search.catalog"), "search.catalog"));
+		GenericTreeNode node = new GenericTreeNode(translate("search.catalog"), "search.catalog");
+		node.setCssClass("o_sel_repo_catalog");
+		rootNode.addChild(node);
 
 		// check if repository portlet is configured in olat_portals.xml
 		boolean repoPortletOn = PortletFactory.containsPortlet("RepositoryPortletStudent");
 		// add default searches
-		rootNode.addChild(new GenericTreeNode(translate("search.generic"), "search.generic"));
+		node = new GenericTreeNode(translate("search.generic"), "search.generic");
+		node.setCssClass("o_sel_repo_search_generic");
+		rootNode.addChild(node);
 		if (bIsAuthor) {
 			GenericTreeNode myEntriesTn = new GenericTreeNode(translate("search.my"), "search.my");
+			myEntriesTn.setCssClass("o_sel_repo_my");
 			myEntriesNodeId = myEntriesTn.getIdent();
 			rootNode.addChild(myEntriesTn);
 		}
 		// add repository search also used by portlets
 		if (repoPortletOn) {
-			rootNode.addChild(new GenericTreeNode(translate("search.mycourses.student"), "search.mycourses.student"));
+			node = new GenericTreeNode(translate("search.mycourses.student"), "search.mycourses.student");
+			node.setCssClass("o_sel_repo_my_student");
+			rootNode.addChild(node);
 			// for authors or users with group rights also show the teacher portlet
 			if (bIsAuthor || BusinessGroupManagerImpl.getInstance().findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, getIdentity(), null).size() > 0) {
-				rootNode.addChild(new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher"));
+				node = new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher");
+				node.setCssClass("o_sel_repo_my_teacher");
+				rootNode.addChild(node);
 			}
 		}
-		rootNode.addChild(new GenericTreeNode(translate("search.course"), "search.course"));
+		node = new GenericTreeNode(translate("search.course"), "search.course");
+		node.setCssClass("o_sel_repo_course");
+		rootNode.addChild(node);
 		if (bIsAuthor) {
 			//cp, scorm, wiki, podcast, portfolie, test, questionn, resource folder, glossary
-			rootNode.addChild(new GenericTreeNode(translate("search.cp"), "search.cp"));
-			rootNode.addChild(new GenericTreeNode(translate("search.scorm"), "search.scorm"));
-			rootNode.addChild(new GenericTreeNode(translate("search.wiki"), "search.wiki"));
-			rootNode.addChild(new GenericTreeNode(translate("search.podcast"), "search.podcast" ));
-			rootNode.addChild(new GenericTreeNode(translate("search.blog"), "search.blog" ));
+			node = new GenericTreeNode(translate("search.cp"), "search.cp");
+			node.setCssClass("o_sel_repo_cp");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.scorm"), "search.scorm");
+			node.setCssClass("o_sel_repo_scorm");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.wiki"), "search.wiki");
+			node.setCssClass("o_sel_repo_wiki");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.podcast"), "search.podcast" );
+			node.setCssClass("o_sel_repo_podcast");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.blog"), "search.blog" );
+			node.setCssClass("o_sel_repo_blog");
+			rootNode.addChild(node);
 			if (portfolioModule.isEnabled()){
-				rootNode.addChild(new GenericTreeNode(translate("search.portfolio"), "search.portfolio"));
+				node = new GenericTreeNode(translate("search.portfolio"), "search.portfolio");
+				node.setCssClass("o_sel_repo_portfolio");
+				rootNode.addChild(node);
 			}
-			rootNode.addChild(new GenericTreeNode(translate("search.test"), "search.test"));
-			rootNode.addChild(new GenericTreeNode(translate("search.survey"), "search.survey"));
-			rootNode.addChild(new GenericTreeNode(translate("search.sharedfolder"), "search.sharedfolder"));
-			rootNode.addChild(new GenericTreeNode(translate("search.glossary"), "search.glossary"));
+			node = new GenericTreeNode(translate("search.test"), "search.test");
+			node.setCssClass("o_sel_repo_test");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.survey"), "search.survey");
+			node.setCssClass("o_sel_repo_survey");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.sharedfolder"), "search.sharedfolder");
+			node.setCssClass("o_sel_repo_sharefolder");
+			rootNode.addChild(node);
+			node = new GenericTreeNode(translate("search.glossary"), "search.glossary");
+			node.setCssClass("o_sel_repo_glossary");
+			rootNode.addChild(node);
 		}
 
 		return gtm;
