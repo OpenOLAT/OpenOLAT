@@ -396,26 +396,26 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * @return
 	 */
-	public Integer getGroupMax() {
+	public int getGroupMax() {
 		String result = businessGroupMaximumMembers.getValue();
 		if (StringHelper.containsNonWhitespace(result)) {
 			result = result.replaceAll(" ", "");
-			return new Integer(Integer.parseInt(result));
+			return Integer.parseInt(result);
 		} else {
-			return null;
+			return -1;
 		}
 	}
 
 	/**
 	 * @return
 	 */
-	public Integer getGroupMin() {
+	public int getGroupMin() {
 		String result = businessGroupMinimumMembers.getValue();
 		if (StringHelper.containsNonWhitespace(result)) {
 			result = result.replaceAll(" ", "");
-			return new Integer(Integer.parseInt(result));
+			return Integer.parseInt(result);
 		} else {
-			return null;
+			return -1;
 		}
 	}
 
@@ -434,8 +434,8 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * @return
 	 */
-	public Boolean isAutoCloseRanksEnabled() {
-		return new Boolean(enableAutoCloseRanks.getSelectedKeys().size() != 0);
+	public boolean isAutoCloseRanksEnabled() {
+		return enableAutoCloseRanks.getSelectedKeys().size() != 0;
 	}
 
 	/**
@@ -448,8 +448,8 @@ public class BusinessGroupFormController extends FormBasicController {
 	/**
 	 * @return
 	 */
-	public Boolean isWaitingListEnabled() {
-		return new Boolean(enableWaitingList.getSelectedKeys().size() != 0);
+	public boolean isWaitingListEnabled() {
+		return enableWaitingList.getSelectedKeys().size() != 0;
 	}
 
 	/**

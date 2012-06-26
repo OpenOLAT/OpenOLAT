@@ -43,7 +43,7 @@ import org.olat.group.BusinessGroup;
  * @author gnaegi
  */
 public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGroup> {
-    private static final int COLUMN_COUNT = 4;    
+    private static final int COLUMN_COUNT = 3;    
 
     /**
      * Constructor for the group and context table model
@@ -72,23 +72,10 @@ public class GroupAndContextTableModel extends DefaultTableDataModel<BusinessGro
             case 1 :
             	String tmp = businessGroup.getDescription();
             	tmp = FilterFactory.getHtmlTagsFilter().filter(tmp);
-                tmp = Formatter.truncate(tmp, 256);
-                return tmp;
-            case 2 : 
-            	String name = "no-context";//TODO gm DefaultContextTranslationHelper.translateIfDefaultContextName(businessGroup.getGroupContext(), trans);
-      				name = StringEscapeUtils.escapeHtml(name).toString();
-      				return name;
+              tmp = Formatter.truncate(tmp, 256);
+              return tmp;
             default :
                 return "ERROR";
         }
     }
-
-    /**
-     * @param row
-     * @return the business group at the given row
-     */
-    public BusinessGroup getBusinessGroupAt(int row) {
-        return objects.get(row);
-    }
-
 }

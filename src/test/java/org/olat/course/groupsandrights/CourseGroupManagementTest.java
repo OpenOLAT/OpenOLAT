@@ -67,8 +67,6 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
-	private OLATResourceManager resourceManager;
-	@Autowired
 	private BusinessGroupService businessGroupService;
 
 	
@@ -166,13 +164,11 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	    assertFalse(gm.isIdentityInLearningGroup(id3, g3.getName())); // not a learning group
 	    assertFalse(gm.isIdentityInLearningGroup(id3, g4.getName())); // not a learning group
 
-	    /*
-	    assertTrue(gm.isIdentityInLearningGroup(id1, g1.getName(), c1.getName()));
-	    assertFalse(gm.isIdentityInLearningGroup(id1, g1.getName(), c2.getName()));
-	    assertTrue(gm.isIdentityInLearningGroup(id3, g1.getName(), c1.getName()));
-	    assertFalse(gm.isIdentityInLearningGroup(id3, g1.getName(), c2.getName()));
-	    */
-	    
+	    assertTrue(gm.isIdentityInLearningGroup(id1, g1.getName()));
+	    assertFalse(gm.isIdentityInLearningGroup(id1, g1.getName()));
+	    assertTrue(gm.isIdentityInLearningGroup(id3, g1.getName()));
+	    assertFalse(gm.isIdentityInLearningGroup(id3, g1.getName()));
+
 	    // test areas
 	    DBFactory.getInstance().closeSession();
 	    assertTrue(gm.isIdentityInLearningArea(id1, a1.getName()));
@@ -198,18 +194,12 @@ public class CourseGroupManagementTest extends OlatTestCase {
 	    assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
 	    assertTrue(gm.hasRight(id1, CourseRights.RIGHT_GROUPMANAGEMENT));
 	    assertFalse(gm.hasRight(id1, CourseRights.RIGHT_ASSESSMENT));
-	    //assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, c2.getName()));
-	  //TODO gm assertFalse(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR, c1.getName()));
+	    assertTrue(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
+	    assertFalse(gm.hasRight(id1, CourseRights.RIGHT_COURSEEDITOR));
 	    assertFalse(gm.hasRight(id2, CourseRights.RIGHT_COURSEEDITOR));
 	    
 	    // test context
 	    DBFactory.getInstance().closeSession();
-	  //TODO gm assertTrue(gm.isIdentityInGroupContext(id1,c1.getName()));
-	    //assertTrue(gm.isIdentityInGroupContext(id1,c2.getName()));
-	    //TODO gm assertTrue(gm.isIdentityInGroupContext(id2,c1.getName()));
-	    //assertFalse(gm.isIdentityInGroupContext(id2,c2.getName()));
-	  //TODO gm  assertTrue(gm.isIdentityInGroupContext(id3,c1.getName()));
-	    //assertTrue(gm.isIdentityInGroupContext(id3,c2.getName()));
 	}
 		
 }

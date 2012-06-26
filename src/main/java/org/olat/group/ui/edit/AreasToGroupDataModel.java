@@ -37,8 +37,8 @@ import org.olat.group.area.BGArea;
  * 
  * @author gnaegi
  */
-public class AreasToGroupDataModel extends DefaultTableDataModel {
-	List selectedAreas;
+public class AreasToGroupDataModel extends DefaultTableDataModel<BGArea> {
+	private List<BGArea> selectedAreas;
 
 	/**
 	 * Constructor for the AreasToGroupDataModel
@@ -47,7 +47,7 @@ public class AreasToGroupDataModel extends DefaultTableDataModel {
 	 * @param selectedAreas List of all areas which are associated to the group -
 	 *          meaning where the checkbox will be checked
 	 */
-	public AreasToGroupDataModel(List allAreas, List selectedAreas) {
+	public AreasToGroupDataModel(List<BGArea> allAreas, List<BGArea> selectedAreas) {
 		super(allAreas);
 		this.selectedAreas = selectedAreas;
 	}
@@ -63,20 +63,13 @@ public class AreasToGroupDataModel extends DefaultTableDataModel {
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
 	public Object getValueAt(int row, int col) {
+		BGArea area = getObject(row);
 		if (col == 0) {
-			return selectedAreas.contains(getArea(row)) ? Boolean.TRUE : Boolean.FALSE;
+			return selectedAreas.contains(area) ? Boolean.TRUE : Boolean.FALSE;
 		} else if (col == 1) {
-			return getArea(row).getName();
+			return area.getName();
 		} else {
 			return "ERROR";
 		}
-	}
-
-	/**
-	 * @param row
-	 * @return the area at the given row
-	 */
-	public BGArea getArea(int row) {
-		return (BGArea) super.getObject(row);
 	}
 }

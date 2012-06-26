@@ -38,9 +38,6 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -86,9 +83,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.notifications.NotificationsManager;
-import org.olat.core.util.notifications.Publisher;
-import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
@@ -112,9 +106,6 @@ import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
-
-import de.bps.olat.util.notifications.SubscriptionProvider;
-import de.bps.olat.util.notifications.SubscriptionProviderImpl;
 
 /**
  * Description: <br>
@@ -178,9 +169,6 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	//fxdiff VCRP-1,2: access control of resources
 	private static final String TABLE_ACTION_ACCESS = "bgTblAccess";
 	private static final String CMD_MENU_INDEX = "cmd.menu.index";
-	private static final String CMD_MENU_BUDDY = "cmd.menu.buddy";
-	private static final String CMD_MENU_LEARN = "cmd.menu.learn";
-	private static final String CMD_MENU_RIGHT = "cmd.menu.right";
 	//fxdiff VCRP-1,2: access control of resources
 	private static final String CMD_MENU_OPEN = "cmd.menu.open";
 	private static final String CMD_MENU_OPEN_SEARCH = "cmd.menu.open.search";
@@ -191,7 +179,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 * @param flags configuration flags
 	 * @param initialViewIdentifier
 	 */
-	public BGMainController(UserRequest ureq, WindowControl wControl, String initialViewIdentifier) {
+	public BGMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -229,7 +217,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		listenTo(searchController);
 		
 		// start with list of all groups
-		doAllGroupList(ureq, getWindowControl());
+		doGroupList(ureq, getWindowControl());
 	}
 
 	/**
@@ -289,14 +277,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		}
 		
 		if (userObject.equals(CMD_MENU_INDEX)) {
-			doAllGroupList(ureq, getWindowControl());
-		} else if (userObject.equals(CMD_MENU_BUDDY)) {
-			doBuddyGroupList(ureq, getWindowControl());
-		} else if (userObject.equals(CMD_MENU_LEARN)) {
-			doLearningGroupList(ureq, getWindowControl());
-		} else if (userObject.equals(CMD_MENU_RIGHT)) {
-			doRightGroupList(ureq, getWindowControl());
-		//fxdiff VCRP-1,2: access control of resources
+			doGroupList(ureq, getWindowControl());
 		} else if (userObject.equals(CMD_MENU_OPEN)) {
 			doOpenGroupList(ureq, getWindowControl());
 		} else if (userObject.equals(CMD_MENU_OPEN_SEARCH)) {
@@ -326,7 +307,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 
 			if (actionid.equals(TABLE_ACTION_LAUNCH)) {
 				//fxdiff BAKS-7 Resume function
-				Controller ctrl = BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+				Controller ctrl = BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false);
 				if(ctrl != null) {
 					addToHistory(ureq, ctrl);
 				}
@@ -345,13 +326,13 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	//fxdiff VCRP-1,2: access control of resources
 	private void handleAccess(UserRequest ureq) {
 		if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), currBusinessGroup)) {
-			BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+			BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false);
 			return;
 		}
 
 		AccessResult acResult = acFrontendManager.isAccessible(currBusinessGroup, getIdentity(), true);
 		if(acResult.isAccessible()) {
-			BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+			BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false);
 		} else if (currBusinessGroup != null && acResult.getAvailableMethods().size() > 0) {
 			accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
 			listenTo(accessController);
@@ -374,7 +355,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			handleEventsGroupTables(ureq, event);
 		} else if (source == mainToolC) {
 			if (event.getCommand().startsWith(ACTION_ADD_BUDDYGROUP)) {
-				initAddBuddygroupWorkflow(ureq);
+				initAddGroupWorkflow(ureq);
 			} else if (event.getCommand().startsWith(ACTION_DELETE_UNUSEDGROUP)) {
 				initDeleteGroupWorkflow(ureq);
 			}
@@ -383,10 +364,11 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 				sendEMailOnDeleteDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.mail.text"), sendEMailOnDeleteDialogBox);
 			}//else cancel was clicked or box closed
 		} else if(source == sendEMailOnDeleteDialogBox){
-			if(DialogBoxUIFactory.isOkEvent(event))
-				doBuddyGroupDelete(ureq,true);
-			else
-				doBuddyGroupDelete(ureq,false);
+			if(DialogBoxUIFactory.isOkEvent(event)) {
+				doGroupDelete(ureq,true);
+			} else {
+				doGroupDelete(ureq,false);
+			}
 		} else if (source == leaveDialogBox) {
 			if (event != Event.CANCELLED_EVENT) {
 				if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -399,17 +381,17 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			if (event == Event.DONE_EVENT) {
 				// create new buddy group with the specified values
 				// values are taken from the createBuddyGroupForm
-				this.currBusinessGroup = createBuddyGroup(ureq);
-				updateGroupListModelAll();
+				currBusinessGroup = createGroup(ureq);
+				updateGroupList();
 
 				// after successfully creating a buddygroup 'launch' it
-				BusinessGroupMainRunController groupRunCtr = BGControllerFactory.getInstance().createRunControllerAsTopNavTab(this.currBusinessGroup,
-						ureq, getWindowControl(), false, null);
+				BusinessGroupMainRunController groupRunCtr = BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, 
+						ureq, getWindowControl(), false);
 				if (groupRunCtr != null) groupRunCtr.activateAdministrationMode(ureq);
 			} else if (event == Event.FAILED_EVENT) {
-				this.cmc = new CloseableModalController(getWindowControl(), translate("close"), this.createBuddyGroupController.getInitialComponent(), true, translate("create.form.title"));
-				this.cmc.activate();
-				listenTo(this.cmc);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), this.createBuddyGroupController.getInitialComponent(), true, translate("create.form.title"));
+				cmc.activate();
+				listenTo(cmc);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// notthing to do
 			}
@@ -417,7 +399,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		} else if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 				activateContent(ureq, CMD_MENU_OPEN);
-				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+				BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false);
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
 				if(StringHelper.containsNonWhitespace(msg)) {
@@ -444,17 +426,15 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	/**
 	 * 
 	 */
-	private void initAddBuddygroupWorkflow(UserRequest ureq) {
-		BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
-		
-		if (this.createBuddyGroupController != null) {
-			removeAsListenerAndDispose(this.createBuddyGroupController);
-		}
-		this.createBuddyGroupController = new BusinessGroupFormController(ureq, getWindowControl(), null, flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
-		listenTo(this.createBuddyGroupController);
-		this.cmc = new CloseableModalController(getWindowControl(), translate("close"), this.createBuddyGroupController.getInitialComponent(), true, translate("create.form.title"));
-		this.cmc.activate();
-		listenTo(this.cmc);
+	private void initAddGroupWorkflow(UserRequest ureq) {
+		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
+
+		removeAsListenerAndDispose(createBuddyGroupController);
+		createBuddyGroupController = new BusinessGroupFormController(ureq, getWindowControl(), null, flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+		listenTo(createBuddyGroupController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), this.createBuddyGroupController.getInitialComponent(), true, translate("create.form.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	/**
@@ -464,7 +444,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 * @param ureq
 	 * @param doSendMail specifies if notification mails should be sent to users of delted group
 	 */
-	private void doBuddyGroupDelete(UserRequest ureq, boolean doSendMail) {
+	private void doGroupDelete(UserRequest ureq, boolean doSendMail) {
 		// 1) send notification mails to users
 		boolean ow = securityManager.isIdentityInSecurityGroup(getIdentity(), currBusinessGroup.getOwnerGroup());
 		// check if user is in owner group (could fake link in table)
@@ -473,22 +453,6 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			return;
 		}
 
-		// inform Indexer about change
-		// 3) delete the group
-		currBusinessGroup = businessGroupService.loadBusinessGroup(currBusinessGroup);
-		
-		//change state of publisher so that notifications of deleted group calendars make no problems
-		CalendarManager calMan = CalendarManagerFactory.getInstance().getCalendarManager();
-		NotificationsManager nfm = NotificationsManager.getInstance();
-		KalendarRenderWrapper calRenderWrapper = calMan.getGroupCalendar(currBusinessGroup);
-		SubscriptionProvider subProvider = new SubscriptionProviderImpl(calRenderWrapper);
-		SubscriptionContext subsContext = subProvider.getSubscriptionContext();
-		Publisher pub = nfm.getPublisher(subsContext);
-		if (pub != null) {
-			pub.setState(1); //int 0 is OK -> all other is not OK
-		}
-		
-		// fxdiff: FXOLAT-138
 		if (doSendMail) {
 			String businessPath = getWindowControl().getBusinessControl().getAsString();
 			businessGroupService.deleteBusinessGroupWithMail(currBusinessGroup, businessPath, getIdentity(), getLocale());
@@ -498,8 +462,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		// do Logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_DELETED, getClass(), LoggingResourceable.wrap(currBusinessGroup));
 		// 4) update Tables
-		doAllGroupList(ureq, getWindowControl());
-		
+		doGroupList(ureq, getWindowControl());
 		showInfo("info.group.deleted");
 	}
 
@@ -519,7 +482,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			if (ownerList.size() > 1) {
 				businessGroupService.removeOwners(ureq.getIdentity(), Collections.singletonList(ureq.getIdentity()), currBusinessGroup, flags);
 				// update model
-				updateGroupListModelAll();
+				updateGroupList();
 			} else {
 				// he is the last owner, but there must be at least one oner
 				// give him a warning, as long as he tries to leave, he gets
@@ -536,7 +499,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		businessGroupService.removeParticipants(ureq.getIdentity(), identities, currBusinessGroup, flags);
 		
 		// update Tables
-		doAllGroupList(ureq, getWindowControl());
+		doGroupList(ureq, getWindowControl());
 	}
 
 	/**
@@ -545,24 +508,20 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 * 
 	 * @return BusinessGroup
 	 */
-	private BusinessGroup createBuddyGroup(UserRequest ureq) {
-		String bgName = this.createBuddyGroupController.getGroupName();
-		String bgDesc = this.createBuddyGroupController.getGroupDescription();
-		Integer bgMin = this.createBuddyGroupController.getGroupMin();
-		Integer bgMax = this.createBuddyGroupController.getGroupMax();
+	private BusinessGroup createGroup(UserRequest ureq) {
+		String bgName = createBuddyGroupController.getGroupName();
+		String bgDesc = createBuddyGroupController.getGroupDescription();
+		int bgMin = createBuddyGroupController.getGroupMin();
+		int bgMax = createBuddyGroupController.getGroupMax();
 		/*
 		 * this creates a BusinessGroup as BuddyGroup with the specified name and
 		 * description and also the CollaborationTools are enabled during creation.
 		 * The GroupContext is null in the case of BuddyGroups.
 		 */
-		BusinessGroup newGroup = businessGroupService.createBusinessGroup(identity, bgName, bgDesc, BusinessGroup.TYPE_BUDDYGROUP, bgMin, bgMax, false, false, null);
-		// create buddylist for group
-		// 2. Add user to group, fire events, do loggin etc.
-		BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
+		BusinessGroup newGroup = businessGroupService.createBusinessGroup(identity, bgName, bgDesc, null, bgMin, bgMax, false, false, null);
 		// do Logging
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(newGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CREATED, getClass());
-		businessGroupService.addOwner(ureq.getIdentity(), ureq.getIdentity(), newGroup, flags);
 		return newGroup;
 	}
 
@@ -572,11 +531,11 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 * @param ureq
 	 * @param wControl
 	 */
-	private void doAllGroupList(UserRequest ureq, WindowControl wControl) {
+	private void doGroupList(UserRequest ureq, WindowControl wControl) {
 		// 1) initialize list controller and datamodel
 		initGroupListCtrAndModel(true, true, false, CMD_MENU_INDEX, ureq);
 		// 2) load data into model
-		updateGroupListModelAll();
+		updateGroupList();
 		// 3) set correct page
 		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/index.html");
 		// 4) update toolboxe
@@ -585,66 +544,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_INDEX, 0l);
 		addToHistory(ureq, ores, null, wControl, true);
 	}
-
-	/**
-	 * Prepare everything and show all buddy groups
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
-	private void doBuddyGroupList(UserRequest ureq, WindowControl wControl) {
-		// 1) initialize list controller and datamodel
-		initGroupListCtrAndModel(true, false, false, CMD_MENU_BUDDY, ureq);
-		// 2) load data into model
-		updateGroupListModelBuddygroups();
-		// 3) set correct page
-		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/buddy.html");
-		// 4) update toolboxe
-		columnLayoutCtr.hideCol2(false);
-		//fxdiff BAKS-7 Resume function
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_BUDDY, 0l);
-		addToHistory(ureq, ores, null, wControl, true);
-	}
-
-	/**
-	 * Prepare everything and show all learning groups
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
-	private void doLearningGroupList(UserRequest ureq, WindowControl wControl) {
-		// 1) initialize list controller and datamodel
-		initGroupListCtrAndModel(false, true, false, CMD_MENU_LEARN, ureq);
-		// 2) load data into model
-		updateGroupListModelLearninggroups();
-		// 3) set correct page
-		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/learning.html");
-		// 4) update toolboxe
-		columnLayoutCtr.hideCol2(true);
-		//fxdiff BAKS-7 Resume function
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_LEARN, 0l);
-		addToHistory(ureq, ores, null, wControl, true);
-	}
-
-	/**
-	 * Prepare everything and show all right groups
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
-	private void doRightGroupList(UserRequest ureq, WindowControl wControl) {
-		// 1) initialize list controller and datamodel
-		initGroupListCtrAndModel(false, true, false, CMD_MENU_RIGHT, ureq);
-		// 2) load data into model
-		updateGroupListModelRightgroups();
-		// 3) set correct page
-		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/right.html");
-		// 4) update toolboxe
-		columnLayoutCtr.hideCol2(true);
-		//fxdiff BAKS-7 Resume function
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_RIGHT, 0l);
-		addToHistory(ureq, ores, null, wControl, true);
-	}
+	
 	//fxdiff VCRP-1,2: access control of resources
 	private void doOpenGroupList(UserRequest ureq, WindowControl wControl) {
 		// 1) initialize list controller and datamodel
@@ -667,14 +567,14 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		} else {
 			segmentView.select(allOpenLink);
 		}
-		
-		
+
 		// 4) update toolboxe
 		columnLayoutCtr.hideCol2(true);
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_OPEN, 0l);
 		addToHistory(ureq, ores, null, wControl, true);
 	}
+	
 	//fxdiff VCRP-1,2: access control of resources
 	private void doSearchOpenGroupList(UserRequest ureq, WindowControl wControl) {
 		// 1) initialize list controller and datamodel
@@ -765,21 +665,11 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 * data for all groups
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
-	private void updateGroupListModelAll() {
+	private void updateGroupList() {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, getIdentity(), true, true, null, 0, -1);
+
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
-		// buddy groups
-		collectGroupListModelBuddygroups(wrapped);
-		// learning groups
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
-		for (BusinessGroup group:groups) {
-			wrapped.add(wrapGroup(group, true, null, null, false, null));
-		}
-		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
-		for (BusinessGroup group:groups) {
-			wrapped.add(wrapGroup(group, true, null, null, false, null));
-		}
-		// right groups
-		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
 		for (BusinessGroup group:groups) {
 			wrapped.add(wrapGroup(group, true, null, null, false, null));
 		}
@@ -787,66 +677,6 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		groupListCtr.modelChanged();
 	}
 
-	/**
-	 * Get most recent data from the database and init the group list model with
-	 * data for buddy groups
-	 */
-	 //fxdiff VCRP-1,2: access control of resources
-	private void updateGroupListModelBuddygroups() {
-		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
-		collectGroupListModelBuddygroups(wrapped);
-		groupListModel.setEntries(wrapped);
-		groupListCtr.modelChanged();
-	}
-	//fxdiff VCRP-1,2: access control of resources
-	private void collectGroupListModelBuddygroups(List<BGTableItem> wrapped) {
-		// buddy groups
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
-		for (BusinessGroup group:groups) {
-			BGTableItem item = wrapGroup(group, true, Boolean.TRUE, Boolean.TRUE, false, null);
-			wrapped.add(item);
-		}
-		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
-		for (BusinessGroup group:groups) {
-			BGTableItem item = wrapGroup(group, true, Boolean.TRUE, null, false, null);
-			wrapped.add(item);
-		}
-	}
-
-	/**
-	 * Get most recent data from the database and init the group list model with
-	 * data for learning groups
-	 */
-	private void updateGroupListModelLearninggroups() {
-		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
-		// learning groups
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
-		for (BusinessGroup group:groups) {
-			wrapped.add(wrapGroup(group, true, null, null, false, null));
-		}
-		groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_LEARNINGROUP, identity, null);
-		for (BusinessGroup group:groups) {
-			wrapped.add(wrapGroup(group, true, null, null, false, null));
-		}
-		groupListModel.setEntries(wrapped);
-		groupListCtr.modelChanged();
-	}
-
-	/**
-	 * Get most recent data from the database and init the group list model with
-	 * data for right groups
-	 */
-	private void updateGroupListModelRightgroups() {
-		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
-		// buddy groups
-		// right groups
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_RIGHTGROUP, identity, null);
-		for(BusinessGroup group:groups) {
-			wrapped.add(wrapGroup(group, true, null, null, false, null));
-		}
-		groupListModel.setEntries(wrapped);
-		groupListCtr.modelChanged();
-	}
 	//fxdiff VCRP-1,2: access control of resources
 	private void updateOpenGroupList() {
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
@@ -862,6 +692,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		groupListModel.setEntries(wrapped);
 		groupListCtr.modelChanged();
 	}
+	
 	//fxdiff VCRP-1,2: access control of resources
 	private void updateSearchGroupList() {
 		List<BusinessGroup> groups; 
@@ -942,22 +773,12 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		gtm.setRootNode(rootNode);
 
 		GenericTreeNode myEntriesTn = new GenericTreeNode();
-		myEntriesTn.setTitle(translate("menu.buddygroups"));
-		myEntriesTn.setUserObject(CMD_MENU_BUDDY);
-		myEntriesTn.setAltText(translate("menu.buddygroups.alt"));
-		rootNode.addChild(myEntriesTn);
-
-		myEntriesTn = new GenericTreeNode();
 		myEntriesTn.setTitle(translate("menu.learninggroups"));
-		myEntriesTn.setUserObject(CMD_MENU_LEARN);
+		myEntriesTn.setUserObject(CMD_MENU_INDEX);
 		myEntriesTn.setAltText(translate("menu.learninggroups.alt"));
 		rootNode.addChild(myEntriesTn);
+		rootNode.setDelegate(myEntriesTn);
 
-		myEntriesTn = new GenericTreeNode();
-		myEntriesTn.setTitle(translate("menu.rightgroups"));
-		myEntriesTn.setUserObject(CMD_MENU_RIGHT);
-		myEntriesTn.setAltText(translate("menu.rightgroups.alt"));
-		rootNode.addChild(myEntriesTn);
 		//fxdiff VCRP-1,2: access control of resources
 		myEntriesTn = new GenericTreeNode();
 		myEntriesTn.setTitle(translate("menu.opengroups"));
@@ -980,18 +801,18 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			viewIdentifier = viewIdentifier.substring(0, viewIdentifier.length() - 2);
 		}
 
-		GenericTreeNode rootNode = (GenericTreeNode) this.menuTree.getTreeModel().getRootNode();
+		GenericTreeNode rootNode = (GenericTreeNode)menuTree.getTreeModel().getRootNode();
 		TreeNode activatedNode = TreeHelper.findNodeByUserObject(viewIdentifier, rootNode);
 		if (activatedNode != null) {
-			this.menuTree.setSelectedNodeId(activatedNode.getIdent());
+			menuTree.setSelectedNodeId(activatedNode.getIdent());
 			activateContent(ureq, activatedNode.getUserObject());
 		} else {
 			// not found, activate the root node
-			this.menuTree.setSelectedNodeId(rootNode.getIdent());
+			menuTree.setSelectedNodeId(rootNode.getIdent());
 			activateContent(ureq, rootNode.getUserObject());
 			// cehck for toolbox activation points
 			if (viewIdentifier.equals(ACTION_ADD_BUDDYGROUP)) {
-				initAddBuddygroupWorkflow(ureq);
+				initAddGroupWorkflow(ureq);
 			}
 		}
 	}
@@ -1024,7 +845,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			activateContent(ureq, rootNode.getUserObject());
 			//check for toolbox activation points
 			if (type.equals(ACTION_ADD_BUDDYGROUP)) {
-				initAddBuddygroupWorkflow(ureq);
+				initAddGroupWorkflow(ureq);
 			}
 		}
 	}

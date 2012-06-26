@@ -28,9 +28,9 @@ package org.olat.admin.user.imp;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.admin.user.groups.GroupAddManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
+import org.olat.group.BusinessGroupService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -69,6 +70,8 @@ public class UserImportController extends BasicController {
 	private Link startLink;
 	
 	StepsMainRunController importStepsController;
+	
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * @param ureq
@@ -78,6 +81,7 @@ public class UserImportController extends BasicController {
 	 */
 	public UserImportController(UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
 		super(ureq, wControl);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		this.canCreateOLATPassword = canCreateOLATPassword;
 		mainVC = createVelocityContainer("importindex");
 		startLink = LinkFactory.createButton("import.start", mainVC, this);
@@ -193,7 +197,6 @@ public class UserImportController extends BasicController {
 
 	//fxdiff: 101 add idents to groups
 	void processGroupAdditionForAllIdents(List<Object> allIdents, List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Identity addingIdentity) {
-		GroupAddManager groupAddMgr = GroupAddManager.getInstance();
 
 		int counter = 0;
 		for (Object o : allIdents) {
@@ -207,7 +210,7 @@ public class UserImportController extends BasicController {
 				ident = BaseSecurityManager.getInstance().findIdentityByName(identName);
 			}
 			if(ident != null){
-				groupAddMgr.addIdentityToGroups(ownGroups, partGroups, mailGroups, ident, addingIdentity);
+				businessGroupService.addIdentityToGroups(ownGroups, partGroups, mailGroups, ident, addingIdentity);
 				counter ++;
 				if (counter % 5 == 0) {
 					DBFactory.getInstance().intermediateCommit();

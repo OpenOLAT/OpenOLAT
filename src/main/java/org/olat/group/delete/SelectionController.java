@@ -59,6 +59,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
@@ -91,6 +92,7 @@ public class SelectionController extends BasicController {
 	private CloseableModalController cmc;
 	
 	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * @param ureq
@@ -101,6 +103,7 @@ public class SelectionController extends BasicController {
 		super(ureq, wControl);
 		
 		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_BG_MAIN_CONTROLLER, ureq.getLocale());
 		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
@@ -172,7 +175,7 @@ public class SelectionController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					bgDeletionManager.setLastUsageNowFor((BusinessGroup) redtm.getObject(rowid));
+					businessGroupService.setLastUsageFor(redtm.getObject(rowid));
 					updateGroupList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {

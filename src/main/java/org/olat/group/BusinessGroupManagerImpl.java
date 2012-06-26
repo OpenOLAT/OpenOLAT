@@ -80,7 +80,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.context.BGContext;
-import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
@@ -1709,7 +1708,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 				try {
 					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(currBusinessGroup);
 					reloadedBusinessGroup.setLastUsage(new Date());
-					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
+					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
 					updateBusinessGroup(reloadedBusinessGroup);
 					return reloadedBusinessGroup;
 				} catch(DBRuntimeException e) {

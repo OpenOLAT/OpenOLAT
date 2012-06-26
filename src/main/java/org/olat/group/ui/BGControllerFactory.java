@@ -97,9 +97,10 @@ public class BGControllerFactory {
 		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgTyp)) {
 			BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
+		} else {
+			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
+			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
 		}
-		// else
-		throw new AssertException("unknown BusinessGroupType::" + bgTyp);
 	}
 
 	//
@@ -134,20 +135,22 @@ public class BGControllerFactory {
 		
 		String bgTyp = businessGroup.getType();
 		if (BusinessGroup.TYPE_BUDDYGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
+			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
 			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, false);
 			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
 		} else if (BusinessGroup.TYPE_LEARNINGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
+			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
 			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
 			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
 		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgTyp)) {
-			BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
+			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
+			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
+			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
+		} else {
+			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
 			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
 			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
 		}
-		// else
-		throw new AssertException("unknown BusinessGroupType::" + bgTyp);
 	}
 
 	/**
@@ -164,7 +167,7 @@ public class BGControllerFactory {
 	 * @return BusinessGroupMainRunController or null if already initialized
 	 */
 	public BusinessGroupMainRunController createRunControllerAsTopNavTab(BusinessGroup businessGroup, UserRequest ureq,
-			WindowControl wControl, boolean isGMAdmin, String initialViewIdentifier) {
+			WindowControl wControl, boolean isGMAdmin) {
 		String displayName = businessGroup.getName();
 
 		BusinessGroupMainRunController bgMrc = null;
@@ -178,7 +181,7 @@ public class BGControllerFactory {
 			dt = dts.createDTab(ores, displayName);
 			// tabs full
 			if (dt == null) return null;
-			bgMrc = this.createRunControllerFor(ureq, dt.getWindowControl(), businessGroup, isGMAdmin, initialViewIdentifier);
+			bgMrc = createRunControllerFor(ureq, dt.getWindowControl(), businessGroup, isGMAdmin, null);
 			dt.setController(bgMrc);
 			dts.addDTab(dt);
 		}
@@ -199,8 +202,8 @@ public class BGControllerFactory {
 	 * @param initialViewIdentifier
 	 * @return a configured buddy group main controller
 	 */
-	public BGMainController createBuddyGroupMainController(UserRequest ureq, WindowControl wControl, String initialViewIdentifier) {
-		return new BGMainController(ureq, wControl, initialViewIdentifier);
+	public BGMainController createBuddyGroupMainController(UserRequest ureq, WindowControl wControl) {
+		return new BGMainController(ureq, wControl);
 	}
 
 	/**

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +33,7 @@ import java.util.Set;
 
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
+import org.olat.admin.user.groups.AddToGroupsEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -49,6 +51,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -111,6 +114,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private BusinessGroupArchiver businessGroupArchiver;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupAddManager groupAddManager;
 	
 
 	private List<DeletableGroupData> deleteListeners = new ArrayList<DeletableGroupData>();
@@ -131,8 +136,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		return deletableList;
 	}
 	
-	
-	
 	@Override
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String type,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
@@ -147,13 +150,30 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 	
 	@Override
-	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, OLATResource resource, String bgDesc, Integer bgMin,
-			Integer bgMax, Boolean enableWaitingList, Boolean enableAutoCloseRanks) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<BusinessGroup> createUniqueBusinessGroupsFor(final Set<String> allNames, final String description,
+			final int minParticipants, final int maxParticipants, final boolean waitingListEnabled, final boolean autoCloseRanksEnabled,
+			final OLATResource resource) {
+
+	   //o_clusterOK by:cg
+		Set<BusinessGroup> createdGroups = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerCallback<Set<BusinessGroup>>(){
+	      public Set<BusinessGroup> execute() {
+					if(checkIfOneOrMoreNameExistsInContext(allNames, resource)){
+						// set error of non existing name
+						return null;
+					} else {
+						// create bulkgroups only if there is no name which already exists.
+						Set<BusinessGroup> newGroups = new HashSet<BusinessGroup>();
+						for (String name : allNames) {
+							BusinessGroup newGroup = createBusinessGroup(null, name, description, null, minParticipants, maxParticipants,
+									waitingListEnabled, autoCloseRanksEnabled, resource);
+							newGroups.add(newGroup);
+						}
+						return newGroups;
+					}
+	      }
+		});
+		return createdGroups;
 	}
-
-
 
 	@Override
 	@Transactional
@@ -169,12 +189,24 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	
 	@Override
 	@Transactional
-	public BusinessGroup setLastUsageFor(BusinessGroup group) {
-		BusinessGroup reloadedGroup = businessGroupDAO.load(group.getKey());
-		reloadedGroup.setLastUsage(new Date());
-		LifeCycleManager.createInstanceFor(reloadedGroup).deleteTimestampFor(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
-		updateBusinessGroup(reloadedGroup);
-		return reloadedGroup;
+	public BusinessGroup setLastUsageFor(final BusinessGroup group) {
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
+			public BusinessGroup execute() {
+				try {
+					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(group);
+					reloadedBusinessGroup.setLastUsage(new Date());
+					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
+					updateBusinessGroup(reloadedBusinessGroup);
+					return reloadedBusinessGroup;
+				} catch(DBRuntimeException e) {
+					if(e.getCause() instanceof ObjectNotFoundException) {
+						//group deleted
+						return null;
+					}
+					throw e;
+				}
+			}
+		});
 	}
 
 	@Override
@@ -312,8 +344,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	
 	@Override
 	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(String type, Identity identity,  OLATResource resource) {
-		// TODO Auto-generated method stub
-		return Collections.emptyList();
+		return businessGroupDAO.findBusinessGroupsWithWaitingListAttendedBy(identity, resource);
 	}
 	
 	@Override
@@ -496,29 +527,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public int countMembersOf(BusinessGroup group, boolean owner, boolean attendee) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public List<Identity> getMembersOf(BusinessGroup group, boolean owner, boolean attendee) {
-		// TODO Auto-generated method stub
-		return Collections.emptyList();
-	}
-
-	@Override
 	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		// TODO Auto-generated method stub
-		return 0;
+		return businessGroupDAO.countMembersOf(resource, owner, attendee);
 	}
 
 	@Override
 	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		// TODO Auto-generated method stub
-		return Collections.emptyList();
+		return businessGroupDAO.getMembersOf(resource, owner, attendee);
 	}
-
 
 	@Override
 	public void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
@@ -799,6 +815,16 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 	}
 
+	@Override
+	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, Identity ident, Identity addingIdentity) {
+		return groupAddManager.addIdentityToGroups(groupsEv, ident, addingIdentity);
+	}
+
+	@Override
+	public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Identity ident,
+			Identity addingIdentity) {
+		return groupAddManager.addIdentityToGroups(ownGroups, partGroups, mailGroups, ident, addingIdentity);
+	}
 
 	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, BGConfigFlags flags) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);

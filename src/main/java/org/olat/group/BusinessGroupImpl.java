@@ -187,7 +187,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @param type2
 	 */
 	private void setType(String type2) {
-		if (type2.length() > TYPE_MAXLENGTH) throw new AssertException("businessgrouptype in o_bg_business too long.");
+		if (type2 != null && type2.length() > TYPE_MAXLENGTH) throw new AssertException("businessgrouptype in o_bg_business too long.");
 		this.type = type2;
 	}
 

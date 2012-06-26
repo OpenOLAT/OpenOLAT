@@ -84,7 +84,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
@@ -178,12 +177,12 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		// translator
 		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, businessGroup.getType(), ureq.getLocale()));
 		// Initialize available rights
-		if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
+		//if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
 			// for now only course rights are relevant
 			// would be nice if this was shomehow defined when initializing
 			// the group context
-			this.bgRights = new CourseRights(ureq.getLocale());
-		}
+			bgRights = new CourseRights(ureq.getLocale());
+		//}
 		// try to acquire edit lock on business group
 		String locksubkey = "groupEdit";
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(businessGroup, ureq.getIdentity(), locksubkey);
@@ -211,33 +210,33 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			tabbedPane.addListener(this);
 			vc_tab_bgDetails = createTabDetails(ureq, currBusinessGroup);// modifies vc_tab_bgDetails
 			tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
-			if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
+			//if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
 				vc_tab_bgCTools = createTabCollabTools(ureq, flags);
 				tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
 				tabIndex++;
-			}
-			if (flags.isEnabled(BGConfigFlags.AREAS)) {
+			//}
+			//if (flags.isEnabled(BGConfigFlags.AREAS)) {
 				vc_tab_bgAreas = createTabAreas();
 				tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
 				tabIndex++;
-			}
-			if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
+			//}
+			//if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
 				vc_tab_bgRights = createTabRights();
 				tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
 				tabIndex++;
-			}
+			//}
 			vc_tab_grpmanagement = createTabGroupManagement(ureq);
 			tabbedPane.addTab(translate("group.edit.tab.members"), vc_tab_grpmanagement);
 			//fxdiff VCRP-1,2: access control of resources
 			tabIndex++;
 			
-			if(BusinessGroup.TYPE_BUDDYGROUP.equals(currBusinessGroup.getType())) {
+			//if(BusinessGroup.TYPE_BUDDYGROUP.equals(currBusinessGroup.getType())) {
 				tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
 		  	listenTo(tabAccessCtrl);
 		  	tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
 		  	tabIndex++;
 		  	tabAccessIndex = tabIndex;
-			}
+			//}
 
 			vc_edit = createVelocityContainer("edit");
 			vc_edit.put("tabbedpane", tabbedPane);
@@ -407,9 +406,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				if (this.modifyBusinessGroupController != null) {
 					removeAsListenerAndDispose(this.modifyBusinessGroupController);
 				}
-				this.modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), this.currBusinessGroup, this.flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
-				listenTo(this.modifyBusinessGroupController);
-				this.vc_tab_bgDetails.put("businessGroupForm", this.modifyBusinessGroupController.getInitialComponent());
+				modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), currBusinessGroup, flags.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
+				listenTo(modifyBusinessGroupController);
+				vc_tab_bgDetails.put("businessGroupForm", this.modifyBusinessGroupController.getInitialComponent());
 
 			}
 		}
@@ -418,13 +417,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	/**
 	 * persist the updates
 	 */
+	//TODO gm
 	private void updateBusinessGroup() {
 		final BusinessGroup  businessGroup = currBusinessGroup;
 		currBusinessGroup = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(businessGroup, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
-				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-				BusinessGroup bg = bgs.loadBusinessGroup(businessGroup);
+				BusinessGroup bg = businessGroupService.loadBusinessGroup(businessGroup);
 				String bgName = modifyBusinessGroupController.getGroupName();
 				String bgDesc = modifyBusinessGroupController.getGroupDescription();
 				Integer bgMax = modifyBusinessGroupController.getGroupMax();
@@ -445,11 +444,11 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				}
 				bg.setAutoCloseRanksEnabled(autoCloseRanksEnabled);
 				bg.setLastUsage(new Date(System.currentTimeMillis()));
-				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION);
+				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
 				// switch on/off waiting-list in member tab
 				vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
 				
-				return bgs.mergeBusinessGroup(bg);
+				return businessGroupService.mergeBusinessGroup(bg);
 			}
 		});
 	}
@@ -459,24 +458,20 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private void updateGroupAreaRelations() {
 		// refresh group to prevent stale object exception and context proxy issues
-		this.currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.currBusinessGroup);
+		currBusinessGroup = businessGroupService.loadBusinessGroup(currBusinessGroup);
 		// 1) add areas to group
-		List addedAreas = areasChoice.getAddedRows();
-		Iterator iterator = addedAreas.iterator();
-		while (iterator.hasNext()) {
-			Integer position = (Integer) iterator.next();
-			BGArea area = areaDataModel.getArea(position.intValue());
-			areaManager.addBGToBGArea(this.currBusinessGroup, area);
-			this.selectedAreas.add(area);
+		List<Integer> addedAreas = areasChoice.getAddedRows();
+		for (Integer position:addedAreas) {
+			BGArea area = areaDataModel.getObject(position.intValue());
+			areaManager.addBGToBGArea(currBusinessGroup, area);
+			selectedAreas.add(area);
 		}
 		// 2) remove areas from group
-		List removedAreas = areasChoice.getRemovedRows();
-		iterator = removedAreas.iterator();
-		while (iterator.hasNext()) {
-			Integer position = (Integer) iterator.next();
-			BGArea area = areaDataModel.getArea(position.intValue());
-			areaManager.removeBGFromArea(this.currBusinessGroup, area);
-			this.selectedAreas.remove(area);
+		List<Integer> removedAreas = areasChoice.getRemovedRows();
+		for (Integer position: removedAreas) {
+			BGArea area = areaDataModel.getObject(position.intValue());
+			areaManager.removeBGFromArea(currBusinessGroup, area);
+			selectedAreas.remove(area);
 		}
 	}
 
@@ -485,24 +480,20 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private void updateGroupRightsRelations() {
 		// refresh group to prevent stale object exception and context proxy issues
-		this.currBusinessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.currBusinessGroup);
+		currBusinessGroup = businessGroupService.loadBusinessGroup(currBusinessGroup);
 		// 1) add rights to group
-		List addedRights = rightsChoice.getAddedRows();
-		Iterator iterator = addedRights.iterator();
-		while (iterator.hasNext()) {
-			Integer position = (Integer) iterator.next();
-			String right = rightDataModel.getRight(position.intValue());
-			rightManager.addBGRight(right, this.currBusinessGroup);
-			this.selectedRights.add(right);
+		List<Integer> addedRights = rightsChoice.getAddedRows();
+		for (Integer position: addedRights) {
+			String right = rightDataModel.getObject(position.intValue());
+			rightManager.addBGRight(right, currBusinessGroup);
+			selectedRights.add(right);
 		}
 		// 2) remove rights from group
-		List removedRights = rightsChoice.getRemovedRows();
-		iterator = removedRights.iterator();
-		while (iterator.hasNext()) {
-			Integer position = (Integer) iterator.next();
-			String right = rightDataModel.getRight(position.intValue());
-			rightManager.removeBGRight(right, this.currBusinessGroup);
-			this.selectedRights.remove(right);
+		List<Integer> removedRights = rightsChoice.getRemovedRows();
+		for (Integer position:removedRights) {
+			String right = rightDataModel.getObject(position.intValue());
+			rightManager.removeBGRight(right, currBusinessGroup);
+			selectedRights.remove(right);
 		}
 	}
 
@@ -545,7 +536,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		tmp.put("areasChoice", areasChoice);
 		tmp.contextPut("noAreasFound", (allAreas.size() > 0 ? Boolean.FALSE : Boolean.TRUE));
 		tmp.contextPut("isGmAdmin", Boolean.valueOf(flags.isEnabled(BGConfigFlags.IS_GM_ADMIN)));
-		tmp.contextPut("type", this.currBusinessGroup.getType());
+		tmp.contextPut("type", currBusinessGroup.getType());
 		return tmp;
 	}
 
@@ -554,8 +545,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private VelocityContainer createTabRights() {
 		VelocityContainer tmp = createVelocityContainer("tab_bgRights");
-		this.selectedRights = rightManager.findBGRights(this.currBusinessGroup);
-		this.rightDataModel = new RightsToGroupDataModel(bgRights, this.selectedRights);
+		selectedRights = rightManager.findBGRights(currBusinessGroup);
+		rightDataModel = new RightsToGroupDataModel(bgRights, selectedRights);
 
 		rightsChoice = new Choice("rightsChoice", getTranslator());
 		rightsChoice.setSubmitKey("submit");
@@ -573,17 +564,15 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private VelocityContainer createTabDetails(UserRequest ureq, BusinessGroup businessGroup) {
 		VelocityContainer tmp = createVelocityContainer("tab_bgDetail");
 		
-		if (this.modifyBusinessGroupController != null) {
-			removeAsListenerAndDispose(this.modifyBusinessGroupController);
-		}
-		this.modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), businessGroup, this.flags
+		removeAsListenerAndDispose(modifyBusinessGroupController);
+		modifyBusinessGroupController = new BusinessGroupFormController(ureq, getWindowControl(), businessGroup, this.flags
 				.isEnabled(BGConfigFlags.GROUP_MINMAX_SIZE));
 		listenTo(this.modifyBusinessGroupController);
 		
-		tmp.put("businessGroupForm", this.modifyBusinessGroupController.getInitialComponent());
+		tmp.put("businessGroupForm", modifyBusinessGroupController.getInitialComponent());
 		tmp.contextPut("BuddyGroup", businessGroup);
-		tmp.contextPut("type", this.currBusinessGroup.getType());
-		tmp.contextPut("groupid", this.currBusinessGroup.getKey());
+		tmp.contextPut("type", currBusinessGroup.getType());
+		tmp.contextPut("groupid", currBusinessGroup.getKey());
 		return tmp;
 	}
 
@@ -725,15 +714,15 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private void refreshAllTabs(UserRequest ureq) {
 	  tabbedPane.removeAll();
 		tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
-		if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
+		//if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
 			tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
-		}
-		if (flags.isEnabled(BGConfigFlags.AREAS)) {
+		//}
+		//if (flags.isEnabled(BGConfigFlags.AREAS)) {
 			tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
-		}
-		if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
+		//}
+		//if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
 			tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
-		}
+		//}
 		tabbedPane.addTab(translate("group.edit.tab.members"), createTabGroupManagement(ureq));
 		if(tabAccessCtrl != null) {
 			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());

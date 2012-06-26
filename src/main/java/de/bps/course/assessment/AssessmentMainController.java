@@ -548,7 +548,7 @@ AssessmentMainController(UserRequest ureq, WindowControl wControl, OLATResourcea
 				if (actionid.equals(CMD_CHOOSE_GROUP)) {
 					int rowid = te.getRowId();
 					GroupAndContextTableModel groupListModel = (GroupAndContextTableModel) groupListCtr.getTableDataModel();
-					this.currentGroup = groupListModel.getBusinessGroupAt(rowid);
+					this.currentGroup = groupListModel.getObject(rowid);
 					this.identitiesList = getGroupIdentitiesFromGroupmanagement(this.currentGroup);
 					// Init the user list with this identitites list
 					doUserChooseWithData(ureq, this.identitiesList, this.currentGroup, this.currentCourseNode);

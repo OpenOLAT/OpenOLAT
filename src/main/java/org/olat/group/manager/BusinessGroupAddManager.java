@@ -17,14 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.user.groups;
+package org.olat.group.manager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.admin.user.groups.AddToGroupsEvent;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -36,6 +35,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -45,17 +46,14 @@ import org.olat.group.ui.BGMailHelper;
  * Initial Date:  09.05.2011 <br>
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GroupAddManager extends BasicManager {
-
-	private static GroupAddManager INSTANCE = new GroupAddManager();
-
-	public static final GroupAddManager getInstance() {
-		return INSTANCE;
-	}
+@Service("groupAddManager")
+public class BusinessGroupAddManager extends BasicManager {
 	
-	private GroupAddManager(){
-		//
-	}
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+
 	
 	/**
 	 * add identity to given groups as owner and/or participant
@@ -66,7 +64,7 @@ public class GroupAddManager extends BasicManager {
 	 * @param addingIdentity
 	 * @return
 	 */
-	public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, final Identity ident, final Identity addingIdentity){
+	public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, final Identity ident, final Identity addingIdentity) {
 		AddToGroupsEvent groupsEv = new AddToGroupsEvent(ownGroups, partGroups, mailGroups);
 		return addIdentityToGroups(groupsEv, ident, addingIdentity);
 	}
@@ -78,9 +76,7 @@ public class GroupAddManager extends BasicManager {
 	 * @param addingIdentity the identity who does this action
 	 * @return
 	 */
-	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity){
-		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
+	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity) {
 		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 		String[] resultTextArgs = new String[2];
 		boolean addToAnyGroup = false;
@@ -93,12 +89,12 @@ public class GroupAddManager extends BasicManager {
 		List<Long> ownerKeys = groupsEv.getOwnerGroupKeys();
 		String ownerGroupnames = "";
 
-		List<BusinessGroup> groups = bgs.loadBusinessGroups(ownerKeys);	
+		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(ownerKeys);	
 		for (BusinessGroup group : groups) {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
 //				seems not to work, but would be the way to go!
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
-				bgs.addOwner(addingIdentity, ident, group, flags);
+				businessGroupService.addOwner(addingIdentity, ident, group, flags);
 				ownerGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
 				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
@@ -109,7 +105,7 @@ public class GroupAddManager extends BasicManager {
 		// add to participant groups
 		List<Long> participantKeys = groupsEv.getParticipantGroupKeys();
 		String participantGroupnames = "";
-		List<BusinessGroup> participantGroups = bgs.loadBusinessGroups(participantKeys);	
+		List<BusinessGroup> participantGroups = businessGroupService.loadBusinessGroups(participantKeys);	
 		for (BusinessGroup group : participantGroups) {
 			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getPartipiciantGroup())) {
 				final BusinessGroup toAddGroup = group;
@@ -117,7 +113,7 @@ public class GroupAddManager extends BasicManager {
 //				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 					public void execute() {
-						bgs.addParticipant(addingIdentity, ident, toAddGroup, flags);
+						businessGroupService.addParticipant(addingIdentity, ident, toAddGroup, flags);
 					}});
 				participantGroupnames += group.getName() + ", ";
 				addToAnyGroup = true;
@@ -128,7 +124,7 @@ public class GroupAddManager extends BasicManager {
 		
 		// send notification mails
 
-		List<BusinessGroup> notifGroups = bgs.loadBusinessGroups(notifyAboutAdd);
+		List<BusinessGroup> notifGroups = businessGroupService.loadBusinessGroups(notifyAboutAdd);
 		for (BusinessGroup group : notifGroups) {
 			MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
 			MailerWithTemplate mailer = MailerWithTemplate.getInstance();

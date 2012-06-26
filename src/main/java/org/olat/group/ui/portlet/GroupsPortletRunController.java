@@ -38,7 +38,6 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -145,8 +144,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
 		groupList = businessGroupService.findBusinessGroups(null, identity, true, true, null, 0, -1);
-		//TODO gm groupList = bgm.findBusinessGroupsAttendedBy(null, identity, null);
-		//TODO gm groupList.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
 		List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
 		return entries;
 	}
@@ -163,9 +160,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			groupList = businessGroupService.findBusinessGroups(null, identity, true, true, null, 0, -1);
-			//TODO gm groupList = bgm.findBusinessGroupsAttendedBy(null, identity, null);
-			//TODO gm groupList.addAll(bgm.findBusinessGroupsOwnedBy(null, identity, null));
-
 			groupList = getSortedList(groupList, sortingCriteria);
 
 			List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
@@ -211,7 +205,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 					BusinessGroup currBusinessGroup = groupListModel.getBusinessGroupAt(rowid);
 					boolean isInBusinessGroup = businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), currBusinessGroup);
 					if(isInBusinessGroup) {
-					  BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false, null);
+					  BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), false);
 					} else {
 						showInfo("groupsPortlet.no_member");
 					}

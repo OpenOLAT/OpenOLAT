@@ -130,7 +130,7 @@ public class NewBGController extends BasicController {
 					allNames.add(this.groupCreateController.getGroupName());
 				}
 
-				this.newGroups = businessGroupService.createUniqueBusinessGroupsFor(allNames, resource, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks);
+				this.newGroups = businessGroupService.createUniqueBusinessGroupsFor(allNames, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
 				if(this.newGroups != null){
 						for (Iterator<BusinessGroup> iter = this.newGroups.iterator(); iter.hasNext();) {
 							BusinessGroup bg = iter.next();

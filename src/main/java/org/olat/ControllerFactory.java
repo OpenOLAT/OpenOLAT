@@ -87,7 +87,7 @@ public class ControllerFactory {
 
 		} else if (OresHelper.isOfType(olatResourceable, BGMainController.class)) {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BuddyGroupMainController, but is in guest group " + roles);
-			return BGControllerFactory.getInstance().createBuddyGroupMainController(ureq, wControl, initialViewIdentifier);
+			return BGControllerFactory.getInstance().createBuddyGroupMainController(ureq, wControl);
 
 		} else if (OresHelper.isOfType(olatResourceable, BusinessGroup.class)) {
 			if (roles.isGuestOnly()) throw new OLATSecurityException("Tried to launch a BusinessGroup, but is in guest group " + roles);

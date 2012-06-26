@@ -37,9 +37,9 @@ import org.olat.group.right.BGRights;
  * 
  * @author gnaegi
  */
-public class RightsToGroupDataModel extends DefaultTableDataModel {
-	List selectedRights;
-	BGRights bgRights;
+public class RightsToGroupDataModel extends DefaultTableDataModel<String> {
+	private List<String> selectedRights;
+	private BGRights bgRights;
 
 	/**
 	 * Constructor for the RightsToGroupDataModel
@@ -48,7 +48,7 @@ public class RightsToGroupDataModel extends DefaultTableDataModel {
 	 * @param selectedRights List of all areas which are associated to the group -
 	 *          meaning where the checkbox will be checked
 	 */
-	public RightsToGroupDataModel(BGRights bgRights, List selectedRights) {
+	public RightsToGroupDataModel(BGRights bgRights, List<String> selectedRights) {
 		super(bgRights.getRights());
 		this.bgRights = bgRights;
 		this.selectedRights = selectedRights;
@@ -66,19 +66,11 @@ public class RightsToGroupDataModel extends DefaultTableDataModel {
 	 */
 	public Object getValueAt(int row, int col) {
 		if (col == 0) {
-			return selectedRights.contains(getRight(row)) ? Boolean.TRUE : Boolean.FALSE;
+			return selectedRights.contains(getObject(row)) ? Boolean.TRUE : Boolean.FALSE;
 		} else if (col == 1) {
-			return bgRights.transateRight(getRight(row));
+			return bgRights.transateRight(getObject(row));
 		} else {
 			return "ERROR";
 		}
-	}
-
-	/**
-	 * @param row
-	 * @return the right at the given row
-	 */
-	public String getRight(int row) {
-		return (String) super.getObject(row);
 	}
 }

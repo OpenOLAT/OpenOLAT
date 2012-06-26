@@ -117,7 +117,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 	    BaseSecurity secm = BaseSecurityManager.getInstance();
 			
 	    // 1) context one: learning groups
-	    OLATResource c1 = null;//TODO gm cm.createAndAddBGContextToResource("c1name-learn", course, BusinessGroup.TYPE_LEARNINGROUP, owner1, true);
+	    OLATResource c1 = JunitTestHelper.createRandomResource();
 	    // create groups without waiting list
 	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0), new Integer(10), false, false, c1);
 	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, new Integer(0), new Integer(10), false, false, c1);
@@ -140,7 +140,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 	    
 	    
 	    // 2) context two: right groups
-	    OLATResource c2 = null;//TODO gm cm.createAndAddBGContextToResource("c2name-area", course, BusinessGroup.TYPE_RIGHTGROUP, owner2, true);
+	    OLATResource c2 = JunitTestHelper.createRandomResource();
 	    // groups
 	    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
 	    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);

@@ -34,7 +34,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
-import org.olat.group.manager.BusinessGroupDeletionManager;
+import org.olat.group.BusinessGroupService;
 
 /**
  * The repository-entry table data model for repository deletion. 
@@ -83,7 +83,7 @@ public class GroupDeleteTableModel extends DefaultTableDataModel<BusinessGroup> 
 				Date lastUsage= businessGroup.getLastUsage();
 				return (lastUsage == null ? "n/a" : lastUsage);
 			case 4 :
-				Date deleteEmail= LifeCycleManager.createInstanceFor(businessGroup).lookupLifeCycleEntry(BusinessGroupDeletionManager.SEND_DELETE_EMAIL_ACTION).getLcTimestamp();
+				Date deleteEmail= LifeCycleManager.createInstanceFor(businessGroup).lookupLifeCycleEntry(BusinessGroupService.SEND_DELETE_EMAIL_ACTION).getLcTimestamp();
 				return (deleteEmail == null ? "n/a" : deleteEmail);
 			default :
 				return "error";

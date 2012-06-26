@@ -921,7 +921,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private void doGroupRun(UserRequest ureq) {
-		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(this.currentGroup, ureq, getWindowControl(), true, null);
+		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(this.currentGroup, ureq, getWindowControl(), true);
 	}
 
 	private void doGroupDelete() {

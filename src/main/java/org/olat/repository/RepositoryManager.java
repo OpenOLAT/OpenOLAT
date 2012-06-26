@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.hibernate.type.StandardBasicTypes;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
@@ -42,6 +44,7 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.bookmark.BookmarkManager;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -70,10 +73,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BGResourceRelation;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.async.BackgroundTaskQueueManager;
 import org.olat.repository.async.IncrementDownloadCounterBackgroundTask;
 import org.olat.repository.async.IncrementLaunchCounterBackgroundTask;
@@ -105,7 +106,7 @@ public class RepositoryManager extends BasicManager {
 	private ImageHelper imageHelper;
 	private static BackgroundTaskQueueManager taskQueueManager;
 	private UserCourseInformationsManager userCourseInformationsManager;
-	private BusinessGroupService businessGroupService;
+	private DB dbInstance;
 
 	/**
 	 * [used by spring]
@@ -134,10 +135,10 @@ public class RepositoryManager extends BasicManager {
 	
 	/**
 	 * [used by Spring]
-	 * @param businessGroupService
+	 * @param dbInstance
 	 */
-	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
-		this.businessGroupService = businessGroupService;
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
 	}
 
 	/**
@@ -626,22 +627,22 @@ public class RepositoryManager extends BasicManager {
 				 .append("     and groupRelation.resource=ori")
 		     .append("  )")
 		     .append(" ))");
-		//TODO gm
 		if(resourceTypes != null && resourceTypes.length > 0) {
 			query.append(" and reResource.resName in (:resnames)");
 		}
 		
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query.toString());
-		dbquery.setLong("editorKey", editor.getKey());
+		TypedQuery<RepositoryEntry> dbquery = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("editorKey", editor.getKey());
 		if(resourceTypes != null && resourceTypes.length > 0) {
 			List<String> resNames = new ArrayList<String>();
 			for(String resourceType:resourceTypes) {
 				resNames.add(resourceType);
 			}
-			dbquery.setParameterList("resnames", resNames);
+			dbquery.setParameter("resnames", resNames);
 		}
-		dbquery.setCacheable(true);
-		List<RepositoryEntry> entries = dbquery.list();
+		dbquery.setHint("org.hibernate.cacheable", true);
+		List<RepositoryEntry> entries = dbquery.getResultList();
 		return entries;
 	}
 	
@@ -1596,10 +1597,11 @@ public class RepositoryManager extends BasicManager {
 			.append(" and ")
 			.append(" v.participantGroup in (select participantSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantSgmsi where participantSgmsi.identity=:identity)");
 
-		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
-		dbquery.setEntity("identity", identity);
-		dbquery.setCacheable(true);
-		List<RepositoryEntry> repoEntries = dbquery.list();	
+		List<RepositoryEntry> repoEntries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identity", identity)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();	
 		return repoEntries;
 	}
 	
@@ -1622,24 +1624,22 @@ public class RepositoryManager extends BasicManager {
 			.append("  v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
 			.append("  or")
 			.append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
-			.append(" )");
+			.append(" ) or (")
+		  .append("  res in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
+		  .append("    ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
+		  .append("    ").append(PolicyImpl.class.getName()).append(" as poi,")
+			.append("    ").append(OLATResourceImpl.class.getName()).append(" as ori")
+			.append("     where sgmsi.identity=:identity and sgmsi.securityGroup = poi.securityGroup")
+			.append("     and poi.permission = 'bgr.editor' and poi.olatResource = ori")
+			.append("     and groupRelation.resource=ori")
+		  .append("  )")
+		  .append(" ))");
 
-		DBQuery dbquery = DBFactory.getInstance().createQuery(sb.toString());
-		dbquery.setEntity("identity", identity);
-		dbquery.setCacheable(true);
-		List<RepositoryEntry> repoEntries = dbquery.list();
-
-		// 2: search for all learning groups where user is coach
-		//TODO gm
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
-		List<BusinessGroup> rightGrougList = businessGroupService.findBusinessGroups(params, identity, false, true, null, 0, -1);
-		List<RepositoryEntry> repoEntriesRightGroup = businessGroupService.findRepositoryEntries(rightGrougList, 0, -1);
-		for(RepositoryEntry entry:repoEntriesRightGroup) {
-			if(!repoEntries.contains(entry)) {
-				repoEntries.add(entry);
-			}
-		}
-		return repoEntries;
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identity", identity)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return entries;
 	}
 }

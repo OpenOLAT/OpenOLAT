@@ -147,7 +147,7 @@ public class BGMultipleCopyWizardController extends WizardController {
 		boolean copyAreas = (flags.isEnabled(BGConfigFlags.AREAS) && copyForm.isCopyAreas());
 		//TODO gm copy relations to resources 
 
-		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, newGroupName, this.originalGroup.getDescription(), null, max, null, null, copyAreas,
+		BusinessGroup newGroup = bgs.copyBusinessGroup(originalGroup, newGroupName, originalGroup.getDescription(), null, max, null, null, copyAreas,
 				copyForm.isCopyTools(), copyForm.isCopyRights(), copyForm.isCopyOwners(), copyForm.isCopyParticipants(), copyForm
 						.isCopyMembersVisibility(), copyForm.isCopyWaitingList());
 		return newGroup;

@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
@@ -75,6 +76,7 @@ public class ReadyToDeleteController extends BasicController {
 	private PackageTranslator tableModelTypeTranslator;
 	
 	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupService businessGroupService;
 
 	/**
 	 * @param ureq
@@ -84,6 +86,7 @@ public class ReadyToDeleteController extends BasicController {
 	public ReadyToDeleteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		/*
 		 * createBGPackageTranslator creates a Translator for Business Groups and the provided package, e.g. ReadyToDelete.class
@@ -129,7 +132,7 @@ public class ReadyToDeleteController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					bgDeletionManager.setLastUsageNowFor( (BusinessGroup) redtm.getObject(rowid) );
+					businessGroupService.setLastUsageFor(redtm.getObject(rowid));
 					updateGroupList();
 				}
 			} else if (event.getCommand().equals(Table.COMMAND_MULTISELECT)) {

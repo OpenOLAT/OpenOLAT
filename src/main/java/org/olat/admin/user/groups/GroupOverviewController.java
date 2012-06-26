@@ -223,7 +223,7 @@ public class GroupOverviewController extends BasicController {
 						updateGroupsTable(ureq);	
 					}
 					else {
-						BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), true, null);
+						BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currBusinessGroup, ureq, getWindowControl(), true);
 					}
 				} else if (actionid.equals(TABLE_ACTION_UNSUBSCRIBE)){
 					// fxdiff: FXOLAT-101 see similar doBuddyGroupLeave() in BGMainController
@@ -247,7 +247,7 @@ public class GroupOverviewController extends BasicController {
 				showWarning("group.add.result.none");
 			} else {
 				if (calloutCtrl != null) calloutCtrl.deactivate();				
-				String[] resultTextArgs = GroupAddManager.getInstance().addIdentityToGroups(groupsEv, identity, getIdentity());
+				String[] resultTextArgs = businessGroupService.addIdentityToGroups(groupsEv, identity, getIdentity());
 				if (resultTextArgs != null){
 					String message = translate("group.add.result", resultTextArgs);
 					getWindowControl().setInfo(message);

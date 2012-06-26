@@ -86,13 +86,14 @@ public class BGTranslatorFactory {
 		}
 		// 1 - group type specific translations (buddy, learning, right)
 		// with fallback to package translator (2)
-		if (groupType.equals(BusinessGroup.TYPE_BUDDYGROUP)) { return new PackageTranslator(PACKAGE_BG, locale, packageTrans); }
-		if (groupType.equals(BusinessGroup.TYPE_LEARNINGROUP)) {
+		if (groupType.equals(BusinessGroup.TYPE_BUDDYGROUP)) { 
+			return new PackageTranslator(PACKAGE_BG, locale, packageTrans);
+		} else if (groupType.equals(BusinessGroup.TYPE_LEARNINGROUP)) {
 			return new PackageTranslator(PACKAGE_LG, locale, packageTrans);
 		} else if (groupType.equals(BusinessGroup.TYPE_RIGHTGROUP)) {
 			return new PackageTranslator(PACKAGE_RG, locale, packageTrans);
 		} else {
-			throw new AssertException("Unknown group type ::" + groupType);
+			return new PackageTranslator(PACKAGE_LG, locale, packageTrans);
 		}
 	}
 }

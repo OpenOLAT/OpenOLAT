@@ -45,6 +45,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
@@ -68,6 +69,7 @@ public class StatusController extends BasicController {
 	private PackageTranslator tableModelTypeTranslator;
 	
 	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupService businessGroupService;
 
 
 	/**
@@ -79,6 +81,7 @@ public class StatusController extends BasicController {
 		super(ureq, wControl);
 		
 		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_BG_MAIN_CONTROLLER, ureq.getLocale());
 		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
@@ -116,7 +119,7 @@ public class StatusController extends BasicController {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_SINGLESELECT_CHOOSE)) {
 					int rowid = te.getRowId();
-					bgDeletionManager.setLastUsageNowFor( (BusinessGroup) redtm.getObject(rowid) );
+					businessGroupService.setLastUsageFor(redtm.getObject(rowid));
 					updateGroupList();				
 				}
 			} 

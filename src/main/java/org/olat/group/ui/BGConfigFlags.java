@@ -211,4 +211,29 @@ public class BGConfigFlags {
 		return bgFlags;
 	}
 
+	
+	public static BGConfigFlags createGroupDefaultFlags() {
+		BGConfigFlags bgFlags = new BGConfigFlags();
+		bgFlags.setEnabled(BGConfigFlags.BUDDYLIST, true);
+		bgFlags.setEnabled(BGConfigFlags.GROUP_OWNERS, true);
+		bgFlags.setEnabled(BGConfigFlags.GROUP_OWNER_REQURED, true);
+		bgFlags.setEnabled(BGConfigFlags.GROUP_MINMAX_SIZE, true);
+		bgFlags.setEnabled(BGConfigFlags.GROUP_COLLABTOOLS, true);
+		bgFlags.setEnabled(BGConfigFlags.AREAS, true);
+		bgFlags.setEnabled(BGConfigFlags.RIGHTS, true);
+		bgFlags.setEnabled(BGConfigFlags.SHOW_RESOURCES, true);
+
+		// security flags
+		// TODO use callback here to make this right dependent
+		bgFlags.setEnabled(BGConfigFlags.GROUPS_CREATE, true);
+		bgFlags.setEnabled(BGConfigFlags.GROUPS_MODIFY, true);
+		bgFlags.setEnabled(BGConfigFlags.GROUPS_DELETE, true);
+		bgFlags.setEnabled(BGConfigFlags.AREAS_CREATE, true);
+		bgFlags.setEnabled(BGConfigFlags.AREAS_MODIFY, true);
+		bgFlags.setEnabled(BGConfigFlags.AREAS_DELETE, true);
+		bgFlags.setEnabled(BGConfigFlags.RIGHTS_MODIFY, true);
+		bgFlags.setEnabled(BGConfigFlags.ADMIN_SEE_ALL_USER_DATA, true);
+
+		return bgFlags;
+	}
 }

@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.admin.user.groups.AddToGroupsEvent;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailerResult;
@@ -43,6 +44,8 @@ import org.olat.resource.OLATResource;
  */
 public interface BusinessGroupService {
 	
+	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
+	
 	public void registerDeletableGroupDataListener(DeletableGroupData listener);
 
 	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
@@ -52,6 +55,9 @@ public interface BusinessGroupService {
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String type,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource);
+	
+	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, String description, int minParticipants, int maxParticipants,
+			boolean waitingListEnabled, boolean autoCloseRanksEnabled, OLATResource resource);
 	
 	public BusinessGroup mergeBusinessGroup(BusinessGroup group);
 	
@@ -109,10 +115,6 @@ public interface BusinessGroupService {
 	
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults);
 	
-	public int countMembersOf(BusinessGroup group, boolean owner, boolean attendee);
-	
-	public List<Identity> getMembersOf(BusinessGroup group, boolean owner, boolean attendee);
-	
 	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee);
 	
 	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee);
@@ -151,7 +153,10 @@ public interface BusinessGroupService {
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
-
+	
+	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity);
+	
+	public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, final Identity ident, final Identity addingIdentity);
 	
 	//security
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
@@ -168,8 +173,7 @@ public interface BusinessGroupService {
 	
 
 
-	public Set<BusinessGroup> createUniqueBusinessGroupsFor(Set<String> allNames, OLATResource resource, String bgDesc, Integer bgMin,
-			Integer bgMax, Boolean enableWaitingList, Boolean enableAutoCloseRanks);
+
 
 
 	
