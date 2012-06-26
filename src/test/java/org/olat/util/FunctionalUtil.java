@@ -19,27 +19,8 @@
  */
 package org.olat.util;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.Properties;
-import java.util.UUID;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPut;
-import org.junit.Assert;
-import org.olat.restapi.RestConnection;
-import org.olat.user.restapi.UserVO;
 
 import com.thoughtworks.selenium.Selenium;
 
@@ -55,7 +36,7 @@ public class FunctionalUtil {
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
 	
 	public final static String INFO_DIALOG = "b_info";
-	
+
 	public enum OlatSite {
 		HOME,
 		GROUPS,
@@ -65,8 +46,10 @@ public class FunctionalUtil {
 		ADMINISTRATION,
 	}
 
-	public final static String OLAT_NAVIGATION_TAB_CSS = "b_nav_site";
-	public final static String OLAT_ACTIVE_NAVIGATION_TAB_CSS = "b_nav_active";
+	public final static String OLAT_TOP_NAVIGATION_LOGOUT_CSS = "o_topnav_logout";
+	
+	public final static String OLAT_NAVIGATION_SITE_CSS = "b_nav_site";
+	public final static String OLAT_ACTIVE_NAVIGATION_SITE_CSS = "b_nav_active";
 	
 	public final static String OLAT_SITE_HOME_CSS = "o_site_home";
 	public final static String OLAT_SITE_GROUPS_CSS = "o_site_groups";
@@ -74,11 +57,15 @@ public class FunctionalUtil {
 	public final static String OLAT_SITE_GROUP_ADMINISTRATION_CSS = "o_site_groupsmanagement";
 	public final static String OLAT_SITE_USER_MANAGEMENT_CSS = "o_site_useradmin";
 	public final static String OLAT_SITE_ADMINISTRATION_CSS = "o_site_admin";
+
+	public final static String CONTENT_CSS = "b_main";
+	public final static String CONTENT_TAB_CSS = "b_item_";
+	public final static String ACTIVE_CONTENT_TAB_CSS = "b_active";
+	
+	public final static String FORM_SAVE_XPATH = "//button[@type='button' and last()]";
 	
 	private String username;
 	private String password;
-	
-	private HashMap<String,String> seleniumCredentials = new HashMap<String,String>();
 	
 	private String deploymentUrl;
 	private String waitLimit;
@@ -87,6 +74,8 @@ public class FunctionalUtil {
 	private String acknowledgeCheckbox;
 	
 	private String infoDialog;
+	
+	private String olatTopNavigationLogoutCss;
 	
 	private String olatNavigationSiteCss;
 	private String olatActiveNavigationSiteCss;
@@ -97,6 +86,12 @@ public class FunctionalUtil {
 	private String olatSiteGroupAdministrationCss;
 	private String olatSiteUserManagementCss;
 	private String olatSiteAdministrationCss;
+	
+	private String contentCss;
+	private String contentTabCss;
+	private String activeContentTabCss;
+	
+	private String formSaveXPath;
 	
 	public FunctionalUtil(){
 		Properties properties = new Properties();
@@ -123,8 +118,10 @@ public class FunctionalUtil {
 		
 		infoDialog = INFO_DIALOG;
 		
-		olatNavigationSiteCss = OLAT_NAVIGATION_TAB_CSS;
-		olatActiveNavigationSiteCss = OLAT_ACTIVE_NAVIGATION_TAB_CSS;
+		olatTopNavigationLogoutCss = OLAT_TOP_NAVIGATION_LOGOUT_CSS;
+		
+		olatNavigationSiteCss = OLAT_NAVIGATION_SITE_CSS;
+		olatActiveNavigationSiteCss = OLAT_ACTIVE_NAVIGATION_SITE_CSS;
 		
 		olatSiteHomeCss = OLAT_SITE_HOME_CSS;
 		olatSiteGroupsCss = OLAT_SITE_GROUPS_CSS;
@@ -132,50 +129,12 @@ public class FunctionalUtil {
 		olatSiteGroupAdministrationCss = OLAT_SITE_GROUP_ADMINISTRATION_CSS;
 		olatSiteUserManagementCss = OLAT_SITE_USER_MANAGEMENT_CSS;
 		olatSiteAdministrationCss = OLAT_SITE_ADMINISTRATION_CSS;
-	}
-	
-	/**
-	 * @param deploymentUrl
-	 * @param count
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * 
-	 * Creates the selenium test users with random passwords and
-	 * writes it to credentials.properties.
-	 */
-	public void createTestUsers(URL deploymentUrl, int count) throws IOException, URISyntaxException{
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-
-		restConnection.login(getUsername(), getPassword());
 		
-		for(int i = 0; i < count; i++){
-			UserVO vo = new UserVO();
-			String username = "selenium_" + i + "_" + UUID.randomUUID().toString();
-			vo.setLogin(username);
-			String password = "passwd_" + i + "_" + UUID.randomUUID().toString();
-			vo.setPassword(password);
-			vo.setFirstName("John_" + i);
-			vo.setLastName("Smith");
-			vo.setEmail(username + "@frentix.com");
-			vo.putProperty("telOffice", "39847592");
-			vo.putProperty("telPrivate", "39847592");
-			vo.putProperty("telMobile", "39847592");
-			vo.putProperty("gender", "Female");//male or female
-			vo.putProperty("birthDay", "12/12/2009");
-
-			URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users").build();
-			HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
-			restConnection.addJsonEntity(method, vo);
-			method.addHeader("Accept-Language", "en");
-
-			HttpResponse response = restConnection.execute(method);
-			assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-			InputStream body = response.getEntity().getContent();
-			
-			seleniumCredentials.put(username, password);
-		}
-
-		restConnection.shutdown();
+		contentCss = CONTENT_CSS;
+		contentTabCss = CONTENT_TAB_CSS;
+		activeContentTabCss = ACTIVE_CONTENT_TAB_CSS;
+		
+		formSaveXPath = FORM_SAVE_XPATH;
 	}
 	
 	/**
@@ -201,7 +160,7 @@ public class FunctionalUtil {
 
 	/**
 	 * @param site
-	 * @return
+	 * @return the matching CSS class
 	 * 
 	 * Find CSS mapping for specific olat site.
 	 */
@@ -279,14 +238,15 @@ public class FunctionalUtil {
 	/**
 	 * @param browser
 	 * @param site
+	 * @return true on success otherwise false
 	 * 
 	 * Open a specific olat site.
 	 */
-	public void openSite(Selenium browser, OlatSite site){
+	public boolean openSite(Selenium browser, OlatSite site){
 		String selectedCss = findCssClassOfSite(site);
 		
 		if(selectedCss == null){
-			return;
+			return(false);
 		}
 		
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -298,7 +258,9 @@ public class FunctionalUtil {
 		.append(" * a");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad("10000");
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
 	}
 	
 	/**
@@ -308,6 +270,10 @@ public class FunctionalUtil {
 	 * Login to olat using selenium.
 	 */
 	public boolean login(Selenium browser){
+		return login(browser, true);
+	}
+	
+	public boolean login(Selenium browser, boolean closeDialogs){
 		loadPage(browser, getLoginPage());
 		
 		/* fill in login form */
@@ -316,21 +282,23 @@ public class FunctionalUtil {
 	    browser.click("id=o_fiooolat_login_button");
 	    browser.waitForPageToLoad(getWaitLimit());
 	    
-		/* check if it's our first login */
-		if(browser.isElementPresent("name=" + getAcknowledgeCheckbox())){
-			browser.click("name=" + getAcknowledgeCheckbox());
-			
-			/* click accept button */
-			browser.click("xpath=//div[@class='b_window']//button[last()]");
-		    browser.waitForPageToLoad(getWaitLimit());
-		}
-		
-		/* click away info dialogs eg. restore session */
-		while(browser.isElementPresent("class="+ getInfoDialog())){
-			/* click last button */
-			browser.click("xpath=//form//button");
-			browser.waitForPageToLoad(getWaitLimit());
-		}
+	    if(closeDialogs){
+	    	/* check if it's our first login */
+	    	if(browser.isElementPresent("name=" + getAcknowledgeCheckbox())){
+	    		browser.click("name=" + getAcknowledgeCheckbox());
+
+	    		/* click accept button */
+	    		browser.click("xpath=//div[@class='b_window']//button[last()]");
+	    		browser.waitForPageToLoad(getWaitLimit());
+	    	}
+
+	    	/* click away info dialogs eg. restore session */
+	    	while(browser.isElementPresent("class="+ getInfoDialog())){
+	    		/* click last button */
+	    		browser.click("xpath=//form//a");
+	    		browser.waitForPageToLoad(getWaitLimit());
+	    	}
+	    }
 		
 		/* validate page */
 		if(checkCurrentSite(browser, OlatSite.HOME)){
@@ -340,6 +308,109 @@ public class FunctionalUtil {
 		}
 	}
 	
+	/**
+	 * @param browser
+	 * @return
+	 * 
+	 * Logout from olat LMS.
+	 */
+	public boolean logout(Selenium browser){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("css=")
+		.append(getOlatTopNavigationLogoutCss())
+		.append(" a");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param tabIndex
+	 * @return true on success otherwise false
+	 * 
+	 * Opens a tab at the specific tabIndex.
+	 */
+	public boolean openContentTab(Selenium browser, int tabIndex){
+		StringBuffer activeTabSelectorBuffer = new StringBuffer();
+		
+		activeTabSelectorBuffer.append("css=#")
+		.append(getContentCss())
+		.append(" * ul .")
+		.append(getContentTabCss())
+		.append(tabIndex + 1)
+		.append('.')
+		.append(getActiveContentTabCss());
+		
+		if(!browser.isElementPresent(activeTabSelectorBuffer.toString())){
+			StringBuffer selectorBuffer = new StringBuffer();
+			
+			selectorBuffer.append("css=#")
+			.append(getContentCss())
+			.append(" * ul .")
+			.append(getContentTabCss())
+			.append(tabIndex + 1)
+			.append(" * a");
+			
+			browser.click(selectorBuffer.toString());
+			browser.waitForPageToLoad(getWaitLimit());
+		}
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param formIndex
+	 * @return true on success
+	 * 
+	 * Save the form at the position formIndex within content element.
+	 */
+	public boolean saveForm(Selenium browser, int formIndex){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form[")
+		.append(formIndex)
+		.append("]")
+		.append(getFormSaveXPath());
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param formIndex
+	 * @param radioGroupIndex
+	 * @param radioIndex
+	 * @return true on success
+	 * 
+	 * Clicks the radio button at position radioIndex from the selection at position radioGroupIndex.
+	 */
+	public boolean clickRadio(Selenium browser, int formIndex, int radioGroupIndex, int radioIndex){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form[")
+		.append(formIndex)
+		.append("]")
+		.append("//input[@type='radio' and index(")
+		.append(radioIndex)
+		.append(")]");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
+	}
 	
 	public String getUsername() {
 		return username;
@@ -355,14 +426,6 @@ public class FunctionalUtil {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public HashMap<String, String> getSeleniumCredentials() {
-		return seleniumCredentials;
-	}
-
-	public void setSeleniumCredentials(HashMap<String, String> seleniumCredentials) {
-		this.seleniumCredentials = seleniumCredentials;
 	}
 
 	public String getDeploymentUrl() {
@@ -403,6 +466,14 @@ public class FunctionalUtil {
 
 	public void setInfoDialog(String infoDialog) {
 		this.infoDialog = infoDialog;
+	}
+
+	public String getOlatTopNavigationLogoutCss() {
+		return olatTopNavigationLogoutCss;
+	}
+
+	public void setOlatTopNavigationLogoutCss(String olatTopNavigationLogoutCss) {
+		this.olatTopNavigationLogoutCss = olatTopNavigationLogoutCss;
 	}
 
 	public String getOlatNavigationSiteCss() {
@@ -468,5 +539,37 @@ public class FunctionalUtil {
 
 	public void setOlatSiteAdministrationCss(String olatSiteAdministrationCss) {
 		this.olatSiteAdministrationCss = olatSiteAdministrationCss;
+	}
+	
+	public String getContentCss() {
+		return contentCss;
+	}
+
+	public void setContentCss(String contentCss) {
+		this.contentCss = contentCss;
+	}
+
+	public String getContentTabCss() {
+		return contentTabCss;
+	}
+
+	public void setContentTabCss(String contentTabCss) {
+		this.contentTabCss = contentTabCss;
+	}
+
+	public String getActiveContentTabCss() {
+		return activeContentTabCss;
+	}
+
+	public void setActiveContentTabCss(String activeContentTabCss) {
+		this.activeContentTabCss = activeContentTabCss;
+	}
+
+	public String getFormSaveXPath() {
+		return formSaveXPath;
+	}
+
+	public void setFormSaveXPath(String formSaveXPath) {
+		this.formSaveXPath = formSaveXPath;
 	}
 }
