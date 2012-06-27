@@ -46,6 +46,7 @@
 				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>
 				<value>org.olat.catalog.restapi.CatalogWebService</value>
 				<value>org.olat.notifications.restapi.NotificationsWebService</value>
+				<value>org.olat.commons.calendar.restapi.CalendarWebService</value>
 				<value>org.olat.restapi.log.LogWebService</value>
 			</list>
 		</property>

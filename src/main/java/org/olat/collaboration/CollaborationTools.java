@@ -39,7 +39,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
-import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -416,32 +415,9 @@ public class CollaborationTools implements Serializable {
 	 * @return Configured WeeklyCalendarController
 	 */
 	public CalendarController createCalendarController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean isAdmin) {
-		// do not use a global translator since in the fututre a collaborationtools
-		// may be shared among users
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
-		// get the calendar
-		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		KalendarRenderWrapper calRenderWrapper = calManager.getGroupCalendar(businessGroup);
-		boolean isOwner = BaseSecurityManager.getInstance().isIdentityInSecurityGroup(ureq.getIdentity(), businessGroup.getOwnerGroup());
-		if (!(isAdmin || isOwner)) {
-			// check if participants have read/write access
-			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-			Long lCalAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupCalendarAccess();
-			if (lCalAccess != null) iCalAccess = lCalAccess.intValue();
-			if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_ALL) {
-				calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			} else {
-				calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			}
-		} else {
-			calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-		}
-		KalendarConfig config = calManager.findKalendarConfigForIdentity(calRenderWrapper.getKalendar(), ureq);
-		if (config != null) {
-			calRenderWrapper.getKalendarConfig().setCss(config.getCss());
-			calRenderWrapper.getKalendarConfig().setVis(config.isVis());
-		}
-		calRenderWrapper.getKalendarConfig().setResId(businessGroup.getKey());
+		CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
+		KalendarRenderWrapper calRenderWrapper = collaborationManager.getCalendar(businessGroup, ureq, isAdmin);
+	
 		if (businessGroup.getType().equals(BusinessGroup.TYPE_LEARNINGROUP)) {
 			// add linking
 			List<OLATResource> resources = BGContextManagerImpl.getInstance().findOLATResourcesForBGContext(businessGroup.getGroupContext());
@@ -457,6 +433,8 @@ public class CollaborationTools implements Serializable {
 				}
 			}
 		}
+		
+		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 		calendars.add(calRenderWrapper);
 		
 		WeeklyCalendarController calendarController = new WeeklyCalendarController(

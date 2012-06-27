@@ -79,9 +79,16 @@ public class CourseCalendars {
 		CourseCalendarSubscription calSubscription = new CourseCalendarSubscription(getKalendar(), ureq.getUserSession().getGuiPreferences());
 		return calSubscription;
 	}
-
-	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, OLATResourceable ores, NodeEvaluation ne) {
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+	
+	/**
+	 * Return only the course calendar without any group calendar
+	 * @param ureq
+	 * @param wControl
+	 * @param ores
+	 * @param ne
+	 * @return
+	 */
+	public static KalendarRenderWrapper getCourseCalendarWrapper(UserRequest ureq, OLATResourceable ores, NodeEvaluation ne) {
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		// add course calendar
 		ICourse course = CourseFactory.loadCourse(ores);
@@ -89,10 +96,11 @@ public class CourseCalendars {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
 		boolean isPrivileged = cgm.isIdentityCourseAdministrator(identity)
-				|| ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID)
+				|| (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
 				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(
 						RepositoryManager.getInstance().lookupRepositoryEntry(course, false), identity)
 				|| ureq.getUserSession().getRoles().isOLATAdmin();
+		
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 		} else {
@@ -103,10 +111,19 @@ public class CourseCalendars {
 			courseKalendarWrapper.getKalendarConfig().setCss(config.getCss());
 			courseKalendarWrapper.getKalendarConfig().setVis(config.isVis());
 		}
+		return courseKalendarWrapper;
+	}
+
+	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, OLATResourceable ores, NodeEvaluation ne) {
+		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, ores, ne);
 		// add link provider
+		ICourse course = CourseFactory.loadCourse(ores);
 		CourseLinkProviderController clpc = new CourseLinkProviderController(course, ureq, wControl);
 		courseKalendarWrapper.setLinkProvider(clpc);
-		calendars.add(courseKalendarWrapper);
+		
+		Identity identity = ureq.getIdentity();
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 
 		// add course group calendars
 		boolean isGroupManager = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
