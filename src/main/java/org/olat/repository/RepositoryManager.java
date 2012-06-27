@@ -380,7 +380,7 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public RepositoryEntry lookupRepositoryEntry(Long key) {
 		if (key == null) return null;
-		return (RepositoryEntry)DBFactory.getInstance().findObject(RepositoryEntry.class, key);
+		return dbInstance.getCurrentEntityManager().find(RepositoryEntry.class, key);
 	}
 	
 	/**

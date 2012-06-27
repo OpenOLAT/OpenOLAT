@@ -139,10 +139,10 @@ class DBManager extends BasicManager {
 	 * @param theClass The class for the object to be loaded
 	 * @param pK The primary key for the object
 	 */	
-	Object loadObject(DBTransaction trx, Class theClass, Long pK) {
-		Object o = null;
+	<U> U loadObject(DBTransaction trx, Class<U> theClass, Long pK) {
+		U o = null;
 		try {
-			o = getSession().load(theClass, pK);
+			o = getEntityManager().find(theClass, pK);
 			if (isLogDebugEnabled()) {
 				logDebug("load (res " +(o == null? "null": "ok")+")(trans "+trx.hashCode()+") key "+pK+" class "+theClass.getName());	
 			}
@@ -258,9 +258,13 @@ class DBManager extends BasicManager {
 	Session getSession() {
 		return getDbSession().getHibernateSession();
 	}
+	
+	EntityManager getEntityManager() {
+		return getDbSession().getEntityManager();
+	}
 
 	DBTransaction beginTransaction() {
-		return this.getDbSession().beginDbTransaction();
+		return getDbSession().beginDbTransaction();
 	}
 	
 	/**
@@ -271,7 +275,7 @@ class DBManager extends BasicManager {
 		Query q = null;
 		DBQuery dbq = null;
 		try {
-			q = this.getSession().createQuery(query);
+			q = getSession().createQuery(query);
 			dbq = new DBQueryImpl(q);
 		} catch (HibernateException he) {
 			setError(he);

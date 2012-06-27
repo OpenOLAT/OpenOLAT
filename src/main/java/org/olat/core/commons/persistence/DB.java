@@ -111,7 +111,7 @@ public interface DB {
 	 * @param key
 	 * @return Object, if any found. or null otherwise
 	 */
-	public Object findObject(Class theClass, Long key);
+	public <U> U findObject(Class<U> theClass, Long key);
 
 	/**
 	 * Find objects based on query
@@ -128,7 +128,7 @@ public interface DB {
 	 * @param key
 	 * @return Object.
 	 */
-	public Object loadObject(Class<?> theClass, Long key);
+	public <U> U loadObject(Class<U> theClass, Long key);
 
 	/**
 	 * Save an object.

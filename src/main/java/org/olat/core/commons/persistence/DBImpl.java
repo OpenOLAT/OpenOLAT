@@ -60,8 +60,6 @@ import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupImpl;
 import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.jmx.support.MBeanServerFactoryBean;
@@ -525,9 +523,9 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param key
 	 * @return Object, if any found. Null, if non exist. 
 	 */
-	public Object findObject(Class theClass, Long key) {
+	public <U> U findObject(Class<U> theClass, Long key) {
 		beginTransaction(key);
-		return getDBManager().findObject(theClass, key);
+		return getCurrentEntityManager().find(theClass, key);
 	}
 	
 	/**
@@ -537,7 +535,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param key
 	 * @return Object.
 	 */
-	public Object loadObject(Class theClass, Long key) {
+	public <U> U loadObject(Class<U> theClass, Long key) {
 		beginTransaction(key);
 		return getDBManager().loadObject(getTransaction(), theClass, key);
 	}
@@ -558,16 +556,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 	 * @param object
 	 */
 	public void updateObject(Object object) {
-		beginTransaction(object);
-		getDBManager().updateObject(getTransaction(), object);
-	}
-	
-	public void updateObject(BusinessGroup object) {
-		beginTransaction(object);
-		getDBManager().updateObject(getTransaction(), object);
-	}
-	
-	public void updateObject(BusinessGroupImpl object) {
 		beginTransaction(object);
 		getDBManager().updateObject(getTransaction(), object);
 	}
