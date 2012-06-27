@@ -320,9 +320,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		GroupVO vo = parse(body, GroupVO.class);
+		GroupVO vo = conn.parse(response, GroupVO.class);
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), g1.getKey());
 	}
@@ -335,9 +333,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		GroupInfoVO vo = parse(body, GroupInfoVO.class);
+		GroupInfoVO vo = conn.parse(response, GroupInfoVO.class);
 		assertNotNull(vo);
 		assertEquals(Boolean.TRUE, vo.getHasWiki());
 		assertEquals("<p>Hello world</p>", vo.getNews());
@@ -353,9 +349,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		GroupInfoVO vo = parse(body, GroupInfoVO.class);
+		GroupInfoVO vo = conn.parse(response, GroupInfoVO.class);
 		assertNotNull(vo);
 		assertEquals(Boolean.FALSE, vo.getHasWiki());
 		assertNull(vo.getNews());

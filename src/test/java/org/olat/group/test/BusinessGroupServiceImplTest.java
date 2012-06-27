@@ -24,7 +24,7 @@
 * <p>
 */
 
-package org.olat.group;
+package org.olat.group.test;
 
 // um click emulieren:
 /*
@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -64,6 +65,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.util.Encoder;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
@@ -78,9 +81,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author patrick
  */
 
-public class BusinessGroupManagerImplTest extends OlatTestCase implements WindowControl {
+public class BusinessGroupServiceImplTest extends OlatTestCase implements WindowControl {
 	//
-	private static Logger log = Logger.getLogger(BusinessGroupManagerImplTest.class.getName());
+	private static Logger log = Logger.getLogger(BusinessGroupServiceImplTest.class.getName());
 	/*
 	 * ::Test Setup::
 	 */
@@ -126,12 +129,15 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
+	private static boolean initialize = false;
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	@Before
 	public void setUp() throws Exception {
+		if(initialize) return;
+		
 			// Identities
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
 			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
@@ -177,10 +183,37 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 
 			DBFactory.getInstance().closeSession();
 
-			setupWaitingList(businessGroupService);
-			/*
-			 * phuuu finally initialized
-			 */	
+			// create business-group with waiting-list
+			String bgWithWaitingListName = "Group with WaitingList";
+			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
+			Boolean enableWaitinglist = new Boolean(true);
+			Boolean enableAutoCloseRanks = new Boolean(true);
+			OLATResource resource = JunitTestHelper.createRandomResource();
+			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
+			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
+					bgWithWaitingListDesc, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
+			bgWithWaitingList.setMaxParticipants(new Integer(2));
+			// Identities
+			String suffix = UUID.randomUUID().toString();
+			User UserWg1 = UserManager.getInstance().createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
+			wg1 = BaseSecurityManager.getInstance().createAndPersistIdentity(suffix, UserWg1,
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, Encoder.encrypt("wg1"));
+			suffix = UUID.randomUUID().toString();
+			User UserWg2 = UserManager.getInstance().createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
+			wg2 = BaseSecurityManager.getInstance().createAndPersistIdentity(suffix, UserWg2,
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, Encoder.encrypt("wg2"));
+			suffix = UUID.randomUUID().toString();
+			User UserWg3 = UserManager.getInstance().createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
+			wg3 = BaseSecurityManager.getInstance().createAndPersistIdentity(suffix, UserWg3,
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, Encoder.encrypt("wg3"));
+			suffix = UUID.randomUUID().toString();
+			User UserWg4 = UserManager.getInstance().createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
+			wg4 = BaseSecurityManager.getInstance().createAndPersistIdentity(suffix, UserWg4,
+					BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, Encoder.encrypt("wg4"));
+
+			DBFactory.getInstance().closeSession();
+			
+			initialize = true;
 	}
 
 	@Test
@@ -594,36 +627,7 @@ public class BusinessGroupManagerImplTest extends OlatTestCase implements Window
 		}
 	}
 
-	// Helper methods
-	// ///////////////
-	private void setupWaitingList(BusinessGroupService bgManager) {
-		if (bgManager.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_LEARNINGROUP, id1, null).size() == 0) {
-			// create business-group with waiting-list
-			String bgWithWaitingListName = "Group with WaitingList";
-			String bgWithWaitingListDesc = "some short description for Group with WaitingList";
-			Boolean enableWaitinglist = new Boolean(true);
-			Boolean enableAutoCloseRanks = new Boolean(true);
-			OLATResource resource = JunitTestHelper.createRandomResource();
-			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
-			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
-					bgWithWaitingListDesc, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
-			bgWithWaitingList.setMaxParticipants(new Integer(2));
-			// Identities
-			User UserWg1 = UserManager.getInstance().createAndPersistUser("FirstName_wg1", "LastName_wg1", "wg1_junittest@olat.unizh.ch");
-			wg1 = BaseSecurityManager.getInstance().createAndPersistIdentity("wg1", UserWg1,
-					BaseSecurityModule.getDefaultAuthProviderIdentifier(), "wg1", Encoder.encrypt("wg1"));
-			User UserWg2 = UserManager.getInstance().createAndPersistUser("FirstName_wg2", "LastName_wg2", "wg2_junittest@olat.unizh.ch");
-			wg2 = BaseSecurityManager.getInstance().createAndPersistIdentity("wg2", UserWg2,
-					BaseSecurityModule.getDefaultAuthProviderIdentifier(), "wg2", Encoder.encrypt("wg2"));
-			User UserWg3 = UserManager.getInstance().createAndPersistUser("FirstName_wg3", "LastName_wg3", "wg3_junittest@olat.unizh.ch");
-			wg3 = BaseSecurityManager.getInstance().createAndPersistIdentity("wg3", UserWg3,
-					BaseSecurityModule.getDefaultAuthProviderIdentifier(), "wg3", Encoder.encrypt("wg3"));
-			User UserWg4 = UserManager.getInstance().createAndPersistUser("FirstName_wg4", "LastName_wg4", "wg4_junittest@olat.unizh.ch");
-			wg4 = BaseSecurityManager.getInstance().createAndPersistIdentity("wg4", UserWg4,
-					BaseSecurityModule.getDefaultAuthProviderIdentifier(), "wg4", Encoder.encrypt("wg4"));
-		}
 
-	}
 
 	// Implements interface WindowControl
 	// ///////////////////////////////////

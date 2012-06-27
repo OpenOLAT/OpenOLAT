@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -210,7 +211,8 @@ public class UserImportController extends BasicController {
 				ident = BaseSecurityManager.getInstance().findIdentityByName(identName);
 			}
 			if(ident != null){
-				businessGroupService.addIdentityToGroups(ownGroups, partGroups, mailGroups, ident, addingIdentity);
+				AddToGroupsEvent groupsEv = new AddToGroupsEvent(ownGroups, partGroups, mailGroups);
+				businessGroupService.addIdentityToGroups(groupsEv, ident, addingIdentity);
 				counter ++;
 				if (counter % 5 == 0) {
 					DBFactory.getInstance().intermediateCommit();

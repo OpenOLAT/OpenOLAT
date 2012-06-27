@@ -32,18 +32,19 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.UUID;
 
-import org.apache.log4j.Logger;
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +57,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Comment:  
  * 
  */
-public class PropertyTest extends OlatTestCase implements OLATResourceable {
+public class PropertyTest extends OlatTestCase {
 
-	private long RESOURCE_ID = 42;
-	private String RESOURCE_TYPE = "org.olat.properties.PropertyTest";
-	private static Logger log = Logger.getLogger(PropertyTest.class);
+
+	private static OLog log = Tracing.createLoggerFor(PropertyTest.class);
 	private static Identity identity = null, id2 = null, id3 = null, id4 = null;
 	private static BusinessGroup group = null;
 	private static org.olat.resource.OLATResource res = null;
@@ -73,21 +73,17 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup() {
+	@Before
+	public void setup() {
 
 				pm = PropertyManager.getInstance();
 				// identity with null User should be ok for test case
-				identity = JunitTestHelper.createAndPersistIdentityAsUser("foo");
-				id2 = JunitTestHelper.createAndPersistIdentityAsUser("eis");
-				id3 = JunitTestHelper.createAndPersistIdentityAsUser("zwoi");
-				id4 = JunitTestHelper.createAndPersistIdentityAsUser("drp");
-				OLATResourceManager orm = OLATResourceManager.getInstance();
-				res = orm.findResourceable(this);
-				if (res == null) {
-					res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
-					OLATResourceManager.getInstance().saveOLATResource(res);
-				}
-				
+				identity = JunitTestHelper.createAndPersistIdentityAsUser("foo-" + UUID.randomUUID().toString());
+				id2 = JunitTestHelper.createAndPersistIdentityAsUser("eis-" + UUID.randomUUID().toString());
+				id3 = JunitTestHelper.createAndPersistIdentityAsUser("zwoi-" + UUID.randomUUID().toString());
+				id4 = JunitTestHelper.createAndPersistIdentityAsUser("drp-" + UUID.randomUUID().toString());
+				res = JunitTestHelper.createRandomResource();
+
 				List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
 				if (l.size() == 0) {
 					group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
@@ -100,9 +96,10 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	/**
 	 * @see junit.framework.TestCase#tearDown()
 	 */
-	@After public void tearDown() {
+	@After
+	public void tearDown() {
 		try {
-			Tracing.logInfo("tearDown: DB.getInstance().closeSession()", this.getClass());
+			log.info("tearDown: DB.getInstance().closeSession()");
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("tearDown failed: ", e);
@@ -133,18 +130,18 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	@Test public void testGetAllResourceTypeNames() {
 		Property p = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
 		try {
-			Tracing.logInfo("p='" + p +"'", this.getClass());
-			Tracing.logInfo("res=" + res, this.getClass());
-			Tracing.logInfo("res.getResourceableTypeName=" + res.getResourceableTypeName(), this.getClass());
+			log.info("p='" + p +"'");
+			log.info("res=" + res);
+			log.info("res.getResourceableTypeName=" + res.getResourceableTypeName());
 			pm.saveProperty(p);
 			DBFactory.getInstance().closeSession();
-			Tracing.logInfo("p='" + p +"'", this.getClass());
-			Tracing.logInfo("res=" + res, this.getClass());
-			Tracing.logInfo("res.getResourceableTypeName=" + res.getResourceableTypeName(), this.getClass());
+			log.info("p='" + p +"'");
+			log.info("res=" + res);
+			log.info("res.getResourceableTypeName=" + res.getResourceableTypeName());
 			String resTypeName = p.getResourceTypeName();
-			Tracing.logInfo("resTypeName=" + resTypeName, this.getClass());
-			List resTypeNames = pm.getAllResourceTypeNames();
-			Tracing.logInfo("resTypeNames=" + resTypeNames, this.getClass());
+			log.info("resTypeName=" + resTypeName);
+			List<String> resTypeNames = pm.getAllResourceTypeNames();
+			log.info("resTypeNames=" + resTypeNames);
 			assertTrue(resTypeNames.contains(resTypeName));
 		} finally {
 			pm.deleteProperty(p);
@@ -154,16 +151,17 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	/**
 	 * testListProperties
 	 */
-	@Test public void testListProperties(){
+	@Test
+	public void testListProperties(){
 		String resTypeName = res.getResourceableTypeName();
 		Long resTypeId = res.getResourceableId();
 		Property p = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
-		List entries = PropertyManager.getInstance().listProperties(identity, group, resTypeName, resTypeId, "cat", "TestProperty");
+		List<Property> entries = PropertyManager.getInstance().listProperties(identity, group, resTypeName, resTypeId, "cat", "TestProperty");
 		if(entries.size() == 1){
 			Property prop = (Property) entries.get(0);
-			assertTrue(resTypeName.equals(prop.getResourceTypeName()));
-			assertTrue(resTypeId.equals(prop.getResourceTypeId()));
+			assertEquals(resTypeName, prop.getResourceTypeName());
+			assertEquals(resTypeId, prop.getResourceTypeId());
 		}
 		
 		pm.deleteProperty(p);
@@ -209,8 +207,8 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		stop = System.currentTimeMillis();
 		System.out.println("CREATE generic property test: " + (stop-start) + " ms (" + (count * 1000 / (stop-start)) + "/sec)");
 		// some find identitites tests
-		List ids = pm.findIdentitiesWithProperty(null, null, "cat", "TestProperty", false);
-		assertTrue(ids.size() == count);
+		List<Identity> ids = pm.findIdentitiesWithProperty(null, null, "cat", "TestProperty", false);
+		assertEquals(count , ids.size());
 		
 		// create course and user properties
 		System.out.println("Preparing user/group properties test. Creating additional properties..");
@@ -229,6 +227,7 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			Property p = pm.findProperty(identity, group, res, "cat", "TestProperty" + i);
+			assertNotNull(p);
 			DBFactory.getInstance().closeSession();
 		}
 		stop = System.currentTimeMillis();
@@ -239,6 +238,7 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			Property p = pm.findUserProperty(identity, "cat", "TestProperty" + i);
+			assertNotNull(p);
 			DBFactory.getInstance().closeSession();
 		}
 		stop = System.currentTimeMillis();
@@ -263,6 +263,7 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			Property p = pm.findUserProperty(identity, "cat", "TestProperty" + i);
+			assertNotNull(p);
 			DBFactory.getInstance().closeSession();
 		}
 		stop = System.currentTimeMillis();
@@ -277,6 +278,7 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < count; i++) {
 			Property p = pm.findUserProperty(identity, "cat", "TestProperty" + i);
+			Assert.assertNotNull(p);
 			DBFactory.getInstance().closeSession();
 		}
 		stop = System.currentTimeMillis();
@@ -370,35 +372,37 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 	}
 	
 	@Test public void testFindIdentities() {
-		Property p = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
+		String propName = UUID.randomUUID().toString();
+		
+		Property p = pm.createPropertyInstance(identity, group, res, "cat", propName, new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
-		p = pm.createPropertyInstance(id2, group, res, "cat", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
+		p = pm.createPropertyInstance(id2, group, res, "cat", propName, new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
-		p = pm.createPropertyInstance(id3, group, res, "cat", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
+		p = pm.createPropertyInstance(id3, group, res, "cat", propName, new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
-		p = pm.createPropertyInstance(id4, group, res, "cat", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
+		p = pm.createPropertyInstance(id4, group, res, "cat", propName, new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
-		p = pm.createPropertyInstance(identity, group, res, "cat2", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
+		p = pm.createPropertyInstance(identity, group, res, "cat2", propName, new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
-		p = pm.createPropertyInstance(id2, group, res, "cat2", "TestProperty", new Float(1.1), new Long(123456), "stringValue", "textValue");
+		p = pm.createPropertyInstance(id2, group, res, "cat2", propName, new Float(1.1), new Long(123456), "stringValue", "textValue");
 		pm.saveProperty(p);
 		
 		DBFactory.getInstance().closeSession();
 		// now find identities
-		List ids = pm.findIdentitiesWithProperty(res, "cat", "TestProperty", false);
-		assertTrue(ids.size() == 4);
-		ids = pm.findIdentitiesWithProperty(res, "cat", "TestProperty", true);
-		assertTrue(ids.size() == 4);
-		ids = pm.findIdentitiesWithProperty(null, "cat", "TestProperty", false);
-		assertTrue(ids.size() == 4);
-		ids = pm.findIdentitiesWithProperty(null, "cat", "TestProperty", true);
-		assertTrue(ids.size() == 0);
-		ids = pm.findIdentitiesWithProperty(null, "cat2", "TestProperty", false);
-		assertTrue(ids.size() == 2);
-		ids = pm.findIdentitiesWithProperty(null, null, "TestProperty", false);
-		assertTrue(ids.size() == 4); // not 6, must be distinct
-		ids = pm.findIdentitiesWithProperty(null, null, "TestProperty", true);
-		assertTrue(ids.size() == 0);
+		List<Identity> ids = pm.findIdentitiesWithProperty(res, "cat", propName, false);
+		assertEquals(4, ids.size());
+		ids = pm.findIdentitiesWithProperty(res, "cat", propName, true);
+		assertEquals(4, ids.size());
+		ids = pm.findIdentitiesWithProperty(null, "cat", propName, false);
+		assertEquals(4, ids.size());
+		ids = pm.findIdentitiesWithProperty(null, "cat", propName, true);
+		assertEquals(0, ids.size());
+		ids = pm.findIdentitiesWithProperty(null, "cat2", propName, false);
+		assertEquals(2, ids.size());
+		ids = pm.findIdentitiesWithProperty(null, null, propName, false);
+		assertEquals(4, ids.size()); // not 6, must be distinct
+		ids = pm.findIdentitiesWithProperty(null, null, propName, true);
+		assertEquals(0, ids.size());
 	}
 	
 	@Test public void testFindProperties() {
@@ -409,7 +413,7 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		pm.saveProperty(p);
 		p = pm.createPropertyInstance(id2, group, res, category, propertyName, new Float(1.1), new Long(123456), "stringValue", textValue);
 		pm.saveProperty(p);
-		List propertyList = pm.findProperties(identity, group, res.getResourceableTypeName(), res.getResourceableId(), category, propertyName);
+		List<Property> propertyList = pm.findProperties(identity, group, res.getResourceableTypeName(), res.getResourceableId(), category, propertyName);
 		assertEquals(1, propertyList.size());
 		assertEquals(propertyName, ((Property)propertyList.get(0)).getName() );
 		assertEquals(textValue,    ((Property)propertyList.get(0)).getTextValue() );
@@ -427,19 +431,5 @@ public class PropertyTest extends OlatTestCase implements OLATResourceable {
 		}
 		long stop = System.currentTimeMillis();
 		System.out.println("Ready : " + (stop-start) + " ms (" + ((l - count) * 1000 / (stop-start)) + "/sec)");
-	}
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
-	public String getResourceableTypeName() {
-		return RESOURCE_TYPE;
-	}
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
-	public Long getResourceableId() {
-		return new Long(RESOURCE_ID);
 	}
 }

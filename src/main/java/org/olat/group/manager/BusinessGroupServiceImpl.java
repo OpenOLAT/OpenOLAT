@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
-import org.olat.admin.user.groups.AddToGroupsEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -43,6 +42,7 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
@@ -70,6 +70,7 @@ import org.olat.group.DeletableReference;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
@@ -115,7 +116,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private BusinessGroupAddManager groupAddManager;
+	private BusinessGroupDeletionManager businessGroupDeletionManager;
 	
 
 	private List<DeletableGroupData> deleteListeners = new ArrayList<DeletableGroupData>();
@@ -140,6 +141,16 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String type,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource) {
+		
+		if(resource != null) {
+			boolean groupExists = businessGroupDAO.checkIfOneOrMoreNameExistsInContext(Collections.singleton(name), resource);
+			if (groupExists) {
+				// there is already a group with this name, return without creating a new group
+				log.warn("A group with this name already exists! You will get null instead of a businessGroup returned!");
+				return null;
+			}
+		}
+		
 		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, type,
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled);
 		
@@ -180,12 +191,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public BusinessGroup mergeBusinessGroup(BusinessGroup group) {
 		return businessGroupDAO.merge(group);
 	}
-
-	@Override
-	@Transactional
-	public void updateBusinessGroup(BusinessGroup group) {
-		businessGroupDAO.update(group);
-	}
 	
 	@Override
 	@Transactional
@@ -196,8 +201,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(group);
 					reloadedBusinessGroup.setLastUsage(new Date());
 					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
-					updateBusinessGroup(reloadedBusinessGroup);
-					return reloadedBusinessGroup;
+					return mergeBusinessGroup(reloadedBusinessGroup);
 				} catch(DBRuntimeException e) {
 					if(e.getCause() instanceof ObjectNotFoundException) {
 						//group deleted
@@ -378,6 +382,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
 		return businessGroupDAO.findContacts(identity, firstResult, maxResults);
 	}
+
+	@Override
+	public void deleteGroupsAfterLifeCycle(List<BusinessGroup> groups) {
+		businessGroupDeletionManager.deleteGroups(groups);
+	}
 	
 	@Override
 	public void deleteBusinessGroup(BusinessGroup group) {
@@ -412,6 +421,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			// 2) Delete the group areas
 			areaManager.deleteBGtoAreaRelations(group);
 			// 3) Delete the group object itself on the database
+			businessGroupRelationDAO.deleteRelations(group);
 			businessGroupDAO.delete(group);
 			// 4) Delete the associated security groups
 			if(group.getOwnerGroup() != null) {
@@ -452,7 +462,23 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 		}
 	}
+	
+	@Override
+	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration) {
+		return businessGroupDAO.getDeletableGroups(lastLoginDuration);
+	}
 
+	@Override
+	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration) {
+		return businessGroupDAO.getGroupsInDeletionProcess(deleteEmailDuration);
+	}
+
+	@Override
+	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration) {
+		return businessGroupDAO.getGroupsReadyToDelete(deleteEmailDuration);
+	}
+
+	@Override
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
 		Codepoint.codepoint(this.getClass(), "deleteBusinessGroupWithMail");
 			
@@ -487,6 +513,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			return mailerResult;
 		}
 		return null;
+	}
+
+	@Override
+	public String sendDeleteEmailTo(List<BusinessGroup> selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
+			String keyEmailBody, Identity sender, Translator pT) {
+		
+		return businessGroupDeletionManager.sendDeleteEmailTo(selectedGroups, mailTemplate, isTemplateChanged, keyEmailSubject, keyEmailBody, sender, pT);
 	}
 	
 	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {
@@ -699,25 +732,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroup currBusinessGroup = loadBusinessGroup(group); // reload business group
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor(){
-				public void execute() {
-					for (final Identity identity : addIdentities) {	
-						if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
-							response.getIdentitiesWithoutPermission().add(identity);
-						}
-						// Check if identity is already in group. make a db query in case
-						// someone in another workflow already added this user to this group. if
-						// found, add user to model
-						else if (securityManager.isIdentityInSecurityGroup(identity, currBusinessGroup.getWaitingGroup())) {
-							response.getIdentitiesAlreadyInGroup().add(identity);
-						} else {
-							// identity has permission and is not already in group => add it
-							addToWaitingList(ureqIdentity, identity, currBusinessGroup);
-							response.getAddedIdentities().add(identity);
-							log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
-						}
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor(){
+			public void execute() {
+				for (final Identity identity : addIdentities) {	
+					if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY)) {
+						response.getIdentitiesWithoutPermission().add(identity);
 					}
-				}});
+					// Check if identity is already in group. make a db query in case
+					// someone in another workflow already added this user to this group. if
+					// found, add user to model
+					else if (securityManager.isIdentityInSecurityGroup(identity, currBusinessGroup.getWaitingGroup())) {
+						response.getIdentitiesAlreadyInGroup().add(identity);
+					} else {
+						// identity has permission and is not already in group => add it
+						addToWaitingList(ureqIdentity, identity, currBusinessGroup);
+						response.getAddedIdentities().add(identity);
+						log.audit("added identity '" + identity.getName() + "' to securitygroup with key " + currBusinessGroup.getPartipiciantGroup().getKey());
+					}
+				}
+			}});
 		return response;
 	}
 
@@ -816,15 +849,72 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, Identity ident, Identity addingIdentity) {
-		return groupAddManager.addIdentityToGroups(groupsEv, ident, addingIdentity);
+	public String[] addIdentityToGroups(final AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity) {
+		final BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
+		String[] resultTextArgs = new String[2];
+		boolean addToAnyGroup = false;
+
+		// notify user about add for following groups:
+		List<Long> notifyAboutAdd = new ArrayList<Long>();
+		List<Long> mailKeys = groupsEv.getMailForGroupsList();
+		
+		// add to owner groups
+		List<Long> ownerKeys = groupsEv.getOwnerGroupKeys();
+		String ownerGroupnames = "";
+
+		List<BusinessGroup> groups = loadBusinessGroups(ownerKeys);	
+		for (BusinessGroup group : groups) {
+			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getOwnerGroup())){
+//				seems not to work, but would be the way to go!
+//				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
+				addOwner(addingIdentity, ident, group, flags);
+				ownerGroupnames += group.getName() + ", ";
+				addToAnyGroup = true;
+				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
+			}
+		}
+		resultTextArgs[0] = ownerGroupnames.substring(0, ownerGroupnames.length() > 0 ? ownerGroupnames.length() - 2 : 0);
+
+		// add to participant groups
+		List<Long> participantKeys = groupsEv.getParticipantGroupKeys();
+		String participantGroupnames = "";
+		List<BusinessGroup> participantGroups = loadBusinessGroups(participantKeys);	
+		for (BusinessGroup group : participantGroups) {
+			if (group != null && !securityManager.isIdentityInSecurityGroup(ident, group.getPartipiciantGroup())) {
+				final BusinessGroup toAddGroup = group;
+//				seems not to work, but would be the way to go!
+//				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
+				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
+					public void execute() {
+						addParticipant(addingIdentity, ident, toAddGroup, flags);
+					}});
+				participantGroupnames += group.getName() + ", ";
+				addToAnyGroup = true;
+				if (!notifyAboutAdd.contains(group.getKey()) && mailKeys.contains(group.getKey())) notifyAboutAdd.add(group.getKey());
+			}			
+		}
+		resultTextArgs[1] = participantGroupnames.substring(0, participantGroupnames.length() > 0 ? participantGroupnames.length() - 2 : 0);
+		
+		// send notification mails
+
+		List<BusinessGroup> notifGroups = loadBusinessGroups(notifyAboutAdd);
+		for (BusinessGroup group : notifGroups) {
+			MailTemplate mailTemplate = BGMailHelper.createAddParticipantMailTemplate(group, addingIdentity);
+			MailerWithTemplate mailer = MailerWithTemplate.getInstance();
+			MailerResult mailerResult = mailer.sendMail(null, ident, null, null, mailTemplate, null);
+			if (mailerResult.getReturnCode() != MailerResult.OK){
+				log.debug("Problems sending Group invitation mail for identity: " + ident.getName() + " and group: " 
+						+ group.getName() + " key: " + group.getKey() + " mailerresult: " + mailerResult.getReturnCode(), null);
+			}
+		}		
+		
+		if (addToAnyGroup) {
+			return resultTextArgs;
+		} else {
+			return null;
+		}
 	}
 
-	@Override
-	public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, Identity ident,
-			Identity addingIdentity) {
-		return groupAddManager.addIdentityToGroups(ownGroups, partGroups, mailGroups, ident, addingIdentity);
-	}
 
 	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, BGConfigFlags flags) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
@@ -982,14 +1072,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Transactional(readOnly=true)
 	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, String groupType,
 			boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupDAO.isIdentityInBusinessGroup(identity, groupName, groupType, resource);
+		return businessGroupDAO.isIdentityInBusinessGroup(identity, groupName, resource);
 	}
 	
-
 	@Override
 	public void exportGroups(List<BusinessGroup> groups, File fExportFile) {
-		// TODO Auto-generated method stub
-
+		businessGroupImportExport.exportGroups(groups, fExportFile);
 	}
 
 	@Override
@@ -999,13 +1087,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile) {
-		// TODO Auto-generated method stub
-		businessGroupArchiver.archiveBGContext(null, exportFile);
-	}
-
-	@Override
-	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset) {
-		return businessGroupArchiver.archiveAreaMembers(resource, columnList, areaList, archiveType, locale, charset);
+		businessGroupArchiver.archiveGroups(groups, exportFile);
 	}
 
 	@Override

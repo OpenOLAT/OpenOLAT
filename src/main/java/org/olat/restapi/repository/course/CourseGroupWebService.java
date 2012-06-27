@@ -310,10 +310,10 @@ public class CourseGroupWebService {
 	 * @param integer
 	 * @return value bigger or equal than 0
 	 */
-	private Integer normalize(Integer integer) {
+	private int normalize(Integer integer) {
 	    //fxdiff FXOLAT-122: course management
-		if(integer == null) return null;
-		if(integer.intValue() < 0) return null;
-		return integer;
+		if(integer == null) return -1;
+		if(integer.intValue() < 0) return -1;
+		return integer.intValue();
 	}
 }

@@ -25,23 +25,16 @@
 
 package org.olat.group;
 
-import java.util.Set;
-
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
-import org.olat.group.context.BGContext;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.testutils.codepoints.server.Codepoint;
 
 /**
  * Description: <BR/> Use the business group factory to create new instances of
@@ -151,7 +144,7 @@ public class BusinessGroupFactory {
 	 * @param groupContext
 	 * @return the group or null if the groupname is not unique in the given
 	 *         context
-	 */
+	 *//*
 	private static BusinessGroup createAndPersistLearningGroup(Identity identity, String name, String description, Integer minParticipants,
 			Integer maxParticipants, Boolean waitingListEnabled,Boolean autoCloseRanksEnabled, BGContext groupContext) {
 		/*
@@ -160,7 +153,7 @@ public class BusinessGroupFactory {
 		 * security groups...................................................... [3]
 		 * create 2 policies, ownerGroup -> PERMISSION_ACCESS ....partipiciantGroup ->
 		 * PERMISSION_READ
-		 */
+		 *//*
 		BusinessGroupImpl businessgroup = null;
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 
@@ -192,7 +185,7 @@ public class BusinessGroupFactory {
 		 * policies: - ownerGroup can do everything on this businessgroup -> is an
 		 * admin, can invite people to owner.- & partipiciantgroup -
 		 * partipiciantGroup can read this businessgroup
-		 */
+		 *//*
 		OLATResource businessgroupOlatResource = OLATResourceManager.getInstance().createOLATResourceInstance(businessgroup);
 		OLATResourceManager.getInstance().saveOLATResource(businessgroupOlatResource);
 		OLATResource groupContextOlatResource = OLATResourceManager.getInstance().findResourceable(groupContext);
@@ -215,7 +208,7 @@ public class BusinessGroupFactory {
 		BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(businessgroup);
 		bgpm.createAndPersistDisplayMembers(true, false, false);
 		return businessgroup;
-	}
+	}*/
 
 	/**
 	 * Create a group of type right group
@@ -226,7 +219,7 @@ public class BusinessGroupFactory {
 	 * @param groupContext
 	 * @return the group or null if the groupname is not unique in the given
 	 *         context
-	 */
+	 *//*
 	private static BusinessGroup createAndPersistRightGroup(Identity identity, String name, String description, Integer minParticipants,
 			Integer maxParticipants, BGContext groupContext) {
 		/*
@@ -234,7 +227,7 @@ public class BusinessGroupFactory {
 		 * learningGroup with name, description, introMsg and the security
 		 * group...................................................... [3] create 2
 		 * policies, partipiciantGroup -> PERMISSION_READ
-		 */
+		 *//*
 		BusinessGroupImpl businessgroup = null;
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 
@@ -249,7 +242,7 @@ public class BusinessGroupFactory {
 		// group
 		SecurityGroup partipiciantGroup = securityManager.createAndPersistSecurityGroup();
 		//
-		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_RIGHTGROUP, name, description, null, partipiciantGroup,null/* no waitingGroup */);
+		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_RIGHTGROUP, name, description, null, partipiciantGroup,null/* no waitingGroup *//*);
 		businessgroup.setMinParticipants(minParticipants);
 		businessgroup.setMaxParticipants(maxParticipants);
 		//
@@ -259,7 +252,7 @@ public class BusinessGroupFactory {
 		}
 		/*
 		 * policies: - partipiciantGroup can read this businessgroup
-		 */
+		 *//*
 		OLATResource businessgroupOlatResource = OLATResourceManager.getInstance().createOLATResourceInstance(businessgroup);
 		OLATResourceManager.getInstance().saveOLATResource(businessgroupOlatResource);
 		securityManager.createAndPersistPolicyWithResource(partipiciantGroup, Constants.PERMISSION_READ, businessgroupOlatResource);
@@ -282,7 +275,7 @@ public class BusinessGroupFactory {
 	 * @param type
 	 * @param groupContext
 	 * @return
-	 */
+	 *//*
 	private static boolean checkIfOneOrMoreNameExistsInContext(Set names, BGContext groupContext) {
 		DB db = DBFactory.getInstance();
 		String query = "select count(bgs) from " 
@@ -306,7 +299,7 @@ public class BusinessGroupFactory {
 	 * @param groupContext The group context of null
 	 * @return true if a group in such a context with the given name exists false
 	 *         otherwhise
-	 */
+	 *//*
 	private static boolean testIfGroupAlreadyExists(String name, String type, BGContext groupContext) {
 		DB db = DBFactory.getInstance();
 		String query = "select count(bgs) from " + "  org.olat.group.BusinessGroupImpl as bgs " + " where bgs.type = :type"
@@ -318,5 +311,5 @@ public class BusinessGroupFactory {
 		int result = ((Long) dbq.list().get(0)).intValue();
 		if (result != 0) return true;
 		return false;
-	}
+	}*/
 }

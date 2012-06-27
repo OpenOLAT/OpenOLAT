@@ -55,8 +55,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.manager.BusinessGroupArchiver;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -225,11 +223,9 @@ public class MemberListWizardController extends BasicController {
 		List<Object[]> objectArrays = new ArrayList<Object[]>();
 		if (GROUPS_MEMBERS.equals(wizardType)) {
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
-			Collections.sort(groups, new Comparator() {
+			Collections.sort(groups, new Comparator<BusinessGroup>() {
 				@Override
-				public int compare(Object o1, Object o2) {
-					BusinessGroup g1 = (BusinessGroup) o1; 
-					BusinessGroup g2 = (BusinessGroup) o2; 
+				public int compare(BusinessGroup g1, BusinessGroup g2) {
 					return g1.getName().compareTo(g2.getName());
 				}
 			});
@@ -241,16 +237,13 @@ public class MemberListWizardController extends BasicController {
 			}
 		} else if (AREAS_MEMBERS.equals(wizardType)) {
 			List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
-			Collections.sort(areas, new Comparator() {
+			Collections.sort(areas, new Comparator<BGArea>() {
 				@Override
-				public int compare(Object o1, Object o2) {
-					BGArea a1 = (BGArea) o1; 
-					BGArea a2 = (BGArea) o2; 
+				public int compare(BGArea a1, BGArea a2) {
 					return a1.getName().compareTo(a2.getName());
 				}
 			});
-			for (Iterator iter = areas.iterator(); iter.hasNext();) {
-				BGArea area = (BGArea) iter.next();
+			for (BGArea area:areas) {
 				Object[] groupChoiceRowData = new Object[2];
 				groupChoiceRowData[0] = new Boolean(true);
 				groupChoiceRowData[1] = new ObjectWrapper(area);
@@ -268,7 +261,7 @@ public class MemberListWizardController extends BasicController {
 		// wizard steps events
 		if (source == groupsOrAreaChoice) {
 			if (event == Choice.EVNT_VALIDATION_OK) {
-				List selRows = groupsOrAreaChoice.getSelectedRows();
+				List<Integer> selRows = groupsOrAreaChoice.getSelectedRows();
 				if (selRows.size() == 0) {
 					if (GROUPS_MEMBERS.equals(wizardType)) {						
 						this.showError("error.selectatleastonegroup");
@@ -363,7 +356,7 @@ public class MemberListWizardController extends BasicController {
 		if(GROUPS_MEMBERS.equals(wizardType)) {
 			outputFile = businessGroupService.archiveGroupMembers(resource, columnList, groupList, archiveType, userLocale, charset);	
 		} else if(AREAS_MEMBERS.equals(wizardType)) {
-			outputFile = businessGroupService.archiveAreaMembers(resource, columnList, areaList, archiveType, userLocale, charset);
+			outputFile = areaManager.archiveAreaMembers(resource, columnList, areaList, archiveType, userLocale, charset);
 		}			
 		return outputFile;
 	}	
@@ -375,8 +368,8 @@ public class MemberListWizardController extends BasicController {
 	 * @return a list with the selected values of the input choice component.
 	 */
 	private List getSelectedValues(Choice choice) {	
-		List selValues = new ArrayList();
-		List selRowsIndexes = choice.getSelectedRows();
+		List<Object> selValues = new ArrayList<Object>();
+		List<Integer> selRowsIndexes = choice.getSelectedRows();
 		int numRows = choice.getTableDataModel().getRowCount();
 		for(int i=0; i<numRows; i++) {
 			if(selRowsIndexes.size() == 0) {
@@ -399,7 +392,7 @@ public class MemberListWizardController extends BasicController {
 	 */
 	private void syncTableModelWithSelection(Choice choice) {
 		GenericObjectArrayTableDataModel tableDataModel = (GenericObjectArrayTableDataModel)choice.getTableDataModel();
-		List removedRowsIndexes = choice.getRemovedRows();
+		List<Integer> removedRowsIndexes = choice.getRemovedRows();
 		if(removedRowsIndexes.size()>0) {
 			int numRows = choice.getTableDataModel().getRowCount();
 			for(int i=0; i<numRows; i++) {
@@ -485,9 +478,5 @@ public class MemberListWizardController extends BasicController {
 		public Object getWrappedObj() {
 			return wrappedObj;
 		}
-		public void setWrappedObj(Object wrappedObj) {
-			this.wrappedObj = wrappedObj;
-		}	
 	}
-
 }

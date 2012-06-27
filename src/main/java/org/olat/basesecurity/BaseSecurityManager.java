@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hibernate.Hibernate;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.admin.quota.GenericQuotaEditController;

@@ -141,6 +141,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		//create identities
 		owner1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-zero");
+		assertNotNull(owner1);
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-one-" + UUID.randomUUID().toString().replace("-", ""));
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-two");
 		DBFactory.getInstance().intermediateCommit();
@@ -371,9 +372,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO vo = parse(body, UserVO.class);
+		UserVO vo = conn.parse(response, UserVO.class);
 
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), id1.getKey());
@@ -390,9 +389,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO vo = parse(body, UserVO.class);
+		UserVO vo = conn.parse(response, UserVO.class);
 
 		assertNotNull(vo);
 		assertEquals(vo.getKey(), id2.getKey());
@@ -460,10 +457,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO savedVo = parse(body, UserVO.class);
-		
+		UserVO savedVo = conn.parse(response, UserVO.class);
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
 
 		assertNotNull(savedVo);
@@ -501,10 +495,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		InputStream body = response.getEntity().getContent();
-		
-		UserVO savedVo = parse(body, UserVO.class);
-		
+		UserVO savedVo = conn.parse(response, UserVO.class);
 		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
 
 		assertNotNull(savedVo);
@@ -574,8 +565,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		ForumVOes forums = parse(body, ForumVOes.class);
+		ForumVOes forums = conn.parse(response, ForumVOes.class);
 		
 		assertNotNull(forums);
 		assertNotNull(forums.getForums());
@@ -610,8 +600,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVOes threads = parse(body, MessageVOes.class);
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
@@ -629,8 +618,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVOes threads = parse(body, MessageVOes.class);
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
@@ -646,8 +634,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FolderVOes folders = parse(body, FolderVOes.class);
+		FolderVOes folders = conn.parse(response, FolderVOes.class);
 		
 		assertNotNull(folders);
 		assertNotNull(folders.getFolders());
@@ -801,9 +788,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-
-		InputStream body = response.getEntity().getContent();
-		GroupVOes groups = parse(body, GroupVOes.class);
+		GroupVOes groups = conn.parse(response, GroupVOes.class);
 		
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
@@ -822,9 +807,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-
-		InputStream body = response.getEntity().getContent();
-		GroupInfoVOes groups = parse(body, GroupInfoVOes.class);
+		GroupInfoVOes groups = conn.parse(response, GroupInfoVOes.class);
 		
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
@@ -880,8 +863,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		HttpGet getMethod2 = conn.createGet(getRequest2.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse getCode2 = conn.execute(getMethod2);
 		assertEquals(200, getCode2.getStatusLine().getStatusCode());
-		InputStream in2 = getCode2.getEntity().getContent();
-		UserVO userVo = parse(in2, UserVO.class);
+		UserVO userVo = conn.parse(getCode2, UserVO.class);
 		assertNotNull(userVo);
 		assertNotNull(userVo.getPortrait());
 		byte[] datas = Base64.decodeBase64(userVo.getPortrait().getBytes());

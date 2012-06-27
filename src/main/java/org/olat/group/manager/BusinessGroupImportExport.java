@@ -20,7 +20,11 @@
 package org.olat.group.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.collaboration.CollaborationTools;
@@ -29,6 +33,8 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
@@ -56,7 +62,117 @@ public class BusinessGroupImportExport {
 	private BusinessGroupService businessGroupService;
 	
 	
+	public void exportGroups(List<BusinessGroup> groups, File fExportFile) {
+		if (groups == null || groups.isEmpty())
+			return; // nothing to do... says Florian.
 
+		OLATGroupExport root = new OLATGroupExport();
+		// export areas
+		root.setAreas(new AreaCollection());
+		root.getAreas().setGroups(new ArrayList<Area>());
+
+		// export groups
+		root.setGroups(new GroupCollection());
+		root.getGroups().setGroups(new ArrayList<Group>());
+		for (BusinessGroup group : groups) {
+			Group newGroup = exportGroup(fExportFile, group);
+			root.getGroups().getGroups().add(newGroup);
+		}
+		saveGroupConfiguration(fExportFile, root);
+	}
+	
+	public void exportGroup(BusinessGroup group, File fExportFile) {
+		OLATGroupExport root = new OLATGroupExport();
+		Group newGroup = exportGroup(fExportFile, group);
+		root.setGroups(new GroupCollection());
+		root.getGroups().setGroups(new ArrayList<Group>());
+		root.getGroups().getGroups().add(newGroup);
+		saveGroupConfiguration(fExportFile, root);
+	}
+	
+	private Group exportGroup(File fExportFile, BusinessGroup group) {
+		Group newGroup = new Group();
+		newGroup.name = group.getName();
+		if (group.getMinParticipants() != null) {
+			newGroup.minParticipants = group.getMinParticipants();
+		}
+		if (group.getMaxParticipants() != null) {
+			newGroup.maxParticipants = group.getMaxParticipants();
+		}
+		if (group.getWaitingListEnabled() != null) {
+			newGroup.waitingList = group.getWaitingListEnabled();
+		}
+		if (group.getAutoCloseRanksEnabled() != null) {
+			newGroup.autoCloseRanks = group.getAutoCloseRanksEnabled();
+		}
+		if(StringHelper.containsNonWhitespace(group.getDescription())) {
+			newGroup.description = Collections.singletonList(group.getDescription());
+		}
+		// collab tools
+
+		CollabTools toolsConfig = new CollabTools();
+		CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
+			try {
+				Field field = toolsConfig.getClass().getField(CollaborationTools.TOOLS[i]);
+				field.setBoolean(toolsConfig, ct.isToolEnabled(CollaborationTools.TOOLS[i]));
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+		newGroup.tools = toolsConfig;
+
+		Long calendarAccess = ct.lookupCalendarAccess();
+		if (calendarAccess != null) {
+			newGroup.calendarAccess = calendarAccess;
+		}
+		//fxdiff VCRP-8: collaboration tools folder access control
+		Long folderAccess = ct.lookupFolderAccess();
+		if(folderAccess != null) {
+			newGroup.folderAccess = folderAccess;
+		}
+		String info = ct.lookupNews();
+		if (info != null && !info.trim().equals("")) {
+			newGroup.info = info.trim();
+		}
+
+		log.debug("fExportFile.getParent()=" + fExportFile.getParent());
+		ct.archive(fExportFile.getParent());
+		// export membership
+		List<BGArea> bgAreas = areaManager.findBGAreasOfBusinessGroup(group);
+		newGroup.areaRelations = new ArrayList<String>();
+		for (BGArea areaRelation : bgAreas) {
+			newGroup.areaRelations.add(areaRelation.getName());
+		}
+		// export properties
+		BusinessGroupPropertyManager bgPropertyManager = new BusinessGroupPropertyManager(group);
+		boolean showOwners = bgPropertyManager.showOwners();
+		boolean showParticipants = bgPropertyManager.showPartips();
+		boolean showWaitingList = bgPropertyManager.showWaitingList();
+
+		newGroup.showOwners = showOwners;
+		newGroup.showParticipants = showParticipants;
+		newGroup.showWaitingList = showWaitingList;
+		return newGroup;
+	}
+	
+	private void saveGroupConfiguration(File fExportFile, OLATGroupExport root) {
+		FileOutputStream fOut = null;
+		try {
+			fOut = new FileOutputStream(fExportFile);
+			xstream.toXML(root, fOut);
+		} catch (IOException ioe) {
+			throw new OLATRuntimeException(
+					"Error writing group configuration during group export.",
+					ioe);
+		} catch (Exception cfe) {
+			throw new OLATRuntimeException(
+					"Error writing group configuration during group export.",
+					cfe);
+		} finally {
+			FileUtils.closeSafely(fOut);
+		}
+	}
 
 	public void importGroups(OLATResource resource, File fGroupExportXML) {
 		if (!fGroupExportXML.exists())
@@ -90,17 +206,17 @@ public class BusinessGroupImportExport {
 				String groupDesc = (group.description != null && !group.description.isEmpty()) ? group.description.get(0) : "";
 
 				// get min/max participants
-				Integer groupMinParticipants = group.minParticipants;
-				Integer groupMaxParticipants = group.maxParticipants;
+				int groupMinParticipants = group.minParticipants == null ? -1 : group.minParticipants.intValue();
+				int groupMaxParticipants = group.maxParticipants == null ? -1 : group.maxParticipants.intValue();
 
 				// waiting list configuration
-				Boolean waitingList = group.waitingList;
-				if (waitingList == null) {
-					waitingList = Boolean.FALSE;
+				boolean waitingList = false;
+				if (group.waitingList != null) {
+					waitingList = group.waitingList.booleanValue();
 				}
-				Boolean enableAutoCloseRanks = group.autoCloseRanks;
-				if (enableAutoCloseRanks == null) {
-					enableAutoCloseRanks = Boolean.FALSE;
+				boolean enableAutoCloseRanks = false;
+				if (group.autoCloseRanks != null) {
+					enableAutoCloseRanks = group.autoCloseRanks.booleanValue();
 				}
 				
 				String type = BusinessGroup.TYPE_LEARNINGROUP;//TODO gm

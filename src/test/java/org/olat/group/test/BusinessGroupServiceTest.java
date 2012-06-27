@@ -1,7 +1,10 @@
 package org.olat.group.test;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
-import java.util.UUID;
 
 import junit.framework.Assert;
 
@@ -9,14 +12,13 @@ import org.junit.After;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,9 +33,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private BusinessGroupService groupService;
-	@Autowired
-	private OLATResourceManager olatResourceManager;
+	private BusinessGroupService businessGroupService;
 	
 	@After
 	public void tearDown() throws Exception {
@@ -47,50 +47,61 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	
 	@Test
 	public void should_service_present() {
-		Assert.assertNotNull(groupService);
-		Assert.assertNotNull(olatResourceManager);
+		Assert.assertNotNull(businessGroupService);
 	}
 	
 	@Test
 	public void createBusinessGroup() {
-		BusinessGroup group = groupService.createBusinessGroup(null, "gdao", "gdao-desc", BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, null);
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "gdao", "gdao-desc", BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, null);
 		Assert.assertNotNull(group);
 	}
 	
 	@Test
 	public void createBusinessGroupWithResource() {
-		String resourceType = UUID.randomUUID().toString();
-		OLATResource resource =  olatResourceManager.createOLATResourceInstance(new TestResource(resourceType));
-		olatResourceManager.saveOLATResource(resource);
-		BusinessGroup group = groupService.createBusinessGroup(null, "gdao", "gdao-desc", BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, resource);
+		OLATResource resource =  JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "gdao", "gdao-desc", BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, resource);
 		
 		//commit the group
 		dbInstance.commit();
 		Assert.assertNotNull(group);
 	}
 	
+	
 	@Test
 	public void loadBusinessGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(); 
-		List<BusinessGroup> groups = groupService.findBusinessGroups(params, null, false, false, null, 0, 5);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, false, false, null, 0, 5);
 		Assert.assertNotNull(groups);
 	}
 	
-	private static class TestResource implements OLATResourceable {
-		private String type;
-		
-		public TestResource(String type) {
-			this.type = type;
-		}
+	@Test
+	public void testGroupsOfBGContext() {
+		OLATResource c1 = JunitTestHelper.createRandomResource();
+		OLATResource c2 = JunitTestHelper.createRandomResource();
 
-		@Override
-		public String getResourceableTypeName() {
-			return type;
-		}
+		DBFactory.getInstance().closeSession(); // simulate user clicks
+		assertTrue(businessGroupService.findBusinessGroups(null, null, false, false, c1, 0, -1).isEmpty());
+		assertTrue(businessGroupService.countBusinessGroups(null, null, false, false, c1) == 0);
 
-		@Override
-		public Long getResourceableId() {
-			return 1l;
-		}
+		DBFactory.getInstance().closeSession(); // simulate user clicks
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+		assertNotNull(g1);
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+		assertNotNull(g2);
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c2);
+		assertNotNull(g3);
+
+		BusinessGroup g2douplicate = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+		assertNull(g2douplicate); // name duplicate names allowed per group context
+
+		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c2);
+		assertNotNull(g4); // name duplicate in other context allowed
+
+		DBFactory.getInstance().closeSession(); // simulate user clicks
+		Assert.assertEquals(2, businessGroupService.findBusinessGroups(null, null, false, false, c1, 0, -1).size());
+		Assert.assertEquals(2, businessGroupService.countBusinessGroups(null, null, false, false, c1));
 	}
+
+	
+
 }

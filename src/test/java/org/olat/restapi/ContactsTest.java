@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -202,8 +201,7 @@ public class ContactsTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri.build(), MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		UserVOes contacts = parse(body, UserVOes.class);
+		UserVOes contacts = conn.parse(response, UserVOes.class);
 		assertNotNull(contacts);
 		assertNotNull(contacts.getUsers());
 		assertEquals(1, contacts.getUsers().length);

@@ -36,7 +36,6 @@ import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_MBODY_DEFAULT
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_MSUBJECT_DEFAULT;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -115,11 +114,9 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 			.queryParam("objectives", "Contact-objectives-0").build();
 		HttpPut method = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		InputStream body = response.getEntity().getContent();
-		
 		
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		CourseNodeVO contactNode = parse(body, CourseNodeVO.class);
+		CourseNodeVO contactNode = conn.parse(response, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
 		assertEquals(contactNode.getShortTitle(), "Contact-0");
@@ -148,12 +145,10 @@ public class CoursesContactElementTest extends OlatJerseyTestCase {
 			.build();
 		HttpPut method = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
-		InputStream body = response.getEntity().getContent();
-		
 		
 		//check the return values
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		CourseNodeVO contactNode = parse(body, CourseNodeVO.class);
+		CourseNodeVO contactNode = conn.parse(response, CourseNodeVO.class);
 		assertNotNull(contactNode);
 		assertNotNull(contactNode.getId());
 		

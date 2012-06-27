@@ -111,8 +111,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		RepositoryEntryVOes entryVoes = parse(body, RepositoryEntryVOes.class);
+		RepositoryEntryVOes entryVoes = conn.parse(response, RepositoryEntryVOes.class);
 		
 
 		assertNotNull(entryVoes);
@@ -131,10 +130,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		
-		
-		RepositoryEntryVO entryVo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO entryVo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(entryVo);
 	}
 	
@@ -158,10 +154,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		
-		InputStream body = response.getEntity().getContent();
-		
-		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
 		Long key = vo.getKey();
@@ -193,10 +186,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		
-		InputStream body = response.getEntity().getContent();
-		
-		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
 		Long key = vo.getKey();
@@ -229,10 +219,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		
-		InputStream body = response.getEntity().getContent();
-		
-		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
 		Long key = vo.getKey();
@@ -264,10 +251,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		
-		InputStream body = response.getEntity().getContent();
-		
-		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
 		Long key = vo.getKey();
@@ -300,10 +284,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-		
-		InputStream body = response.getEntity().getContent();
-		
-		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO vo = conn.parse(response, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
 		Long key = vo.getKey();

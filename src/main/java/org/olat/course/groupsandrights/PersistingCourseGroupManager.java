@@ -127,7 +127,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInLearningGroup(org.olat.core.id.Identity,
 	 *      java.lang.String, java.lang.String)
 	 */
-	public boolean isIdentityInLearningGroup(Identity identity, String groupName) {
+	public boolean isIdentityInGroup(Identity identity, String groupName) {
 		return businessGroupService.isIdentityInBusinessGroup(identity, groupName, BusinessGroup.TYPE_LEARNINGROUP, true, true, courseResource);
 	}
 	
@@ -170,14 +170,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 			}
 			return isLearningGroupFull;
 		}
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInRightGroup(org.olat.core.id.Identity,
-	 *      java.lang.String)
-	 */
-	public boolean isIdentityInRightGroup(Identity identity, String groupName) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, groupName, BusinessGroup.TYPE_RIGHTGROUP, true, true, courseResource);
 	}
 
 	/**
@@ -359,15 +351,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyLearningGroup(org.olat.core.id.Identity)
 	 */
-	public boolean isIdentityParticipantInAnyLearningGroup(Identity identity) {
+	public boolean isIdentityParticipantInAnyGroup(Identity identity) {
 		return businessGroupService.isIdentityInBusinessGroup(identity, null, BusinessGroup.TYPE_LEARNINGROUP, false, true, courseResource);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyRightGroup(org.olat.core.id.Identity)
-	 */
-	public boolean isIdentityParticipantInAnyRightGroup(Identity identity) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, null, BusinessGroup.TYPE_RIGHTGROUP, false, true, courseResource);
 	}
 
 	/**

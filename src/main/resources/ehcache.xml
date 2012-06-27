@@ -1,4 +1,4 @@
-<ehcache>
+<ehcache updateCheck="false">
 
 	<!-- OLAT uses ehcache as following:
 		- hibernate second level cache

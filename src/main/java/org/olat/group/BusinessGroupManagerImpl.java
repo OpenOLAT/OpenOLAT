@@ -107,7 +107,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author patrick
  */
-public class BusinessGroupManagerImpl extends BasicManager implements BusinessGroupManager, UserDataDeletable {
+public class BusinessGroupManagerImpl extends BasicManager implements BusinessGroupManager /*, UserDataDeletable */ {
 
 	private static BusinessGroupManager INSTANCE;
 
@@ -119,20 +119,20 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	
 	/**
 	 * @return singleton instance
-	 */
+	 *//*
 	public static BusinessGroupManager getInstance() {
 		return INSTANCE;
-	}
+	}*/
 
 	/**
 	 * [used by spring]
-	 */
+	 *//*
 	private BusinessGroupManagerImpl(BaseSecurity securityManager, UserDeletionManager userDeletionManager) {
 		userDeletionManager.registerDeletableUserData(this);
 		this.securityManager = securityManager;
 		deleteListeners = new ArrayList<DeletableGroupData>();
 		INSTANCE = this;
-	}
+	}*/
 	
 	/**
 	 * [used by Spring]
@@ -162,15 +162,15 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * @param names
 	 * @param groupContext
 	 * @return
-	 */
+	 *//*
 	protected boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BGContext groupContext){
 		return CoreSpringFactory.getImpl(BusinessGroupService.class).checkIfOneOrMoreNameExistsInContext(names, null);
-	}
+	}*/
 	
 	/**
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsOwnedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
-	 */
+	 *//*
 	public List<BusinessGroup> findBusinessGroupsOwnedBy(String type, Identity identityP, BGContext bgContext) {
 		// attach group context to session - maybe a proxy...
 		String query = "select bgi from " + " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi,"
@@ -180,13 +180,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 
 		DB db = DBFactory.getInstance();
 		DBQuery dbq = db.createQuery(query);
-		/*
-		 * query.append("select distinct v from" + "
-		 * org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi," + "
-		 * org.olat.repository.RepositoryEntry v" + " inner join fetch v.ownerGroup
-		 * as secGroup" + " inner join fetch v.olatResource as res where" + "
-		 * sgmsi.securityGroup = secGroup and sgmsi.identity.key=");
-		 */
+
 
 		dbq.setLong("identId", identityP.getKey().longValue());
 		if (bgContext != null) dbq.setEntity("context", bgContext);
@@ -194,12 +188,12 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 
 		List<BusinessGroup> res = dbq.list();
 		return res;
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsAttendedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
-	 */
+	 *//*
 	public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identityP, BGContext bgContext) {
 		String query = "select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi "
 				+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi"
@@ -319,21 +313,21 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			dbq.setParameterList("tools", params.getTools());
 		}
 		return dbq;
-	}
+	}*/
 
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#getAllBusinessGroups()
-	 */
+	 *//*
 	public List<BusinessGroup> getAllBusinessGroups() {
 		DBQuery dbq = DBFactory.getInstance().createQuery("select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi ");
 		return dbq.list();
-	}
+	}*/
 	
 	/**
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsAttendedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
-	 */
+	 *//*
 	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(String type, Identity identityP, BGContext bgContext) {
 		String query = "select bgi from " + "  org.olat.group.BusinessGroupImpl as bgi "
 				+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi"
@@ -349,13 +343,14 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 
 		List<BusinessGroup> res = dbq.list();
 		return res;
-	}
+	}*/
 	
 	/**
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroupsAttendedBy(java.lang.String,
 	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
+  /*
 	public List<BusinessGroup> findBusinessGroups(Collection<String> types, Identity identityP34, Long id, String name, String description, String owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" as bgi");
@@ -463,11 +458,11 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		// To test for literal instances of '_', we have to escape it.
 		string = string.replace("_", "\\_");
 		return string.toLowerCase();
-	}
+	}*/
 	
 	/**
 	 * @see org.olat.group.BusinessGroupManager#findBusinessGroup(org.olat.basesecurity.SecurityGroup)
-	 */
+	 *//*
 	public BusinessGroup findBusinessGroup(SecurityGroup secGroup) {
 		StringBuilder sb = new StringBuilder(); 
 		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi where ")
@@ -478,19 +473,19 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		List<BusinessGroup> res = query.list();
 		if(res.isEmpty()) return null;
 		return res.get(0);
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#updateBusinessGroup(org.olat.group.BusinessGroup)
-	 */
+	 *//*
 	public void updateBusinessGroup(BusinessGroup updatedBusinessGroup) {
 		updatedBusinessGroup.setLastModified(new Date());
 		DBFactory.getInstance().updateObject(updatedBusinessGroup);
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#deleteBusinessGroup(org.olat.group.BusinessGroup)
-	 */
+	 *//*
 	public void deleteBusinessGroup(BusinessGroup businessGroupTodelete) {
 		try{
 			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(businessGroupTodelete);
@@ -566,7 +561,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	//TODO gm
 	
 	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {
-		/*
+		*//*
 		BGContext context = group.getGroupContext();
 		if(context == null) return;//nothing to do
 		
@@ -599,13 +594,13 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 				}
 			}
 		}
-		*/
-	}
+		
+	}*/
 	/**
 	 * @see org.olat.group.BusinessGroupManager#deleteBusinessGroupWithMail(org.olat.group.BusinessGroup,
 	 *      org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.translator.Translator, java.util.List)
-	 */
+	 *//*
 	public void deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, WindowControl wControl, UserRequest ureq, Translator trans,
 			List contactLi) {
 		Codepoint.codepoint(this.getClass(), "deleteBusinessGroupWithMail");
@@ -640,23 +635,23 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			MailHelper.printErrorsAndWarnings(mailerResult, wControl, ureq.getLocale());
 		}
 		
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#deleteBusinessGroups(java.util.List)
-	 */
+	 *//*
 	public void deleteBusinessGroups(List businessGroups) {
 		Iterator iterator = businessGroups.iterator();
 		while (iterator.hasNext()) {
 			BusinessGroup group = (BusinessGroup) iterator.next();
 			deleteBusinessGroup(group);
 		}
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#isIdentityInBusinessGroup(org.olat.core.id.Identity,
 	 *      java.lang.String, org.olat.group.context.BGContext)
-	 */
+	 *//*
 	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, BGContext groupContext) {
 		DB db = DBFactory.getInstance();
 		StringBuilder q = new StringBuilder();
@@ -677,12 +672,12 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		List result = query.list();
 		if (result.size() == 0) return false;
 		return ( ((Long) result.get(0)).intValue() > 0);
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#isIdentityInBusinessGroup(org.olat.core.id.Identity,
 	 *      org.olat.group.BusinessGroup)
-	 */
+	 *//*
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup) {
 		SecurityGroup participants = businessGroup.getPartipiciantGroup();
 		SecurityGroup owners = businessGroup.getOwnerGroup();
@@ -751,19 +746,19 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		DBQuery dbq = db.createQuery(query.toString());
 		dbq.setLong("identKey", identity.getKey());
 		return dbq;
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#loadBusinessGroup(org.olat.group.BusinessGroup)
-	 */
+	 *//*
 	public BusinessGroup loadBusinessGroup(BusinessGroup currBusinessGroup) {
 		return (BusinessGroup) DBFactory.getInstance().loadObject(currBusinessGroup);
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#loadBusinessGroup(java.lang.Long,
 	 *      boolean)
-	 */
+	 *//*
 	public BusinessGroup loadBusinessGroup(Long groupKey, boolean strict) {
 		if (strict) return (BusinessGroup) DBFactory.getInstance().loadObject(BusinessGroupImpl.class, groupKey);
 		return (BusinessGroup) DBFactory.getInstance().findObject(BusinessGroupImpl.class, groupKey);
@@ -772,23 +767,23 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	public BusinessGroup loadBusinessGroup(String groupKey, boolean strict) {
 		Long key = Long.parseLong(groupKey); 
 		return loadBusinessGroup(key, strict);
-	}
+	}*/
 	
 	/**
 	 * @see org.olat.group.BusinessGroupManager#loadBusinessGroup(java.lang.Long,
 	 *      boolean)
-	 */
+	 *//*
 	//fxdiff VCRP-1,2: access control of resources
 	public BusinessGroup loadBusinessGroup(OLATResource resource, boolean strict) {
 		return loadBusinessGroup(resource.getResourceableId(), strict);
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#copyBusinessGroup(org.olat.group.BusinessGroup,
 	 *      java.lang.String, java.lang.String, java.lang.Integer,
 	 *      java.lang.Integer, org.olat.group.context.BGContext, java.util.Map,
 	 *      boolean, boolean, boolean, boolean, boolean, boolean)
-	 */
+	 *//*
 	public BusinessGroup copyBusinessGroup(BusinessGroup sourceBusinessGroup, String targetName, String targetDescription, Integer targetMin,
 			Integer targetMax, BGContext targetBgContext, Map areaLookupMap, boolean copyAreas, boolean copyCollabToolConfig, boolean copyRights,
 			boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList) {
@@ -876,14 +871,14 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		return newGroup;
 
 	}
-
+*/
 	/**
 	 * @see org.olat.group.BusinessGroupManager#addParticipant(org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.UserRequest, org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger,
 	 *      boolean)
-	 */
+	 *//*
 	public void addParticipantAndFireEvent(Identity ureqIdentity, final Identity identity, final BusinessGroup group, BGConfigFlags flags,
 			boolean doOnlyPostAddingStuff) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
@@ -908,7 +903,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
 		// send notification mail in your controller!
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#addOwner(org.olat.core.gui.control.WindowControl,
@@ -916,7 +911,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger,
 	 *      boolean)
-	 */
+	 *//*
 	public void addOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags, 
 			boolean doOnlyPostAddingStuff) {
 		if (!doOnlyPostAddingStuff) {
@@ -965,7 +960,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		
 		//remove subsciptions if user gets removed
 		//TODO removeSubscriptions(identity, group);
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#removeOwner(org.olat.core.gui.control.WindowControl,
@@ -973,7 +968,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger,
 	 *      boolean)
-	 */
+	 *//*
 	public void removeOwnerAndFireEvent(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags,
 			boolean doOnlyPostRemovingStuff) {
 		if (!doOnlyPostRemovingStuff) {
@@ -1003,7 +998,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(),
 				LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
 		// send notification mail in your controller!
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#removeParticipant(org.olat.core.gui.control.WindowControl,
@@ -1011,7 +1006,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger,
 	 *      boolean)
-	 */
+	 *//*
 	public void removeParticipantAndFireEvent(final Identity ureqIdentity, final Identity identity, final BusinessGroup group, final BGConfigFlags flags,
 			final boolean doOnlyPostRemovingStuff) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
@@ -1041,7 +1036,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, flags);
 		}	
 		// send notification mail in your controller!
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#addParticipant(org.olat.core.gui.control.WindowControl,
@@ -1049,7 +1044,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger,
 	 *      boolean)
-	 */
+	 *//*
 	public void addToWaitingListAndFireEvent(Identity ureqIdentity, final Identity identity, final BusinessGroup group,
 			boolean doOnlyPostAddingStuff) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
@@ -1061,7 +1056,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_TO_WAITING_LIST_ADDED, getClass(), LoggingResourceable.wrap(identity));
 		// send notification mail in your controller!
-	}
+	}*/
 	
 	/**
 	 * @see org.olat.group.BusinessGroupManager#removeFromWaitingListAndFireEvent(org.olat.core.gui.control.WindowControl,
@@ -1069,7 +1064,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 *      org.olat.core.id.Identity, org.olat.group.BusinessGroup,
 	 *      org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger,
 	 *      boolean)
-	 */
+	 *//*
 	public void removeFromWaitingListAndFireEvent(Identity userRequestIdentity, final Identity identity, final BusinessGroup group, 
 			boolean doOnlyPostRemovingStuff) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
@@ -1333,7 +1328,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
   /**
    * 
    * @see org.olat.group.BusinessGroupManager#moveIdenitFromWaitingListToParticipant(org.olat.core.id.Identity, org.olat.core.gui.control.WindowControl, org.olat.core.gui.UserRequest, org.olat.core.gui.translator.Translator, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-   */
+   *//*
 	public BusinessGroupAddResponse moveIdenityFromWaitingListToParticipant(final List<Identity> choosenIdentities, final Identity ureqIdentity, final BusinessGroup currBusinessGroup, final BGConfigFlags flags) {
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup,new SyncerExecutor(){
@@ -1357,7 +1352,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#getPositionInWaitingListFor(org.olat.core.id.Identity, org.olat.group.BusinessGroup)
-	 */
+	 *//*
 	public int getPositionInWaitingListFor(Identity identity, BusinessGroup businessGroup) {
 		// get position in waiting-list
 		List identities = securityManager.getIdentitiesAndDateOfSecurityGroup(businessGroup.getWaitingGroup(),true);
@@ -1398,7 +1393,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#addOwnersAndFireEvent(org.olat.core.id.Identity, java.util.List, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-	 */
+	 *//*
 	public BusinessGroupAddResponse addOwnersAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup currBusinessGroup, BGConfigFlags flags) {
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		for (Identity identity : addIdentities) {
@@ -1424,7 +1419,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#addParticipantsAndFireEvent(org.olat.core.id.Identity, java.util.List, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-	 */
+	 *//*
 	public BusinessGroupAddResponse addParticipantsAndFireEvent(final Identity ureqIdentity, final List<Identity> addIdentities, BusinessGroup acurrBusinessGroup, final BGConfigFlags flags) {
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroup currBusinessGroup = loadBusinessGroup(acurrBusinessGroup); // reload business group
@@ -1453,7 +1448,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#addToWaitingListAndFireEvent(org.olat.core.id.Identity, java.util.List, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-	 */
+	 *//*
 	public BusinessGroupAddResponse addToWaitingListAndFireEvent(final Identity ureqIdentity, final List<Identity> addIdentities, BusinessGroup acurrBusinessGroup, BGConfigFlags flags) {
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroup currBusinessGroup = loadBusinessGroup(acurrBusinessGroup); // reload business group
@@ -1490,7 +1485,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#removeOwnersAndFireEvent(org.olat.core.id.Identity, java.util.List, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-	 */
+	 *//*
 	public void removeOwnersAndFireEvent(Identity ureqIdentity, List<Identity> identities, BusinessGroup currBusinessGroup, BGConfigFlags flags) {
 		for (Identity identity : identities) {
 		  removeOwnerAndFireEvent(ureqIdentity, identity, currBusinessGroup, flags, false);
@@ -1501,7 +1496,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#removeParticipantsAndFireEvent(org.olat.core.gui.control.WindowControl, org.olat.core.id.Identity, org.olat.core.gui.translator.Translator, java.util.List, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-	 */
+	 *//*
 	public void removeParticipantsAndFireEvent(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup currBusinessGroup, final BGConfigFlags flags) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor(){
 			public void execute() {
@@ -1516,7 +1511,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	/**
 	 * 
 	 * @see org.olat.group.BusinessGroupManager#removeFromWaitingListAndFireEvent(org.olat.core.id.Identity, org.olat.core.gui.translator.Translator, java.util.List, org.olat.group.BusinessGroup, org.olat.group.ui.BGConfigFlags, org.olat.core.logging.UserActivityLogger)
-	 */
+	 *//*
 	public void removeFromWaitingListAndFireEvent(final Identity ureqIdentity, final List<Identity> identities, final BusinessGroup currBusinessGroup, final BGConfigFlags flags) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor(){
 			public void execute() {
@@ -1575,7 +1570,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * @param flags
 	 * @param logger
 	 * @param secMgr
-	 */
+	 *//*
 	//o_clusterOK by:cg call this method only from synchronized code-block (removeParticipantAndFireEvent( ).
 	private void transferFirstIdentityFromWaitingToParticipant(Identity ureqIdentity, BusinessGroup group, BGConfigFlags flags) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().assertAlreadyDoInSyncFor(group);
@@ -1586,7 +1581,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 			int waitingPartipiciantSize = securityManager.countIdentitiesOfSecurityGroup(group.getPartipiciantGroup());
 			if ( (maxSize != null) && (waitingPartipiciantSize < maxSize.intValue()) ) {
 				// ok it has free places => get first idenity from Waitinglist
-				List identities = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup(), true/*sortedByAddedDate*/);
+				List identities = securityManager.getIdentitiesAndDateOfSecurityGroup(group.getWaitingGroup(), true/*sortedByAddedDate*//*);
 				int i = 0;
 				boolean transferNotDone = true;
 			  while (i<identities.size() && transferNotDone) {
@@ -1634,7 +1629,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	 * If there is no other owner for a group, the olat-administrator (defined in spring config) will be added as owner.
 	 *   
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
-	 */
+	 *//*
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// remove as Participant 
 		List<BusinessGroup> attendedGroups = findAllBusinessGroupsAttendedBy(identity);
@@ -1679,7 +1674,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 	public void archiveGroups(BGContext context, File exportFile) {
 		BusinessGroupArchiver.getInstance().archiveBGContext(null, exportFile);		
 	}
-	*/
+	*//*
 	
 	private void removeSubscriptions(Identity identity, BusinessGroup group) {
 		NotificationsManager notiMgr = NotificationsManager.getInstance();
@@ -1696,7 +1691,7 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#setLastUsageFor(org.olat.group.BusinessGroup)
-	 */
+	 *//*
 	public BusinessGroup setLastUsageFor(final BusinessGroup currBusinessGroup) {
 		//o_clusterOK by:cg
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerCallback<BusinessGroup>() {
@@ -1720,11 +1715,12 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 				}
 			}
 		});
-	}
+	}*/
 
 	/**
 	 * @see org.olat.group.BusinessGroupManager#createUniqueBusinessGroupsFor(java.util.Set, org.olat.group.context.BGContext, java.lang.String, java.lang.Integer, java.lang.Integer, java.lang.Boolean, java.lang.Boolean)
 	 */
+  /*
 	public Set<BusinessGroup> createUniqueBusinessGroupsFor(final Set<String> allNames, final BGContext bgContext, final String bgDesc, final Integer bgMin, 
 			final Integer bgMax, final Boolean enableWaitinglist, final Boolean enableAutoCloseRanks) {
 	   //o_clusterOK by:cg
@@ -1777,6 +1773,6 @@ public class BusinessGroupManagerImpl extends BasicManager implements BusinessGr
 		
 		List<BusinessGroup> res = dbq.list();
 		return res;
-	}
+	}*/
 
 }

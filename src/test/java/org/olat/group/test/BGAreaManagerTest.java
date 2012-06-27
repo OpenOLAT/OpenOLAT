@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.group;
+package org.olat.group.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,14 +44,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,20 +66,17 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Autowired
 	private BGAreaManager areaManager;
 
-
 	@Before
 	public void setUp() {
 		try {
-			OLATResourceable ores1 = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
-			c1 = OLATResourceManager.getInstance().createOLATResourceInstance(ores1);
-			OLATResourceable ores2 = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
-			c2 = OLATResourceManager.getInstance().createOLATResourceInstance(ores2);
+			c1 = JunitTestHelper.createRandomResource();
+			Assert.assertNotNull(c1);
+			c2 = JunitTestHelper.createRandomResource();
 			Assert.assertNotNull(c2);
 
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in setUp(): " + e);
-			e.printStackTrace();
 		}
 	}
 
@@ -91,11 +86,17 @@ public class BGAreaManagerTest extends OlatTestCase {
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
-			e.printStackTrace();
 			throw e;
 		}
 	}
-
+	
+	@Test
+	public void testCreateBGArea() {
+		String areaName = UUID.randomUUID().toString();
+		BGArea bgArea = areaManager.createAndPersistBGAreaIfNotExists(areaName, "description:" + areaName, c1);
+		Assert.assertNotNull(bgArea);
+		DBFactory.getInstance().commit();
+	}
 	
 	/** 
 	 * Do in different threads ant check that no exception happens :

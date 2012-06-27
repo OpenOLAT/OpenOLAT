@@ -85,7 +85,7 @@ public class InLearningGroupFunction extends AbstractFunction {
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		//System.out.println("todo: check if "+(ident==null? "n/a":ident.getName())+" is in group "+groupName);
 		
-		return cgm.isIdentityInLearningGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		return cgm.isIdentityInGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {

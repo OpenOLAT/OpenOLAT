@@ -44,7 +44,6 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -95,8 +94,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
 			Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 			System.out.println("Demo course imported - resourceableId: " + resourceableId);
-					
-			DB db = DBFactory.getInstance();			
+		
 			course = CourseFactory.loadCourse(resourceableId);
 			DBFactory.getInstance().closeSession();
 						
@@ -106,14 +104,11 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			log.info("setUp done ------------------------");					
 		} catch (RuntimeException e) {
 			log.error("Exception in setUp(): " + e);
-			e.printStackTrace();
 		}
 	}
+	
 	@After
-	public void tearDown() throws Exception {			
-		// TODO: Does not cleanup Demo-course because other Test which use Demo-Course too, will be have failures
-		//remove demo course on file system
-		//CourseFactory.deleteCourse(course);		
+	public void tearDown() throws Exception {
 		try {
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
@@ -233,8 +228,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		}
 		
 		//delete the efficiencyStatements for the current course

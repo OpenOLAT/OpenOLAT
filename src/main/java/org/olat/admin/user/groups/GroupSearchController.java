@@ -46,6 +46,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.ui.BusinessGroupTableModel;
 
 /**

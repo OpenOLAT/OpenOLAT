@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.user.groups;
+package org.olat.group.model;
 
 import java.util.List;
 
@@ -34,6 +34,8 @@ import org.olat.core.gui.control.Event;
  */
 public class AddToGroupsEvent extends Event {
 
+	private static final long serialVersionUID = 6173876999047030112L;
+	
 	private List<Long> ownerList;
 	private List<Long> participantList;
 	private List<Long> mailForGroupsList;

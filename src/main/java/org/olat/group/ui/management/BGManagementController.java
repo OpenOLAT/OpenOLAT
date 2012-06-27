@@ -921,19 +921,19 @@ public class BGManagementController extends MainLayoutBasicController implements
 	}
 
 	private void doGroupRun(UserRequest ureq) {
-		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(this.currentGroup, ureq, getWindowControl(), true);
+		BGControllerFactory.getInstance().createRunControllerAsTopNavTab(currentGroup, ureq, getWindowControl(), true);
 	}
 
 	private void doGroupDelete() {
 		// remove this controller as listener from the group
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, this.currentGroup);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, currentGroup);
 		// now delete group and update table model
-		businessGroupService.deleteBusinessGroup(this.currentGroup);
+		businessGroupService.deleteBusinessGroup(currentGroup);
 		if (groupListModel != null) {
-			groupListModel.getObjects().remove(this.currentGroup);
+			groupListModel.getObjects().remove(currentGroup);
 			groupListCtr.modelChanged();
 		}
-		this.currentGroup = null;
+		currentGroup = null;
 	}
 
 	private void doGroupList(UserRequest ureq, boolean initializeModel) {

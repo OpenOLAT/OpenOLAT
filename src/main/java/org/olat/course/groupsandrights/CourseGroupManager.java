@@ -76,7 +76,7 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return true if user is in learning group, false otherwhise
 	 */
-	public boolean isIdentityInLearningGroup(Identity identity, String groupName);
+	public boolean isIdentityInGroup(Identity identity, String groupName);
 
 	/**
 	 * Checks whether a set of learning groups with an identical name are full or not.
@@ -87,15 +87,6 @@ public interface CourseGroupManager {
 	 */
 	public boolean isLearningGroupFull(String groupName);
 
-	/**
-	 * Checks if an identity is in a right group with the given name in any
-	 * contexts of this course
-	 * 
-	 * @param identity
-	 * @param groupName
-	 * @return true if user is in right group, false otherwhise
-	 */
-	public boolean isIdentityInRightGroup(Identity identity, String groupName);
 
 	/**
 	 * Checks if an identity is in any learning areas with the given name in any
@@ -132,20 +123,12 @@ public interface CourseGroupManager {
 	public boolean isIdentityCourseParticipant(Identity identity);
 
 	/**
-	 * Checks if user is participant in any right group of this course
-	 * 
-	 * @param identity
-	 * @return boolean
-	 */
-	public boolean isIdentityParticipantInAnyRightGroup(Identity identity);
-
-	/**
 	 * Checks if user is participant in any learning group of this course
 	 * 
 	 * @param identity
 	 * @return boolean
 	 */
-	public boolean isIdentityParticipantInAnyLearningGroup(Identity identity);
+	public boolean isIdentityParticipantInAnyGroup(Identity identity);
 
 	/**
 	 * @return A list of all learning group from all learning group contexts of

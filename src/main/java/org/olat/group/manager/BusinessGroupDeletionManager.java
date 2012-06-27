@@ -27,7 +27,6 @@ package org.olat.group.manager;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,11 +34,8 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -52,8 +48,6 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.properties.Property;
-import org.olat.properties.PropertyManager;
 import org.olat.repository.delete.service.DeletionModule;
 
 
@@ -64,13 +58,6 @@ import org.olat.repository.delete.service.DeletionModule;
 public class BusinessGroupDeletionManager extends BasicManager {
 
 	private static final String GROUP_ARCHIVE_DIR = "archive_deleted_groups";
-
-	private static final String PROPERTY_CATEGORY = "GroupDeletion";
-	private static final String LAST_USAGE_DURATION_PROPERTY_NAME = "LastUsageDuration";
-	private static final int DEFAULT_LAST_USAGE_DURATION = 24;
-	private static final String DELETE_EMAIL_DURATION_PROPERTY_NAME = "DeleteEmailDuration";
-	private static final int DEFAULT_DELETE_EMAIL_DURATION = 30;
-	
 	private static final String  GROUPEXPORT_XML  = "groupexport.xml";
 	private static final String  GROUPARCHIVE_XLS = "grouparchive.xls";
 
@@ -93,21 +80,7 @@ public class BusinessGroupDeletionManager extends BasicManager {
 		this.businessGroupService = businessGroupService;
 	}
 
-	public void setLastUsageDuration(int lastUsageDuration) {
-		setProperty(LAST_USAGE_DURATION_PROPERTY_NAME, lastUsageDuration);
-	}
 
-	public void setDeleteEmailDuration(int deleteEmailDuration) {
-		setProperty(DELETE_EMAIL_DURATION_PROPERTY_NAME, deleteEmailDuration);
-	}
-
-	public int getLastUsageDuration() {
-		return getPropertyByName(LAST_USAGE_DURATION_PROPERTY_NAME, DEFAULT_LAST_USAGE_DURATION);
-	}
-
-	public int getDeleteEmailDuration() {
-		return getPropertyByName(DELETE_EMAIL_DURATION_PROPERTY_NAME, DEFAULT_DELETE_EMAIL_DURATION);
-	}
 
 	public String sendDeleteEmailTo(List<BusinessGroup> selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
 			String keyEmailBody, Identity sender, Translator pT) {
@@ -182,75 +155,14 @@ public class BusinessGroupDeletionManager extends BasicManager {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		group = bgs.loadBusinessGroup(group);
 		LifeCycleManager.createInstanceFor(group).markTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
-		group = bgs.mergeBusinessGroup(group);
+		//group = bgs.updateBusinessGroup(group);
 	}
 
-	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration) {
-		Calendar lastUsageLimit = Calendar.getInstance();
-		lastUsageLimit.add(Calendar.MONTH, - lastLoginDuration);
-		logDebug("lastLoginLimit=" + lastUsageLimit);
-		// 1. get all businness-groups with lastusage > x
-		String query = "select gr from org.olat.group.BusinessGroupImpl as gr "
-				+ " where (gr.lastUsage = null or gr.lastUsage < :lastUsage)"
-				+ " and gr.type = :type ";
-		DBQuery dbq = DBFactory.getInstance().createQuery(query);
-		dbq.setDate("lastUsage", lastUsageLimit.getTime());
-		dbq.setString("type", BusinessGroup.TYPE_BUDDYGROUP);
-		
-		
-		List groups = dbq.list();
-		// 2. get all businness-groups in deletion-process (email send)
-		query = "select gr from org.olat.group.BusinessGroupImpl as gr"
-			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
-			+ " where gr.key = le.persistentRef "
-			+ " and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'" 
-			+ " and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' ";
-		dbq = DBFactory.getInstance().createQuery(query);
-		List groupsInProcess = dbq.list();
-		// 3. Remove all groups in deletion-process from all unused-groups
-		groups.removeAll(groupsInProcess);
-		return groups;
-	}
-
-	//TODO gm ONLY BUDDY????
-	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration) {
-		Calendar deleteEmailLimit = Calendar.getInstance();
-		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
-		logDebug("deleteEmailLimit=" + deleteEmailLimit);
-		String queryStr = "select gr from org.olat.group.BusinessGroupImpl as gr"
-				+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
-				+ " where gr.key = le.persistentRef "
-				+ " and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'" 
-				+ " and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp >= :deleteEmailDate "
-				+ " and gr.type = :type ";
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
-		dbq.setDate("deleteEmailDate", deleteEmailLimit.getTime());
-		dbq.setString("type", BusinessGroup.TYPE_BUDDYGROUP);
-		return dbq.list();
-	}
-
-	//TODO gm ONLY BUDDY????
-	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration) {
-		Calendar deleteEmailLimit = Calendar.getInstance();
-		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
-		logDebug("deleteEmailLimit=" + deleteEmailLimit);
-		String queryStr = "select gr from org.olat.group.BusinessGroupImpl as gr"
-			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
-			+ " where gr.key = le.persistentRef "
-			+ " and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'" 
-			+ " and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp < :deleteEmailDate "
-			+ " and gr.type = :type ";
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
-		dbq.setDate("deleteEmailDate", deleteEmailLimit.getTime());
-		dbq.setString("type", BusinessGroup.TYPE_BUDDYGROUP);
-		return dbq.list();
-	}
-
-	public void deleteGroups(List<BusinessGroup> groups) {
+	protected void deleteGroups(List<BusinessGroup> groups) {
 		for (BusinessGroup businessGroup : groups) {
 			String archiveFileName = archive(getArchivFilePath(businessGroup), businessGroup);
 			logAudit("Group-Deletion: archived businessGroup=" + businessGroup + " , archive-file-name=" + archiveFileName);
-			CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).deleteTools(businessGroup);
+
 			businessGroupService.deleteBusinessGroup(businessGroup);
 			LifeCycleManager.createInstanceFor(businessGroup).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
 			LifeCycleManager.createInstanceFor(businessGroup).markTimestampFor(GROUP_DELETED_ACTION, createLifeCycleLogDataFor(businessGroup));
@@ -298,30 +210,5 @@ public class BusinessGroupDeletionManager extends BasicManager {
 	private String getArchivFilePath(BusinessGroup businessGroup) {
 		return module.getArchiveRootPath() + File.separator + GROUP_ARCHIVE_DIR + File.separator + DeletionModule.getArchiveDatePath() 
 		     + File.separator + "del_group_" + businessGroup.getResourceableId();
-	}
-	
-
-	//////////////////
-	// Private Methods
-	//////////////////
-	private int getPropertyByName(String name, int defaultValue) {
-		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, name);
-		if (properties.size() == 0) {
-			return defaultValue;
-		} else {
-			return ((Property)properties.get(0)).getLongValue().intValue();
-		}
-	}
-
-	private void setProperty(String propertyName, int value) {
-		List<Property> properties = PropertyManager.getInstance().findProperties(null, null, null, PROPERTY_CATEGORY, propertyName);
-		Property property = null;
-		if (properties.size() == 0) {
-			property = PropertyManager.getInstance().createPropertyInstance(null, null, null, PROPERTY_CATEGORY, propertyName, null,  new Long(value), null, null);
-		} else {
-			property = (Property)properties.get(0);
-			property.setLongValue( new Long(value) );
-		}
-		PropertyManager.getInstance().saveProperty(property);
 	}
 }

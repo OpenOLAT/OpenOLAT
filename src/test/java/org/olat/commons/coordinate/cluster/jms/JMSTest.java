@@ -28,6 +28,8 @@ package org.olat.commons.coordinate.cluster.jms;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +47,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
 /**
@@ -55,38 +58,39 @@ import org.olat.test.OlatTestCase;
 public class JMSTest extends OlatTestCase {
 	private static boolean isInitialized = false;
 	private static Identity id1;
-	private OLATResourceable ores1;
-	
-	private Event event = null;
 
-	
+	private Event event;
 
-	@Before public void setup() throws Exception {
+	@Before
+	public void setup() throws Exception {
 		if (isInitialized == false) {
-			//ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity");
-			id1 = BaseSecurityManager.getInstance().createAndPersistIdentity("id1", null, BaseSecurityModule.getDefaultAuthProviderIdentifier(), "id1",
-					Encoder.encrypt("id1"));
+			id1 = JunitTestHelper.createAndPersistIdentityAsUser("jms" + UUID.randomUUID().toString());
 			DBFactory.getInstance().closeSession();
 			isInitialized = true;
 		}
+	}
+	
+	@After
+	public void tearDown() throws Exception {
+		DBFactory.getInstance().closeSession();
 	}
 
 	/**
 	 * 
 	 */
-	@Test public void testSendReceive() {
+	@Test
+	public void testSendReceive() {
 		// enable test only if we have the cluster configuration enabled.
 		// this test requires that an JMS Provider is running
 		// (see file serviceconfig/org/olat/core/_spring/coreextconfig.xml)
 		EventBus bus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 		if (bus instanceof ClusterEventBus) {
 			// send and wait some time until a message should arrive at the latest.
-			ores1 = OresHelper.createOLATResourceableInstance("hellojms", new Long(123));
+			OLATResourceable ores1 = OresHelper.createOLATResourceableInstance("hellojms", new Long(123));
 			
 			bus.registerFor(new GenericEventListener(){
 
 				public void event(Event event) {
-					// TODO Auto-generated method stub
 					System.out.println("event received!"+event);
 					JMSTest.this.event = event;
 				}}, id1, ores1);
@@ -97,17 +101,10 @@ public class JMSTest extends OlatTestCase {
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			assertNotNull("after 2 secs, an answer from the jms should have arrived", event);
-			
 		}
 		// else no tests to pass here
 	}
-	
-	@After public void tearDown() throws Exception {
-		DBFactory.getInstance().closeSession();
-	}
-
 }

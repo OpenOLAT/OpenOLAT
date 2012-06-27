@@ -1256,7 +1256,7 @@ public class EPStructureManager extends BasicManager {
 			}
 		}
 		
-		dbInstance.updateObject(targetEl);
+		targetEl = dbInstance.getCurrentEntityManager().merge(targetEl);
 	}
 	
 	private int indexOf(List<EPStructureToStructureLink> refLinks, EPStructureToStructureLink link, Comparator<EPStructureToStructureLink> comparator) {

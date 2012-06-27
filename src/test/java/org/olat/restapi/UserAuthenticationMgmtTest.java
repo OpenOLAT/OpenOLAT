@@ -131,8 +131,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 
     HttpResponse response = conn.execute(method);
     assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-    InputStream body = response.getEntity().getContent();
-    AuthenticationVO savedAuth = parse(body, AuthenticationVO.class);
+    AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
     Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-API");
     
 

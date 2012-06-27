@@ -47,6 +47,11 @@ import org.olat.group.BusinessGroup;
  */
 
 public class ProjectImpl extends PersistentObject implements Project {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static final String CUSTOMFIELD_KEY = "customfield_";
 
 	private static final String EVENT_START = "event_start";
@@ -214,9 +219,26 @@ public class ProjectImpl extends PersistentObject implements Project {
 		this.projectBroker = projectBroker;
 	}
 
-
+	@Override
 	public String toString() {
 		return "Project [title=" + getTitle() + ", description=" + getDescription() + ", state=" + getState() + "] " + super.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 82301 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof Project) {
+			Project project = (Project)obj;
+			return getKey() != null && getKey().equals(project.getKey());	
+		}
+		return false;
 	}
 
 	public void setAttachedFileName(String attachmentFileName) {

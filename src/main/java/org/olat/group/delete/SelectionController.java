@@ -59,8 +59,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
 
@@ -91,7 +91,7 @@ public class SelectionController extends BasicController {
 
 	private CloseableModalController cmc;
 	
-	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupModule businessGroupModule;
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -102,7 +102,7 @@ public class SelectionController extends BasicController {
 	public SelectionController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
+		businessGroupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_BG_MAIN_CONTROLLER, ureq.getLocale());
@@ -126,7 +126,7 @@ public class SelectionController extends BasicController {
 		selectionListContent = createVelocityContainer("selectionlist");
 		selectionListContent.put("repositorylist", tableCtr.getInitialComponent() );
 		selectionListContent.contextPut("header", translate("selection.delete.header",
-				new String[] { Integer.toString(bgDeletionManager.getLastUsageDuration()) }));
+				new String[] { Integer.toString(businessGroupModule.getLastUsageDuration()) }));
 		editParameterLink = LinkFactory.createButtonXSmall("button.editParameter", selectionListContent, this);
 		deleteSelectionPanel.setContent(selectionListContent);
 	}
@@ -140,7 +140,7 @@ public class SelectionController extends BasicController {
 		if (source == editParameterLink) {
 			
 			removeAsListenerAndDispose(selectionForm);
-			selectionForm = new SelectionForm(ureq, getWindowControl(), bgDeletionManager);
+			selectionForm = new SelectionForm(ureq, getWindowControl(), businessGroupModule);
 			listenTo(selectionForm);
 			
 			removeAsListenerAndDispose(cmc);
@@ -162,8 +162,8 @@ public class SelectionController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == selectionForm) {
 			if (event == Event.DONE_EVENT) {
-				bgDeletionManager.setLastUsageDuration(selectionForm.getLastUsageDuration());
-				bgDeletionManager.setDeleteEmailDuration(selectionForm.getDeleteEmailDuration());
+				businessGroupModule.setLastUsageDuration(selectionForm.getLastUsageDuration());
+				businessGroupModule.setDeleteEmailDuration(selectionForm.getDeleteEmailDuration());
 				initializeContent();
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -187,7 +187,7 @@ public class SelectionController extends BasicController {
 			initializeContent();
 		} else if (source == deleteGroupMailCtr) {
 			if (event == Event.DONE_EVENT) {
-				String warningMessage = bgDeletionManager.sendDeleteEmailTo(
+				String warningMessage = businessGroupService.sendDeleteEmailTo(
 						selectedGroups, deleteGroupMailCtr.getMailTemplate(),
 						deleteGroupMailCtr.isTemplateChanged(),	KEY_EMAIL_SUBJECT, KEY_EMAIL_BODY,
 						ureq.getIdentity(), (PackageTranslator) getTranslator()
@@ -261,7 +261,7 @@ public class SelectionController extends BasicController {
 	}
 
 	public void updateGroupList() {
-		List<BusinessGroup> l = bgDeletionManager.getDeletableGroups(bgDeletionManager.getLastUsageDuration());
+		List<BusinessGroup> l = businessGroupService.getDeletableGroups(businessGroupModule.getLastUsageDuration());
 		redtm = new GroupDeleteTableModel(l, tableModelTypeTranslator);
 		tableCtr.setTableDataModel(redtm);
 	}
@@ -290,7 +290,7 @@ class SelectionForm extends FormBasicController {
 
 	private IntegerElement lastUsageDuration;
 	private IntegerElement emailDuration;
-	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupModule businessGroupModule;
 
 	/**
 	 * @param name
@@ -299,9 +299,9 @@ class SelectionForm extends FormBasicController {
 	 *          validation takes place
 	 */
 	
-	public SelectionForm(UserRequest ureq, WindowControl wControl, BusinessGroupDeletionManager bgDeletionManager) {
+	public SelectionForm(UserRequest ureq, WindowControl wControl, BusinessGroupModule businessGroupModule) {
 		super(ureq, wControl);
-		this.bgDeletionManager = bgDeletionManager;
+		this.businessGroupModule = businessGroupModule;
 		initForm(ureq);
 	}
 
@@ -325,8 +325,8 @@ class SelectionForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		lastUsageDuration= uifactory.addIntegerElement("lastUsageDuration", "edit.parameter.form.lastusage.duration", bgDeletionManager.getLastUsageDuration(), formLayout);
-		emailDuration = uifactory.addIntegerElement("emailDuration", "edit.parameter.form.email.duration", bgDeletionManager.getDeleteEmailDuration(), formLayout);
+		lastUsageDuration= uifactory.addIntegerElement("lastUsageDuration", "edit.parameter.form.lastusage.duration", businessGroupModule.getLastUsageDuration(), formLayout);
+		emailDuration = uifactory.addIntegerElement("emailDuration", "edit.parameter.form.email.duration", businessGroupModule.getDeleteEmailDuration(), formLayout);
 		
 		lastUsageDuration.setMinValueCheck(1, null);
 		emailDuration.setMinValueCheck(1, null);

@@ -48,6 +48,14 @@ create table if not exists o_gp_business (
    fk_waitinggroup bigint unique,
    primary key (group_id)
 );
+create table if not exists o_gp_business_to_resource (
+   g_id bigint not null,
+   version mediumint unsigned not null,
+   creationdate datetime,
+   fk_resource bigint not null,
+   fk_group bigint not null,
+   primary key (g_id)
+);
 create table if not exists o_temporarykey (
    reglist_id bigint not null,
    version mediumint unsigned not null,
@@ -277,7 +285,8 @@ create table if not exists o_gp_bgarea (
    creationdate datetime,
    name varchar(255) not null,
    descr longtext,
-   groupcontext_fk bigint not null,
+   groupcontext_fk bigint,
+   fk_resource bigint default null,
    primary key (area_id)
 );
 create table if not exists o_repositoryentry (
@@ -1128,6 +1137,8 @@ create index  gp_type_idx on o_gp_business (businessgrouptype);
 alter table o_gp_business add index FKCEEB8A86DF6BCD14 (groupcontext_fk), add constraint FKCEEB8A86DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext (groupcontext_id);
 alter table o_gp_business add index FKCEEB8A86A1FAC766 (fk_ownergroup), add constraint FKCEEB8A86A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup (id);
 alter table o_gp_business add index FKCEEB8A86C06E3EF3 (fk_partipiciantgroup), add constraint FKCEEB8A86C06E3EF3 foreign key (fk_partipiciantgroup) references o_bs_secgroup (id);
+alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_group foreign key (fk_group) references o_gp_business (group_id);
 create index  provider_idx on o_bs_authentication (provider);
 create index  credential_idx on o_bs_authentication (credential);
 create index  authusername_idx on o_bs_authentication (authusername);
@@ -1178,6 +1189,7 @@ alter table o_bs_policy add index FK9A1C5109F9C3F1D (oresource_id), add constrai
 alter table o_bs_policy add index FK9A1C5101E2E76DB (group_id), add constraint FK9A1C5101E2E76DB foreign key (group_id) references o_bs_secgroup (id);
 create index  name_idx on o_gp_bgarea (name);
 alter table o_gp_bgarea add index FK9EFAF698DF6BCD14 (groupcontext_fk), add constraint FK9EFAF698DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext (groupcontext_id);
+alter table o_gp_bgarea add constraint idx_area_to_resource foreign key (fk_resource) references o_olatresource (resource_id);
 create index  access_idx on o_repositoryentry (accesscode);
 create index  initialAuthor_idx on o_repositoryentry (initialauthor);
 create index  resource_idx on o_repositoryentry (resourcename);

@@ -214,17 +214,17 @@ public class BusinessGroupArchiver {
 		buf.append( translator.translate("table.subject.addeddate") );
 		buf.append(EOL);
 	}
-
-	public void archiveBGContext(OLATResource resource, File archiveFile) {
-		FileUtils.save(archiveFile, toXls(resource), "utf-8");		
+	
+	public void archiveGroups(List<BusinessGroup> groups, File archiveFile) {
+		FileUtils.save(archiveFile, toXls(groups), "utf-8");		
 	}
 
-	private String toXls(OLATResource resource) {
+	private String toXls(List<BusinessGroup> groups) {
 		StringBuffer buf = new StringBuffer();
 		// Export Context Header
 		buf.append(translator.translate("archive.group.context.name"));
 		buf.append(DELIMITER);
-		buf.append(resource.getResourceableTypeName());
+		buf.append("");
 		buf.append(DELIMITER);
 		buf.append(translator.translate("archive.group.context.type"));
 		buf.append(DELIMITER);
@@ -235,7 +235,6 @@ public class BusinessGroupArchiver {
 		buf.append(FilterFactory.getHtmlTagsFilter().filter("Description"));
 		buf.append(EOL);
 
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
 		for (BusinessGroup group : groups) {
 			buf.append( toXls(group) );
 			buf.append(EOL);

@@ -19,6 +19,7 @@
  */
 package org.olat.group.manager;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -34,6 +36,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -41,6 +44,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
@@ -79,8 +83,13 @@ public class BusinessGroupDAO {
 		
 		String realType = type == null ? BusinessGroup.TYPE_LEARNINGROUP : type;
 		businessgroup = new BusinessGroupImpl(realType, name, description, ownerGroup, participantGroup, waitingGroup);
-		businessgroup.setMinParticipants(minParticipants);
-		businessgroup.setMaxParticipants(maxParticipants);
+		if(minParticipants >= 0) {
+			businessgroup.setMinParticipants(minParticipants);
+		}
+		if(maxParticipants > 0) {
+			businessgroup.setMaxParticipants(maxParticipants);
+		}
+		
 		businessgroup.setWaitingListEnabled(waitingListEnabled);
 		businessgroup.setAutoCloseRanksEnabled(autoCloseRanksEnabled);
 		
@@ -136,9 +145,12 @@ public class BusinessGroupDAO {
 		if(ids == null || ids.isEmpty()) {
 			return Collections.emptyList();
 		}
-		
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<BusinessGroup> groups = em.createQuery("select grp from " + BusinessGroupImpl.class.getName() + " grp where grp.id in (:ids)", BusinessGroup.class)
+		StringBuilder sb = new StringBuilder();
+		sb.append("select grp from ").append(BusinessGroupImpl.class.getName()).append(" grp where grp.id in (:ids)");
+
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("ids", ids)
 				.getResultList();
 		return groups;
 	}
@@ -167,6 +179,71 @@ public class BusinessGroupDAO {
 		em.remove(group);
 	}
 	
+	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration) {
+		Calendar lastUsageLimit = Calendar.getInstance();
+		lastUsageLimit.add(Calendar.MONTH, - lastLoginDuration);
+		log.debug("lastLoginLimit=" + lastUsageLimit);
+		// 1. get all business-groups with last usage > x
+		StringBuilder sb = new StringBuilder();
+		sb.append("select gr from ").append(BusinessGroupImpl.class).append(" as gr ")
+		  .append(" where (gr.lastUsage = null or gr.lastUsage < :lastUsage)");
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("lastUsage", lastUsageLimit.getTime(), TemporalType.TIMESTAMP)
+				.getResultList();
+
+		// 2. get all businness-groups in deletion-process (email send)
+		StringBuilder sc = new StringBuilder();
+		sc.append( "select gr from ").append(BusinessGroupImpl.class.getName()).append(" as gr")
+		  .append(", ").append(LifeCycleEntry.class.getName()).append(" as le ")
+			.append(" where gr.key = le.persistentRef ")
+			.append(" and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'" )
+			.append(" and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "'");
+		List<BusinessGroup> groupsInProcess = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), BusinessGroup.class)
+				.getResultList();
+		
+		// 3. Remove all groups in deletion-process from all unused-groups
+		groups.removeAll(groupsInProcess);
+		return groups;
+	}
+
+	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration) {
+		Calendar deleteEmailLimit = Calendar.getInstance();
+		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
+		log.debug("deleteEmailLimit=" + deleteEmailLimit);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select gr from ").append(BusinessGroupImpl.class.getName()).append(" as gr")
+			.append(" , ").append(LifeCycleEntry.class.getName()).append(" as le")
+			.append(" where gr.key = le.persistentRef ")
+			.append(" and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'")
+			.append(" and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp >= :deleteEmailDate ");
+
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("deleteEmailDate", deleteEmailLimit.getTime(), TemporalType.TIMESTAMP)
+				.getResultList();
+		return groups;
+	}
+	
+	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration) {
+		Calendar deleteEmailLimit = Calendar.getInstance();
+		deleteEmailLimit.add(Calendar.DAY_OF_MONTH, - (deleteEmailDuration - 1));
+		log.debug("deleteEmailLimit=" + deleteEmailLimit);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select gr from ").append(BusinessGroupImpl.class.getName()).append(" as gr")
+			.append(" , ").append(LifeCycleEntry.class.getName()).append(" as le")
+			.append(" where gr.key = le.persistentRef ")
+			.append(" and le.persistentTypeName ='org.olat.group.BusinessGroupImpl'")
+			.append(" and le.action ='" + BusinessGroupService.SEND_DELETE_EMAIL_ACTION + "' and le.lcTimestamp < :deleteEmailDate ");
+		
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("deleteEmailDate", deleteEmailLimit.getTime(), TemporalType.TIMESTAMP)
+				.getResultList();
+		return groups;
+	}
+	
 	/**
 	 * Work with the hibernate session
 	 * @param group
@@ -177,10 +254,10 @@ public class BusinessGroupDAO {
 		return group;
 	}
 	
-	public boolean isIdentityInBusinessGroup(Identity identity, String name, String groupType, OLATResource resource) {
+	public boolean isIdentityInBusinessGroup(Identity identity, String name, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi where")
-		  .append(" bgi.name = :name")
+		  .append(" bgi.name=:name")
 		  .append(" and (")
 		  .append("   bgi.partipiciantGroup in (")
 		  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
@@ -194,15 +271,12 @@ public class BusinessGroupDAO {
 		  .append(" )")
 			.append(" and bgi in (")
 			.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
-			.append(" )")
-			.append(" and bgi.type=:type");
+			.append(" )");
 
-		System.out.println(sb.toString());
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("name", name)
 				.setParameter("resourceKey", resource.getKey())
-				.setParameter("type", groupType)
 				.getSingleResult();
 		return count.intValue() > 0;
 	}
@@ -346,6 +420,10 @@ public class BusinessGroupDAO {
 			query.append("left join fetch bgi.ownerGroup ownerGroup ");
 			query.append("left join fetch bgi.partipiciantGroup participantGroup ");
 			query.append("left join fetch bgi.waitingGroup waitingGroup ");
+		} else {
+			query.append("left join bgi.ownerGroup ownerGroup ");
+			query.append("left join bgi.partipiciantGroup participantGroup ");
+			query.append("left join bgi.waitingGroup waitingGroup ");
 		}
 
 		boolean where = false;
@@ -406,6 +484,10 @@ public class BusinessGroupDAO {
 			searchLikeAttribute(query, "bgi", "description", "search");
 			query.append(")");
 		} else {
+			if(StringHelper.containsNonWhitespace(params.getExactName())) {
+				where = where(query, where);
+				query.append("bgi.name=:exactName");
+			}
 			if(StringHelper.containsNonWhitespace(params.getName())) {
 				where = where(query, where);
 				searchLikeAttribute(query, "bgi", "name", "name");
@@ -451,6 +533,9 @@ public class BusinessGroupDAO {
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
 			dbq.setParameter("search", params.getNameOrDesc());
 		} else {
+			if(StringHelper.containsNonWhitespace(params.getExactName())) {
+				dbq.setParameter("exactName", params.getExactName());
+			}
 			if(StringHelper.containsNonWhitespace(params.getName())) {
 				dbq.setParameter("name", params.getName());
 			}

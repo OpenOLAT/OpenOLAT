@@ -412,7 +412,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * be ignored in the query
 	 * @return List of identities
 	 */
-	public List findIdentitiesWithProperty(OLATResourceable resourceable, String category, String name, boolean matchNullValues) {
+	public List<Identity> findIdentitiesWithProperty(OLATResourceable resourceable, String category, String name, boolean matchNullValues) {
 		if (resourceable == null) 
 			return findIdentitiesWithProperty(null, null, category, name, matchNullValues);
 		else
@@ -430,7 +430,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * be ignored in the query
 	 * @return List of identities
 	 */
-	public List findIdentitiesWithProperty(String resourceTypeName, Long resourceTypeId, String category, String name, boolean matchNullValues) {
+	public List<Identity> findIdentitiesWithProperty(String resourceTypeName, Long resourceTypeId, String category, String name, boolean matchNullValues) {
 		StringBuilder query = new StringBuilder();
 		ArrayList objs = new ArrayList();
 		ArrayList types = new ArrayList();
@@ -587,7 +587,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	/**
 	 * @return a list of all available resource type names
 	 */
-	public List getAllResourceTypeNames() {
+	public List<String> getAllResourceTypeNames() {
 		return DBFactory.getInstance().find("select distinct v.resourceTypeName from org.olat.properties.Property as v where v.resourceTypeName is not null");
 	}
 

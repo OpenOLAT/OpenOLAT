@@ -138,8 +138,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CourseVOes courses = parse(body, CourseVOes.class);
+		CourseVOes courses = conn.parse(response, CourseVOes.class);
 		assertNotNull(courses);
 		assertNotNull(courses.getCourses());
 		assertEquals(1, courses.getCourses().length);
@@ -155,8 +154,7 @@ public class CoursesTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		CourseVO course = parse(body, CourseVO.class);
+		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
 		assertEquals("course3", course.getTitle());
 		//check repository entry

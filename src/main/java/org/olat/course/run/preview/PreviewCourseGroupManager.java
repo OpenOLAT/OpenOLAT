@@ -86,7 +86,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInLearningGroup(org.olat.core.id.Identity, java.lang.String)
 	 */
-	public boolean isIdentityInLearningGroup(Identity identity, String groupName) {
+	public boolean isIdentityInGroup(Identity identity, String groupName) {
 		return groups.contains(groupName);
 	}
 	
@@ -94,13 +94,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isLearningGroupFull(java.lang.String)
 	 */
 	public boolean isLearningGroupFull(String groupName){
-		return groups.contains(groupName);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityInRightGroup(org.olat.core.id.Identity, java.lang.String)
-	 */
-	public boolean isIdentityInRightGroup(Identity identity, String groupName) {
 		return groups.contains(groupName);
 	}
 
@@ -131,16 +124,9 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyRightGroup(org.olat.core.id.Identity)
-	 */
-	public boolean isIdentityParticipantInAnyRightGroup(Identity identity) {
-		throw new AssertException("unsupported");
-	}
-
-	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyLearningGroup(org.olat.core.id.Identity)
 	 */
-	public boolean isIdentityParticipantInAnyLearningGroup(Identity identity) {
+	public boolean isIdentityParticipantInAnyGroup(Identity identity) {
 		throw new AssertException("unsupported");
 	}
 

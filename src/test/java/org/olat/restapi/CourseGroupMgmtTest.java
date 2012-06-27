@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -52,7 +53,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -91,6 +91,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	
 	/**
@@ -115,29 +117,21 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().saveObject(course);
 		DBFactory.getInstance().closeSession();
 		
-		//create learn group
-    BaseSecurity secm = BaseSecurityManager.getInstance();
-		
-    // 1) context one: learning groups
-    OLATResource c1 = JunitTestHelper.createRandomResource();
     // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, course);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, course);
     // members
-    secm.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
-    secm.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
+    securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
+    securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
+    securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
+    securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
     
-    
-    // 2) context two: right groups
-    OLATResource c2 =  JunitTestHelper.createRandomResource();
     // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, course);
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, course);
     // members
-    secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
-    secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
+    securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
+    securityManager.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());
     
     DBFactory.getInstance().closeSession(); // simulate user clicks
 	}
@@ -151,7 +145,6 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
       DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("Exception in tearDown(): " + e);
-      e.printStackTrace();
       throw e;
 		}
 	}
@@ -168,9 +161,16 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		
 		List<GroupVO> vos = parseGroupArray(body);
 		assertNotNull(vos);
-		assertEquals(2, vos.size());//g1 and g2	
-		assertTrue(vos.get(0).getKey().equals(g1.getKey()) || vos.get(0).getKey().equals(g2.getKey()));
-		assertTrue(vos.get(1).getKey().equals(g1.getKey()) || vos.get(1).getKey().equals(g2.getKey()));
+		assertEquals(2, vos.size());//g1, g2, g3, g4
+		
+		List<Long> voKeys = new ArrayList<Long>(4);
+		for(GroupVO vo:vos) {
+			voKeys.add(vo.getKey());
+		}
+		assertTrue(voKeys.contains(g1.getKey()));
+		assertTrue(voKeys.contains(g2.getKey()));
+		//assertTrue(voKeys.contains(g3.getKey()));
+		//assertTrue(voKeys.contains(g4.getKey()));
 	}
 	
 	@Test
@@ -180,9 +180,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
 		
-		GroupVO vo = parse(body, GroupVO.class);
+		GroupVO vo = conn.parse(response, GroupVO.class);
 		assertNotNull(vo);
 		assertEquals(g1.getKey(), vo.getKey());
 	}
@@ -203,9 +202,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
 		
-		GroupVO responseVo = parse(body, GroupVO.class);
+		GroupVO responseVo = conn.parse(response, GroupVO.class);
 		assertNotNull(responseVo);
 		assertEquals(vo.getName(), responseVo.getName());
 

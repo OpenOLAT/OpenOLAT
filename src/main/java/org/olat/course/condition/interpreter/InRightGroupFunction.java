@@ -87,7 +87,7 @@ public class InRightGroupFunction extends AbstractFunction {
 		
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		
-		return cgm.isIdentityInRightGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		return cgm.isIdentityInGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {

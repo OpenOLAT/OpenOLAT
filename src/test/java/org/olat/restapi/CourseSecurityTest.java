@@ -40,6 +40,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -83,8 +84,11 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 			// create course and persist as OLATResourceImpl
 			admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id-c-s-0");
+			Assert.assertNotNull(id1);
 			auth1 = JunitTestHelper.createAndPersistIdentityAsAuthor("id-c-s-1");
+			Assert.assertNotNull(auth1);
 			auth2 = JunitTestHelper.createAndPersistIdentityAsAuthor("id-c-s-2");
+			Assert.assertNotNull(auth2);
 			
 			course = CoursesWebService.createEmptyCourse(admin, "course-security-2", "Test course for the security test", null);
 			DBFactory.getInstance().intermediateCommit();

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -44,6 +45,20 @@ public class BusinessGroupRelationDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	public void deleteRelations(BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+			.append(" where rel.group.key=:groupKey");
+
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		List<BGResourceRelation> relations = em.createQuery(sb.toString(), BGResourceRelation.class)
+				.setParameter("groupKey", group.getKey())
+				.getResultList();
+		
+		for(BGResourceRelation relation:relations) {
+			em.remove(relation);
+		}
+	}
 
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		if(groups == null || groups.isEmpty()) {
@@ -66,7 +81,6 @@ public class BusinessGroupRelationDAO {
 		query.setParameter("groupKeys", groupKeys);
 		return query.getResultList();
 	}
-	
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		if(groups == null || groups.isEmpty()) {

@@ -379,7 +379,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			if (event == Event.DONE_EVENT) {
 				// update business group with the specified values
 				// values are taken from the modifyBusinessGroupForm
-				updateBusinessGroup();
+				currBusinessGroup = updateBusinessGroup();
 				// inform index about change
 				refreshAllTabs(ureq);
 				// notify current active users of this business group
@@ -418,9 +418,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 * persist the updates
 	 */
 	//TODO gm
-	private void updateBusinessGroup() {
+	private BusinessGroup updateBusinessGroup() {
 		final BusinessGroup  businessGroup = currBusinessGroup;
-		currBusinessGroup = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(businessGroup, new SyncerCallback<BusinessGroup>() {
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(businessGroup, new SyncerCallback<BusinessGroup>() {
 			public BusinessGroup execute() {
 				// refresh group to prevent stale object exception and context proxy issues
 				BusinessGroup bg = businessGroupService.loadBusinessGroup(businessGroup);

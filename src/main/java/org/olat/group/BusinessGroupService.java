@@ -26,11 +26,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.admin.user.groups.AddToGroupsEvent;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.repository.RepositoryEntry;
@@ -61,11 +63,20 @@ public interface BusinessGroupService {
 	
 	public BusinessGroup mergeBusinessGroup(BusinessGroup group);
 	
-	public void updateBusinessGroup(BusinessGroup group);
-	
 	public void deleteBusinessGroup(BusinessGroup group);
 	
+	public void deleteGroupsAfterLifeCycle(List<BusinessGroup> groups);
+	
+	public List<BusinessGroup> getDeletableGroups(int lastLoginDuration);
+	
+	public List<BusinessGroup> getGroupsInDeletionProcess(int deleteEmailDuration);
+	
+	public List<BusinessGroup> getGroupsReadyToDelete(int deleteEmailDuration);
+	
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup group, String businessPath, Identity deletedBy, Locale locale);
+	
+	public String sendDeleteEmailTo(List<BusinessGroup> selectedGroups, MailTemplate mailTemplate, boolean isTemplateChanged, String keyEmailSubject, 
+			String keyEmailBody, Identity sender, Translator pT);
 	
 	public BusinessGroup setLastUsageFor(BusinessGroup group);
 		
@@ -156,7 +167,7 @@ public interface BusinessGroupService {
 	
 	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity);
 	
-	public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, final Identity ident, final Identity addingIdentity);
+	//public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, final Identity ident, final Identity addingIdentity);
 	
 	//security
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
@@ -184,10 +195,6 @@ public interface BusinessGroupService {
 	public void importGroups(OLATResource resource, File fGroupExportXML);
 	
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile);
-	
-	//TODO move to area service
-	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType,
-			Locale locale, String charset);
 
 	public File archiveGroupMembers(OLATResource resource, List<String> columnList, List<BusinessGroup> groupList, String archiveType,
 			Locale locale, String charset);

@@ -79,7 +79,7 @@ public interface ProjectGroupManager {
 	 * @param groupDescription
 	 * @param accountManagerGroup
 	 */
-	public abstract void updateAccountManagerGroupName(String groupName, String groupDescription, BusinessGroup accountManagerGroup);
+	public BusinessGroup updateAccountManagerGroupName(String groupName, String groupDescription, BusinessGroup accountManagerGroup);
 
 	////////////////////////////
 	// PROJECT GROUP MANAGEMENT
@@ -110,7 +110,7 @@ public interface ProjectGroupManager {
 	 * @param initialGroupName  New group-name, if the group name already exists, append a number e.g. ' _2' for uniqueness 
 	 * @param groupDescription  New description of group
 	 */
-	public abstract void changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription, OLATResource courseResource);
+	public BusinessGroup changeProjectGroupName(BusinessGroup projectGroup, String initialGroupName, String groupDescription, OLATResource courseResource);
 
 	/**
 	 * Accept candidates as participants, move identity from candidate-group to participant-group 
@@ -195,7 +195,7 @@ public interface ProjectGroupManager {
 	 * @param projectGroup
 	 * @param maxMembers
 	 */
-  public void setProjectGroupMaxMembers(BusinessGroup projectGroup, int maxMembers );
+  public BusinessGroup setProjectGroupMaxMembers(BusinessGroup projectGroup, int maxMembers );
   
   /**
    * Returns true when candidate-list is empty.

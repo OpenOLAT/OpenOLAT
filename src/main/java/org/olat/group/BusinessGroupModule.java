@@ -39,6 +39,11 @@ public class BusinessGroupModule extends AbstractOLATModule {
 
 	public static String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
 	
+	public static final String LAST_USAGE_DURATION_PROPERTY_NAME = "LastUsageDuration";
+	public static final int DEFAULT_LAST_USAGE_DURATION = 24;
+	public static final String DELETE_EMAIL_DURATION_PROPERTY_NAME = "DeleteEmailDuration";
+	public static final int DEFAULT_DELETE_EMAIL_DURATION = 30;
+	
 	/**
 	 * [used by spring]
 	 */
@@ -77,6 +82,22 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	@Override
 	public void setPersistedProperties(PersistedProperties persistedProperties) {
 		this.moduleConfigProperties = persistedProperties;
+	}
+	
+	public void setLastUsageDuration(int lastUsageDuration) {
+		setIntProperty(LAST_USAGE_DURATION_PROPERTY_NAME, lastUsageDuration, true);
+	}
+
+	public void setDeleteEmailDuration(int deleteEmailDuration) {
+		setIntProperty(DELETE_EMAIL_DURATION_PROPERTY_NAME, deleteEmailDuration, true);
+	}
+
+	public int getLastUsageDuration() {
+		return DEFAULT_LAST_USAGE_DURATION;// getIntProperty(LAST_USAGE_DURATION_PROPERTY_NAME, DEFAULT_LAST_USAGE_DURATION);
+	}
+
+	public int getDeleteEmailDuration() {
+		return DEFAULT_DELETE_EMAIL_DURATION;//getIntProperty(DELETE_EMAIL_DURATION_PROPERTY_NAME, DEFAULT_DELETE_EMAIL_DURATION);
 	}
 
 }

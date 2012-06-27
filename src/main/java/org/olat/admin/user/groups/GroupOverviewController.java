@@ -58,6 +58,7 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.core.util.notifications.NotificationHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGMailHelper;

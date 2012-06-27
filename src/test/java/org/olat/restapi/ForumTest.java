@@ -163,8 +163,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVOes threads = parse(body, MessageVOes.class);
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
@@ -195,8 +194,7 @@ public class ForumTest extends OlatJerseyTestCase {
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVOes threads = parse(body, MessageVOes.class);
+		MessageVOes threads = conn.parse(response, MessageVOes.class);
 		
 		assertNotNull(threads);
 		assertNotNull(threads.getMessages());
@@ -210,12 +208,10 @@ public class ForumTest extends OlatJerseyTestCase {
 		URI uri = getForumUriBuilder().path("threads").queryParam("authorKey", id1.getKey())
 			.queryParam("title", "New thread")
 			.queryParam("body", "A very interesting thread").build();
-		HttpPut method = conn.createPut(
-uri, MediaType.APPLICATION_JSON, true);
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO thread = parse(body, MessageVO.class);
+		MessageVO thread = conn.parse(response, MessageVO.class);
 		assertNotNull(thread);
 		assertNotNull(thread.getKey());
 		assertEquals(thread.getForumKey(), forum.getKey());
@@ -244,8 +240,7 @@ uri, MediaType.APPLICATION_JSON, true);
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO message = parse(body, MessageVO.class);
+		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		assertNotNull(message.getKey());
 		assertEquals(message.getForumKey(), forum.getKey());
@@ -311,8 +306,7 @@ uri, MediaType.APPLICATION_JSON, true);
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO message = parse(body, MessageVO.class);
+		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		
 		//attachment
@@ -355,8 +349,7 @@ uri, MediaType.APPLICATION_JSON, true);
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO message = parse(body, MessageVO.class);
+		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		
 		//attachment
@@ -420,8 +413,7 @@ uri, MediaType.APPLICATION_JSON, true);
 		
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO message = parse(body, MessageVO.class);
+		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		
 		assertNotNull(message.getAttachments());
@@ -470,8 +462,7 @@ uri, MediaType.APPLICATION_JSON, true);
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO message = parse(body, MessageVO.class);
+		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		
 		//attachment
@@ -521,8 +512,7 @@ uri, MediaType.APPLICATION_JSON, true);
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		MessageVO message = parse(body, MessageVO.class);
+		MessageVO message = conn.parse(response, MessageVO.class);
 		assertNotNull(message);
 		
 		//attachment

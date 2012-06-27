@@ -504,9 +504,13 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 		ProjectBroker projectBroker = (ProjectBroker)projectCache.get(projectBrokerId.toString());
 		if (projectBroker == null) {
 			logDebug("find no projectBroker in the cache => create a new one projectBrokerId=" + projectBrokerId);
-			List projectList = DBFactory.getInstance().find(
-					"select project from org.olat.course.nodes.projectbroker.datamodel.ProjectImpl as project" +
-					" where project.projectBroker.key = ?", projectBrokerId,	StandardBasicTypes.LONG);
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct project from ").append(ProjectImpl.class.getName()).append(" as project ")
+			  .append(" where project.projectBroker.key=:projectBrokerKey");
+
+			List<Project> projectList = DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), Project.class)
+					.setParameter("projectBrokerKey", projectBrokerId)
+					.getResultList();
 			projectBroker = getProjectBroker(projectBrokerId);
 			projectBroker.setProjects(projectList);
 			projectCache.put(projectBrokerId.toString(), projectBroker);

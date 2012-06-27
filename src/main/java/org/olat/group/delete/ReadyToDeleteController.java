@@ -49,8 +49,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
 
@@ -75,7 +75,7 @@ public class ReadyToDeleteController extends BasicController {
 	private DialogBoxController deleteConfirmController;
 	private PackageTranslator tableModelTypeTranslator;
 	
-	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupModule businessGroupModule;
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -85,7 +85,7 @@ public class ReadyToDeleteController extends BasicController {
 	 */
 	public ReadyToDeleteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
+		businessGroupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		/*
@@ -143,7 +143,7 @@ public class ReadyToDeleteController extends BasicController {
 			} 
 		} else if (source == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				bgDeletionManager.deleteGroups(groupsReadyToDelete);
+				businessGroupService.deleteGroupsAfterLifeCycle(groupsReadyToDelete);
 				showInfo("readyToDelete.deleted.msg");
 			}
 			updateGroupList();
@@ -184,13 +184,13 @@ public class ReadyToDeleteController extends BasicController {
 		VelocityContainer readyToDeleteContent = createVelocityContainer("readyToDelete");
 		readyToDeleteContent.put("readyToDelete", tableCtr.getInitialComponent());
 		readyToDeleteContent.contextPut("header", translate("ready.to.delete.header", 
-				Integer.toString(bgDeletionManager.getDeleteEmailDuration()) ));
+				Integer.toString(businessGroupModule.getDeleteEmailDuration()) ));
 		readyToDeletePanel.setContent(readyToDeleteContent);
 		
 	}
 
 	protected void updateGroupList() {
-		List<BusinessGroup> l = bgDeletionManager.getGroupsReadyToDelete(bgDeletionManager.getDeleteEmailDuration());
+		List<BusinessGroup> l = businessGroupService.getGroupsReadyToDelete(businessGroupModule.getDeleteEmailDuration());
 		redtm = new GroupDeleteTableModel(l,tableModelTypeTranslator);
 		tableCtr.setTableDataModel(redtm);
 	}

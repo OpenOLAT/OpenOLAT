@@ -25,7 +25,9 @@
 
 package org.olat.group.area;
 
+import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -190,4 +192,7 @@ public interface BGAreaManager {
 	 * @return
 	 */
 	public abstract boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, OLATResource resource);
+	
+	
+	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset);
 }

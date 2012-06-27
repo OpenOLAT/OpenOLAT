@@ -52,6 +52,7 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.AddToGroupsEvent;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -189,7 +190,8 @@ public class UserBulkChangeManager extends BasicManager {
 			// FXOLAT-101: add identity to new groups:
 			if (ownGroups.size() != 0 || partGroups.size() != 0){
 				BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-				bgs.addIdentityToGroups(ownGroups, partGroups, mailGroups, identity, addingIdentity);
+				AddToGroupsEvent groupsEv = new AddToGroupsEvent(ownGroups, partGroups, mailGroups);
+				bgs.addIdentityToGroups(groupsEv, identity, addingIdentity);
 			}			
 			
 			// set status

@@ -32,16 +32,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 
-import org.apache.log4j.Logger;
+import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -55,16 +57,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Comment:  
  * 
  */
-public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceable {
+public class LifeCycleManagerTest extends OlatTestCase {
 
-	private long RESOURCE_ID = 144;
-	private String RESOURCE_TYPE = "org.olat.commons.lifecycle.LifeCycleManagerTest";
-	private static Logger log = Logger.getLogger(LifeCycleManagerTest.class);
-	private static Identity identity = null;
-	private static BusinessGroup group = null;
-	private static org.olat.resource.OLATResource res = null;
+	private static OLog log = Tracing.createLoggerFor(LifeCycleManagerTest.class);
+	private static Identity identity;
+	private static BusinessGroup group;
+	private static OLATResource res;
 
-	
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -74,20 +73,20 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 	@Before
 	public void setup() {
 		// identity with null User should be ok for test case
-		res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
-		OLATResourceManager.getInstance().saveOLATResource(res);
-		identity = JunitTestHelper.createAndPersistIdentityAsUser("foo");
-		group = businessGroupService.createBusinessGroup( identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
+		res = JunitTestHelper.createRandomResource();
+		identity = JunitTestHelper.createAndPersistIdentityAsUser("foo-" + UUID.randomUUID().toString());
+		group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
 	}
 	
 	/**
 	 * @see junit.framework.TestCase#tearDown()
 	 */
-	@After public void tearDown() {
+	@After
+	public void tearDown() {
 		try {
 			OLATResourceManager.getInstance().deleteOLATResource(res);
 			businessGroupService.deleteBusinessGroup(group);
-			Tracing.logInfo("tearDown: DB.getInstance().closeSession()", this.getClass());
+			log.info("tearDown: DB.getInstance().closeSession()");
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
 			log.error("tearDown failed: ", e);
@@ -97,7 +96,8 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 	/**
 	 * Test creation of LifeCycleManager.
 	 */
-	@Test public void testCreateInstanceFor() {
+	@Test
+	public void testCreateInstanceFor() {
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
 		LifeCycleManager lcm2 = LifeCycleManager.createInstanceFor(res);
 		assertNotSame("testCreateInstanceFor should NOT return the same instance", lcm1,lcm2);
@@ -106,7 +106,8 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 	/**
 	 * Test: mark two timestamp in different context.
 	 */
-	@Test public void testMarkTimestampFor() {
+	@Test
+	public void testMarkTimestampFor() {
 		String action = "doTest";
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
 		LifeCycleManager lcm2 = LifeCycleManager.createInstanceFor(res);
@@ -126,7 +127,8 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 	/**
 	 * Test: Delete Timestamp for certain action
 	 */
-	@Test public void testDeleteTimestampFor() {
+	@Test
+	public void testDeleteTimestampFor() {
 		String action = "doTestDelete";
 		LifeCycleManager lcm1 = LifeCycleManager.createInstanceFor(group);
 		lcm1.markTimestampFor(action);
@@ -135,23 +137,5 @@ public class LifeCycleManagerTest extends OlatTestCase implements OLATResourceab
 		lcm1.deleteTimestampFor(action);
 		LifeCycleEntry lce2 = lcm1.lookupLifeCycleEntry(action, null);
 		assertNull("Found deleted LifeCycleEntry", lce2);
-	
-	}
-
-	//////////////////////////////
-	// Implements OLATResourceable
-	//////////////////////////////
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
-	public String getResourceableTypeName() {
-		return RESOURCE_TYPE;
-	}
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
-	public Long getResourceableId() {
-		return new Long(RESOURCE_ID);
 	}
 }

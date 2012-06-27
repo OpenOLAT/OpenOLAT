@@ -38,12 +38,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.notifications.NotificationsManager;
 import org.olat.core.util.notifications.Publisher;
 import org.olat.core.util.notifications.PublisherData;
@@ -57,6 +59,7 @@ import org.olat.testutils.codepoints.client.CodepointClientFactory;
 import org.olat.testutils.codepoints.client.CodepointRef;
 import org.olat.testutils.codepoints.client.CommunicationException;
 import org.olat.testutils.codepoints.client.TemporaryPausedThread;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Dec 9, 2004
@@ -68,22 +71,29 @@ import org.olat.testutils.codepoints.client.TemporaryPausedThread;
  */
 public class NotificationsManagerTest extends OlatTestCase {
 
-	private static Logger log = Logger.getLogger(NotificationsManagerTest.class);
+	private static OLog log = Tracing.createLoggerFor(NotificationsManagerTest.class);
 	private static final String CODEPOINT_SERVER_ID = "NotificationsManagerTest";
 
-	private static Identity identity, identity2, identity3;
-	private static NotificationsManager nm;
+	private static Identity identity1, identity2, identity3;
+	
+	@Autowired
+	private NotificationsManager notificationManager;
+	@Autowired
+	private DB dbInstance;
+	
+	
 
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
-	@Before public void setup() {
-			nm = NotificationsManager.getInstance();
+	@Before
+	public void setup() {
 			// identity with null User should be ok for test case
-			identity = JunitTestHelper.createAndPersistIdentityAsUser("fi1");
-			identity2 = JunitTestHelper.createAndPersistIdentityAsUser("fi2");
-			identity3 = JunitTestHelper.createAndPersistIdentityAsUser("fi3");
+			identity1 = JunitTestHelper.createAndPersistIdentityAsUser("fi1-" + UUID.randomUUID().toString());
+			identity2 = JunitTestHelper.createAndPersistIdentityAsUser("fi2-" + UUID.randomUUID().toString());
+			identity3 = JunitTestHelper.createAndPersistIdentityAsUser("fi3-" + UUID.randomUUID().toString());
+			dbInstance.commit();
 	}
 	
 	/**
@@ -97,11 +107,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 		}
 	}
 
-	/**
-	 * 
-	 *
-	 */
-	@Test public void testSubscriptions() {
+	@Test
+	public void testSubscriptions() {
 		SubscriptionContext sc = new SubscriptionContext("Course", new Long(123), "676");
 		PublisherData pd = new PublisherData("Forum", "e.g. forumdata=keyofforum", null);
 
@@ -112,37 +119,35 @@ public class NotificationsManagerTest extends OlatTestCase {
 		//assertNull(p);
 		DBFactory.getInstance().closeSession();
 		
-		nm.subscribe(identity, sc, pd);
-		nm.subscribe(identity3, sc, pd);
-		nm.subscribe(identity2, sc2, pd2);
-		nm.subscribe(identity, sc2, pd2);
+		notificationManager.subscribe(identity1, sc, pd);
+		notificationManager.subscribe(identity3, sc, pd);
+		notificationManager.subscribe(identity2, sc2, pd2);
+		notificationManager.subscribe(identity1, sc2, pd2);
 				
 		DBFactory.getInstance().closeSession();
 
-		Publisher p = nm.getPublisher(sc);
+		Publisher p = notificationManager.getPublisher(sc);
 		assertNotNull(p);
 		
 		assertEquals(p.getResName(), sc.getResName());
 		assertEquals(p.getResId(), sc.getResId());
 		assertEquals(p.getSubidentifier(), sc.getSubidentifier());
 		
-		boolean isSub = nm.isSubscribed(identity, sc);
+		boolean isSub = notificationManager.isSubscribed(identity1, sc);
 		assertTrue("subscribed::", isSub);
 		
-		//List subs = nm.getValidSubscribers(identity);
-		
-		nm.notifyAllSubscribersByEmail();
+		notificationManager.notifyAllSubscribersByEmail();
 		
 		DBFactory.getInstance().closeSession();
-		nm.unsubscribe(identity, sc);
+		notificationManager.unsubscribe(identity1, sc);
 		DBFactory.getInstance().closeSession();
 		
-		boolean isStillSub = nm.isSubscribed(identity, sc);
+		boolean isStillSub = notificationManager.isSubscribed(identity1, sc);
 		assertFalse("subscribed::", isStillSub);
 		
-		nm.delete(sc);
+		notificationManager.delete(sc);
 		
-		Publisher p2 = nm.getPublisher(sc);
+		Publisher p2 = notificationManager.getPublisher(sc);
 		assertNull("publisher marked deleted should not be found", p2);
 	}
 	
@@ -151,7 +156,8 @@ public class NotificationsManagerTest extends OlatTestCase {
 	 * Start 2 threads which call 'subscribe' with same SubscriptionContext.
 	 * Breakpoint at doInSync, second thread must wait until thread 1 has released the breakpoint.
 	 */
-	@Test public void testConcurrentFindOrCreatePublisher() {
+	@Test
+	public void testConcurrentFindOrCreatePublisher() {
 		
 		JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
 		
@@ -170,8 +176,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.notifications.NotificationsManagerImpl.findOrCreatePublisher");
 			codepointRef.enableBreakpoint();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 			fail("Could not initialize CodepointClient");
 		}
 		
@@ -179,7 +184,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					NotificationsManager.getInstance().subscribe(identity, sc, pd);
+					NotificationsManager.getInstance().subscribe(identity1, sc, pd);
 					DBFactory.getInstance().closeSession();
 					statusList.add(Boolean.TRUE);
 					System.out.println("testConcurrentFindOrCreatePublisher thread1 finished");
@@ -227,27 +232,24 @@ public class NotificationsManagerTest extends OlatTestCase {
 	
 		// sleep until t1 and t2 should have terminated/excepted
 		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<5)) {
+		while ( (statusList.size()<2) && exceptionHolder.isEmpty() && (loopCount<5)) {
 			sleep(1000);
 			loopCount++;
 		}
 		assertTrue("Threads did not finish in 5sec", loopCount<5);
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
-			exception.printStackTrace();
+			log.error("exception: "+exception.getMessage(), exception);
 		}
-		if (exceptionHolder.size() > 0) {
-			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
-		}
+		assertEquals("It throws an exception in test", 0, exceptionHolder.size());	
+
 		assertEquals("Thread(s) did not finish",2, statusList.size());
-		assertTrue("Subscriber does not exists for identity=" + identity,  NotificationsManager.getInstance().isSubscribed(identity, sc));
+		assertTrue("Subscriber does not exists for identity=" + identity1,  NotificationsManager.getInstance().isSubscribed(identity1, sc));
 		assertTrue("Subscriber does not exists for identity=" + identity2, NotificationsManager.getInstance().isSubscribed(identity2, sc));
 		codepointClient.close();
 		System.out.println("testConcurrentFindOrCreatePublisher finish successful");
 		
 		JMSCodePointServerJunitHelper.stopServer();
-		
 	}
 	
 	/**

@@ -45,8 +45,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupDeletionManager;
 import org.olat.group.ui.BGTranslatorFactory;
 import org.olat.group.ui.main.BGMainController;
 
@@ -68,7 +68,7 @@ public class StatusController extends BasicController {
 	private GroupDeleteTableModel redtm;
 	private PackageTranslator tableModelTypeTranslator;
 	
-	private final BusinessGroupDeletionManager bgDeletionManager;
+	private final BusinessGroupModule businessGroupModule;
 	private final BusinessGroupService businessGroupService;
 
 
@@ -80,7 +80,7 @@ public class StatusController extends BasicController {
 	public StatusController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		bgDeletionManager = CoreSpringFactory.getImpl(BusinessGroupDeletionManager.class);
+		businessGroupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_BG_MAIN_CONTROLLER, ureq.getLocale());
@@ -94,7 +94,7 @@ public class StatusController extends BasicController {
 		repositoryDeleteStatusPanel.addListener(this);
 		myContent.put("repositoryDeleteStatusPanel", repositoryDeleteStatusPanel);
 		myContent.contextPut("header", translate("status.delete.email.header", 
-				new String [] { Integer.toString(bgDeletionManager.getDeleteEmailDuration()) }));
+				new String [] { Integer.toString(businessGroupModule.getDeleteEmailDuration()) }));
 		initializeTableController(ureq);
 
 		putInitialPanel(myContent);
@@ -148,7 +148,7 @@ public class StatusController extends BasicController {
 	}
 
 	protected void updateGroupList() {
-		List<BusinessGroup> l = bgDeletionManager.getGroupsInDeletionProcess(bgDeletionManager.getDeleteEmailDuration());
+		List<BusinessGroup> l = businessGroupService.getGroupsInDeletionProcess(businessGroupModule.getDeleteEmailDuration());
 		redtm = new GroupDeleteTableModel(l, tableModelTypeTranslator);
 		tableCtr.setTableDataModel(redtm);
 	}

@@ -96,7 +96,8 @@ class DBManager extends BasicManager {
 			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + o);
 		}
 		try {
-			getSession().delete(o);
+			Object relaoded = getSession().merge(o);
+			getSession().delete(relaoded);
 			if (isLogDebugEnabled()) {
 				logDebug("delete (trans "+trx.hashCode()+") class "+o.getClass().getName()+" = "+o.toString());	
 			}

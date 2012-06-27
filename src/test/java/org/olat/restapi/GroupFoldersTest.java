@@ -327,8 +327,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FileVO file = parse(body, FileVO.class);
+		FileVO file = conn.parse(response, FileVO.class);
 		assertNotNull(file);
 	}
 	
@@ -345,8 +344,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		InputStream body = response.getEntity().getContent();
-		FileVO file = parse(body, FileVO.class);
+		FileVO file = conn.parse(response, FileVO.class);
 		assertNotNull(file);
 		assertNotNull(file.getHref());
 		assertNotNull(file.getTitle());
