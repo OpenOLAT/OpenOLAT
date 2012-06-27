@@ -173,6 +173,10 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 */
 	public boolean hasFocus();
 	
+	public String getElementCssClass();
+	
+	public void setElementCssClass(String cssClass);
+	
 	/**
 	 * called if this component is dispatched, e.g. was clicked (double clicked,
 	 * ...)

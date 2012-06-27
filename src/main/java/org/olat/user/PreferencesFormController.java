@@ -143,6 +143,7 @@ public class PreferencesFormController extends FormBasicController {
 
 		// Username
 		StaticTextElement username = uifactory.addStaticTextElement("form.username", tobeChangedIdentity.getName(), formLayout);
+		username.setElementCssClass("o_sel_home_settings_username");
 		username.setEnabled(false);
 
 		// Language
@@ -151,6 +152,7 @@ public class PreferencesFormController extends FormBasicController {
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
 		language = uifactory.addDropdownSingleselect("form.language", formLayout, langKeys, langValues, null);
+		language.setElementCssClass("o_sel_home_settings_language");
 		String langKey = prefs.getLanguage();
 		// Preselect the users language if available. Maye not anymore enabled on
 		// this server
@@ -170,6 +172,7 @@ public class PreferencesFormController extends FormBasicController {
 				translate("form.fontsize.presentation")
 		};
 		fontsize = uifactory.addDropdownSingleselect("form.fontsize", formLayout, cssFontsizeKeys, cssFontsizeValues, null);
+		fontsize.setElementCssClass("o_sel_home_settings_fontsize");
 		fontsize.select(prefs.getFontsize(), true);
 		fontsize.addActionListener(this, FormEvent.ONCHANGE);
 		
@@ -185,6 +188,7 @@ public class PreferencesFormController extends FormBasicController {
 				intervalValues[i] = translate(i18nPrefix + intervalKeys[i]);
 			}
 			notificationInterval = uifactory.addDropdownSingleselect("form.notification", formLayout, intervalKeys, intervalValues, null);
+			notificationInterval.setElementCssClass("o_sel_home_settings_notification_interval");
 			notificationInterval.select(prefs.getNotificationInterval(), true);			
 		}
 		//fxdiff VCRP-16: intern mail system
@@ -193,6 +197,7 @@ public class PreferencesFormController extends FormBasicController {
 			String userEmail = tobeChangedIdentity.getUser().getProperty(UserConstants.EMAIL, getLocale());
 			String[] mailInternLabels = new String[] { translate("mail." + mailIntern[0], userEmail), translate("mail." + mailIntern[1], userEmail) };
 			mailSystem = uifactory.addRadiosVertical("mail-system", "mail.system", formLayout, mailIntern, mailInternLabels);
+			mailSystem.setElementCssClass("o_sel_home_settings_mail");
 			
 			String mailPrefs = prefs.getReceiveRealMail();
 			if(StringHelper.containsNonWhitespace(mailPrefs)) {
@@ -213,6 +218,7 @@ public class PreferencesFormController extends FormBasicController {
 		String currentCharset = UserManager.getInstance().getUserCharset(tobeChangedIdentity);
 		String[] csKeys = StringHelper.getMapKeysAsStringArray(charsets);
 		charset = uifactory.addDropdownSingleselect("form.charset", formLayout, csKeys, csKeys, null);
+		charset.setElementCssClass("o_sel_home_settings_cahrset");
 		charset.select(currentCharset, true);
 
 		// Submit and cancel buttons

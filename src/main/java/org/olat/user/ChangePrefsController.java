@@ -238,13 +238,16 @@ class SpecialPrefsForm extends FormBasicController {
 		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
 		
 		prefsElement = uifactory.addCheckboxesVertical("prefs", "title.prefs.accessibility", formLayout, keys, values, null, 1);
+		prefsElement.setElementCssClass("o_sel_home_settings_accessibility");
 		//fxdiff BAKS-7 Resume function
 		HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
 		if(historyModule.isResumeEnabled()) {
 			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);
+			resumeElement.setElementCssClass("o_sel_home_settings_resume");
 		}
 		if(historyModule.isBackEnabled()) {
 			backElement = uifactory.addRadiosVertical("back-enabling", "back.label", formLayout, yesNoKeys, yesNoValues);
+			backElement.setElementCssClass("o_sel_home_settings_back_enabling");
 		}
 		update();
 		
@@ -323,6 +326,7 @@ class UserPrefsResetForm extends FormBasicController {
 		values = new String[] {translate("reset.elements.guiprefs"), translate("reset.elements.sysprefs"), translate("reset.elements.resume")};
 		
 		resetElements = uifactory.addCheckboxesVertical("prefs", "reset.elements", formLayout, keys, values, null, 1);
+		resetElements.setElementCssClass("o_sel_home_settings_reset_sysprefs");
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
