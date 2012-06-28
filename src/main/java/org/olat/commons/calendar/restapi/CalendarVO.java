@@ -34,6 +34,9 @@ public class CalendarVO {
 	private String type;
 	private boolean subscribed;
 	
+	private String css;
+	private String displayName;
+	
 	public CalendarVO() {
 		//
 	}
@@ -42,6 +45,8 @@ public class CalendarVO {
 		id = wrapper.getKalendar().getType() + "_" + wrapper.getKalendar().getCalendarID();
 		subscribed = wrapper.isSubscribed();
 		type = wrapper.getKalendar().getType();
+		css = wrapper.getKalendarConfig().getCss();
+		displayName = wrapper.getKalendarConfig().getDisplayName();
 	}
 	
 	public String getId() {
@@ -67,9 +72,20 @@ public class CalendarVO {
 	public void setSubscribed(boolean subscribed) {
 		this.subscribed = subscribed;
 	}
-	
 
-	
-	
+	public String getCss() {
+		return css;
+	}
 
+	public void setCss(String css) {
+		this.css = css;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
 }

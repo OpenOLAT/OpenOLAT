@@ -174,23 +174,29 @@ public class CalendarWebService {
 		if(event.getId() == null) {
 			String id = UUID.randomUUID().toString();
 			KalendarEvent kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
+			transfer(event, kalEvent);
 			calendarManager.addEventTo(calendar.getKalendar(), kalEvent);
 		} else {
 			KalendarEvent kalEvent = calendar.getKalendar().getEvent(event.getId());
 			if(kalEvent == null) {
 				kalEvent = new KalendarEvent(event.getId(), event.getSubject(), event.getBegin(), event.getEnd());
+				transfer(event, kalEvent);
 				calendarManager.addEventTo(calendar.getKalendar(), kalEvent);
 			} else {
 				kalEvent.setBegin(event.getBegin());
 				kalEvent.setEnd(event.getEnd());
 				kalEvent.setSubject(event.getSubject());
-				kalEvent.setDescription(event.getDescription());
+				transfer(event, kalEvent);
 			}
 		}
 
 		return Response.ok().build();
 	}
 	
+	private void transfer(EventVO event, KalendarEvent kalEvent) {
+		kalEvent.setDescription(event.getDescription());
+		kalEvent.setLocation(event.getLocation());
+	}
 	
 	@GET
 	@Path("events")

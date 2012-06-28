@@ -34,9 +34,14 @@ public class EventVO {
 	private String id;
 	private String subject;
 	private String description;
+	private String location;
+	private String calendarId;
 	
 	private Date begin;
 	private Date end;
+	
+	private Date creationDate;
+	private String createdBy;
 	
 	public EventVO() {
 		//
@@ -46,9 +51,11 @@ public class EventVO {
 		id = event.getID();
 		subject = event.getSubject();
 		description = event.getDescription();
-		
+		location = event.getLocation();
 		begin = event.getBegin();
 		end = event.getEnd();
+		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();
+		creationDate = new Date(event.getCreated());
 	}
 
 	public String getId() {
@@ -75,6 +82,14 @@ public class EventVO {
 		this.description = description;
 	}
 
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
 	public Date getBegin() {
 		return begin;
 	}
@@ -90,8 +105,28 @@ public class EventVO {
 	public void setEnd(Date end) {
 		this.end = end;
 	}
-	
-	
-	
 
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getCalendarId() {
+		return calendarId;
+	}
+
+	public void setCalendarId(String calendarId) {
+		this.calendarId = calendarId;
+	}
 }
