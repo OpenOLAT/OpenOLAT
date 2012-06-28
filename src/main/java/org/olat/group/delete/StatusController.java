@@ -88,7 +88,7 @@ public class StatusController extends BasicController {
 		myContent = createVelocityContainer("deletestatus");
 
 		//used to translate the BusinessGroup.getType() String in the table model
-		tableModelTypeTranslator = BGTranslatorFactory.createBGPackageTranslator(MY_PACKAGE, /*doesnt matter*/BusinessGroup.TYPE_BUDDYGROUP, ureq.getLocale());
+		tableModelTypeTranslator = BGTranslatorFactory.createBGPackageTranslator(MY_PACKAGE, "LearningGroup", ureq.getLocale());
 		
 		repositoryDeleteStatusPanel = new Panel("repositoryDeleteStatusPanel");
 		repositoryDeleteStatusPanel.addListener(this);

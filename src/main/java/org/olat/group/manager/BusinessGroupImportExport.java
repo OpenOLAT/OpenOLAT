@@ -219,8 +219,7 @@ public class BusinessGroupImportExport {
 					enableAutoCloseRanks = group.autoCloseRanks.booleanValue();
 				}
 				
-				String type = BusinessGroup.TYPE_LEARNINGROUP;//TODO gm
-				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, type, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, resource);
+				BusinessGroup newGroup = businessGroupService.createBusinessGroup(null, groupName, groupDesc, groupMinParticipants, groupMaxParticipants, waitingList, enableAutoCloseRanks, resource);
 
 				// get tools config
 				CollabTools toolsConfig = group.tools;

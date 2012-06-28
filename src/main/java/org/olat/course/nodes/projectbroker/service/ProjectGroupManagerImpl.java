@@ -96,11 +96,11 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			logDebug("No group for project-broker exist => create a new one");
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			OLATResource courseResource = cpm.getCourseResource();
-			accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, courseResource);
+			accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, courseResource);
 			int i = 2;
 			while (accountManagerGroup == null) {
 				// group with this name exist already, try another name
-				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, courseResource);
+				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, -1, -1, false, false, courseResource);
 				i++;
 			}
 			logDebug("createAndPersistBusinessGroup businessgroup=" + accountManagerGroup);			
@@ -175,13 +175,13 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 		//BGContext context = createGroupContext(CourseFactory.loadCourse(courseId));
 		logDebug("createProjectGroupFor groupName=" + groupName);
-		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription,BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, resource);
+		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, resource);
 		// projectGroup could be null when a group with name already exists
 		int counter = 2;
 		while (projectGroup == null) {
 			// name alreday exist try another one
 			String newGroupName = groupName + " _" + counter ;
-			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, false, false, resource);
+			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, -1, -1, false, false, resource);
 			counter++;
 		}
 		logDebug("Created a new projectGroup=" + projectGroup);
@@ -242,7 +242,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
-		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
 				for (Identity identity : addIdentities) {

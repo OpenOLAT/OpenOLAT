@@ -75,7 +75,7 @@ public class LifeCycleManagerTest extends OlatTestCase {
 		// identity with null User should be ok for test case
 		res = JunitTestHelper.createRandomResource();
 		identity = JunitTestHelper.createAndPersistIdentityAsUser("foo-" + UUID.randomUUID().toString());
-		group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
+		group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", -1, -1, false, false, null);
 	}
 	
 	/**

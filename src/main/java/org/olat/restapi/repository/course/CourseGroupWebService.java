@@ -217,7 +217,7 @@ public class CourseGroupWebService {
 		Integer max = normalize(group.getMaxParticipants());
 		
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(course);
-		BusinessGroup bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, BusinessGroup.TYPE_LEARNINGROUP, min, max, false, false, resource);
+		BusinessGroup bg = bgm.createBusinessGroup(ureq.getIdentity(), name, desc, min, max, false, false, resource);
 		GroupVO savedVO = ObjectFactory.get(bg);
 		return Response.ok(savedVO).build();
 	}

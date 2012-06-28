@@ -98,30 +98,18 @@ public class CourseCalendarController extends BasicController {
 		calendars.add(courseKalendarWrapper);
 		
 		// add course group calendars
-		boolean isGroupManager = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
-		if (isGroupManager) {
-			// learning groups
-			List allGroups = cgm.getAllLearningGroupsFromAllContexts();
-			addCalendars(ureq, allGroups, true, clpc, calendars);
-			// right groups
-			allGroups = cgm.getAllRightGroupsFromAllContexts();
-			addCalendars(ureq, allGroups, true, clpc, calendars);
-		} else {
-			// learning groups
-			List ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
-			addCalendars(ureq, ownerGroups, true, clpc, calendars);
-			List attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
-			for (Iterator ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
-				BusinessGroup ownerGroup = (BusinessGroup) ownerGroupsIterator.next();
-				if (attendedGroups.contains(ownerGroup))
-					attendedGroups.remove(ownerGroup);
-			}
-			addCalendars(ureq, attendedGroups, false, clpc, calendars);
-
-			// right groups
-			List rightGroups = cgm.getParticipatingRightGroupsFromAllContexts(identity);
-			addCalendars(ureq, rightGroups, false, clpc, calendars);
+		
+		// learning groups
+		List<BusinessGroup> ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
+		addCalendars(ureq, ownerGroups, true, clpc, calendars);
+		List<BusinessGroup> attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
+		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
+			BusinessGroup ownerGroup = (BusinessGroup) ownerGroupsIterator.next();
+			if (attendedGroups.contains(ownerGroup))
+				attendedGroups.remove(ownerGroup);
 		}
+		addCalendars(ureq, attendedGroups, false, clpc, calendars);
+
 		return calendars;
 	}
 	

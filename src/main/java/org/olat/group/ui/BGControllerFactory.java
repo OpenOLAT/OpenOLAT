@@ -87,8 +87,8 @@ public class BGControllerFactory {
 	 * @return an edit controller for this busines group
 	 */
 	public BusinessGroupEditController createEditControllerFor(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
-		String bgTyp = businessGroup.getType();
-		if (BusinessGroup.TYPE_BUDDYGROUP.equals(bgTyp)) {
+		//String bgTyp = businessGroup.getType();
+		/*if (BusinessGroup.TYPE_BUDDYGROUP.equals(bgTyp)) {
 			BGConfigFlags flags = BGConfigFlags.createBuddyGroupDefaultFlags();
 			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
 		} else if (BusinessGroup.TYPE_LEARNINGROUP.equals(bgTyp)) {
@@ -97,10 +97,10 @@ public class BGControllerFactory {
 		} else if (BusinessGroup.TYPE_RIGHTGROUP.equals(bgTyp)) {
 			BGConfigFlags flags = BGConfigFlags.createRightGroupDefaultFlags();
 			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
-		} else {
-			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-			return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
-		}
+		} else {*/
+		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
+		return new BusinessGroupEditController(ureq, wControl, businessGroup, flags);
+		//}
 	}
 
 	//
@@ -133,7 +133,7 @@ public class BGControllerFactory {
 		}
 		
 		
-		String bgTyp = businessGroup.getType();
+		/*String bgTyp = businessGroup.getType();
 		if (BusinessGroup.TYPE_BUDDYGROUP.equals(bgTyp)) {
 			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
 			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, false);
@@ -146,11 +146,11 @@ public class BGControllerFactory {
 			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
 			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
 			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
-		} else {
-			BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
-			flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
-			return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
-		}
+		} else {*/
+		BGConfigFlags flags = BGConfigFlags.createGroupDefaultFlags();
+		flags.setEnabled(BGConfigFlags.IS_GM_ADMIN, isGMAdmin);
+		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup, flags, initialViewIdentifier);
+
 	}
 
 	/**

@@ -1153,11 +1153,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		if (InstantMessagingModule.isEnabled() && 
 				collabTools.isToolEnabled(CollaborationTools.TOOL_CHAT) && 
-				(
-						!businessGroup.getType().equals(BusinessGroup.TYPE_LEARNINGROUP) ||
-						InstantMessagingModule.isSyncLearningGroups() // whether LearningGroups can have chat or not
-				)
-			) {
+				InstantMessagingModule.isSyncLearningGroups() // whether LearningGroups can have chat or not)
+				) {
 			gtnChild = new GenericTreeNode();
 			gtnChild.setTitle(translate("menutree.chat"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CHAT);
@@ -1200,18 +1197,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeAdmin = gtnChild;
 
 			//fxdiff VCRP-1,2: access control of resources
-			if(BusinessGroup.TYPE_BUDDYGROUP.equals(businessGroup.getType())) {
-				AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-				if(acModule.isEnabled()) {
-					gtnChild = new GenericTreeNode();
-					gtnChild.setTitle(translate("menutree.ac"));
-					gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
-					gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
-					gtnChild.setAltText(translate("menutree.ac.alt"));
-					gtnChild.setIconCssClass("b_order_icon");
-					root.addChild(gtnChild);
-					//acNodeId = gtnChild.getIdent();
-				}
+			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
+			if(acModule.isEnabled()) {
+				gtnChild = new GenericTreeNode();
+				gtnChild.setTitle(translate("menutree.ac"));
+				gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
+				gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
+				gtnChild.setAltText(translate("menutree.ac.alt"));
+				gtnChild.setIconCssClass("b_order_icon");
+				root.addChild(gtnChild);
+				//acNodeId = gtnChild.getIdent();
 			}
 		}
 

@@ -196,7 +196,7 @@ public class CourseCreationHelper {
 			for (int i = 0; i < courseConfig.getGroupCount(); i++) {
 				// create group
 				BusinessGroup learningGroup = bgs.createBusinessGroup( null, groupBaseName + " "
-						+ (i + 1), null, BusinessGroup.TYPE_LEARNINGROUP, 0, courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
+						+ (i + 1), null, 0, courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
 						course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 				// enable the contact collaboration tool
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(learningGroup);

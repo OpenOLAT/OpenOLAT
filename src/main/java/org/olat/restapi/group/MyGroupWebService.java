@@ -36,8 +36,6 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.restapi.support.MediaTypeVariants;
@@ -85,7 +83,6 @@ public class MyGroupWebService {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = bgs.countBusinessGroups(params, retrievedUser, true, true, null);
@@ -135,7 +132,6 @@ public class MyGroupWebService {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
 			int totalCount = bgs.countBusinessGroups(params, retrievedUser, true, true, null);

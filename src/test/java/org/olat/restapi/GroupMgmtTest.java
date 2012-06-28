@@ -162,8 +162,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
     // 1) context one: learning groups
     OLATResource c1 = JunitTestHelper.createRandomResource();
     // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
     
     //permission to see owners and participants
     BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);
@@ -185,8 +185,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
     // 2) context two: right groups
     OLATResource c2 = JunitTestHelper.createRandomResource();
     // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
     // members
     secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());

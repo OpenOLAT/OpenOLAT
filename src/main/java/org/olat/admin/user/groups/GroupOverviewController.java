@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -131,50 +132,47 @@ public class GroupOverviewController extends BasicController {
 
 		BaseSecurity sm = BaseSecurityManager.getInstance();
 		List<Object[]> userGroups = new ArrayList<Object[]>();
-			//loop over all kind of groups with all possible memberships
-			List<String> bgTypes = new ArrayList<String>();
-			bgTypes.add(BusinessGroup.TYPE_BUDDYGROUP);
-			bgTypes.add(BusinessGroup.TYPE_LEARNINGROUP);
-			bgTypes.add(BusinessGroup.TYPE_RIGHTGROUP);
-			for (String bgType : bgTypes) {				
-				List<BusinessGroup> ownedGroups = businessGroupService.findBusinessGroupsOwnedBy(bgType, identity, null);
-				List<BusinessGroup> attendedGroups = businessGroupService.findBusinessGroupsAttendedBy(bgType, identity, null);
-				List<BusinessGroup> waitingGroups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(bgType, identity, null);
-				//using HashSet to remove duplicate entries
-				HashSet<BusinessGroup> allGroups = new HashSet<BusinessGroup>();
-				allGroups.addAll(ownedGroups);
-				allGroups.addAll(attendedGroups);
-				allGroups.addAll(waitingGroups);
-				
-				Iterator<BusinessGroup> iter = allGroups.iterator();
-				while (iter.hasNext()) {
-					Object[] groupEntry = new Object[4];
-					BusinessGroup group = iter.next();
-					groupEntry[0] = translate(group.getType());
-					groupEntry[1] = group;
-					Date joinDate = null;
-					if(attendedGroups.contains(group)&&ownedGroups.contains(group)) {
-						groupEntry[2] = translate("attende.and.owner");
-						joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getPartipiciantGroup(), identity);
-					}
-					else if(attendedGroups.contains(group)) {
-						groupEntry[2] = translate("attende");
-						joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getPartipiciantGroup(), identity);
-					}
-					else if(ownedGroups.contains(group)) {
-						groupEntry[2] = translate("owner");
-						joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getOwnerGroup(), identity);
-					}
-					else if(waitingGroups.contains(group)) {
-						int waitingListPosition = businessGroupService.getPositionInWaitingListFor(identity, group);
-						groupEntry[2] = translate("waiting", String.valueOf(waitingListPosition));
-						joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getWaitingGroup(), identity);
-					}
-					groupEntry[3] = joinDate;
-					
-					userGroups.add(groupEntry);
-					}			
+		//loop over all kind of groups with all possible memberships
+
+
+		List<BusinessGroup> ownedGroups = businessGroupService.findBusinessGroupsOwnedBy(identity, null);
+		List<BusinessGroup> attendedGroups = businessGroupService.findBusinessGroupsAttendedBy(identity, null);
+		List<BusinessGroup> waitingGroups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(identity, null);
+		//using HashSet to remove duplicate entries
+		Set<BusinessGroup> allGroups = new HashSet<BusinessGroup>();
+		allGroups.addAll(ownedGroups);
+		allGroups.addAll(attendedGroups);
+		allGroups.addAll(waitingGroups);
+		
+		Iterator<BusinessGroup> iter = allGroups.iterator();
+		while (iter.hasNext()) {
+			Object[] groupEntry = new Object[4];
+			BusinessGroup group = iter.next();
+			groupEntry[0] = translate(group.getType());
+			groupEntry[1] = group;
+			Date joinDate = null;
+			if(attendedGroups.contains(group)&&ownedGroups.contains(group)) {
+				groupEntry[2] = translate("attende.and.owner");
+				joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getPartipiciantGroup(), identity);
 			}
+			else if(attendedGroups.contains(group)) {
+				groupEntry[2] = translate("attende");
+				joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getPartipiciantGroup(), identity);
+			}
+			else if(ownedGroups.contains(group)) {
+				groupEntry[2] = translate("owner");
+				joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getOwnerGroup(), identity);
+			}
+			else if(waitingGroups.contains(group)) {
+				int waitingListPosition = businessGroupService.getPositionInWaitingListFor(identity, group);
+				groupEntry[2] = translate("waiting", String.valueOf(waitingListPosition));
+				joinDate = sm.getSecurityGroupJoinDateForIdentity(group.getWaitingGroup(), identity);
+			}
+			groupEntry[3] = joinDate;
+			
+			userGroups.add(groupEntry);
+		}			
+
 		tableDataModel = new GroupOverviewModel(userGroups, 4);
 		tblCtr.setTableDataModel(tableDataModel);
 	}

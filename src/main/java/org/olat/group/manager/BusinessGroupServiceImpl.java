@@ -138,12 +138,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 	
 	@Override
-	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String type,
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource) {
 		
 		if(resource != null) {
-			boolean groupExists = businessGroupDAO.checkIfOneOrMoreNameExistsInContext(Collections.singleton(name), resource);
+			boolean groupExists = businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(Collections.singleton(name), resource);
 			if (groupExists) {
 				// there is already a group with this name, return without creating a new group
 				log.warn("A group with this name already exists! You will get null instead of a businessGroup returned!");
@@ -151,8 +151,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 		}
 		
-		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description, type,
-				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled);
+		BusinessGroup group = businessGroupDAO.createAndPersist(creator, name, description,
+				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled, false, false, false);
 		
 		if(resource instanceof OLATResourceImpl) {
 			businessGroupRelationDAO.addRelationToResource(group, resource);
@@ -175,7 +175,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 						// create bulkgroups only if there is no name which already exists.
 						Set<BusinessGroup> newGroups = new HashSet<BusinessGroup>();
 						for (String name : allNames) {
-							BusinessGroup newGroup = createBusinessGroup(null, name, description, null, minParticipants, maxParticipants,
+							BusinessGroup newGroup = createBusinessGroup(null, name, description, minParticipants, maxParticipants,
 									waitingListEnabled, autoCloseRanksEnabled, resource);
 							newGroups.add(newGroup);
 						}
@@ -245,12 +245,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	
 	@Override
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
-		return businessGroupDAO.checkIfOneOrMoreNameExistsInContext(names, resource);
+		return businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(names, resource);
 	}
 
 	@Override
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
-		return businessGroupDAO.checkIfOneOrMoreNameExistsInContext(names, group);
+		return businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(names, group);
 	}
 
 	@Override
@@ -259,7 +259,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			boolean copyRights, boolean copyOwners, boolean copyParticipants, boolean copyMemberVisibility, boolean copyWaitingList) {
 
 		// 1. create group, set waitingListEnabled, enableAutoCloseRanks like source business-group
-		BusinessGroup newGroup = createBusinessGroup(null, targetName, targetDescription, null, targetMin, targetMax, 
+		BusinessGroup newGroup = createBusinessGroup(null, targetName, targetDescription, targetMin, targetMax, 
 				sourceBusinessGroup.getWaitingListEnabled(), sourceBusinessGroup.getAutoCloseRanksEnabled(), targetResource);
 		// return immediately with null value to indicate an already take groupname
 		if (newGroup == null) { 
@@ -337,22 +337,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<BusinessGroup> findBusinessGroupsOwnedBy(String type, Identity identity, OLATResource resource) {
+	public List<BusinessGroup> findBusinessGroupsOwnedBy(Identity identity, OLATResource resource) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(type);
 		return businessGroupDAO.findBusinessGroups(params, identity, true, false, resource, 0, -1);
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
-	public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identity, OLATResource resource) {
+	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity, OLATResource resource) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(type);
 		return businessGroupDAO.findBusinessGroups(params, identity, false, true, resource, 0, -1);
 	}
 	
 	@Override
-	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(String type, Identity identity,  OLATResource resource) {
+	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity,  OLATResource resource) {
 		return businessGroupDAO.findBusinessGroupsWithWaitingListAttendedBy(identity, resource);
 	}
 	
@@ -566,12 +564,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		return businessGroupDAO.countMembersOf(resource, owner, attendee);
+		return businessGroupRelationDAO.countMembersOf(resource, owner, attendee);
 	}
 
 	@Override
 	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		return businessGroupDAO.getMembersOf(resource, owner, attendee);
+		return businessGroupRelationDAO.getMembersOf(resource, owner, attendee);
 	}
 
 	@Override
@@ -976,14 +974,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private void addToRoster(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
 		if (flags.isEnabled(BGConfigFlags.BUDDYLIST) && InstantMessagingModule.isEnabled()) {
 			//evaluate whether to sync or not
-			boolean syncBuddy = InstantMessagingModule.getAdapter().getConfig().isSyncPersonalGroups();
-			boolean isBuddy = group.getType().equals(BusinessGroup.TYPE_BUDDYGROUP);
-			
-			boolean syncLearn = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
-			boolean isLearn = group.getType().equals(BusinessGroup.TYPE_LEARNINGROUP);
-			
+			boolean syncGroup = InstantMessagingModule.getAdapter().getConfig().isSyncLearningGroups();
 			//only sync when a group is a certain type and this type is configured that you want to sync it
-			if ((syncBuddy && isBuddy) || (syncLearn && isLearn)) { 
+			if(syncGroup) { 
 				String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
 				String groupDisplayName = group.getName();
 				//course group enrolment is time critial so we move this in an separate thread and catch all failures 
@@ -1048,6 +1041,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 		}
 	}
+	
+	@Override
+	public boolean hasResources(BusinessGroup group) {
+		return businessGroupRelationDAO.countResources(group) > 0;
+	}
 
 	@Override
 	@Transactional
@@ -1086,9 +1084,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, String groupType,
+	public boolean isIdentityInBusinessGroup(Identity identity, String groupName,
 			boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupDAO.isIdentityInBusinessGroup(identity, groupName, resource);
+		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupName, resource);
 	}
 	
 	@Override

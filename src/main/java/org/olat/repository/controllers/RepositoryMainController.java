@@ -72,7 +72,6 @@ import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.fileresource.types.WikiResource;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
@@ -286,7 +285,6 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 			rootNode.addChild(new GenericTreeNode(translate("search.mycourses.student"), "search.mycourses.student"));
 			// for authors or users with group rights also show the teacher portlet
 			SearchBusinessGroupParams rightParams = new SearchBusinessGroupParams();
-			rightParams.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
 			if (bIsAuthor || businessGroupService.countBusinessGroups(rightParams, getIdentity(), true, false, null) > 0) {
 				rootNode.addChild(new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher"));
 			}

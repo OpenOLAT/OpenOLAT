@@ -186,7 +186,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 
 		identity = ureq.getIdentity();
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, BusinessGroup.TYPE_BUDDYGROUP, ureq.getLocale()));
+		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, null, ureq.getLocale()));
 		//fxdiff VCRP-1,2: access control of resources
 		acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
 
@@ -311,13 +311,14 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 				if(ctrl != null) {
 					addToHistory(ureq, ctrl);
 				}
-			} else if (actionid.equals(TABLE_ACTION_DELETE) && currBusinessGroup.getType().equals(BusinessGroup.TYPE_BUDDYGROUP)) {
-				// only for buddygroups allowed
-				deleteDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.delete.text", trnslP), deleteDialogBox);
-			} else if (actionid.equals(TABLE_ACTION_LEAVE) && currBusinessGroup.getType().equals(BusinessGroup.TYPE_BUDDYGROUP)) {
-				// only for buddygroups allowed
-				leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", trnslP), leaveDialogBox);
-			//fxdiff VCRP-1,2: access control of resources
+			} else if (actionid.equals(TABLE_ACTION_DELETE) || actionid.equals(TABLE_ACTION_LEAVE)) {
+				if(!businessGroupService.hasResources(currBusinessGroup)) {
+					if(actionid.equals(TABLE_ACTION_DELETE)) {
+						deleteDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.delete.text", trnslP), deleteDialogBox);
+					} else if(actionid.equals(TABLE_ACTION_LEAVE)) {
+						leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", trnslP), leaveDialogBox);
+					}
+				}
 			} else if (actionid.equals(TABLE_ACTION_ACCESS)) {
 				handleAccess(ureq);
 			}
@@ -518,7 +519,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		 * description and also the CollaborationTools are enabled during creation.
 		 * The GroupContext is null in the case of BuddyGroups.
 		 */
-		BusinessGroup newGroup = businessGroupService.createBusinessGroup(identity, bgName, bgDesc, null, bgMin, bgMax, false, false, null);
+		BusinessGroup newGroup = businessGroupService.createBusinessGroup(identity, bgName, bgDesc, bgMin, bgMax, false, false, null);
 		// do Logging
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(newGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CREATED, getClass());

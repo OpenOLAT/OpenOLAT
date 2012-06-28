@@ -110,7 +110,7 @@ public class SelectionController extends BasicController {
 		myContent = createVelocityContainer("panel");
 
 		//used to translate the BusinessGroup.getType() String in the table model
-		tableModelTypeTranslator = BGTranslatorFactory.createBGPackageTranslator(MY_PACKAGE, /*doesnt matter*/BusinessGroup.TYPE_BUDDYGROUP, ureq.getLocale());
+		tableModelTypeTranslator = BGTranslatorFactory.createBGPackageTranslator(MY_PACKAGE, "BuddyGroup", ureq.getLocale());
 		
 		deleteSelectionPanel = new Panel("deleteSelectionPanel");
 		deleteSelectionPanel.addListener(this);

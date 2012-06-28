@@ -109,9 +109,9 @@ public class BGRightManagerTest extends OlatTestCase {
 		OLATResource c1 = JunitTestHelper.createRandomResource();
 		OLATResource c2 = JunitTestHelper.createRandomResource();
 
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c1);
-		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c1);
-		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, -1, -1, false, false, c1);
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, -1, -1, false, false, c1);
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false, c2);
 
 		securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
 		securityManager.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());

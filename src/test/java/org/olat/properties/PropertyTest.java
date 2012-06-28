@@ -84,9 +84,9 @@ public class PropertyTest extends OlatTestCase {
 				id4 = JunitTestHelper.createAndPersistIdentityAsUser("drp-" + UUID.randomUUID().toString());
 				res = JunitTestHelper.createRandomResource();
 
-				List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, identity, null);
+				List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(identity, null);
 				if (l.size() == 0) {
-					group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
+					group = businessGroupService.createBusinessGroup(identity, "a buddygroup", "a desc", -1, -1, false, false, null);
 				} else {
 					group =  (BusinessGroup) l.get(0);
 				}

@@ -157,7 +157,6 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private Translator userTrans;
 	private final OLATResource resource;
-	private final String groupType = BusinessGroup.TYPE_LEARNINGROUP;
 	private BGConfigFlags flags;
 	private static final int STATE_OVERVIEW = 1;
 	private static final int STATE_CONTEXT_REMOVED = 3;
@@ -236,7 +235,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// Initialize translator
 		// 1 - package translator with default group fallback translators and type
 		// translator
-		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, this.groupType, ureq.getLocale()));
+		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, "LearningGroup", ureq.getLocale()));
 		// user translator
 		this.userTrans = Util.createPackageTranslator(UserManager.class, ureq.getLocale());
 
@@ -788,33 +787,25 @@ public class BGManagementController extends MainLayoutBasicController implements
 		// Overview page
 		overviewVC = createVelocityContainer("overview");
 		overviewVC.contextPut("flags", flags);
-		overviewVC.contextPut("type", this.groupType);
 		// Create new group form
 		newGroupVC = createVelocityContainer("newgroup");
-		newGroupVC.contextPut("type", this.groupType);
 		// Group list
 		groupListVC = createVelocityContainer("grouplist");
-		groupListVC.contextPut("type", this.groupType);
 		// Group message
 		sendMessageVC = createVelocityContainer("sendmessage");
-		sendMessageVC.contextPut("type", this.groupType);
 		if (flags.isEnabled(BGConfigFlags.AREAS)) {
 			// Create new area form
 			newAreaVC = createVelocityContainer("newarea");
-			newAreaVC.contextPut("type", this.groupType);
 			// Area list
 			areaListVC = createVelocityContainer("arealist");
-			areaListVC.contextPut("type", this.groupType);
 		}
 		// User list
 		userListVC = createVelocityContainer("userlist");
-		userListVC.contextPut("type", this.groupType);
 		// User details
 		userDetailsVC = new VelocityContainer("userdetails", Util.getPackageVelocityRoot(this.getClass()) + "/userdetails.html", 
 				Util.createPackageTranslator(HomePageDisplayController.class, getLocale(), getTranslator())
 		, this);
 		backButton = LinkFactory.createButtonSmall("back", userDetailsVC, this);
-		userDetailsVC.contextPut("type", this.groupType);
 	}
 
 	private void doOverview(UserRequest ureq) {
@@ -1081,7 +1072,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		userDetailsVC.put("userdetailsform", homePageDisplayController.getInitialComponent());
 		// 2. expose the owner groups of the identity
 		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS)) {
-			List<BusinessGroup> ownerGroups = businessGroupService.findBusinessGroupsOwnedBy(groupType, currentIdentity, resource);
+			List<BusinessGroup> ownerGroups = businessGroupService.findBusinessGroupsOwnedBy(currentIdentity, resource);
 			
 			Link[] ownerGroupLinks= new Link[ownerGroups.size()];
 			int ownerNumber = 0;
@@ -1100,7 +1091,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 			userDetailsVC.contextPut("showOwnerGroups", Boolean.FALSE);
 		}
 		// 3. expose the participant groups of the identity
-		List<BusinessGroup> participantGroups = businessGroupService.findBusinessGroupsAttendedBy(groupType, currentIdentity, resource);
+		List<BusinessGroup> participantGroups = businessGroupService.findBusinessGroupsAttendedBy(currentIdentity, resource);
 		
 		Link[] participantGroupLinks= new Link[participantGroups.size()];
 		int participantNumber = 0;

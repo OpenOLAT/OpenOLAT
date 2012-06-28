@@ -118,8 +118,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().closeSession();
 		
     // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, course);
-    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, course);
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, course);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, course);
     // members
     securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
     securityManager.addIdentityToSecurityGroup(id1, g1.getPartipiciantGroup());
@@ -127,8 +127,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
     securityManager.addIdentityToSecurityGroup(id2, g2.getPartipiciantGroup());
     
     // groups
-    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, course);
-    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, course);
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, course);
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, course);
     // members
     securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     securityManager.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());

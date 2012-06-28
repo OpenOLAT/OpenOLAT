@@ -80,14 +80,14 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 * @param ownerGroup
 	 * @param partipiciantGroup
 	 */
-	public BusinessGroupImpl(String type, String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
+	public BusinessGroupImpl(String groupName, String description, SecurityGroup ownerGroup, SecurityGroup partipiciantGroup,
 			SecurityGroup waitingGroup) {
 		this.setName(groupName);
 		this.setDescription(description);
 		this.setOwnerGroup(ownerGroup);
 		this.setPartipiciantGroup(partipiciantGroup);
 		this.setWaitingGroup(waitingGroup);
-		this.setType(type);
+		this.setType("LearningGroup");
 		// per default no waiting-list
 		Boolean disabled = new Boolean(false);
 		this.setWaitingListEnabled(disabled);

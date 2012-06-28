@@ -117,7 +117,7 @@ public class EnrollmentManagerTest extends OlatTestCase implements WindowControl
 			OLATResource resource = JunitTestHelper.createRandomResource();
 			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
-					bgWithWaitingListDesc, BusinessGroup.TYPE_LEARNINGROUP,  -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
+					bgWithWaitingListDesc, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
 			System.out.println("TEST bgWithWaitingList=" + bgWithWaitingList);
 			System.out.println("TEST bgWithWaitingList.getMaxParticipants()=" + bgWithWaitingList.getMaxParticipants() );

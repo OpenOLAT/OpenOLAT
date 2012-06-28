@@ -98,7 +98,7 @@ public class ReadyToDeleteController extends BasicController {
 		PackageTranslator fallbackTrans = new PackageTranslator(PACKAGE_BG_MAIN_CONTROLLER, ureq.getLocale());
 		this.setTranslator( new PackageTranslator( MY_PACKAGE, ureq.getLocale(), fallbackTrans) );
 		//used to translate the BusinessGroup.getType() String in the table model
-		tableModelTypeTranslator = BGTranslatorFactory.createBGPackageTranslator(Util.getPackageName(ReadyToDeleteController.class), /*doesnt matter*/BusinessGroup.TYPE_BUDDYGROUP, ureq.getLocale());
+		tableModelTypeTranslator = BGTranslatorFactory.createBGPackageTranslator(Util.getPackageName(ReadyToDeleteController.class), "BuddyGroup", ureq.getLocale());
 
 		myContent = createVelocityContainer("panel");
 		

@@ -26,14 +26,6 @@
 
 package org.olat.group.test;
 
-// um click emulieren:
-/*
- * 1) generiere Persistentes Object 2) -> DB...evict() entferne Instanz aus
- * HibernateSession 3) aktionen testen, z.b. update failed, falls object nicht
- * in session
- */
-// DB.getInstance().evict();
-// DB.getInstance().loadObject(); püft ob schon in hibernate session.
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -56,14 +48,8 @@ import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.WindowBackOffice;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
-import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.util.Encoder;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -75,13 +61,13 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description: <BR/>TODO: Class Description for BusinessGroupManagerImplTest
+ * Description: <BR/>
  * <P/> Initial Date: Jul 28, 2004
  * 
- * @author patrick
+ * @author patrick, srosse
  */
 
-public class BusinessGroupServiceImplTest extends OlatTestCase implements WindowControl {
+public class BusinessGroupServiceImplTest extends OlatTestCase {
 	//
 	private static Logger log = Logger.getLogger(BusinessGroupServiceImplTest.class.getName());
 	/*
@@ -144,35 +130,35 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 			id3 = JunitTestHelper.createAndPersistIdentityAsUser("id3");
 			id4 = JunitTestHelper.createAndPersistIdentityAsUser("id4");
 			// buddyGroups without waiting-list: groupcontext is null
-			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
 			if (l.size() == 0) {
-				one = businessGroupService.createBusinessGroup(id1, oneName, oneDesc, BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
+				one = businessGroupService.createBusinessGroup(id1, oneName, oneDesc, -1, -1, false, false, null);
 			} else {
-				List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+				List<BusinessGroup> groups = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
 				for(BusinessGroup group:groups) {
 					if(oneName.equals(group.getName())) {
 						one = group;
 					}
 				}
 			}
-			l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+			l = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
 			if (l.size() == 0) {
-				two = businessGroupService.createBusinessGroup(id2, twoName, twoDesc, BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
+				two = businessGroupService.createBusinessGroup(id2, twoName, twoDesc, -1, -1, false, false, null);
 				SecurityGroup twoPartips = two.getPartipiciantGroup();
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id3, twoPartips);
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id4, twoPartips);
 			} else {
-				two = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null).get(0);
+				two = businessGroupService.findBusinessGroupsOwnedBy(id2, null).get(0);
 			}
-			l = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
+			l = businessGroupService.findBusinessGroupsOwnedBy(id3, null);
 			if (l.size() == 0) {
-				three = businessGroupService.createBusinessGroup(id3, threeName, threeDesc, BusinessGroup.TYPE_BUDDYGROUP, -1, -1, false, false, null);
+				three = businessGroupService.createBusinessGroup(id3, threeName, threeDesc, -1, -1, false, false, null);
 				SecurityGroup threeOwner = three.getOwnerGroup();
 				SecurityGroup threeOPartips = three.getPartipiciantGroup();
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id2, threeOPartips);
 				BaseSecurityManager.getInstance().addIdentityToSecurityGroup(id1, threeOwner);
 			} else {
-				three = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null).get(0);
+				three = businessGroupService.findBusinessGroupsOwnedBy(id3, null).get(0);
 			}
 			/*
 			 * Membership in ParticipiantGroups............................. id1
@@ -191,7 +177,7 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 			OLATResource resource = JunitTestHelper.createRandomResource();
 			System.out.println("testAddToWaitingListAndFireEvent: resource=" + resource);
 			bgWithWaitingList = businessGroupService.createBusinessGroup(id1, bgWithWaitingListName,
-					bgWithWaitingListDesc, BusinessGroup.TYPE_LEARNINGROUP, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
+					bgWithWaitingListDesc, -1, -1, enableWaitinglist, enableAutoCloseRanks, resource);
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
 			// Identities
 			String suffix = UUID.randomUUID().toString();
@@ -229,11 +215,11 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		BusinessGroup[] ctxBgroups = new BusinessGroup[namesInCtxB.length];
 
 		for (int i = 0; i < namesInCtxA.length; i++) {
-			ctxAgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxA[i], null, BusinessGroup.TYPE_LEARNINGROUP, 0, 0, false,
+			ctxAgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxA[i], null, 0, 0, false,
 					false, ctxA);
 		}
 		for (int i = 0; i < namesInCtxB.length; i++) {
-			ctxBgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxB[i], null, BusinessGroup.TYPE_LEARNINGROUP, 0, 0, false,
+			ctxBgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxB[i], null, 0, 0, false,
 					false, ctxB);
 		}
 		// first click created two context and each of them containg groups
@@ -321,7 +307,7 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		/*
 		 * id1
 		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
 		assertTrue("2 BuddyGroups owned by id1", sqlRes.size() == 2);
 		for (int i = 0; i < sqlRes.size(); i++) {
 			assertTrue("It's a BuddyGroup Object", sqlRes.get(i) instanceof BusinessGroup);
@@ -331,19 +317,19 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 			assertTrue("It's the correct BuddyGroup", ok);
 
 		}
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id1, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id1, null);
 		assertTrue("0 BuddyGroup where id1 is partipicating", sqlRes.size() == 0);
 
 		/*
 		 * id2
 		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
 		// equality by comparing PersistenObject.getKey()!!!
 		assertTrue("It's the correct BuddyGroup", two.getKey().longValue() == found.getKey().longValue());
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id2, null);
 		assertTrue("1 BuddyGroup where id2 is partipicating", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -352,13 +338,13 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		/*
 		 * id3
 		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id3, null);
 		assertTrue("1 BuddyGroup owned by id3", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
 		// equality by comparing PersistenObject.getKey()!!!
 		assertTrue("It's the correct BuddyGroup", three.getKey().longValue() == found.getKey().longValue());
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id3, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id3, null);
 		assertTrue("1 BuddyGroup where id3 is partipicating", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -367,10 +353,10 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		/*
 		 * id4
 		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id4, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id4, null);
 		assertTrue("0 BuddyGroup owned by id4", sqlRes.size() == 0);
 		//
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(BusinessGroup.TYPE_BUDDYGROUP, id4, null);
+		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id4, null);
 		assertTrue("1 BuddyGroup where id4 is partipicating", sqlRes.size() == 1);
 		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
 		found = (BusinessGroup) sqlRes.get(0);
@@ -399,7 +385,7 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		/*
 		 * id2
 		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
 		found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
 		for (int i = 0; i < CollaborationTools.TOOLS.length; i++) {
@@ -455,7 +441,7 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		/*
 		 * id2
 		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
 		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
 		found = (BusinessGroup) sqlRes.get(0);
 		CollaborationTools myCTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(found);
@@ -467,7 +453,7 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		 * 
 		 */
 		businessGroupService.deleteBusinessGroup(found);
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(BusinessGroup.TYPE_BUDDYGROUP, id2, null);
+		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
 		assertTrue("0 BuddyGroup owned by id2", sqlRes.size() == 0);
 		/*
 		 * 
@@ -596,7 +582,7 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 		OLATResource resource = JunitTestHelper.createRandomResource();
 
 		BusinessGroup deleteTestGroup = businessGroupService.createBusinessGroup(id1, "deleteTestGroup-1",
-				"deleteTestGroup-1", BusinessGroup.TYPE_LEARNINGROUP, -1, -1, withWaitingList, true, resource);
+				"deleteTestGroup-1", -1, -1, withWaitingList, true, resource);
 		
 		Long ownerGroupKey = deleteTestGroup.getOwnerGroup().getKey();
 		Long partipiciantGroupKey = deleteTestGroup.getPartipiciantGroup().getKey();
@@ -626,40 +612,4 @@ public class BusinessGroupServiceImplTest extends OlatTestCase implements Window
 			log.error("tearDown failed: ", e);
 		}
 	}
-
-
-
-	// Implements interface WindowControl
-	// ///////////////////////////////////
-	public void pushToMainArea(Component comp) {};
-
-	public void pushAsModalDialog(Component comp) {};
-
-	public void pop() {};
-
-	public void setInfo(String string) {};
-
-	public void setError(String string) {};
-
-	public void setWarning(String string) {};
-
-	public DTabs getDTabs() {
-		return null;
-	};
-
-	public WindowControlInfo getWindowControlInfo() {
-		return null;
-	};
-
-	public void makeFlat() {};
-
-	public BusinessControl getBusinessControl() {
-		return null;
-	}
-
-	public WindowBackOffice getWindowBackOffice() {
-		// TODO Auto-generated method stub
-		return null;
-	};
-
 }

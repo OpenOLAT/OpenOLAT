@@ -100,9 +100,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		OLATResource course1 = JunitTestHelper.createRandomResource();
 
 		// create groups without waitinglist
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false,
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false,
 				course1);
-		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false,
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false,
 				course1);
 		// members
 		securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
@@ -112,9 +112,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(id3, g1.getOwnerGroup());
 
 		// groups
-		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false,
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false,
 				course1);
-		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false,
+		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, -1, -1, false, false,
 				course1);
 		// members
 		securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
@@ -166,9 +166,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		OLATResource course1 = JunitTestHelper.createRandomResource();
 
 		// create groups without waitinglist
-		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false,
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false,
 				course1);
-		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false,
+		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "g2", null, 0, 10, false, false,
 				course1);
 		// members
 		securityManager.addIdentityToSecurityGroup(id1, g2.getOwnerGroup());
@@ -186,9 +186,9 @@ public class CourseGroupManagementTest extends OlatTestCase {
 		areaManager.addBGToBGArea(g2, a3);
 
 		// groups
-		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false,
+		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "g3", null, -1, -1, false, false,
 				course1);
-		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false,
+		BusinessGroup g4 = businessGroupService.createBusinessGroup(null, "g4", null, -1, -1, false, false,
 				course1);
 		// members
 		securityManager.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());

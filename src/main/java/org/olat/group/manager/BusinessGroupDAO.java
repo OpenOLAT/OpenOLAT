@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -71,8 +70,9 @@ public class BusinessGroupDAO {
 	@Autowired
 	private OLATResourceManager olatResourceManager;
 	
-	public BusinessGroup createAndPersist(Identity creator, String name, String description, String type,
-			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled) {
+	public BusinessGroup createAndPersist(Identity creator, String name, String description,
+			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
+			boolean showOwners, boolean showParticipants, boolean showWaitingList) {
 
 		BusinessGroupImpl businessgroup = null;
 		//security groups
@@ -80,8 +80,7 @@ public class BusinessGroupDAO {
 		SecurityGroup participantGroup = securityManager.createAndPersistSecurityGroup();
 		SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 		
-		String realType = type == null ? BusinessGroup.TYPE_LEARNINGROUP : type;
-		businessgroup = new BusinessGroupImpl(realType, name, description, ownerGroup, participantGroup, waitingGroup);
+		businessgroup = new BusinessGroupImpl(name, description, ownerGroup, participantGroup, waitingGroup);
 		if(minParticipants >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}
@@ -118,12 +117,7 @@ public class BusinessGroupDAO {
 
 		// group members visibility
 		BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(businessgroup);
-		if(BusinessGroup.TYPE_RIGHTGROUP.equals(type)) {
-			bgpm.createAndPersistDisplayMembers(false, true, false);
-		} else {
-			bgpm.createAndPersistDisplayMembers(true, false, false);
-		}
-		
+		bgpm.createAndPersistDisplayMembers(showOwners, showParticipants, showWaitingList);
 		return businessgroup;
 	}
 	
@@ -138,7 +132,11 @@ public class BusinessGroupDAO {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("select grp from ").append(BusinessGroupImpl.class.getName()).append(" grp where grp.id in (:ids)");
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" bgi ")
+			.append(" left join fetch bgi.ownerGroup ownerGroup")
+			.append(" left join fetch bgi.partipiciantGroup participantGroup")
+			.append(" left join fetch bgi.waitingGroup waitingGroup")
+		  .append(" where bgi.key in (:ids)");
 
 		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
@@ -148,8 +146,14 @@ public class BusinessGroupDAO {
 	}
 	
 	public List<BusinessGroup> loadAll() {
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<BusinessGroup> groups = em.createQuery("select grp from " + BusinessGroupImpl.class.getName() + " grp", BusinessGroup.class)
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" bgi ")
+			.append(" left join fetch bgi.ownerGroup ownerGroup")
+			.append(" left join fetch bgi.partipiciantGroup participantGroup")
+			.append(" left join fetch bgi.waitingGroup waitingGroup");
+
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
 				.getResultList();
 		return groups;
 	}
@@ -166,6 +170,12 @@ public class BusinessGroupDAO {
 		return mergedGroup;
 	}
 	
+	/**
+	 * The method don't reload/reattach the object, make sure that you have
+	 * reloaded the business group before trying to delete it.
+	 * 
+	 * @param group
+	 */
 	public void delete(BusinessGroup group) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		em.remove(group);
@@ -246,65 +256,6 @@ public class BusinessGroupDAO {
 		return group;
 	}
 	
-	public boolean isIdentityInBusinessGroup(Identity identity, String name, OLATResource resource) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi where")
-		  .append(" bgi.name=:name")
-		  .append(" and (")
-		  .append("   bgi.partipiciantGroup in (")
-		  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
-		  .append("       where participantMemberShip.identity.key=:identityKey")
-		  .append("   )")
-		  .append("   or")
-		  .append("   bgi.ownerGroup in (")
-		  .append("     select ownerMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
-		  .append("       where ownerMemberShip.identity.key=:identityKey")
-		  .append("   )")
-		  .append(" )")
-			.append(" and bgi in (")
-			.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
-			.append(" )");
-
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("name", name)
-				.setParameter("resourceKey", resource.getKey())
-				.getSingleResult();
-		return count.intValue() > 0;
-	}
-	
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
-		return checkIfOneOrMoreNameExistsInContext(names, Collections.singletonList(resource.getKey()));
-	}
-	
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bgs.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" inner join rel.group bgs ")
-		  .append(" where bgs.key=:groupKey");
-		
-		List<Long> resourceKeys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
-				.setParameter("groupKey", group.getKey())
-				.setParameter("names", names)
-				.getResultList();
-		
-		return checkIfOneOrMoreNameExistsInContext(names, resourceKeys);
-	}
-	
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, List<Long> resourceKeys) {
-		if(resourceKeys == null || resourceKeys.isEmpty()) return false;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgs) from ").append(BGResourceRelation.class.getName()).append(" as rel ")
-			.append(" inner join rel.group bgs ")
-		  .append(" where rel.resource.key in (:resourceKey) and bgs.name in (:names)");
-		
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resourceKeys)
-				.setParameter("names", names)
-				.getSingleResult();
-		return count.intValue() > 0;
-	}
 	
 	public BusinessGroup findBusinessGroup(SecurityGroup secGroup) {
 		StringBuilder sb = new StringBuilder(); 
@@ -326,19 +277,21 @@ public class BusinessGroupDAO {
 		StringBuilder sb = new StringBuilder();
 		if(resource == null) {
 			sb.append("select bgs from ").append(BusinessGroupImpl.class.getName()).append(" as bgs ")
-		    .append(" inner join bgs.waitingGroup waitingList ")
+		    .append(" inner join fetch bgs.waitingGroup waitingList ")
+			  .append(" left join fetch bgs.ownerGroup ownerGroup ")
+			  .append(" left join fetch bgs.partipiciantGroup participantGroup ")
 		    .append(" where ");
 		} else {
 			sb.append("select bgs from ").append(BGResourceRelation.class.getName()).append(" as rel ")
 			  .append(" inner join rel.group bgs ")
-			  .append(" inner join bgs.waitingGroup waitingList ")
+			  .append(" inner join fetch bgs.waitingGroup waitingList ")
+			  .append(" left join fetch bgs.ownerGroup ownerGroup ")
+			  .append(" left join fetch bgs.partipiciantGroup participantGroup ")
 		    .append(" where rel.resource.key=:resourceKey and ");
 		}
 		sb.append(" waitingList in (select memberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" memberShip ")
       .append("   where memberShip.identity.key=:identityKey ")
       .append(" )");
-		
-		System.out.println(sb.toString());
 		
 		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("identityKey", identity.getKey());
@@ -347,52 +300,6 @@ public class BusinessGroupDAO {
 		}
 		List<BusinessGroup> groups = query.getResultList();
 		return groups;
-	}
-	
-	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		if(!owner && !attendee) return 0;
-		TypedQuery<Number> query = createMembersDBQuery(resource, owner, attendee, Number.class);
-		Number count = query.getSingleResult();
-		return count.intValue();
-	}
-
-	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee) {
-		if(!owner && !attendee) return Collections.emptyList();
-		TypedQuery<Identity> query = createMembersDBQuery(resource, owner, attendee, Identity.class);
-		List<Identity> members = query.getResultList();
-		return members;
-	}
-	
-	private <T> TypedQuery<T> createMembersDBQuery(OLATResource resource, boolean owner, boolean attendee, Class<T> resultClass) {
-		StringBuilder sb = new StringBuilder();
-		if(Identity.class.equals(resultClass)) {
-			sb.append("select distinct sgmi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
-		} else {
-			sb.append("select count(distinct sgmi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
-		}
-		sb.append(" inner join sgmi.securityGroup as secGroup ")
-		  .append(" where ");
-		
-		if(owner) {
-			sb.append("  secGroup in (")
-		    .append("    select rel1.group.ownerGroup from ").append(BGResourceRelation.class.getName()).append(" as rel1")
-		    .append("      where rel1.resource.key=:resourceKey")
-		    .append("  )");
-		}
-		if(attendee) {
-			if(owner) sb.append(" or ");
-			sb.append("  secGroup in (")
-	      .append("    select rel2.group.partipiciantGroup from ").append(BGResourceRelation.class.getName()).append(" as rel2")
-	      .append("      where rel2.resource.key=:resourceKey")
-	      .append("  )");
-		}  
-		if(Identity.class.equals(resultClass)) {
-			sb.append("order by sgmi.identity.name");
-		}
-
-		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), resultClass);
-		db.setParameter("resourceKey", resource.getKey());
-		return db;
 	}
 	
 	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity,
@@ -543,31 +450,28 @@ public class BusinessGroupDAO {
 			dbq.setParameter("tools", params.getTools());
 		}
 		if(StringHelper.containsNonWhitespace(params.getOwner())) {
-			dbq.setParameter("owner", params.getOwner());
+			dbq.setParameter("owner", makeFuzzyQueryString(params.getOwner()));
 		}
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
-			dbq.setParameter("search", params.getNameOrDesc());
+			dbq.setParameter("search", makeFuzzyQueryString(params.getNameOrDesc()));
 		} else {
 			if(StringHelper.containsNonWhitespace(params.getExactName())) {
 				dbq.setParameter("exactName", params.getExactName());
 			}
 			if(StringHelper.containsNonWhitespace(params.getName())) {
-				dbq.setParameter("name", params.getName());
+				dbq.setParameter("name", makeFuzzyQueryString(params.getName()));
 			}
 			if(StringHelper.containsNonWhitespace(params.getDescription())) {
-				dbq.setParameter("description", params.getDescription());
+				dbq.setParameter("description", makeFuzzyQueryString(params.getDescription()));
 			}
 		}
 		return dbq;
 	}
 	
 	public int countContacts(Identity identity) {
-		Number result = createContactsQuery(identity, Number.class).getSingleResult();
-		int numOfContacts = result.intValue();
-		if(numOfContacts > 0) {
-			numOfContacts--;//always a contact of myself with this query
-		}
-		return numOfContacts;
+		List<Long> result = createContactsQuery(identity, Long.class).getResultList();
+		result.remove(identity.getKey());//not always a contact of myself with this query
+		return result.size();
 	}
 
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
@@ -588,7 +492,7 @@ public class BusinessGroupDAO {
 		if(Identity.class.equals(resultClass)) {
 			query.append("select distinct sgmi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
 		} else {
-			query.append("select count(distinct sgmi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			query.append("select distinct sgmi.identity.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
 		}
 		query.append(" inner join sgmi.securityGroup as secGroup ")
 		     .append(" where ")
@@ -639,6 +543,19 @@ public class BusinessGroupDAO {
 	 	 	}
 		}
 		return sb;
+	}
+	
+	private String makeFuzzyQueryString(String string) {
+		// By default only fuzzyfy at the end. Usually it makes no sense to do a
+		// fuzzy search with % at the beginning, but it makes the query very very
+		// slow since it can not use any index and must perform a fulltext search.
+		// User can always use * to make it a really fuzzy search query
+		string = string.replace('*', '%');
+		string = string + "%";
+		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
+		// To test for literal instances of '_', we have to escape it.
+		string = string.replace("_", "\\_");
+		return string.toLowerCase();
 	}
 	
 	private boolean where(StringBuilder sb, boolean where) {

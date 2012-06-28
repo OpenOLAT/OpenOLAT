@@ -27,7 +27,6 @@ package org.olat.admin.registration;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +54,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseModule;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -306,15 +304,11 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		
 		// Groups
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setTypes(Collections.singletonList(BusinessGroup.TYPE_BUDDYGROUP));
-		int buddyGroups = businessGroupService.countBusinessGroups(params, null, false, false, null);
-		msgProperties.put("buddyGroups", String.valueOf(buddyGroups));
-		params.setTypes(Collections.singletonList(BusinessGroup.TYPE_LEARNINGROUP));
-		int learningGroups = businessGroupService.countBusinessGroups(params, null, false, false, null);
-		msgProperties.put("learningGroups", String.valueOf(learningGroups));
-		params.setTypes(Collections.singletonList(BusinessGroup.TYPE_RIGHTGROUP));
-		int rightGroups = businessGroupService.countBusinessGroups(params, null, false, false, null);
-		msgProperties.put("rightGroups", String.valueOf(rightGroups));
+		int groups = businessGroupService.countBusinessGroups(params, null, false, false, null);
+		msgProperties.put("buddyGroups", String.valueOf(groups));
+		msgProperties.put("learningGroups", String.valueOf(groups));
+		msgProperties.put("rightGroups", String.valueOf(groups));
+		msgProperties.put("groups", String.valueOf(groups));
 			
 		if (website) {
 			// URL

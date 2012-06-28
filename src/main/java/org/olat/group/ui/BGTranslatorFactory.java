@@ -44,9 +44,9 @@ import org.olat.group.BusinessGroup;
  */
 public class BGTranslatorFactory {
 	private static final String PACKAGE_BASE = Util.getPackageName(BGTranslatorFactory.class);
-	private static final String PACKAGE_BG = PACKAGE_BASE + ".buddygroup";
+	//private static final String PACKAGE_BG = PACKAGE_BASE + ".buddygroup";
 	private static final String PACKAGE_LG = PACKAGE_BASE + ".learninggroup";
-	private static final String PACKAGE_RG = PACKAGE_BASE + ".rightgroup";
+	//private static final String PACKAGE_RG = PACKAGE_BASE + ".rightgroup";
 
 	private BGTranslatorFactory() {
 	// never called
@@ -86,14 +86,13 @@ public class BGTranslatorFactory {
 		}
 		// 1 - group type specific translations (buddy, learning, right)
 		// with fallback to package translator (2)
-		if (groupType.equals(BusinessGroup.TYPE_BUDDYGROUP)) { 
+		/*if (groupType.equals(BusinessGroup.TYPE_BUDDYGROUP)) { 
 			return new PackageTranslator(PACKAGE_BG, locale, packageTrans);
 		} else if (groupType.equals(BusinessGroup.TYPE_LEARNINGROUP)) {
 			return new PackageTranslator(PACKAGE_LG, locale, packageTrans);
 		} else if (groupType.equals(BusinessGroup.TYPE_RIGHTGROUP)) {
 			return new PackageTranslator(PACKAGE_RG, locale, packageTrans);
-		} else {
-			return new PackageTranslator(PACKAGE_LG, locale, packageTrans);
-		}
+		}*/
+		return new PackageTranslator(PACKAGE_LG, locale, packageTrans);
 	}
 }

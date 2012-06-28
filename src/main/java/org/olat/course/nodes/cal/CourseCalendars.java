@@ -37,7 +37,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.calendar.CourseLinkProviderController;
@@ -108,29 +107,15 @@ public class CourseCalendars {
 		courseKalendarWrapper.setLinkProvider(clpc);
 		calendars.add(courseKalendarWrapper);
 
-		// add course group calendars
-		boolean isGroupManager = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
-		if (isGroupManager) {
-			// learning groups
-			List<BusinessGroup> allGroups = cgm.getAllLearningGroupsFromAllContexts();
-			addCalendars(ureq, allGroups, true, clpc, calendars);
-			// right groups
-			allGroups = cgm.getAllRightGroupsFromAllContexts();
-			addCalendars(ureq, allGroups, true, clpc, calendars);
-		} else {
-			// learning groups
-			List<BusinessGroup> ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
-			addCalendars(ureq, ownerGroups, true, clpc, calendars);
-			List<BusinessGroup> attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
-			for (BusinessGroup ownerGroup : ownerGroups) {
-				if (attendedGroups.contains(ownerGroup)) attendedGroups.remove(ownerGroup);
-			}
-			addCalendars(ureq, attendedGroups, false, clpc, calendars);
-
-			// right groups
-			List<BusinessGroup> rightGroups = cgm.getParticipatingRightGroupsFromAllContexts(identity);
-			addCalendars(ureq, rightGroups, false, clpc, calendars);
+		// learning groups
+		List<BusinessGroup> ownerGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
+		addCalendars(ureq, ownerGroups, true, clpc, calendars);
+		List<BusinessGroup> attendedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
+		for (BusinessGroup ownerGroup : ownerGroups) {
+			if (attendedGroups.contains(ownerGroup)) attendedGroups.remove(ownerGroup);
 		}
+		addCalendars(ureq, attendedGroups, false, clpc, calendars);
+
 		return new CourseCalendars(courseKalendarWrapper, calendars);
 	}
 

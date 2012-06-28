@@ -23,12 +23,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -82,6 +86,125 @@ public class BusinessGroupRelationDAO {
 		for(BGResourceRelation relation:relations) {
 			em.remove(relation);
 		}
+	}
+	
+
+	public boolean isIdentityInBusinessGroup(Identity identity, String name, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi where")
+		  .append(" bgi.name=:name")
+		  .append(" and (")
+		  .append("   bgi.partipiciantGroup in (")
+		  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
+		  .append("       where participantMemberShip.identity.key=:identityKey")
+		  .append("   )")
+		  .append("   or")
+		  .append("   bgi.ownerGroup in (")
+		  .append("     select ownerMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
+		  .append("       where ownerMemberShip.identity.key=:identityKey")
+		  .append("   )")
+		  .append(" )")
+			.append(" and bgi in (")
+			.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
+			.append(" )");
+
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("name", name)
+				.setParameter("resourceKey", resource.getKey())
+				.getSingleResult();
+		return count.intValue() > 0;
+	}
+	
+	
+	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
+		if(!owner && !attendee) return 0;
+		TypedQuery<Number> query = createMembersDBQuery(resource, owner, attendee, Number.class);
+		Number count = query.getSingleResult();
+		return count.intValue();
+	}
+
+	public List<Identity> getMembersOf(OLATResource resource, boolean owner, boolean attendee) {
+		if(!owner && !attendee) return Collections.emptyList();
+		TypedQuery<Identity> query = createMembersDBQuery(resource, owner, attendee, Identity.class);
+		List<Identity> members = query.getResultList();
+		return members;
+	}
+	
+	private <T> TypedQuery<T> createMembersDBQuery(OLATResource resource, boolean owner, boolean attendee, Class<T> resultClass) {
+		StringBuilder sb = new StringBuilder();
+		if(Identity.class.equals(resultClass)) {
+			sb.append("select distinct sgmi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+		} else {
+			sb.append("select count(distinct sgmi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+		}
+		sb.append(" inner join sgmi.securityGroup as secGroup ")
+		  .append(" where ");
+		
+		if(owner) {
+			sb.append("  secGroup in (")
+		    .append("    select rel1.group.ownerGroup from ").append(BGResourceRelation.class.getName()).append(" as rel1")
+		    .append("      where rel1.resource.key=:resourceKey")
+		    .append("  )");
+		}
+		if(attendee) {
+			if(owner) sb.append(" or ");
+			sb.append("  secGroup in (")
+	      .append("    select rel2.group.partipiciantGroup from ").append(BGResourceRelation.class.getName()).append(" as rel2")
+	      .append("      where rel2.resource.key=:resourceKey")
+	      .append("  )");
+		}  
+		if(Identity.class.equals(resultClass)) {
+			sb.append("order by sgmi.identity.name");
+		}
+
+		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), resultClass);
+		db.setParameter("resourceKey", resource.getKey());
+		return db;
+	}
+	
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
+		return checkIfOneOrMoreNameExistsInContext(names, Collections.singletonList(resource.getKey()));
+	}
+	
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgs.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+			.append(" inner join rel.group bgs ")
+		  .append(" where bgs.key=:groupKey");
+		
+		List<Long> resourceKeys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("groupKey", group.getKey())
+				.setParameter("names", names)
+				.getResultList();
+		
+		return checkIfOneOrMoreNameExistsInContext(names, resourceKeys);
+	}
+	
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, List<Long> resourceKeys) {
+		if(resourceKeys == null || resourceKeys.isEmpty()) return false;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(bgs) from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+			.append(" inner join rel.group bgs ")
+		  .append(" where rel.resource.key in (:resourceKey) and bgs.name in (:names)");
+		
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resourceKeys)
+				.setParameter("names", names)
+				.getSingleResult();
+		return count.intValue() > 0;
+	}
+	
+	public int countResources(BusinessGroup group) {
+		if(group == null) return 0;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(bgcr) from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key=:groupKeys");
+		
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("groupKey", group.getKey())
+				.getSingleResult();
+		return count.intValue();
 	}
 
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults) {

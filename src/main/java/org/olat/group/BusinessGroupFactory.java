@@ -25,16 +25,6 @@
 
 package org.olat.group;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
-import org.olat.group.properties.BusinessGroupPropertyManager;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 
 /**
  * Description: <BR/> Use the business group factory to create new instances of
@@ -89,7 +79,7 @@ public class BusinessGroupFactory {
 	 * @param name
 	 * @param description
 	 * @return the group
-	 */
+	 *//*
 	private static BusinessGroup createAndPersistBuddyGroup(Identity identity, String name, String description, Integer minParticipants,
 			Integer maxParticipants) {
 		/*
@@ -98,14 +88,14 @@ public class BusinessGroupFactory {
 		 * groups...................................................... [3] create 2
 		 * policies, ownerGroup -> PERMISSION_ACCESS -> buddygroup.
 		 * ....partipiciantGroup -> PERMISSION_READ -> buddygroup ..............
-		 */
+		 *//*
 		BusinessGroupImpl businessgroup = null;
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		// groups
 		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
 		SecurityGroup partipiciantGroup = securityManager.createAndPersistSecurityGroup();
 
-		businessgroup = new BusinessGroupImpl(BusinessGroup.TYPE_BUDDYGROUP, name, description, ownerGroup, partipiciantGroup,null/* no waitingGroup*/);
+		businessgroup = new BusinessGroupImpl(name, description, ownerGroup, partipiciantGroup, null);
 		businessgroup.setMinParticipants(minParticipants);
 		businessgroup.setMaxParticipants(maxParticipants);
 
@@ -117,7 +107,7 @@ public class BusinessGroupFactory {
 		 * policies: - ownerGroup can do everything on this businessgroup -> is an
 		 * admin, can invite people to owner.- & partipiciantgroup -
 		 * partipiciantGroup can read this businessgroup
-		 */
+		 *//*
 		OLATResource businessgroupOlatResource =  OLATResourceManager.getInstance().createOLATResourceInstance(businessgroup);
 		OLATResourceManager.getInstance().saveOLATResource(businessgroupOlatResource);
 
@@ -133,7 +123,7 @@ public class BusinessGroupFactory {
 		BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(businessgroup);
 		bgpm.createAndPersistDisplayMembers(true, false, false);
 		return businessgroup;
-	}
+	}*/
 
 	/**
 	 * Create a group of type learning group

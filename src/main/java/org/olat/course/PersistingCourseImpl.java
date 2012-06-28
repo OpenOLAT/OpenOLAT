@@ -366,7 +366,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// export learning groups
 		PersistingCourseGroupManager.getInstance(this).exportCourseLeaningGroups(fExportedDataDir);
 		// export right groups
-		PersistingCourseGroupManager.getInstance(this).exportCourseRightGroups(fExportedDataDir);
+		//PersistingCourseGroupManager.getInstance(this).exportCourseRightGroups(fExportedDataDir);
 		// export repo metadata
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry myRE = rm.lookupRepositoryEntry(this, true);

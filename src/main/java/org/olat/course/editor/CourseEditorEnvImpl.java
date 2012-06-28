@@ -53,6 +53,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 
 /**
@@ -167,12 +168,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	public boolean existsGroup(String groupname) {
 		// FIXME:fg:b improve performance by adding a special query for the existence
 		// check!
-		List cnt = cgm.getLearningGroupsFromAllContexts(groupname);
-		return (cnt != null && cnt.size() > 0);
-	}
-
-	public boolean existsRightGroup(String groupname) {
-		List cnt = cgm.getRightGroupsFromAllContexts(groupname);
+		List<BusinessGroup> cnt = cgm.getLearningGroupsFromAllContexts(groupname);
 		return (cnt != null && cnt.size() > 0);
 	}
 

@@ -150,8 +150,8 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	    // 1) context one: learning groups
 	    OLATResource c1 = JunitTestHelper.createRandomResource();
 	    // create groups without waiting list
-	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
-	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
 	    
 	    //permission to see owners and participants
 	    BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);

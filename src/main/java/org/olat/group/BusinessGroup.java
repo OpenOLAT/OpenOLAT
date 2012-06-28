@@ -43,11 +43,11 @@ import org.olat.core.id.Persistable;
 public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
 
 	/** group type: buddygroup * */
-	public final static String TYPE_BUDDYGROUP = "BuddyGroup";
+	//public final static String TYPE_BUDDYGROUP = "BuddyGroup";
 	/** group type: learning group * */
-	public final static String TYPE_LEARNINGROUP = "LearningGroup";
+	//public final static String TYPE_LEARNINGROUP = "LearningGroup";
 	/** group type: course right group * */
-	public final static String TYPE_RIGHTGROUP = "RightGroup";
+	//public final static String TYPE_RIGHTGROUP = "RightGroup";
 	/** regular expression to check for valid group names */
 	// commas are not allowed. name is used in course conditions for weak binding
 	public final static String VALID_GROUPNAME_REGEXP = "^[^,\"]*$";

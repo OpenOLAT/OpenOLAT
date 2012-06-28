@@ -72,7 +72,7 @@ public class InRightGroupFunction extends AbstractFunction {
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			if (!cev.existsRightGroup(groupName)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, groupName,
+			if (!cev.existsGroup(groupName)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, groupName,
 					"error.notfound.name", "solution.checkgroupmanagement")); }
 			// remember the reference to the node id for this condtion
 			cev.addSoftReference("groupId", groupName);

@@ -442,20 +442,20 @@ public class CollaborationTools implements Serializable {
 			calRenderWrapper.getKalendarConfig().setVis(config.isVis());
 		}
 		calRenderWrapper.getKalendarConfig().setResId(businessGroup.getKey());
-		if (businessGroup.getType().equals(BusinessGroup.TYPE_LEARNINGROUP)) {
-			// add linking
-			List<OLATResource> resources = CoreSpringFactory.getImpl(BusinessGroupService.class).findResources(Collections.singleton(businessGroup), 0, -1);
-			for (OLATResource resource:resources) {
-				if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-					ICourse course = CourseFactory.loadCourse(resource);
-					CourseLinkProviderController clp = new CourseLinkProviderController(course, ureq, wControl);
-					calRenderWrapper.setLinkProvider(clp);
-					// for the time being only internal learning groups are supported, therefore we only get
-					// the first course reference.
-					break;
-				}
+
+		// add linking
+		List<OLATResource> resources = CoreSpringFactory.getImpl(BusinessGroupService.class).findResources(Collections.singleton(businessGroup), 0, -1);
+		for (OLATResource resource:resources) {
+			if (resource.getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
+				ICourse course = CourseFactory.loadCourse(resource);
+				CourseLinkProviderController clp = new CourseLinkProviderController(course, ureq, wControl);
+				calRenderWrapper.setLinkProvider(clp);
+				// for the time being only internal learning groups are supported, therefore we only get
+				// the first course reference.
+				break;
 			}
 		}
+
 		calendars.add(calRenderWrapper);
 		
 		WeeklyCalendarController calendarController = new WeeklyCalendarController(

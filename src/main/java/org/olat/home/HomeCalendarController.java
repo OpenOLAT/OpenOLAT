@@ -136,7 +136,6 @@ public class HomeCalendarController extends BasicController implements Activatea
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams();
-		groupParams.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP, BusinessGroup.TYPE_RIGHTGROUP);
 		groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
 		List<BusinessGroup> ownerGroups = bgs.findBusinessGroups(groupParams, ureq.getIdentity(), true, false, null, 0, -1);
 		addCalendars(ureq, ownerGroups, true, calendars);

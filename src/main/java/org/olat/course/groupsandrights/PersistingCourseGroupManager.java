@@ -128,7 +128,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 *      java.lang.String, java.lang.String)
 	 */
 	public boolean isIdentityInGroup(Identity identity, String groupName) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, groupName, BusinessGroup.TYPE_LEARNINGROUP, true, true, courseResource);
+		return businessGroupService.isIdentityInBusinessGroup(identity, groupName, true, true, courseResource);
 	}
 	
 	/**
@@ -181,21 +181,10 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getRightGroupsFromAllContexts(java.lang.String)
-	 */
-	public List<BusinessGroup> getRightGroupsFromAllContexts(String groupName) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
-		params.setExactName(groupName);
-		return businessGroupService.findBusinessGroups(params, null, false, false, courseResource, 0, -1);
-	}
-
-	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllLearningGroupsFromAllContexts()
 	 */
 	public List<BusinessGroup> getAllLearningGroupsFromAllContexts() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
 		return businessGroupService.findBusinessGroups(params, null, false, false, courseResource, 0, -1);
 	}
 
@@ -204,7 +193,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
 		params.setExactName(groupName);
 		return businessGroupService.findBusinessGroups(params, null, false, false, courseResource, 0, -1);
 	}
@@ -242,7 +230,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity, String groupName) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
 		return businessGroupService.findBusinessGroups(params, identity, false, true, courseResource, 0, -1);
 	}
 
@@ -256,21 +243,11 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	}
 
 	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllRightGroupsFromAllContexts()
-	 */
-	public List<BusinessGroup> getAllRightGroupsFromAllContexts() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
-		return businessGroupService.findBusinessGroups(params, null, false, false, courseResource, 0, -1);
-	}
-
-	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getOwnedLearningGroupsFromAllContexts(org.olat.core.id.Identity)
 	 */
 	@Override
 	public List<BusinessGroup> getOwnedLearningGroupsFromAllContexts(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
 		List<BusinessGroup> allGroups =
 				businessGroupService.findBusinessGroups(params, identity, true, false, courseResource, 0, -1);
 		return allGroups;
@@ -282,19 +259,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	@Override
 	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
-		List<BusinessGroup> allGroups =
-				businessGroupService.findBusinessGroups(params, identity, false, true, courseResource, 0, -1);
-		return allGroups;
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getParticipatingRightGroupsFromAllContexts(org.olat.core.id.Identity)
-	 */
-	@Override
-	public List<BusinessGroup> getParticipatingRightGroupsFromAllContexts(Identity identity) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_RIGHTGROUP);
 		List<BusinessGroup> allGroups =
 				businessGroupService.findBusinessGroups(params, identity, false, true, courseResource, 0, -1);
 		return allGroups;
@@ -315,7 +279,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_COACH, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, null, null, true, false, courseResource);
+				|| businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, courseResource);
 		return isParticipant;
 	}
 	
@@ -334,7 +298,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_PARTI, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, null, null, false, true, courseResource);
+				|| businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, courseResource);
 		return isParticipant;
 	}
 
@@ -352,7 +316,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyLearningGroup(org.olat.core.id.Identity)
 	 */
 	public boolean isIdentityParticipantInAnyGroup(Identity identity) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, null, BusinessGroup.TYPE_LEARNINGROUP, false, true, courseResource);
+		return businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, courseResource);
 	}
 
 	/**
@@ -436,15 +400,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public void importCourseLearningGroups(File fImportDirectory) {
 		File fGroupExportXML = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);
 		businessGroupService.importGroups(courseResource, fGroupExportXML);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#exportCourseRightGroups(java.io.File)
-	 */
-	public void exportCourseRightGroups(File fExportDirectory) {
-		File fExportFile = new File(fExportDirectory, RIGHTGROUPEXPORT_XML);
-		List<BusinessGroup> rightGroups = getAllRightGroupsFromAllContexts();
-		businessGroupService.exportGroups(rightGroups, fExportFile);
 	}
 
 	/**
@@ -558,7 +513,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getWaitingListGroupsFromAllContexts(org.olat.core.id.Identity)
 	 */
 	public List<BusinessGroup> getWaitingListGroupsFromAllContexts(Identity identity) {
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(null, identity, courseResource);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(identity, courseResource);
 		return groups;
 	}
 
@@ -569,7 +524,5 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public void archiveCourseGroups(File exportDirectory) {
 		File exportLearningGroupFile = new File(exportDirectory, "default_" + LEARNINGGROUPARCHIVE_XLS);
 		businessGroupService.archiveGroups(getAllLearningGroupsFromAllContexts(), exportLearningGroupFile);
-		File exportRightGroupsFile = new File(exportDirectory, "default_" + RIGHTGROUPARCHIVE_XLS);
-		businessGroupService.archiveGroups(getAllRightGroupsFromAllContexts(), exportRightGroupsFile);
 	}
 }

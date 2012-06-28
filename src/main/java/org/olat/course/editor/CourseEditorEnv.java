@@ -65,8 +65,6 @@ public interface CourseEditorEnv {
 	 * @return
 	 */
 	boolean existsGroup(String groupname);
-
-	boolean existsRightGroup(String groupname);
 	
 	/**
 	 * @param areaname

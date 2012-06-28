@@ -119,7 +119,6 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 	/**
 	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
 	 */
-	@SuppressWarnings("unchecked")
 	public void init() {
 		if (config.isEnabled()) {
 			
@@ -134,10 +133,12 @@ public class InstantMessagingModule implements Initializable, Destroyable, UserD
 			 * delete from o_property where name='org.olat.instantMessaging.InstantMessagingModule::syncedbuddygroups';
 			 */
 			
-			List props = propertyManager.findProperties(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_BUDDY_GROUPS));
+			List<Property> props = propertyManager.findProperties(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_BUDDY_GROUPS));
 			if (props.size() == 0) {
 				
-				if (config.isSyncPersonalGroups()) instantMessaging.synchronizeAllBuddyGroupsWithIMServer();
+				if (config.isSyncPersonalGroups()) {
+					instantMessaging.synchronizeBusinessGroupsWithIMServer();
+				}
 				Property property = propertyManager.createPropertyInstance(null, null, null, "classConfig", createPropertyName(this.getClass(), CONFIG_SYNCED_BUDDY_GROUPS), null,  null, Boolean.toString(true), null);
 				propertyManager.saveProperty(property);
 			}

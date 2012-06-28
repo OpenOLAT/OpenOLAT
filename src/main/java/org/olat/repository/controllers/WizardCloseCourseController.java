@@ -66,7 +66,6 @@ import org.olat.core.util.mail.MailerWithTemplate;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.repository.RepositoryEntry;
@@ -255,7 +254,6 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 		if(course != null) {
 			BaseSecurity securityManager = BaseSecurityManager.getInstance();
 
-
 			// LearningGroups
 			List<BusinessGroup> allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllLearningGroupsFromAllContexts();
 			BGConfigFlags flagsLearning = BGConfigFlags.createLearningGroupDefaultFlags();
@@ -263,18 +261,17 @@ public class WizardCloseCourseController extends WizardController implements Wiz
 				SecurityGroup secGroupOwner = bGroup.getOwnerGroup();
 				SecurityGroup secGroupPartipiciant = bGroup.getPartipiciantGroup();
 				SecurityGroup secGroupWaiting = bGroup.getWaitingGroup();
-				businessGroupService.removeOwners(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), bGroup, flagsLearning);
-				businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup, flagsLearning);
-				businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup, flagsLearning);
+				if(secGroupOwner != null) {
+					businessGroupService.removeOwners(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupOwner), bGroup, flagsLearning);
+				}
+				if(secGroupPartipiciant != null) {
+					businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), bGroup, flagsLearning);
+				}
+				if(secGroupWaiting != null) {
+					businessGroupService.removeFromWaitingList(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupWaiting), bGroup, flagsLearning);
+				}
 			}
-			// RightGroups
-			allGroups.clear();
-			allGroups = course.getCourseEnvironment().getCourseGroupManager().getAllRightGroupsFromAllContexts();
-			BGConfigFlags flagsRightgroup = BGConfigFlags.createRightGroupDefaultFlags();
-			for (Object bGroup : allGroups) {
-				SecurityGroup secGroupPartipiciant = ((BusinessGroup) bGroup).getPartipiciantGroup();
-				businessGroupService.removeParticipants(identity, securityManager.getIdentitiesOfSecurityGroup(secGroupPartipiciant), ((BusinessGroup) bGroup), flagsRightgroup);
-			}
+			
 			//fxdiff VCRP-1,2: access control of resources
 			if(repositoryEntry.getParticipantGroup() != null) {
 				SecurityGroup secGroupPartipiciant = repositoryEntry.getParticipantGroup();

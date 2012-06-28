@@ -147,7 +147,7 @@ public interface CourseGroupManager {
 	 * @param groupName
 	 * @return
 	 */
-	public List<BusinessGroup> getRightGroupsFromAllContexts(String groupName);
+	//public List<BusinessGroup> getRightGroupsFromAllContexts(String groupName);
 
 	/**
 	 * @param areaName
@@ -190,17 +190,6 @@ public interface CourseGroupManager {
 	 * @return A list of all learning groups where this identity is participant
 	 */
 	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity);
-
-	/**
-	 * @param identity
-	 * @return A list of right groups where this identity is participating
-	 */
-	public List<BusinessGroup> getParticipatingRightGroupsFromAllContexts(Identity identity);
-
-	/**
-	 * @return A list of all right groups from this course
-	 */
-	public List<BusinessGroup> getAllRightGroupsFromAllContexts();
 
 	/**
 	 * @return A list of all group areas from this course
@@ -253,13 +242,6 @@ public interface CourseGroupManager {
 	 * @param fImportDirectory
 	 */
 	public void importCourseLearningGroups(File fImportDirectory);
-
-	/**
-	 * Export all groups which are course internal to a file for later import.
-	 * 
-	 * @param fExportDirectory
-	 */
-	public void exportCourseRightGroups(File fExportDirectory);
 
 	/**
 	 * Import course internal groups fa previous export.

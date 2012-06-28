@@ -173,7 +173,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private List<BusinessGroup> ownedGroups;
 	private List<BusinessGroup> participatedGroups;
 	private List<BusinessGroup> waitingListGroups;
-	private List<BusinessGroup> rightGroups;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -811,7 +810,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		} else if (cmd.equals("groupmngt")) {
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course, BusinessGroup.TYPE_LEARNINGROUP);
+				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course);
 				listenTo(currentToolCtr);
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
@@ -824,13 +823,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				all.setContent(currentToolCtr.getInitialComponent());
 			} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 			
-		} else if (cmd.equals("rightmngt")) {
-			if (isCourseAdmin) {
-				currentToolCtr = new CourseGroupManagementMainController(ureq, getWindowControl(), course, BusinessGroup.TYPE_RIGHTGROUP);
-				listenTo(currentToolCtr);
-				all.setContent(currentToolCtr.getInitialComponent());
-			} else throw new OLATSecurityException("clicked rightmanagement, but no according right");
-
 		} else if (cmd.equals("statistic")) {
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
@@ -1074,7 +1066,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// check if this affects a right group where the user does participate.
 				// if so, we need
 				// to rebuild the toolboxes
-				if (PersistenceHelper.listContainsObjectByKey(rightGroups, bgme.getModifiedGroupKey())) {
+				if (PersistenceHelper.listContainsObjectByKey(participatedGroups, bgme.getModifiedGroupKey()) ||
+						PersistenceHelper.listContainsObjectByKey(ownedGroups, bgme.getModifiedGroupKey())) {
 					// 1) reinitialize all group memberships
 					initGroupMemberships(identity);
 					// 2) reinitialize the users roles and rights
@@ -1129,9 +1122,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				//
 				myTool.addLink("groupmngt", translate("command.opengroupmngt"));
 			}
-			if (isCourseAdmin) {
-				myTool.addLink("rightmngt", translate("command.openrightmngt"));
-			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 				myTool.addLink("archiver", translate("command.openarchiver"));
 			}
@@ -1144,13 +1134,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				myTool.addLink("statistic", translate("command.openstatistic"));
 			}
-
-			//
-			/*
-			 * if (isCourseAdmin) { myTool.addLink(TOOLBOX_LINK_COURSECONFIG,
-			 * translate("command.courseconfig")); }
-			 */
-			//
 		}
 
 		// 2) add coached groups
@@ -1170,12 +1153,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 
 		// 4) add right groups
-		if (rightGroups.size() > 0) {
+		/*if (rightGroups.size() > 0) {
 			myTool.addHeader(translate("header.tools.rightGroups"));
 			for (BusinessGroup group : rightGroups) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
 			}
-		}
+		}*/
 
 		// 5) add waiting-list groups
 		if (waitingListGroups.size() > 0) {
@@ -1299,7 +1282,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		ownedGroups = cgm.getOwnedLearningGroupsFromAllContexts(identity);
 		participatedGroups = cgm.getParticipatingLearningGroupsFromAllContexts(identity);
 		waitingListGroups = cgm.getWaitingListGroupsFromAllContexts(identity);
-		rightGroups = cgm.getParticipatingRightGroupsFromAllContexts(identity);
 	}
 
 	/**

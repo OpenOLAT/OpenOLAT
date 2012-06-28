@@ -118,7 +118,6 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.addTools(CollaborationTools.TOOL_FOLDER);
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<BusinessGroup> groups = bgs.findBusinessGroups(params, identity, true, true, null, 0, -1);
 		Set<String> addedGroupNames = new HashSet<String>();
@@ -149,7 +148,6 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.addTools(CollaborationTools.TOOL_FOLDER);
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		List<BusinessGroup> tutorGroups = bgs.findBusinessGroups(params, identity, true, false, null, 0, -1);
 		for (BusinessGroup group : tutorGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, true);

@@ -70,8 +70,6 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.bc.BCWebService;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManager;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
@@ -247,7 +245,6 @@ public class UserFoldersWebService {
 		//start found forums in groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_BUDDYGROUP, BusinessGroup.TYPE_LEARNINGROUP);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
 		for(BusinessGroup group:groups) {

@@ -177,8 +177,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // 1) context one: learning groups
     OLATResource c1 = JunitTestHelper.createRandomResource();
     // create groups without waiting list
-    g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
-    g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, BusinessGroup.TYPE_LEARNINGROUP, 0, 10, false, false, c1);
+    g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, 0, 10, false, false, c1);
+    g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
     // members g1
     secm.addIdentityToSecurityGroup(id1, g1.getOwnerGroup());
     secm.addIdentityToSecurityGroup(id2, g1.getPartipiciantGroup());
@@ -189,8 +189,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
     // 2) context two: right groups
     OLATResource c2 = JunitTestHelper.createRandomResource();
     // groups
-    g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
-    g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, BusinessGroup.TYPE_RIGHTGROUP, -1, -1, false, false, c2);
+    g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, -1, -1, false, false, c2);
+    g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
     // members
     secm.addIdentityToSecurityGroup(id1, g3.getPartipiciantGroup());
     secm.addIdentityToSecurityGroup(id2, g4.getPartipiciantGroup());

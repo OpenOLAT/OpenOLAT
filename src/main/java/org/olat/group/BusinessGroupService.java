@@ -54,7 +54,7 @@ public interface BusinessGroupService {
 	
 	
 	
-	public BusinessGroup createBusinessGroup(Identity creator, String name, String description, String type,
+	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource);
 	
@@ -99,11 +99,11 @@ public interface BusinessGroupService {
 	//search methods
 	public BusinessGroup findBusinessGroup(SecurityGroup secGroup);
 
-	public List<BusinessGroup> findBusinessGroupsOwnedBy(String type, Identity identity, OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsOwnedBy(Identity identity, OLATResource resource);
 	
-	public List<BusinessGroup> findBusinessGroupsAttendedBy(String type, Identity identity, OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity, OLATResource resource);
 	
-	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(String type, Identity identity,OLATResource resource);
+	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity,OLATResource resource);
 	
 	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity,
 			boolean ownedById, boolean attendedById, OLATResource resource);
@@ -117,6 +117,9 @@ public interface BusinessGroupService {
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group); 
 
 	//retrieve repository entries
+
+	public boolean hasResources(BusinessGroup group);
+	
 	public void addResourceTo(BusinessGroup group, OLATResource resource);
 	
 	public void removeResourceFrom(BusinessGroup group, OLATResource resource);
@@ -165,14 +168,12 @@ public interface BusinessGroupService {
 	public BusinessGroupAddResponse moveIdentityFromWaitingListToParticipant(List<Identity> identities, Identity ureqIdentity, BusinessGroup currBusinessGroup, BGConfigFlags flags);
 
 	
-	
 	public BusinessGroupAddResponse addToSecurityGroupAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	public void removeAndFireEvent(Identity ureqIdentity, List<Identity> addIdentities, SecurityGroup secGroup);
 	
 	public String[] addIdentityToGroups(AddToGroupsEvent groupsEv, final Identity ident, final Identity addingIdentity);
 	
-	//public String[] addIdentityToGroups(List<Long> ownGroups, List<Long> partGroups, List<Long> mailGroups, final Identity ident, final Identity addingIdentity);
 	
 	//security
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
@@ -183,17 +184,9 @@ public interface BusinessGroupService {
 	 * @param resource
 	 * @return
 	 */
-	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, String groupType, boolean ownedById, boolean attendedById, OLATResource resource);
+	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, boolean ownedById, boolean attendedById, OLATResource resource);
 
 
-	
-
-
-
-
-
-	
-	
 	//export - import
 	public void exportGroups(List<BusinessGroup> groups, File fExportFile);
 
@@ -203,7 +196,5 @@ public interface BusinessGroupService {
 
 	public File archiveGroupMembers(OLATResource resource, List<String> columnList, List<BusinessGroup> groupList, String archiveType,
 			Locale locale, String charset);
-
-	
 
 }

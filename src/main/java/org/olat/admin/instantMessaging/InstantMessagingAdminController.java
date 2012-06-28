@@ -72,8 +72,7 @@ public class InstantMessagingAdminController extends FormBasicController {
 		InstantMessaging im = InstantMessagingModule.getAdapter();
 		if (source == doSyncButton) {
 			showInfo("imadmin.sync.cmd.dosync.caption");
-			boolean allOk = im.synchronizeAllBuddyGroupsWithIMServer();
-			allOk &= im.synchronizeLearningGroupsWithIMServer();
+			boolean allOk = im.synchronizeBusinessGroupsWithIMServer();
 			if (!allOk) {
 				refreshAndSetConnectionStatus();
 				showError("imadmin.sync.failed");

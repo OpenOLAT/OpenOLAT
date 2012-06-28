@@ -34,8 +34,6 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.tree.MenuTree;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -81,7 +79,7 @@ public class CourseGroupManagementMainController extends MainLayoutBasicControll
 	 * @param course
 	 * @param groupType
 	 */
-	public CourseGroupManagementMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String groupType) {
+	public CourseGroupManagementMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) {
 		super(ureq, wControl);
 		
 		getUserActivityLogger().setStickyActionType(ActionType.admin);

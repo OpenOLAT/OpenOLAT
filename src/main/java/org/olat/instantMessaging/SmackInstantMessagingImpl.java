@@ -39,7 +39,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -336,7 +335,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 	 */
 
 	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public boolean synchronizeLearningGroupsWithIMServer() {
+	public boolean synchronizeBusinessGroupsWithIMServer() {
 		if (!(adminConnecion != null && adminConnecion.getConnection() != null && adminConnecion.getConnection().isConnected())) {
 			return false;
 		}
@@ -348,11 +347,9 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		int GROUP_BATCH_SIZE = 50;
 		List<BusinessGroup> groups;
 		Set<Long> checkedIdentities = new HashSet<Long>();
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.addTypes(BusinessGroup.TYPE_LEARNINGROUP);
 		do {
-			groups = bgs.findBusinessGroups(params, null, false, false, null, counter, GROUP_BATCH_SIZE);
+			groups = businessGroupService.findBusinessGroups(params, null, false, false, null, counter, GROUP_BATCH_SIZE);
 			for (BusinessGroup group:groups) {
 				if (!syncLearn) {
 					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);
@@ -376,35 +373,6 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 
 		logInfo("Ended synchronisation of LearningGroups with IM server: Synched "+counter+" groups in " + (System.currentTimeMillis() - start) + " (ms)");
 		return true;
-	}
-
-	/**
-	 * Synchronize the groups with the IM system
-	 * To synchronize buddygroups, use the null-context.
-	 * Be aware that this action might take some time!
-	 * @return true if successfull, false if IM server is not running
-	 */
-	public boolean synchronizeAllBuddyGroupsWithIMServer() {
-		if (adminConnecion != null && adminConnecion.getConnection() != null && adminConnecion.getConnection().isConnected()) {
-			logInfo("Started synchronisation of BuddyGroups with IM server.");
-			//null as argument pulls all buddygroups
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			params.addTypes(BusinessGroup.TYPE_BUDDYGROUP);
-			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, false, false, null, 0, -1);
-			int counter = 0;
-			//fxdiff: FXOLAT-219 decrease the load for synching groups
-			Set<Long> checkedIdentites = new HashSet<Long>();
-			for (BusinessGroup group: groups) {
-				if(synchonizeBuddyRoster(group, checkedIdentites)) {
-					counter++;
-				}
-				//make an intermediate commit already
-			}
-			logInfo("Ended synchronisation of BuddyGroups with IM server: Synched "+counter+" groups");
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	/**
