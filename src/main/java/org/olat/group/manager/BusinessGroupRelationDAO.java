@@ -32,6 +32,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,29 @@ public class BusinessGroupRelationDAO {
 
 	@Autowired
 	private DB dbInstance;
+	
+	public void addRelationToResource(BusinessGroup group, OLATResource resource) {
+		BGResourceRelation relation = new BGResourceRelation();
+		relation.setGroup(group);
+		relation.setResource((OLATResourceImpl)resource);
+		dbInstance.getCurrentEntityManager().persist(relation);
+	}
+	
+	public void deleteRelation(BusinessGroup group, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+			.append(" where rel.group.key=:groupKey and rel.resource.key=:resourceKey");
+
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		List<BGResourceRelation> relations = em.createQuery(sb.toString(), BGResourceRelation.class)
+				.setParameter("groupKey", group.getKey())
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+		
+		for(BGResourceRelation relation:relations) {
+			em.remove(relation);
+		}
+	}
 	
 	public void deleteRelations(BusinessGroup group) {
 		StringBuilder sb = new StringBuilder();

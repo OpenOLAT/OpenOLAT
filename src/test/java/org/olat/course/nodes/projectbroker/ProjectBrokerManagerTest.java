@@ -39,6 +39,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import junit.framework.Assert;
 
@@ -87,8 +88,8 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 	@Before public void setup() throws Exception {
 		System.out.println("ProjectBrokerManagerTest.setUp start...");
 		try {
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
-			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
+			id1 = JunitTestHelper.createAndPersistIdentityAsUser("project-id1-" + UUID.randomUUID().toString());
+			id2 = JunitTestHelper.createAndPersistIdentityAsUser("project-id2-" + UUID.randomUUID().toString());
 
 			if (resourceableId == null) {
 				RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();

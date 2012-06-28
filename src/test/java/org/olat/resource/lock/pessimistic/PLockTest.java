@@ -33,6 +33,9 @@ import static org.junit.Assume.assumeTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -501,22 +504,22 @@ public class PLockTest extends OlatTestCase {
 		//	 create users
 		final List<Identity> identities = new ArrayList<Identity>();
 		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
-			Identity i1 = JunitTestHelper.createAndPersistIdentityAsUser("u"+i);
-			identities.add(i1);
-			System.out.println("testSync: Identity=" + "u"+i + "created");
-			DBFactory.getInstance().closeSession();
+			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("u-" + i + "-" + UUID.randomUUID().toString());
+			identities.add(id);
+			System.out.println("testSync: Identity=" + id.getName() + " created");
 		}
+		DBFactory.getInstance().closeSession();
 
-		
 		final SecurityGroup group2 = BaseSecurityManager.getInstance().createAndPersistSecurityGroup();
 		// make sure the lock has been written to the disk (tests for createOrFind see other methods)
 		DBFactory.getInstance().closeSession();
-		//PLock p1 = PessimisticLockManager.getInstance().findOrPersistPLock("befinsert");
-		//assertNotNull(p1);
-
 		
+		//prepare threads
+		int numOfThreads = MAX_COUNT + MAX_USERS_MORE;
+		final CountDownLatch finishCount = new CountDownLatch(numOfThreads);
+
 		// try to enrol all in the same group
-		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
+		for (int i = 0; i < numOfThreads; i++) {
 			final int j = i;
 			new Thread(new Runnable(){
 				public void run() {
@@ -527,14 +530,22 @@ public class PLockTest extends OlatTestCase {
 						PLock p2 = PessimisticLockManager.getInstance().findOrPersistPLock("befinsert");
 						assertNotNull(p2);
 						doNoLockingEnrol(id, group2);
+						DBFactory.getInstance().commit();
 						DBFactory.getInstance().closeSession();
 					} catch (Exception e) {
 						e.printStackTrace();
+					} finally {
+						finishCount.countDown();
 					}
 				}}).start();
-		}		
+		}
 		
-		sleep(20000);
+		try {
+			finishCount.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		// now count 
 		DBFactory.getInstance().closeSession();
 		int cnt2 = BaseSecurityManager.getInstance().countIdentitiesOfSecurityGroup(group2);

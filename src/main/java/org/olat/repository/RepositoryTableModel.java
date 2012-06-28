@@ -26,7 +26,6 @@
 package org.olat.repository;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -40,11 +39,9 @@ import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
-import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 
 /**
@@ -55,7 +52,7 @@ import org.olat.resource.accesscontrol.model.OLATResourceAccess;
  * Comment:  
  * 
  */
-public class RepositoryTableModel extends DefaultTableDataModel implements TableDataModel {
+public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry> {
 
 	/**
 	 * Identifies a table selection event (outer-left column)
@@ -163,7 +160,7 @@ public class RepositoryTableModel extends DefaultTableDataModel implements Table
 	
 	@Override
 	//fxdiff VCRP-1,2: access control of resources
-	public void setObjects(List objects) {
+	public void setObjects(List<RepositoryEntry> objects) {
 		super.setObjects(objects);
 		
 		repoEntriesWithOffer = new HashMap<Long,OLATResourceAccess>();

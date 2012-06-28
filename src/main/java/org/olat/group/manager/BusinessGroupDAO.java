@@ -50,7 +50,6 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,13 +125,6 @@ public class BusinessGroupDAO {
 		}
 		
 		return businessgroup;
-	}
-	
-	public void addRelationToResource(BusinessGroup group, OLATResource resource) {
-		BGResourceRelation relation = new BGResourceRelation();
-		relation.setGroup(group);
-		relation.setResource((OLATResourceImpl)resource);
-		dbInstance.getCurrentEntityManager().persist(relation);
 	}
 	
 	public BusinessGroup load(Long id) {
@@ -282,13 +274,33 @@ public class BusinessGroupDAO {
 	}
 	
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
+		return checkIfOneOrMoreNameExistsInContext(names, Collections.singletonList(resource.getKey()));
+	}
+	
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgs.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+			.append(" inner join rel.group bgs ")
+		  .append(" where bgs.key=:groupKey");
+		
+		List<Long> resourceKeys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("groupKey", group.getKey())
+				.setParameter("names", names)
+				.getResultList();
+		
+		return checkIfOneOrMoreNameExistsInContext(names, resourceKeys);
+	}
+	
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, List<Long> resourceKeys) {
+		if(resourceKeys == null || resourceKeys.isEmpty()) return false;
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(bgs) from ").append(BGResourceRelation.class.getName()).append(" as rel ")
 			.append(" inner join rel.group bgs ")
-		  .append(" where rel.resource.key=:resourceKey and bgs.name in (:names)");
+		  .append(" where rel.resource.key in (:resourceKey) and bgs.name in (:names)");
 		
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resource.getKey())
+				.setParameter("resourceKey", resourceKeys)
 				.setParameter("names", names)
 				.getSingleResult();
 		return count.intValue() > 0;
@@ -296,8 +308,11 @@ public class BusinessGroupDAO {
 	
 	public BusinessGroup findBusinessGroup(SecurityGroup secGroup) {
 		StringBuilder sb = new StringBuilder(); 
-		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi where ")
-			.append("(bgi.partipiciantGroup=:secGroup or bgi.ownerGroup=:secGroup or bgi.waitingGroup=:secGroup)");
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
+			.append(" left join fetch bgi.ownerGroup ownerGroup")
+			.append(" left join fetch bgi.partipiciantGroup participantGroup")
+			.append(" left join fetch bgi.waitingGroup waitingGroup")
+			.append(" where (bgi.partipiciantGroup=:secGroup or bgi.ownerGroup=:secGroup or bgi.waitingGroup=:secGroup)");
 
 		List<BusinessGroup> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("secGroup", secGroup)

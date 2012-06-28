@@ -15,12 +15,12 @@
 		<property  name="creationDate" column="creationdate" type="timestamp" />
   		
 		<many-to-one name="resource" class="org.olat.resource.OLATResourceImpl"
-    		outer-join="false" cascade="none" lazy="false">  
+    		outer-join="true" cascade="none" lazy="false">  
 			<column name="fk_resource" not-null="true" unique="false" />    	
     	</many-to-one> 
     	
 		<many-to-one name="group" class="org.olat.group.BusinessGroupImpl"
-			outer-join="false" cascade="none" lazy="false">
+			outer-join="true" cascade="none" lazy="false">
 			<column name="fk_group" not-null="true" unique="false" />    	
     	</many-to-one>
 			  	

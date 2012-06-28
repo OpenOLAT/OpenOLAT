@@ -41,7 +41,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.resource.OLATResource;
 
 /**
  * Implements a Business group creation dialog using FlexiForms.
@@ -75,15 +74,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * Decides whether minimum and maximum number of group members can be applied.
 	 */
 	private boolean minMaxEnabled = false;
-
-	/**
-	 * 
-	 */
 	private MultipleSelectionElement enableWaitingList;
-
-	/**
-	 * 
-	 */
 	private MultipleSelectionElement enableAutoCloseRanks;
 
 	/**
@@ -91,30 +82,22 @@ public class BusinessGroupFormController extends FormBasicController {
 	 */
 	private BusinessGroup businessGroup;
 
-	/**
-	 * 
-	 */
 	private boolean bulkMode = false;
 
-	/**
-	 * 
-	 */
-	private HashSet<String> validNames;
+	private Set<String> validNames;
 
 	/** The key for the waiting list checkbox. */
-	String[] waitingListKeys = new String[] { "create.form.enableWaitinglist" };
+	private final String[] waitingListKeys = new String[] { "create.form.enableWaitinglist" };
 
 	/** The value for the waiting list checkbox. */
-	String[] waitingListValues = new String[] { translate("create.form.enableWaitinglist") };
+	private final String[] waitingListValues = new String[] { translate("create.form.enableWaitinglist") };
 
 	/** The key for the autoCloseRanks checkbox. */
-	String[] autoCloseKeys = new String[] { "create.form.enableAutoCloseRanks" };
+	private final String[] autoCloseKeys = new String[] { "create.form.enableAutoCloseRanks" };
 
 	/** The value for the autoCloseRanks checkbox. */
-	String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
+	private final String[] autoCloseValues = new String[] { translate("create.form.enableAutoCloseRanks") };
 	
-	
-	private OLATResource resource;//TODO gm
 	private final BusinessGroupService businessGroupService;
 
 	/**
@@ -155,7 +138,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	protected void initForm(FormItemContainer formLayout, @SuppressWarnings("unused") Controller listener, UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Create the business group name input text element
 		if (bulkMode) {
 			businessGroupName = uifactory.addTextElement("create.form.title.bgnames", "create.form.title.bgnames", 10 * BusinessGroup.MAX_GROUP_NAME_LENGTH, "", formLayout);
@@ -213,8 +196,8 @@ public class BusinessGroupFormController extends FormBasicController {
 			businessGroupDescription.setValue(businessGroup.getDescription());
 			Integer minimumMembers = businessGroup.getMinParticipants();
 			Integer maximumMembers = businessGroup.getMaxParticipants();
-			businessGroupMinimumMembers.setValue(minimumMembers == null ? "" : minimumMembers.toString());
-			businessGroupMaximumMembers.setValue(maximumMembers == null ? "" : maximumMembers.toString());
+			businessGroupMinimumMembers.setValue(minimumMembers == null || minimumMembers.intValue() <= 0 ? "" : minimumMembers.toString());
+			businessGroupMaximumMembers.setValue(maximumMembers == null || maximumMembers.intValue() <= 0 ? "" : maximumMembers.toString());
 			if (businessGroup.getWaitingListEnabled() != null) {
 				enableWaitingList.select("create.form.enableWaitinglist", businessGroup.getWaitingListEnabled());
 			}
@@ -234,7 +217,6 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected boolean validateFormLogic(UserRequest ureq) {
 		// 1) Check valid group names
 		if (!StringHelper.containsNonWhitespace(businessGroupName.getValue())) {
@@ -359,7 +341,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		names.add(businessGroupName.getValue());
 	  //group name changes to an already used name, and is a learning group
 		if(businessGroup!=null && !businessGroup.getName().equals(businessGroupName.getValue())
-				&& businessGroupService.checkIfOneOrMoreNameExistsInContext(names, resource)) {	
+				&& businessGroupService.checkIfOneOrMoreNameExistsInContext(names, businessGroup)) {	
 			return true;
 		}
 		return false;

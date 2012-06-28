@@ -155,7 +155,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				minParticipants, maxParticipants, waitingListEnabled, autoCloseRanksEnabled);
 		
 		if(resource instanceof OLATResourceImpl) {
-			businessGroupDAO.addRelationToResource(group, resource);
+			businessGroupRelationDAO.addRelationToResource(group, resource);
 		}
 		return group;
 	}
@@ -246,6 +246,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
 		return businessGroupDAO.checkIfOneOrMoreNameExistsInContext(names, resource);
+	}
+
+	@Override
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
+		return businessGroupDAO.checkIfOneOrMoreNameExistsInContext(names, group);
 	}
 
 	@Override
@@ -1042,6 +1047,17 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				InstantMessagingModule.getAdapter().removeUserFromFriendsRoster(groupID, identity.getName());
 			}
 		}
+	}
+
+	@Override
+	@Transactional
+	public void addResourceTo(BusinessGroup group, OLATResource resource) {
+		businessGroupRelationDAO.addRelationToResource(group, resource);
+	}
+
+	@Override
+	public void removeResourceFrom(BusinessGroup group, OLATResource resource) {
+		businessGroupRelationDAO.deleteRelation(group, resource);
 	}
 
 	@Override

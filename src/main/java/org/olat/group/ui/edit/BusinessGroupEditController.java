@@ -144,6 +144,8 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private LockResult lockEntry;
 
 	private DialogBoxController alreadyLockedDialogController;
+	
+	private BusinessGroupEditResourceController resourceController;
 
 	/**
 	 * Never call this constructor directly, use the BGControllerFactory instead!!
@@ -171,18 +173,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		// Initialize other members
 
 		// group
-		this.flags = configurationFlags;
+		flags = configurationFlags;
 		// Initialize translator:
 		// package translator with default group fallback translators and type
 		// translator
 		setTranslator(BGTranslatorFactory.createBGPackageTranslator(PACKAGE, businessGroup.getType(), ureq.getLocale()));
 		// Initialize available rights
-		//if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
-			// for now only course rights are relevant
-			// would be nice if this was shomehow defined when initializing
-			// the group context
-			bgRights = new CourseRights(ureq.getLocale());
-		//}
+		bgRights = new CourseRights(ureq.getLocale());
 		// try to acquire edit lock on business group
 		String locksubkey = "groupEdit";
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(businessGroup, ureq.getIdentity(), locksubkey);
@@ -205,44 +202,35 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			 * add Tabbed Panes for configuration
 			 */
 			//fxdiff VCRP-1,2: access control of resources
-			int tabIndex = 0;
 			tabbedPane = new TabbedPane("bgTabbs", ureq.getLocale());
 			tabbedPane.addListener(this);
 			vc_tab_bgDetails = createTabDetails(ureq, currBusinessGroup);// modifies vc_tab_bgDetails
 			tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
-			//if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
-				vc_tab_bgCTools = createTabCollabTools(ureq, flags);
-				tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
-				tabIndex++;
-			//}
-			//if (flags.isEnabled(BGConfigFlags.AREAS)) {
-				vc_tab_bgAreas = createTabAreas();
-				tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
-				tabIndex++;
-			//}
-			//if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
-				vc_tab_bgRights = createTabRights();
-				tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
-				tabIndex++;
-			//}
+
+			vc_tab_bgCTools = createTabCollabTools(ureq, flags);
+			tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
+
+			vc_tab_bgAreas = createTabAreas();
+			tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
+
+			vc_tab_bgRights = createTabRights();
+			tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
+
 			vc_tab_grpmanagement = createTabGroupManagement(ureq);
 			tabbedPane.addTab(translate("group.edit.tab.members"), vc_tab_grpmanagement);
-			//fxdiff VCRP-1,2: access control of resources
-			tabIndex++;
+
+			resourceController = new BusinessGroupEditResourceController(ureq, getWindowControl(), currBusinessGroup);
+			listenTo(resourceController);
+	  	tabbedPane.addTab(translate("group.edit.tab.resources"), resourceController.getInitialComponent());
 			
-			//if(BusinessGroup.TYPE_BUDDYGROUP.equals(currBusinessGroup.getType())) {
-				tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
-		  	listenTo(tabAccessCtrl);
-		  	tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
-		  	tabIndex++;
-		  	tabAccessIndex = tabIndex;
-			//}
+			tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
+		  listenTo(tabAccessCtrl);
+		  tabAccessIndex = tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
 
 			vc_edit = createVelocityContainer("edit");
 			vc_edit.put("tabbedpane", tabbedPane);
-			vc_edit.contextPut("title", getTranslator().translate("group.edit.title", new String[] { StringEscapeUtils.escapeHtml(this.currBusinessGroup.getName())
-					.toString() }));
-			vc_edit.contextPut("type", this.currBusinessGroup.getType());
+			String[] title = new String[] { StringEscapeUtils.escapeHtml(currBusinessGroup.getName()) };
+			vc_edit.contextPut("title", getTranslator().translate("group.edit.title", title));
 			putInitialPanel(vc_edit);
 		}else{
 			//lock was not successful !
@@ -714,18 +702,13 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	private void refreshAllTabs(UserRequest ureq) {
 	  tabbedPane.removeAll();
 		tabbedPane.addTab(translate("group.edit.tab.details"), vc_tab_bgDetails);
-		//if (flags.isEnabled(BGConfigFlags.GROUP_COLLABTOOLS)) {
-			tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
-		//}
-		//if (flags.isEnabled(BGConfigFlags.AREAS)) {
-			tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
-		//}
-		//if (flags.isEnabled(BGConfigFlags.RIGHTS)) {
-			tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
-		//}
+		tabbedPane.addTab(translate("group.edit.tab.collabtools"), vc_tab_bgCTools);
+		tabbedPane.addTab(translate("group.edit.tab.areas"), vc_tab_bgAreas);
+		tabbedPane.addTab(translate("group.edit.tab.rights"), vc_tab_bgRights);
 		tabbedPane.addTab(translate("group.edit.tab.members"), createTabGroupManagement(ureq));
 		if(tabAccessCtrl != null) {
 			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
 		}
 	}
+
 }

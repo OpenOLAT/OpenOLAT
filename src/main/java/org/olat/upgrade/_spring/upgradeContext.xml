@@ -38,6 +38,7 @@
 					<property name="portfolioCourseNodeEnabled" value="${course.node.portfolio.enabled}"/>
 				</bean>
 				<bean id="upgrade_8_1_0" class="org.olat.upgrade.OLATUpgrade_8_1_0"/>
+				<bean id="upgrade_8_2_0" class="org.olat.upgrade.OLATUpgrade_8_2_0"/>
 			</list>
 		</property>
 	</bean>

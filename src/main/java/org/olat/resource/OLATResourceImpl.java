@@ -37,6 +37,8 @@ import org.olat.core.logging.AssertException;
  */
 public class OLATResourceImpl extends PersistentObject implements OLATResource {
 
+	private static final long serialVersionUID = 4797534778467150679L;
+
 	/** for mysql, need always to provide a type and a key to allow a composite index, so 0 is
 	 * a reserved key meaning "no key"
 	 */
@@ -118,6 +120,7 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		StringBuilder desc =
 			new StringBuilder()
@@ -131,5 +134,21 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 				.append("], ");
 		return desc.toString() + super.toString();
 	}
-
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 9734598 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof OLATResource) {
+			OLATResource resource = (OLATResource)obj;
+			return getKey() != null && getKey().equals(resource.getKey());	
+		}
+		return false;
+	}
 }

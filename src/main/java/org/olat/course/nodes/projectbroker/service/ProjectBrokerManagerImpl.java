@@ -132,7 +132,9 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 			public void execute() {
 				DBFactory.getInstance().saveObject(project);
 				ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
-				projectBroker.getProjects().add(project);
+				if(!projectBroker.getProjects().contains(project)) {
+					projectBroker.getProjects().add(project);
+				}
 				projectCache.update(projectBrokerId.toString(), projectBroker);
 			}
 		});	

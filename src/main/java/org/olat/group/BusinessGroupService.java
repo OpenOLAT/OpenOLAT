@@ -114,8 +114,13 @@ public interface BusinessGroupService {
 	//check
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource); 
 	
+	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group); 
 
 	//retrieve repository entries
+	public void addResourceTo(BusinessGroup group, OLATResource resource);
+	
+	public void removeResourceFrom(BusinessGroup group, OLATResource resource);
+	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults);
