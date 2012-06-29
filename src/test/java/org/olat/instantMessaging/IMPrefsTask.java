@@ -28,7 +28,8 @@ package org.olat.instantMessaging;
 import org.jivesoftware.smack.packet.Presence;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.properties.PropertyManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -39,6 +40,8 @@ import org.olat.properties.PropertyManager;
  * @author guido
  */
 public class IMPrefsTask implements Runnable {
+	
+	private OLog log = Tracing.createLoggerFor(IMPrefsTask.class);
 	
 	private Identity ident;
 
@@ -56,8 +59,7 @@ public class IMPrefsTask implements Runnable {
 		try {
 			Thread.sleep(z);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		}
 		
 		ImPrefsManager mgr = ImPrefsManager.getInstance();
@@ -68,13 +70,13 @@ public class IMPrefsTask implements Runnable {
 		prefs.setVisibleToOthers(false);
 		mgr.updatePropertiesFor(ident, prefs);
 		
-		double rand = Math.random()*3;
+		double rand = Math.random() * 3;
 		int i = Long.valueOf((Math.round(rand))).intValue();
 		if (i == 1) {
-			PropertyManager.getInstance().deleteProperty(prefs.getDbProperty()); //delete from time to time a property
+			mgr.deleteProperties(ident, prefs);
 			System.out.println("prefs deleted for user: "+ident.getName());
 		}
-		DBFactory.getInstance().closeSession();
+		DBFactory.getInstance().commitAndCloseSession();
 		System.out.println("prefs loaded and updated for user: "+ident.getName());
 	}
 

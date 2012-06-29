@@ -28,14 +28,12 @@ package org.olat.instantMessaging;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.taskExecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
@@ -55,38 +53,44 @@ import org.springframework.beans.factory.annotation.Autowired;
 	 */
 public class IMPrefsUnitTest extends OlatTestCase {
 	private OLog log = Tracing.createLoggerFor(IMPrefsUnitTest.class);
-	private String testUserA = "anIdentity1-" + UUID.randomUUID().toString();
-	private String testUserB = "anIdentity2-" + UUID.randomUUID().toString();
-	private String testUserC = "anIdentity3-" + UUID.randomUUID().toString();
-	private String testUserD = "anIdentity4-" + UUID.randomUUID().toString();
 
 	@Autowired
-	private BaseSecurity securityManager;
+	private DB dbInstance;
+	@Autowired
+	private ImPrefsManager imPrefsManager;
+	
+
+	@After
+	public void tearDown() {
+		try {
+			DBFactory.getInstance().closeSession();
+		} catch (Exception e) {
+			log.error("Exception in tearDown(): " + e);
+		}
+	}
 	
 	@Test
 	public void testPrefs() {
-		List<String> usernames = new ArrayList<String>();
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("im-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("im-1-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("im-1-" + UUID.randomUUID().toString());
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("im-1-" + UUID.randomUUID().toString());
+
 		List<Identity> identities = new ArrayList<Identity>();
-		usernames.add(testUserA);
-		usernames.add(testUserB);
-		usernames.add(testUserC);
-		usernames.add(testUserD);
+		identities.add(id1);
+		identities.add(id2);
+		identities.add(id3);
+		identities.add(id4);
+		dbInstance.commitAndCloseSession();
 		
-		for (Iterator<String> iterator = usernames.iterator(); iterator.hasNext();) {
-			String name = iterator.next();
-			Identity ident = securityManager.findIdentityByName(name);
-			assertNotNull(ident);
-			identities.add(ident);
-		}
 		long start = System.currentTimeMillis();
 
-		int runs = 0;
-		while (runs  < 100) {
-			double rand = Math.random()*3;
+		for (int runs=0; runs<100; runs++) {
+			double rand = Math.random() * 3.0d;
 			int i = Long.valueOf((Math.round(rand))).intValue();
-			ImPrefsManager mgr = ImPrefsManager.getInstance();
-			Identity ident = identities.get(i);
-			ImPreferences prefs = mgr.loadOrCreatePropertiesFor(ident);
+			
+			Identity randomIdentity = identities.get(i);
+			ImPreferences prefs = imPrefsManager.loadOrCreatePropertiesFor(randomIdentity);
 			assertNotNull(prefs);
 			assertNotNull(prefs.getDbProperty());
 			
@@ -95,42 +99,17 @@ public class IMPrefsUnitTest extends OlatTestCase {
 			} catch (InterruptedException e1) {
 				log.error("", e1);
 			}
-			for (Iterator<Identity> iterator = identities.iterator(); iterator.hasNext();) {
-				ident = iterator.next();
-				TaskExecutorManager.getInstance().runTask(new IMPrefsTask(ident));
+			for (Identity identity:identities) {
+				TaskExecutorManager.getInstance().runTask(new IMPrefsTask(identity));
 				try {
 					Thread.sleep(20);
 				} catch (InterruptedException e) {
 					log.error("", e);
 				}
 			}
-			runs++;
 		}
 		
 		long stop = System.currentTimeMillis();
 		System.out.println("took time in s:"+(stop-start)/1000);
-	}	
-	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before
-	public void setup()throws Exception {
-		JunitTestHelper.createAndPersistIdentityAsUser(testUserA);
-		JunitTestHelper.createAndPersistIdentityAsUser(testUserB);
-		JunitTestHelper.createAndPersistIdentityAsUser(testUserC);
-		JunitTestHelper.createAndPersistIdentityAsUser(testUserD);
-		DBFactory.getInstance().closeSession();
-	}
-
-	/**
-	 * TearDown is called after each test
-	 */
-	@After public void tearDown() {
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (Exception e) {
-			log.error("Exception in tearDown(): " + e);
-		}
 	}
 }
