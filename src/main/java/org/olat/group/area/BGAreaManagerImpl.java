@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.manager.BasicManager;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -100,6 +101,11 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 			areas.put(origArea, targetArea);
 		}
 		return areas;
+	}
+	
+	@Override
+	public BGArea loadArea(Long key) {
+		return dbInstance.getCurrentEntityManager().find(BGAreaImpl.class, key);
 	}
 
 	/**
@@ -219,8 +225,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		if(areas == null || areas.isEmpty()) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select bgarel.businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
-		  .append(" where  bgarel.groupArea.key in (:areakeys)");
+		sb.append("select distinct bgarel.businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
 
 		List<Long> areaKeys = new ArrayList<Long>();
 		for(BGArea area:areas) {
@@ -241,17 +247,29 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	public List<BusinessGroup> findBusinessGroupsOfAreaAttendedBy(Identity identity, String areaName, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
-		  .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi , org.olat.group.area.BGtoAreaRelationImpl as bgarel")
+		  .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmi")
+		  .append(", org.olat.group.area.BGtoAreaRelationImpl as bgarel")
 			.append(", org.olat.group.area.BGAreaImpl as area")
-			.append(" where area.name=:name and bgarel.businessGroup=bgi")
-			.append("  and bgarel.groupArea=area and bgi.partipiciantGroup=sgmi.securityGroup and sgmi.identity.key=:identityKey")
-			.append("  and area.resource.key=:resourceKey");
+			.append(" where bgarel.groupArea=area and bgi.partipiciantGroup=sgmi.securityGroup and bgarel.businessGroup=bgi")
+			.append(" and sgmi.identity.key=:identityKey");
 		
-		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
-			.setParameter("identityKey", identity.getKey())
-			.setParameter("resourceKey", resource.getKey())
-			.getResultList();
+		if(StringHelper.containsNonWhitespace(areaName)) {
+			sb.append(" and area.name=:name");
+		}
+		if(resource != null) {
+			sb.append(" and area.resource.key=:resourceKey");
+		}
 
+		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("identityKey", identity.getKey());
+		if(StringHelper.containsNonWhitespace(areaName)) {
+			query.setParameter("name", areaName);
+		}
+		if(resource != null) {
+			query.setParameter("resourceKey", resource.getKey());
+		}
+		
+		List<BusinessGroup> groups = query.getResultList();
 		return groups;
 	}
 
@@ -267,7 +285,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		if(groups == null || groups.isEmpty()) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select bgarel.groupArea from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		sb.append("select distinct bgarel.groupArea from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
 		  .append("where bgarel.businessGroup.key in (:groupKeys)");
 
 		TypedQuery<BGArea> areaQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class);
@@ -371,7 +389,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 */
 	private void removeBGFromArea(Long businessGroupKey, Long bgAreaKey) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.groupArea.key=:areaKey and bgarel.businessGroup=:groupKey");
+		sb.append("delete from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel where bgarel.groupArea.key=:areaKey and bgarel.businessGroup.key=:groupKey");
 		
 		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
 			.setParameter("areaKey", bgAreaKey)

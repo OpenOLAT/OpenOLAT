@@ -73,6 +73,8 @@ public interface BGAreaManager {
 	 * @return The area or null if the area does not exists
 	 */
 	public abstract BGArea findBGArea(String areaName, OLATResource resource);
+	
+	public BGArea loadArea(Long key);
 
 	/**
 	 * Update the given area in the database

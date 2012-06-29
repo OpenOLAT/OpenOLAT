@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,6 +50,8 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -70,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class BusinessGroupServiceImplTest extends OlatTestCase {
 	//
-	private static Logger log = Logger.getLogger(BusinessGroupServiceImplTest.class.getName());
+	private static OLog log = Tracing.createLoggerFor(BusinessGroupServiceImplTest.class);
 	/*
 	 * ::Test Setup::
 	 */
