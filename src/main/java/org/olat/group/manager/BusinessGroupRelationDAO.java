@@ -168,14 +168,15 @@ public class BusinessGroupRelationDAO {
 	}
 	
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
+		if(names == null || names.isEmpty()) return false;
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select bgs.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
+		sb.append("select rel.resource.key from ").append(BGResourceRelation.class.getName()).append(" as rel ")
 			.append(" inner join rel.group bgs ")
 		  .append(" where bgs.key=:groupKey");
 		
 		List<Long> resourceKeys = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("groupKey", group.getKey())
-				.setParameter("names", names)
 				.getResultList();
 		
 		return checkIfOneOrMoreNameExistsInContext(names, resourceKeys);
@@ -183,6 +184,7 @@ public class BusinessGroupRelationDAO {
 	
 	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, List<Long> resourceKeys) {
 		if(resourceKeys == null || resourceKeys.isEmpty()) return false;
+		if(names == null || names.isEmpty()) return false;
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(bgs) from ").append(BGResourceRelation.class.getName()).append(" as rel ")
@@ -213,7 +215,7 @@ public class BusinessGroupRelationDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key in (:groupKeys)");
+		sb.append("select distinct bgcr.resource from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key in (:groupKeys)");
 		
 		TypedQuery<OLATResource> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), OLATResource.class);
 		query.setFirstResult(firstResult);

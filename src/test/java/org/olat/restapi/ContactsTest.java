@@ -113,45 +113,47 @@ public class ContactsTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 			
 		//create learn group
-	    BaseSecurity secm = BaseSecurityManager.getInstance();
-			
-	    // 1) context one: learning groups
-	    OLATResource c1 = JunitTestHelper.createRandomResource();
-	    // create groups without waiting list
-	    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, new Integer(0), new Integer(10), false, false, c1);
-	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, new Integer(0), new Integer(10), false, false, c1);
-	    
-	    //permission to see owners and participants
-	    BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);
-	    bgpm1.updateDisplayMembers(false, false, false);
-	    BusinessGroupPropertyManager bgpm2 = new BusinessGroupPropertyManager(g2);
-	    bgpm2.updateDisplayMembers(true, true, false);
-	    
-	    // members g1
-	    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
-	    
-	    // members g2
-	    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
-	    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
-	    
-	    
-	    // 2) context two: right groups
-	    OLATResource c2 = JunitTestHelper.createRandomResource();
-	    // groups
-	    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
-	    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
-	    // members -> default participants are visible
-	    secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part3, g3.getPartipiciantGroup());
-	    
-	    secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());
-	    secm.addIdentityToSecurityGroup(part3, g4.getPartipiciantGroup());
-	    
-	    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
-	    initialized = true;
+    BaseSecurity secm = BaseSecurityManager.getInstance();
+		
+    // 1) context one: learning groups
+    OLATResource c1 = JunitTestHelper.createRandomResource();
+    // create groups without waiting list
+    g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, c1);
+    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
+    
+    //permission to see owners and participants
+    BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);
+    bgpm1.updateDisplayMembers(false, false, false);
+    BusinessGroupPropertyManager bgpm2 = new BusinessGroupPropertyManager(g2);
+    bgpm2.updateDisplayMembers(true, true, false);
+    
+    // members g1
+    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());
+    secm.addIdentityToSecurityGroup(owner2, g1.getOwnerGroup());
+    secm.addIdentityToSecurityGroup(part1, g1.getPartipiciantGroup());
+    secm.addIdentityToSecurityGroup(part2, g1.getPartipiciantGroup());
+    
+    // members g2
+    secm.addIdentityToSecurityGroup(owner1, g2.getOwnerGroup());
+    secm.addIdentityToSecurityGroup(part1, g2.getPartipiciantGroup());
+    
+    
+    // 2) context two: right groups
+    OLATResource c2 = JunitTestHelper.createRandomResource();
+    // groups
+    g3 = businessGroupService.createBusinessGroup(null, "rest-g3", null, -1, -1, false, false, c2);
+    new BusinessGroupPropertyManager(g3).updateDisplayMembers(false, true, false);
+    g4 = businessGroupService.createBusinessGroup(null, "rest-g4", null, -1, -1, false, false, c2);
+    new BusinessGroupPropertyManager(g4).updateDisplayMembers(false, true, false);
+    // members -> default participants are visible
+    secm.addIdentityToSecurityGroup(owner1, g3.getPartipiciantGroup());
+    secm.addIdentityToSecurityGroup(part3, g3.getPartipiciantGroup());
+    
+    secm.addIdentityToSecurityGroup(owner2, g4.getPartipiciantGroup());
+    secm.addIdentityToSecurityGroup(part3, g4.getPartipiciantGroup());
+    
+    DBFactory.getInstance().commitAndCloseSession(); // simulate user clicks
+    initialized = true;
 	}
 	
 	@Test

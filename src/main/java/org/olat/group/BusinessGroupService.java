@@ -51,9 +51,7 @@ public interface BusinessGroupService {
 	public void registerDeletableGroupDataListener(DeletableGroupData listener);
 
 	public List<String> getDependingDeletablableListFor(BusinessGroup currentGroup, Locale locale);
-	
-	
-	
+
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 			OLATResource resource);

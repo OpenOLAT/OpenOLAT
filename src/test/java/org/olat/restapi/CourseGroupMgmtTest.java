@@ -161,7 +161,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		
 		List<GroupVO> vos = parseGroupArray(body);
 		assertNotNull(vos);
-		assertEquals(2, vos.size());//g1, g2, g3, g4
+		assertEquals(4, vos.size());//g1, g2, g3, g4
 		
 		List<Long> voKeys = new ArrayList<Long>(4);
 		for(GroupVO vo:vos) {
@@ -169,8 +169,8 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		}
 		assertTrue(voKeys.contains(g1.getKey()));
 		assertTrue(voKeys.contains(g2.getKey()));
-		//assertTrue(voKeys.contains(g3.getKey()));
-		//assertTrue(voKeys.contains(g4.getKey()));
+		assertTrue(voKeys.contains(g3.getKey()));
+		assertTrue(voKeys.contains(g4.getKey()));
 	}
 	
 	@Test

@@ -774,7 +774,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		InputStream body = response.getEntity().getContent();
 		List<GroupVO> groups = parseGroupArray(body);
 		assertNotNull(groups);
-		assertEquals(2, groups.size());//g1 and g2 as g3 and g4 are right groups which are not returned
+		assertEquals(3, groups.size());//g1, g2 and g3
 	}
 	
 	@Test
@@ -793,7 +793,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
-		assertEquals(2, groups.getTotalCount());//g1 and g2 as g3 and g4 are right groups which are not returned
+		assertEquals(3, groups.getTotalCount());//g1, g2 and g3
 	}
 	
 	@Test
@@ -812,7 +812,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups);
 		assertNotNull(groups.getGroups());
 		assertEquals(1, groups.getGroups().length);
-		assertEquals(2, groups.getTotalCount());//g1 and g2 as g3 and g4 are right groups which are not returned
+		assertEquals(3, groups.getTotalCount());//g1, g2 and g3
 	}
 	
 	@Test

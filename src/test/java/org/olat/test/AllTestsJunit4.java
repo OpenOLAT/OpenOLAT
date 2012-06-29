@@ -74,9 +74,12 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,//ok
 	org.olat.commons.coordinate.CoordinatorTest.class,//ok
 	org.olat.admin.user.delete.service.UserDeletionManagerTest.class,//ok
-	org.olat.group.test.BGRightManagerTest.class,//fail
+	org.olat.group.test.BGRightManagerTest.class,//ok
 	org.olat.group.test.BGAreaManagerTest.class,//ok
+	org.olat.group.test.BusinessGroupServiceTest.class,//ok
 	org.olat.group.test.BusinessGroupServiceImplTest.class,//ok
+	org.olat.group.test.BusinessGroupDAOTest.class,//ok
+	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
 	org.olat.resource.OLATResourceManagerTest.class,//ok

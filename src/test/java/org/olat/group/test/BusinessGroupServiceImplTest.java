@@ -39,6 +39,7 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -125,10 +126,10 @@ public class BusinessGroupServiceImplTest extends OlatTestCase {
 		if(initialize) return;
 		
 			// Identities
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
-			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2");
-			id3 = JunitTestHelper.createAndPersistIdentityAsUser("id3");
-			id4 = JunitTestHelper.createAndPersistIdentityAsUser("id4");
+			id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1-bgs-" + UUID.randomUUID().toString());
+			id2 = JunitTestHelper.createAndPersistIdentityAsUser("id2-bgs-" + UUID.randomUUID().toString());
+			id3 = JunitTestHelper.createAndPersistIdentityAsUser("id3-bgs-" + UUID.randomUUID().toString());
+			id4 = JunitTestHelper.createAndPersistIdentityAsUser("id4-bgs-" + UUID.randomUUID().toString());
 			// buddyGroups without waiting-list: groupcontext is null
 			List<BusinessGroup> l = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
 			if (l.size() == 0) {
@@ -205,6 +206,8 @@ public class BusinessGroupServiceImplTest extends OlatTestCase {
 	@Test
 	public void testCheckIfNamesExistsInContext() throws Exception {
 		suiteIsAborted = true;
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("id5-check-" + UUID.randomUUID().toString());
 
 		OLATResource ctxA = JunitTestHelper.createRandomResource();
 		OLATResource ctxB = JunitTestHelper.createRandomResource();
@@ -215,11 +218,11 @@ public class BusinessGroupServiceImplTest extends OlatTestCase {
 		BusinessGroup[] ctxBgroups = new BusinessGroup[namesInCtxB.length];
 
 		for (int i = 0; i < namesInCtxA.length; i++) {
-			ctxAgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxA[i], null, 0, 0, false,
+			ctxAgroups[i] = businessGroupService.createBusinessGroup(id, namesInCtxA[i], null, 0, 0, false,
 					false, ctxA);
 		}
 		for (int i = 0; i < namesInCtxB.length; i++) {
-			ctxBgroups[i] = businessGroupService.createBusinessGroup(id1, namesInCtxB[i], null, 0, 0, false,
+			ctxBgroups[i] = businessGroupService.createBusinessGroup(id, namesInCtxB[i], null, 0, 0, false,
 					false, ctxB);
 		}
 		// first click created two context and each of them containg groups
@@ -299,71 +302,43 @@ public class BusinessGroupServiceImplTest extends OlatTestCase {
 	@Test
 	public void testCreateAndPersistBuddyGroup() throws Exception {
 		suiteIsAborted = true;
-		/*
-		 * 
-		 */
-		List<BusinessGroup> sqlRes;
-		BusinessGroup found;
-		/*
-		 * id1
-		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
-		assertTrue("2 BuddyGroups owned by id1", sqlRes.size() == 2);
-		for (int i = 0; i < sqlRes.size(); i++) {
-			assertTrue("It's a BuddyGroup Object", sqlRes.get(i) instanceof BusinessGroup);
-			found = (BusinessGroup) sqlRes.get(i);
-			// equality by comparing PersistenObject.getKey()!!!
-			boolean ok = one.getKey().longValue() == found.getKey().longValue() || three.getKey().longValue() == found.getKey().longValue();
-			assertTrue("It's the correct BuddyGroup", ok);
 
-		}
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id1, null);
-		assertTrue("0 BuddyGroup where id1 is partipicating", sqlRes.size() == 0);
+		// id1
+		List<BusinessGroup> groupOwnedId1 = businessGroupService.findBusinessGroupsOwnedBy(id1, null);
+		Assert.assertEquals("2 BuddyGroups owned by id1", 3, groupOwnedId1.size());
+		Assert.assertTrue(groupOwnedId1.contains(one));
+		Assert.assertTrue(groupOwnedId1.contains(three));
+		Assert.assertTrue(groupOwnedId1.contains(bgWithWaitingList));
 
-		/*
-		 * id2
-		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
-		assertTrue("1 BuddyGroup owned by id2", sqlRes.size() == 1);
-		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
-		found = (BusinessGroup) sqlRes.get(0);
-		// equality by comparing PersistenObject.getKey()!!!
-		assertTrue("It's the correct BuddyGroup", two.getKey().longValue() == found.getKey().longValue());
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id2, null);
-		assertTrue("1 BuddyGroup where id2 is partipicating", sqlRes.size() == 1);
-		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
-		found = (BusinessGroup) sqlRes.get(0);
-		assertTrue("It's the correct BuddyGroup", three.getKey().longValue() == found.getKey().longValue());
+		List<BusinessGroup> groupAttendeeId1 = businessGroupService.findBusinessGroupsAttendedBy(id1, null);
+		Assert.assertEquals("0 BuddyGroup where id1 is partipicating", 0, groupAttendeeId1.size());
 
-		/*
-		 * id3
-		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id3, null);
-		assertTrue("1 BuddyGroup owned by id3", sqlRes.size() == 1);
-		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
-		found = (BusinessGroup) sqlRes.get(0);
-		// equality by comparing PersistenObject.getKey()!!!
-		assertTrue("It's the correct BuddyGroup", three.getKey().longValue() == found.getKey().longValue());
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id3, null);
-		assertTrue("1 BuddyGroup where id3 is partipicating", sqlRes.size() == 1);
-		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
-		found = (BusinessGroup) sqlRes.get(0);
-		assertTrue("It's the correct BuddyGroup", two.getKey().longValue() == found.getKey().longValue());
+		// id2
+		List<BusinessGroup> groupOwnedId2 = businessGroupService.findBusinessGroupsOwnedBy(id2, null);
+		Assert.assertEquals("1 BuddyGroup owned by id2", 1, groupOwnedId2.size());
+		Assert.assertTrue(groupOwnedId2.contains(two));
+		
+		List<BusinessGroup> groupAttendeeId2 = businessGroupService.findBusinessGroupsAttendedBy(id2, null);
+		Assert.assertEquals("1 BuddyGroup where id2 is partipicating", 1, groupAttendeeId2.size());
+		assertTrue("It's the correct BuddyGroup", groupAttendeeId2.contains(three));
 
-		/*
-		 * id4
-		 */
-		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id4, null);
-		assertTrue("0 BuddyGroup owned by id4", sqlRes.size() == 0);
-		//
-		sqlRes = businessGroupService.findBusinessGroupsAttendedBy(id4, null);
-		assertTrue("1 BuddyGroup where id4 is partipicating", sqlRes.size() == 1);
-		assertTrue("It's a BuddyGroup Object", sqlRes.get(0) instanceof BusinessGroup);
-		found = (BusinessGroup) sqlRes.get(0);
-		assertTrue("It's the correct BuddyGroup", two.getKey().longValue() == found.getKey().longValue());
-		/*
-		 * 
-		 */
+		// id3
+		List<BusinessGroup> groupOwnedId3 = businessGroupService.findBusinessGroupsOwnedBy(id3, null);
+		Assert.assertEquals("1 BuddyGroup owned by id3", 1, groupOwnedId3.size());
+		assertTrue("It's the correct BuddyGroup", groupOwnedId3.contains(three));
+		
+		List<BusinessGroup> groupAttendeeId3 = businessGroupService.findBusinessGroupsAttendedBy(id3, null);
+		Assert.assertEquals("1 BuddyGroup where id3 is partipicating", 1, groupAttendeeId3.size());
+		assertTrue("It's the correct BuddyGroup", groupAttendeeId3.contains(two));
+
+		// id4
+		List<BusinessGroup> groupOwnedId4 = businessGroupService.findBusinessGroupsOwnedBy(id4, null);
+		Assert.assertEquals("0 BuddyGroup owned by id4", 0, groupOwnedId4.size());
+
+		List<BusinessGroup> groupAttendeeId4 = businessGroupService.findBusinessGroupsAttendedBy(id4, null);
+		Assert.assertEquals("1 BuddyGroup where id4 is partipicating", 1, groupAttendeeId4.size());
+		assertTrue("It's the correct BuddyGroup", groupAttendeeId4.contains(two));
+
 		suiteIsAborted = false;
 		nrOfTestCasesAlreadyRun++;
 	}
