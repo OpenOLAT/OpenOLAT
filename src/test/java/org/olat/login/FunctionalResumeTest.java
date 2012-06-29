@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
-import org.olat.util.FunctionalEnums;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalHomeSiteUtil.HomePage;
 import org.olat.util.FunctionalResourcesSiteUtil;
@@ -76,49 +75,6 @@ public class FunctionalResumeTest {
 		functionalHomeSiteUtil = new FunctionalHomeSiteUtil(functionalUtil);
 		functionalResourcesSiteUtil = new FunctionalResourcesSiteUtil(functionalUtil);
 	}
-
-	/**
-	 * Enables resume in olat but you must be logged in.
-	 */
-	public void enableResume(){
-		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
-			functionalUtil.openSite(browser, OlatSite.HOME);
-		}
-		
-		/* enable resume */
-		Assert.assertTrue(functionalHomeSiteUtil.openPageByNavigation(browser, HomePage.SETTINGS));
-		Assert.assertTrue(functionalHomeSiteUtil.checkCurrentPage(browser, HomePage.SETTINGS));
-		
-		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
-		Assert.assertTrue(functionalUtil.clickRadio(browser,
-				FunctionalEnums.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal(),
-				FunctionalEnums.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.ordinal(),
-				FunctionalEnums.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_AUTOMATICALLY.ordinal()));
-		Assert.assertTrue(functionalUtil.saveForm(browser,
-				FunctionalEnums.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
-	}
-
-	/**
-	 * Enables resume on request in olat but you must be logged in.
-	 */
-	public void enableResumeOnRequest(){
-		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
-			functionalUtil.openSite(browser, OlatSite.HOME);
-		}
-		
-		/* enable resume */
-		Assert.assertTrue(functionalHomeSiteUtil.openPageByNavigation(browser, HomePage.SETTINGS));
-		Assert.assertTrue(functionalHomeSiteUtil.checkCurrentPage(browser, HomePage.SETTINGS));
-		
-		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
-		Assert.assertTrue(functionalUtil.clickRadio(browser,
-				FunctionalEnums.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal(),
-				FunctionalEnums.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.ordinal(),
-				FunctionalEnums.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_ON_REQUEST.ordinal()));
-		Assert.assertTrue(functionalUtil.saveForm(browser,
-				FunctionalEnums.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
-	}
-	
 	
 	@Test
 	@RunAsClient
@@ -126,17 +82,27 @@ public class FunctionalResumeTest {
 		/* deploy course with rest */
 		RepositoryEntryVO repositoryEntry = functionalVOUtil.importAllElementsCourseCourse(deploymentUrl);
 		
+		/* create xpath to check if course is open */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//li[@class='b_nav_tab b_nav_active b_resource_CourseModule'")
+		.append("//a[@title='")
+		.append(repositoryEntry.getDisplayname())
+		.append("']");
+		
+		String courseXPath = selectorBuffer.toString();
+		
 		/* login */
 		Assert.assertTrue(functionalUtil.login(browser));
 		
 		/* enable resume */
-		enableResume();
+		functionalHomeSiteUtil.enableResume(browser);
 		
-		/* open course */
+		/* open course and check if it's open */
 		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
-		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, repositoryEntry.getResourcename(), repositoryEntry.getResourceableId()));
-		
-		
+		Assert.assertTrue(functionalResourcesSiteUtil.openCourse(browser, repositoryEntry.getResourceableId()));
+
+		Assert.assertTrue(browser.isElementPresent(courseXPath));
 		
 		/* logout */
 		Assert.assertTrue(functionalUtil.logout(browser));
@@ -145,10 +111,10 @@ public class FunctionalResumeTest {
 		Assert.assertTrue(functionalUtil.login(browser, false));
 		
 		/* check if we are on open course tab */
-		
+		Assert.assertTrue(browser.isElementPresent(courseXPath));
 		
 		/* enable resume on request */
-		enableResumeOnRequest();
+		functionalHomeSiteUtil.enableResumeOnRequest(browser);
 		
 		/* login without clicking away dialogs */
 		Assert.assertTrue(functionalUtil.login(browser, false));
@@ -158,7 +124,7 @@ public class FunctionalResumeTest {
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		/* check if we are on open course tab */
-		
+		Assert.assertTrue(browser.isElementPresent(courseXPath));
 		
 		//TODO:JK: implement me
 	}

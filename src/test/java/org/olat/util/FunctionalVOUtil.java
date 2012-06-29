@@ -41,8 +41,6 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.olat.restapi.RepositoryEntriesTest;
 import org.olat.restapi.RestConnection;
@@ -50,36 +48,12 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 
 public class FunctionalVOUtil {
-	protected static final JsonFactory jsonFactory = new JsonFactory();
-	
 	private String username;
 	private String password;
 	
 	public FunctionalVOUtil(String username, String password){
 		setUsername(username);
 		setPassword(password);
-	}
-	
-	protected <T> T parse(String body, Class<T> cl) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			T obj = mapper.readValue(body, cl);
-			return obj;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	protected <T> T parse(InputStream body, Class<T> cl) {
-		try {
-			ObjectMapper mapper = new ObjectMapper(jsonFactory);
-			T obj = mapper.readValue(body, cl);
-			return obj;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 	
 	/**
@@ -122,7 +96,7 @@ public class FunctionalVOUtil {
 			assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 			InputStream body = response.getEntity().getContent();
 			
-			UserVO current = parse(body, UserVO.class);
+			UserVO current = restConnection.parse(body, UserVO.class);
 			Assert.assertNotNull(current);
 			
 			user.add(current);
@@ -158,7 +132,7 @@ public class FunctionalVOUtil {
 		
 		InputStream body = response.getEntity().getContent();
 		
-		RepositoryEntryVO vo = parse(body, RepositoryEntryVO.class);
+		RepositoryEntryVO vo = restConnection.parse(body, RepositoryEntryVO.class);
 		assertNotNull(vo);
 		
 		return(vo);

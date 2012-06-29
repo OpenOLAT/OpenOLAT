@@ -19,6 +19,9 @@
  */
 package org.olat.util;
 
+import org.junit.Assert;
+import org.olat.util.FunctionalUtil.OlatSite;
+
 import com.thoughtworks.selenium.Selenium;
 
 /**
@@ -29,6 +32,7 @@ public class FunctionalHomeSiteUtil {
 	
 	public final static String HOME_PAGE_NAVIGATION_SELECTED_CSS = "b_tree_selected";
 	
+	/* navigation */
 	public final static String HOME_PAGE_PORTAL_CSS = "o_sel_portal";
 	public final static String HOME_PAGE_SETTINGS_CSS = "o_sel_mysettings";
 	public final static String HOME_PAGE_CALENDAR_CSS = "o_sel_calendar";
@@ -42,6 +46,136 @@ public class FunctionalHomeSiteUtil {
 	public final static String EPORTFOLIO_PAGE_MY_BINDERS_CSS = "o_sel_EPMaps";
 	public final static String EPORTFOLIO_PAGE_MY_PORTFOLIO_TASKS_CSS = "o_sel_EPStructuredMaps";
 	public final static String EPORTFOLIO_PAGE_RELEASED_BINDERS_CSS = "o_sel_EPSharedMaps";
+	
+	/* portal */
+	public final static String PORTAL_EDIT_LINK_CSS = "o_home_portaleditlink";
+	
+	public final static String PORTLET_REPOSITORY_STUDENT_CSS = "o_portlet_repository_student";
+	public final static String PORTLET_INFOMESSAGES_CSS = "o_portlet_infomessages";
+	public final static String PORTLET_CALENDAR_CSS = "o_portlet_calendar";
+	public final static String PORTLET_BOOKMARK_CSS = "o_portlet_bookmark";
+	public final static String PORTLET_GROUPS_CSS = "o_portlet_groups";
+	public final static String PORTLET_NOTI_CSS = "o_portlet_noti";
+	public final static String PORTLET_EFF_CSS = "o_portlet_eff";
+	public final static String PORTLET_NOTES_CSS = "o_portlet_notes";
+	public final static String PORTLET_DYK_CSS = "o_portlet_dyk";
+	
+	/* General System Settings */
+	public final static String LANGUAGE_OPTIONS_ID = "o_fioform_language_SELBOX";
+	
+	public final static String GERMAN_LANGUAGE_VALUE = "de";
+	public final static String ENGLISH_LANGUAGE_VALUE = "en";
+	public final static String FRENCH_LANGUAGE_VALUE = "fr";
+	public final static String SPANISH_LANGUAGE_VALUE = "es";
+	public final static String ITALIAN_LANGUAGE_VALUE = "it";
+	
+	/* Specific System Settings */
+	public final static String ACCESSIBILITY_CSS = "o_sel_home_settings_accessibility";
+	public final static String RESUME_LAST_SESSION_CSS = "o_sel_home_settings_resume";
+	public final static String SUPPORT_FOR_BROWSER_BACK_CSS = "o_sel_home_settings_back_enabling";
+	
+	public final static String NO_VALUE = "none";
+	public final static String YES_AUTOMATICALLY_VALUE = "auto";
+	public final static String YES_ON_REQUEST_VALUE = "request";
+	
+	/* Reset Configurations */
+	public final static String CONFIGURATIONS_CSS = "o_sel_home_settings_reset_sysprefs";
+	
+	public final static String GUI_PREFERENCES_VALUE = "guiprefs";
+	public final static String SYS_PREFERENCES_VALUE = "sysprefs";
+	public final static String RESUME_VALUE = "resume";
+	
+	/* password tab */
+	//TODO:JK: add CSS classes to olat
+	public final static String OLD_PASSWORD_CSS = "";
+	public final static String NEW_PASSWORD_CSS = "";
+	public final static String CONFIRM_PASSWORD_CSS = "";
+	
+	public enum PortalSettingsForms {
+		GENERAL_SYSTEM_SETTINGS,
+		SPECIFIC_SYSTEM_SETTINGS,
+		RESET_CONFIGURATIONS;
+		
+		public enum SpecificSystemSettingsRadios {
+			ACCESSIBILITY(ACCESSIBILITY_CSS),
+			RESUME_LAST_SESSION(RESUME_LAST_SESSION_CSS),	
+			SUPPORT_FOR_BROWSER_BACK(SUPPORT_FOR_BROWSER_BACK_CSS);
+			
+			private String groupCss;
+			
+			SpecificSystemSettingsRadios(String groupCss){
+				setGroupCss(groupCss);
+			}
+			
+			public String getGroupCss() {
+				return groupCss;
+			}
+
+			public void setGroupCss(String groupCss) {
+				this.groupCss = groupCss;
+			}
+
+			public enum ResumeLastSession{
+				NO(NO_VALUE),
+				YES_AUTOMATICALLY(YES_AUTOMATICALLY_VALUE),
+				YES_ON_REQUEST(YES_ON_REQUEST_VALUE);
+				
+				private String valueAttribute;
+				
+				ResumeLastSession(String valueAttribute){
+					setValueAttribute(valueAttribute);
+				}
+
+				public String getValueAttribute() {
+					return valueAttribute;
+				}
+
+				public void setValueAttribute(String valueAttribute) {
+					this.valueAttribute = valueAttribute;
+				}
+			} 
+		}
+		
+
+		public enum ResetConfigurations{
+			Configurations(CONFIGURATIONS_CSS);
+			
+			private String groupCss;
+			
+			ResetConfigurations(String groupCss){
+				setGroupCss(groupCss);
+			}
+			
+			public String getGroupCss() {
+				return groupCss;
+			}
+
+			public void setGroupCss(String groupCss) {
+				this.groupCss = groupCss;
+			}
+
+			public enum ConfigurationsCheckboxes {
+				GUI_PREFERENCES(GUI_PREFERENCES_VALUE),
+				SYS_PREFERENCES(SYS_PREFERENCES_VALUE),
+				RESUME(RESUME_VALUE);
+				
+				private String valueAttribute;
+
+				ConfigurationsCheckboxes (String valueAttribute){
+					setValueAttribute(valueAttribute);
+				}
+				
+				
+				public String getValueAttribute() {
+					return valueAttribute;
+				}
+
+				public void setValueAttribute(String valueAttribute) {
+					this.valueAttribute = valueAttribute;
+				}
+			}
+		}
+	}
 	
 	public enum HomePage {
 		PORTAL,
@@ -61,6 +195,13 @@ public class FunctionalHomeSiteUtil {
 		MY_PORTFOLIO_TASKS,
 		RELEASED_BINDERS,
 	};
+	
+	public enum Direction {
+		UP,
+		DOWN,
+		LEFT,
+		RIGHT;
+	}
 
 	private FunctionalUtil functionalUtil;
 	
@@ -80,6 +221,21 @@ public class FunctionalHomeSiteUtil {
 	private String ePortfolioPageMyPortfolioTasksCss;
 	private String ePortfolioPageReleasedBindersCss;
 	
+	private String portalEditLinkCss;
+	
+	private String portletRepositoryStudentCss;
+	private String portletInfomessagesCss;
+	private String portletCalendarCss;
+	private String portletBookmarkCss;
+	private String portletGroupsCss;
+	private String portletNotiCss;
+	private String portletEffCss;
+	private String portletNotesCss;
+	private String portletDykCss;
+	
+	private String oldPasswordCss;
+	private String newPasswordCss;
+	private String confirmPasswordCss;
 	
 	/**
 	 * @param functionalUtil
@@ -104,6 +260,21 @@ public class FunctionalHomeSiteUtil {
 		setEPortfolioPageMyBindersCss(EPORTFOLIO_PAGE_MY_BINDERS_CSS);
 		setEPortfolioPageMyPortfolioTasksCss(EPORTFOLIO_PAGE_MY_PORTFOLIO_TASKS_CSS);
 		setEPortfolioPageReleasedBindersCss(EPORTFOLIO_PAGE_RELEASED_BINDERS_CSS);
+		
+		setPortalEditLinkCss(PORTAL_EDIT_LINK_CSS);
+		
+		setPortletRepositoryStudentCss(PORTLET_REPOSITORY_STUDENT_CSS);
+		setPortletInfomessagesCss(PORTLET_INFOMESSAGES_CSS);
+		setPortletCalendarCss(PORTLET_CALENDAR_CSS);
+		setPortletBookmarkCss(PORTLET_BOOKMARK_CSS);
+		setPortletGroupsCss(PORTLET_GROUPS_CSS);
+		setPortletNotiCss(PORTLET_NOTI_CSS);
+		setPortletEffCss(PORTLET_EFF_CSS);
+		setPortletNotesCss(PORTLET_NOTES_CSS);
+		
+		setOldPasswordCss(OLD_PASSWORD_CSS);
+		setNewPasswordCss(NEW_PASSWORD_CSS);
+		setConfirmPasswordCss(CONFIRM_PASSWORD_CSS);
 	}
 	
 	/**
@@ -241,6 +412,221 @@ public class FunctionalHomeSiteUtil {
 		return(true);
 	}
 
+	/**
+	 * @param browser
+	 * 
+	 * Open portal in configuration mode.
+	 */
+	public void beginEditingPortal(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.PORTAL));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.PORTAL));
+		
+		/* begin editing */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("css=.")
+		.append(PORTAL_EDIT_LINK_CSS)
+		.append(" * a");
+		
+		browser.click(selectorBuffer.toString());
+	}
+	
+	/**
+	 * @param browser
+	 * 
+	 * Close portal configuration mode.
+	 */
+	public void endEditingPortal(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.PORTAL));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.PORTAL));
+		
+		/* end editing */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("css=.")
+		.append(PORTAL_EDIT_LINK_CSS)
+		.append(" * a");
+		
+		browser.click(selectorBuffer.toString());
+	}
+	
+	public void activatePortlet(Selenium browser, String portletCss){
+		//TODO:JK: implement me
+	}
+	
+	public void deactivatePortlet(Selenium browser, String portletCss){
+		//TODO:JK: implement me
+	}
+	
+	public void movePortlet(Selenium browser, String portletCss, Direction direction){
+		//TODO:JK: implement me
+	}
+	
+	
+	/**
+	 * @param browser
+	 * @param language permitted values are: en, es, fr, de, it
+	 * 
+	 * Selects the specified language.
+	 */
+	public void selectLanguage(Selenium browser, String language){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.SETTINGS));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
+		
+		/* open System tab */
+		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		
+		/* select language */
+		functionalUtil.selectOption(browser, LANGUAGE_OPTIONS_ID, language);
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		Assert.assertTrue(functionalUtil.saveForm(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.GENERAL_SYSTEM_SETTINGS.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * 
+	 * Enables resume in olat but you must be logged in.
+	 */
+	public void enableResume(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.SETTINGS));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
+		
+		/* open System tab */
+		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		
+		/* enable resume */
+		Assert.assertTrue(functionalUtil.clickRadio(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_AUTOMATICALLY.getValueAttribute()));
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		Assert.assertTrue(functionalUtil.saveForm(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
+	}
+
+	/**
+	 * @param browser
+	 * 
+	 * Enables resume on request in olat but you must be logged in.
+	 */
+	public void enableResumeOnRequest(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.SETTINGS));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
+		
+		/* open system tab */
+		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		
+		/* enable resume */
+		Assert.assertTrue(functionalUtil.clickRadio(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.YES_ON_REQUEST.getValueAttribute()));
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		Assert.assertTrue(functionalUtil.saveForm(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
+	}
+	
+	/**
+	 * @param browser
+	 * 
+	 * Disable resume in olat but you must be logged in.
+	 */
+	public boolean disableResume(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.SETTINGS));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
+		
+		/* open system tab */
+		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		
+		/* enable resume */
+		Assert.assertTrue(functionalUtil.clickRadio(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.RESUME_LAST_SESSION.getGroupCss(),
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.ResumeLastSession.NO.getValueAttribute()));
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		Assert.assertTrue(functionalUtil.saveForm(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
+		
+		return(true);
+	}
+	
+	public void enableBack(Selenium browser){
+		//TODO:JK: implement me
+	}
+	
+	public void disableBack(Selenium browser){
+		//TODO:JK: implement me
+	}
+	
+	/**
+	 * @param browser
+	 * @return true on success
+	 * 
+	 * Resets portal settings to default.
+	 */
+	public boolean resetSettings(Selenium browser){
+		/* open settings page */
+		if(!openPageByNavigation(browser, HomePage.SETTINGS)){
+			return(false);
+		}
+		
+		/* click system tab */
+		functionalUtil.openContentTab(browser, 1);
+		
+		/* using reset configurations form */
+		/* click all checkboxes */
+		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, GUI_PREFERENCES_VALUE);
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, SYS_PREFERENCES_VALUE);
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, RESUME_VALUE);
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		/* click Reset */
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//form//button[@type='button' and @value='Reset']");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		
+		return(true);
+	}
+	
 	public FunctionalUtil getUtil() {
 		return functionalUtil;
 	}
@@ -355,5 +741,109 @@ public class FunctionalHomeSiteUtil {
 	public void setEPortfolioPageReleasedBindersCss(
 			String ePortfolioPageReleasedBindersCss) {
 		this.ePortfolioPageReleasedBindersCss = ePortfolioPageReleasedBindersCss;
+	}
+
+	public String getPortalEditLinkCss() {
+		return portalEditLinkCss;
+	}
+
+	public void setPortalEditLinkCss(String portalEditLinkCss) {
+		this.portalEditLinkCss = portalEditLinkCss;
+	}
+
+	public String getPortletRepositoryStudentCss() {
+		return portletRepositoryStudentCss;
+	}
+
+	public void setPortletRepositoryStudentCss(String portletRepositoryStudentCss) {
+		this.portletRepositoryStudentCss = portletRepositoryStudentCss;
+	}
+
+	public String getPortletInfomessagesCss() {
+		return portletInfomessagesCss;
+	}
+
+	public void setPortletInfomessagesCss(String portletInfomessagesCss) {
+		this.portletInfomessagesCss = portletInfomessagesCss;
+	}
+
+	public String getPortletCalendarCss() {
+		return portletCalendarCss;
+	}
+
+	public void setPortletCalendarCss(String portletCalendarCss) {
+		this.portletCalendarCss = portletCalendarCss;
+	}
+
+	public String getPortletBookmarkCss() {
+		return portletBookmarkCss;
+	}
+
+	public void setPortletBookmarkCss(String portletBookmarkCss) {
+		this.portletBookmarkCss = portletBookmarkCss;
+	}
+
+	public String getPortletGroupsCss() {
+		return portletGroupsCss;
+	}
+
+	public void setPortletGroupsCss(String portletGroupsCss) {
+		this.portletGroupsCss = portletGroupsCss;
+	}
+
+	public String getPortletNotiCss() {
+		return portletNotiCss;
+	}
+
+	public void setPortletNotiCss(String portletNotiCss) {
+		this.portletNotiCss = portletNotiCss;
+	}
+
+	public String getPortletEffCss() {
+		return portletEffCss;
+	}
+
+	public void setPortletEffCss(String portletEffCss) {
+		this.portletEffCss = portletEffCss;
+	}
+
+	public String getPortletNotesCss() {
+		return portletNotesCss;
+	}
+
+	public void setPortletNotesCss(String portletNotesCss) {
+		this.portletNotesCss = portletNotesCss;
+	}
+
+	public String getPortletDykCss() {
+		return portletDykCss;
+	}
+
+	public void setPortletDykCss(String portletDykCss) {
+		this.portletDykCss = portletDykCss;
+	}
+
+	public String getOldPasswordCss() {
+		return oldPasswordCss;
+	}
+
+	public void setOldPasswordCss(String oldPasswordCss) {
+		this.oldPasswordCss = oldPasswordCss;
+	}
+
+	public String getNewPasswordCss() {
+		return newPasswordCss;
+	}
+
+	public void setNewPasswordCss(String newPasswordCss) {
+		this.newPasswordCss = newPasswordCss;
+	}
+
+	public String getConfirmPasswordCss() {
+		return confirmPasswordCss;
+	}
+
+	public void setConfirmPasswordCss(String confirmPasswordCss) {
+		this.confirmPasswordCss = confirmPasswordCss;
 	}
 }

@@ -274,6 +274,10 @@ public class FunctionalUtil {
 	}
 	
 	public boolean login(Selenium browser, boolean closeDialogs){
+		return(login(browser, getUsername(), getPassword(), closeDialogs));
+	}
+	
+	public boolean login(Selenium browser, String username, String password, boolean closeDialogs){
 		loadPage(browser, getLoginPage());
 		
 		/* fill in login form */
@@ -387,6 +391,32 @@ public class FunctionalUtil {
 	
 	/**
 	 * @param browser
+	 * @param groupCss
+	 * @param value
+	 * @return true on success
+	 * 
+	 * Clicks the radio button with specific value attribute in groupCss container.
+	 */
+	public boolean clickCheckbox(Selenium browser, String groupCss, String value){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form")
+		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal']")
+		.append("//input[@type='checkbox' and @value='")
+		.append(value)
+		.append("']");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(getWaitLimit());
+		//TODO:JK: implement me
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
 	 * @param formIndex
 	 * @param radioGroupIndex
 	 * @param radioIndex
@@ -394,7 +424,64 @@ public class FunctionalUtil {
 	 * 
 	 * Clicks the radio button at position radioIndex from the selection at position radioGroupIndex.
 	 */
+	@Deprecated
 	public boolean clickRadio(Selenium browser, int formIndex, int radioGroupIndex, int radioIndex){
+		StringBuffer selectorBuffer = new StringBuffer();
+	
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form[")
+		.append(formIndex)
+		.append("]")
+		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal'][")
+		.append(radioGroupIndex)
+		.append("]")
+		.append("//input[@type='radio'][")
+		.append(radioIndex)
+		.append("]");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param groupCss
+	 * @param value
+	 * @return true on success
+	 * 
+	 * Clicks the radio button with specific value attribute in groupCss container.
+	 */
+	public boolean clickRadio(Selenium browser, String groupCss, String value){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form")
+		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal']")
+		.append("//input[@type='radio' and @value='")
+		.append(value)
+		.append("']");
+		
+		browser.click(selectorBuffer.toString());
+		browser.waitForPageToLoad(getWaitLimit());
+
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param formIndex
+	 * @param textIndex
+	 * @param text
+	 * @return true on success
+	 * 
+	 * Type text in the specified text entry at textIndex position within form at formIndex.
+	 */
+	@Deprecated
+	public boolean typeText(Selenium browser, int formIndex, int textIndex, String text){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//div[@class='")
@@ -402,14 +489,85 @@ public class FunctionalUtil {
 		.append("']//form[")
 		.append(formIndex)
 		.append("]")
-		.append("//input[@type='radio' and index(")
-		.append(radioIndex)
-		.append(")]");
+		.append("//input[@type='text'][")
+		.append(textIndex)
+		.append("]");
 		
-		browser.click(selectorBuffer.toString());
+		browser.type(selectorBuffer.toString(), text);
 		browser.waitForPageToLoad(getWaitLimit());
 		
 		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param entryCss
+	 * @param text
+	 * @return true on success
+	 * 
+	 * Types text to the with CSS class specified entry.
+	 */
+	public boolean typeText(Selenium browser, String entryCss, String text){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form")
+		.append("//div[@class='")
+		.append(entryCss)
+		.append("']")
+		.append("//input[@type='text']");
+		
+		browser.type(selectorBuffer.toString(), text);
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
+	}
+	
+	/**
+	 * @param browser
+	 * @param entryCss
+	 * @param text
+	 * @return true on success
+	 * 
+	 * Types text to the with CSS class specified password entry.
+	 */
+	public boolean typePassword(Selenium browser, String entryCss, String text){
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form")
+		.append("//div[@class='")
+		.append(entryCss)
+		.append("']")
+		.append("//input[@type='password']");
+		
+		browser.type(selectorBuffer.toString(), text);
+		browser.waitForPageToLoad(getWaitLimit());
+		
+		return(true);
+	}
+	
+	public boolean selectOption(Selenium browser, String id, String value){
+		StringBuffer selectLocatorBuffer = new StringBuffer();
+		
+		selectLocatorBuffer.append("xpath=//div[@class='")
+		.append(getContentCss())
+		.append("']//form")
+		.append("//div[@id='")
+		.append(id)
+		.append("']");
+		
+		StringBuffer optionLocatorBuffer = new StringBuffer();
+		
+		optionLocatorBuffer.append("xpath=//option[@value='")
+		.append(value)
+		.append("']");
+		
+		browser.select(selectLocatorBuffer.toString(), optionLocatorBuffer.toString());
+		
+		return(false);
 	}
 	
 	public String getUsername() {
