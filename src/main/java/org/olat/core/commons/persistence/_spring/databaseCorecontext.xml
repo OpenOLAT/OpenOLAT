@@ -16,7 +16,9 @@
      			<value>classpath:/org/olat/core/commons/persistence/_spring/core_persistence.xml</value>
 			</list>
   		</property>
+  		<!-- 
 		<property name="defaultDataSource" ref="${db.vendor}PooledDataSource"/>
+		-->
 	</bean>
 	
 	<!-- EntityManagerFactory -->
@@ -44,19 +46,28 @@
 		    </props>
 		</constructor-arg>
 	</bean>
-
+	
 	<bean id="mysqlHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
+			     <!-- Using datasource of hibernate -->
+				<prop key="hibernate.connection.driver_class">com.mysql.jdbc.Driver</prop>
+		        <prop key="hibernate.connection.url">jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</prop>
+		        <prop key="hibernate.connection.username">${db.user}</prop>
+		        <prop key="hibernate.connection.password">${db.pass}</prop>
 		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
 	        </props>            
 		</constructor-arg>
-		<property name="addMoreProperties" ref="hibernateProps" />
+		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
 	</bean>
 
 	<bean id="postgresqlHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
+				<prop key="hibernate.connection.driver_class">org.postgresql.Driver</prop>
+				<prop key="hibernate.connection.url">jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</prop>
+				<prop key="hibernate.connection.username">${db.user}</prop>
+				<prop key="hibernate.connection.password">${db.pass}</prop>
 		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 	        </props>            
 		</constructor-arg>
@@ -96,6 +107,37 @@
 				<prop key="javax.persistence.lock.timeout">30000</prop>
 	        </props>
 		</constructor-arg>        
+	</bean>
+	
+	<bean id="c3p0HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+		<constructor-arg>
+			<props>
+	            <prop key="hibernate.connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</prop>
+	            <!-- Min pool size -->
+	            <prop key="hibernate.c3p0.min_size">${db.hibernate.c3p0.minsize}</prop>
+	            <!-- Max pool size , mysql-default value is 100, If you need to support more connections, you should set a larger value for this variable in mysql config -->
+	            <prop key="hibernate.c3p0.max_size">${db.hibernate.c3p0.maxsize}</prop>
+	            <!-- Connection timeout in sec -->
+	            <prop key="hibernate.c3p0.timeout">1800</prop>
+	            <!-- Size of prepared statements -->
+	            <prop key="hibernate.c3p0.max_statements">10000</prop>
+	            <!-- Commit on connection close --> 
+	            <prop key="hibernate.c3p0.autoCommitOnClose">false</prop>
+	            <!-- Number of connection acquired when pool is exhausted -->
+	            <prop key="hibernate.c3p0.acquire_increment">2</prop>
+	             <!-- Idle time (in sec) before pooled connection is validated -->
+	             <prop key="hibernate.c3p0.idle_test_period">500</prop>
+	
+	            <!--  OLAT-5528: under heavy load situations threads have been seen to deadlock on acquire/release of a connection.
+	                             increasing number of helper threads from 3 to 10 plus limiting the max time for administrative tasks to 2min
+	                             is expected to allow these situations to resolve themselves -->
+	            <!-- Number of c3p0 helper threads - default is 3 --> 
+	            <prop key="hibernate.c3p0.numHelperThreads">10</prop>
+	            <!-- Maximum time spent by c3p0 for administrative tasks in seconds - default infinity=0 --> 
+	            <prop key="hibernate.c3p0.maxAdministrativeTaskTime">120</prop>
+	        </props>
+		</constructor-arg>
+		<property name="addMoreProperties" ref="hibernateProps" />
 	</bean>
 
 	<!-- c3p0 pooled JDBC connection -->

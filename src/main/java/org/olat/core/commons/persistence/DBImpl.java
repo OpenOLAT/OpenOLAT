@@ -227,7 +227,7 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 			logDebug("DB manager ist null.", null);
 			return null;
 		}
-		beginTransaction("entittyManager");
+		beginTransaction("entityManager");
 		return dbm.getDbSession().getEntityManager();
 	}
 
