@@ -20,13 +20,19 @@
 package org.olat.upgrade;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaImpl;
+import org.olat.group.area.BGAreaManager;
+import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.group.context.BGContext2Resource;
+import org.olat.group.model.BGResourceRelation;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,11 +50,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 
 	private static final String TASK_CONTEXTS = "Upgrade contexts";
+	private static final String TASK_AREAS = "Upgrade areas";
 	private static final int REPO_ENTRIES_BATCH_SIZE = 20;
 	private static final String VERSION = "OLAT_8.2.0";
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -78,7 +87,8 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			}
 		}
 		
-		boolean allOk = upgradeAreas(upgradeManager, uhd);
+		boolean allOk = upgradeGroups(upgradeManager, uhd);
+		allOk &= upgradeAreas(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -90,7 +100,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private boolean upgradeAreas(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+	private boolean upgradeGroups(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		if (!uhd.getBooleanDataValue(TASK_CONTEXTS)) {
 
 			int counter = 0;
@@ -111,6 +121,27 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		return false;
 	}
 	
+	private boolean upgradeAreas(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		if (!uhd.getBooleanDataValue(TASK_AREAS)) {
+
+			int counter = 0;
+			List<BGAreaImpl> areas;
+			do {
+				areas = findAreas(counter, REPO_ENTRIES_BATCH_SIZE);
+				for(BGAreaImpl area:areas) {
+					processArea(area);
+				}
+				counter += areas.size();
+				log.audit("Processed areas: " + areas.size());
+			} while(areas.size() == REPO_ENTRIES_BATCH_SIZE);
+			
+			uhd.setBooleanDataValue(TASK_AREAS, true);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+			return false;
+		}
+		return false;
+	}
+	
 	private void processBusinessGroup(BusinessGroup group) {
 		List<OLATResource> resources = findOLATResourcesForBusinessGroup(group);
 		List<OLATResource> currentList = businessGroupService.findResources(Collections.singletonList(group), 0, -1);
@@ -123,7 +154,98 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			}
 		}
 		dbInstance.commitAndCloseSession();
-		System.out.println("Processed: " + group.getName() + " add " + count + " resources");
+		log.audit("Processed: " + group.getName() + " add " + count + " resources");
+	}
+	
+	private void processArea(BGAreaImpl area) {
+		if(area.getResource() != null) {
+			//already migrated
+			return;
+		}
+		Long groupContextKey = area.getGroupContextKey();
+		List<OLATResource> resources = findOLATResourcesForBGContext(groupContextKey);
+		if(resources.isEmpty()) {
+			//nothing to do
+		} else {
+			//reuse the area for the first resource
+			Iterator<OLATResource> resourcesIt = resources.iterator();
+			OLATResource firstResource = resourcesIt.next();
+			area.setResource(firstResource);
+			dbInstance.getCurrentEntityManager().merge(area);
+			List<Long> firstResourcesGroupKeys = findBusinessGroupsOfResource(firstResource);
+			List<BusinessGroup> originalGroupList = findBusinessGroupsOfArea(area);
+			//remove the groups which aren't part of the first resource
+			for(BusinessGroup group:originalGroupList) {
+				if(!firstResourcesGroupKeys.contains(group.getKey())) {
+					areaManager.removeBGFromArea(group, area);
+				}
+			}
+			
+			//duplicate the areas for the next resources
+			if(resourcesIt.hasNext()) {
+				for( ;resourcesIt.hasNext(); ) {
+					OLATResource resource = resourcesIt.next();
+					List<Long> resourcesGroupKeys = findBusinessGroupsOfResource(resource);
+					BGArea existingArea = areaManager.findBGArea(area.getName(), resource);
+					if(existingArea == null) {
+						BGArea copyArea = areaManager.createAndPersistBGAreaIfNotExists(area.getName(), area.getDescription(), resource);
+						for(BusinessGroup group:originalGroupList) {
+							if(resourcesGroupKeys.contains(group.getKey())) {
+								areaManager.addBGToBGArea(group, copyArea);
+							}
+						}
+					}
+				}
+			}
+		}
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private List<OLATResource> findOLATResourcesForBGContext(Long contextKey) {
+		StringBuilder q = new StringBuilder();
+		q.append("select bgcr.resource from ").append(BGContext2Resource.class.getName()).append(" as bgcr where bgcr.groupContext.key=:contextKey");
+		
+		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), OLATResource.class)
+				.setParameter("contextKey", contextKey)
+				.getResultList();
+		return resources;
+	}
+	
+	private List<Long> findBusinessGroupsOfResource(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct relation.group.key from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey");
+
+		List<Long> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+		return groups;
+	}
+	
+	private List<BusinessGroup> findBusinessGroupsOfArea(BGArea area) {
+		StringBuilder q = new StringBuilder();
+		q.append("select bgarel.businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
+		 .append(" where bgarel.groupArea.key=:areaKey");
+		
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(q.toString(), BusinessGroup.class)
+				.setParameter("areaKey", area.getKey())
+				.getResultList();
+		return groups;
+	}
+	
+	private List<BGAreaImpl> findAreas(int firstResult, int maxResults) {
+		StringBuilder q = new StringBuilder();
+		q.append("select area from ").append(BGAreaImpl.class.getName()).append(" area ")
+		 .append(" left join fetch area.resource resource")
+		 .append(" order by area.key");
+
+		List<BGAreaImpl> resources = dbInstance.getCurrentEntityManager().createQuery(q.toString(), BGAreaImpl.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+		return resources;
 	}
 	
 	private List<BusinessGroup> findBusinessGroups(int firstResult, int maxResults) {

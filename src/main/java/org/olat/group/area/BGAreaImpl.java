@@ -55,9 +55,9 @@ public class BGAreaImpl extends PersistentObject implements BGArea {
 		setDescription(description);
 	}
 	
-	BGAreaImpl(String name, String description, OLATResource OLATResource) {
+	BGAreaImpl(String name, String description, OLATResource resource) {
 		setName(name);
-		setResource(OLATResource);
+		setResource(resource);
 		setDescription(description);
 	}
 
