@@ -42,11 +42,11 @@ import org.olat.group.manager.GroupXStream;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class GroupImportExportTest {
+public class BusinessGroupImportExportXStreamTest {
 	
 	@Test
 	public void importLearningGroupTest() {
-		InputStream input = GroupImportExportTest.class.getResourceAsStream("learninggroupexport.xml");
+		InputStream input = BusinessGroupImportExportXStreamTest.class.getResourceAsStream("learninggroupexport.xml");
 		GroupXStream xstream = new GroupXStream();
 		OLATGroupExport export = xstream.fromXML(input);
 		assertNotNull(export);
@@ -66,7 +66,7 @@ public class GroupImportExportTest {
 	
 	@Test
 	public void importRightGroupTest() {
-		InputStream input = GroupImportExportTest.class.getResourceAsStream("rightgroupexport.xml");
+		InputStream input = BusinessGroupImportExportXStreamTest.class.getResourceAsStream("rightgroupexport.xml");
 		GroupXStream xstream = new GroupXStream();
 		OLATGroupExport export = xstream.fromXML(input);
 		assertNotNull(export);

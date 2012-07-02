@@ -1,0 +1,17 @@
+<OLATGroupExport>
+  <AreaCollection/>
+  <GroupCollection>
+    <Group name="Export group 1" waitingList="false" autoCloseRanks="false" showOwners="true" showParticipants="true" showWaitingList="false">
+      <Description>&lt;p&gt;Export group 1&lt;/p&gt;</Description>
+      <CollabTools hasNews="false" hasContactForm="false" hasCalendar="false" hasFolder="false" hasForum="false" hasChat="false" hasWiki="false" hasPortfolio="false"/>
+    </Group>
+    <Group name="Export group 2" maxParticipants="25" waitingList="true" autoCloseRanks="false" showOwners="true" showParticipants="false" showWaitingList="false">
+      <Description>&lt;p&gt;Export group 1&lt;/p&gt;</Description>
+      <CollabTools hasNews="false" hasContactForm="false" hasCalendar="false" hasFolder="false" hasForum="false" hasChat="false" hasWiki="false" hasPortfolio="false"/>
+    </Group>
+    <Group name="Export group 3" maxParticipants="25" waitingList="true" autoCloseRanks="false" showOwners="true" showParticipants="true" showWaitingList="true" info="&lt;p&gt;Hello Mitglied&lt;/p&gt;">
+      <Description>&lt;p&gt;Export group 2&lt;/p&gt;</Description>
+      <CollabTools hasNews="true" hasContactForm="true" hasCalendar="true" hasFolder="true" hasForum="true" hasChat="true" hasWiki="true" hasPortfolio="true"/>
+    </Group>
+  </GroupCollection>
+</OLATGroupExport>
