@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -43,6 +44,7 @@ import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalHomeSiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalVOUtil;
+import org.olat.util.FunctionalHomeSiteUtil.SettingsTab;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 
@@ -117,7 +119,7 @@ public class FunctionalSettingsTest {
 		/* edit settings */
 		functionalHomeSiteUtil.openPageByNavigation(browser, FunctionalHomeSiteUtil.HomePage.SETTINGS);
 		
-		functionalUtil.openContentTab(browser, 1);
+		functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal());
 		
 		functionalHomeSiteUtil.selectLanguage(browser, "en");
 		
@@ -159,10 +161,9 @@ public class FunctionalSettingsTest {
 		functionalUtil.openSite(browser, FunctionalUtil.OlatSite.HOME);
 		functionalHomeSiteUtil.openPageByNavigation(browser, FunctionalHomeSiteUtil.HomePage.SETTINGS);
 		
-		//TODO:JK: use random generated password
-		String newPassword = "letmein@123";
+		String newPassword = "passwd_" + 0 + "_" + UUID.randomUUID().toString();
 		
-		functionalUtil.openContentTab(browser, 2);
+		functionalUtil.openContentTab(browser, SettingsTab.PASSWORD.ordinal());
 		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getOldPasswordCss(), functionalUtil.getPassword());
 		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getNewPasswordCss(), newPassword);
 		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getConfirmPasswordCss(), newPassword);

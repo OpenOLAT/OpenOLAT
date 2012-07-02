@@ -50,7 +50,9 @@ public class FunctionalHomeSiteUtil {
 	/* portal */
 	public final static String PORTAL_EDIT_LINK_CSS = "o_home_portaleditlink";
 	
+	public final static String PORTLET_QUICKSTART_CSS = "o_portlet_quickstart";
 	public final static String PORTLET_REPOSITORY_STUDENT_CSS = "o_portlet_repository_student";
+	public final static String PORTLET_REPOSITORY_TEACHER_CSS = "o_portlet_repository_teacher";
 	public final static String PORTLET_INFOMESSAGES_CSS = "o_portlet_infomessages";
 	public final static String PORTLET_CALENDAR_CSS = "o_portlet_calendar";
 	public final static String PORTLET_BOOKMARK_CSS = "o_portlet_bookmark";
@@ -59,6 +61,13 @@ public class FunctionalHomeSiteUtil {
 	public final static String PORTLET_EFF_CSS = "o_portlet_eff";
 	public final static String PORTLET_NOTES_CSS = "o_portlet_notes";
 	public final static String PORTLET_DYK_CSS = "o_portlet_dyk";
+	
+	public final static String PORTLET_MOVE_LEFT_CSS = "b_portlet_edit_left";
+	public final static String PORTLET_MOVE_RIGHT_CSS = "b_portlet_edit_right";
+	public final static String PORTLET_MOVE_UPWARDS_CSS = "b_portlet_edit_up";
+	public final static String PORTLET_MOVE_DOWNWARDS_CSS = "b_portlet_edit_down";
+	public final static String PORTLET_EDIT_INACTIVATE_CSS = "b_portlet_edit_delete";
+	public final static String PORTLET_EDIT_ACTIVATE_CSS = "b_portlet_add";
 	
 	/* General System Settings */
 	public final static String LANGUAGE_OPTIONS_ID = "o_fioform_language_SELBOX";
@@ -77,6 +86,9 @@ public class FunctionalHomeSiteUtil {
 	public final static String NO_VALUE = "none";
 	public final static String YES_AUTOMATICALLY_VALUE = "auto";
 	public final static String YES_ON_REQUEST_VALUE = "request";
+	
+	public final static String OFF_VALUE = "no";
+	public final static String ON_VALUE = "yes";
 	
 	/* Reset Configurations */
 	public final static String CONFIGURATIONS_CSS = "o_sel_home_settings_reset_sysprefs";
@@ -133,7 +145,26 @@ public class FunctionalHomeSiteUtil {
 				public void setValueAttribute(String valueAttribute) {
 					this.valueAttribute = valueAttribute;
 				}
-			} 
+			}
+			
+			public enum SupportForBrowserBack {
+				ON(ON_VALUE),
+				OFF(OFF_VALUE);
+				
+				private String valueAttribute;
+				
+				SupportForBrowserBack(String valueAttribute){
+					setValueAttribute(valueAttribute);
+				}
+
+				public String getValueAttribute() {
+					return valueAttribute;
+				}
+
+				public void setValueAttribute(String valueAttribute) {
+					this.valueAttribute = valueAttribute;
+				}
+			}
 		}
 		
 
@@ -203,6 +234,14 @@ public class FunctionalHomeSiteUtil {
 		RIGHT;
 	}
 
+	public enum SettingsTab {
+		PROFILE,
+		SYSTEM,
+		PASSWORD,
+		WEB_DAV,
+		TERMS_OF_USE;
+	}
+	
 	private FunctionalUtil functionalUtil;
 	
 	private String homePageNavigationSelectedCss;
@@ -223,7 +262,9 @@ public class FunctionalHomeSiteUtil {
 	
 	private String portalEditLinkCss;
 	
+	private String portletQuickstartCss;
 	private String portletRepositoryStudentCss;
+	private String portletRepositoryTeacherCss;
 	private String portletInfomessagesCss;
 	private String portletCalendarCss;
 	private String portletBookmarkCss;
@@ -232,6 +273,13 @@ public class FunctionalHomeSiteUtil {
 	private String portletEffCss;
 	private String portletNotesCss;
 	private String portletDykCss;
+	
+	private String portletActivateCss;
+	private String portletInactivateCss;
+	private String portletMoveLeftCss;
+	private String portletMoveRightCss;
+	private String portletMoveUpCss;
+	private String portletMoveDownCss;
 	
 	private String oldPasswordCss;
 	private String newPasswordCss;
@@ -263,7 +311,9 @@ public class FunctionalHomeSiteUtil {
 		
 		setPortalEditLinkCss(PORTAL_EDIT_LINK_CSS);
 		
+		setPortletQuickstartCss(PORTLET_QUICKSTART_CSS);
 		setPortletRepositoryStudentCss(PORTLET_REPOSITORY_STUDENT_CSS);
+		setPortletRepositoryTeacherCss(PORTLET_REPOSITORY_TEACHER_CSS);
 		setPortletInfomessagesCss(PORTLET_INFOMESSAGES_CSS);
 		setPortletCalendarCss(PORTLET_CALENDAR_CSS);
 		setPortletBookmarkCss(PORTLET_BOOKMARK_CSS);
@@ -271,6 +321,13 @@ public class FunctionalHomeSiteUtil {
 		setPortletNotiCss(PORTLET_NOTI_CSS);
 		setPortletEffCss(PORTLET_EFF_CSS);
 		setPortletNotesCss(PORTLET_NOTES_CSS);
+		
+		setPortletActivateCss(PORTLET_EDIT_ACTIVATE_CSS);
+		setPortletInactivateCss(PORTLET_EDIT_INACTIVATE_CSS);
+		setPortletMoveLeftCss(PORTLET_MOVE_LEFT_CSS);
+		setPortletMoveRightCss(PORTLET_MOVE_RIGHT_CSS);
+		setPortletMoveUpCss(PORTLET_MOVE_UPWARDS_CSS);
+		setPortletMoveDownCss(PORTLET_MOVE_DOWNWARDS_CSS);
 		
 		setOldPasswordCss(OLD_PASSWORD_CSS);
 		setNewPasswordCss(NEW_PASSWORD_CSS);
@@ -461,15 +518,75 @@ public class FunctionalHomeSiteUtil {
 	}
 	
 	public void activatePortlet(Selenium browser, String portletCss){
-		//TODO:JK: implement me
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("css=.")
+		.append(portletCss)
+		.append(getPortletActivateCss())
+		.append(" * a");
+		
+		browser.click(selectorBuffer.toString());
 	}
 	
+	/**
+	 * @param browser
+	 * @param portletCss
+	 * 
+	 * Remove a portlet from portal.
+	 */
 	public void deactivatePortlet(Selenium browser, String portletCss){
-		//TODO:JK: implement me
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("css=.")
+		.append(portletCss)
+		.append(" * .")
+		.append(getPortletInactivateCss());
+		
+		browser.click(selectorBuffer.toString());
 	}
 	
+	/**
+	 * @param browser
+	 * @param portletCss
+	 * @param direction
+	 * 
+	 * Move a portlet to the given direction
+	 */
 	public void movePortlet(Selenium browser, String portletCss, Direction direction){
-		//TODO:JK: implement me
+		StringBuffer selectorBuffer = new StringBuffer();
+		
+		selectorBuffer.append("css=.")
+		.append(portletCss)
+		.append(" * .");
+		
+		switch(direction){
+		case LEFT:
+		{
+			selectorBuffer.append(getPortletMoveLeftCss());
+			
+			break;
+		}
+		case RIGHT:
+		{
+			selectorBuffer.append(getPortletMoveRightCss());
+			
+			break;
+		}
+		case UP:
+		{
+			selectorBuffer.append(getPortletMoveUpCss());
+			
+			break;
+		}
+		case DOWN:
+		{
+			selectorBuffer.append(getPortletMoveDownCss());
+			
+			break;
+		}
+		}
+		
+		browser.click(selectorBuffer.toString());
 	}
 	
 	
@@ -489,7 +606,7 @@ public class FunctionalHomeSiteUtil {
 		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
 		
 		/* open System tab */
-		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 		
 		/* select language */
 		functionalUtil.selectOption(browser, LANGUAGE_OPTIONS_ID, language);
@@ -514,7 +631,7 @@ public class FunctionalHomeSiteUtil {
 		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
 		
 		/* open System tab */
-		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 		
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
@@ -541,7 +658,7 @@ public class FunctionalHomeSiteUtil {
 		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
 		
 		/* open system tab */
-		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 		
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
@@ -568,7 +685,7 @@ public class FunctionalHomeSiteUtil {
 		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
 		
 		/* open system tab */
-		Assert.assertTrue(functionalUtil.openContentTab(browser, 1));
+		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
 		
 		/* enable resume */
 		Assert.assertTrue(functionalUtil.clickRadio(browser,
@@ -582,12 +699,52 @@ public class FunctionalHomeSiteUtil {
 		return(true);
 	}
 	
-	public void enableBack(Selenium browser){
-		//TODO:JK: implement me
+	public boolean enableBack(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.SETTINGS));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
+		
+		/* open system tab */
+		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
+		
+		/* enable resume */
+		Assert.assertTrue(functionalUtil.clickRadio(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SUPPORT_FOR_BROWSER_BACK.getGroupCss(),
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SupportForBrowserBack.ON.getValueAttribute()));
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		Assert.assertTrue(functionalUtil.saveForm(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
+		
+		return(true);
 	}
 	
-	public void disableBack(Selenium browser){
-		//TODO:JK: implement me
+	public boolean disableBack(Selenium browser){
+		if(!functionalUtil.checkCurrentSite(browser, OlatSite.HOME)){
+			functionalUtil.openSite(browser, OlatSite.HOME);
+		}
+		
+		/* goto home site */
+		Assert.assertTrue(openPageByNavigation(browser, HomePage.SETTINGS));
+		Assert.assertTrue(checkCurrentPage(browser, HomePage.SETTINGS));
+		
+		/* open system tab */
+		Assert.assertTrue(functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal()));
+		
+		/* enable resume */
+		Assert.assertTrue(functionalUtil.clickRadio(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SUPPORT_FOR_BROWSER_BACK.getGroupCss(),
+				FunctionalHomeSiteUtil.PortalSettingsForms.SpecificSystemSettingsRadios.SupportForBrowserBack.OFF.getValueAttribute()));
+		
+		//FIXME:JK: use CSS classes instead of ordinal
+		Assert.assertTrue(functionalUtil.saveForm(browser,
+				FunctionalHomeSiteUtil.PortalSettingsForms.SPECIFIC_SYSTEM_SETTINGS.ordinal()));
+		
+		return(true);
 	}
 	
 	/**
@@ -751,12 +908,28 @@ public class FunctionalHomeSiteUtil {
 		this.portalEditLinkCss = portalEditLinkCss;
 	}
 
+	public String getPortletQuickstartCss() {
+		return portletQuickstartCss;
+	}
+
+	public void setPortletQuickstartCss(String portletQuickstartCss) {
+		this.portletQuickstartCss = portletQuickstartCss;
+	}
+
 	public String getPortletRepositoryStudentCss() {
 		return portletRepositoryStudentCss;
 	}
 
 	public void setPortletRepositoryStudentCss(String portletRepositoryStudentCss) {
 		this.portletRepositoryStudentCss = portletRepositoryStudentCss;
+	}
+
+	public String getPortletRepositoryTeacherCss() {
+		return portletRepositoryTeacherCss;
+	}
+
+	public void setPortletRepositoryTeacherCss(String portletRepositoryTeacherCss) {
+		this.portletRepositoryTeacherCss = portletRepositoryTeacherCss;
 	}
 
 	public String getPortletInfomessagesCss() {
@@ -821,6 +994,54 @@ public class FunctionalHomeSiteUtil {
 
 	public void setPortletDykCss(String portletDykCss) {
 		this.portletDykCss = portletDykCss;
+	}
+
+	public String getPortletActivateCss() {
+		return portletActivateCss;
+	}
+
+	public void setPortletActivateCss(String portletActivateCss) {
+		this.portletActivateCss = portletActivateCss;
+	}
+
+	public String getPortletInactivateCss() {
+		return portletInactivateCss;
+	}
+
+	public void setPortletInactivateCss(String portletInactivateCss) {
+		this.portletInactivateCss = portletInactivateCss;
+	}
+
+	public String getPortletMoveLeftCss() {
+		return portletMoveLeftCss;
+	}
+
+	public void setPortletMoveLeftCss(String portletMoveLeftCss) {
+		this.portletMoveLeftCss = portletMoveLeftCss;
+	}
+
+	public String getPortletMoveRightCss() {
+		return portletMoveRightCss;
+	}
+
+	public void setPortletMoveRightCss(String portletMoveRightCss) {
+		this.portletMoveRightCss = portletMoveRightCss;
+	}
+
+	public String getPortletMoveUpCss() {
+		return portletMoveUpCss;
+	}
+
+	public void setPortletMoveUpCss(String portletMoveUpCss) {
+		this.portletMoveUpCss = portletMoveUpCss;
+	}
+
+	public String getPortletMoveDownCss() {
+		return portletMoveDownCss;
+	}
+
+	public void setPortletMoveDownCss(String portletMoveDownCss) {
+		this.portletMoveDownCss = portletMoveDownCss;
 	}
 
 	public String getOldPasswordCss() {
