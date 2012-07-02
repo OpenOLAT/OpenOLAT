@@ -46,7 +46,6 @@ import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -69,6 +68,8 @@ public class BusinessGroupDAO {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATResourceManager olatResourceManager;
+	@Autowired
+	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
@@ -116,8 +117,7 @@ public class BusinessGroupDAO {
 		// per default all collaboration-tools are disabled
 
 		// group members visibility
-		BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(businessgroup);
-		bgpm.createAndPersistDisplayMembers(showOwners, showParticipants, showWaitingList);
+		businessGroupPropertyManager.createAndPersistDisplayMembers(businessgroup, showOwners, showParticipants, showWaitingList);
 		return businessgroup;
 	}
 	

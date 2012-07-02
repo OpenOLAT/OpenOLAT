@@ -84,7 +84,7 @@ import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.group.model.DisplayMembers;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.BGTranslatorFactory;
@@ -199,7 +199,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private BGConfigFlags flags;
 
-	private BusinessGroupPropertyManager bgpm;
 	private final BusinessGroupService businessGroupService;
 	private UserSession userSession;
 	private String adminNodeId; // reference to admin menu item
@@ -254,7 +253,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
-		bgpm = new BusinessGroupPropertyManager(businessGroup);
 	
 		this.userSession = ureq.getUserSession();
 		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
@@ -822,7 +820,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doShowMembers(UserRequest ureq) {
 		VelocityContainer membersVc = createVelocityContainer("ownersandmembers");
 		// 1. show owners if configured with Owners
-		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && bgpm.showOwners()) {
+		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
+		if (flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && displayMembers.isShowOwners()) {
 			removeAsListenerAndDispose(gownersC);
 			gownersC = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getOwnerGroup());
 			listenTo(gownersC);
@@ -832,7 +831,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			membersVc.contextPut("showOwnerGroups", Boolean.FALSE);
 		}
 		// 2. show participants if configured with Participants
-		if (bgpm.showPartips()) {
+		if (displayMembers.isShowParticipants()) {
 			removeAsListenerAndDispose(gparticipantsC);
 			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getPartipiciantGroup());
 			listenTo(gparticipantsC);
@@ -844,7 +843,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 		// 3. show waiting-list if configured 
 		membersVc.contextPut("hasWaitingList", new Boolean(businessGroup.getWaitingListEnabled()) );
-		if (bgpm.showWaitingList()) {
+		if (displayMembers.isShowWaitingList()) {
 			removeAsListenerAndDispose(waitingListController);
 			waitingListController = new GroupController(ureq, getWindowControl(), false, true, false, businessGroup.getWaitingGroup());
 			listenTo(waitingListController);
@@ -995,9 +994,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			BusinessGroupModifiedEvent bgmfe = (BusinessGroupModifiedEvent) event;
 			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {
 				// reset business group property manager
-				this.bgpm = new BusinessGroupPropertyManager(this.businessGroup);
 				// update reference to update business group object
-				this.businessGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(this.businessGroup);
+				businessGroup = businessGroupService.loadBusinessGroup(this.businessGroup);
 				main.contextPut("BuddyGroup", this.businessGroup);
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);
@@ -1105,8 +1103,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			//fxdiff BAKS-7 Resume function
 			nodeResources = gtnChild;
 		}
-
-		if ((flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && bgpm.showOwners()) || bgpm.showPartips()) {
+		
+		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
+		if ((flags.isEnabled(BGConfigFlags.GROUP_OWNERS) && displayMembers.isShowOwners()) || displayMembers.isShowParticipants()) {
 			// either owners or participants, or both are visible
 			// otherwise the node is not visible
 			gtnChild = new GenericTreeNode();

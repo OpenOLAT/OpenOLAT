@@ -33,6 +33,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.repository.RepositoryEntry;
@@ -60,6 +61,11 @@ public interface BusinessGroupService {
 			boolean waitingListEnabled, boolean autoCloseRanksEnabled, OLATResource resource);
 	
 	public BusinessGroup mergeBusinessGroup(BusinessGroup group);
+	
+	
+	public DisplayMembers getDisplayMembers(BusinessGroup group);
+	
+	public void updateDisplayMembers(BusinessGroup group, DisplayMembers displayMembers);
 	
 	public void deleteBusinessGroup(BusinessGroup group);
 	

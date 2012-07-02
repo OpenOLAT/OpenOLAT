@@ -23,14 +23,14 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.group.properties;
+package org.olat.group.manager;
 
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
-import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyConstants;
+import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<BR>
@@ -44,30 +44,15 @@ import org.olat.properties.PropertyConstants;
  * 
  * @author patrick
  */
+@Service("businessGroupPropertyManager")
+public class BusinessGroupPropertyDAO {
+	private static final String PROP_NAME = "displayMembers";
+	private static final int showOwnersVal      = 1;// 0x..0001
+	private static final int showPartipsVal     = 2;// 0x..0010
+	private static final int showWaitingListVal = 4;// 0x..0100
 
-public class BusinessGroupPropertyManager extends BasicManager {
-	private static String PROP_NAME = "displayMembers";
-	private int showOwnersVal      = 1;// 0x..0001
-	private int showPartipsVal     = 2;// 0x..0010
-	private int showWaitingListVal = 4;// 0x..0100
-
-	// 0x..1000
-	// next used int values should be  8, 16, ....
-	//
-	private BusinessGroup businessGroup;
-	private NarrowedPropertyManager npm;
-	private Property myProperty; // local copy
-
-	/**
-	 * Create a new BusinessGroupPropertyManager which instantiates a
-	 * NarrowedPropertyManager, narrowed to the supplied BusinessGroup.
-	 * 
-	 * @param bg BusinessGroup not null.
-	 */
-	public BusinessGroupPropertyManager(BusinessGroup bg) {
-		this.businessGroup = bg;
-		this.npm = NarrowedPropertyManager.getInstance(businessGroup);
-	}
+	@Autowired
+	private PropertyManager propertyManager;
 
 	/**
 	 * Creates and persists a new Property for the Display Members configuration
@@ -77,15 +62,14 @@ public class BusinessGroupPropertyManager extends BasicManager {
 	 * @param showPartips
 	 * @return The generated property
 	 */
-	public Property createAndPersistDisplayMembers(boolean showOwners, boolean showPartips, boolean showWaitingList) {
+	public Property createAndPersistDisplayMembers(BusinessGroup group, boolean showOwners, boolean showPartips, boolean showWaitingList) {
 		long showXXX = 0;
 		if (showOwners) showXXX += showOwnersVal;
 		if (showPartips) showXXX += showPartipsVal;
 		if (showWaitingList) showXXX += showWaitingListVal;
-		Property prop = npm.createPropertyInstance(null, this.businessGroup, PropertyConstants.OLATRESOURCE_CONFIGURATION, PROP_NAME, null,
-				new Long(showXXX), null, null);
-		npm.saveProperty(prop);
-		this.myProperty = prop;
+		
+		Property prop = propertyManager.createPropertyInstance(null, group, group, PropertyConstants.OLATRESOURCE_CONFIGURATION, PROP_NAME, null, new Long(showXXX), null, null);
+		propertyManager.saveProperty(prop);
 		return prop;
 	}
 
@@ -96,30 +80,23 @@ public class BusinessGroupPropertyManager extends BasicManager {
 	 * @param showOwners
 	 * @param showPartips
 	 */
-	public void updateDisplayMembers(boolean showOwners, boolean showPartips, boolean showWaitingList) {
+	public void updateDisplayMembers(BusinessGroup group, boolean showOwners, boolean showPartips, boolean showWaitingList) {
 		long showXXX = 0;
 		if (showOwners) showXXX += showOwnersVal;
 		if (showPartips) showXXX += showPartipsVal;
 		if (showWaitingList) showXXX += showWaitingListVal;
-		if (this.myProperty == null) {
-			this.myProperty = findProperty();
-		} else {
-			// reload object to prevent stale object exception
-			this.myProperty = (Property) DBFactory.getInstance().loadObject(this.myProperty);
-		}
-		this.myProperty.setLongValue(new Long(showXXX));
-		npm.updateProperty(this.myProperty);
+		
+		Property property = findProperty(group);
+		property.setLongValue(new Long(showXXX));
+		propertyManager.updateProperty(property);
 	}
 
 	/**
 	 * delete the display members property
 	 */
-	public void deleteDisplayMembers() {
-		if (this.myProperty == null) {
-			this.myProperty = findProperty();
-		}
-		npm.deleteProperty(myProperty);
-		this.myProperty = null;
+	public void deleteDisplayMembers(BusinessGroup group) {
+		Property property = findProperty(group);
+		propertyManager.deleteProperty(property);
 	}
 
 	/**
@@ -129,35 +106,43 @@ public class BusinessGroupPropertyManager extends BasicManager {
 	 * 
 	 * @return true if group owners are configured to be displayed
 	 */
-	public boolean showOwners() {
-		return ((getDisplayMembersValue() & showOwnersVal) == showOwnersVal);
+	public boolean showOwners(Property prop) {
+		return ((getDisplayMembersValue(prop) & showOwnersVal) == showOwnersVal);
 	}
 
 	/**
-	 * true if Members can see the Partipiciants, false otherwise. If the property
+	 * true if Members can see the Participants, false otherwise. If the property
 	 * is not existing, i.e. called before the property was created and persisted,
 	 * a null pointer exception occurs.
 	 * 
 	 * @return true if group participants are configured to be displayed
 	 */
-	public boolean showPartips() {
-		return ((getDisplayMembersValue() & showPartipsVal) == showPartipsVal);
+	public boolean showPartips(Property prop) {
+		return ((getDisplayMembersValue(prop) & showPartipsVal) == showPartipsVal);
+	}
+	
+
+	/**
+	 * true if Members can see the Waiting, false otherwise. If the property
+	 * is not existing, i.e. called before the property was created and persisted,
+	 * a null pointer exception occurs.
+	 * 
+	 * @return true if group participants are configured to be displayed
+	 */
+	public boolean showWaitingList(Property prop) {
+		return ((getDisplayMembersValue(prop) & showWaitingListVal) == showWaitingListVal);
 	}
 
-	private int getDisplayMembersValue() {
-		if (this.myProperty == null) {
-			this.myProperty = findProperty();
-		}
-		//
-		int showXXX = this.myProperty.getLongValue().intValue();
+	private int getDisplayMembersValue(Property prop) {
+		int showXXX = prop.getLongValue().intValue();
 		return showXXX;
 	}
 
 	/**
 	 * @return The group property. Either red from database or newly created.
 	 */
-	private Property findProperty() {
-		Property prop = npm.findProperty(null, businessGroup, PropertyConstants.OLATRESOURCE_CONFIGURATION, PROP_NAME);
+	public Property findProperty(BusinessGroup group) {
+		Property prop = propertyManager.findProperty(null, group, group, PropertyConstants.OLATRESOURCE_CONFIGURATION, PROP_NAME);
 		// prop != null, otherwise the init of this businessGroup was incomplete
 		// or the caller uses the function in the wrong way
 		//
@@ -167,7 +152,7 @@ public class BusinessGroupPropertyManager extends BasicManager {
 		// are to show. This reproduces behaviour of OLAT before the code was added.
 		// Furthermore if the property wass not existing one will be created.
 		if (prop == null) {
-			prop = createAndPersistDisplayMembers(true, true, true);
+			prop = createAndPersistDisplayMembers(group, true, true, true);
 		}
 		return prop;
 	}
@@ -175,20 +160,13 @@ public class BusinessGroupPropertyManager extends BasicManager {
 	/**
 	 * @param sourceGroup The group from which the configuration should be copied
 	 */
-	public void copyConfigurationFromGroup(BusinessGroup sourceGroup) {
-		BusinessGroupPropertyManager sourceGPM = new BusinessGroupPropertyManager(sourceGroup);
-		updateDisplayMembers(sourceGPM.showOwners(), sourceGPM.showPartips(), sourceGPM.showWaitingList() );
+	public void copyConfigurationFromGroup(BusinessGroup sourceGroup, BusinessGroup targetGroup) {
+		Property sourceGPM = findProperty(sourceGroup);
+		boolean showOwners = showOwners(sourceGPM);
+		boolean showPartips = showPartips(sourceGPM);
+		boolean showWaitingList = showWaitingList(sourceGPM);
+		updateDisplayMembers(targetGroup, showOwners, showPartips, showWaitingList);
 	}
 
-	/**
-	 * true if Members can see the Waiting, false otherwise. If the property
-	 * is not existing, i.e. called before the property was created and persisted,
-	 * a null pointer exception occurs.
-	 * 
-	 * @return true if group participants are configured to be displayed
-	 */
-	public boolean showWaitingList() {
-		return ((getDisplayMembersValue() & showWaitingListVal) == showWaitingListVal);
-	}
 
 }

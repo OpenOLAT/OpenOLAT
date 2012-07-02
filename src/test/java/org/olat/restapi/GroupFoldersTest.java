@@ -68,7 +68,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.group.model.DisplayMembers;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -154,10 +154,8 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	    g2 = businessGroupService.createBusinessGroup(null, "rest-g2", null, 0, 10, false, false, c1);
 	    
 	    //permission to see owners and participants
-	    BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(g1);
-	    bgpm1.updateDisplayMembers(false, false, false);
-	    BusinessGroupPropertyManager bgpm2 = new BusinessGroupPropertyManager(g2);
-	    bgpm2.updateDisplayMembers(true, true, false);
+	    businessGroupService.updateDisplayMembers(g1, new DisplayMembers(false, false, false));
+	    businessGroupService.updateDisplayMembers(g2, new DisplayMembers(true, true, false));
 	    
 	    // members g1
 	    secm.addIdentityToSecurityGroup(owner1, g1.getOwnerGroup());

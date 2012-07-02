@@ -39,7 +39,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +60,8 @@ public class BusinessGroupImportExport {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 	
 	public void exportGroups(List<BusinessGroup> groups, File fExportFile) {
@@ -145,10 +147,10 @@ public class BusinessGroupImportExport {
 			newGroup.areaRelations.add(areaRelation.getName());
 		}
 		// export properties
-		BusinessGroupPropertyManager bgPropertyManager = new BusinessGroupPropertyManager(group);
-		boolean showOwners = bgPropertyManager.showOwners();
-		boolean showParticipants = bgPropertyManager.showPartips();
-		boolean showWaitingList = bgPropertyManager.showWaitingList();
+		Property property = businessGroupPropertyManager.findProperty(group);
+		boolean showOwners = businessGroupPropertyManager.showOwners(property);
+		boolean showParticipants = businessGroupPropertyManager.showPartips(property);
+		boolean showWaitingList = businessGroupPropertyManager.showWaitingList(property);
 
 		newGroup.showOwners = showOwners;
 		newGroup.showParticipants = showParticipants;
@@ -272,8 +274,7 @@ public class BusinessGroupImportExport {
 				if (group.showWaitingList != null) {
 					showWaitingList = group.showWaitingList;
 				}
-				BusinessGroupPropertyManager bgPropertyManager = new BusinessGroupPropertyManager(newGroup);
-				bgPropertyManager.updateDisplayMembers(showOwners, showParticipants, showWaitingList);
+				businessGroupPropertyManager.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList);
 			}
 		}
 	}

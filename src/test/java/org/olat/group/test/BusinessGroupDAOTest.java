@@ -36,8 +36,9 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.group.manager.BusinessGroupPropertyDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.properties.Property;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 
 	
 	@After
@@ -330,20 +333,20 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the value
-		BusinessGroupPropertyManager bgpm1 = new BusinessGroupPropertyManager(group1);
-		Assert.assertTrue(bgpm1.showOwners());
-		Assert.assertTrue(bgpm1.showPartips());
-		Assert.assertFalse(bgpm1.showWaitingList());
+		Property prop1 = businessGroupPropertyManager.findProperty(group1);
+		Assert.assertTrue(businessGroupPropertyManager.showOwners(prop1));
+		Assert.assertTrue(businessGroupPropertyManager.showPartips(prop1));
+		Assert.assertFalse(businessGroupPropertyManager.showWaitingList(prop1));
 		
-		BusinessGroupPropertyManager bgpm2 = new BusinessGroupPropertyManager(group2);
-		Assert.assertFalse(bgpm2.showOwners());
-		Assert.assertTrue(bgpm2.showPartips());
-		Assert.assertFalse(bgpm2.showWaitingList());
+		Property prop2 = businessGroupPropertyManager.findProperty(group2);
+		Assert.assertFalse(businessGroupPropertyManager.showOwners(prop2));
+		Assert.assertTrue(businessGroupPropertyManager.showPartips(prop2));
+		Assert.assertFalse(businessGroupPropertyManager.showWaitingList(prop2));
 		
-		BusinessGroupPropertyManager bgpm3 = new BusinessGroupPropertyManager(group3);
-		Assert.assertFalse(bgpm3.showOwners());
-		Assert.assertFalse(bgpm3.showPartips());
-		Assert.assertTrue(bgpm3.showWaitingList());
+		Property prop3 = businessGroupPropertyManager.findProperty(group3);
+		Assert.assertFalse(businessGroupPropertyManager.showOwners(prop3));
+		Assert.assertFalse(businessGroupPropertyManager.showPartips(prop3));
+		Assert.assertTrue(businessGroupPropertyManager.showWaitingList(prop3));
 	}
 	
 	@Test

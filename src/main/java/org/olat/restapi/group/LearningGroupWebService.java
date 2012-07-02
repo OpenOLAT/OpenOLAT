@@ -66,8 +66,8 @@ import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
@@ -407,8 +407,8 @@ public class LearningGroupWebService {
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(bg);
-			if(!bgpm.showOwners()) {
+			DisplayMembers displayMembers = bgs.getDisplayMembers(bg);
+			if(!displayMembers.isShowOwners()) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}
@@ -442,8 +442,8 @@ public class LearningGroupWebService {
 			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(bg);
-			if(!bgpm.showPartips()) {
+			DisplayMembers displayMembers = bgs.getDisplayMembers(bg);
+			if(!displayMembers.isShowParticipants()) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 		}

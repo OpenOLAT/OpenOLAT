@@ -30,9 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -48,7 +48,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.ArrayHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.DisplayMembers;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -95,7 +96,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 	public final static String NLS_RADIO_ALL = "all";
 	public final static String NLS_RADIO_NOTHING = "nothing";
 	public final static String NLS_RADIO_CHOOSE = "choose";
-
+	
 	/**
 	 * @param name
 	 * @param translator
@@ -107,11 +108,10 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		this.isAdmin = isAdmin;
 		
 		// check 'members can see owners' and 'members can see participants' 
-		BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(businessGroup);
-		BaseSecurity scrtMngr = BaseSecurityManager.getInstance();
-
-		showChooseOwners  = bgpm.showOwners();
-		showChoosePartips = bgpm.showPartips();
+		BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(businessGroup);
+		showChooseOwners  = displayMembers.isShowOwners();
+		showChoosePartips = displayMembers.isShowParticipants();
 		showWaitingList = isAdmin && businessGroup.getWaitingListEnabled().booleanValue();
 		
 		if (isMultiSelectionOwnerKeys())  {

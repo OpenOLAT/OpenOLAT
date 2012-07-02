@@ -71,8 +71,8 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.properties.BusinessGroupPropertyManager;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.BGConfigFlags;
 import org.olat.group.ui.BGMailHelper;
@@ -80,6 +80,7 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.syncservice.SyncSingleUserTask;
 import org.olat.notifications.NotificationsManagerImpl;
+import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
@@ -117,6 +118,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupDeletionManager businessGroupDeletionManager;
+	@Autowired
+	private BusinessGroupPropertyDAO businessGroupPropertyManager;
 	
 
 	private List<DeletableGroupData> deleteListeners = new ArrayList<DeletableGroupData>();
@@ -191,7 +194,25 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public BusinessGroup mergeBusinessGroup(BusinessGroup group) {
 		return businessGroupDAO.merge(group);
 	}
-	
+
+	@Override
+	public DisplayMembers getDisplayMembers(BusinessGroup group) {
+		Property props = businessGroupPropertyManager.findProperty(group);
+		DisplayMembers displayMembers = new DisplayMembers();
+		displayMembers.setShowOwners(businessGroupPropertyManager.showOwners(props));
+		displayMembers.setShowParticipants(businessGroupPropertyManager.showPartips(props));
+		displayMembers.setShowWaitingList(businessGroupPropertyManager.showWaitingList(props));
+		return displayMembers;
+	}
+
+	@Override
+	public void updateDisplayMembers(BusinessGroup group, DisplayMembers displayMembers) {
+		boolean showOwners = displayMembers.isShowOwners();
+		boolean showPartips = displayMembers.isShowParticipants();
+		boolean showWaitingList = displayMembers.isShowWaitingList();
+		businessGroupPropertyManager.updateDisplayMembers(group, showOwners, showPartips, showWaitingList);
+	}
+
 	@Override
 	@Transactional
 	public BusinessGroup setLastUsageFor(final BusinessGroup group) {
@@ -281,8 +302,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// 3. copy member visibility
 		if (copyMemberVisibility) {
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(newGroup);
-			bgpm.copyConfigurationFromGroup(sourceBusinessGroup);
+			businessGroupPropertyManager.copyConfigurationFromGroup(sourceBusinessGroup, newGroup);
 		}
 		// 4. copy areas
 		if (copyAreas) {
@@ -417,8 +437,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			ct.deleteTools(group);// deletes everything concerning properties&collabTools
 			
 			// 1.b)delete display member property
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(group);
-			bgpm.deleteDisplayMembers();
+			businessGroupPropertyManager.deleteDisplayMembers(group);
 			// 1.c)delete user in security groups
 			removeFromRepositoryEntrySecurityGroup(group);
 			// 2) Delete the group areas

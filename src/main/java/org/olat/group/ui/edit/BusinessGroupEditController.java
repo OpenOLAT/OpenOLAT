@@ -84,7 +84,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.properties.BusinessGroupPropertyManager;
+import org.olat.group.model.DisplayMembers;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
 import org.olat.group.ui.BGConfigFlags;
@@ -292,10 +292,9 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == this.dmsForm && event == Event.CHANGED_EVENT) {
-			BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(currBusinessGroup);
-			bgpm.updateDisplayMembers(dmsForm.getShowOwners(), dmsForm.getShowPartipiciants(), dmsForm.getShowWaitingList());
-			bgpm = null;
+		if (source == dmsForm && event == Event.CHANGED_EVENT) {
+			businessGroupService.updateDisplayMembers(currBusinessGroup,
+					new DisplayMembers(dmsForm.getShowOwners(), dmsForm.getShowPartipiciants(), dmsForm.getShowWaitingList()));
 			// notify current active users of this business group
 			BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null);
 			// do loggin
@@ -576,17 +575,16 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		// Member Display Form, allows to enable/disable that others partips see
 		// partips and/or owners
 		//
-		BusinessGroupPropertyManager bgpm = new BusinessGroupPropertyManager(currBusinessGroup);
+		DisplayMembers displayMembers = businessGroupService.getDisplayMembers(currBusinessGroup);
 		// configure the form with checkboxes for owners and/or partips according
 		// the booleans
 		removeAsListenerAndDispose(dmsForm);
 		dmsForm = new DisplayMemberSwitchForm(ureq, getWindowControl(), hasOwners, hasPartips, hasWaitingList);
 		listenTo(dmsForm);
 		// set if the checkboxes are checked or not.
-		if (hasOwners) dmsForm.setShowOwnersChecked(bgpm.showOwners());
-		if (hasPartips) dmsForm.setShowPartipsChecked(bgpm.showPartips());
-		if (hasWaitingList) dmsForm.setShowWaitingListChecked(bgpm.showWaitingList());
-		bgpm = null;
+		if (hasOwners) dmsForm.setShowOwnersChecked(displayMembers.isShowOwners());
+		if (hasPartips) dmsForm.setShowPartipsChecked(displayMembers.isShowParticipants());
+		if (hasWaitingList) dmsForm.setShowWaitingListChecked(displayMembers.isShowWaitingList());
 		
 		tmp.put("displayMembers", dmsForm.getInitialComponent());
 		boolean enableTablePreferences = flags.isEnabled(BGConfigFlags.ADMIN_SEE_ALL_USER_DATA);
