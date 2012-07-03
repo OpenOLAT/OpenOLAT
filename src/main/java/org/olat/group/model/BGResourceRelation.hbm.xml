@@ -25,4 +25,13 @@
     	</many-to-one>
 			  	
 	</class>
+	
+	<class name="org.olat.group.model.BGRepositoryEntryRelation" table="o_gp_business_to_repository_v" mutable="false">
+		<composite-id>
+			<key-property name="groupKey" column="grp_id" type="long" />
+			<key-property name="repositoryEntryKey" column="re_id" type="long" />
+		</composite-id>
+  		<property name="repositoryEntryDisplayName" column="re_displayname" />	  	
+	</class>
+	
 </hibernate-mapping>

@@ -29,8 +29,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.group.ui.BGControllerFactory;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.manager.ACFrontendManager;
 
@@ -59,7 +57,8 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		Controller ctrl = null;
 		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
 		if(bgroup != null) {
-			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+			boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
+					|| ureq.getUserSession().getRoles().isGroupManager();
 			// check if allowed to start (must be member or admin)
 			//fxdiff VCRP-1,2: access control of resources
 			if (isOlatAdmin || bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup)) {
@@ -87,22 +86,22 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 		Long gKey = ores.getResourceableId();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bgroup = bgs.loadBusinessGroup(gKey);
-		if (bgroup != null){
-			return bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
-		}
-		return false;
+		if (bgroup == null) {
+			return false;
+		}	
+		return ureq.getUserSession().getRoles().isOLATAdmin() ||
+				ureq.getUserSession().getRoles().isGroupManager() ||
+				bgs.isIdentityInBusinessGroup(ureq.getIdentity(), bgroup) || isAccessControlled(bgroup);
 	}
 	
 	private boolean isAccessControlled(BusinessGroup bgroup) {
 		AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 		if(acModule.isEnabled()) {
 			ACFrontendManager acFrontendManager = (ACFrontendManager)CoreSpringFactory.getBean("acFrontendManager");
-			OLATResource resource = OLATResourceManager.getInstance().findResourceable(bgroup);
-			if(acFrontendManager.isResourceAccessControled(resource, new Date())) {
+			if(acFrontendManager.isResourceAccessControled(bgroup.getResource(), new Date())) {
 				return true;
 			}
 		}
 		return false;
 	}
-
 }

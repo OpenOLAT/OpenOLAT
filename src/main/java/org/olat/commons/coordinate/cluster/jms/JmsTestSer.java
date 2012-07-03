@@ -35,6 +35,7 @@ import org.olat.core.util.ObjectCloner;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.resource.OLATResource;
 
 public class JmsTestSer {
 
@@ -151,6 +152,11 @@ public class JmsTestSer {
 			}
 
 			public String getName() {
+				return null;
+			}
+			
+			@Override
+			public OLATResource getResource() {
 				return null;
 			}
 

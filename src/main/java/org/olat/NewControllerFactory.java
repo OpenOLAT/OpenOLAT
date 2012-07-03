@@ -124,6 +124,18 @@ public class NewControllerFactory extends LogDelegator {
 		}
 		return false;
 	}
+	
+	/**
+	 * Launch a controller in a tab or a site with the business path
+	 * @param businessPath
+	 * @param ureq
+	 * @param origControl
+	 */
+	public void launch(String businessPath, UserRequest ureq, WindowControl origControl) {
+		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
+	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, origControl);
+	  launch(ureq, bwControl);
+	}
 
 	/**
 	 * Launch a controller in a tab or site in the given window from a user

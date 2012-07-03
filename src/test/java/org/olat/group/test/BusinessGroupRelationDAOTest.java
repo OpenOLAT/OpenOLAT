@@ -35,7 +35,9 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -76,6 +78,9 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(resources);
 		Assert.assertEquals(1, resources.size());
 		Assert.assertTrue(resources.contains(resource));
+		
+		int count = businessGroupRelationDao.countResources(group);
+		Assert.assertEquals(1, count);
 	}
 	
 	@Test
@@ -639,5 +644,40 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(participant6);
 		Assert.assertEquals(1, participant6.size());
 		Assert.assertTrue(participant6.contains(part4));
+	}
+	
+	@Test
+	public void findRelationToRepositoryEntries() {
+		//create 3 entries and 1 group
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re3 = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		businessGroupRelationDao.addRelationToResource(group, re1.getOlatResource());
+		businessGroupRelationDao.addRelationToResource(group, re2.getOlatResource());
+		businessGroupRelationDao.addRelationToResource(group, re3.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		//check with empty list of groups
+		List<BGRepositoryEntryRelation> emptyRelations = businessGroupRelationDao.findRelationToRepositoryEntries(Collections.<BusinessGroup>emptyList(), 0, -1); 
+		Assert.assertNotNull(emptyRelations);
+		Assert.assertEquals(0, emptyRelations.size());
+		
+		//check with the group
+		List<BGRepositoryEntryRelation> relations = businessGroupRelationDao.findRelationToRepositoryEntries(Collections.singletonList(group), 0, -1); 
+		Assert.assertNotNull(relations);
+		Assert.assertEquals(3, relations.size());
+		
+		int count = 0;
+		for(BGRepositoryEntryRelation relation:relations) {
+			if(relation.getRepositoryEntryKey().equals(re1.getKey())
+					|| relation.getRepositoryEntryKey().equals(re2.getKey())
+					|| relation.getRepositoryEntryKey().equals(re3.getKey())) {
+				count++;
+			}
+		}
+		Assert.assertEquals(3, count);
 	}
 }

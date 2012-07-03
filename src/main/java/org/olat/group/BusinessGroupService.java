@@ -33,6 +33,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGConfigFlags;
@@ -130,6 +131,8 @@ public interface BusinessGroupService {
 	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
+	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
+	
 	public List<OLATResource> findResources(Collection<BusinessGroup> groups, int firstResult, int maxResults);
 	
 	
@@ -181,6 +184,8 @@ public interface BusinessGroupService {
 	
 	//security
 	public boolean isIdentityInBusinessGroup(Identity identity, BusinessGroup businessGroup);
+	
+	public List<Long> isIdentityInBusinessGroups(Identity identity, List<BusinessGroup> businessGroups);
 	/**
 	 * 
 	 * @param identity

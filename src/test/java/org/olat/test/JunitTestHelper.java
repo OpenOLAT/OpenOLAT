@@ -134,6 +134,24 @@ public class JunitTestHelper {
 		return identity;
 	}
 	
+	public static final RepositoryEntry createAndPersistRepositoryEntry() {
+		OLATResourceManager resourceManager = OLATResourceManager.getInstance();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
+		OLATResource r =  resourceManager.createOLATResourceInstance(ores);
+		resourceManager.saveOLATResource(r);
+		
+		RepositoryManager repositoryManager = RepositoryManager.getInstance();
+		RepositoryEntry re = repositoryManager.createRepositoryEntryInstance("Florian Gnägi");
+		re.setOlatResource(r);
+		re.setResourcename("Lernen mit OLAT");
+		re.setDisplayname(ores.getResourceableTypeName());
+		repositoryManager.createOwnerSecurityGroup(re);
+		repositoryManager.createTutorSecurityGroup(re);
+		repositoryManager.createParticipantSecurityGroup(re);
+		repositoryManager.saveRepositoryEntry(re);
+		return re;
+	}
+	
 	/**
 	 * Deploys/imports the "Demo Course".
 	 * @return the created RepositoryEntry

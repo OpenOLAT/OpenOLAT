@@ -233,6 +233,18 @@ public class RepositoryManager extends BasicManager {
 		re.setParticipantGroup(participantGroup);
 	}
 	
+	public void createOwnerSecurityGroup(RepositoryEntry re) {
+		if(re.getOwnerGroup() != null) return;
+		
+		SecurityGroup ownerGroup = securityManager.createAndPersistSecurityGroup();
+		// member of this group may modify member's membership
+		securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, ownerGroup);
+		// members of this group are always authors also
+		securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
+		securityManager.addIdentityToSecurityGroup(securityManager.findIdentityByName("administrator"), ownerGroup);
+		re.setOwnerGroup(ownerGroup);
+	}
+	
 	/**
 	 * 
 	 * @param addedEntry

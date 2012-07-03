@@ -161,6 +161,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	private Link searchOpenLink;
 	private SegmentViewComponent segmentView;
 	private BGSearchController searchController;
+	private BusinessGroupListController groupsCtr;
 
 	// group list table rows
 	private static final String TABLE_ACTION_LEAVE = "bgTblLeave";
@@ -169,6 +170,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	//fxdiff VCRP-1,2: access control of resources
 	private static final String TABLE_ACTION_ACCESS = "bgTblAccess";
 	private static final String CMD_MENU_INDEX = "cmd.menu.index";
+	private static final String CMD_MENU_LIST = "cmd.menu.list";
 	//fxdiff VCRP-1,2: access control of resources
 	private static final String CMD_MENU_OPEN = "cmd.menu.open";
 	private static final String CMD_MENU_OPEN_SEARCH = "cmd.menu.open.search";
@@ -282,6 +284,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			doOpenGroupList(ureq, getWindowControl());
 		} else if (userObject.equals(CMD_MENU_OPEN_SEARCH)) {
 			doSearchOpenGroupList(ureq, getWindowControl());
+		} else if (userObject.equals(CMD_MENU_LIST)) {
+			doList(ureq, getWindowControl());
 		}
 	}
 
@@ -525,6 +529,16 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CREATED, getClass());
 		return newGroup;
 	}
+	
+	private void doList(UserRequest ureq, WindowControl wControl) {
+		if(groupsCtr == null) {
+			groupsCtr = new BusinessGroupListController(ureq, wControl);
+			listenTo(groupsCtr);
+		}
+
+		columnLayoutCtr.setCol3(groupsCtr.getInitialComponent());
+		columnLayoutCtr.hideCol2(false);
+	}
 
 	/**
 	 * Prepare everything and show all groups
@@ -540,6 +554,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		// 3) set correct page
 		main.setPage(Util.getPackageVelocityRoot(this.getClass()) + "/index.html");
 		// 4) update toolboxe
+		columnLayoutCtr.setCol3(main);
 		columnLayoutCtr.hideCol2(false);
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_INDEX, 0l);
@@ -570,6 +585,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		}
 
 		// 4) update toolboxe
+		columnLayoutCtr.setCol3(main);
 		columnLayoutCtr.hideCol2(true);
 		//fxdiff BAKS-7 Resume function
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CMD_MENU_OPEN, 0l);
@@ -598,6 +614,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		}
 
 		// 4) update toolboxe
+		columnLayoutCtr.setCol3(main);
 		columnLayoutCtr.hideCol2(true);
 		
 		//fxdiff BAKS-7 Resume function
@@ -719,7 +736,7 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		for(BusinessGroup group:groups) {
 			OLATResource ores = OLATResourceManager.getInstance().findResourceable(group);
 			resourceKeys.put(group.getKey(), ores.getKey());
-			if(businessGroupService.isIdentityInBusinessGroup(this.getIdentity(), group)) {
+			if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
 				membership.add(group.getKey());
 			}
 		}
@@ -778,7 +795,12 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 		myEntriesTn.setUserObject(CMD_MENU_INDEX);
 		myEntriesTn.setAltText(translate("menu.learninggroups.alt"));
 		rootNode.addChild(myEntriesTn);
-		rootNode.setDelegate(myEntriesTn);
+		
+		GenericTreeNode listEntriesTn = new GenericTreeNode();
+		listEntriesTn.setTitle(translate("menu.groups"));
+		listEntriesTn.setUserObject(CMD_MENU_LIST);
+		listEntriesTn.setAltText(translate("menu.groups.alt"));
+		rootNode.addChild(listEntriesTn);
 
 		//fxdiff VCRP-1,2: access control of resources
 		myEntriesTn = new GenericTreeNode();

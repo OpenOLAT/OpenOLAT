@@ -43,6 +43,7 @@ create table if not exists o_gp_business (
    waitinglist_enabled bit,
    autocloseranks_enabled bit,
    groupcontext_fk bigint,
+   fk_resource bigint unique,
    fk_ownergroup bigint unique,
    fk_partipiciantgroup bigint unique,
    fk_waitinggroup bigint unique,
@@ -1055,6 +1056,16 @@ create or replace view o_ep_notifications_comment_v as (
    inner join o_olatresource as comment_resource on (comment_resource.resid = ucomment.resid and comment_resource.resname = ucomment.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = comment_resource.resource_id)
    left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = ucomment.ressubpath)
+);
+
+create or replace view o_gp_business_to_repository_v as (
+	select 
+		grp.group_id as grp_id,
+		repoentry.repositoryentry_id as re_id,
+		repoentry.displayname as re_displayname
+	from o_gp_business as grp
+	inner join o_gp_business_to_resource as relation on (relation.fk_group = grp.group_id)
+	inner join o_repositoryentry as repoentry on (repoentry.fk_olatresource = relation.fk_resource)
 );
 
 

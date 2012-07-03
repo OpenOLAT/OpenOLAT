@@ -32,6 +32,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date: Aug 2, 2004
@@ -87,6 +88,8 @@ public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OL
 	 * @param description the description of this group. Might be NULL
 	 */
 	public void setDescription(String description);
+	
+	public OLATResource getResource();
 
 	/**
 	 * The BusinessGroup has 1..n Owners acting as <i>administrators </i>.

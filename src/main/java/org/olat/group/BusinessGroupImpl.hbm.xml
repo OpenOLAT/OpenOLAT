@@ -38,19 +38,11 @@
 		<property name="autoCloseRanksEnabled" type="boolean" column="autocloseranks_enabled" unique="false" not-null="false"/>	
 		
 		<property name="groupContextKey" type="long" column="groupcontext_fk" />	
-		
-		<!--
-		<many-to-one 
- 		   	name="groupContext" 
-    		class="org.olat.group.context.BGContextImpl"
-    		outer-join="true" 
-    		cascade="none">  
-			<column 
-				name="groupcontext_fk" 
-				not-null="false" 
-				unique="false" />    	
+
+		<many-to-one name="resource" class="org.olat.resource.OLATResourceImpl"
+    		outer-join="true" cascade="none" lazy="false">  
+			<column name="fk_resource" not-null="false" unique="true" />    	
     	</many-to-one> 
-    	-->
 
 		<!--
 		Implementation Note:

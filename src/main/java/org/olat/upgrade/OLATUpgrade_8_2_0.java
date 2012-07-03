@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
@@ -34,6 +35,7 @@ import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.group.context.BGContext2Resource;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,9 +59,13 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private OLATResourceManager resourceManager;
 
 	public OLATUpgrade_8_2_0() {
 		super();
@@ -146,6 +152,28 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		List<OLATResource> resources = findOLATResourcesForBusinessGroup(group);
 		List<OLATResource> currentList = businessGroupService.findResources(Collections.singletonList(group), 0, -1);
 		
+		boolean merge = false;
+		if(group.getResource() == null) {
+			OLATResource resource = resourceManager.findResourceable(group);
+			((BusinessGroupImpl)group).setResource(resource);
+			merge = true;
+		}
+		if(group.getOwnerGroup() == null) {
+			((BusinessGroupImpl)group).setOwnerGroup(securityManager.createAndPersistSecurityGroup());
+			merge = true;
+		}
+		if(group.getPartipiciantGroup() == null) {
+			((BusinessGroupImpl)group).setPartipiciantGroup(securityManager.createAndPersistSecurityGroup());
+			merge = true;
+		}
+		if(group.getWaitingGroup() == null) {
+			group.setWaitingGroup(securityManager.createAndPersistSecurityGroup());
+			merge = true;
+		}
+		if(merge) {
+			group = dbInstance.getCurrentEntityManager().merge(group);
+		}
+
 		int count = 0;
 		for	(OLATResource resource:resources) {
 			if(!currentList.contains(resource)) {

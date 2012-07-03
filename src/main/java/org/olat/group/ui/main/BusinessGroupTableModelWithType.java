@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
@@ -39,7 +38,7 @@ import org.olat.group.BusinessGroup;
 /**
  * @author gnaegi
  */
-public class BusinessGroupTableModelWithType extends DefaultTableDataModel implements TableDataModel {
+public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTableItem> {
 	private final int columnCount;
 	private Translator trans;
 
@@ -88,11 +87,13 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel imple
 			case 6:
 				return new Boolean(wrapped.isAccessControl());
 			case 7:
-				if(wrapped.isMember()) return trans.translate("select");
-				return trans.translate("table.access");
+				if(wrapped.isAccessControl()) {
+					if(wrapped.isMember()) return trans.translate("select");
+					return trans.translate("table.access");
+				}
+				return null;
 			case 8:
 				return wrapped.getAccessTypes();
-				
 			default:
 				return "ERROR";
 		}

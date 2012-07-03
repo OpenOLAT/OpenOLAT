@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,6 +51,9 @@ public class BGSearchController extends FormBasicController{
 	private TextElement owner;
 	private TextElement description;
 	private FormLink searchButton;
+	private MultipleSelectionElement attendeeEl;
+	private MultipleSelectionElement ownerEl;
+	private MultipleSelectionElement waitingEl;
 	
 	private String limitUsername;
 	private boolean isAdmin;
@@ -68,23 +72,48 @@ public class BGSearchController extends FormBasicController{
 		initForm(ureq);
 	}
 	
+	public BGSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean extended) {
+		super(ureq, wControl, "group_search");
+		this.isAdmin = isAdmin;
+		initForm(ureq);
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", formLayout);
+		FormLayoutContainer leftContainer = FormLayoutContainer.createDefaultFormLayout("left_1", getTranslator());
+		leftContainer.setRootForm(mainForm);
+		formLayout.add(leftContainer);
+
+		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", leftContainer);
 		displayName.setFocus(true);
 		
-		owner = uifactory.addTextElement("cif_owner", "cif.owner", 255, "", formLayout);
+		owner = uifactory.addTextElement("cif_owner", "cif.owner", 255, "", leftContainer);
 		if (limitUsername != null) {
 			owner.setValue(limitUsername);
 			owner.setEnabled(false);
 		}
-		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", formLayout);
+		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);
 		
 		if(isAdmin) {
-			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", formLayout);
+			id = uifactory.addTextElement("cif_id", "cif.id", 12, "", leftContainer);
 			id.setVisible(isAdmin);
 			id.setRegexMatchCheck("\\d*", "search.id.format");
 		}
+		
+		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
+		rightContainer.setRootForm(mainForm);
+		formLayout.add(rightContainer);
+
+		String[] ownerValues = new String[]{ translate("search.owner") };
+		ownerEl = uifactory.addCheckboxesVertical("search.owner", rightContainer, new String[]{"owner"}, ownerValues, null, 1);
+		
+		String[] attendeeValues = new String[]{ translate("search.attendee") };
+		attendeeEl = uifactory.addCheckboxesVertical("search.attendee", rightContainer, new String[]{"attendee"}, attendeeValues, null, 1);
+		
+		String[] waitingValues = new String[]{ translate("search.waiting") };
+		waitingEl = uifactory.addCheckboxesVertical("search.waiting", rightContainer, new String[]{"waiting"}, waitingValues, null, 1);
+		
+		
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -101,7 +130,12 @@ public class BGSearchController extends FormBasicController{
 	 */
 	public Long getId() {
 		if (id != null && !id.isEmpty()) {
-			return new Long(id.getValue());
+			try {
+				return new Long(id.getValue());
+			} catch (NumberFormatException e) {
+				id.setValue("");
+				return null;
+			}
 		}
 		return null;
 	}
@@ -161,7 +195,16 @@ public class BGSearchController extends FormBasicController{
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
-			fireEvent (ureq, Event.DONE_EVENT); 
+			SearchEvent e = new SearchEvent();
+			e.setId(getId());
+			e.setName(getName());
+			e.setDescription(getDescription());
+			e.setOwnerName(getOwner());
+			e.setOwner(ownerEl.isAtLeastSelected(1));
+			e.setAttendee(attendeeEl.isAtLeastSelected(1));
+			e.setWaiting(waitingEl.isAtLeastSelected(1));
+			fireEvent(ureq, e);
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 }

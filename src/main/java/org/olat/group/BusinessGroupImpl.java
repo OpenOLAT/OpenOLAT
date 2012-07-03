@@ -33,6 +33,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.resource.OLATResource;
 
 /**
  * Description: <br>
@@ -53,6 +54,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	private String type;
 	private Integer minParticipants;
 	private Integer maxParticipants;
+	private OLATResource resource;
 	private SecurityGroup ownerGroup;
 	private SecurityGroup partipiciantGroup;
 	private SecurityGroup waitingGroup;
@@ -99,14 +101,14 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	/**
 	 * @param partipiciantGroupP
 	 */
-	private void setPartipiciantGroup(SecurityGroup partipiciantGroupP) {
+	public void setPartipiciantGroup(SecurityGroup partipiciantGroupP) {
 		this.partipiciantGroup = partipiciantGroupP;
 	}
 
 	/**
 	 * @param ownerGroupP
 	 */
-	private void setOwnerGroup(SecurityGroup ownerGroupP) {
+	public void setOwnerGroup(SecurityGroup ownerGroupP) {
 		this.ownerGroup = ownerGroupP;
 	}
 
@@ -137,6 +139,14 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	 */
 	public String getName() {
 		return this.name;
+	}
+
+	public OLATResource getResource() {
+		return resource;
+	}
+
+	public void setResource(OLATResource resource) {
+		this.resource = resource;
 	}
 
 	/**

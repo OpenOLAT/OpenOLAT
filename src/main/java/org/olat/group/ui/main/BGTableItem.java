@@ -19,12 +19,11 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.group.BusinessGroup;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 
 /**
@@ -43,6 +42,7 @@ public class BGTableItem {
 	private final Boolean allowDelete;
 	private final BusinessGroup businessGroup;
 	private List<RepositoryEntry> resources;
+	private List<BGRepositoryEntryRelation> relations;
 	private List<PriceMethodBundle> access;
 	
 	public BGTableItem(BusinessGroup businessGroup, boolean member, Boolean allowLeave, Boolean allowDelete,
@@ -90,6 +90,14 @@ public class BGTableItem {
 
 	public void setResources(List<RepositoryEntry> resources) {
 		this.resources = resources;
+	}
+
+	public List<BGRepositoryEntryRelation> getRelations() {
+		return relations;
+	}
+
+	public void setRelations(List<BGRepositoryEntryRelation> relations) {
+		this.relations = relations;
 	}
 
 	@Override

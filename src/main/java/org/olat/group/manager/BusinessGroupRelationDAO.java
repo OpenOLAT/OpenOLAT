@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BGResourceRelation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -201,7 +202,7 @@ public class BusinessGroupRelationDAO {
 	public int countResources(BusinessGroup group) {
 		if(group == null) return 0;
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgcr) from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key=:groupKeys");
+		sb.append("select count(bgcr) from ").append(BGResourceRelation.class.getName()).append(" bgcr where bgcr.group.key=:groupKey");
 		
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("groupKey", group.getKey())
@@ -247,6 +248,29 @@ public class BusinessGroupRelationDAO {
 			.append(" )");
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), RepositoryEntry.class);
+		query.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(BusinessGroup group:groups) {
+			groupKeys.add(group.getKey());
+		}
+		query.setParameter("groupKeys", groupKeys);
+		return query.getResultList();
+	}
+	
+	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
+		if(groups == null || groups.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from ").append(BGRepositoryEntryRelation.class.getName()).append(" as rel ")
+			.append(" where rel.groupKey in (:groupKeys)");
+
+		TypedQuery<BGRepositoryEntryRelation> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGRepositoryEntryRelation.class);
 		query.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);

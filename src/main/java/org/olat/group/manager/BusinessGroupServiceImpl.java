@@ -71,6 +71,7 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.AddToGroupsEvent;
+import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.DisplayMembers;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
@@ -1086,6 +1087,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRepositoryEntries(groups, firstResult, maxResults);
 	}
+	
+	@Override
+	public List<BGRepositoryEntryRelation> findRelationToRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
+		return businessGroupRelationDAO.findRelationToRepositoryEntries(groups, firstResult, maxResults);
+	}
 
 	@Override
 	@Transactional(readOnly=true)
@@ -1099,6 +1105,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public List<Long> isIdentityInBusinessGroups(Identity identity, List<BusinessGroup> groups) {
+		return businessGroupDAO.isIdentityInBusinessGroups(identity, true, true, groups);
 	}
 
 	@Override
