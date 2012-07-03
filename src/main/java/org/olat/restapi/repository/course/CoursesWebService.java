@@ -245,7 +245,9 @@ public class CoursesWebService {
 			// copy image if available
 			RepositoryManager.getInstance().copyImage(src, preparedEntry);
 			
-			return prepareCourse(preparedEntry, courseConfigVO);
+			ICourse course = prepareCourse(preparedEntry, courseConfigVO);
+			RepositoryHandlerFactory.getInstance().getRepositoryHandler(src).releaseLock(lockResult);
+			return course;
 		}
 		
 		return null;
