@@ -26,7 +26,6 @@
 package org.olat.group.ui.edit;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,13 +35,10 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesMoveEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.WaitingGroupController;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.collaboration.CollaborationToolsSettingsController;
-import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -68,7 +64,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -404,40 +399,16 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	/**
 	 * persist the updates
 	 */
-	//TODO gm
 	private BusinessGroup updateBusinessGroup() {
-		final BusinessGroup  businessGroup = currBusinessGroup;
-		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(businessGroup, new SyncerCallback<BusinessGroup>() {
-			public BusinessGroup execute() {
-				// refresh group to prevent stale object exception and context proxy issues
-				BusinessGroup bg = businessGroupService.loadBusinessGroup(businessGroup);
-				String bgName = modifyBusinessGroupController.getGroupName();
-				String bgDesc = modifyBusinessGroupController.getGroupDescription();
-				Integer bgMax = modifyBusinessGroupController.getGroupMax();
-				Integer bgMin = modifyBusinessGroupController.getGroupMin();
-				Boolean waitingListEnabled = modifyBusinessGroupController.isWaitingListEnabled();
-				Boolean autoCloseRanksEnabled = modifyBusinessGroupController.isAutoCloseRanksEnabled();
-		
-				bg.setName(bgName);
-				bg.setDescription(bgDesc);
-				bg.setMaxParticipants(bgMax);
-				bg.setMinParticipants(bgMin);
-				bg.setWaitingListEnabled(waitingListEnabled);
-				if (waitingListEnabled.booleanValue() && (bg.getWaitingGroup() == null) ) {
-					// Waitinglist is enabled but not created => Create waitingGroup
-					BaseSecurity securityManager = BaseSecurityManager.getInstance();
-					SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
-					bg.setWaitingGroup(waitingGroup);
-				}
-				bg.setAutoCloseRanksEnabled(autoCloseRanksEnabled);
-				bg.setLastUsage(new Date(System.currentTimeMillis()));
-				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
-				// switch on/off waiting-list in member tab
-				vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
-				
-				return businessGroupService.mergeBusinessGroup(bg);
-			}
-		});
+		String bgName = modifyBusinessGroupController.getGroupName();
+		String bgDesc = modifyBusinessGroupController.getGroupDescription();
+		Integer bgMax = modifyBusinessGroupController.getGroupMax();
+		Integer bgMin = modifyBusinessGroupController.getGroupMin();
+		Boolean waitingListEnabled = modifyBusinessGroupController.isWaitingListEnabled();
+		Boolean autoCloseRanksEnabled = modifyBusinessGroupController.isAutoCloseRanksEnabled();
+		vc_tab_grpmanagement.contextPut("hasWaitingGrp", waitingListEnabled);
+		return businessGroupService.updateBusinessGroup(currBusinessGroup, bgName, bgDesc,
+				bgMin, bgMax, waitingListEnabled, autoCloseRanksEnabled);
 	}
 
 	/**
@@ -511,7 +482,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private VelocityContainer createTabAreas() {
 		VelocityContainer tmp = createVelocityContainer("tab_bgAreas");
-		List<BGArea> allAreas = areaManager.findBGAreasOfBusinessGroup(currBusinessGroup); //TODO gm areaManager.findBGAreasOfBGContext(currBusinessGroup.getGroupContext());
+		List<BGArea> allAreas = areaManager.findBGAreasOfBusinessGroup(currBusinessGroup);
 		selectedAreas = areaManager.findBGAreasOfBusinessGroup(currBusinessGroup);
 		areaDataModel = new AreasToGroupDataModel(allAreas, selectedAreas);
 

@@ -298,6 +298,7 @@ public class GroupOverviewController extends BasicController {
 
 			// 2) remove as participant
 			final BusinessGroup toRemFromGroup = currBusinessGroup;
+			//TODO gm sync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(currBusinessGroup, new SyncerExecutor() {
 				public void execute() {
 					businessGroupService.removeParticipant(getIdentity(), identity, toRemFromGroup, flags);

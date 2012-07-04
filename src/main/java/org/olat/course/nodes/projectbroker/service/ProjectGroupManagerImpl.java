@@ -156,9 +156,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		if (accountManagerGroup != null){
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(accountManagerGroup);
-			reloadedBusinessGroup.setName(groupName);
-			reloadedBusinessGroup.setDescription(groupDescription);
-			return bgs.mergeBusinessGroup(reloadedBusinessGroup);
+			return bgs.updateBusinessGroup(reloadedBusinessGroup, groupName, groupDescription,
+					reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 		}
 		return null;
 	}
@@ -206,7 +205,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		Set<String> names = new HashSet<String>();
 		names.add(groupName);
 		int counter = 2;
-		while (bgs.checkIfOneOrMoreNameExistsInContext(names, courseResource)) {
+		while (bgs.checkIfOneOrMoreNameExists(names, courseResource)) {
 		// a group with name already exist => look for an other one, append a number
 			groupName = initialGroupName + " _" + counter++ ;
 			logDebug("try groupName=" + groupName);
@@ -215,13 +214,13 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			
 		}
 		logDebug("groupName=" + groupName);
-		reloadedBusinessGroup.setName(groupName);
-		reloadedBusinessGroup.setDescription(groupDescription);
-		return bgs.mergeBusinessGroup(reloadedBusinessGroup);
+		return bgs.updateBusinessGroup(reloadedBusinessGroup, groupName, groupDescription,
+				reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 	}
 
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
+	//TODO gm sync
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
 			public List<Identity> execute() {
 				List<Identity> addedIdentities = new ArrayList<Identity>();
@@ -242,6 +241,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
 		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
+	//TODO gm sync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
@@ -261,6 +261,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		final Project reloadedProject = (Project) DBFactory.getInstance().loadObject(project, true);
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+	//TODO gm sync
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				for (final Identity identity : identities) {
@@ -320,8 +321,8 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
   	 BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
   	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
   	 logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
-  	 reloadedBusinessGroup.setMaxParticipants(maxMembers);
-  	 return bgs.mergeBusinessGroup(reloadedBusinessGroup);
+  	 return bgs.updateBusinessGroup(reloadedBusinessGroup, null, null, reloadedBusinessGroup.getMinParticipants(),
+  			 maxMembers);
 	}
 
 	///////////////////

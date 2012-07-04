@@ -316,7 +316,7 @@ public class CollaborationTools implements Serializable {
 		//final List<Forum> forumHolder = new ArrayList<Forum>();
 		
 		Codepoint.codepoint(CollaborationTools.class, "pre_sync_enter");
-		
+	//TODO gm sync
 		Forum forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
 			public Forum execute() {
 				
@@ -536,7 +536,7 @@ public class CollaborationTools implements Serializable {
 	public Controller createPortfolioController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group) {
 		final EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
 		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
-		
+	//TODO gm sync
 		PortfolioStructureMap map = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<PortfolioStructureMap>(){
 			public PortfolioStructureMap execute() {
 				PortfolioStructureMap aMap;
@@ -675,7 +675,7 @@ public class CollaborationTools implements Serializable {
 		// handle Boolean Values via String Field in Property DB Table
 		final String toolValueStr = toolValue ? TRUE : FALSE;
 		final PropertyManager pm = PropertyManager.getInstance();
-		//
+		//TODO gm sync
 		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
 			public void execute() {				
 				//was: synchronized (CollaborationTools.class) {

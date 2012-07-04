@@ -341,7 +341,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		names.add(businessGroupName.getValue());
 	  //group name changes to an already used name, and is a learning group
 		if(businessGroup!=null && !businessGroup.getName().equals(businessGroupName.getValue())
-				&& businessGroupService.checkIfOneOrMoreNameExistsInContext(names, businessGroup)) {	
+				&& businessGroupService.checkIfOneOrMoreNameExists(names, businessGroup)) {	
 			return true;
 		}
 		return false;

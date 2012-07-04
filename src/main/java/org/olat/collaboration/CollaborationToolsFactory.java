@@ -76,6 +76,7 @@ public class CollaborationToolsFactory {
 		if (ores == null) throw new AssertException("Null is not allowed here, you have to provide an existing ores here!");
 		final String cacheKey = Long.valueOf(ores.getResourceableId()).toString();
 		//sync operation cluster wide
+	//TODO gm sync
 		return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<CollaborationTools>() {
 			
 			public CollaborationTools execute() {

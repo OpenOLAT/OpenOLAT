@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.UUID;
 
 import junit.framework.Assert;
 
@@ -40,8 +41,10 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Policy;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.AssertException;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -62,6 +65,8 @@ public class BGRightManagerTest extends OlatTestCase {
 	private static Logger log = Logger.getLogger(BGRightManagerTest.class.getName());
 	private Identity id1, id2, id3, id4;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -102,6 +107,106 @@ public class BGRightManagerTest extends OlatTestCase {
 			throw e;
 		}
 	}
+	
+	
+	/*
+	
+
+	public abstract void removeBGRight(String bgRight, BusinessGroup rightGroup);
+
+
+	*/
+	
+	/**
+	 * Test if the add right doesn't generate errors
+	 */
+	@Test
+	public void addRight() {
+		OLATResource c1 = JunitTestHelper.createRandomResource();
+		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "addRight", null, -1, -1, false, false, c1);
+		rightManager.addBGRight("test-right", g1);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void hasBGRight() {
+		//create a right for the identity
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("has-right-" + UUID.randomUUID().toString());
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, -1, -1, false, false, resource);
+		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		rightManager.addBGRight("bgr.has-right", group);
+		dbInstance.commitAndCloseSession();
+		
+		//check if the right is set
+		boolean right = rightManager.hasBGRight("bgr.has-right", identity, resource);
+		Assert.assertTrue(right);
+		//check if a dummy is not set
+		boolean notright = rightManager.hasBGRight("bgrblabla", identity, resource);
+		Assert.assertFalse(notright);
+	}
+	
+	@Test
+	public void findBGRights() {
+		//create 2 rights for the identity
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("find-rights-" + UUID.randomUUID().toString());
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "findBGRights", null, -1, -1, false, false, resource);
+		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		rightManager.addBGRight("bgr.findright1", group);
+		rightManager.addBGRight("bgr.findright2", group);
+		dbInstance.commitAndCloseSession();
+		
+		//check if the rights are set
+		List<String> rights = rightManager.findBGRights(group);
+		Assert.assertNotNull(rights);
+		Assert.assertEquals(2, rights.size());
+		Assert.assertTrue(rights.contains("bgr.findright1"));
+		Assert.assertTrue(rights.contains("bgr.findright2"));
+	}
+	
+	@Test
+	public void removeBGRight() {
+		//create 2 rights for the identity
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("remove-rights-" + UUID.randomUUID().toString());
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource);
+		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		rightManager.addBGRight("bgr.removeright1", group);
+		rightManager.addBGRight("bgr.removeright2", group);
+		dbInstance.commitAndCloseSession();
+		
+		//check if the rights are set
+		List<String> rights = rightManager.findBGRights(group);
+		Assert.assertEquals(2, rights.size());
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright1", identity, resource));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource));
+		
+		//remove right 1
+		rightManager.removeBGRight("bgr.removeright1", group);
+		dbInstance.commitAndCloseSession();
+		
+		//check if there is only 1 right
+		List<String> rightsAfterDelete = rightManager.findBGRights(group);
+		Assert.assertEquals(1, rightsAfterDelete.size());
+		Assert.assertTrue(rightsAfterDelete.contains("bgr.removeright2"));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.removeright1", identity, resource));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource));
+	}
+	
+	@Test(expected=AssertException.class)
+	public void removeUnkownRight() {
+		//create 2 rights for the identity
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("remove-rights-" + UUID.randomUUID().toString());
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "removeBGRight", null, -1, -1, false, false, resource);
+		securityManager.addIdentityToSecurityGroup(identity, group.getPartipiciantGroup());
+		rightManager.addBGRight("bgr.removeright1", group);
+		dbInstance.commitAndCloseSession();
+
+		//remove a dummy right which doesn't exists
+		rightManager.removeBGRight("bgr.removeblabla", group);
+	}
 
 	/** BGContextManagerImpl:deleteBGContext() * */
 	@Test
@@ -124,8 +229,6 @@ public class BGRightManagerTest extends OlatTestCase {
 		rightManager.addBGRight(CourseRights.RIGHT_COURSEEDITOR, g3);
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 
-		// secm.createAndPersistPolicy(rightGroup.getPartipiciantGroup(), bgRight,
-		// rightGroup.getGroupContext());
 		List<SecurityGroup> groups = securityManager.getGroupsWithPermissionOnOlatResourceable(CourseRights.RIGHT_ARCHIVING, c1);
 		Assert.assertEquals(2, groups.size());
 

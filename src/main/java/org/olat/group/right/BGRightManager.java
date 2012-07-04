@@ -48,7 +48,9 @@ public interface BGRightManager {
 	public static final String BG_RIGHT_PREFIX = "bgr.";
 
 	/**
-	 * Add a business group right to a business group
+	 * Add a business group right to a business group. Don't forget
+	 * that a right for business group must start with "bgr." and
+	 * that a right must not be longer as 16 characters.
 	 * 
 	 * @param bgRight
 	 * @param rightGroup
@@ -65,17 +67,10 @@ public interface BGRightManager {
 
 	/**
 	 * @param bgRight
-	 * @param rightGroup
-	 * @return true if a group has this business group right, false otherwhise
-	 */
-	// public abstract boolean hasBGRight(String bgRight, BusinessGroup
-	// rightGroup);
-	/**
-	 * @param bgRight
 	 * @param identity
-	 * @param bgContext
+	 * @param resource
 	 * @return true if an identity is in a group that has this business group
-	 *         right in the given group context
+	 *         right in the given resource
 	 */
 	public abstract boolean hasBGRight(String bgRight, Identity identity, OLATResource resource);
 

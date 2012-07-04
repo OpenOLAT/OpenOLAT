@@ -76,10 +76,6 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 		}
 	}
 
-	/**
-	 * @see org.olat.group.right.BGRightManager#hasBGRight(java.lang.String,
-	 *      org.olat.core.id.Identity, org.olat.group.context.BGContext)
-	 */
 	public boolean hasBGRight(String bgRight, Identity identity, OLATResource resource) {
 		return securityManager.isIdentityPermittedOnResourceable(identity, bgRight, resource);
 	}

@@ -31,8 +31,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
@@ -87,6 +90,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.testutils.codepoints.server.Codepoint;
+import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,7 +102,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("businessGroupService")
-public class BusinessGroupServiceImpl implements BusinessGroupService {
+public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataDeletable {
 	private final OLog log = Tracing.createLoggerFor(BusinessGroupServiceImpl.class);
 
 	@Autowired
@@ -121,10 +125,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	private BusinessGroupDeletionManager businessGroupDeletionManager;
 	@Autowired
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
 	
-
 	private List<DeletableGroupData> deleteListeners = new ArrayList<DeletableGroupData>();
 
+	@PostConstruct
+	public void init() {
+		userDeletionManager.registerDeletableUserData(this);
+	}
 	
 	public void registerDeletableGroupDataListener(DeletableGroupData listener) {
 		this.deleteListeners.add(listener);
@@ -141,6 +150,35 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		return deletableList;
 	}
 	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		// remove as Participant 
+		List<BusinessGroup> attendedGroups = findBusinessGroupsAttendedBy(identity, null);
+		for (Iterator<BusinessGroup> iter = attendedGroups.iterator(); iter.hasNext();) {
+			securityManager.removeIdentityFromSecurityGroup(identity, iter.next().getPartipiciantGroup());
+		}
+		log.debug("Remove partipiciant identity=" + identity + " from " + attendedGroups.size() + " groups");
+		// remove from waitinglist 
+		List<BusinessGroup> waitingGroups = findBusinessGroupsWithWaitingListAttendedBy(identity, null);
+		for (Iterator<BusinessGroup> iter = waitingGroups.iterator(); iter.hasNext();) {
+			securityManager.removeIdentityFromSecurityGroup(identity, iter.next().getWaitingGroup());
+		}
+		log.debug("Remove from waiting-list identity=" + identity + " in " + waitingGroups.size() + " groups");
+
+		// remove as owner
+		List<BusinessGroup> ownerGroups = findBusinessGroupsOwnedBy(identity, null);
+		for (Iterator<BusinessGroup> iter = ownerGroups.iterator(); iter.hasNext();) {
+			BusinessGroup businessGroup = iter.next();
+			securityManager.removeIdentityFromSecurityGroup(identity, businessGroup.getOwnerGroup());
+			if (securityManager.countIdentitiesOfSecurityGroup(businessGroup.getOwnerGroup()) == 0) {
+				securityManager.addIdentityToSecurityGroup(userDeletionManager.getAdminIdentity(), businessGroup.getOwnerGroup());
+				log.info("Delete user-data, add Administrator-identity as owner of businessGroup=" + businessGroup.getName());
+			}
+		}
+		log.debug("Remove owner identity=" + identity + " from " + ownerGroups.size() + " groups");
+		log.debug("All entries in groups deleted for identity=" + identity);
+	}
+
 	@Override
 	public BusinessGroup createBusinessGroup(Identity creator, String name, String description,
 			int minParticipants, int maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
@@ -172,7 +210,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	   //o_clusterOK by:cg
 		Set<BusinessGroup> createdGroups = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resource, new SyncerCallback<Set<BusinessGroup>>(){
 	      public Set<BusinessGroup> execute() {
-					if(checkIfOneOrMoreNameExistsInContext(allNames, resource)){
+					if(checkIfOneOrMoreNameExists(allNames, resource)){
 						// set error of non existing name
 						return null;
 					} else {
@@ -192,8 +230,47 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	@Transactional
-	public BusinessGroup mergeBusinessGroup(BusinessGroup group) {
-		return businessGroupDAO.merge(group);
+	public BusinessGroup updateBusinessGroup(final BusinessGroup group, final String name, final String description,
+			final Integer minParticipants, final Integer maxParticipants) {
+		
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
+			public BusinessGroup execute() {
+				// refresh group to prevent stale object exception and context proxy issues
+				BusinessGroup bg = loadBusinessGroup(group);
+				bg.setName(name);
+				bg.setDescription(description);
+				bg.setMaxParticipants(minParticipants);
+				bg.setMinParticipants(maxParticipants);
+				bg.setLastUsage(new Date(System.currentTimeMillis()));
+				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
+				return businessGroupDAO.merge(bg);
+			}
+		});
+	}
+	
+	public BusinessGroup updateBusinessGroup(final BusinessGroup group, final String name, final String description,
+			final Integer minParticipants, final Integer maxParticipants, final Boolean waitingList, final Boolean autoCloseRanks) {
+		
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<BusinessGroup>() {
+			public BusinessGroup execute() {
+				// refresh group to prevent stale object exception and context proxy issues
+				BusinessGroup bg = loadBusinessGroup(group);
+				bg.setName(name);
+				bg.setDescription(description);
+				bg.setMaxParticipants(new Integer(minParticipants));
+				bg.setMinParticipants(new Integer(maxParticipants));
+				bg.setWaitingListEnabled(waitingList);
+				if (waitingList.booleanValue() && (bg.getWaitingGroup() == null) ) {
+					// Waitinglist is enabled but not created => Create waitingGroup
+					SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
+					bg.setWaitingGroup(waitingGroup);
+				}
+				bg.setAutoCloseRanksEnabled(autoCloseRanks);
+				bg.setLastUsage(new Date(System.currentTimeMillis()));
+				LifeCycleManager.createInstanceFor(bg).deleteTimestampFor(BusinessGroupService.SEND_DELETE_EMAIL_ACTION);
+				return businessGroupDAO.merge(bg);
+			}
+		});
 	}
 
 	@Override
@@ -223,7 +300,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					BusinessGroup reloadedBusinessGroup = loadBusinessGroup(group);
 					reloadedBusinessGroup.setLastUsage(new Date());
 					LifeCycleManager.createInstanceFor(reloadedBusinessGroup).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
-					return mergeBusinessGroup(reloadedBusinessGroup);
+					return businessGroupDAO.merge(reloadedBusinessGroup);
 				} catch(DBRuntimeException e) {
 					if(e.getCause() instanceof ObjectNotFoundException) {
 						//group deleted
@@ -266,12 +343,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 	
 	@Override
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, OLATResource resource) {
+	public boolean checkIfOneOrMoreNameExists(Set<String> names, OLATResource resource) {
 		return businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(names, resource);
 	}
 
 	@Override
-	public boolean checkIfOneOrMoreNameExistsInContext(Set<String> names, BusinessGroup group) {
+	public boolean checkIfOneOrMoreNameExists(Set<String> names, BusinessGroup group) {
 		return businessGroupRelationDAO.checkIfOneOrMoreNameExistsInContext(names, group);
 	}
 
@@ -546,6 +623,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 	
 	private void removeFromRepositoryEntrySecurityGroup(BusinessGroup group) {
+		//TODO
 		/*
 		BGContext context = group.getGroupContext();
 		if(context == null) return;//nothing to do
@@ -593,30 +671,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
-		//fxdiff VCRP-1,2: access control of resources
-		List<RepositoryEntry> res = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, 1);
-		for(RepositoryEntry re:res) {
-			if(re.getTutorGroup() == null) {
-				repositoryManager.createTutorSecurityGroup(re);
-				repositoryManager.updateRepositoryEntry(re);
-			}
-			if(re.getTutorGroup() != null && !securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
-				securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
-			}
-		}
-		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
-		
-		// add user to buddies rosters
-		addToRoster(ureqIdentity, identity, group, flags);
-		// notify currently active users of this business group
-		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
-		// do logging
-		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
-		// send notification mail in your controller!
-	}
-
-	@Override
 	public BusinessGroupAddResponse addOwners(Identity ureqIdentity, List<Identity> addIdentities, BusinessGroup group, BGConfigFlags flags) {
 		BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		for (Identity identity : addIdentities) {
@@ -637,6 +691,29 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 		}
 		return response;
+	}
+	
+	private void addOwner(Identity ureqIdentity, Identity identity, BusinessGroup group, BGConfigFlags flags) {
+		//fxdiff VCRP-1,2: access control of resources
+		List<RepositoryEntry> res = businessGroupRelationDAO.findRepositoryEntries(Collections.singletonList(group), 0, 1);
+		for(RepositoryEntry re:res) {
+			if(re.getTutorGroup() == null) {
+				repositoryManager.createTutorSecurityGroup(re);
+				repositoryManager.updateRepositoryEntry(re);
+			}
+			if(re.getTutorGroup() != null && !securityManager.isIdentityInSecurityGroup(identity, re.getTutorGroup())) {
+				securityManager.addIdentityToSecurityGroup(identity, re.getTutorGroup());
+			}
+		}
+		securityManager.addIdentityToSecurityGroup(identity, group.getOwnerGroup());
+		
+		// add user to buddies rosters
+		addToRoster(ureqIdentity, identity, group, flags);
+		// notify currently active users of this business group
+		BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, group, identity);
+		// do logging
+		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identity));
+		// send notification mail in your controller!
 	}
 	
 	@Override

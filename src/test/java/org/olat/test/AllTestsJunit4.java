@@ -77,7 +77,6 @@ import org.junit.runners.Suite;
 	org.olat.group.test.BGRightManagerTest.class,//ok
 	org.olat.group.test.BGAreaManagerTest.class,//ok
 	org.olat.group.test.BusinessGroupServiceTest.class,//ok
-	org.olat.group.test.BusinessGroupServiceImplTest.class,//ok
 	org.olat.group.test.BusinessGroupDAOTest.class,//ok
 	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok

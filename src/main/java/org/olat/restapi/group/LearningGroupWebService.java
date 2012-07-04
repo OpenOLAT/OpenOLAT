@@ -216,19 +216,10 @@ public class LearningGroupWebService {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
 
-		BusinessGroup savedBg = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(bg, new SyncerCallback<BusinessGroup>(){
-			public BusinessGroup execute() {
-				BusinessGroup reloadedBG = bgs.loadBusinessGroup(bg);
-				reloadedBG.setName(group.getName());
-				reloadedBG.setDescription(group.getDescription());
-				reloadedBG.setMinParticipants(normalize(group.getMinParticipants()));
-				reloadedBG.setMaxParticipants(normalize(group.getMaxParticipants()));
-				return bgs.mergeBusinessGroup(reloadedBG);
-			}
-		});
-		
+		BusinessGroup mergedBg = bgs.updateBusinessGroup(bg, group.getName(), group.getDescription(),
+				normalize(group.getMinParticipants()), normalize(group.getMaxParticipants()));
 		//save the updated group
-		GroupVO savedVO = ObjectFactory.get(savedBg);
+		GroupVO savedVO = ObjectFactory.get(mergedBg);
 		return Response.ok(savedVO).build();
 	}
 	
@@ -489,11 +480,12 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+		//TODO gm sync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
-					bgs.addOwner(ureq.getIdentity(), identity, group, flags);
+					List<Identity> identityToAdd = Collections.singletonList(identity);
+					bgs.addOwners(ureq.getIdentity(), identityToAdd, group, flags);
 					return Boolean.TRUE;
 				}
 			});// end of doInSync
@@ -548,7 +540,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+		//TODO gm sync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
@@ -605,7 +597,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+		//TODO gm sync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerCallback<Boolean>(){
 				public Boolean execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
@@ -662,7 +654,7 @@ public class LearningGroupWebService {
 			if(identity == null || group == null) {
 				return Response.serverError().status(Status.NOT_FOUND).build();
 			}
-			
+			//TODO gm sync
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(group, new SyncerExecutor(){
 				public void execute() {
 					BGConfigFlags flags = BGConfigFlags.createLearningGroupDefaultFlags();
