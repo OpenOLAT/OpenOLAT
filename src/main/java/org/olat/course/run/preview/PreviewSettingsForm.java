@@ -47,7 +47,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
-import org.olat.course.condition.GroupOrAreaSelectionController;
+import org.olat.course.condition.AreaSelectionController;
+import org.olat.course.condition.GroupSelectionController;
 
 /**
  * Description:<br>
@@ -78,8 +79,8 @@ public class PreviewSettingsForm extends FormBasicController {
 	private SingleSelection roles;
 	
 	private ICourse course;
-	//private GroupAndAreaSelectController chooser;
-	private GroupOrAreaSelectionController groupChooser, areaChooser;
+	private AreaSelectionController areaChooser;
+	private GroupSelectionController groupChooser;
 	
 	private CloseableModalController cmc;
 	
@@ -194,12 +195,8 @@ public class PreviewSettingsForm extends FormBasicController {
 	protected void  formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == groupChooserLink) {
 			removeAsListenerAndDispose (groupChooser);
-			groupChooser = new GroupOrAreaSelectionController(
-					0, //group
-					getWindowControl(), ureq,
-					"group", course.getCourseEnvironment().getCourseGroupManager(),
-					group.getValue()
-			);
+			groupChooser = new GroupSelectionController(ureq, getWindowControl(), "group",
+					course.getCourseEnvironment().getCourseGroupManager(), group.getValue());
 			listenTo(groupChooser);
 				
 			removeAsListenerAndDispose(cmc);
@@ -213,15 +210,10 @@ public class PreviewSettingsForm extends FormBasicController {
 			
 		} else if (source == areaChooserLink) {
 			removeAsListenerAndDispose (areaChooser);
-			areaChooser = new GroupOrAreaSelectionController(
-					1, // area
-					getWindowControl(), ureq,
-					"area", course.getCourseEnvironment().getCourseGroupManager(),
-					area.getValue()
-			);
+			areaChooser = new AreaSelectionController(ureq, getWindowControl(), "area",
+					course.getCourseEnvironment().getCourseGroupManager(), area.getValue());
 			listenTo(areaChooser);
-			
-			
+
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(
 				getWindowControl(),

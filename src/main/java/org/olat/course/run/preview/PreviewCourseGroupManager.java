@@ -200,6 +200,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return areas;
 	}
 
+	@Override
+	public List<BGArea> getAreasFromContext(String areaname) {
+		return null;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
 	 */

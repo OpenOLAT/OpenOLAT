@@ -151,7 +151,7 @@ public class BusinessGroupImportExportTest extends OlatTestCase {
 		Assert.assertEquals(3, groups.size());
 		
 		//check if all three areas are imported
-		List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 		Assert.assertNotNull(areas);
 		Assert.assertEquals(3, areas.size());
 		

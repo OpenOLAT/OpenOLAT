@@ -236,7 +236,7 @@ public class MemberListWizardController extends BasicController {
 				objectArrays.add(groupChoiceRowData);
 			}
 		} else if (AREAS_MEMBERS.equals(wizardType)) {
-			List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+			List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 			Collections.sort(areas, new Comparator<BGArea>() {
 				@Override
 				public int compare(BGArea a1, BGArea a2) {

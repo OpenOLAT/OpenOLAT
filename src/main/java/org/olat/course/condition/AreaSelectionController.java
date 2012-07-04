@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.Reset;
 import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -43,7 +45,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
-import org.olat.group.ui.NewBGController;
 
 /**
  * Description:<br>
@@ -53,18 +54,16 @@ import org.olat.group.ui.NewBGController;
  * 
  * @author patrickb
  */
-public class GroupOrAreaSelectionController extends FormBasicController {
+public class AreaSelectionController extends FormBasicController {
 
 	private MultipleSelectionElement entrySelector;
 	protected String[] entries;
 	private FormLinkImpl createNew;
 	private CourseGroupManager courseGrpMngr;
-	private boolean inGroupMode;
-	private NewBGController groupCreateCntrllr;
 	private NewAreaController areaCreateCntrllr;
 	private CloseableModalController cmc;
 
-	public GroupOrAreaSelectionController(int groupOrArea, WindowControl wControl, UserRequest ureq, String title,
+	public AreaSelectionController(UserRequest ureq, WindowControl wControl, String title,
 			CourseGroupManager courseGrpMngr, String selectionAsCsvStr) {
 		super(ureq, wControl, "group_or_area_selection");
 		/*
@@ -72,24 +71,14 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		 */
 		this.courseGrpMngr = courseGrpMngr;
 		// group or area mode
-		this.inGroupMode = groupOrArea == 0;
+
 		// unique names from list to arry
-		List<String> uniqueNames = null;
-		if (inGroupMode) {
-			uniqueNames = courseGrpMngr.getUniqueLearningGroupNamesFromAllContexts();
-		} else {
-			uniqueNames = courseGrpMngr.getUniqueAreaNamesFromAllContexts();
-		}
-		
+		List<String> uniqueNames = courseGrpMngr.getUniqueAreaNamesFromAllContexts();
 		entries = new String[uniqueNames.size()];
 		uniqueNames.toArray(entries);
-		/*
-		 * init form elements
-		 */
-		initForm(this.flc, this, ureq);
-		/*
-		 * after initialising the element, select the entries
-		 */
+		
+		initForm(ureq);
+		
 		String[] activeSelection = selectionAsCsvStr != null ? selectionAsCsvStr.split(",") : new String[] {};
 		for (int i = 0; i < activeSelection.length; i++) {
 			entrySelector.select(activeSelection[i].trim(), true);
@@ -97,72 +86,24 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, org.olat.core.gui.components.form.flexible.FormItem source,
-			org.olat.core.gui.components.form.flexible.impl.FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == createNew) {
-			if (inGroupMode) {
-				
-				// user wants to create a new group -> show group create form
-				
-				removeAsListenerAndDispose(groupCreateCntrllr);
-				groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-						ureq, getWindowControl(), true, courseGrpMngr.getCourseResource(), true, null
-				);
-				listenTo(groupCreateCntrllr);
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(
-						getWindowControl(),"close",groupCreateCntrllr.getInitialComponent()
-				);
-				listenTo(cmc);
-				
-				cmc.activate();
-				
-			} else {
-				
-				//user wants to create a new area -> show new area create form
-				
-				removeAsListenerAndDispose(areaCreateCntrllr);
-				areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-						ureq, getWindowControl(), courseGrpMngr.getCourseResource()
-				);
-				listenTo(areaCreateCntrllr);
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(
-						getWindowControl(),"close",areaCreateCntrllr.getInitialComponent()
-				);
-				listenTo(cmc);
-				
-				cmc.activate();
-			}
+			//user wants to create a new area -> show new area create form
+			removeAsListenerAndDispose(areaCreateCntrllr);
+			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(ureq, getWindowControl(), courseGrpMngr.getCourseResource());
+			listenTo(areaCreateCntrllr);
+			
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(),"close",areaCreateCntrllr.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == groupCreateCntrllr) {
-			
+		if(source == areaCreateCntrllr) {
 			cmc.deactivate();
-			
-			if (event == Event.DONE_EVENT) {
-				List<String> uniqueNames = null;
-				uniqueNames = courseGrpMngr.getUniqueLearningGroupNamesFromAllContexts();
-				// update entries
-				entries = new String[uniqueNames.size()];
-				uniqueNames.toArray(entries);
-				entrySelector.setKeysAndValues(entries, entries, null);
-				//
-				// select new value
-				entrySelector.select(groupCreateCntrllr.getCreatedGroup().getName(), true);
-				
-				//inform condition config easy about new groups -> which informs further
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} 
-		} else if(source == areaCreateCntrllr){
-			
-			cmc.deactivate();
-			
 			if (event == Event.DONE_EVENT) {
 				List<String> uniqueNames = null;
 				uniqueNames = courseGrpMngr.getUniqueAreaNamesFromAllContexts();
@@ -180,9 +121,6 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//
@@ -190,27 +128,13 @@ public class GroupOrAreaSelectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer boundTo, Controller listener, UserRequest ureq) {
-		/*
-		// | [] group 1 | create group |
-		// | [] group 2 | |
-		// | submit | cancel | |
-		//
-		 * 
-		 */
-
-			// easy creation only possible if a default group context available
-			if (inGroupMode) {
-				createNew = new FormLinkImpl("create");
-			} else {
-				createNew = new FormLinkImpl("create");
-			}
-			//is a button
-			createNew.setCustomEnabledLinkCSS("b_button");
-			createNew.setCustomDisabledLinkCSS("b_button b_disabled");
-			// create new group/area on the right side
-			boundTo.add(createNew);
-
-		
+		// easy creation only possible if a default group context available
+		createNew = new FormLinkImpl("create");
+		//is a button
+		createNew.setCustomEnabledLinkCSS("b_button");
+		createNew.setCustomDisabledLinkCSS("b_button b_disabled");
+		// create new group/area on the right side
+		boundTo.add(createNew);
 
 		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, entries, entries, null, 1);
 		// submitCancel after checkboxes

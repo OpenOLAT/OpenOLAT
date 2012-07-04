@@ -178,12 +178,31 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	public boolean existsArea(String areaname) {
 		// FIXME:fg:b improve performance by adding a special query for the existence
 		// check!
-		List cnt = cgm.getAllAreasFromAllContexts();
-		for (Iterator iter = cnt.iterator(); iter.hasNext();) {
-			BGArea element = (BGArea) iter.next();
-			if (element.getName().equals(areaname)) { return true; }
+		List<BGArea> cnt = cgm.getAllAreasFromAllContexts();
+		for (BGArea element : cnt) {
+			if (element.getName().equals(areaname)) { 
+				return true;
+			}
 		}
 		return false;
+	}
+
+	@Override
+	public List<String> validateAreas(List<String> areanames) {
+		List<BGArea> cnt = cgm.getAllAreasFromAllContexts();
+		List<String> invalidNames = new ArrayList<String>();
+		
+		a_a:
+		for(String areaname:areanames) {
+			for (BGArea element : cnt) {
+				if (element.getName().equals(areaname)) { 
+					continue a_a;
+				}
+			}
+			invalidNames.add(areaname);
+			
+		}
+		return invalidNames;
 	}
 
 	/**

@@ -64,7 +64,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	private static final String LEARNINGGROUPEXPORT_XML = "learninggroupexport.xml";
 	private static final String RIGHTGROUPEXPORT_XML = "rightgroupexport.xml";
 	private static final String LEARNINGGROUPARCHIVE_XLS = "learninggroup_archiv.xls";
-	private static final String RIGHTGROUPARCHIVE_XLS = "rightgroup_archiv.xls";
+	//private static final String RIGHTGROUPARCHIVE_XLS = "rightgroup_archiv.xls";
 
 	private final OLATResource courseResource;
 	
@@ -201,16 +201,24 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllAreasFromAllContexts()
 	 */
 	public List<BGArea> getAllAreasFromAllContexts() {
-		List<BusinessGroup> learningGroups = getAllLearningGroupsFromAllContexts();
-		List<BGArea> areas = areaManager.findBGAreasOfBusinessGroups(learningGroups);
+		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
 		return areas;
+	}
+
+	@Override
+	public List<BGArea> getAreasFromContext(String areaname) {
+		BGArea area = areaManager.findBGArea(areaname, courseResource);
+		if(area == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(area);
 	}
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getLearningGroupsInAreaFromAllContexts(java.lang.String)
 	 */
 	public List<BusinessGroup> getLearningGroupsInAreaFromAllContexts(String areaName) {
-		List<BGArea> areas = areaManager.findBGAreasOfBGContext(courseResource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(courseResource);
 		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
 		return groups;
 	}

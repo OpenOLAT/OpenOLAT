@@ -71,6 +71,13 @@ public interface CourseEditorEnv {
 	 * @return
 	 */
 	boolean existsArea(String areaname);
+	
+	/**
+	 * Return the invalid areas
+	 * @param areaname
+	 * @return
+	 */
+	public List<String> validateAreas(List<String> areaname);
 
 	/**
 	 * @return

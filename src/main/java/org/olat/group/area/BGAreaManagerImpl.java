@@ -92,7 +92,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 */
 	// o_clusterOK by:cg ; must be synchronized too ? => not 100% sure, 
 	public Map<BGArea,BGArea> copyBGAreasOfBGContext(OLATResource origBgContext, final OLATResource targetBgContext) {
-		List<BGArea> origAreas = findBGAreasOfBGContext(origBgContext);
+		List<BGArea> origAreas = findBGAreasInContext(origBgContext);
 		Map<BGArea,BGArea> areas = new HashMap<BGArea,BGArea>();
 		Iterator<BGArea> iterator = origAreas.iterator();
 		while (iterator.hasNext()) {
@@ -300,7 +300,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	/**
 	 * @see org.olat.group.area.BGAreaManager#countBGAreasOfBGContext(org.olat.group.context.BGContext)
 	 */
-	public int countBGAreasOfBGContext(OLATResource resource) {
+	@Override
+	public int countBGAreasInContext(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(area) from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey");
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
@@ -312,7 +313,8 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	/**
 	 * @see org.olat.group.area.BGAreaManager#findBGAreasOfBGContext(org.olat.group.context.BGContext)
 	 */
-	public List<BGArea> findBGAreasOfBGContext(OLATResource resource) {
+	@Override
+	public List<BGArea> findBGAreasInContext(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey");
 		List<BGArea> areas = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)

@@ -100,8 +100,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private TextElement easyAreaTE;
 	private FormLink chooseAreasLink;
 	private MultipleSelectionElement groupSwitch;
-	private GroupOrAreaSelectionController groupChooseC;
-	private GroupOrAreaSelectionController areaChooseC;
+	private GroupSelectionController groupChooseC;
+	private AreaSelectionController areaChooseC;
 	private FormLink fixGroupError;
 	private FormLink fixAreaError;
 	private MultipleSelectionElement assessmentSwitch;
@@ -332,10 +332,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		if (source == chooseGroupsLink) {
 			
 			removeAsListenerAndDispose(groupChooseC);
-			groupChooseC = new GroupOrAreaSelectionController(
-					0, getWindowControl(), ureq, "group", courseEditorEnv.getCourseGroupManager(),
-					easyGroupTE.getValue()
-			);
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
+					courseEditorEnv.getCourseGroupManager(), easyGroupTE.getValue());
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
@@ -371,10 +369,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		} else if (source == chooseAreasLink) {
 			
 			removeAsListenerAndDispose(areaChooseC);
-			areaChooseC = new GroupOrAreaSelectionController(
-					1, getWindowControl(), ureq, "area", courseEditorEnv.getCourseGroupManager(),
-					easyAreaTE.getValue()
-			);
+			areaChooseC = new AreaSelectionController(ureq, getWindowControl(), "area",
+					courseEditorEnv.getCourseGroupManager(), easyAreaTE.getValue());
 			listenTo(areaChooseC);
 			
 			removeAsListenerAndDispose(cmc);
@@ -687,15 +683,13 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			if (!easyAreaTE.isEmpty()) {
 				// check whether areas exist
 				activeAreaSelection = easyAreaTE.getValue().split(",");
-				boolean exists = false;
-				Set<String> missingAreas = new HashSet<String>();
-				for (int i = 0; i < activeAreaSelection.length; i++) {
-					String trimmed = activeAreaSelection[i].trim();
-					exists = courseEditorEnv.existsArea(trimmed);
-					if (!exists) {
-						missingAreas.add(trimmed);
-					}
+				
+				List<String> activeAreaList = new ArrayList<String>();
+				for (int i=activeAreaSelection.length; i-->0; ) {
+					activeAreaList.add(activeAreaSelection[i].trim());
 				}
+				List<String> missingAreas = courseEditorEnv.validateAreas(activeAreaList);
+
 				if (missingAreas.size() > 0) {
 					retVal = false;
 					String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";

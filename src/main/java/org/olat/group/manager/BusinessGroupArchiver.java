@@ -261,7 +261,7 @@ public class BusinessGroupArchiver {
 		List<Member> participants = new ArrayList<Member>();
 		List<Member> waitings = new ArrayList<Member>();
 
-		List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 		for (BGArea area :areas) {
 			if (areaList.contains(area)) { //rely on the equals() method of the BGArea impl
  				List<BusinessGroup> areaBusinessGroupList = areaManager.findBusinessGroupsOfArea(area);

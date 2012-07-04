@@ -231,11 +231,11 @@ public class BGAreaManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//count
-		int numOfAreas = areaManager.countBGAreasOfBGContext(resource);
+		int numOfAreas = areaManager.countBGAreasInContext(resource);
 		Assert.assertEquals(3, numOfAreas);
 		
 		//find areas
-		List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+		List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 		Assert.assertNotNull(areas);
 		Assert.assertEquals(3, areas.size());
 		Assert.assertTrue(areas.contains(area1));

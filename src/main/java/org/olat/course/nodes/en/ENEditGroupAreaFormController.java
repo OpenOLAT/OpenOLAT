@@ -53,8 +53,9 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.Condition;
-import org.olat.course.condition.GroupOrAreaSelectionController;
+import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.ENCourseNode;
@@ -95,8 +96,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	
 	private NewAreaController areaCreateCntrllr;
 	private NewBGController groupCreateCntrllr;
-	private GroupOrAreaSelectionController areaChooseC;
-	private GroupOrAreaSelectionController groupChooseC;
+	private AreaSelectionController areaChooseC;
+	private GroupSelectionController groupChooseC;
 	private FormLayoutContainer areaChooseSubContainer, groupChooseSubContainer ;
 	private FormItemContainer groupsAndAreasSubContainer;
 	
@@ -302,15 +303,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if (!easyAreaTE.isEmpty()) {
 			// check whether areas exist
 			activeAreaSelection = easyAreaTE.getValue().split(",");
-			boolean exists = false;
-			Set<String> missingAreas = new HashSet<String>();
-			for (int i = 0; i < activeAreaSelection.length; i++) {
-				String trimmed = activeAreaSelection[i].trim();
-				exists = cev.existsArea(trimmed);
-				if (!exists && trimmed.length() > 0 && !missingAreas.contains(trimmed) ) {
-					missingAreas.add(trimmed);
-				}
+
+			List<String> activeAreaList = new ArrayList<String>();
+			for (int i=activeAreaSelection.length; i-->0; ) {
+				activeAreaList.add(activeAreaSelection[i].trim());
 			}
+			List<String> missingAreas = cev.validateAreas(activeAreaList);
 			if (missingAreas.size() > 0) {
 				retVal = false;
 				String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
@@ -385,11 +383,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		if (source == chooseGroupsLink) {
 			
 			removeAsListenerAndDispose(groupChooseC);
-			groupChooseC = new GroupOrAreaSelectionController(
-					0, getWindowControl(), ureq, "group",
-					cev.getCourseGroupManager(),
-					easyGroupTE.getValue()
-			);
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
+					cev.getCourseGroupManager(), easyGroupTE.getValue());
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
@@ -429,11 +424,8 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 			// already areas -> choose areas
 			removeAsListenerAndDispose(areaChooseC);
-			areaChooseC = new GroupOrAreaSelectionController (
-					1, getWindowControl(), ureq, "area",
-					cev.getCourseGroupManager(),
-					easyAreaTE.getValue()
-			);
+			areaChooseC = new AreaSelectionController (ureq, getWindowControl() , "area",
+					cev.getCourseGroupManager(), easyAreaTE.getValue());
 			listenTo(areaChooseC);
 			
 			

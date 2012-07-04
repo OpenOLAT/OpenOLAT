@@ -825,7 +825,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 		overviewVC.contextPut("numbParticipants", new Integer(numOfParticipants));
 		// number of areas
 		if (flags.isEnabled(BGConfigFlags.AREAS)) {
-			overviewVC.contextPut("numbAreas", new Integer(areaManager.countBGAreasOfBGContext(resource)));
+			overviewVC.contextPut("numbAreas", new Integer(areaManager.countBGAreasInContext(resource)));
 		}
 		setTools(STATE_OVERVIEW);
 	}
@@ -963,7 +963,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 			// 2. find areas for group list filter
 			if (flags.isEnabled(BGConfigFlags.AREAS)) {
-				List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+				List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 				areaFilters = new ArrayList<ShortName>(areas);
 				groupListCtr.setFilters(this.areaFilters, currentAreaFilter);
 			}
@@ -993,7 +993,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 
 	private void doAreaList(UserRequest ureq, boolean initializeModel) {
 		if (areaListModel == null || initializeModel) {
-			List<BGArea> areas = areaManager.findBGAreasOfBGContext(resource);
+			List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 			areaListModel = new BGAreaTableModel(areas, getTranslator());
 
 			if (areaListCtr != null) areaListCtr.dispose();

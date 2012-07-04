@@ -49,7 +49,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.course.condition.GroupOrAreaSelectionController;
+import org.olat.course.condition.AreaSelectionController;
+import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.BGControllerFactory;
@@ -90,8 +91,8 @@ public class COConfigForm extends FormBasicController {
 	
 	private NewAreaController areaCreateCntrllr;
 	private NewBGController groupCreateCntrllr;
-	private GroupOrAreaSelectionController areaChooseC;
-	private GroupOrAreaSelectionController groupChooseC;
+	private AreaSelectionController areaChooseC;
+	private GroupSelectionController groupChooseC;
 	
 	
 	private FormLayoutContainer areaChooseSubContainer, groupChooseSubContainer ;
@@ -251,15 +252,12 @@ public class COConfigForm extends FormBasicController {
 		if (!easyAreaTE.isEmpty()) {
 			// check whether areas exist
 			activeAreaSelection = easyAreaTE.getValue().split(",");
-			boolean exists = false;
-			Set<String> missingAreas = new HashSet<String>();
-			for (int i = 0; i < activeAreaSelection.length; i++) {
-				String trimmed = activeAreaSelection[i].trim();
-				exists = cev.existsArea(trimmed);
-				if (!exists && trimmed.length() > 0 && !missingAreas.contains(trimmed) ) {
-					missingAreas.add(trimmed);
-				}
+
+			List<String> activeAreaList = new ArrayList<String>();
+			for (int i=activeAreaSelection.length; i-->0; ) {
+				activeAreaList.add(activeAreaSelection[i].trim());
 			}
+			List<String> missingAreas = cev.validateAreas(activeAreaList);
 			if (missingAreas.size() > 0) {
 				retVal = false;
 				String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
@@ -525,11 +523,8 @@ public class COConfigForm extends FormBasicController {
 		if (source == chooseGroupsLink) {
 			
 			removeAsListenerAndDispose(groupChooseC);
-			groupChooseC = new GroupOrAreaSelectionController(
-					0, getWindowControl(), ureq, "group",
-					cev.getCourseGroupManager(),
-					easyGroupTE.getValue()
-			);
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
+					cev.getCourseGroupManager(), easyGroupTE.getValue());
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
@@ -568,11 +563,8 @@ public class COConfigForm extends FormBasicController {
 
 			// already areas -> choose areas
 			removeAsListenerAndDispose(areaChooseC);
-			areaChooseC = new GroupOrAreaSelectionController (
-					1, getWindowControl(), ureq, "area",
-					cev.getCourseGroupManager(),
-					easyAreaTE.getValue()
-			);
+			areaChooseC = new AreaSelectionController (ureq, getWindowControl(), "area",
+					cev.getCourseGroupManager(), easyAreaTE.getValue());
 			listenTo(areaChooseC);
 			
 			

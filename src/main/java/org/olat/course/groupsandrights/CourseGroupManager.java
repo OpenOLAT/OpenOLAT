@@ -142,12 +142,6 @@ public interface CourseGroupManager {
 	 *         contexts of this course
 	 */
 	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName);
-	/**
-	 * 
-	 * @param groupName
-	 * @return
-	 */
-	//public List<BusinessGroup> getRightGroupsFromAllContexts(String groupName);
 
 	/**
 	 * @param areaName
@@ -195,6 +189,8 @@ public interface CourseGroupManager {
 	 * @return A list of all group areas from this course
 	 */
 	public List<BGArea> getAllAreasFromAllContexts();
+	
+	public List<BGArea> getAreasFromContext(String areaname);
 
 	/**
 	 * Deletes the course group management. This will unlink all group contexts

@@ -157,7 +157,7 @@ public interface BGAreaManager {
 	 * @param resource
 	 * @return Number of business gropu areas
 	 */
-	public abstract int countBGAreasOfBGContext(OLATResource resource);
+	public abstract int countBGAreasInContext(OLATResource resource);
 
 	/**
 	 * Searches for all business group areas in the given business group context
@@ -165,7 +165,7 @@ public interface BGAreaManager {
 	 * @param resource
 	 * @return A list of business group areas
 	 */
-	public List<BGArea> findBGAreasOfBGContext(OLATResource resource);
+	public List<BGArea> findBGAreasInContext(OLATResource resource);
 
 	/**
 	 * Checks if an identity is in a business group areas with a given name in the
