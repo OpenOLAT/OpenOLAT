@@ -198,6 +198,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		
 		if(resource instanceof OLATResourceImpl) {
 			businessGroupRelationDAO.addRelationToResource(group, resource);
+			//add coach and participant permission
+			securityManager.createAndPersistPolicyWithResource(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
+			securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
 		}
 		return group;
 	}
@@ -1146,11 +1149,17 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Transactional
 	public void addResourceTo(BusinessGroup group, OLATResource resource) {
 		businessGroupRelationDAO.addRelationToResource(group, resource);
+		//add coach and participant permission
+		securityManager.createAndPersistPolicyWithResource(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
+		securityManager.createAndPersistPolicyWithResource(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
 	}
 
 	@Override
 	public void removeResourceFrom(BusinessGroup group, OLATResource resource) {
 		businessGroupRelationDAO.deleteRelation(group, resource);
+		//remove permission
+		securityManager.deletePolicy(group.getOwnerGroup(), Constants.PERMISSION_COACH, resource);
+		securityManager.deletePolicy(group.getPartipiciantGroup(), Constants.PERMISSION_PARTI, resource);
 	}
 
 	@Override

@@ -236,7 +236,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, identities.size());
 
 		List<Policy> policies = securityManager.getPoliciesOfSecurityGroup(g1.getPartipiciantGroup());
-		Assert.assertEquals(3, policies.size()); // read, archiving, courseeditor
+		Assert.assertEquals(4, policies.size()); // read, parti, archiving, courseeditor
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c2));
