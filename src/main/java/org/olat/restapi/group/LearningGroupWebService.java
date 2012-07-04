@@ -133,8 +133,8 @@ public class LearningGroupWebService {
 			groups = bgs.loadAllBusinessGroups();
 		} else {
 			Identity identity = RestSecurityHelper.getIdentity(request);
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			groups = bgs.findBusinessGroups(params, identity, true, true, null, 0, -1);
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
+			groups = bgs.findBusinessGroups(params, null, 0, -1);
 		}
 		
 		int count = 0;

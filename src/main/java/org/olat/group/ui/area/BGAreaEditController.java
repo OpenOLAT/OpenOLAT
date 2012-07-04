@@ -128,7 +128,7 @@ public class BGAreaEditController extends BasicController {
 		groupsTabVC = createVelocityContainer("groupstab");
 		tabbedPane.addTab(translate("tab.groups"), groupsTabVC);
 
-		allGroups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
+		allGroups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 		inAreaGroups = areaManager.findBusinessGroupsOfArea(area);
 		groupsDataModel = new GroupsToAreaDataModel(allGroups, inAreaGroups);
 

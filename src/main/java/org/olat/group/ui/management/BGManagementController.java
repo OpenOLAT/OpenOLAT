@@ -811,7 +811,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 	private void doOverview(UserRequest ureq) {
 		setMainContent(overviewVC);
 		
-		int numOfGroups = businessGroupService.countBusinessGroups(null, null, false, false, resource);
+		int numOfGroups = businessGroupService.countBusinessGroups(null, resource);
 		int numOfParticipants = businessGroupService.countMembersOf(resource, false, true);
 		int numOfOwners = businessGroupService.countMembersOf(resource, true, false);
 		
@@ -953,7 +953,7 @@ public class BGManagementController extends MainLayoutBasicController implements
 			// area
 			List<BusinessGroup> groups;
 			if (currentAreaFilter == null) {
-				groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
+				groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 			} else {
 				groups = areaManager.findBusinessGroupsOfArea(currentAreaFilter); // filtered
 				// groups

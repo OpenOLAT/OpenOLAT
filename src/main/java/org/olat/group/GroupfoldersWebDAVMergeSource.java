@@ -116,10 +116,10 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		
 		String childName = VFSManager.extractChild(path);
 
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<BusinessGroup> groups = bgs.findBusinessGroups(params, identity, true, true, null, 0, -1);
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
 		Set<String> addedGroupNames = new HashSet<String>();
 		for(BusinessGroup group:groups) {
 			String name = nameIdentifier(group, addedGroupNames);
@@ -146,13 +146,15 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 		Set<Long> addedGroupKeys = new HashSet<Long>();
 		Set<String> addedGroupNames = new HashSet<String>();
 		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
-		List<BusinessGroup> tutorGroups = bgs.findBusinessGroups(params, identity, true, false, null, 0, -1);
+		List<BusinessGroup> tutorGroups = bgs.findBusinessGroups(params, null, 0, -1);
 		for (BusinessGroup group : tutorGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, true);
 		}
-		List<BusinessGroup> participantsGroups = bgs.findBusinessGroups(params, identity, false, true, null, 0, -1);
+
+		SearchBusinessGroupParams paramsParticipants = new SearchBusinessGroupParams(identity, false, true);
+		List<BusinessGroup> participantsGroups = bgs.findBusinessGroups(paramsParticipants, null, 0, -1);
 		for (BusinessGroup group : participantsGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, false);
 		}

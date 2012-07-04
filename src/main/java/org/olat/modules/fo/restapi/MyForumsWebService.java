@@ -214,9 +214,9 @@ public class MyForumsWebService {
 		
 		//start found forums in groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		params.addTools(CollaborationTools.TOOL_FORUM);
-		List<BusinessGroup> groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
 		//list forum keys
 		List<Long> groupIds = new ArrayList<Long>();
 		Map<Long,BusinessGroup> groupsMap = new HashMap<Long,BusinessGroup>();

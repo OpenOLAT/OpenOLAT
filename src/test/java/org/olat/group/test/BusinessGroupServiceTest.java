@@ -218,8 +218,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	
 	@Test
 	public void loadBusinessGroups() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(); 
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, false, false, null, 0, 5);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(null, false, false);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, 5);
 		Assert.assertNotNull(groups);
 	}
 	
@@ -229,8 +229,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		OLATResource c2 = JunitTestHelper.createRandomResource();
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
-		assertTrue(businessGroupService.findBusinessGroups(null, null, false, false, c1, 0, -1).isEmpty());
-		assertTrue(businessGroupService.countBusinessGroups(null, null, false, false, c1) == 0);
+		SearchBusinessGroupParams params1 = new SearchBusinessGroupParams(null, false, false);
+		assertTrue(businessGroupService.findBusinessGroups(params1, c1, 0, -1).isEmpty());
+		assertTrue(businessGroupService.countBusinessGroups(params1, c1) == 0);
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "g1", null, 0, 10, false, false, c1);
@@ -247,8 +248,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		assertNotNull(g4); // name duplicate in other context allowed
 
 		dbInstance.commitAndCloseSession(); // simulate user clicks
-		Assert.assertEquals(2, businessGroupService.findBusinessGroups(null, null, false, false, c1, 0, -1).size());
-		Assert.assertEquals(2, businessGroupService.countBusinessGroups(null, null, false, false, c1));
+		SearchBusinessGroupParams params2 = new SearchBusinessGroupParams(null, false, false);
+		Assert.assertEquals(2, businessGroupService.findBusinessGroups(params2, c1, 0, -1).size());
+		Assert.assertEquals(2, businessGroupService.countBusinessGroups(params2, c1));
 	}
 
 	@Test
@@ -375,7 +377,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<BusinessGroup> groupOwnedId4 = businessGroupService.findBusinessGroupsOwnedBy(id4, null);
 		Assert.assertEquals("0 BuddyGroup owned by id4", 0, groupOwnedId4.size());
 
-		List<BusinessGroup> groupAttendeeId4 = businessGroupService.findBusinessGroups(null, id4, false, true, null, 0, -1);
+
+		SearchBusinessGroupParams params4 = new SearchBusinessGroupParams(id4, false, true);
+		List<BusinessGroup> groupAttendeeId4 = businessGroupService.findBusinessGroups(params4, null, 0, -1);
 		Assert.assertEquals("1 BuddyGroup where id4 is partipicating", 1, groupAttendeeId4.size());
 		assertTrue("It's the correct BuddyGroup", groupAttendeeId4.contains(two));
 	}

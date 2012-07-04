@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -50,6 +51,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -354,17 +356,15 @@ public class BusinessGroupDAO {
 		return groups;
 	}
 	
-	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource) {
-		TypedQuery<Number> query = createFindDBQuery(params, identity, ownedById, attendedById, resource, Number.class);
+	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource) {
+		TypedQuery<Number> query = createFindDBQuery(params, resource, Number.class);
 
 		Number count = query.getSingleResult();
 		return count.intValue();
 	}
 	
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource, int firstResult, int maxResults) {
-		TypedQuery<BusinessGroup> query = createFindDBQuery(params, identity, ownedById, attendedById, resource, BusinessGroup.class);
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults) {
+		TypedQuery<BusinessGroup> query = createFindDBQuery(params, resource, BusinessGroup.class);
 		query.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
@@ -373,8 +373,7 @@ public class BusinessGroupDAO {
 		return groups;
 	}
 	
-	private <T> TypedQuery<T> createFindDBQuery(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource, Class<T> resultClass) {
+	private <T> TypedQuery<T> createFindDBQuery(SearchBusinessGroupParams params, OLATResource resource, Class<T> resultClass) {
 		StringBuilder query = new StringBuilder();
 		if(BusinessGroup.class.equals(resultClass)) {
 			query.append("select distinct(bgi) from ");
@@ -383,7 +382,7 @@ public class BusinessGroupDAO {
 		}
 		query.append(org.olat.group.BusinessGroupImpl.class.getName()).append(" as bgi ");
 
-		if(StringHelper.containsNonWhitespace(params.getOwner())) {
+		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
 			//implicit joins
 			query.append(", ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ")
 				   .append(", ").append(IdentityImpl.class.getName()).append(" identity")
@@ -396,13 +395,14 @@ public class BusinessGroupDAO {
 			     .append("inner join fetch bgi.waitingGroup waitingGroup ")
 			     .append("inner join fetch bgi.resource bgResource ");
 		} else {
-			query.append("inner join bgi.ownerGroup ownerGroup ");
-			query.append("inner join bgi.partipiciantGroup participantGroup ");
-			query.append("inner join bgi.waitingGroup waitingGroup ");
+			query.append("inner join bgi.ownerGroup ownerGroup ")
+			     .append("inner join bgi.partipiciantGroup participantGroup ")
+			     .append("inner join bgi.waitingGroup waitingGroup ")
+	         .append("inner join bgi.resource bgResource ");
 		}
 
 		boolean where = false;
-		if(StringHelper.containsNonWhitespace(params.getOwner())) {
+		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
 			where = true;
 			query.append(" where ownerGroup = sgmi.securityGroup")
 				   .append(" and sgmi.identity = identity ")
@@ -434,21 +434,39 @@ public class BusinessGroupDAO {
 			query.append("bgi.type in (:types)");
 		}
 		
-		if(ownedById || attendedById) {
+		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
 			where = where(query, where);
+			boolean subOr = false;
 			query.append('(');
-			if(ownedById) {
+			if(params.isOwner()) {
+				subOr = or(query, subOr);
 				query.append("ownerGroup.key in (select ownerMemberShip.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerMemberShip ")
 				     .append(" where ownerMemberShip.identity.key=:identId ")
 				     .append(")");
 			}
-			if(attendedById) {
-				if(ownedById) query.append(" or ");
+			if(params.isAttendee()) {
+				subOr = or(query, subOr);
 				query.append(" participantGroup.key in (select partMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as partMembership ")
 				     .append("  where partMembership.identity.key=:identId")
 				     .append(" )");
 			}
+			if(params.isWaiting()) {
+				subOr = or(query, subOr);
+				query.append(" waitingGroup.key in (select waitMembership.securityGroup.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as waitMembership ")
+				     .append("  where waitMembership.identity.key=:identId")
+				     .append(" )");
+			}
 			query.append(')');
+		}
+		
+		if(params.isPublicGroup()) {
+			where = where(query, where);
+	    query.append(" bgResource.key in (")
+	         .append("   select offer.resource.key from ").append(OfferImpl.class.getName()).append(" offer ")
+	         .append("     where offer.valid=true")
+	         .append("     and (offer.validFrom is null or offer.validFrom<=:atDate)")
+					 .append("     and (offer.validTo is null or offer.validTo>=:atDate)")
+					 .append(" )");
 		}
 		
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
@@ -484,10 +502,15 @@ public class BusinessGroupDAO {
 			query.append(" order by bgi.name,bgi.key");
 		}
 		
+		System.out.println(query.toString());
+		
 		TypedQuery<T> dbq = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
 		//add parameters
-		if(ownedById || attendedById) {
-			dbq.setParameter("identId", identity.getKey().longValue());
+		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
+			dbq.setParameter("identId", params.getIdentity().getKey());
+		}
+		if(params.isPublicGroup()) {
+			dbq.setParameter("atDate", new Date(), TemporalType.TIMESTAMP);
 		}
 		if(params.getKey() != null) {
 			dbq.setParameter("id", params.getKey());
@@ -502,8 +525,8 @@ public class BusinessGroupDAO {
 		if(params.getTools() != null && !params.getTools().isEmpty()) {
 			dbq.setParameter("tools", params.getTools());
 		}
-		if(StringHelper.containsNonWhitespace(params.getOwner())) {
-			dbq.setParameter("owner", makeFuzzyQueryString(params.getOwner()));
+		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
+			dbq.setParameter("owner", makeFuzzyQueryString(params.getOwnerName()));
 		}
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
 			dbq.setParameter("search", makeFuzzyQueryString(params.getNameOrDesc()));

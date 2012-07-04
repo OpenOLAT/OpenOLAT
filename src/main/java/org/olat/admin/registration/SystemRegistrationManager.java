@@ -304,7 +304,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		
 		// Groups
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		int groups = businessGroupService.countBusinessGroups(params, null, false, false, null);
+		int groups = businessGroupService.countBusinessGroups(params, null);
 		msgProperties.put("buddyGroups", String.valueOf(groups));
 		msgProperties.put("learningGroups", String.valueOf(groups));
 		msgProperties.put("rightGroups", String.valueOf(groups));

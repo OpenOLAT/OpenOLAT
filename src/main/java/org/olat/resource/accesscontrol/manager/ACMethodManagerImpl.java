@@ -251,13 +251,12 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, group.key, offer.price from ").append(OfferAccessImpl.class.getName()).append(" access, ")
-			.append(BusinessGroupImpl.class.getName()).append(" group, ")
-			.append(OLATResourceImpl.class.getName()).append(" gResource")
+			.append(BusinessGroupImpl.class.getName()).append(" group ")
 			.append(" inner join access.offer offer")
-			.append(" inner join offer.resource oResource")
 			.append(" where access.valid=").append(valid)
 			.append(" and offer.valid=").append(valid)
-			.append(" and group.key=gResource.resId and gResource.resName='BusinessGroup' and oResource.key=gResource.key");
+			.append(" and group.resource.key=offer.resource.key");
+
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");

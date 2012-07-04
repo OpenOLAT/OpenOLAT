@@ -248,11 +248,9 @@ public interface BusinessGroupService {
 	 */
 	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity,OLATResource resource);
 	
-	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource);
+	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource);
 	
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource, int firstResult, int maxResults);
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults);
 	
 	//check
 	public boolean checkIfOneOrMoreNameExists(Set<String> names, OLATResource resource); 

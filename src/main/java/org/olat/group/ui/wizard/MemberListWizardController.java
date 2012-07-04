@@ -222,7 +222,7 @@ public class MemberListWizardController extends BasicController {
 	private GenericObjectArrayTableDataModel getGroupOrAreaChoiceTableDataModel(OLATResource resource) {
 		List<Object[]> objectArrays = new ArrayList<Object[]>();
 		if (GROUPS_MEMBERS.equals(wizardType)) {
-			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 			Collections.sort(groups, new Comparator<BusinessGroup>() {
 				@Override
 				public int compare(BusinessGroup g1, BusinessGroup g2) {

@@ -185,7 +185,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	public List<BusinessGroup> getAllLearningGroupsFromAllContexts() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		return businessGroupService.findBusinessGroups(params, null, false, false, courseResource, 0, -1);
+		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setExactName(groupName);
-		return businessGroupService.findBusinessGroups(params, null, false, false, courseResource, 0, -1);
+		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 	}
 
 	/**
@@ -229,8 +229,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 *      java.lang.String)
 	 */
 	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity, String groupName) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		return businessGroupService.findBusinessGroups(params, identity, false, true, courseResource, 0, -1);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
+		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 	}
 
 	/**
@@ -247,9 +247,9 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	@Override
 	public List<BusinessGroup> getOwnedLearningGroupsFromAllContexts(Identity identity) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
 		List<BusinessGroup> allGroups =
-				businessGroupService.findBusinessGroups(params, identity, true, false, courseResource, 0, -1);
+				businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 		return allGroups;
 	}
 
@@ -258,9 +258,9 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 */
 	@Override
 	public List<BusinessGroup> getParticipatingLearningGroupsFromAllContexts(Identity identity) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
 		List<BusinessGroup> allGroups =
-				businessGroupService.findBusinessGroups(params, identity, false, true, courseResource, 0, -1);
+				businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 		return allGroups;
 	}
 

@@ -70,6 +70,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
@@ -606,7 +607,8 @@ public class EPShareListController extends FormBasicController {
 		
 		public GroupMapperProvider() {
 			if(groupList.isEmpty()) {
-				groupList.addAll(businessGroupService.findBusinessGroups(null, getIdentity(), true, true, null, 0, -1));
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+				groupList.addAll(businessGroupService.findBusinessGroups(params, null, 0, -1));
 			}
 		}
 

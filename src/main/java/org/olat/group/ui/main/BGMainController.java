@@ -684,8 +684,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 	 */
 	 //fxdiff VCRP-1,2: access control of resources
 	private void updateGroupList() {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, getIdentity(), true, true, null, 0, -1);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();
 		for (BusinessGroup group:groups) {
@@ -726,8 +726,8 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			params.setKey(id);
 			params.setName(name);
 			params.setDescription(description);
-			params.setOwner(owner);
-			groups = businessGroupService.findBusinessGroups(params, null, false, false, null, 0, -1);
+			params.setOwnerName(owner);
+			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		}
 
 		List<BGTableItem> wrapped = new ArrayList<BGTableItem>();

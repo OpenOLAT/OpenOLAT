@@ -284,8 +284,8 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 		if (repoPortletOn) {
 			rootNode.addChild(new GenericTreeNode(translate("search.mycourses.student"), "search.mycourses.student"));
 			// for authors or users with group rights also show the teacher portlet
-			SearchBusinessGroupParams rightParams = new SearchBusinessGroupParams();
-			if (bIsAuthor || businessGroupService.countBusinessGroups(rightParams, getIdentity(), true, false, null) > 0) {
+			SearchBusinessGroupParams rightParams = new SearchBusinessGroupParams(getIdentity(), true, false);
+			if (bIsAuthor || businessGroupService.countBusinessGroups(rightParams, null) > 0) {
 				rootNode.addChild(new GenericTreeNode(translate("search.mycourses.teacher"), "search.mycourses.teacher"));
 			}
 		}

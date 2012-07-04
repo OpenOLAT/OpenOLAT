@@ -349,7 +349,7 @@ public class SmackInstantMessagingImpl extends LogDelegator implements InstantMe
 		Set<Long> checkedIdentities = new HashSet<Long>();
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		do {
-			groups = businessGroupService.findBusinessGroups(params, null, false, false, null, counter, GROUP_BATCH_SIZE);
+			groups = businessGroupService.findBusinessGroups(params, null, counter, GROUP_BATCH_SIZE);
 			for (BusinessGroup group:groups) {
 				if (!syncLearn) {
 					String groupID = InstantMessagingModule.getAdapter().createChatRoomString(group);

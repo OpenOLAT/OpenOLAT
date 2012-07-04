@@ -244,9 +244,9 @@ public class UserFoldersWebService {
 		
 		//start found forums in groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
-		List<BusinessGroup> groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
+		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
 		for(BusinessGroup group:groups) {
 			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
 			VFSContainer container = tools.getSecuredFolder(group, null, retrievedUser, false);

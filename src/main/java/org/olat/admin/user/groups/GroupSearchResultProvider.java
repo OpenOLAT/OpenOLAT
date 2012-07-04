@@ -108,7 +108,7 @@ public class GroupSearchResultProvider implements ResultMapProvider {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.addTypes(typeFilter);
 		params.setNameOrDesc('%' + searchValue + '%');
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		for (BusinessGroup group : groups) {			
 			if (group.getOwnerGroup() != null && group.getPartipiciantGroup() != null) {
 				List<RepositoryEntry> repoEntries = businessGroupService.findRepositoryEntries(groups, 0, -1);

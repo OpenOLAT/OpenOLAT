@@ -135,15 +135,19 @@ public class HomeCalendarController extends BasicController implements Activatea
 		// get group calendars
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
-		SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(ureq.getIdentity(), true, false);
 		groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
-		List<BusinessGroup> ownerGroups = bgs.findBusinessGroups(groupParams, ureq.getIdentity(), true, false, null, 0, -1);
+		List<BusinessGroup> ownerGroups = bgs.findBusinessGroups(groupParams, null, 0, -1);
 		addCalendars(ureq, ownerGroups, true, calendars);
-		List<BusinessGroup> attendedGroups = bgs.findBusinessGroups(groupParams, ureq.getIdentity(), false, true, null, 0, -1);
+		
+		SearchBusinessGroupParams groupParams2 = new SearchBusinessGroupParams(ureq.getIdentity(), false, true);
+		groupParams2.addTools(CollaborationTools.TOOL_CALENDAR);
+		List<BusinessGroup> attendedGroups = bgs.findBusinessGroups(groupParams2, null, 0, -1);
 		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
 			BusinessGroup ownerGroup = ownerGroupsIterator.next();
-			if (attendedGroups.contains(ownerGroup))
+			if (attendedGroups.contains(ownerGroup)) {
 				attendedGroups.remove(ownerGroup);
+			}
 		}
 		addCalendars(ureq, attendedGroups, false, calendars);
 		

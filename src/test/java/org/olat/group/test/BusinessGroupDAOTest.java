@@ -19,8 +19,11 @@
  */
 package org.olat.group.test;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +42,8 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupPropertyDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
+import org.olat.resource.accesscontrol.manager.ACFrontendManager;
+import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +64,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupPropertyDAO businessGroupPropertyManager;
-
+	@Autowired
+	private ACFrontendManager acFrontendManager;
 	
 	@After
 	public void tearDown() throws Exception {
@@ -489,7 +495,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(); 
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertTrue(groups.size() >= 2);
 		Assert.assertTrue(groups.contains(group1));
@@ -497,7 +503,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		dbInstance.commit();
 
-		List<BusinessGroup> groupLimit = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, 1);
+		List<BusinessGroup> groupLimit = businessGroupDao.findBusinessGroups(params, null, 0, 1);
 		Assert.assertNotNull(groupLimit);
 		Assert.assertEquals(1, groupLimit.size());
 	}
@@ -512,7 +518,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setExactName(exactName);
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(1, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -530,7 +536,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setName(name);
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(2, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -548,7 +554,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setName("*" + name + "*");
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -566,7 +572,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setDescription(name);
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(1, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -584,7 +590,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setDescription("*" + name + "*");
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -602,7 +608,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setNameOrDesc(name);
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(2, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -620,7 +626,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setNameOrDesc("*" + name + "*");
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -642,8 +648,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setOwner(name);
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		params.setOwnerName(name);
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(2, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -664,8 +670,8 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setOwner("*" + name + "*");
-		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, false, false, null, 0, -1);
+		params.setOwnerName("*" + name + "*");
+		List<BusinessGroup> groups = businessGroupDao.findBusinessGroups(params, null, 0, -1);
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(3, groups.size() );
 		Assert.assertTrue(groups.contains(group1));
@@ -673,6 +679,84 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group3));
 	}
 	
+	@Test
+	public void findBusinessGroupsByIdentity() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("is-in-grp-" + UUID.randomUUID().toString());
+		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "is-in-grp-1", "is-in-grp-1-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "is-in-grp-2", "is-in-grp-2-desc", 0, 5, true, false, true, false, false);
+		BusinessGroup group3 = businessGroupDao.createAndPersist(null, "is-in-grp-3", "is-in-grp-3-desc", 0, 5, true, false, true, false, false);
+		dbInstance.commitAndCloseSession();
+
+		securityManager.addIdentityToSecurityGroup(id, group2.getPartipiciantGroup());
+		securityManager.addIdentityToSecurityGroup(id, group3.getWaitingGroup());
+		dbInstance.commitAndCloseSession();
+
+		//check owner
+		SearchBusinessGroupParams paramsOwner = new SearchBusinessGroupParams();
+		paramsOwner.setIdentity(id);
+		paramsOwner.setOwner(true);
+		List<BusinessGroup> ownedGroups = businessGroupDao.findBusinessGroups(paramsOwner, null, 0, 0);
+		Assert.assertNotNull(ownedGroups);
+		Assert.assertEquals(1, ownedGroups.size());
+		Assert.assertTrue(ownedGroups.contains(group1));
+		
+		//check attendee
+		SearchBusinessGroupParams paramsAttendee = new SearchBusinessGroupParams();
+		paramsAttendee.setIdentity(id);
+		paramsAttendee.setAttendee(true);
+		List<BusinessGroup> attendeeGroups = businessGroupDao.findBusinessGroups(paramsAttendee, null, 0, 0);
+		Assert.assertNotNull(attendeeGroups);
+		Assert.assertEquals(1, attendeeGroups.size());
+		Assert.assertTrue(attendeeGroups.contains(group2));
+
+		//check waiting
+		SearchBusinessGroupParams paramsWaiting = new SearchBusinessGroupParams();
+		paramsWaiting.setIdentity(id);
+		paramsWaiting.setWaiting(true);
+		List<BusinessGroup> waitingGroups = businessGroupDao.findBusinessGroups(paramsWaiting, null, 0, 0);
+		Assert.assertNotNull(waitingGroups);
+		Assert.assertEquals(1, waitingGroups.size());
+		Assert.assertTrue(waitingGroups.contains(group3));
+		
+		//check all
+		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
+		paramsAll.setIdentity(id);
+		paramsAll.setOwner(true);
+		paramsAll.setAttendee(true);
+		paramsAll.setWaiting(true);
+		List<BusinessGroup> allGroups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
+		Assert.assertNotNull(allGroups);
+		Assert.assertEquals(3, allGroups.size());
+		Assert.assertTrue(allGroups.contains(group1));
+		Assert.assertTrue(allGroups.contains(group2));
+		Assert.assertTrue(allGroups.contains(group3));
+	}
+	
+	@Test
+	public void findPublicGroups() {
+		//create a group with an access control
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "access-grp-1", "access-grp-1-desc", 0, 5, true, false, true, false, false);
+		//create and save an offer
+		Offer offer = acFrontendManager.createOffer(group.getResource(), "TestBGWorkflow");
+		assertNotNull(offer);
+		acFrontendManager.save(offer);
+			
+		dbInstance.commitAndCloseSession();
+			
+		//retrieve the offer
+		SearchBusinessGroupParams paramsAll = new SearchBusinessGroupParams();
+		paramsAll.setPublicGroup(true);
+		List<BusinessGroup> accessGroups = businessGroupDao.findBusinessGroups(paramsAll, null, 0, 0);
+		Assert.assertNotNull(accessGroups);
+		Assert.assertTrue(accessGroups.size() >= 1);
+		Assert.assertTrue(accessGroups.contains(group));
+		
+		for(BusinessGroup accessGroup:accessGroups) {
+			List<Offer> offers = acFrontendManager.findOfferByResource(accessGroup.getResource(), true, new Date());
+			Assert.assertNotNull(offers);
+			Assert.assertFalse(offers.isEmpty());
+		}
+	}
 	
 	@Test
 	public void isIdentityInBusinessGroups() {

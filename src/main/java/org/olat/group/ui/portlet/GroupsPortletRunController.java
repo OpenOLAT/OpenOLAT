@@ -62,6 +62,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.site.GroupsSite;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -143,7 +144,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	 * @return the PortletEntry list.
 	 */
 	private List<PortletEntry> getAllPortletEntries() {
-		groupList = businessGroupService.findBusinessGroups(null, identity, true, true, null, 0, -1);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
+		groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);
 		return entries;
 	}
@@ -159,7 +161,8 @@ public class GroupsPortletRunController extends AbstractPortletRunController imp
 	
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			groupList = businessGroupService.findBusinessGroups(null, identity, true, true, null, 0, -1);
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
+			groupList = businessGroupService.findBusinessGroups(params, null, 0, -1);
 			groupList = getSortedList(groupList, sortingCriteria);
 
 			List<PortletEntry> entries = convertBusinessGroupToPortletEntryList(groupList);

@@ -309,7 +309,7 @@ public class BusinessGroupArchiver {
 		List<Member> participants = new ArrayList<Member>();
 		List<Member> waitings = new ArrayList<Member>();
 				
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, null, false, false, resource, 0, -1);
+		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, resource, 0, -1);
 		for (BusinessGroup group: groups) {
 			if (groupList.contains(group)) { //rely on the equals() method of the BusinessGroup impl			
 				if(group.getOwnerGroup()!=null) {

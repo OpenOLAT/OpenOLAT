@@ -12,6 +12,9 @@ alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_group forei
 
 -- groups
 alter table o_gp_business add column fk_resource bigint unique default null;
+alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_gp_business add constraint idx_bgp_waiting foreign key (fk_waitinggroup) references o_bs_secgroup (id);
+
 
 -- area
 alter table o_gp_bgarea modify groupcontext_fk bigint;

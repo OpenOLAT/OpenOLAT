@@ -436,15 +436,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	@Transactional(readOnly=true)
 	public List<BusinessGroup> findBusinessGroupsOwnedBy(Identity identity, OLATResource resource) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		return businessGroupDAO.findBusinessGroups(params, identity, true, false, resource, 0, -1);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
+		return businessGroupDAO.findBusinessGroups(params, resource, 0, -1);
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
 	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity, OLATResource resource) {
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		return businessGroupDAO.findBusinessGroups(params, identity, false, true, resource, 0, -1);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, false, true);
+		return businessGroupDAO.findBusinessGroups(params, resource, 0, -1);
 	}
 	
 	@Override
@@ -454,22 +454,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	
 	@Override
 	@Transactional(readOnly=true)
-	public int countBusinessGroups(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource) {
+	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
 		}
-		return businessGroupDAO.countBusinessGroups(params, identity, ownedById, attendedById, resource);
+		return businessGroupDAO.countBusinessGroups(params, resource);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, Identity identity,
-			boolean ownedById, boolean attendedById, OLATResource resource, int firstResult, int maxResults) {
+	public List<BusinessGroup> findBusinessGroups(SearchBusinessGroupParams params, OLATResource resource, int firstResult, int maxResults) {
 		if(params == null) {
 			params = new SearchBusinessGroupParams();
 		}
-		return businessGroupDAO.findBusinessGroups(params, identity, ownedById, attendedById, resource, firstResult, maxResults);
+		return businessGroupDAO.findBusinessGroups(params, resource, firstResult, maxResults);
 	}
 
 	@Override

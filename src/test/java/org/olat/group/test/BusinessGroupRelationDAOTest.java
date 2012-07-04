@@ -540,18 +540,19 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		//check resource 1
-		int count1_1 = businessGroupDao.countBusinessGroups(params, null, false, false, resource1);
+		int count1_1 = businessGroupDao.countBusinessGroups(params, resource1);
 		Assert.assertEquals(2, count1_1);
-		List<BusinessGroup> groups1_1 = businessGroupDao.findBusinessGroups(params, null, false, false, resource1, 0, -1);
+		List<BusinessGroup> groups1_1 = businessGroupDao.findBusinessGroups(params, resource1, 0, -1);
 		Assert.assertNotNull(groups1_1);
 		Assert.assertEquals(2, groups1_1.size());
 		Assert.assertTrue(groups1_1.contains(group1));
 		Assert.assertTrue(groups1_1.contains(group2));
 
 		//check owner 1 + resource 1
-		int count3_1 = businessGroupDao.countBusinessGroups(params, id1, true, true, resource1);
+		SearchBusinessGroupParams paramsRestricted = new SearchBusinessGroupParams(id1, true, true);
+		int count3_1 = businessGroupDao.countBusinessGroups(paramsRestricted, resource1);
 		Assert.assertEquals(1, count3_1);
-		List<BusinessGroup> groups3_1 = businessGroupDao.findBusinessGroups(params, id1, true, true, resource1, 0, -1);
+		List<BusinessGroup> groups3_1 = businessGroupDao.findBusinessGroups(paramsRestricted, resource1, 0, -1);
 		Assert.assertNotNull(groups3_1);
 		Assert.assertEquals(1, groups3_1.size());
 		Assert.assertEquals(group1, groups3_1.get(0));

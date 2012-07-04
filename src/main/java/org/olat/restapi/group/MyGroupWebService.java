@@ -82,11 +82,11 @@ public class MyGroupWebService {
 
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgs.countBusinessGroups(params, retrievedUser, true, true, null);
-			groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, start, limit);
+			int totalCount = bgs.countBusinessGroups(params, null);
+			groups = bgs.findBusinessGroups(params, null, start, limit);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -98,7 +98,7 @@ public class MyGroupWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, 0, -1);
+			groups = bgs.findBusinessGroups(params, null, 0, -1);
 			
 			int count = 0;
 			GroupVO[] groupVOs = new GroupVO[groups.size()];
@@ -131,11 +131,11 @@ public class MyGroupWebService {
 
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
 		List<BusinessGroup> groups;
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			int totalCount = bgs.countBusinessGroups(params, retrievedUser, true, true, null);
-			groups = bgs.findBusinessGroups(params, retrievedUser, true, true, null, start, limit);
+			int totalCount = bgs.countBusinessGroups(params, null);
+			groups = bgs.findBusinessGroups(params, null, start, limit);
 			
 			int count = 0;
 			GroupInfoVO[] groupVOs = new GroupInfoVO[groups.size()];

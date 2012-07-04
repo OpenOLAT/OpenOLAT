@@ -22,6 +22,8 @@ package org.olat.group.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.id.Identity;
+
 /**
  * 
  * Description:<br>
@@ -40,7 +42,24 @@ public class SearchBusinessGroupParams {
 	private String name;
 	private String exactName;
 	private String description;
-	private String owner;
+	private String ownerName;
+	
+	private Identity identity;
+	private boolean owner;
+	private boolean attendee;
+	private boolean waiting;
+	private boolean publicGroup;
+	
+	public SearchBusinessGroupParams() {
+		//
+	}
+	
+	public SearchBusinessGroupParams(Identity identity, boolean owner, boolean attendee) {
+		this.identity = identity;
+		this.owner = owner;
+		this.attendee = attendee;
+	}
+
 	
 	public List<String> getTypes() {
 		return types;
@@ -108,12 +127,12 @@ public class SearchBusinessGroupParams {
 		this.description = description;
 	}
 
-	public String getOwner() {
-		return owner;
+	public String getOwnerName() {
+		return ownerName;
 	}
 
-	public void setOwner(String owner) {
-		this.owner = owner;
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
 	}
 
 	public String getNameOrDesc() {
@@ -122,5 +141,45 @@ public class SearchBusinessGroupParams {
 
 	public void setNameOrDesc(String nameOrDesc) {
 		this.nameOrDesc = nameOrDesc;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+
+	public boolean isOwner() {
+		return owner;
+	}
+
+	public void setOwner(boolean owner) {
+		this.owner = owner;
+	}
+
+	public boolean isAttendee() {
+		return attendee;
+	}
+
+	public void setAttendee(boolean attendee) {
+		this.attendee = attendee;
+	}
+
+	public boolean isWaiting() {
+		return waiting;
+	}
+
+	public void setWaiting(boolean waiting) {
+		this.waiting = waiting;
+	}
+
+	public boolean isPublicGroup() {
+		return publicGroup;
+	}
+
+	public void setPublicGroup(boolean publicGroup) {
+		this.publicGroup = publicGroup;
 	}
 }

@@ -280,8 +280,7 @@ public class ACFrontendManager extends BasicManager {
 	 * @return The list of OfferAccess objects that represent available access methods
 	 */
 	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate) {
-		OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
-		List<Offer> offers = accessManager.findOfferByResource(resource, valid, atDate);
+		List<Offer> offers = accessManager.findOfferByResource(group.getResource(), valid, atDate);
 		if(offers.isEmpty()) {
 			return Collections.<OfferAccess>emptyList();
 		}

@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
@@ -97,11 +116,11 @@ public class BusinessGroupListController extends BasicController {
 		groupListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.resources", 5, null, getLocale(),  ColumnDescriptor.ALIGNMENT_LEFT, resourcesRenderer));
 		groupListCtr.addColumnDescriptor(false, new BooleanColumnDescriptor("table.header.leave", 3, TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
 		if(admin) {
-			groupListCtr.addColumnDescriptor(false, new BooleanColumnDescriptor("table.header.delete", 4, TABLE_ACTION_DELETE, translate("table.header.delete"), null));
+			groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.delete", 4, TABLE_ACTION_DELETE, translate("table.header.delete"), null));
 		}
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.ac", 7, TABLE_ACTION_ACCESS, getLocale()));
+		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.ac", 7, TABLE_ACTION_ACCESS, getLocale()));
 
-		groupListModel = new BusinessGroupTableModelWithType(new ArrayList<BGTableItem>(), getTranslator(), 7);
+		groupListModel = new BusinessGroupTableModelWithType(new ArrayList<BGTableItem>(), getTranslator(), admin ? 7 : 6);
 		groupListCtr.setTableDataModel(groupListModel);
 
 		mainVC.put("searchPanel", searchController.getInitialComponent());
@@ -159,7 +178,7 @@ public class BusinessGroupListController extends BasicController {
 					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", businessGroup.getName()), leaveDialogBox);
 					leaveDialogBox.setUserObject(businessGroup);
 				} else if (actionid.equals(TABLE_ACTION_ACCESS)) {
-					//handleAccess(ureq);
+					doLaunch(ureq, businessGroup);
 				}
 			}
 		} else if (source == deleteDialogBox) {
@@ -176,6 +195,11 @@ public class BusinessGroupListController extends BasicController {
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doLaunch(UserRequest ureq, BusinessGroup group) {
+		String businessPath = "[BusinessGroup:" + group.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	/**
@@ -235,28 +259,47 @@ public class BusinessGroupListController extends BasicController {
 	}
 	
 	private void doSearch(SearchEvent event) {
+		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
+
 		List<BGTableItem> items = search(event);
 		groupListModel.setEntries(items);
 		groupListCtr.modelChanged();
+		
+		if(isLogDebugEnabled()) {
+			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
+		}
 	}
 
 	private List<BGTableItem> search(SearchEvent event) {
 		Long id = event.getId();
 		String name = event.getName();
 		String description = event.getDescription();
-		String owner = event.getOwnerName();
+		String ownerName = event.getOwnerName();
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setKey(id);
 		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
 		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
-		params.setOwner(StringHelper.containsNonWhitespace(owner) ? owner : null);
+		params.setOwnerName(StringHelper.containsNonWhitespace(ownerName) ? ownerName : null);
+		params.setOwner(event.isOwner());
+		params.setAttendee(event.isAttendee());
+		params.setWaiting(event.isWaiting());
+		params.setPublicGroup(event.isPublicGroups());
+		params.setIdentity(getIdentity());
 		
-		Identity me = null;
-		if(event.isAttendee() || event.isOwner()) {
-			me = getIdentity();
+		//security
+		List<BusinessGroup> groups;
+		if(admin) {
+			if(event.isAttendee() || event.isOwner()) {
+				params.setIdentity(getIdentity());
+			}
+			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		} else {
+			if(!event.isAttendee() && !event.isOwner() && !event.isWaiting() && !event.isPublicGroups()) {
+				params.setPublicGroup(true);
+			}
+			groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 		}
-		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, me, event.isOwner(), event.isAttendee(), null, 0, -1);
 		
 		List<Long> groupsWithMembership = businessGroupService.isIdentityInBusinessGroups(getIdentity(), groups);
 		Set<Long> memberships = new HashSet<Long>(groupsWithMembership);

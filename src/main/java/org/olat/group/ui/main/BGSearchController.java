@@ -23,13 +23,12 @@ package org.olat.group.ui.main;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,10 +49,11 @@ public class BGSearchController extends FormBasicController{
 	private TextElement displayName;
 	private TextElement owner;
 	private TextElement description;
-	private FormLink searchButton;
+	private FormSubmit searchButton;
 	private MultipleSelectionElement attendeeEl;
 	private MultipleSelectionElement ownerEl;
 	private MultipleSelectionElement waitingEl;
+	private MultipleSelectionElement publicEl;
 	
 	private String limitUsername;
 	private boolean isAdmin;
@@ -112,12 +112,13 @@ public class BGSearchController extends FormBasicController{
 		
 		String[] waitingValues = new String[]{ translate("search.waiting") };
 		waitingEl = uifactory.addCheckboxesVertical("search.waiting", rightContainer, new String[]{"waiting"}, waitingValues, null, 1);
-		
-		
-		
+
+		String[] publicValues = new String[]{ translate("search.public") };
+		publicEl = uifactory.addCheckboxesVertical("search.public", rightContainer, new String[]{"public"}, publicValues, null, 1);
+
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		searchButton = uifactory.addFormSubmitButton("search", "search", buttonLayout);
 	}
 
 	@Override
@@ -168,7 +169,7 @@ public class BGSearchController extends FormBasicController{
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		if (isEmpty())	{
+		if (!isAdmin && isEmpty())	{
 			showWarning("cif.error.allempty", null);
 			allOk &= false;
 		}
@@ -184,12 +185,31 @@ public class BGSearchController extends FormBasicController{
 				}
 			}
 		}
+		
+		if(!isAdmin) {
+			boolean owner = ownerEl.isAtLeastSelected(1);
+			boolean attendee = attendeeEl.isAtLeastSelected(1);
+			boolean publicGroups = publicEl.isAtLeastSelected(1);
+			if(!owner && !attendee && !publicGroups) {
+				publicEl.select("public", true);
+			}	
+		}
 		return allOk && super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK (UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT); 
+		SearchEvent e = new SearchEvent();
+		e.setId(getId());
+		e.setName(getName());
+		e.setDescription(getDescription());
+		e.setOwnerName(getOwner());
+		e.setOwner(ownerEl.isAtLeastSelected(1));
+		e.setAttendee(attendeeEl.isAtLeastSelected(1));
+		e.setWaiting(waitingEl.isAtLeastSelected(1));
+		e.setPublicGroups(publicEl.isAtLeastSelected(1));
+		fireEvent (ureq, e);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	@Override
@@ -203,6 +223,7 @@ public class BGSearchController extends FormBasicController{
 			e.setOwner(ownerEl.isAtLeastSelected(1));
 			e.setAttendee(attendeeEl.isAtLeastSelected(1));
 			e.setWaiting(waitingEl.isAtLeastSelected(1));
+			e.setPublicGroups(publicEl.isAtLeastSelected(1));
 			fireEvent(ureq, e);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
