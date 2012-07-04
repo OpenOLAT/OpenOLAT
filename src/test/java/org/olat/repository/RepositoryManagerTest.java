@@ -40,6 +40,8 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -70,6 +72,7 @@ import org.olat.testutils.codepoints.client.CodepointClientFactory;
 import org.olat.testutils.codepoints.client.CodepointRef;
 import org.olat.testutils.codepoints.client.CommunicationException;
 import org.olat.testutils.codepoints.client.TemporaryPausedThread;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Mar 26, 2004
@@ -86,10 +89,16 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private static final String FG_TYPE = UUID.randomUUID().toString().replace("_", "");
 	private static final String CG_TYPE = UUID.randomUUID().toString().replace("-", "");
 
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before public void setup() {
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
+	@Before
+	public void setup() {
 		try {
 			// Setup for code-points
 			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
@@ -97,10 +106,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			log.error("Error while setting up activeMq or Codepointserver", e);
 		}
 	}
-	
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
+
 	@After public void tearDown() {
 		try {
 			JMSCodePointServerJunitHelper.stopServer();
@@ -138,9 +144,72 @@ public class RepositoryManagerTest extends OlatTestCase {
 		}
 	}
 	
-	/**
-	 */
-	@Test public void testQueryReferencableResourcesLimitType() {
+	@Test
+	public void lookupRepositoryEntryByOLATResourceable() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry loadedRe = repositoryManager.lookupRepositoryEntry(re.getOlatResource(), false);
+		
+		Assert.assertNotNull(loadedRe);
+		Assert.assertEquals(re, loadedRe);
+	}
+	
+	@Test
+	public void lookupRepositoryEntryBySoftkey() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry loadedRe = repositoryManager.lookupRepositoryEntryBySoftkey(re.getSoftkey(), false);
+		Assert.assertNotNull(loadedRe);
+		Assert.assertEquals(re, loadedRe);
+	}
+	
+	@Test
+	public void lookupDisplayNameByOLATResourceableId() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(re.getOlatResource().getResourceableId());
+		Assert.assertNotNull(displayName);
+		Assert.assertEquals(re.getDisplayname(), displayName);
+	}
+	
+	@Test
+	public void queryByOwnerLimitAccess() {
+		//create a repository entry with an owner
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		securityManager.addIdentityToSecurityGroup(id, re.getOwnerGroup());
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntry> entries = repositoryManager.queryByOwnerLimitAccess(id, RepositoryEntry.ACC_OWNERS, Boolean.TRUE);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertTrue(entries.contains(re));
+	}
+	
+	@Test
+	public void isOwnerOfRepositoryEntry() {
+		//create a repository entry with an owner and a participant
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
+		Identity part = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-is-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		securityManager.addIdentityToSecurityGroup(owner, re.getOwnerGroup());
+		securityManager.addIdentityToSecurityGroup(part, re.getParticipantGroup());
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean isOwnerOwner = repositoryManager.isOwnerOfRepositoryEntry(owner, re);
+		Assert.assertTrue(isOwnerOwner);
+		boolean isPartOwner = repositoryManager.isOwnerOfRepositoryEntry(part, re);
+		Assert.assertFalse(isPartOwner);
+	}
+
+	@Test
+	public void testQueryReferencableResourcesLimitType() {
 		DB db = DBFactory.getInstance();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -193,7 +262,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		List<String> typelist = Collections.singletonList(FG_TYPE);
 		// finally the search query
 		long startSearchReferencable = System.currentTimeMillis();
-		List results = rm.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
+		List<RepositoryEntry> results = rm.queryReferencableResourcesLimitType(id1, new Roles(false, false, false, true, false, false, false), typelist, null, null, null);
 		long endSearchReferencable = System.currentTimeMillis();
 		log.debug("found " + results.size() + " repo entries " + (endSearchReferencable - startSearchReferencable) + "ms");
 

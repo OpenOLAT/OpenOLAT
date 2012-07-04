@@ -39,6 +39,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -136,7 +137,7 @@ public class JunitTestHelper {
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry() {
 		OLATResourceManager resourceManager = OLATResourceManager.getInstance();
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), CodeHelper.getForeverUniqueID());
 		OLATResource r =  resourceManager.createOLATResourceInstance(ores);
 		resourceManager.saveOLATResource(r);
 		

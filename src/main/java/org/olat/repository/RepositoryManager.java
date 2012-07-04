@@ -392,7 +392,7 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public RepositoryEntry lookupRepositoryEntry(Long key) {
 		if (key == null) return null;
-		return dbInstance.getCurrentEntityManager().find(RepositoryEntry.class, key);
+		return lookupRepositoryEntry(key, false) ;
 	}
 	
 	/**
@@ -408,11 +408,13 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 				 .append(" inner join fetch v.olatResource as ores")
+			   .append(" left join fetch v.ownerGroup as ownerGroup")
+			   .append(" left join fetch v.participantGroup as participantGroup")
+			   .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key = :repoKey");
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setLong("repoKey", key);
-		List<RepositoryEntry> entries = dbQuery.list();
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", key).getResultList();
 		if(entries.isEmpty()) {
 			return null;
 		}
@@ -427,6 +429,9 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder query = new StringBuilder();
 		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 				 .append(" inner join fetch v.olatResource as ores")
+			   .append(" left join fetch v.ownerGroup as ownerGroup")
+			   .append(" left join fetch v.participantGroup as participantGroup")
+			   .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.key in (:repoKey)");
 		
 		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
@@ -449,11 +454,16 @@ public class RepositoryManager extends BasicManager {
 			if (!strict) return null;
 			throw new AssertException("Unable to fetch OLATResource for resourceable: " + resourceable.getResourceableTypeName() + ", " + resourceable.getResourceableId());
 		}
-		
-		String query = "select v from org.olat.repository.RepositoryEntry v"+
-			" inner join fetch v.olatResource as ores"+
-			" where ores.key = :oreskey";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" inner join fetch v.olatResource as ores")
+			.append(" left join fetch v.ownerGroup as ownerGroup")
+			.append(" left join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
+		  .append(" where ores.key = :oreskey");
+
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(sb.toString());
 		dbQuery.setLong("oreskey", ores.getKey().longValue());
 		dbQuery.setCacheable(true);
 		
@@ -481,11 +491,15 @@ public class RepositoryManager extends BasicManager {
 	 * @throws AssertException if the softkey could not be found (strict=true)
 	 */
 	public RepositoryEntry lookupRepositoryEntryBySoftkey(String softkey, boolean strict) {
-		String query = "select v from org.olat.repository.RepositoryEntry v" +
-			" inner join fetch v.olatResource as ores"+
-			" where v.softkey = :softkey";
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v")
+		  .append(" inner join fetch v.olatResource as ores ")
+			.append(" left join fetch v.ownerGroup as ownerGroup")
+			.append(" left join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
+		  .append(" where v.softkey=:softkey");
 		
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query);
+		DBQuery dbQuery = DBFactory.getInstance().createQuery(sb.toString());
 		dbQuery.setString("softkey", softkey);
 		dbQuery.setCacheable(true);
 		List result = dbQuery.list();
@@ -512,19 +526,19 @@ public class RepositoryManager extends BasicManager {
 	 * @return the repositoryentry displayname or null if not found
 	 */
 	public String lookupDisplayNameByOLATResourceableId(Long resId) {
-		String query = "select v from org.olat.repository.RepositoryEntry v"+
-			" inner join fetch v.olatResource as ores"+
-			" where ores.resId = :resid";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query);
-		dbQuery.setLong("resid", resId.longValue());
-		dbQuery.setCacheable(true);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v.displayname from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" inner join v.olatResource as ores")
+		  .append(" where ores.resId=:resid");
 		
-		List<RepositoryEntry> result = dbQuery.list();
-		int size = result.size();
-		if (size > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + size);
-		else if (size == 0) return null;
-		RepositoryEntry entry = result.get(0);
-		return entry.getDisplayname();
+		List<String> displaynames = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("resid", resId.longValue())
+				.getResultList();
+
+		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
+		else if (displaynames.isEmpty()) return null;
+		return displaynames.get(0);
 	}
 	
 	/**
@@ -626,9 +640,12 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder query = new StringBuilder(1000);
 		query.append("select distinct(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		     .append(" inner join v.olatResource as reResource ")
+				 .append(" left join fetch v.ownerGroup as ownerGroup")
+				 .append(" left join fetch v.participantGroup as participantGroup")
+				 .append(" left join fetch v.tutorGroup as tutorGroup")
 		     .append(" where v.access > 0 ")
 		     .append(" and ((")
-		     .append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity.key=:editorKey)")
+		     .append("  ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity.key=:editorKey)")
 		     .append(" ) or (")
 		     .append("  reResource in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
 		     .append("    ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
@@ -653,7 +670,6 @@ public class RepositoryManager extends BasicManager {
 			}
 			dbquery.setParameter("resnames", resNames);
 		}
-		dbquery.setHint("org.hibernate.cacheable", true);
 		List<RepositoryEntry> entries = dbquery.getResultList();
 		return entries;
 	}
@@ -677,24 +693,6 @@ public class RepositoryManager extends BasicManager {
 		return ((Long)dbquery.list().get(0)).intValue();
 	}
 
-	
-	/**
-	 * Query by type without any other limitations
-	 * @param restrictedType
-	 * @param roles
-	 * @return Results
-	 */
-	public List queryByType(String restrictedType) {
-		String query = "select v from" +
-			" org.olat.repository.RepositoryEntry v" +
-			" inner join fetch v.olatResource as res"+
-		  " where res.resName= :restrictedType";
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query);
-		dbquery.setString("restrictedType", restrictedType);
-		dbquery.setCacheable(true);
-		return dbquery.list();
-	}
-
 	/**
 	 * Query by type, limit by ownership or role accessability.
 	 * @param identity Identity (optional)
@@ -711,6 +709,9 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
 		sb.append(" inner join fetch v.olatResource as res")
+			.append(" left join fetch v.ownerGroup as ownerGroup")
+			.append(" left join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
 			.append(" where res.resName=:restrictedType and ");
 		
 		boolean setIdentity = false;
@@ -725,7 +726,7 @@ public class RepositoryManager extends BasicManager {
 		if(setIdentity) {
 			dbquery.setEntity("identity", identity);
 		}
-		dbquery.setCacheable(true);
+		//dbquery.setCacheable(true); performance killer
 		return dbquery.list();
 	}
 	
@@ -739,11 +740,13 @@ public class RepositoryManager extends BasicManager {
 	public List<RepositoryEntry> queryByTypeLimitAccess(String restrictedType, UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		String institution = ureq.getIdentity().getUser().getProperty("institutionalName", null);
-		
+
+		//TODO hibernate
 		List<RepositoryEntry> results = new ArrayList<RepositoryEntry>();
 		if(!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager()) {
 			StringBuilder query = new StringBuilder(400);
-			query.append("select distinct v from org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res"
+			query.append("select distinct v from org.olat.repository.RepositoryEntry v"
+			    + " inner join fetch v.olatResource as res"
 					+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi"
 					+ ", org.olat.basesecurity.IdentityImpl identity"
 					+ ", org.olat.user.UserImpl user "
@@ -796,9 +799,13 @@ public class RepositoryManager extends BasicManager {
 	public List<RepositoryEntry> queryByOwner(Identity identity, String[] limitTypes) {
 		if (identity == null) throw new AssertException("identity can not be null!");
 		StringBuffer query = new StringBuffer(400);
-		query.append("select v from" + " org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res,"
-				+ " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" + " where " + " v.ownerGroup = sgmsi.securityGroup and"
-				+ " sgmsi.identity = :identity");
+		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		     .append(" inner join fetch v.olatResource as res ")
+		   	 .append(" left join fetch v.ownerGroup as ownerGroup")
+		  	 .append(" left join fetch v.participantGroup as participantGroup")
+		  	 .append(" left join fetch v.tutorGroup as tutorGroup")
+				 .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" + " where " + " v.ownerGroup = sgmsi.securityGroup and")
+				 .append(" sgmsi.identity = :identity");
 		if (limitTypes != null && limitTypes.length > 0) {
 			for (int i = 0; i < limitTypes.length; i++) {
 				String limitType = limitTypes[i];
@@ -847,13 +854,13 @@ public class RepositoryManager extends BasicManager {
 	 * @param desc Limit search to description. Can be NULL
 	 * @return List of repository entries
 	 */	
-	public List queryReferencableResourcesLimitType(Identity identity, Roles roles, List resourceTypes, String displayName, String author, String desc) {
+	public List<RepositoryEntry> queryReferencableResourcesLimitType(Identity identity, Roles roles, List resourceTypes, String displayName, String author, String desc) {
 		if (identity == null) {
 			throw new AssertException("identity can not be null!");
 		}
 		if (!roles.isAuthor()) {
 			// if user has no author right he can not reference to any resource at all
-			return new ArrayList();
+			return new ArrayList<RepositoryEntry>();
 		}
 
 		// cleanup some data: use null values if emtpy
@@ -865,9 +872,12 @@ public class RepositoryManager extends BasicManager {
 		// Build the query
 		// 1) Joining tables 
 		StringBuilder query = new StringBuilder(400);
-		query.append("select distinct v from");
-		query.append(" org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res" );
-		query.append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi");
+		query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		     .append(" inner join fetch v.olatResource as res" )
+		     .append(" left join fetch v.ownerGroup as ownerGroup")
+		     .append(" left join fetch v.participantGroup as participantGroup")
+	       .append(" left join fetch v.tutorGroup as tutorGroup")
+		     .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi");
 		if (author != null) {
 			query.append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi2");
 			query.append(", org.olat.basesecurity.IdentityImpl identity");
@@ -878,7 +888,7 @@ public class RepositoryManager extends BasicManager {
 		// the join of v.ownerGropu and sgmsi.securityGroup mus be outside the sgmsi.identity = :identity
 		// otherwhise the join is not present in the second part of the or clause and the cross product will
 		// be to large (does not work when more than 100 repo entries present!)
-		query.append(" v.ownerGroup = sgmsi.securityGroup"); 
+		query.append(" ownerGroup = sgmsi.securityGroup"); 
 		// restrict on ownership or referencability flag
 		query.append(" and ( sgmsi.identity = :identity "); 
 		query.append(" or ");
@@ -938,32 +948,35 @@ public class RepositoryManager extends BasicManager {
 	 * @return Results
 	 */
 	public List<RepositoryEntry> queryByOwnerLimitAccess(Identity identity, int limitAccess, Boolean membersOnly) {
-		String query = "select v from" +
-			" org.olat.repository.RepositoryEntry v inner join fetch v.olatResource as res," + 
-			" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" +
-			" where" +
-			" v.ownerGroup = sgmsi.securityGroup "+
-		  " and sgmsi.identity = :identity and (v.access>=:limitAccess";
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" inner join fetch v.olatResource as res ")
+			.append(" inner join fetch v.ownerGroup as ownerGroup")
+			.append(" left join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
+		  .append(" , org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi")
+			.append(" where ownerGroup = sgmsi.securityGroup ")
+		  .append(" and sgmsi.identity.key=:identityKey and (v.access>=:limitAccess");
 		
 		if(limitAccess != RepositoryEntry.ACC_OWNERS && membersOnly != null && membersOnly.booleanValue()) {
-			query += " or (v.access=1 and v.membersOnly=true)";
+			sb.append(" or (v.access=1 and v.membersOnly=true)");
 		}
-		query += ")";
+		sb.append(")");
 		
-		DBQuery dbquery = DBFactory.getInstance().createQuery(query);
-		dbquery.setEntity("identity", identity);
-		dbquery.setInteger("limitAccess", limitAccess);
-		return dbquery.list();		
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("limitAccess", limitAccess)
+				.getResultList();
+		return entries;		
 	}
 	
 	/**
 	 * check ownership of identiy for a resource
 	 * @return true if the identity is member of the security group of the repository entry
 	 */
-	public boolean isOwnerOfRepositoryEntry(Identity identity, RepositoryEntry entry){
-		//TODO:gs:a transform into direct hibernate query
-		SecurityGroup ownerGroup = lookupRepositoryEntry(entry.getOlatResource(), true).getOwnerGroup();
-		return BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, ownerGroup);
+	public boolean isOwnerOfRepositoryEntry(Identity identity, RepositoryEntry entry) {
+		return BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, entry.getOwnerGroup());
 	}
 	
 	/**
@@ -987,6 +1000,7 @@ public class RepositoryManager extends BasicManager {
 		boolean var_desc = (desc != null && desc.length() != 0);
 		boolean var_resourcetypes = (resourceTypes != null && resourceTypes.size() > 0);
 
+		//TODO hibernate
 		// Use two different select prologues... 
 		if (var_author) { // extended query for user search
 			query.append("select distinct v from" +
@@ -1266,9 +1280,15 @@ public class RepositoryManager extends BasicManager {
 		if(count) {
 			query.append("select count(v.key) from ").append(RepositoryEntry.class.getName()).append(" v ");
 			query.append(" inner join v.olatResource as res");
+			query.append(" left join v.ownerGroup as ownerGroup");
+			query.append(" left join v.participantGroup as participantGroup");
+			query.append(" left join v.tutorGroup as tutorGroup");
 		} else {
 			query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ");
 			query.append(" inner join fetch v.olatResource as res");
+			query.append(" left join fetch v.ownerGroup as ownerGroup");
+			query.append(" left join fetch v.participantGroup as participantGroup");
+			query.append(" left join fetch v.tutorGroup as tutorGroup");
 		}
 		
 		boolean setIdentity = false;
@@ -1283,7 +1303,7 @@ public class RepositoryManager extends BasicManager {
 			else query.append(RepositoryEntry.ACC_USERS);
 			query.append(") or (");
 			
-			query.append("v.access=1 and v.ownerGroup in (select ms.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ms, ")
+			query.append("v.access=1 and ownerGroup in (select ms.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ms, ")
 			     .append(" org.olat.basesecurity.IdentityImpl msid,")
 			     .append(" org.olat.user.UserImpl msuser ")
 			     .append(" where ms.identity = msid and msid.user = msuser and ")
@@ -1299,7 +1319,7 @@ public class RepositoryManager extends BasicManager {
 		
 		if (var_author) { // fuzzy author search
 			author = '%' + author.replace('*', '%') + '%';
-			query.append(" and v.ownerGroup in (select msauth.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" msauth, ")
+			query.append(" and ownerGroup in (select msauth.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" msauth, ")
 		         .append(" org.olat.basesecurity.IdentityImpl msauthid,")
 		         .append(" org.olat.user.UserImpl msauthuser ")
 		         .append(" where msauth.identity = msauthid and msauthid.user = msauthuser and ")
@@ -1573,6 +1593,9 @@ public class RepositoryManager extends BasicManager {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 			.append(" inner join fetch v.olatResource as res where ")
+			.append(" left join fetch v.ownerGroup as ownerGroup")
+			.append(" left join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
 			//learning resource as participant/tutor
 			.append("(")
 			.append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
@@ -1604,15 +1627,18 @@ public class RepositoryManager extends BasicManager {
 	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity) {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
-			.append(" inner join fetch v.olatResource as res where ")
+			.append(" inner join fetch v.olatResource as res")
+			.append(" left join fetch v.ownerGroup as ownerGroup")
+			.append(" inner join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
+			.append(" where ")
 			.append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 			.append(" and ")
-			.append(" v.participantGroup in (select participantSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantSgmsi where participantSgmsi.identity=:identity)");
+			.append(" participantGroup in (select participantSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantSgmsi where participantSgmsi.identity=:identity)");
 
 		List<RepositoryEntry> repoEntries = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identity", identity)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();	
 		return repoEntries;
 	}
@@ -1629,13 +1655,17 @@ public class RepositoryManager extends BasicManager {
 	public List<RepositoryEntry> getLearningResourcesAsTeacher(Identity identity) {
 		StringBuilder sb = new StringBuilder(400);
 		sb.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
-			.append(" inner join fetch v.olatResource as res where ")
+			.append(" inner join fetch v.olatResource as res ")
+			.append(" left join fetch v.ownerGroup as ownerGroup")
+			.append(" left join fetch v.participantGroup as participantGroup")
+			.append(" left join fetch v.tutorGroup as tutorGroup")
+			.append(" where ")
 			.append(" (v.access>=").append(RepositoryEntry.ACC_USERS).append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 			.append(" and ")
 			.append(" (")
-			.append("  v.tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
+			.append("  tutorGroup in (select tutorSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" tutorSgmsi where tutorSgmsi.identity=:identity)")
 			.append("  or")
-			.append("  v.ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
+			.append("  ownerGroup in (select ownerSgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" ownerSgmsi where ownerSgmsi.identity=:identity)")
 			.append(" ) or (")
 		  .append("  res in (select groupRelation.resource from ").append(BGResourceRelation.class.getName()).append(" as groupRelation, ")
 		  .append("    ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi,")
@@ -1650,7 +1680,6 @@ public class RepositoryManager extends BasicManager {
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identity", identity)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return entries;
 	}
