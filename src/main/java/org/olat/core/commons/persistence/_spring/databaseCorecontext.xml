@@ -71,7 +71,7 @@
 		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 	        </props>            
 		</constructor-arg>
-		<property name="addMoreProperties" ref="hibernateProps" />
+		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
 	</bean>
 
 	<bean id="hibernateProps" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">

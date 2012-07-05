@@ -28,6 +28,7 @@ package org.olat.resource.lock.pessimistic;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
@@ -419,82 +420,66 @@ public class PLockTest extends OlatTestCase {
 		// 1. prepare collection
 		int numthreads = 500;
 		int numores = 1;
-		int maxwait = 12; // seconds to wait for completion (upper performance boundary)
-		class Collector {
-			private int threadsDone = 0;
-			synchronized void incThreadDone() {
-				threadsDone++;
-			}
-			
-			synchronized int getThreadsDoneCnt() {
-				return threadsDone;
-			}
-		};
 		
 		// 2. create 500 threads and start them
 		long start = System.currentTimeMillis();
-		final Collector c = new Collector();
+		final CountDownLatch doneSignal = new CountDownLatch(numthreads);
 		for (int i = 0; i < numthreads; i++) {
 			final String asset = "assetaboutaslongasores"+(i % numores);
 			Runnable r = new Runnable() {
 				public void run() {
-					PessimisticLockManager.getInstance().findOrPersistPLock(asset);
-					c.incThreadDone();
-					DBFactory.getInstance().closeSession();
+					try {
+						PessimisticLockManager.getInstance().findOrPersistPLock(asset);
+						doneSignal.countDown();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						DBFactory.getInstance().closeSession();
+					}
 				}
 			};
 			new Thread(r).start();
 		}	
 		int i;
 		// 4. wait till all are finished or it takes too long
-		for (i = 0; i < maxwait; i++) {
-			int donecnt = c.getThreadsDoneCnt();
-			if (donecnt < numthreads) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					//
-				}
-			} else { // done
-				break;
-			}
+		try {
+			boolean interrupt = doneSignal.await(20, TimeUnit.SECONDS);
+			System.out.println("perf for Plocktest:testPerf(): "+(System.currentTimeMillis()-start));
+			assertTrue("Test takes too long (more than 20s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		long stop = System.currentTimeMillis();
-		System.out.println("perf for Plocktest:testPerf(): "+(stop-start));
-		assertTrue("performance is not within boundary:"+maxwait, i<maxwait);
 		
 		// repeat the same again - this time it should/could be faster
 		// 2. create 500 threads and start them
 		long start2 = System.currentTimeMillis();
-		final Collector c2 = new Collector();
+		final CountDownLatch doneSignal2 = new CountDownLatch(numthreads);
 		for (int i2 = 0; i2 < numthreads; i2++) {
 			final String asset = "assetaboutaslongasores"+(i2 % numores);
 			Runnable r = new Runnable() {
 				public void run() {
-					PessimisticLockManager.getInstance().findOrPersistPLock(asset);
-					c2.incThreadDone();
-					DBFactory.getInstance().closeSession();
+					try {
+						PessimisticLockManager.getInstance().findOrPersistPLock(asset);
+						doneSignal2.countDown();
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						DBFactory.getInstance().commitAndCloseSession();
+					}
 				}
 			};
 			new Thread(r).start();
 		}	
 
 		// 4. wait till all are finished or it takes too long
-		for (i = 0; i < maxwait; i++) {
-			int donecnt = c2.getThreadsDoneCnt();
-			if (donecnt < numthreads) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					//
-				}
-			} else { // done
-				break;
-			}
+		
+		try {
+			boolean interrupt = doneSignal.await(20, TimeUnit.SECONDS);
+			System.out.println("perf (again) for Plocktest:testPerf(): "+(System.currentTimeMillis()-start2));
+			assertTrue("Test takes too long (more than 20s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
-		long stop2 = System.currentTimeMillis();
-		System.out.println("perf (again) for Plocktest:testPerf(): "+(stop2-start2));
-		assertTrue("performance is not within boundary:"+maxwait, i<maxwait);
 	}
 	
 	@Test public void testSync() {
