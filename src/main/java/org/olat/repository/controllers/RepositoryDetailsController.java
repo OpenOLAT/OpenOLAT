@@ -462,7 +462,10 @@ public class RepositoryDetailsController extends BasicController implements Gene
 					}
 				}
 				// update catalog link
-				detailsToolC.setEnabled(TOOL_CATALOG, (repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS) && !corrupted);
+				boolean addCatalogEnabled = !corrupted &&
+						(repositoryEntry.getAccess() >= RepositoryEntry.ACC_USERS ||
+						repositoryEntry.isMembersOnly());
+				detailsToolC.setEnabled(TOOL_CATALOG, addCatalogEnabled);
 			}
 			if (isNewController) {
 				if(isAuthor) {
