@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
@@ -110,8 +111,9 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		if(started) return;
 		
 		FrameworkStartupEventChannel.fireEvent();
-
-		postgresqlConfigured = "postgres".equals(DBFactory.getInstance().getDbVendor()); 
+		
+		String dbVendor = DBFactory.getInstance().getDbVendor();
+		postgresqlConfigured = dbVendor != null && dbVendor.startsWith("postgres"); 
 		
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		printOlatLocalProperties();
@@ -120,6 +122,15 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
 		started = true;
+	}
+	
+	@After
+	public void closeConnectionAfter() {
+		try {
+			DBFactory.getInstance().commitAndCloseSession();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

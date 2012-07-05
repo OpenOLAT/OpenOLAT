@@ -502,8 +502,7 @@ public class BusinessGroupDAO {
 			query.append(" order by bgi.name,bgi.key");
 		}
 		
-		System.out.println(query.toString());
-		
+
 		TypedQuery<T> dbq = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
 		//add parameters
 		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
@@ -566,11 +565,12 @@ public class BusinessGroupDAO {
 	private <T> TypedQuery<T> createContactsQuery(Identity identity, Class<T> resultClass) {
 		StringBuilder query = new StringBuilder();
 		if(Identity.class.equals(resultClass)) {
-			query.append("select distinct sgmi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			query.append("select distinct identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
 		} else {
-			query.append("select distinct sgmi.identity.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			query.append("select distinct identity.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
 		}
-		query.append(" inner join sgmi.securityGroup as secGroup ")
+		query.append(" inner join sgmi.identity as identity ")
+		     .append(" inner join sgmi.securityGroup as secGroup ")
 		     .append(" where ")
 		     .append("  secGroup in (")
 		     .append("    select bg1.ownerGroup from ").append(BusinessGroupImpl.class.getName()).append(" as bg1,").append(Property.class.getName()).append(" as prop where prop.grp=bg1 and prop.name='displayMembers' and prop.longValue in (1,3,5,7)")
@@ -589,7 +589,7 @@ public class BusinessGroupDAO {
 		     .append("      and bg4.ownerGroup in (select ownerSgmi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as ownerSgmi where ownerSgmi.identity.key=:identKey)")
 		     .append("  )");
 		if(Identity.class.equals(resultClass)) {
-			query.append("order by sgmi.identity.name");
+			query.append("order by identity.name");
 		}
 
 		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);

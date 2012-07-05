@@ -135,11 +135,12 @@ public class BusinessGroupRelationDAO {
 	private <T> TypedQuery<T> createMembersDBQuery(OLATResource resource, boolean owner, boolean attendee, Class<T> resultClass) {
 		StringBuilder sb = new StringBuilder();
 		if(Identity.class.equals(resultClass)) {
-			sb.append("select distinct sgmi.identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			sb.append("select distinct identity from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
 		} else {
-			sb.append("select count(distinct sgmi.identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
+			sb.append("select count(distinct identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi ");
 		}
-		sb.append(" inner join sgmi.securityGroup as secGroup ")
+		sb.append(" inner join sgmi.identity as identity ")
+		  .append(" inner join sgmi.securityGroup as secGroup ")
 		  .append(" where ");
 		
 		if(owner) {
@@ -156,7 +157,7 @@ public class BusinessGroupRelationDAO {
 	      .append("  )");
 		}  
 		if(Identity.class.equals(resultClass)) {
-			sb.append("order by sgmi.identity.name");
+			sb.append("order by identity.name");
 		}
 
 		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), resultClass);
