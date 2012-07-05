@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.commons.calendar.model.KalendarEvent;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "catalogVO")
+@XmlRootElement(name = "eventVO")
 public class EventVO {
 	
 	private String id;
@@ -39,6 +39,7 @@ public class EventVO {
 	
 	private Date begin;
 	private Date end;
+	private boolean allDayEvent;
 	
 	private Date creationDate;
 	private String createdBy;
@@ -54,6 +55,7 @@ public class EventVO {
 		location = event.getLocation();
 		begin = event.getBegin();
 		end = event.getEnd();
+		allDayEvent = event.isAllDayEvent();
 		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();
 		creationDate = new Date(event.getCreated());
 	}
@@ -104,6 +106,14 @@ public class EventVO {
 
 	public void setEnd(Date end) {
 		this.end = end;
+	}
+
+	public boolean isAllDayEvent() {
+		return allDayEvent;
+	}
+
+	public void setAllDayEvent(boolean allDayEvent) {
+		this.allDayEvent = allDayEvent;
 	}
 
 	public Date getCreationDate() {

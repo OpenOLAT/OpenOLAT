@@ -196,6 +196,7 @@ public class CalendarWebService {
 	private void transfer(EventVO event, KalendarEvent kalEvent) {
 		kalEvent.setDescription(event.getDescription());
 		kalEvent.setLocation(event.getLocation());
+		kalEvent.setAllDayEvent(event.isAllDayEvent());
 	}
 	
 	@GET
