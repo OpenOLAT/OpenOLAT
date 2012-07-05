@@ -1148,6 +1148,8 @@ create index  gp_type_idx on o_gp_business (businessgrouptype);
 alter table o_gp_business add index FKCEEB8A86DF6BCD14 (groupcontext_fk), add constraint FKCEEB8A86DF6BCD14 foreign key (groupcontext_fk) references o_gp_bgcontext (groupcontext_id);
 alter table o_gp_business add index FKCEEB8A86A1FAC766 (fk_ownergroup), add constraint FKCEEB8A86A1FAC766 foreign key (fk_ownergroup) references o_bs_secgroup (id);
 alter table o_gp_business add index FKCEEB8A86C06E3EF3 (fk_partipiciantgroup), add constraint FKCEEB8A86C06E3EF3 foreign key (fk_partipiciantgroup) references o_bs_secgroup (id);
+alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
+alter table o_gp_business add constraint idx_bgp_waiting foreign key (fk_waitinggroup) references o_bs_secgroup (id);
 alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
 alter table o_gp_business_to_resource add constraint idx_bgp_to_rsrc_group foreign key (fk_group) references o_gp_business (group_id);
 create index  provider_idx on o_bs_authentication (provider);
