@@ -430,7 +430,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 			prevSite = sites.get(0);
 			if (contentCtrl == null) {
 				//activate site only if no content was set -> allow content before activation of default site.
-				activateSite(sites.get(0), ureq, null, null);
+				activateSite(prevSite, ureq, null, null);
+				siteToBusinessPath.put(prevSite, ureq.getUserSession().getLastHistoryPoint());
 			}
 		}
 		if (sites == null && contentCtrl == null) { 
@@ -481,23 +482,18 @@ public class BaseFullWebappController extends BasicController implements Generic
 				if(point != null) {
 					BusinessControlFactory.getInstance().addToHistory(ureq, point);
 				}
-				siteToBusinessPath.put(s, ureq.getUserSession().getLastHistoryPoint());
+
+				HistoryPoint currentPoint = ureq.getUserSession().getLastHistoryPoint();
+				siteToBusinessPath.put(s, currentPoint);
 			} else if (mC.equals("a")) { // activate dyntab
 				DTab dt = (DTab) link.getUserObject();
 				doActivateDTab((DTabImpl) dt);
-			} else if (mC.equals("u")) { // undock dyntab
-				// TODO:fj:c look at undock feature
 			} else if (mC.equals("c")) { // close dyntab
 				DTab dt = (DTab) link.getUserObject();
 				requestCloseTab(dt);
 			}
 		} else if (source == getWindowControl().getWindowBackOffice().getWindow()) {
-			//OLAT BACK-FORWARD Handling -> Prevent any back forward until 80% handles back-forward as defined
-			//see adjustState 
 			if (event == Window.OLDTIMESTAMPCALL) {
-				// we have a "reload" push or such -> set Warn Msg
-				// getWindowControl().setWarning(this.getTranslator().translate("warn.reload"));// 
-				
 				if (GUIInterna.isLoadPerformanceMode()) {
 					getLogger().info("loadtestMode RELOAD");
 				} else {
@@ -955,8 +951,8 @@ public class BaseFullWebappController extends BasicController implements Generic
 	// brasato:: remove
 	//fxdiff BAKS-7 Resume function
 	public void activateStatic(UserRequest ureq, String className, String viewIdentifier, List<ContextEntry> entries) {
-		for (Iterator it_sites = sites.iterator(); it_sites.hasNext();) {
-			SiteInstance site = (SiteInstance) it_sites.next();
+		for (Iterator<SiteInstance> it_sites = sites.iterator(); it_sites.hasNext();) {
+			SiteInstance site = it_sites.next();
 			String cName = site.getClass().getName();
 			if (cName.equals(className)) {
 				activateSite(site, ureq, viewIdentifier, entries);
