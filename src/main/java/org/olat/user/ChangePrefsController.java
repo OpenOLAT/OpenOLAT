@@ -36,17 +36,19 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.UserSession;
 import org.olat.core.id.User;
 import org.olat.core.id.context.HistoryManager;
 import org.olat.core.id.context.HistoryModule;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.properties.PropertyManager;
@@ -253,8 +255,10 @@ class SpecialPrefsForm extends FormBasicController {
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", buttonLayout);
+		submitButton.setElementCssClass("o_sel_home_settings_gui_submit");
+		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		cancelButton.setElementCssClass("o_sel_home_settings_gui_cancel");
 	}
 
 	private void update() {
@@ -330,7 +334,8 @@ class UserPrefsResetForm extends FormBasicController {
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("reset.submit", buttonLayout);
+		FormSubmit submitButton = uifactory.addFormSubmitButton("reset.submit", buttonLayout);
+		submitButton.setElementCssClass("o_sel_home_settings_reset_sysprefs_submit");
 	}
 
 	@Override

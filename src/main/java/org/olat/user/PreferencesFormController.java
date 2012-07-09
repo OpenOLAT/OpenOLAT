@@ -34,6 +34,8 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
@@ -224,8 +226,10 @@ public class PreferencesFormController extends FormBasicController {
 		// Submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", buttonLayout);
+		submitButton.setElementCssClass("o_sel_home_settings_prefs_submit");
+		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		cancelButton.setElementCssClass("o_sel_home_settings_prefs_cancel");
 	}
 
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
