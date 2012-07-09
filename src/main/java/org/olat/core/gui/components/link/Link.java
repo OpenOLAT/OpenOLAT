@@ -80,7 +80,6 @@ public class Link extends Component {
 	private String customDisplayText;
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
-	private String elementCssClass;
 	private String target;
 	boolean markIt = false;
 	private Object internalAttachedObj;
@@ -338,14 +337,6 @@ public class Link extends Component {
 			presentation += Link.FLEXIBLEFORMLNK;
 		}
 		setDirty(true);
-	}
-	
-	public String getElementCssClass() {
-		return elementCssClass;
-	}
-
-	public void setElementCssClass(String elementCssClass) {
-		this.elementCssClass = elementCssClass;
 	}
 
 	public void removeCSS(){

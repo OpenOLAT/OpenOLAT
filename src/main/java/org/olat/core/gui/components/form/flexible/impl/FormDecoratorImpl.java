@@ -44,7 +44,7 @@ import org.olat.core.util.StringHelper;
  */
 public class FormDecoratorImpl implements FormDecorator {
 
-	FormItemContainer container;
+	private final FormItemContainer container;
 
 	public FormDecoratorImpl(FormItemContainer container) {
 		this.container = container;
@@ -115,6 +115,13 @@ public class FormDecoratorImpl implements FormDecorator {
 			return false;
 		else
 			return (item instanceof SpacerElement);
+	}
+	
+	public String getContainerCssClass() {
+		if (container != null && StringHelper.containsNonWhitespace(container.getElementCssClass())) {
+			return " " + container.getElementCssClass();
+		}
+		return "";
 	}
 	
 	public String getElementCssClass(String formItemName) {

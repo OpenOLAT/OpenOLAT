@@ -36,8 +36,6 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -255,10 +253,9 @@ class SpecialPrefsForm extends FormBasicController {
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", buttonLayout);
-		submitButton.setElementCssClass("o_sel_home_settings_gui_submit");
-		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		cancelButton.setElementCssClass("o_sel_home_settings_gui_cancel");
+		buttonLayout.setElementCssClass("o_sel_home_settings_gui_buttons");
+		uifactory.addFormSubmitButton("submit", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
 	private void update() {
@@ -334,8 +331,8 @@ class UserPrefsResetForm extends FormBasicController {
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		FormSubmit submitButton = uifactory.addFormSubmitButton("reset.submit", buttonLayout);
-		submitButton.setElementCssClass("o_sel_home_settings_reset_sysprefs_submit");
+		buttonLayout.setElementCssClass("o_sel_home_settings_reset_sysprefs_buttons");
+		uifactory.addFormSubmitButton("reset.submit", buttonLayout);
 	}
 
 	@Override

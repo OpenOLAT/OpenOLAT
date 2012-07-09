@@ -34,8 +34,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
@@ -143,6 +141,7 @@ public class PreferencesFormController extends FormBasicController {
 		// load preferences
 		Preferences prefs = tobeChangedIdentity.getUser().getPreferences();
 
+
 		// Username
 		StaticTextElement username = uifactory.addStaticTextElement("form.username", tobeChangedIdentity.getName(), formLayout);
 		username.setElementCssClass("o_sel_home_settings_username");
@@ -226,10 +225,9 @@ public class PreferencesFormController extends FormBasicController {
 		// Submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		FormSubmit submitButton = uifactory.addFormSubmitButton("submit", buttonLayout);
-		submitButton.setElementCssClass("o_sel_home_settings_prefs_submit");
-		FormCancel cancelButton = uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		cancelButton.setElementCssClass("o_sel_home_settings_prefs_cancel");
+		buttonLayout.setElementCssClass("o_sel_home_settings_prefs_buttons");
+		uifactory.addFormSubmitButton("submit", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {

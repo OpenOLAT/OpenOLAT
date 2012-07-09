@@ -43,7 +43,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.StringHelper;
 
 /**
  * Description: Renders the link component depending of features and style. 
@@ -84,9 +83,6 @@ public class LinkRenderer implements ComponentRenderer {
 		cssSb.append("class=\"");
 		if (!link.isEnabled()) {
 			cssSb.append(" b_disabled ");
-		}
-		if(StringHelper.containsNonWhitespace(link.getElementCssClass())) {
-			cssSb.append(link.getElementCssClass()).append(" ");
 		}
 		if (presentation == Link.BUTTON_XSMALL) {
 			cssSb.append("b_button b_xsmall");

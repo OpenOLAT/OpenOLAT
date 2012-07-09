@@ -35,7 +35,6 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -70,9 +69,6 @@ class FormButtonRenderer implements ComponentRenderer {
 		}
 		sb.append(FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction()));
 		sb.append(" class=\"b_button ");
-		if(StringHelper.containsNonWhitespace(fs.getElementCssClass())) {
-			sb.append(fs.getElementCssClass());
-		}
 		if(!source.isEnabled()){
 			sb.append(" b_disabled ");
 		}		
