@@ -219,12 +219,12 @@ public class QTIResultDetailsController extends BasicController {
 		AssessableCourseNode testNode = (AssessableCourseNode)course.getRunStructure().getNode(nodeIdent);
 		ModuleConfiguration modConfig = testNode.getModuleConfiguration();
 
-		String resourcePathInfo = courseResourceableId + File.separator + nodeIdent; 
-		AssessmentInstance ai = AssessmentFactory.createAssessmentInstance(assessedIdentity, modConfig, false ,resourcePathInfo);
+		String resourcePathInfo = courseResourceableId + File.separator + nodeIdent;
+		AssessmentInstance ai = AssessmentFactory.createAssessmentInstance(assessedIdentity, "", modConfig, false, courseResourceableId, nodeIdent, resourcePathInfo);
 		//close the test
 		ai.close();
 		//persist the results
-		iqm.persistResults(ai, courseResourceableId.longValue(), nodeIdent, assessedIdentity, "");
+		iqm.persistResults(ai);
 
 		//reporting
 		Document docResReporting = iqm.getResultsReporting(ai, assessedIdentity, I18nModule.getDefaultLocale());

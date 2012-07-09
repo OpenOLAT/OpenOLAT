@@ -36,6 +36,7 @@ import org.olat.ims.qti.container.ItemsInput;
 import org.olat.ims.qti.container.Output;
 import org.olat.ims.qti.container.SectionContext;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.modules.iq.IQManager;
 
 /**
  */
@@ -144,12 +145,17 @@ public class DefaultNavigator implements Serializable {
 	public void submitAssessment() {
 		Output pendingOutput = null;
 		boolean pendingFeedback = getInfo().isFeedback();
+		boolean alreadyClosed = getAssessmentInstance().isClosed();
 		if(pendingFeedback && getAssessmentInstance().getAssessmentContext().getCurrentSectionContext() != null) {
 			ItemContext itc = getAssessmentInstance().getAssessmentContext().getCurrentSectionContext().getCurrentItemContext();
 			pendingOutput = itc.getOutput();
 		}
 
 		getAssessmentInstance().close();
+		if(!getAssessmentInstance().isPreview() && !alreadyClosed) {
+			IQManager.getInstance().persistResults(getAssessmentInstance());
+		}
+		
 		AssessmentContext ac = getAssessmentContext();
 		
 		info.clear();
