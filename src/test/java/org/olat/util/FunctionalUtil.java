@@ -30,7 +30,7 @@ import com.thoughtworks.selenium.Selenium;
  */
 public class FunctionalUtil {
 	public final static String DEPLOYMENT_URL = "http://localhost:8080/olat";
-	public final static String WAIT_LIMIT = "5000";
+	public final static String WAIT_LIMIT = "15000";
 	
 	public final static String LOGIN_PAGE = "dmz";
 	public final static String ACKNOWLEDGE_CHECKBOX = "acknowledge_checkbox";
@@ -97,6 +97,7 @@ public class FunctionalUtil {
 		Properties properties = new Properties();
 		
 		try {
+			//TODO:JK: use default properties file
 			properties.load(FunctionalUtil.class.getResourceAsStream("credentials.properties"));
 			
 			username = properties.getProperty("admin.login");
@@ -297,11 +298,12 @@ public class FunctionalUtil {
 	    	}
 
 	    	/* click away info dialogs eg. restore session */
-	    	while(browser.isElementPresent("class="+ getInfoDialog())){
+	    	//TODO:JK: find a way to solve endless loop
+	    	//while(browser.isElementPresent("class="+ getInfoDialog())){
 	    		/* click last button */
-	    		browser.click("xpath=//form//a");
+	    		browser.click("xpath=//form//div//button[@type='button']/../../span/a[@class='b_button']");
 	    		browser.waitForPageToLoad(getWaitLimit());
-	    	}
+	    	//}
 	    }
 		
 		/* validate page */
@@ -376,9 +378,7 @@ public class FunctionalUtil {
 	public boolean saveForm(Selenium browser, int formIndex){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form[")
+		selectorBuffer.append("xpath=//form[")
 		.append(formIndex)
 		.append("]")
 		.append(getFormSaveXPath());
@@ -400,9 +400,7 @@ public class FunctionalUtil {
 	public boolean clickCheckbox(Selenium browser, String groupCss, String value){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form")
+		selectorBuffer.append("xpath=//form")
 		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal']")
 		.append("//input[@type='checkbox' and @value='")
 		.append(value)
@@ -428,9 +426,7 @@ public class FunctionalUtil {
 	public boolean clickRadio(Selenium browser, int formIndex, int radioGroupIndex, int radioIndex){
 		StringBuffer selectorBuffer = new StringBuffer();
 	
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form[")
+		selectorBuffer.append("xpath=//form[")
 		.append(formIndex)
 		.append("]")
 		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal'][")
@@ -457,9 +453,7 @@ public class FunctionalUtil {
 	public boolean clickRadio(Selenium browser, String groupCss, String value){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form")
+		selectorBuffer.append("//form")
 		.append("//div[@class='b_form_selection_vertical' or @class='b_form_selection_horizontal']")
 		.append("//input[@type='radio' and @value='")
 		.append(value)
@@ -484,9 +478,7 @@ public class FunctionalUtil {
 	public boolean typeText(Selenium browser, int formIndex, int textIndex, String text){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form[")
+		selectorBuffer.append("xpath=//form[")
 		.append(formIndex)
 		.append("]")
 		.append("//input[@type='text'][")
@@ -510,9 +502,7 @@ public class FunctionalUtil {
 	public boolean typeText(Selenium browser, String entryCss, String text){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form")
+		selectorBuffer.append("xpath=//form")
 		.append("//div[@class='")
 		.append(entryCss)
 		.append("']")
@@ -535,9 +525,7 @@ public class FunctionalUtil {
 	public boolean typePassword(Selenium browser, String entryCss, String text){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form")
+		selectorBuffer.append("xpath=//form")
 		.append("//div[@class='")
 		.append(entryCss)
 		.append("']")
@@ -552,9 +540,7 @@ public class FunctionalUtil {
 	public boolean selectOption(Selenium browser, String id, String value){
 		StringBuffer selectLocatorBuffer = new StringBuffer();
 		
-		selectLocatorBuffer.append("xpath=//div[@class='")
-		.append(getContentCss())
-		.append("']//form")
+		selectLocatorBuffer.append("xpath=//form")
 		.append("//div[@id='")
 		.append(id)
 		.append("']");

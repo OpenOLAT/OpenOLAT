@@ -208,7 +208,7 @@ public class FunctionalHomeSiteUtil {
 		}
 	}
 	
-	public enum HomePage {
+	public enum HomePage {//TODO:JK: HomeSiteActions
 		PORTAL,
 		SETTINGS,
 		CALENDAR,
@@ -517,6 +517,12 @@ public class FunctionalHomeSiteUtil {
 		browser.click(selectorBuffer.toString());
 	}
 	
+	/**
+	 * @param browser
+	 * @param portletCss
+	 * 
+	 * Add specified portlet by its CSS class.
+	 */
 	public void activatePortlet(Selenium browser, String portletCss){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
@@ -765,18 +771,18 @@ public class FunctionalHomeSiteUtil {
 		/* using reset configurations form */
 		/* click all checkboxes */
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, GUI_PREFERENCES_VALUE);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		//browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, SYS_PREFERENCES_VALUE);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		//browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		functionalUtil.clickCheckbox(browser, CONFIGURATIONS_CSS, RESUME_VALUE);
-		browser.waitForPageToLoad(functionalUtil.getWaitLimit());
+		//browser.waitForPageToLoad(functionalUtil.getWaitLimit());
 		
 		/* click Reset */
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("xpath=//form//button[@type='button' and @value='Reset']");
+		selectorBuffer.append("xpath=//form//button[@type='button']"); //  and @value='Reset'
 		
 		browser.click(selectorBuffer.toString());
 		browser.waitForPageToLoad(functionalUtil.getWaitLimit());

@@ -108,14 +108,14 @@ public class FunctionalVOUtil {
 	}
 	
 	public RepositoryEntryVO importAllElementsCourseCourse(URL deploymentUrl) throws URISyntaxException, IOException{
-		URL courseUrl = RepositoryEntriesTest.class.getResource("All_Elements_Course.zip");
+		URL courseUrl = RepositoryEntriesTest.class.getResource("../course/All_Elements_Course.zip");
 		Assert.assertNotNull(courseUrl);
 		
 		File course = new File(courseUrl.toURI());
 		
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 
-		restConnection.login(getUsername(), getPassword());
+		assertTrue(restConnection.login(getUsername(), getPassword()));
 		
 		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("repo/entries").build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
