@@ -121,6 +121,7 @@ public class CourseCalendars {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseLinkProviderController clpc = new CourseLinkProviderController(course, ureq, wControl);
 		courseKalendarWrapper.setLinkProvider(clpc);
+		calendars.add(courseKalendarWrapper);
 		
 		Identity identity = ureq.getIdentity();
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
