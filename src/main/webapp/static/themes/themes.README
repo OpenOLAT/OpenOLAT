@@ -78,8 +78,37 @@ up in "category"-folders. Images are referenced from within the CSS files using 
 Creating a custom theme
 =======================
 
-Work in progress...
+A good way is to start with a copy of "openolatexample" (i.e. my_theme). Adjust the variables in 
+_definitions.scss according to your needs.
 
+If you want to change the layout of	standard OpenOLAT elements lookup the css rules in the corresponding
+modules in the OpenOLAT theme: from openolat/all/modules
+
+You can a) copy the files you your theme and modify it or b) import the styles from the openolat theme
+and override the values you want to change. Variant b) is recommended since it automatically adds new 
+layout features from future releases. 
+
+The structure of the scss-files is very clear, so it should be no problem to do any change and understanding
+theme. If you copied a file from openolat-theme to my_theme/all, you have to adjust your layout.scss:
+...
+@import "all/basemod";
+...
+@import "all/tables";
+...
+@import "all/portlets_boxes";
+
+If you want to display a logo or background-image in the #header, you should set $enablebiz to true and 
+adjust the box-size to your needs.
+
+Edit _basemod.scss (an example):
+...
+#b_header {
+...	
+@if $enablebiz == true { height: 120px; }
+...
+background: transparent url('images/my_logo.png') no-repeat 42px 10px;
+
+After all work is done, you have to compile the theme (see below): sh compiletheme.sh my_theme
 
 
 Testing a custom theme
