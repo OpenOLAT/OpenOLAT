@@ -223,7 +223,7 @@ public class WeeklyCalendarController extends BasicController implements Activat
 		weeklyCalendar.addListener(this);
 
 	  // subscription, see OLAT-3861
-		if (!isGuest) {
+		if (!isGuest && !calendarWrappers.isEmpty()) {
 			SubscriptionProvider provider = new SubscriptionProviderImpl(caller, calendarWrappers.get(0));
 			subsContext = provider.getSubscriptionContext();
 			// if sc is null, then no subscription is desired
