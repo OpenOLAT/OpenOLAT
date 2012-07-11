@@ -90,6 +90,16 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return groups.contains(groupName);
 	}
 	
+	@Override
+	public boolean isIdentityInGroup(Identity identity, Long groupKey) {
+		for(BusinessGroup group:groups) {
+			if(groupKey.equals(group.getKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isLearningGroupFull(java.lang.String)
 	 */
@@ -102,6 +112,16 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	public boolean isIdentityInLearningArea(Identity identity, String areaName) {
 		return areas.contains(areaName);
+	}
+
+	@Override
+	public boolean isIdentityInLearningArea(Identity identity, Long areaKey) {
+		for(BGArea area:areas) {
+			if(areaKey.equals(area.getKey())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -121,13 +141,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	public boolean isIdentityCourseAdministrator(Identity identity) {
 		return isCourseAdmin;
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyLearningGroup(org.olat.core.id.Identity)
-	 */
-	public boolean isIdentityParticipantInAnyGroup(Identity identity) {
-		throw new AssertException("unsupported");
 	}
 
 	/**

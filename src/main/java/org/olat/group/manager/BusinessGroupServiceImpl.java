@@ -1200,7 +1200,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Transactional(readOnly=true)
 	public boolean isIdentityInBusinessGroup(Identity identity, String groupName,
 			boolean ownedById, boolean attendedById, OLATResource resource) {
-		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupName, resource);
+		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, groupName, null, resource);
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey,
+			boolean ownedById, boolean attendedById, OLATResource resource) {
+		return businessGroupRelationDAO.isIdentityInBusinessGroup(identity, null, groupKey, resource);
 	}
 	
 	@Override

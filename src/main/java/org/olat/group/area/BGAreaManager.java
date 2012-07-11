@@ -176,7 +176,7 @@ public interface BGAreaManager {
 	 * @param resource
 	 * @return true if identity is in such an area, false otherwise
 	 */
-	public boolean isIdentityInBGArea(Identity identity, String areaName, OLATResource resource);
+	public boolean isIdentityInBGArea(Identity identity, String areaName, Long groupKey, OLATResource resource);
 
 	/**
 	 * Reloads the business group area from the database or the hibernate second

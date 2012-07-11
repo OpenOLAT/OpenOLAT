@@ -555,14 +555,25 @@ public class BGAreaManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check in area 1
-		boolean testArea1 = areaManager.isIdentityInBGArea(id1, "area-1-" + areaName, resource);
+		boolean testArea1 = areaManager.isIdentityInBGArea(id1, "area-1-" + areaName, null, resource);
 		Assert.assertTrue(testArea1);
 		//check in area 1
-		boolean testArea2 = areaManager.isIdentityInBGArea(id1, "area-2-" + areaName, resource);
+		boolean testArea2 = areaManager.isIdentityInBGArea(id1, "area-2-" + areaName, null, resource);
 		Assert.assertTrue(testArea2);
 		//check in area 1
-		boolean testArea3 = areaManager.isIdentityInBGArea(id1, "area-3-" + areaName, resource);
+		boolean testArea3 = areaManager.isIdentityInBGArea(id1, "area-3-" + areaName, null, resource);
 		Assert.assertFalse(testArea3);
+		
+		//check with keys
+		//check in area 1
+		boolean testArea4 = areaManager.isIdentityInBGArea(id1, null, area1.getKey(), resource);
+		Assert.assertTrue(testArea4);
+		//check in area 1
+		boolean testArea5 = areaManager.isIdentityInBGArea(id1, null, area2.getKey(), resource);
+		Assert.assertTrue(testArea5);
+		//check in area 1
+		boolean testArea6 = areaManager.isIdentityInBGArea(id1, null, area3.getKey(), resource);
+		Assert.assertFalse(testArea6);
 	}
 	
 	/** 

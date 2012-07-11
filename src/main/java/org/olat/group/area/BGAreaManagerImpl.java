@@ -327,19 +327,30 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	 * @see org.olat.group.area.BGAreaManager#isIdentityInBGArea(org.olat.core.id.Identity,
 	 *      java.lang.String, org.olat.group.context.BGContext)
 	 */
-	public boolean isIdentityInBGArea(Identity identity, String areaName, OLATResource resource) {
+	public boolean isIdentityInBGArea(Identity identity, String areaName, Long areaKey, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(grp) from ").append(BusinessGroupImpl.class.getName()).append(" as grp")
 		  .append(", org.olat.group.area.BGAreaImpl as area, org.olat.group.area.BGtoAreaRelationImpl bgarel, org.olat.basesecurity.SecurityGroupMembershipImpl as secgmemb")
-		  .append(" where bgarel.groupArea = area and bgarel.businessGroup = grp")
-			.append(" and area.name=:name and area.resource.key=:resourceKey ")
+		  .append(" where bgarel.groupArea = area and bgarel.businessGroup = grp");
+		if(StringHelper.containsNonWhitespace(areaName)) {
+			sb.append(" and area.name=:name ");
+		}
+		if(areaKey != null) {
+			sb.append(" and area.key=:areaKey ");
+		}
+		sb.append(" and area.resource.key=:resourceKey ")
 			.append(" and ((grp.partipiciantGroup = secgmemb.securityGroup and secgmemb.identity.key=:identityKey) or (grp.ownerGroup = secgmemb.securityGroup and secgmemb.identity=:identityKey))");
 		
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 			.setParameter("identityKey", identity.getKey())
-			.setParameter("resourceKey", resource.getKey())
-			.setParameter("name", areaName)
-			.getSingleResult();
+			.setParameter("resourceKey", resource.getKey());
+		if(StringHelper.containsNonWhitespace(areaName)) {
+			query.setParameter("name", areaName);
+		}
+		if(areaKey != null) {
+			query.setParameter("areaKey", areaKey);
+		}
+		Number count = query.getSingleResult();
 		return count.intValue() > 0;
 	}
 

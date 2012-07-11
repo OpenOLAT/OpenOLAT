@@ -31,6 +31,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -88,13 +89,21 @@ public class BusinessGroupRelationDAO {
 			em.remove(relation);
 		}
 	}
-	
 
-	public boolean isIdentityInBusinessGroup(Identity identity, String name, OLATResource resource) {
+	public boolean isIdentityInBusinessGroup(Identity identity, String name, Long groupKey, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi where")
-		  .append(" bgi.name=:name")
-		  .append(" and (")
+		sb.append("select count(bgi) from ").append(BusinessGroupImpl.class.getName()).append(" bgi");
+		boolean and = false;
+		if(StringHelper.containsNonWhitespace(name)) {
+			and = and(sb, and);
+			sb.append(" bgi.name=:name");
+		}
+		if(groupKey != null) {
+			and = and(sb, and);
+			sb.append(" bgi.key=:groupKey");
+		}
+		and(sb, and);
+		sb.append(" (")
 		  .append("   bgi.partipiciantGroup in (")
 		  .append("     select participantMemberShip.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" participantMemberShip ")
 		  .append("       where participantMemberShip.identity.key=:identityKey")
@@ -109,14 +118,20 @@ public class BusinessGroupRelationDAO {
 			.append("   select relation.group from ").append(BGResourceRelation.class.getName()).append(" relation where relation.resource.key=:resourceKey")
 			.append(" )");
 
-		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
-				.setParameter("name", name)
-				.setParameter("resourceKey", resource.getKey())
-				.getSingleResult();
+				.setParameter("resourceKey", resource.getKey());
+
+		if(StringHelper.containsNonWhitespace(name)) {
+			query.setParameter("name", name);
+		}
+		if(groupKey != null) {
+			query.setParameter("groupKey", groupKey);
+		}
+		Number count = query.getSingleResult();
 		return count.intValue() > 0;
 	}
-	
+
 	
 	public int countMembersOf(OLATResource resource, boolean owner, boolean attendee) {
 		if(!owner && !attendee) return 0;
@@ -283,5 +298,11 @@ public class BusinessGroupRelationDAO {
 		}
 		query.setParameter("groupKeys", groupKeys);
 		return query.getResultList();
+	}
+	
+	private boolean and(StringBuilder sb, boolean and) {
+		if(and) sb.append(" and ");
+		else sb.append(" where ");
+		return true;
 	}
 }

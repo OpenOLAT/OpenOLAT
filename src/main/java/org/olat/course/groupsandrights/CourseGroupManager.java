@@ -77,6 +77,8 @@ public interface CourseGroupManager {
 	 * @return true if user is in learning group, false otherwhise
 	 */
 	public boolean isIdentityInGroup(Identity identity, String groupName);
+	
+	public boolean isIdentityInGroup(Identity identity, Long groupKey);
 
 	/**
 	 * Checks whether a set of learning groups with an identical name are full or not.
@@ -97,6 +99,8 @@ public interface CourseGroupManager {
 	 * @return true if user is in such an area, false otherwhise
 	 */
 	public boolean isIdentityInLearningArea(Identity identity, String areaName);
+	
+	public boolean isIdentityInLearningArea(Identity identity, Long areaKey);
 
 	/**
 	 * Checks if user is coach in any of the courses learning groups
@@ -121,14 +125,6 @@ public interface CourseGroupManager {
 	 * @return boolean
 	 */
 	public boolean isIdentityCourseParticipant(Identity identity);
-
-	/**
-	 * Checks if user is participant in any learning group of this course
-	 * 
-	 * @param identity
-	 * @return boolean
-	 */
-	public boolean isIdentityParticipantInAnyGroup(Identity identity);
 
 	/**
 	 * @return A list of all learning group from all learning group contexts of

@@ -130,7 +130,12 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	public boolean isIdentityInGroup(Identity identity, String groupName) {
 		return businessGroupService.isIdentityInBusinessGroup(identity, groupName, true, true, courseResource);
 	}
-	
+
+	@Override
+	public boolean isIdentityInGroup(Identity identity, Long groupKey) {
+		return businessGroupService.isIdentityInBusinessGroup(identity, groupKey, true, true, courseResource);
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isLearningGroupFull(java.lang.String)
 	 */
@@ -177,7 +182,12 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 *      java.lang.String)
 	 */
 	public boolean isIdentityInLearningArea(Identity identity, String areaName) {
-		return areaManager.isIdentityInBGArea(identity, areaName, courseResource);
+		return areaManager.isIdentityInBGArea(identity, areaName, null, courseResource);
+	}
+	
+	@Override
+	public boolean isIdentityInLearningArea(Identity identity, Long areaKey) {
+		return areaManager.isIdentityInBGArea(identity, null, areaKey, courseResource);
 	}
 
 	/**
@@ -287,7 +297,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_COACH, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, null, true, false, courseResource);
+				|| businessGroupService.isIdentityInBusinessGroup(identity, (String)null, true, false, courseResource);
 		return isParticipant;
 	}
 	
@@ -306,7 +316,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_PARTI, courseResource)
-				|| businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, courseResource);
+				|| businessGroupService.isIdentityInBusinessGroup(identity, (String)null, false, true, courseResource);
 		return isParticipant;
 	}
 
@@ -318,13 +328,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		// shortcut here...
 		BaseSecurity secMgr = BaseSecurityManager.getInstance();
 		return secMgr.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ADMIN, courseResource);
-	}
-
-	/**
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityParticipantInAnyLearningGroup(org.olat.core.id.Identity)
-	 */
-	public boolean isIdentityParticipantInAnyGroup(Identity identity) {
-		return businessGroupService.isIdentityInBusinessGroup(identity, null, false, true, courseResource);
 	}
 
 	/**

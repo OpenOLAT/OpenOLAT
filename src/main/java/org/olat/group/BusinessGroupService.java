@@ -454,6 +454,19 @@ public interface BusinessGroupService {
 	 */
 	public boolean isIdentityInBusinessGroup(Identity identity, String groupName, boolean ownedById, boolean attendedById, OLATResource resource);
 
+	/**
+	 * Checks if an identity is in a business group with a specific key, either as owner or
+	 * as participant
+	 * @param identity
+	 * @param groupKey
+	 * @param ownedById
+	 * @param attendedById
+	 * @param resource
+	 * @return
+	 */
+	public boolean isIdentityInBusinessGroup(Identity identity, Long groupKey, boolean ownedById, boolean attendedById, OLATResource resource);
+
+	
 	//export - import
 	/**
 	 * Export group definitions to file.
