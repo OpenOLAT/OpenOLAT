@@ -105,9 +105,9 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 
 		// calculate the column css classes based on YAML schema
 		int cols = portalColumns.size();
-		List<String> columnCssClassWrapper = new ArrayList(cols);
+		List<String> columnCssClassWrapper = new ArrayList<String>(cols);
 		columnCssClassWrapper.add(0, ""); // empty, in velocity things start with 1...
-		List<String> columnCssClassInner = new ArrayList(cols);
+		List<String> columnCssClassInner = new ArrayList<String>(cols);
 		columnCssClassInner.add(0, ""); // empty, in velocity things start with 1...
 		switch (cols) {
 		case 0:
@@ -120,29 +120,29 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 			break;
 		case 2:
 			// 50% each
-			columnCssClassWrapper.add(1, "b_c50l"); 
+			columnCssClassWrapper.add(1, "b_c50l o_sel_portal_col_1"); 
 			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "b_c50r"); 
+			columnCssClassWrapper.add(2, "b_c50r o_sel_portal_col_2"); 
 			columnCssClassInner.add(2, "b_subcr"); 
 			break;
 		case 3:
 			// 33% each
-			columnCssClassWrapper.add(1, "b_c33l"); 
+			columnCssClassWrapper.add(1, "b_c33l o_sel_portal_col_1"); 
 			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "b_c33l"); 
+			columnCssClassWrapper.add(2, "b_c33l o_sel_portal_col_2"); 
 			columnCssClassInner.add(2, "b_subcl"); 
-			columnCssClassWrapper.add(3, "b_c33r"); 
+			columnCssClassWrapper.add(3, "b_c33r o_sel_portal_col_3"); 
 			columnCssClassInner.add(3, "b_subcr"); 
 			break;
 		case 4:
 			// 25% each
-			columnCssClassWrapper.add(1, "b_c25l"); 
+			columnCssClassWrapper.add(1, "b_c25l o_sel_portal_col_1"); 
 			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "b_c25l"); 
+			columnCssClassWrapper.add(2, "b_c25l o_sel_portal_col_2"); 
 			columnCssClassInner.add(2, "b_subcl"); 
-			columnCssClassWrapper.add(3, "b_c25l"); 
+			columnCssClassWrapper.add(3, "b_c25l o_sel_portal_col_3"); 
 			columnCssClassInner.add(3, "b_subcl"); 
-			columnCssClassWrapper.add(4, "b_c25r"); 
+			columnCssClassWrapper.add(4, "b_c25r o_sel_portal_col_4"); 
 			columnCssClassInner.add(4, "b_subcr"); 
 			break;
 		default:
