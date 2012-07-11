@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalHomeSiteUtil;
-import org.olat.util.FunctionalHomeSiteUtil.HomePage;
+import org.olat.util.FunctionalHomeSiteUtil.HomeSiteAction;
 import org.olat.util.FunctionalRepositorySiteUtil;
 import org.olat.util.FunctionalUtil;
 import org.olat.util.FunctionalUtil.OlatSite;

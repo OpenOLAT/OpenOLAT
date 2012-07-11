@@ -211,7 +211,7 @@ public class FunctionalUtil {
 	 * @param site
 	 * @return true if match otherwise false
 	 * 
-	 * Check if the correct olat tab is open.
+	 * Check if the correct olat site is open.
 	 */
 	public boolean checkCurrentSite(Selenium browser, OlatSite site){
 		String selectedCss = findCssClassOfSite(site);
@@ -248,6 +248,10 @@ public class FunctionalUtil {
 		
 		if(selectedCss == null){
 			return(false);
+		}
+		
+		if(checkCurrentSite(browser, site)){
+			return(true);
 		}
 		
 		StringBuffer selectorBuffer = new StringBuffer();
@@ -301,8 +305,10 @@ public class FunctionalUtil {
 	    	//TODO:JK: find a way to solve endless loop
 	    	//while(browser.isElementPresent("class="+ getInfoDialog())){
 	    		/* click last button */
+	    	if(browser.isElementPresent("class="+ getInfoDialog())){
 	    		browser.click("xpath=//form//div//button[@type='button']/../../span/a[@class='b_button']");
 	    		browser.waitForPageToLoad(getWaitLimit());
+	    	}
 	    	//}
 	    }
 		
@@ -323,7 +329,7 @@ public class FunctionalUtil {
 	public boolean logout(Selenium browser){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
-		selectorBuffer.append("css=")
+		selectorBuffer.append("css=#")
 		.append(getOlatTopNavigationLogoutCss())
 		.append(" a");
 		
@@ -376,15 +382,21 @@ public class FunctionalUtil {
 	 * Save the form at the position formIndex within content element.
 	 */
 	public boolean saveForm(Selenium browser, int formIndex){
+		saveForm(browser, formIndex, getWaitLimit());
+		
+		return(true);
+	}
+	
+	public boolean saveForm(Selenium browser, int formIndex, String waitLimit){
 		StringBuffer selectorBuffer = new StringBuffer();
 		
 		selectorBuffer.append("xpath=//form[")
-		.append(formIndex)
+		.append(formIndex + 1)
 		.append("]")
 		.append(getFormSaveXPath());
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(getWaitLimit());
+		browser.waitForPageToLoad(waitLimit);
 		
 		return(true);
 	}
@@ -407,8 +419,6 @@ public class FunctionalUtil {
 		.append("']");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(getWaitLimit());
-		//TODO:JK: implement me
 		
 		return(true);
 	}
@@ -437,7 +447,6 @@ public class FunctionalUtil {
 		.append("]");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(getWaitLimit());
 		
 		return(true);
 	}
@@ -460,7 +469,6 @@ public class FunctionalUtil {
 		.append("']");
 		
 		browser.click(selectorBuffer.toString());
-		browser.waitForPageToLoad(getWaitLimit());
 
 		return(true);
 	}
@@ -486,7 +494,6 @@ public class FunctionalUtil {
 		.append("]");
 		
 		browser.type(selectorBuffer.toString(), text);
-		browser.waitForPageToLoad(getWaitLimit());
 		
 		return(true);
 	}
@@ -509,7 +516,6 @@ public class FunctionalUtil {
 		.append("//input[@type='text']");
 		
 		browser.type(selectorBuffer.toString(), text);
-		browser.waitForPageToLoad(getWaitLimit());
 		
 		return(true);
 	}
@@ -532,7 +538,6 @@ public class FunctionalUtil {
 		.append("//input[@type='password']");
 		
 		browser.type(selectorBuffer.toString(), text);
-		browser.waitForPageToLoad(getWaitLimit());
 		
 		return(true);
 	}
@@ -541,15 +546,14 @@ public class FunctionalUtil {
 		StringBuffer selectLocatorBuffer = new StringBuffer();
 		
 		selectLocatorBuffer.append("xpath=//form")
-		.append("//div[@id='")
+		.append("//select[@id='")
 		.append(id)
 		.append("']");
 		
 		StringBuffer optionLocatorBuffer = new StringBuffer();
 		
-		optionLocatorBuffer.append("xpath=//option[@value='")
-		.append(value)
-		.append("']");
+		optionLocatorBuffer.append("value=")
+		.append(value);
 		
 		browser.select(selectLocatorBuffer.toString(), optionLocatorBuffer.toString());
 		

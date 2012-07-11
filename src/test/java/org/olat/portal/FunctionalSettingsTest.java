@@ -80,30 +80,35 @@ public class FunctionalSettingsTest {
 	
 	@Test
 	@RunAsClient
-	public void checkSettings() throws IOException, URISyntaxException{
+	public void checkSettings() throws IOException, URISyntaxException, InterruptedException{
 		/* create test user via REST */
 		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
 		
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser));
+		Thread.sleep(5000);
 		
 		/* reset settings */
 		Assert.assertTrue(functionalHomeSiteUtil.resetSettings(browser));
+		Thread.sleep(5000);
 		
 		/* set language */
 		functionalHomeSiteUtil.selectLanguage(browser, FunctionalHomeSiteUtil.GERMAN_LANGUAGE_VALUE);
+		Thread.sleep(10000);
 		
 		/* resume off */
 		functionalHomeSiteUtil.disableResume(browser);
 		
 		/* logout */
 		Assert.assertTrue(functionalUtil.logout(browser));
+		Thread.sleep(5000);
 		
 		/* login for test case */
 		Assert.assertTrue(functionalUtil.login(browser));
 		
 		/* click configure */
 		functionalHomeSiteUtil.beginEditingPortal(browser);
+		Thread.sleep(5000);
 		
 		/* de-/activate portlets */
 		functionalHomeSiteUtil.deactivatePortlet(browser, functionalHomeSiteUtil.getPortletEffCss());
@@ -117,11 +122,11 @@ public class FunctionalSettingsTest {
 		//TODO:JK: do something fancy to test the result
 		
 		/* edit settings */
-		functionalHomeSiteUtil.openPageByNavigation(browser, FunctionalHomeSiteUtil.HomePage.SETTINGS);
+		functionalHomeSiteUtil.openActionByMenuTree(browser, FunctionalHomeSiteUtil.HomeSiteAction.SETTINGS);
 		
 		functionalUtil.openContentTab(browser, SettingsTab.SYSTEM.ordinal());
 		
-		functionalHomeSiteUtil.selectLanguage(browser, "en");
+		functionalHomeSiteUtil.selectLanguage(browser, FunctionalHomeSiteUtil.ENGLISH_LANGUAGE_VALUE);
 		
 		functionalHomeSiteUtil.enableBack(browser);
 		
@@ -159,7 +164,7 @@ public class FunctionalSettingsTest {
 		Assert.assertTrue(functionalUtil.login(browser, current.getLogin(), current.getPassword(), true));
 		
 		functionalUtil.openSite(browser, FunctionalUtil.OlatSite.HOME);
-		functionalHomeSiteUtil.openPageByNavigation(browser, FunctionalHomeSiteUtil.HomePage.SETTINGS);
+		functionalHomeSiteUtil.openActionByMenuTree(browser, FunctionalHomeSiteUtil.HomeSiteAction.SETTINGS);
 		
 		String newPassword = "passwd_" + 0 + "_" + UUID.randomUUID().toString();
 		

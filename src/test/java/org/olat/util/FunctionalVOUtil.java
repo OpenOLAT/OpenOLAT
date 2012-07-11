@@ -128,6 +128,8 @@ public class FunctionalVOUtil {
 		method.setEntity(entity);
 		
 		HttpResponse response = restConnection.execute(method);
+		System.out.println("*===============*" + response.getStatusLine().getStatusCode());
+		
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
 		InputStream body = response.getEntity().getContent();
