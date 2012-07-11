@@ -110,13 +110,16 @@ public class ChangePasswordForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		oldpass = uifactory.addPasswordElement("oldpass", "form.password.old", 128, "", formLayout);
+		oldpass.setElementCssClass("o_sel_home_pwd_old");
 		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 128, "", formLayout);
+		newpass1.setElementCssClass("o_sel_home_pwd_new_1");
 		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 128, "", formLayout);
+		newpass2.setElementCssClass("o_sel_home_pwd_new_2");
 		
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		buttonLayout.setElementCssClass("o_sel_home_pwd_buttons");
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());	

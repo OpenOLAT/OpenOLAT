@@ -219,7 +219,7 @@ public class PreferencesFormController extends FormBasicController {
 		String currentCharset = UserManager.getInstance().getUserCharset(tobeChangedIdentity);
 		String[] csKeys = StringHelper.getMapKeysAsStringArray(charsets);
 		charset = uifactory.addDropdownSingleselect("form.charset", formLayout, csKeys, csKeys, null);
-		charset.setElementCssClass("o_sel_home_settings_cahrset");
+		charset.setElementCssClass("o_sel_home_settings_charset");
 		charset.select(currentCharset, true);
 
 		// Submit and cancel buttons
