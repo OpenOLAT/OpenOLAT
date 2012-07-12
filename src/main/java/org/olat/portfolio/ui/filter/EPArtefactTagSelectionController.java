@@ -53,7 +53,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 	private MultipleSelectionElementImpl chkBox;
 
 	public EPArtefactTagSelectionController(UserRequest ureq, WindowControl wControl, List<String> selectedTagsList) {
-		super(ureq, wControl);
+		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 
 		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		this.selectedTagsList = selectedTagsList;
@@ -68,6 +68,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 //		setFormTitle("filter.tag.title");
 		setFormDescription("filter.tag.intro");
+		setFormStyle("b_eportfolio_tag_selector");
 		
 		Map<String, String> allUserTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
 		LinkedList<Entry<String, String>> sortEntrySet = new LinkedList<Entry<String, String>>(allUserTags.entrySet());
