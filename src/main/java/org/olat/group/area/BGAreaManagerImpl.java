@@ -108,6 +108,20 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		return dbInstance.getCurrentEntityManager().find(BGAreaImpl.class, key);
 	}
 
+	@Override
+	public List<BGArea> loadAreas(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area ")
+		  .append(" where area.key in (:keys)");
+		
+		List<BGArea> areas = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)
+				.setParameter("keys", keys)
+				.getResultList();
+		return areas;
+	}
+
 	/**
 	 * @see org.olat.group.area.BGAreaManager#findBGArea(java.lang.String,
 	 *      org.olat.group.context.BGContext)
@@ -306,6 +320,7 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		sb.append("select count(area) from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey");
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("resourceKey", resource.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 		return count.intValue();
 	}
@@ -350,7 +365,9 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		if(areaKey != null) {
 			query.setParameter("areaKey", areaKey);
 		}
-		Number count = query.getSingleResult();
+		Number count = query
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
 		return count.intValue() > 0;
 	}
 
@@ -371,6 +388,30 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
 				.setParameter("resourceKey", resource.getKey())
 				.setParameter("names", allNames)
+				.getSingleResult();
+		return count.intValue() > 0;
+	}
+
+	@Override
+	public boolean existArea(String nameOrKey, OLATResource resource) {
+		Long key = null;
+		if(StringHelper.isLong(nameOrKey)) {
+			key = new Long(nameOrKey);
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(area) from ").append(BGAreaImpl.class.getName()).append(" area  ")
+		  .append(" where area.resource.key=:resourceKey and area.");
+		if(key == null) {
+			sb.append("name");
+		} else {
+			sb.append("key");
+		} 
+		sb.append("=:nameOrKey");
+		
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("nameOrKey", key == null ? nameOrKey : key)
 				.getSingleResult();
 		return count.intValue() > 0;
 	}

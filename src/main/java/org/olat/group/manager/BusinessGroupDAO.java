@@ -46,7 +46,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BGResourceRelation;
+import org.olat.group.model.BusinessGroupShortImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
@@ -130,6 +132,22 @@ public class BusinessGroupDAO {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		BusinessGroup group = em.find(BusinessGroupImpl.class, id, LockModeType.NONE);
 		return group;
+	}
+	
+	public List<BusinessGroupShort> loadShort(Collection<Long> ids) {
+		if(ids == null || ids.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupShortImpl.class.getName()).append(" bgi ")
+		  .append(" where bgi.key in (:ids)");
+
+		List<BusinessGroupShort> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroupShort.class)
+				.setParameter("ids", ids)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		return groups;
 	}
 	
 	public List<BusinessGroup> load(Collection<Long> ids) {
@@ -357,7 +375,8 @@ public class BusinessGroupDAO {
 	}
 	
 	public int countBusinessGroups(SearchBusinessGroupParams params, OLATResource resource) {
-		TypedQuery<Number> query = createFindDBQuery(params, resource, Number.class);
+		TypedQuery<Number> query = createFindDBQuery(params, resource, Number.class)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE);
 
 		Number count = query.getSingleResult();
 		return count.intValue();

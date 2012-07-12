@@ -24,8 +24,10 @@
 */
 package org.olat.group.ui;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
@@ -40,8 +42,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.group.area.BGAreaManagerImpl;
-import org.olat.group.context.BGContext;
 import org.olat.group.ui.area.BGAreaFormController;
 import org.olat.resource.OLATResource;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -67,7 +67,7 @@ public class NewAreaController extends BasicController {
 	private boolean bulkMode = false;
 	private Set<BGArea> newAreas;
 	private HashSet<String> newAreaNames;
-	private BGAreaManager areaManager;
+	private final BGAreaManager areaManager;
 
 	/**
 	 * 
@@ -78,23 +78,23 @@ public class NewAreaController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	NewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvAreaNames) {
+	public NewAreaController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean bulkMode, String csvAreaNames) {
 		super(ureq, wControl);
 		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
-		this.areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		this.contentVC = this.createVelocityContainer("areaform");
-		this.contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		contentVC = this.createVelocityContainer("areaform");
+		contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		//
-		this.areaCreateController = new BGAreaFormController(ureq, wControl, null, bulkMode);
-		listenTo(this.areaCreateController);
-		this.contentVC.put("areaForm", this.areaCreateController.getInitialComponent());
+		areaCreateController = new BGAreaFormController(ureq, wControl, null, bulkMode);
+		listenTo(areaCreateController);
+		contentVC.put("areaForm", areaCreateController.getInitialComponent());
 		
 		if (csvAreaNames != null) {
-			this.areaCreateController.setAreaName(csvAreaNames);
+			areaCreateController.setAreaName(csvAreaNames);
 		}
-		this.putInitialPanel(this.contentVC);
+		putInitialPanel(contentVC);
 	}
 	
 	/**
@@ -167,6 +167,8 @@ public class NewAreaController extends BasicController {
 		return newAreas.iterator().next().getName();
 	}
 	
+	
+	
 	/**
 	 * if Event.DONE_EVENT received the return value is always NOT NULL. If
 	 * Event_FORM_CANCELLED ist received this will be null.
@@ -183,6 +185,14 @@ public class NewAreaController extends BasicController {
 	 */
 	public Set<BGArea> getCreatedAreas(){
 		return newAreas;
+	}
+	
+	public List<Long> getCreatedAreaKeys(){
+		List<Long> areaKeys = new ArrayList<Long>();
+		for(BGArea newArea:newAreas) {
+			areaKeys.add(newArea.getKey());
+		}
+		return areaKeys;
 	}
 	
 	/**

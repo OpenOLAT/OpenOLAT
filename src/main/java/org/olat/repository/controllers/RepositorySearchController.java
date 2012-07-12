@@ -381,7 +381,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	void doSearchByTypeLimitAccess(String type, UserRequest ureq) {
 		searchType = null;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		List entries = rm.queryByTypeLimitAccess(type, ureq);
+		List<RepositoryEntry> entries = rm.queryByTypeLimitAccess(type, ureq);
 		repoTableModel.setObjects(entries);
 		//fxdiff VCRP-10: repository search with type filter
 		tableCtr.setFilters(null, null);

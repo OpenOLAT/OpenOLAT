@@ -68,6 +68,7 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.DeletableGroupData;
 import org.olat.group.DeletableReference;
 import org.olat.group.GroupLoggingAction;
@@ -338,7 +339,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public List<BusinessGroup> loadBusinessGroups(Collection<Long> keys) {
 		return businessGroupDAO.load(keys);
 	}
-	
+
+	@Override
+	public List<BusinessGroupShort> loadShortBusinessGroups(Collection<Long> keys) {
+		return businessGroupDAO.loadShort(keys);
+	}
+
 	@Override
 	@Transactional
 	public List<BusinessGroup> loadAllBusinessGroups() {

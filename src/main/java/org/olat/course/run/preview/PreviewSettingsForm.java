@@ -196,7 +196,7 @@ public class PreviewSettingsForm extends FormBasicController {
 		if (source == groupChooserLink) {
 			removeAsListenerAndDispose (groupChooser);
 			groupChooser = new GroupSelectionController(ureq, getWindowControl(), "group",
-					course.getCourseEnvironment().getCourseGroupManager(), group.getValue());
+					course.getCourseEnvironment().getCourseGroupManager(), null /* group.getValue() */); //TODO gm
 			listenTo(groupChooser);
 				
 			removeAsListenerAndDispose(cmc);
@@ -211,7 +211,7 @@ public class PreviewSettingsForm extends FormBasicController {
 		} else if (source == areaChooserLink) {
 			removeAsListenerAndDispose (areaChooser);
 			areaChooser = new AreaSelectionController(ureq, getWindowControl(), "area",
-					course.getCourseEnvironment().getCourseGroupManager(), area.getValue());
+					course.getCourseEnvironment().getCourseGroupManager(), null /* area.getValue() */);//TODO gm
 			listenTo(areaChooser);
 
 			removeAsListenerAndDispose(cmc);

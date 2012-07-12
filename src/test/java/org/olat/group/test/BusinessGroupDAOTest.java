@@ -38,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupPropertyDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -194,6 +195,39 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, groups3.size());
 		Assert.assertTrue(groups3.contains(group1));
 		Assert.assertTrue(groups3.contains(group2));
+	}
+	
+	@Test
+	public void loadShortBusinessGroupsByKeys() {
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, "shorty-1", "shorty-1-desc", 0, 10, true, true, false, false, false);
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, "shorty-2", "shorty-2-desc", 0, 10, true, true, false, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check if the method is robust against empty list fo keys
+		List<BusinessGroupShort> groups1 = businessGroupDao.loadShort(Collections.<Long>emptyList());
+		Assert.assertNotNull(groups1);
+		Assert.assertEquals(0, groups1.size());
+		
+		//check load 1 group
+		List<BusinessGroupShort> groups2 = businessGroupDao.loadShort(Collections.singletonList(group1.getKey()));
+		Assert.assertNotNull(groups2);
+		Assert.assertEquals(1, groups2.size());
+		Assert.assertEquals(group1.getKey(), groups2.get(0).getKey());
+		Assert.assertEquals(group1.getName(), groups2.get(0).getName());
+		
+		//check load 2 groups
+		List<Long> groupKeys = new ArrayList<Long>(2);
+		groupKeys.add(group1.getKey());
+		groupKeys.add(group2.getKey());
+		List<BusinessGroupShort> groups3 = businessGroupDao.loadShort(groupKeys);
+		Assert.assertNotNull(groups3);
+		Assert.assertEquals(2, groups3.size());
+		List<Long> groupShortKeys3 = new ArrayList<Long>(3);
+		for(BusinessGroupShort group:groups3) {
+			groupShortKeys3.add(group.getKey());
+		}
+		Assert.assertTrue(groupShortKeys3.contains(group1.getKey()));
+		Assert.assertTrue(groupShortKeys3.contains(group2.getKey()));
 	}
 	
 	@Test

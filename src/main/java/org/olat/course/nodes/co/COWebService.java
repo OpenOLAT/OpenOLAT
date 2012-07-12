@@ -49,8 +49,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 
@@ -246,8 +246,8 @@ public class COWebService extends AbstractCourseNodeWebService {
 					Long groupKey = new Long(groupId);
 					keys.add(groupKey);
 				}
-				List<BusinessGroup> groups = bgm.loadBusinessGroups(keys);
-				for(BusinessGroup bg:groups) {
+				List<BusinessGroupShort> groups = bgm.loadShortBusinessGroups(keys);
+				for(BusinessGroupShort bg:groups) {
 					groupNames.add(bg.getName());
 				}
 			}

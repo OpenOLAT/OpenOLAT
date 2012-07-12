@@ -449,7 +449,8 @@ public class RepositoryManager extends BasicManager {
 	 * @throws AssertException if the softkey could not be found (strict=true)
 	 */
 	public RepositoryEntry lookupRepositoryEntry(OLATResourceable resourceable, boolean strict) {
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(resourceable);
+		OLATResource ores = (resourceable instanceof OLATResource) ? (OLATResource)resourceable
+				: OLATResourceManager.getInstance().findResourceable(resourceable);
 		if (ores == null) {
 			if (!strict) return null;
 			throw new AssertException("Unable to fetch OLATResource for resourceable: " + resourceable.getResourceableTypeName() + ", " + resourceable.getResourceableId());
@@ -463,11 +464,10 @@ public class RepositoryManager extends BasicManager {
 			.append(" left join fetch v.tutorGroup as tutorGroup")
 		  .append(" where ores.key = :oreskey");
 
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(sb.toString());
-		dbQuery.setLong("oreskey", ores.getKey().longValue());
-		dbQuery.setCacheable(true);
-		
-		List result = dbQuery.list();
+		List<RepositoryEntry> result = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("oreskey", ores.getKey())
+				.getResultList();
 		int size = result.size();
 		if (strict) {
 			if (size != 1)
@@ -480,7 +480,38 @@ public class RepositoryManager extends BasicManager {
 				return null;
 			}
 		}
-		return (RepositoryEntry)result.get(0);
+		return result.get(0);
+	}
+	
+	public Long lookupRepositoryEntryKey(OLATResourceable resourceable, boolean strict) {
+		OLATResource ores = (resourceable instanceof OLATResource) ? (OLATResource)resourceable
+				: OLATResourceManager.getInstance().findResourceable(resourceable);
+		if (ores == null) {
+			if (!strict) return null;
+			throw new AssertException("Unable to fetch OLATResource for resourceable: " + resourceable.getResourceableTypeName() + ", " + resourceable.getResourceableId());
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v.key from ").append(RepositoryEntry.class.getName()).append(" v ")
+		  .append(" where v.olatResource.key=:oreskey");
+
+		List<Long> result = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("oreskey", ores.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+		int size = result.size();
+		if (strict) {
+			if (size != 1)
+				throw new AssertException("Repository resourceable lookup returned zero or more than one result: " + size);
+		} else { // not strict -> return null if zero entries found
+			if (size > 1)
+				throw new AssertException("Repository resourceable lookup returned more than one result: " + size);
+			if (size == 0) {
+				return null;
+			}
+		}
+		return result.get(0);
 	}
 
 	/**
@@ -1682,5 +1713,37 @@ public class RepositoryManager extends BasicManager {
 				.setParameter("identity", identity)
 				.getResultList();
 		return entries;
+	}
+	
+	public boolean isIdentityInTutorSecurityGroup(Identity identity, OLATResource resource) {
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join v.tutorGroup as tutorGroup")
+			.append(" where v.olatResource.key=:resourceKey")
+			.append(" and tutorGroup in (select sgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" sgmsi where sgmsi.identity.key=:identityKey)");
+
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceKey", resource.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
+		return count.intValue() > 0;
+	}
+	
+	public boolean isIdentityInParticipantSecurityGroup(Identity identity, OLATResource resource) {
+		StringBuilder sb = new StringBuilder(400);
+		sb.append("select count(v) from ").append(RepositoryEntry.class.getName()).append(" v ")
+			.append(" inner join v.participantGroup as participantGroup")
+			.append(" where v.olatResource.key=:resourceKey")
+			.append(" and participantGroup in (select sgmsi.securityGroup from ").append(SecurityGroupMembershipImpl.class.getName()).append(" sgmsi where sgmsi.identity.key=:identityKey)");
+
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceKey", resource.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getSingleResult();
+		return count.intValue() > 0;
 	}
 }

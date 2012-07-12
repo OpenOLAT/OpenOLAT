@@ -25,13 +25,16 @@
 
 package org.olat.course.condition.interpreter;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
+import java.util.Collection;
 
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.score.GetPassedFunction;
@@ -262,6 +265,9 @@ public class ConditionInterpreter {
 	 * @return True if evaluation successfull.
 	 */
 	public boolean evaluateCondition(Condition c) {
+		if(c.isExpertMode() && StringHelper.containsNonWhitespace(c.getConditionUpgraded())) {
+			return evaluateCondition(c.getConditionUpgraded());
+		}
 		return evaluateCondition(c.getConditionExpression());
 	}
 
@@ -315,6 +321,19 @@ public class ConditionInterpreter {
 			throw new ParseException("Parse exception for calculation: " + calculation + ". " + xe.getMessage(), xe.getPosition());
 		}
 	}
+	
+	public Collection<Object> getParsedTokens(String condition) 
+	throws Exception {
+		Expression exp = new Expression(condition, env);
+		exp.evaluate();
+		
+		Field tokenListField = Expression.class.getDeclaredField("oTokenList");
+		tokenListField.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		Collection<Object> tokenList = (Collection<Object>)tokenListField.get(exp);
+		System.out.println("Tokens: " + tokenList);
+		return tokenList;
+	}
 
 	/**
 	 * Evaluate a condition using the jmep expression parser
@@ -335,126 +354,4 @@ public class ConditionInterpreter {
 			throw new ParseException("Parse exception for condition: " + condition + ". " + xe.getMessage(), xe.getPosition());
 		}
 	}
-
-	private boolean evaluateCondition(Expression exp) throws ParseException {
-		try {
-			Object result = exp.evaluate();
-			if (result instanceof Double) {
-				return (((Double) result).doubleValue() == 1.0) ? true : false;
-			} else if (result instanceof Integer) {
-				return (((Integer) result).intValue() == 1) ? true : false;
-			} else return false;
-		} catch (XExpression xe) {
-			throw new ParseException("Parse exception" + xe.getMessage(), xe.getPosition());
-		}
-	}
-
-	/**
-	 * Test method for condition interpreter using the dummy lu callback
-	 *
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		/*
-		 * --- this method is not working, but left for the docu ---
-		 */
-
-		// CourseEnvironment ce = new CourseEnvironmentImpl(null);
-		ConditionInterpreter interpreter = null; //new ConditionInterpreter(new TestUserCourseEnvironmentImpl());// ce);
-
-		long start = System.currentTimeMillis();
-		try {
-			Expression exp = new Expression("(inGroup(\"blue\")|!inGroup(\"red\")) & now > date(\"09.03.2004 15:00\")", interpreter.env);
-			Expression exp2 = new Expression("(9.99999 < 10) & (1000/2 > 200)", interpreter.env);
-
-			for (int i = 0; i < 1000; i++) {
-				exp = new Expression("(inGroup(\"blue\")|!inGroup(\"red\")) & now > date(\"09.03.2004 15:00\")", interpreter.env);
-				interpreter.evaluateCondition(exp);
-				exp2 = new Expression("(9.99999 < 10) & (1000/2 > 200)", interpreter.env);
-				interpreter.evaluateCondition(exp2);
-			}
-
-		} catch (Exception e) {
-			// just a timing test
-		}
-		long stop = System.currentTimeMillis();
-		System.out.println("time:" + ((stop - start)));
-
-		// TODO refine tests with new interpreter
-
-		// number tests
-		/*
-		 * interpreter.printTestCase("is in group red", "inGroup(\"red\")");
-		 * interpreter.printTestCase("is not in group red", "!inGroup(\"red\")");
-		 * interpreter.printTestCase("is in group blue", "inGroup(\"blue\")");
-		 * interpreter.printTestCase("is in group blue or red", "(inGroup(\"blue\")) |
-		 * (inGroup(\"red\"))"); interpreter.printTestCase("is in group red or blue
-		 * (no cond eval)", "(inGroup(\"red\")) | (inGroup(\"blue\"))");
-		 * interpreter.printTestCase("is in group red and blue", "(inGroup(\"red\")) &
-		 * (inGroup(\"blue\"))"); interpreter.printTestCase("is not in group blue
-		 * and in group red", "(inGroup(\"blue\")) & (inGroup(\"red\"))");
-		 */
-		interpreter.printTestCase("(inGroup(\"blue\")|inGroup(\"red\")) & now > date(\"09.03.2004 15:00\")");
-
-		interpreter.printTestCase("1 < 10");
-		interpreter.printTestCase("(9.99999 < 10) & (1000/2 > 200)");
-		interpreter.printTestCase("(90.99999 < 10) | (1000/2 > 200)");
-		// interpreter.printTestCase("100/0");
-		// interpreter.printTestCase("100/0 < 2"); // hm, interresting
-		// interpreter.printTestCase("100/0 > 2");
-
-		// property tests using exposed java object as property callback
-		// PropertyManager pm = new PropertyManager();
-		// pm.setCourseProperty(new IntProperty("integer-prop", 5));
-		/*
-		 * interpreter.printTestCase("courseProperty(\"integer-prop\") > 4");
-		 * interpreter.printTestCase("courseProperty(\"integer-prop\") < 4");
-		 * interpreter.printTestCase("courseProperty(\"integer-prop\") = 5"); //
-		 * might be confusing to beginners that = must be written as == (will throw
-		 * exception otherwhise) // property tests with non existing properties
-		 * interpreter.printTestCase("courseProperty(\"gibts-nöd\") < 4"); // hm...
-		 * user must understand that a property exists by default and has a default
-		 * value interpreter.printTestCase("courseProperty(\"gibts-nöd\") > 4");
-		 * interpreter.printTestCase("courseProperty(\"gibts-nöd\") = 4");
-		 */
-		// Property tests with date properties
-		/*
-		 * pm.setUserProperty(new DateProperty("date-prop", new Date())); // set
-		 * property to a tesing value
-		 * interpreter.printTestCase("userProperty(\"date-prop\") < now");
-		 * interpreter.printTestCase("userProperty(\"date-prop\") = now");
-		 * interpreter.printTestCase("userProperty(\"date-prop\") > now");
-		 */
-		// Now a test with a fake date (e.g. for runtime simulation-preview-mode)
-		interpreter.printTestCase("date(\"01.01.2004 12:00\") < now");
-
-		interpreter.printTestCase("date(\"01.01.2004 12:00\") > now");
-		interpreter.printTestCase("date(\"01.01.2004 12:00\") + 3m > now");
-		interpreter.printTestCase("now > date(\"09.03.2004 15:00\")");
-		interpreter.printTestCase("1 & 1 & 0 | 1");
-		//
-		// System.out.println("testsyntax ok:" +
-		// interpreter.syntaxTestExpression("now > date(\"28.02.2004 15:00\")"));
-		// System.out.println("testsyntax nok:" +
-		// interpreter.syntaxTestExpression("now > date(\"31.02.2004 15:00\")"));
-
-	}
-
-	/**
-	 * helper for main method
-	 *
-	 * @param testCondition
-	 */
-	private void printTestCase(String testCondition) {
-		try {
-			System.out.println(testCondition + ":  " + doEvaluateCondition(testCondition) + "\n-----\n");
-		} catch (ParseException e) {
-			System.out.println(e.toString());
-		}
-	}
-	
-	private UserCourseEnvironment getUserCourseEnvironment() {
-		return uce;
-	}
-
 }

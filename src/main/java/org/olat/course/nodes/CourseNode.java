@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.StatusDescription;
@@ -351,7 +352,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @return empty list, or list with active condition expressions of the course
 	 *         node
 	 */
-	public abstract List getConditionExpressions();
+	public List<ConditionExpression> getConditionExpressions();
 
 	/**
 	 * explain what the given status description means in the publish environment

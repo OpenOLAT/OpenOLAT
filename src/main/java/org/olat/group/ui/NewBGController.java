@@ -38,7 +38,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupManagerImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.resource.OLATResource;
@@ -84,22 +83,22 @@ public class NewBGController extends BasicController {
 	 * @param bulkMode
 	 * @param csvGroupNames
 	 */
-	NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource, boolean bulkMode, String csvGroupNames) {
+	public NewBGController(UserRequest ureq, WindowControl wControl, boolean minMaxEnabled, OLATResource resource, boolean bulkMode, String csvGroupNames) {
 		super(ureq, wControl);
 		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		this.contentVC = this.createVelocityContainer("bgform");
-		this.contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
+		contentVC = createVelocityContainer("bgform");
+		contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		
-		this.groupCreateController = new BusinessGroupFormController(ureq, wControl, null, minMaxEnabled, bulkMode);
-		listenTo(this.groupCreateController);
-		this.contentVC.put("groupForm", this.groupCreateController.getInitialComponent());
+		groupCreateController = new BusinessGroupFormController(ureq, wControl, null, minMaxEnabled, bulkMode);
+		listenTo(groupCreateController);
+		contentVC.put("groupForm", groupCreateController.getInitialComponent());
 		if (csvGroupNames != null) {
-			this.groupCreateController.setGroupName(csvGroupNames);
+			groupCreateController.setGroupName(csvGroupNames);
 		}
-		this.putInitialPanel(contentVC);
+		putInitialPanel(contentVC);
 	}
 
 	/**
@@ -117,23 +116,22 @@ public class NewBGController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == this.groupCreateController) {
 			if (event == Event.DONE_EVENT) {
-				String bgDesc = this.groupCreateController.getGroupDescription();
-				Integer bgMax = this.groupCreateController.getGroupMax();
-				Integer bgMin = this.groupCreateController.getGroupMin();
-				Boolean enableWaitingList = this.groupCreateController.isWaitingListEnabled();
-				Boolean enableAutoCloseRanks = this.groupCreateController.isAutoCloseRanksEnabled();
+				String bgDesc = groupCreateController.getGroupDescription();
+				Integer bgMax = groupCreateController.getGroupMax();
+				Integer bgMin = groupCreateController.getGroupMin();
+				Boolean enableWaitingList = groupCreateController.isWaitingListEnabled();
+				Boolean enableAutoCloseRanks = groupCreateController.isAutoCloseRanksEnabled();
 				
 				Set<String> allNames = new HashSet<String>();
-				if (this.bulkMode) {
-					allNames = this.groupCreateController.getGroupNames();
+				if (bulkMode) {
+					allNames = groupCreateController.getGroupNames();
 				} else {
-					allNames.add(this.groupCreateController.getGroupName());
+					allNames.add(groupCreateController.getGroupName());
 				}
 
-				this.newGroups = businessGroupService.createUniqueBusinessGroupsFor(allNames, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
-				if(this.newGroups != null){
-						for (Iterator<BusinessGroup> iter = this.newGroups.iterator(); iter.hasNext();) {
-							BusinessGroup bg = iter.next();
+				newGroups = businessGroupService.createUniqueBusinessGroupsFor(allNames, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, resource);
+				if(newGroups != null){
+						for (BusinessGroup bg: newGroups) {
 							LoggingResourceable resourceInfo = LoggingResourceable.wrap(bg);
 							ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CREATED, getClass(), resourceInfo);	
 						}						
@@ -191,6 +189,14 @@ public class NewBGController extends BasicController {
 			 groupNames.add( iterator.next().getName());
 		}
 		return groupNames;
+	}
+	
+	public Set<Long> getCreatedGroupKeys(){
+		Set<Long> groupKeys = new HashSet<Long>();
+		for (BusinessGroup group:newGroups) {
+			 groupKeys.add(group.getKey());
+		}
+		return groupKeys;
 	}
 	
 	/**

@@ -87,6 +87,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.delete.TabbedPaneController;
 import org.olat.group.model.SearchBusinessGroupParams;

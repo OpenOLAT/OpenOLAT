@@ -26,12 +26,14 @@ package org.olat.course.condition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.DependencyRuleApplayable;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -41,7 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -65,7 +67,10 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.CourseNode;
-import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.NewBGController;
@@ -85,7 +90,7 @@ import org.olat.shibboleth.ShibbolethModule;
 public class ConditionConfigEasyController extends FormBasicController implements GenericEventListener {
 	private Condition validatedCondition;
 	private CourseEditorEnv courseEditorEnv;
-	private List nodeIdentList;
+	private List<CourseNode> nodeIdentList;
 	private FormSubmit subm;
 	//private FormReset reset;
 	private MultipleSelectionElement coachExclusive;
@@ -95,9 +100,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private FormLayoutContainer areaChooseSubContainer,  groupChooseSubContainer;
 	private FormLayoutContainer assessNodesListContainer;
 	private MultipleSelectionElement dateSwitch;
-	private TextElement easyGroupTE;
+	private StaticTextElement easyGroupList;
 	private FormLink chooseGroupsLink;
-	private TextElement easyAreaTE;
+	private StaticTextElement easyAreaList;
 	private FormLink chooseAreasLink;
 	private MultipleSelectionElement groupSwitch;
 	private GroupSelectionController groupChooseC;
@@ -115,9 +120,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private IntegerElement cutValue;
 	private MultipleSelectionElement applyRulesForCoach;
 	
-	private NewBGController groupCreateCntrllr;
+	private NewBGController groupCreateCtlr;
 	private CloseableModalController cmc;
-	private NewAreaController areaCreateCntrllr;
+	private NewAreaController areaCreateCtlr;
 	private FormLink createGroupsLink;
 	private FormLink createAreasLink;
 
@@ -133,6 +138,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private EventBus singleUserEventCenter;
 	private OLATResourceable groupConfigChangeEventOres;
 	
+	private final BGAreaManager areaManager;
+	private final BusinessGroupService businessGroupService;
+	
 	/**
 	 * with default layout <tt>_content/easycondedit.html</tt>
 	 * 
@@ -146,10 +154,12 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param nodeIdentList
 	 * @param euce
 	 */
-	@SuppressWarnings("unused")
 	public ConditionConfigEasyController(UserRequest ureq, WindowControl wControl, Condition cond, String title,  String formName,
-			List nodeIdentList, CourseEditorEnv env) {
+			List<CourseNode> nodeIdentList, CourseEditorEnv env) {
 		super(ureq, wControl, "easycondedit");
+		
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		groupConfigChangeEventOres = OresHelper.createOLATResourceableType(MultiUserEvent.class);
@@ -165,11 +175,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		);
 		this.courseEditorEnv = env;	
 		this.nodeIdentList = nodeIdentList;
-		
 
-		/*
-		 * init all elements the last thing to do
-		 */
 		initForm(ureq);
 	}
 
@@ -185,25 +191,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void formOK(UserRequest ureq) {
-		
-		easyGroupTE.setValue(
-				StringHelper.formatAsSortUniqCSVString(
-					Arrays.asList(easyGroupTE.getValue().split(","))
-				)
-		);
-			
-		easyAreaTE.setValue(
-				StringHelper.formatAsSortUniqCSVString(
-					Arrays.asList(easyAreaTE.getValue().split(","))
-				)
-		);
-		
-		
-		/*
-		 * 
-		 */
+
 		// 1) rule applies also for coach switch - one checkbox
 		// has opposite meaning -> selected is saved as false, and vice versa
 		if (applyRulesForCoach.getSelectedKeys().size() == 0) {
@@ -240,10 +229,14 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			// 4) group switch
 			if (groupSwitch.getSelectedKeys().size() == 1) {
 				// groups
-				if (StringHelper.containsNonWhitespace(easyGroupTE.getValue())) validatedCondition.setEasyModeGroupAccess(easyGroupTE.getValue());
+				if (!isEmpty(easyGroupList)) {
+					validatedCondition.setEasyModeGroupAccessIdList(getKeys(easyGroupList));
+				}
 				else validatedCondition.setEasyModeGroupAccess(null);
 				// areas
-				if (StringHelper.containsNonWhitespace(easyAreaTE.getValue())) validatedCondition.setEasyModeGroupAreaAccess(easyAreaTE.getValue());
+				if (!isEmpty(easyAreaList)) {
+					validatedCondition.setEasyModeGroupAreaAccessIdList(getKeys(easyAreaList));
+				}
 				else validatedCondition.setEasyModeGroupAreaAccess(null);
 			} else {
 				validatedCondition.setEasyModeGroupAccess(null);
@@ -316,7 +309,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		
 		if (source == coachExclusive) {
@@ -327,104 +319,69 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				subm.setVisible(true);		
 			}
 			return;
-		}
-		
-		if (source == chooseGroupsLink) {
-			
+		} else if (source == chooseGroupsLink) {
+			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(groupChooseC);
+			
+			List<Long> groupKeys = getKeys(easyGroupList);
 			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
-					courseEditorEnv.getCourseGroupManager(), easyGroupTE.getValue());
+					courseEditorEnv.getCourseGroupManager(), groupKeys);
 			listenTo(groupChooseC);
 
-			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(
 					getWindowControl(), "close", groupChooseC.getInitialComponent(),
-					true, getTranslator().translate("popupchoosegroups")
-			);
+					true, getTranslator().translate("popupchoosegroups"));
 			listenTo(cmc);
-			
 			cmc.activate();
-
 		} else if (source == createGroupsLink) {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(groupCreateCtlr);
 			
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			String[] csvGroupName = easyGroupTE.isEmpty() ? new String[0] : easyGroupTE.getValue().split(",");
-			// determine if bulkmode or not
-			removeAsListenerAndDispose(groupCreateCntrllr);
-			
-			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-					ureq, getWindowControl(),  true,
-					courseResource, true, easyGroupTE.getValue()
-			);
-			listenTo(groupCreateCntrllr);
-
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close", groupCreateCntrllr.getInitialComponent()
-			);
+			String csvGroupName = isEmpty(easyGroupList) ? null : getGroupNames(getKeys(easyGroupList));
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(),  true, courseResource, true, csvGroupName);
+			listenTo(groupCreateCtlr);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
 			listenTo(cmc);
-			
 			cmc.activate();
-
 		} else if (source == chooseAreasLink) {
-			
+			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaChooseC);
+			
 			areaChooseC = new AreaSelectionController(ureq, getWindowControl(), "area",
-					courseEditorEnv.getCourseGroupManager(), easyAreaTE.getValue());
+					courseEditorEnv.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 			
-			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(
 					getWindowControl(), "close", areaChooseC.getInitialComponent(),
-					true, getTranslator().translate("popupchooseareas")
-			);
+					true, getTranslator().translate("popupchooseareas"));
 			listenTo(cmc);
-			
 			cmc.activate();
-
 		} else if (source == createAreasLink) {
-			
-			String[] csvAreaName = easyAreaTE.isEmpty() ? new String[0] : easyAreaTE.getValue().split(",");
-			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			removeAsListenerAndDispose(areaCreateCntrllr);
-			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), 
-					courseResource, true, easyAreaTE.getValue()
-			);
-			listenTo(areaCreateCntrllr);
-
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					areaCreateCntrllr.getInitialComponent()
-			);
-			listenTo(cmc);
-			
-			cmc.activate();
+			removeAsListenerAndDispose(areaCreateCtlr);
 
+			String csvAreaName = isEmpty(easyAreaList) ? null : getAreaNames(getKeys(easyAreaList));
+			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
+			areaCreateCtlr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName);
+			listenTo(areaCreateCtlr);
+
+			cmc = new CloseableModalController(getWindowControl(), "close",areaCreateCtlr.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
 		} else if (source == fixGroupError) {
-			/*
-			 * user wants to fix problem with fixing group error link e.g. create one
-			 * or more group at once.
-			 */
-			
+			// user wants to fix problem with fixing group error link e.g. create one
+			// or more group at once.
 			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			removeAsListenerAndDispose(groupCreateCntrllr);
-			groupCreateCntrllr = BGControllerFactory.getInstance().createNewBGController(
-					ureq, getWindowControl(), true,
-					courseResource, true, csvGroupName[0]
-			);
-			listenTo(groupCreateCntrllr);
+			removeAsListenerAndDispose(groupCreateCtlr);
+			groupCreateCtlr = new NewBGController(ureq, getWindowControl(), true, courseResource, true, csvGroupName[0]);
+			listenTo(groupCreateCtlr);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close", groupCreateCntrllr.getInitialComponent()
-			);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
 			listenTo(cmc);
-			
-			cmc.activate();
-			
+			cmc.activate();	
 		} else if (source == fixAreaError) {
 			/*
 			 * user wants to fix problem with fixing area error link e.g. create one
@@ -432,39 +389,33 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			 */
 			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
 			OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-			removeAsListenerAndDispose(areaCreateCntrllr);
-			areaCreateCntrllr = BGControllerFactory.getInstance().createNewAreaController(
-					ureq, getWindowControl(), 
-					courseResource, true, csvAreaName[0]
-			);
-			listenTo(areaCreateCntrllr);
+			removeAsListenerAndDispose(areaCreateCtlr);
+			areaCreateCtlr = BGControllerFactory.getInstance().createNewAreaController(
+					ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
+			listenTo(areaCreateCtlr);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close", areaCreateCntrllr.getInitialComponent()
-			);
+			cmc = new CloseableModalController(getWindowControl(), "close", areaCreateCtlr.getInitialComponent());
 			listenTo(cmc);
-			
 			cmc.activate();
-			
 		}
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected void event(UserRequest ureq, Controller source, org.olat.core.gui.control.Event event) {
 		
 		if (source == groupChooseC) {
 			
 			if (Event.DONE_EVENT == event) {
 				cmc.deactivate();
-				easyGroupTE.setValue(StringHelper.formatAsSortUniqCSVString(groupChooseC.getSelectedEntries()));
+				List<Long> groupKeys = groupChooseC.getSelectedKeys();
+				easyGroupList.setUserObject(groupKeys);
+				easyGroupList.setValue(getGroupNames(groupKeys));
 				validateGroupFields();
-				easyGroupTE.getRootForm().submit(ureq);
-				
-			} else if (event == event.CANCELLED_EVENT) {
+				easyGroupList.getRootForm().submit(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
-			} else if (event == event.CHANGED_EVENT) {
+			} else if (event == Event.CHANGED_EVENT) {
 				//a group was created within from within the chooser
 			}
 			
@@ -473,67 +424,59 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			if (event == Event.DONE_EVENT) {
 		
 				cmc.deactivate();
-				easyAreaTE.setValue(StringHelper.formatAsSortUniqCSVString(areaChooseC.getSelectedEntries()));
+				List<Long> areaKeys = areaChooseC.getSelectedKeys();
+				easyAreaList.setUserObject(areaKeys);
+				easyAreaList.setValue(this.getAreaNames(areaKeys));
 				validateGroupFields();
-				easyAreaTE.getRootForm().submit(ureq);
+				easyAreaList.getRootForm().submit(ureq);
 				
-			} else if (event == event.CANCELLED_EVENT) {
+			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
-			} else if (event == event.CHANGED_EVENT) {
+			} else if (event == Event.CHANGED_EVENT) {
 				//an area was created within from within the chooser
 			}
 			
-		} else if (source == groupCreateCntrllr) {
-			
+		} else if (source == groupCreateCtlr) {
 			cmc.deactivate();
-			
 			if (event == Event.DONE_EVENT) {
-				
-				List <String>c = new ArrayList<String>();
-				c.addAll(Arrays.asList(easyGroupTE.getValue().split(",")));
+				List<Long> c = new ArrayList<Long>();
+				c.addAll(getKeys(easyGroupList));
 				if (fixGroupError != null && fixGroupError.getUserObject() != null) {
 					c.removeAll(Arrays.asList((String[])fixGroupError.getUserObject()));
 				}
-				c.addAll (groupCreateCntrllr.getCreatedGroupNames());
-				
-				easyGroupTE.setValue(StringHelper.formatAsSortUniqCSVString(c));
-				
-				easyGroupTE.getRootForm().submit(ureq);
+				c.addAll(groupCreateCtlr.getCreatedGroupKeys());
+				easyGroupList.setValue(getGroupNames(c));
+				easyGroupList.setUserObject(c);
+				easyGroupList.getRootForm().submit(ureq);
 				validateGroupFields();
 	
-				if (groupCreateCntrllr.getCreatedGroupNames().size() > 0) {
+				if (!groupCreateCtlr.getCreatedGroupKeys().isEmpty()) {
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
-				
 			} 
-			
-		} else if (source == areaCreateCntrllr) {
-			
+		} else if (source == areaCreateCtlr) {
 			cmc.deactivate();
-			
 			if (event == Event.DONE_EVENT) {
-				
-				List <String>c = new ArrayList<String>();
-				c.addAll(Arrays.asList(easyAreaTE.getValue().split(",")));
+				List<Long> c = new ArrayList<Long>();
+				c.addAll(getKeys(easyAreaList));
 				if (fixAreaError!= null && fixAreaError.getUserObject() != null) {
 					c.removeAll(Arrays.asList((String[])fixAreaError.getUserObject()));
 				}
-				c.addAll (areaCreateCntrllr.getCreatedAreaNames());
+				c.addAll(areaCreateCtlr.getCreatedAreaKeys());
 				
-				easyAreaTE.setValue(StringHelper.formatAsSortUniqCSVString(c));
-				
-				easyAreaTE.getRootForm().submit(ureq);
+				easyAreaList.setValue(getAreaNames(c));
+				easyAreaList.setUserObject(c);
+				easyAreaList.getRootForm().submit(ureq);
 				validateGroupFields();
 				
-				if (areaCreateCntrllr.getCreatedAreaNames().size() > 0)  {
-					this.singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
+				if (!areaCreateCtlr.getCreatedAreaKeys().isEmpty())  {
+					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
 			}
 		}
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean retVal = true;
 		// (1)
@@ -618,60 +561,55 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		boolean retVal = true;
 		if (groupSwitch.getSelectedKeys().size() == 1) {
 			
-			String[] activeGroupSelection = new String[0];
-			String[] activeAreaSelection = new String[0];
+			List<Long> activeGroupSelection = null;
+			List<Long> activeAreaSelection = null;
 			groupChooseSubContainer.clearError();
-			if (!easyGroupTE.isEmpty()) {
+			if (!isEmpty(easyGroupList)) {
 				// check whether groups exist
-				activeGroupSelection = easyGroupTE.getValue().split(",");
-				boolean exists = false;
-				Set<String> missingGroups = new HashSet<String>();
-				for (int i = 0; i < activeGroupSelection.length; i++) {
-					String trimmed = activeGroupSelection[i].trim();
-					if(trimmed.length()>BusinessGroup.MAX_GROUP_NAME_LENGTH) {
-						easyGroupTE.setErrorKey( "error.nameTooLong", new String[0]);
-						return false;
+				activeGroupSelection = getKeys(easyGroupList);
+
+				Set<Long> missingGroups = new HashSet<Long>();
+				List<BusinessGroupShort> existingGroups =  businessGroupService.loadShortBusinessGroups(activeGroupSelection);
+				a_a:
+				for(Long activeGroupKey:activeGroupSelection) {
+					for(BusinessGroupShort group:existingGroups) {
+						if(group.getKey().equals(activeGroupKey)) {
+							continue a_a;
+						}
 					}
-					exists = courseEditorEnv.existsGroup(trimmed);
-					if (!exists) {
-						missingGroups.add(trimmed);
-					}
+					missingGroups.add(activeGroupKey);
 				}
+
 				if (missingGroups.size() > 0) {
 					retVal = false;
 					String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
-					String csvMissGrps = StringHelper.formatAsCSVString(missingGroups);
+					String csvMissGrps = toString(missingGroups);
 					String[] params = new String[] { "-", csvMissGrps };
-
-					/*
-					 * create error with link to fix it
-					 */
+					// create error with link to fix it
 					String vc_errorPage = velocity_root + "/erroritem.html";
 					FormLayoutContainer errorGroupItemLayout = FormLayoutContainer.createCustomFormLayout(
-							"errorgroupitem", getTranslator(), vc_errorPage
-					);
+							"errorgroupitem", getTranslator(), vc_errorPage);
 
+					groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
+					// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
+					fixGroupError = new FormLinkImpl("error.fix", "create");
+					// link
+					fixGroupError.setCustomEnabledLinkCSS("b_button");
+					errorGroupItemLayout.add(fixGroupError);
 
-						groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
-						// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
-						fixGroupError = new FormLinkImpl("error.fix", "create");
-						// link
-						fixGroupError.setCustomEnabledLinkCSS("b_button");
-						errorGroupItemLayout.add(fixGroupError);
-
-						fixGroupError.setErrorKey(labelKey, params);
-						fixGroupError.showError(true);
-						fixGroupError.showLabel(false);
-						// hinty to pass the information if one group is
-						// missing or if 2 or more groups are missing
-						// (see fixGroupErrer.getUserObject to understand)
-						// e.g. if userobject String[].lenght == 1 -> one group only
-						// String[].lenght > 1 -> show bulkmode creation group
-						if (missingGroups.size() > 1) {
-							fixGroupError.setUserObject(new String[] { csvMissGrps, "dummy" });
-						} else {
-							fixGroupError.setUserObject(new String[] { csvMissGrps });
-						}
+					fixGroupError.setErrorKey(labelKey, params);
+					fixGroupError.showError(true);
+					fixGroupError.showLabel(false);
+					// hinty to pass the information if one group is
+					// missing or if 2 or more groups are missing
+					// (see fixGroupErrer.getUserObject to understand)
+					// e.g. if userobject String[].lenght == 1 -> one group only
+					// String[].lenght > 1 -> show bulkmode creation group
+					if (missingGroups.size() > 1) {
+						fixGroupError.setUserObject(new String[] { csvMissGrps, "dummy" });
+					} else {
+						fixGroupError.setUserObject(new String[] { csvMissGrps });
+					}
 
 					groupChooseSubContainer.showError(true);
 				} else {
@@ -680,20 +618,26 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				}
 			}
 			areaChooseSubContainer.clearError();
-			if (!easyAreaTE.isEmpty()) {
+			if (!isEmpty(easyAreaList)) {
 				// check whether areas exist
-				activeAreaSelection = easyAreaTE.getValue().split(",");
+				activeAreaSelection = getKeys(easyAreaList);
 				
-				List<String> activeAreaList = new ArrayList<String>();
-				for (int i=activeAreaSelection.length; i-->0; ) {
-					activeAreaList.add(activeAreaSelection[i].trim());
+				List<Long> missingAreas = new ArrayList<Long>();
+				List<BGArea> cnt = areaManager.loadAreas(activeAreaSelection);
+				a_a:
+				for(Long activeAreaKey:activeAreaSelection) {
+					for (BGArea element : cnt) {
+						if (element.getKey().equals(activeAreaKey)) { 
+							continue a_a;
+						}
+					}
+					missingAreas.add(activeAreaKey);
 				}
-				List<String> missingAreas = courseEditorEnv.validateAreas(activeAreaList);
-
+				
 				if (missingAreas.size() > 0) {
 					retVal = false;
 					String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
-					String csvMissAreas = StringHelper.formatAsCSVString(missingAreas);
+					String csvMissAreas = toString(missingAreas);
 					String[] params = new String[] { "-", csvMissAreas };
 
 					/*
@@ -705,40 +649,35 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					);
 					
 
-						areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
-						// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
-						fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
-						// link
-						fixAreaError.setCustomEnabledLinkCSS("b_button");
-						errorAreaItemLayout.add(fixAreaError);
+					areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
+					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
+					fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
+					// link
+					fixAreaError.setCustomEnabledLinkCSS("b_button");
+					errorAreaItemLayout.add(fixAreaError);
 
-						fixAreaError.setErrorKey(labelKey, params);
-						fixAreaError.showError(true);
-						fixAreaError.showLabel(false);
-						// hint to pass the information if one area is
-						// missing or if 2 or more areas are missing
-						// (see fixGroupErrer.getUserObject to understand)
-						// e.g. if userobject String[].lenght == 1 -> one group only
-						// String[].lenght > 1 -> show bulkmode creation group
-						if (missingAreas.size() > 1) {
-							fixAreaError.setUserObject(new String[] { csvMissAreas, "dummy" });
-						} else {
-							fixAreaError.setUserObject(new String[] { csvMissAreas });
-						}
+					fixAreaError.setErrorKey(labelKey, params);
+					fixAreaError.showError(true);
+					fixAreaError.showLabel(false);
+					// hint to pass the information if one area is
+					// missing or if 2 or more areas are missing
+					// (see fixGroupErrer.getUserObject to understand)
+					// e.g. if userobject String[].lenght == 1 -> one group only
+					// String[].lenght > 1 -> show bulkmode creation group
+					if (missingAreas.size() > 1) {
+						fixAreaError.setUserObject(new String[] { csvMissAreas, "dummy" });
+					} else {
+						fixAreaError.setUserObject(new String[] { csvMissAreas });
+					}
 
-					/*
-					 * 
-					 */
 					areaChooseSubContainer.showError(true);
 				} else {
-					// TODO:pb:introduce clear error instead hiding error!
 					areaChooseSubContainer.clearError();
 				}
-
 			}
 
-			boolean easyGroupOK = (!easyGroupTE.isEmpty() && activeGroupSelection.length != 0);
-			boolean easyAreaOK = (!easyAreaTE.isEmpty() && activeAreaSelection.length != 0);
+			boolean easyGroupOK = (!isEmpty(easyGroupList) && !activeGroupSelection.isEmpty());
+			boolean easyAreaOK = (!isEmpty(easyAreaList) && !activeAreaSelection.isEmpty());
 			if (easyGroupOK || easyAreaOK) {
 				// clear general error
 				groupSubContainer.clearError();
@@ -771,7 +710,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
-	@SuppressWarnings("unused")
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 	
 		addCoachExclusive(formLayout, listener);
@@ -884,27 +822,20 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		
 		// disable date choosers if date switch is set to no
 		// enable it otherwise.
-		final Set<FormItem> dependenciesDateSwitch = new HashSet<FormItem>() {
-			{
-				add(toDate);
-				add(fromDate);
-				add(dateSubContainer);
-			}
-		};
+		final Set<FormItem> dependenciesDateSwitch = new HashSet<FormItem>();
+		dependenciesDateSwitch.add(toDate);
+		dependenciesDateSwitch.add(fromDate);
+		dependenciesDateSwitch.add(dateSubContainer);
 		
-		final Set<FormItem> dependenciesAttributeSwitch = new HashSet<FormItem>() {
-			{
-				// only add when initialized. is null when shibboleth module is not enabled
-				if (ShibbolethModule.isEnableShibbolethLogins()) {
-					add(attributeBconnector);
-				}
-			}
-		};
+		final Set<FormItem> dependenciesAttributeSwitch = new HashSet<FormItem>();
+		// only add when initialized. is null when shibboleth module is not enabled
+		if (ShibbolethModule.isEnableShibbolethLogins()) {
+			dependenciesAttributeSwitch.add(attributeBconnector);
+		}
 		
 		// show elements dependent on other values set.
 		FormItemDependencyRule hideClearDateSwitchDeps = RulesFactory.createCustomRule(dateSwitch, null, dependenciesDateSwitch, formLayout);
 		hideClearDateSwitchDeps.setDependencyRuleApplayable(new DependencyRuleApplayable() {
-			@SuppressWarnings("unused")
 			public void apply(FormItem triggerElement, Object triggerVal, Set<FormItem> targets) {
 				toDate.setDate(null);
 				toDate.setVisible(false);
@@ -944,7 +875,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			FormItemDependencyRule hideClearAttibuteSwitchDeps = RulesFactory.createCustomRule(attributeSwitch, null, dependenciesAttributeSwitch, formLayout);
 			
 			hideClearAttibuteSwitchDeps.setDependencyRuleApplayable(new DependencyRuleApplayable() {
-				@SuppressWarnings("unused")
 				public void apply(FormItem triggerElement, Object triggerVal, Set<FormItem> targets) {
 					attributeSwitch.clearError();
 					attributeBconnector.select(BCON_VAL_AND, true);
@@ -973,25 +903,21 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		//
 		// enable textfields and subworkflow-start-links if groups is yes
 		// disable it otherwise
-		final Set<FormItem> dependenciesGroupSwitch = new HashSet<FormItem>() {
-			{
-				add(groupSubContainer);
-			}
-		};
+		final Set<FormItem> dependenciesGroupSwitch = new HashSet<FormItem>();
+		dependenciesGroupSwitch.add(groupSubContainer);
 		FormItemDependencyRule hideClearGroupSwitchDeps = RulesFactory.createCustomRule(groupSwitch, null, dependenciesGroupSwitch, formLayout);
 		hideClearGroupSwitchDeps.setDependencyRuleApplayable(new DependencyRuleApplayable() {
-			@SuppressWarnings("unused")
 			public void apply(FormItem triggerElement, Object triggerVal, Set<FormItem> targets) {
 				
-				easyAreaTE.clearError();
-				easyGroupTE.clearError();
+				easyAreaList.clearError();
+				easyGroupList.clearError();
 				groupSwitch.clearError();
 				groupSubContainer.setVisible(false);			
 				
 				if (ShibbolethModule.isEnableShibbolethLogins()) {
 					attributeSwitch.clearError();
 				}
-				easyGroupTE.setFocus(false);
+				easyGroupList.setFocus(false);
 				
 				//assessment switch only enabled if nodes to be selected
 				boolean coachExclIsOn = coachExclusive.getSelectedKeys().size() == 1;
@@ -1005,7 +931,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		toggleApplyRule.setDependencyRuleApplayable(new DependencyRuleApplayable() {
 			public void apply(FormItem triggerElement, Object triggerVal, Set<FormItem> targets) {
 
-				easyGroupTE.setFocus(true);
+				easyGroupList.setFocus(true);
 				
 				//assessment switch only enabled if nodes to be selected
 				assessmentSwitch.setEnabled((nodeIdentList.size() > 0  || isSelectedNodeDeleted()));
@@ -1016,14 +942,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		
 		//	
 		// dependencies of assessment switch
-		final Set<FormItem> assessDeps = new HashSet<FormItem>() {
-			{
-				add(assessmentTypeSwitch);
-				add(nodePassed);
-				add(cutValue);
-				add(assessSubContainer);
-			}
-		};
+		final Set<FormItem> assessDeps = new HashSet<FormItem>();
+		assessDeps.add(assessmentTypeSwitch);
+		assessDeps.add(nodePassed);
+		assessDeps.add(cutValue);
+		assessDeps.add(assessSubContainer);
 
 		// show elements dependent on other values set.
 		FormItemDependencyRule showAssessmentSwitchDeps = RulesFactory.createCustomRule(assessmentSwitch, "ison", assessDeps, formLayout);
@@ -1058,24 +981,19 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 		});
 
-		final Set<FormItem> assessTypeDeps = new HashSet<FormItem>() {
-			{
-				add(cutValue);
-			}
-		};
+		final Set<FormItem> assessTypeDeps = new HashSet<FormItem>();
+		assessTypeDeps.add(cutValue);
 		RulesFactory.createHideRule(assessmentTypeSwitch, NODEPASSED_VAL_PASSED, assessTypeDeps, assessSubContainer);
 		RulesFactory.createShowRule(assessmentTypeSwitch, NODEPASSED_VAL_SCORE, assessTypeDeps, assessSubContainer);
 
 		// 
 		//
-		final Set<FormItem> dependenciesCoachExclusiveReadonly = new HashSet<FormItem>() {
-			{
-				addAll(dependenciesDateSwitch);
-				addAll(dependenciesGroupSwitch);
-				addAll(assessDeps);
-				addAll(dependenciesAttributeSwitch);
-			}
-		};
+		final Set<FormItem> dependenciesCoachExclusiveReadonly = new HashSet<FormItem>();
+		dependenciesCoachExclusiveReadonly.addAll(dependenciesDateSwitch);
+		dependenciesCoachExclusiveReadonly.addAll(dependenciesGroupSwitch);
+		dependenciesCoachExclusiveReadonly.addAll(assessDeps);
+		dependenciesCoachExclusiveReadonly.addAll(dependenciesAttributeSwitch);
+
 		// coach exclusive switch rules
 		// -> custom rule implementation because it is not a simple hide / show rule
 		// while disabling reset the elements
@@ -1092,8 +1010,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				toDate.setDate(null);
 				fromDate.setDate(null);
 				groupSwitch.setEnabled(false);
-				easyAreaTE.setValue("");
-				easyGroupTE.setValue("");
+				easyAreaList.setValue("");
+				easyAreaList.setUserObject(new ArrayList<Long>());
+				easyGroupList.setValue("");
+				easyGroupList.setUserObject(new ArrayList<Long>());
 				assessmentSwitch.setEnabled(false);
 				// disable the shibboleth attributes switch and reset the row subform
 				if (attributeSwitch != null) {
@@ -1120,17 +1040,15 @@ public class ConditionConfigEasyController extends FormBasicController implement
 
 		// two rules to bring them back visible and also checkable
 		// dependencies of assessment switch
-		final Set<FormItem> switchesOnly = new HashSet<FormItem>() {
-			{
-				add(dateSwitch);
-				add(groupSwitch);
-				add(assessmentSwitch);
-				add(applyRulesForCoach);
-				if (ShibbolethModule.isEnableShibbolethLogins()) {
-					add(attributeSwitch);
-				}
-			}
-		};
+		final Set<FormItem> switchesOnly = new HashSet<FormItem>();
+		switchesOnly.add(dateSwitch);
+		switchesOnly.add(groupSwitch);
+		switchesOnly.add(assessmentSwitch);
+		switchesOnly.add(applyRulesForCoach);
+		if (ShibbolethModule.isEnableShibbolethLogins()) {
+			switchesOnly.add(attributeSwitch);
+		}
+
 		FormItemDependencyRule enableOthers = RulesFactory.createCustomRule(coachExclusive, null, switchesOnly, formLayout);
 		enableOthers.setDependencyRuleApplayable(new DependencyRuleApplayable() {
 			private boolean firedDuringInit = true;
@@ -1150,14 +1068,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				firedDuringInit = false;
 			}
 		});
-		
-
 	}
 
-	/*
-	 * methods to add elements
-	 */
 	/**
+	 * Methods to add elements
 	 * @param formLayout
 	 * @param listener
 	 */
@@ -1178,7 +1092,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * @param formLayout
 	 * @param listener
 	 */
-	@SuppressWarnings("unused")
 	private void addApplyRulesForTutorsToo(FormItemContainer formLayout, Controller listener) {
 		
 		/*
@@ -1257,26 +1170,17 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 */
 	private void addEasyGroupAreaChoosers(FormItemContainer formLayout, Controller listener) {
 
-		groupSubContainer = (FormItemContainer) FormLayoutContainer.createDefaultFormLayout("groupSubContainer", getTranslator());
+		groupSubContainer = FormLayoutContainer.createDefaultFormLayout("groupSubContainer", getTranslator());
 		formLayout.add(groupSubContainer);
 
-		String groupInitVal = validatedCondition.getEasyModeGroupAccess();
-		if (groupInitVal != null) {
-			groupInitVal  = StringHelper.formatAsSortUniqCSVString(
-				Arrays.asList(groupInitVal.split(","))
-			);
-		}
-		
-		String areaInitVal  = validatedCondition.getEasyModeGroupAreaAccess();
-		if (areaInitVal != null) {
-			areaInitVal  = StringHelper.formatAsSortUniqCSVString(
-				Arrays.asList(areaInitVal.split(","))
-			);
-		}
-		
+		List<Long> groupKeyList = validatedCondition.getEasyModeGroupAccessIdList();
+		String groupInitVal = getGroupNames(groupKeyList);
+		List<Long> areaKeyList  = validatedCondition.getEasyModeGroupAreaAccessIdList();
+		String areaInitVal = getAreaNames(areaKeyList);
+
 		groupSwitch = uifactory.addCheckboxesHorizontal("groupSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.groupSwitch") }, null);
 		// initialize selection
-		if (groupInitVal != null || areaInitVal != null) {
+		if (!groupKeyList.isEmpty() || !areaKeyList.isEmpty()) {
 			groupSwitch.select("ison", true);
 		} else {
 			groupSwitch.select("ison", false);
@@ -1284,30 +1188,50 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		groupSwitch.addActionListener(listener, FormEvent.ONCLICK);
 		
 		//groups
-		groupChooseSubContainer = (FormLayoutContainer)FormLayoutContainer.createHorizontalFormLayout("groupChooseSubContainer", getTranslator());
+		groupChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout("groupChooseSubContainer", getTranslator());
 		groupChooseSubContainer.setLabel("form.easy.group", null);
 		groupSubContainer.add(groupChooseSubContainer);		
 
-		easyGroupTE = uifactory.addTextElement("group", null, 1024, groupInitVal, groupChooseSubContainer);
-		easyGroupTE.setDisplaySize(24);
-		easyGroupTE.setExampleKey("form.easy.example.group", null);
-		
+		easyGroupList = uifactory.addStaticTextElement("groupList", null, groupInitVal, groupChooseSubContainer);
+		easyGroupList.setUserObject(groupKeyList);
+
 		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer,"b_form_groupchooser");
 		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer,"b_form_groupchooser");	
 		
 		//areas
-		areaChooseSubContainer = (FormLayoutContainer)FormLayoutContainer.createHorizontalFormLayout("areaChooseSubContainer", getTranslator());
+		areaChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout("areaChooseSubContainer", getTranslator());
 		areaChooseSubContainer.setLabel("form.easy.area", null);
 		groupSubContainer.add(areaChooseSubContainer);		
 
-		easyAreaTE = uifactory.addTextElement("area", null, 1024, areaInitVal, areaChooseSubContainer);
-		easyAreaTE.setDisplaySize(24);
-		easyAreaTE.setExampleKey("form.easy.example.area", null);
+		easyAreaList = uifactory.addStaticTextElement("groupList", null, areaInitVal, areaChooseSubContainer);
+		easyAreaList.setUserObject(areaKeyList);
 		
 		chooseAreasLink = uifactory.addFormLink("choose", areaChooseSubContainer,"b_form_groupchooser");
 		createAreasLink = uifactory.addFormLink("create", areaChooseSubContainer,"b_form_groupchooser");
 		
 		updateGroupsAndAreasCheck();
+	}
+	
+	private String getGroupNames(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
+		for(BusinessGroupShort group:groups) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(group.getName());
+		}
+		return sb.toString();
+	}
+	
+	private String getAreaNames(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		for(Long key:keys) {
+			BGArea area = areaManager.loadArea(key);
+			if(area != null) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(area.getName());
+			}
+		}
+		return sb.toString();
 	}
 
 	private void addAssessmentSwitch(FormItemContainer formLayout, Controller listener) {
@@ -1434,9 +1358,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	 * update for example the "create link" to "choose link
 	 */
 	private void updateGroupsAndAreasCheck() {
-		
-		boolean hasAreas = courseEditorEnv.getCourseGroupManager().getAllAreasFromAllContexts().size() > 0;
-		boolean hasGroups = courseEditorEnv.getCourseGroupManager().getAllLearningGroupsFromAllContexts().size() > 0;
+		OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
+		boolean hasAreas = areaManager.countBGAreasInContext(courseResource) > 0;
+		boolean hasGroups = businessGroupService.countBusinessGroups(null, courseResource) > 0;
 		
 		createGroupsLink.setVisible(!hasGroups);
 		chooseGroupsLink.setVisible(!createGroupsLink.isVisible());
@@ -1460,5 +1384,31 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		}
 		return false;
 	}
-
+	
+	private boolean isEmpty(StaticTextElement element) {
+		List<Long> keys = getKeys(element);
+		if(keys == null || keys.isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+	
+	private List<Long> getKeys(StaticTextElement element) {
+		@SuppressWarnings("unchecked")
+		List<Long> keys = (List<Long>)element.getUserObject();
+		if(keys == null) {
+			keys = new ArrayList<Long>();
+			element.setUserObject(keys);
+		}
+		return keys;
+	}
+	
+	private String toString(Collection<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		for(Long key:keys) {
+			if(sb.length() > 0) sb.append(',');
+			sb.append(key);
+		}
+		return sb.toString();
+	}
 }

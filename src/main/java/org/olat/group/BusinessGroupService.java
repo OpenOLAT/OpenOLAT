@@ -178,6 +178,8 @@ public interface BusinessGroupService {
 	 */
 	public List<BusinessGroup> loadBusinessGroups(Collection<Long> keys);
 	
+	public List<BusinessGroupShort> loadShortBusinessGroups(Collection<Long> keys);
+	
 	/**
 	 * Load all business groups (be cautious, it takes lot of times)
 	 * @return The list of all business groups

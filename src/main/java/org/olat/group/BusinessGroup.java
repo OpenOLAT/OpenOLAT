@@ -41,7 +41,7 @@ import org.olat.resource.OLATResource;
  *         Comment: All OLAT business group implementation share this interface.
  *         Examples are the buddygroups or the learning groups
  */
-public interface BusinessGroup extends Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
+public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
 
 	/** group type: buddygroup * */
 	//public final static String TYPE_BUDDYGROUP = "BuddyGroup";

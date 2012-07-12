@@ -74,7 +74,19 @@ public interface BGAreaManager {
 	 */
 	public abstract BGArea findBGArea(String areaName, OLATResource resource);
 	
+	/**
+	 * Load an area by its primary key
+	 * @param key
+	 * @return
+	 */
 	public BGArea loadArea(Long key);
+	
+	/**
+	 * Load a list of areas
+	 * @param keys
+	 * @return
+	 */
+	public List<BGArea> loadAreas(List<Long> keys);
 
 	/**
 	 * Update the given area in the database
@@ -124,6 +136,14 @@ public interface BGAreaManager {
 	 * @return A list of business groups
 	 */
 	public List<BusinessGroup> findBusinessGroupsOfArea(BGArea area);
+
+	/**
+	 * Searches for all business groups that are associated with the given
+	 * business group areas
+	 * 
+	 * @param area
+	 * @return A list of business groups
+	 */
 	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas);
 
 	/**
@@ -146,18 +166,23 @@ public interface BGAreaManager {
 	 */
 	public List<BGArea> findBGAreasOfBusinessGroup(BusinessGroup group);
 	
+	/**
+	 * Searches for all business group areas associated with the given business
+	 * groups
+	 * 
+	 * @param group
+	 * @return A list of business group area
+	 */
 	public List<BGArea> findBGAreasOfBusinessGroups(List<BusinessGroup> groups);
 	
-	
-
 	/**
 	 * Counts the number of business group areas of the given business group
 	 * context
 	 * 
 	 * @param resource
-	 * @return Number of business gropu areas
+	 * @return Number of business group areas
 	 */
-	public abstract int countBGAreasInContext(OLATResource resource);
+	public int countBGAreasInContext(OLATResource resource);
 
 	/**
 	 * Searches for all business group areas in the given business group context
@@ -194,6 +219,15 @@ public interface BGAreaManager {
 	 * @return
 	 */
 	public abstract boolean checkIfOneOrMoreNameExistsInContext(Set<String> allNames, OLATResource resource);
+	
+	/**
+	 * Check if an area exist with this anem or this primary key within the
+	 * context of the resource
+	 * @param nameOrKey
+	 * @param resource
+	 * @return
+	 */
+	public boolean existArea(String nameOrKey, OLATResource resource);
 	
 	
 	public File archiveAreaMembers(OLATResource resource, List<String> columnList, List<BGArea> areaList, String archiveType, Locale locale, String charset);

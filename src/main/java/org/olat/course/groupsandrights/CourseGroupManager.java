@@ -138,6 +138,8 @@ public interface CourseGroupManager {
 	 *         contexts of this course
 	 */
 	public List<BusinessGroup> getLearningGroupsFromAllContexts(String groupName);
+	
+	public boolean existGroup(String nameOrKey);
 
 	/**
 	 * @param areaName
@@ -187,6 +189,8 @@ public interface CourseGroupManager {
 	public List<BGArea> getAllAreasFromAllContexts();
 	
 	public List<BGArea> getAreasFromContext(String areaname);
+	
+	public boolean existArea(String nameOrKey);
 
 	/**
 	 * Deletes the course group management. This will unlink all group contexts

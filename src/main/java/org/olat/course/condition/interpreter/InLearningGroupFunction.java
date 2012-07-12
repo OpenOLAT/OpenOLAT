@@ -85,11 +85,25 @@ public class InLearningGroupFunction extends AbstractFunction {
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
 		//System.out.println("todo: check if "+(ident==null? "n/a":ident.getName())+" is in group "+groupName);
 		
+		if(isGroupKey(groupName)) {
+			Long groupKey = Long.parseLong(groupName);
+			return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		}
 		return cgm.isIdentityInGroup(ident,groupName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
 	}
-
+	
+	private boolean isGroupKey(String groupName) {
+		char[] charArr = groupName.toCharArray();
+		for(int i=charArr.length; i-->0; ) {
+			char ch = charArr[i];
+			if(ch < 47 || ch > 58) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

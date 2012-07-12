@@ -26,7 +26,10 @@
 package org.olat.course.condition;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date: Jan 30, 2004
@@ -35,14 +38,17 @@ import java.util.List;
 public class Condition implements Serializable, Cloneable {
 	transient private String conditionId = null;
 	private String condition = null;
+	private String conditionUpgraded = null;
 	private boolean expertMode = false;
 
-	private String easyModeBeginDate = null;
-	private String easyModeEndDate = null;
-	private String easyModeGroupAccess = null;
-	private String easyModeGroupAreaAccess = null;
-	private String easyModeNodePassedId = null;
-	private String easyModeCutValue = null;
+	private String easyModeBeginDate;
+	private String easyModeEndDate;
+	private String easyModeGroupAccess;
+	private String easyModeGroupAccessIds;
+	private String easyModeGroupAreaAccess;
+	private String easyModeGroupAreaAccessIds;
+	private String easyModeNodePassedId;
+	private String easyModeCutValue;
 
 	// true: ONLY coaches and admins have access, students are blocked out
 	// false: no such rule
@@ -86,6 +92,14 @@ public class Condition implements Serializable, Cloneable {
 	 */
 	public void setConditionExpression(String string) {
 		condition = string;
+	}
+
+	public String getConditionUpgraded() {
+		return conditionUpgraded;
+	}
+
+	public void setConditionUpgraded(String conditionUpgraded) {
+		this.conditionUpgraded = conditionUpgraded;
 	}
 
 	/**
@@ -147,6 +161,26 @@ public class Condition implements Serializable, Cloneable {
 		else this.easyModeGroupAccess = easyModeGroupAccess;
 	}
 
+	public String getEasyModeGroupAccessIds() {
+		return easyModeGroupAccessIds;
+	}
+	
+	public void setEasyModeGroupAccessIds(String easyModeGroupAccessIds) {
+		if (easyModeGroupAccessIds != null && easyModeGroupAccessIds.equals("")) {
+			this.easyModeGroupAccessIds = null;
+		} else {
+			this.easyModeGroupAccessIds = easyModeGroupAccessIds;
+		}
+	}
+	
+	public List<Long> getEasyModeGroupAccessIdList() {
+		return getAccessIdList(easyModeGroupAccessIds);
+	}
+	
+	public void setEasyModeGroupAccessIdList(List<Long> keys) {
+		setEasyModeGroupAccessIds(getAccessIdList(keys));
+	}
+
 	/**
 	 * @return Returns the easyModeGroupAreaAccess.
 	 */
@@ -160,6 +194,47 @@ public class Condition implements Serializable, Cloneable {
 	public void setEasyModeGroupAreaAccess(String easyModeGroupAreaAccess) {
 		if (easyModeGroupAreaAccess != null && easyModeGroupAreaAccess.equals("")) this.easyModeGroupAreaAccess = null;
 		else this.easyModeGroupAreaAccess = easyModeGroupAreaAccess;
+	}
+	
+	public String getEasyModeGroupAreaAccessIds() {
+		return easyModeGroupAreaAccessIds;
+	}
+	
+	public void setEasyModeGroupAreaAccessIds(String easyModeGroupAreaAccessIds) {
+		if (easyModeGroupAreaAccessIds != null && easyModeGroupAreaAccessIds.equals("")) {
+			this.easyModeGroupAreaAccessIds = null;
+		} else {
+			this.easyModeGroupAreaAccessIds = easyModeGroupAreaAccessIds;
+		}
+	}
+	
+	public List<Long> getEasyModeGroupAreaAccessIdList() {
+		return getAccessIdList(easyModeGroupAreaAccessIds);
+	}
+	
+	public void setEasyModeGroupAreaAccessIdList(List<Long> keys) {
+		setEasyModeGroupAreaAccessIds(getAccessIdList(keys));
+	}
+	
+	private final String getAccessIdList(List<Long> keys) {
+		StringBuilder sb = new StringBuilder();
+		for(Long key:keys) {
+			if(sb.length() > 0) sb.append(",");
+			sb.append(key);
+		}
+		return sb.toString();
+	}
+	
+	private final List<Long> getAccessIdList(String ids) {
+		if(StringHelper.containsNonWhitespace(ids)) {
+			String[] longStrArr = ids.split(",");
+			List<Long> keys = new ArrayList<Long>(longStrArr.length);
+			for(String longStr:longStrArr) {
+				keys.add(new Long(longStr.trim()));
+			}
+			return keys;
+		}
+		return new ArrayList<Long>();
 	}
 
 	/**
@@ -242,15 +317,18 @@ public class Condition implements Serializable, Cloneable {
 			sb.append("\"))");
 			needsAmpersand = true;
 		}
-		if (getEasyModeGroupAccess() != null) {
-			if (getEasyModeGroupAreaAccess() != null) {
+		
+		
+		if (getEasyModeGroupAccess() != null || getEasyModeGroupAccessIds() != null) {
+			if (getEasyModeGroupAreaAccess() != null || getEasyModeGroupAreaAccessIds() != null) {
 				if (needsAmpersand) sb.append(" & (");
 				else sb.append(" (");
 			} else if (needsAmpersand) {
 				sb.append(" & ");
 			}
 			// Delimiter for more than one groups is a comma
-			String[] groups = getEasyModeGroupAccess().split(",");
+			String[] groups = getEasyModeGroupAccessIds() == null ? 
+					getEasyModeGroupAccess().split(",") : getEasyModeGroupAccessIds().split(",");
 			if (groups.length > 1) sb.append("(");
 			for (int i = 0; i < groups.length; i++) {
 				sb.append("inLearningGroup(\"");
@@ -262,14 +340,15 @@ public class Condition implements Serializable, Cloneable {
 			if (groups.length > 1) sb.append(")");
 			needsAmpersand = true;
 		}
-		if (getEasyModeGroupAreaAccess() != null) {
-			if (getEasyModeGroupAccess() != null && needsAmpersand) {
+		if (getEasyModeGroupAreaAccess() != null || getEasyModeGroupAreaAccessIds() != null) {
+			if ((getEasyModeGroupAccess() != null || getEasyModeGroupAccessIds() != null) && needsAmpersand) {
 				sb.append("|");
 			} else if (needsAmpersand) {
 				sb.append(" & ");
 			}
 			// Delimiter for more than one group area is a comma
-			String[] areas = getEasyModeGroupAreaAccess().split(",");
+			String[] areas = getEasyModeGroupAreaAccessIds() == null ?
+					getEasyModeGroupAreaAccess().split(",") : getEasyModeGroupAreaAccessIds().split(",");
 			if (areas.length > 1) sb.append("(");
 			for (int i = 0; i < areas.length; i++) {
 				sb.append("inLearningArea(\"");
@@ -280,7 +359,7 @@ public class Condition implements Serializable, Cloneable {
 			}
 			if (areas.length > 1) sb.append(")");
 			needsAmpersand = true;
-			if (getEasyModeGroupAccess() != null) {
+			if (getEasyModeGroupAccess() != null || getEasyModeGroupAccessIds() != null) {
 				sb.append(")");
 			}
 		}
@@ -360,7 +439,9 @@ public class Condition implements Serializable, Cloneable {
 		this.easyModeCutValue = null;
 		this.easyModeEndDate = null;
 		this.easyModeGroupAccess = null;
+		this.easyModeGroupAccessIds = null;
 		this.easyModeGroupAreaAccess = null;
+		this.easyModeGroupAreaAccessIds = null;
 		this.easyModeNodePassedId = null;
 		this.attributeConditions = null;
 		// do not clear this.expertMode = false;
@@ -380,7 +461,9 @@ public class Condition implements Serializable, Cloneable {
 		retVal.easyModeCutValue = this.easyModeCutValue;
 		retVal.easyModeEndDate = this.easyModeEndDate;
 		retVal.easyModeGroupAccess = this.easyModeGroupAccess;
+		retVal.easyModeGroupAccessIds = this.easyModeGroupAccessIds;
 		retVal.easyModeGroupAreaAccess = this.easyModeGroupAreaAccess;
+		retVal.easyModeGroupAreaAccessIds = this.easyModeGroupAreaAccessIds;
 		retVal.easyModeNodePassedId = this.easyModeNodePassedId;
 		retVal.expertMode = this.expertMode;
 		retVal.condition = this.condition;

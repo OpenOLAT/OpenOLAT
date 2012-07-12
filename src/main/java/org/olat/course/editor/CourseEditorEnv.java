@@ -70,7 +70,7 @@ public interface CourseEditorEnv {
 	 * @param areaname
 	 * @return
 	 */
-	boolean existsArea(String areaname);
+	boolean existsArea(String areaNameOrKey);
 	
 	/**
 	 * Return the invalid areas

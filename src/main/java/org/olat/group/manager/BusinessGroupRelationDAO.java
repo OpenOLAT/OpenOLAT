@@ -128,6 +128,7 @@ public class BusinessGroupRelationDAO {
 		if(groupKey != null) {
 			query.setParameter("groupKey", groupKey);
 		}
+		query.setHint("org.hibernate.cacheable", Boolean.TRUE);
 		Number count = query.getSingleResult();
 		return count.intValue() > 0;
 	}

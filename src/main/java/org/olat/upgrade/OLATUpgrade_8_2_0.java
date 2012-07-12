@@ -25,6 +25,18 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.Structure;
+import org.olat.course.condition.Condition;
+import org.olat.course.nodes.AbstractAccessableCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GenericCourseNode;
+import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
@@ -34,6 +46,9 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.group.context.BGContext2Resource;
 import org.olat.group.model.BGResourceRelation;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +68,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 
 	private static final String TASK_CONTEXTS = "Upgrade contexts";
 	private static final String TASK_AREAS = "Upgrade areas";
+	private static final String TASK_CONDITIONS = "Upgrade conditions";
 	private static final int REPO_ENTRIES_BATCH_SIZE = 20;
 	private static final String VERSION = "OLAT_8.2.0";
 	
@@ -66,6 +82,8 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private OLATResourceManager resourceManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public OLATUpgrade_8_2_0() {
 		super();
@@ -95,6 +113,7 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 		
 		boolean allOk = upgradeGroups(upgradeManager, uhd);
 		allOk &= upgradeAreas(upgradeManager, uhd);
+		allOk &= upgradeCourseConditions(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -146,6 +165,194 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 			return false;
 		}
 		return false;
+	}
+	
+	private boolean upgradeCourseConditions(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		if (!uhd.getBooleanDataValue(TASK_CONDITIONS)) {
+			int counter = 0;
+			List<RepositoryEntry> entries;
+			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+			params.setRoles(new Roles(true, false, false, false, false, false, false));
+			params.addResourceTypes("CourseModule");
+			do {
+				entries = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, REPO_ENTRIES_BATCH_SIZE, true);
+				for(RepositoryEntry entry:entries) {
+					processCourse(entry);
+				}
+				counter += entries.size();
+				log.audit("Processed repository entries: " + entries.size());
+			} while(entries.size() == REPO_ENTRIES_BATCH_SIZE);
+			
+			uhd.setBooleanDataValue(TASK_CONDITIONS, false);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+			return false;
+		}
+		return false;
+	}
+	
+	private void processCourse(RepositoryEntry entry) {
+		ICourse opendedCourse = null;
+		try {
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, entry.getOlatResource(), 0, -1);
+			List<BGArea> areas = areaManager.findBGAreasInContext(entry.getOlatResource());
+			
+			
+			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			ProcessingOccured processingFlag = new ProcessingOccured();
+			System.out.println("Start: " + course.getCourseTitle());
+			Structure structure = course.getRunStructure();
+			processCourseRec(processingFlag, structure.getRootNode(), groups, areas);
+			CourseEditorTreeModel editorTree = course.getEditorTreeModel();
+			processEditorCourseRec(processingFlag, editorTree.getRootNode(), groups, areas);
+			if(processingFlag.isProcessed()) {
+				opendedCourse = CourseFactory.openCourseEditSession(course.getResourceableId());
+				System.out.println("Save of:" + course.getCourseTitle() + " (" + course.getResourceableId() + ")");
+				CourseFactory.saveCourse(opendedCourse.getResourceableId());
+			} else {
+				System.out.println("No change for: " + course.getCourseTitle() + " (" + course.getResourceableId() + ")");
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		} finally {
+			if(opendedCourse != null) {
+				CourseFactory.closeCourseEditSession(opendedCourse.getResourceableId(), true);
+			}	
+		}
+	}
+	
+	private void processCourseRec(ProcessingOccured processingFlag, INode node,
+			List<BusinessGroup> groups, List<BGArea> areas) {
+		if(node instanceof CourseNode) {
+			processCourseNode(processingFlag, (CourseNode)node, groups, areas);
+		}
+		for(int i=node.getChildCount(); i-->0; ) {
+			INode subNode = node.getChildAt(i);
+			processCourseRec(processingFlag, subNode, groups, areas);
+		}
+	}
+	
+	private void processEditorCourseRec(ProcessingOccured processingFlag, INode node,
+			List<BusinessGroup> groups, List<BGArea> areas) {
+		if(node instanceof CourseEditorTreeNode) {
+			processCourseNode(processingFlag, ((CourseEditorTreeNode)node).getCourseNode(), groups, areas);
+		}
+		for(int i=node.getChildCount(); i-->0; ) {
+			INode subNode = node.getChildAt(i);
+			processEditorCourseRec(processingFlag, subNode, groups, areas);
+		}
+	}
+	
+	private void processCourseNode(ProcessingOccured processingFlag, CourseNode node,
+			List<BusinessGroup> groups, List<BGArea> areas) {
+		if(node instanceof GenericCourseNode) {
+			GenericCourseNode genericNode = (GenericCourseNode)node;
+			processCondition(processingFlag, genericNode.getPreConditionAccess(), groups, areas);
+			processCondition(processingFlag, genericNode.getPreConditionVisibility(), groups, areas);
+			if(node instanceof AbstractAccessableCourseNode) {
+				//nothing
+				
+			}
+		}
+	}
+	
+	private void processCondition(ProcessingOccured processingFlag, Condition condition,
+			List<BusinessGroup> groups, List<BGArea> areas) {
+		boolean easy = StringHelper.containsNonWhitespace(condition.getConditionFromEasyModeConfiguration());
+		if(easy) {
+			//already processed?
+			if(StringHelper.containsNonWhitespace(condition.getEasyModeGroupAccessIds())
+					|| StringHelper.containsNonWhitespace(condition.getEasyModeGroupAreaAccessIds())) {
+				return;
+			}
+			if(!StringHelper.containsNonWhitespace(condition.getEasyModeGroupAccess())
+					&& !StringHelper.containsNonWhitespace(condition.getEasyModeGroupAreaAccess())) {
+				return;
+			}
+			
+			String groupKeys = toGroupKeys(condition.getEasyModeGroupAccess(), groups);
+			condition.setEasyModeGroupAccessIds(groupKeys);
+			String areaKeys = toAreaKeys(condition.getEasyModeGroupAreaAccess(), areas);
+			condition.setEasyModeGroupAreaAccessIds(areaKeys);
+			processingFlag.processed();
+		} else if(condition.isExpertMode()) {
+			String expression = condition.getConditionExpression();
+			if(StringHelper.containsNonWhitespace(expression)) {
+				String reference = condition.getConditionExpression();
+				for(BusinessGroup group:groups) {
+					String strToMatch = "\"" + group.getName() + "\"";
+					String replacement = "\"" + group.getKey() + "\"";
+					expression = replaceAllCaseInsensitive(expression, strToMatch, replacement);
+				}
+				for(BGArea area:areas) {
+					String strToMatch = "\"" + area.getName() + "\"";
+					String replacement = "\"" + area.getKey() + "\"";
+					expression = replaceAllCaseInsensitive(expression, strToMatch, replacement);
+				}
+				
+				if(!reference.equals(expression)) {
+					condition.setConditionUpgraded(expression);
+					processingFlag.processed();
+				}
+			}
+		}
+	}
+	
+	private String replaceAllCaseInsensitive(String expression, String name, String replacement) {
+		String lcExpresion = expression.toLowerCase();
+		String lcName = name.toLowerCase();
+
+		int index = 0;
+		while((index = lcExpresion.indexOf(lcName, index)) > 0) {
+			int startIndex = index;
+			int stopIndex = index + lcName.length();
+			
+			String newExpression = expression.substring(0, startIndex);
+			newExpression += replacement;
+			newExpression += expression.substring(stopIndex);
+			
+			expression = newExpression;
+			lcExpresion = expression.toLowerCase();
+			index = startIndex + replacement.length();	
+		}
+		return expression;
+	}
+	
+	private String toGroupKeys(String groupNames, List<BusinessGroup> groups) {
+		if(!StringHelper.containsNonWhitespace(groupNames)) return null;
+		String[] groupNameArr = groupNames.split(",");
+		StringBuilder sb = new StringBuilder();
+		for(String groupName:groupNameArr) {
+			groupName = groupName.trim();
+			for(BusinessGroup group:groups) {
+				if(groupName.equals(group.getName())) {
+					if(sb.length() > 0) {
+						sb.append(',');
+					}
+					sb.append(group.getKey());
+					break;
+				}
+			}
+		}
+		return sb.toString().trim();
+	}
+	
+	private String toAreaKeys(String areaNames, List<BGArea> areas) {
+		if(!StringHelper.containsNonWhitespace(areaNames)) return null;
+		String[] areaNameArr = areaNames.split(",");
+		StringBuilder sb = new StringBuilder();
+		for(String areaName:areaNameArr) {
+			areaName = areaName.trim();
+			for(BGArea area:areas) {
+				if(areaName.equals(area.getName())) {
+					if(sb.length() > 0) {
+						sb.append(',');
+					}
+					sb.append(area.getKey());
+					break;
+				}
+			}
+		}
+		return sb.toString().trim();
 	}
 	
 	private void processBusinessGroup(BusinessGroup group) {
@@ -299,5 +506,17 @@ public class OLATUpgrade_8_2_0 extends OLATUpgrade {
 				.setParameter("contextKey", ((BusinessGroupImpl)group).getGroupContextKey())
 				.getResultList();
 		return resources;
+	}
+	
+	private class ProcessingOccured {
+		private boolean processed = false;
+
+		public boolean isProcessed() {
+			return processed;
+		}
+
+		public void processed() {
+			processed = true;
+		}
 	}
 }

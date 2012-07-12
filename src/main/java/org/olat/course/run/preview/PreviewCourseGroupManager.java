@@ -124,6 +124,16 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return false;
 	}
 
+	@Override
+	public boolean existGroup(String nameOrKey) {
+		return false;
+	}
+
+	@Override
+	public boolean existArea(String nameOrKey) {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
 	 */

@@ -121,6 +121,7 @@ public class ConditionEditController extends BasicController {
 				//successfully changed condition - get condition - dispose and init cond
 				validatedCondition = conditionEasyCtrllr.getCondition(); 
 				condition = cloneCondition(validatedCondition);
+				System.out.println("Condition: " + condition.getConditionExpression());
 				// Inform all listeners about the changed condition
 				// this event goes to the NodeEditController and from there to the 
 				// CourseEditorController which then saves the condition

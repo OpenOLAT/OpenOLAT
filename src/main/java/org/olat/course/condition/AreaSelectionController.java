@@ -24,6 +24,7 @@
 */
 package org.olat.course.condition;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.group.area.BGArea;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.NewAreaController;
 
@@ -57,31 +59,33 @@ import org.olat.group.ui.NewAreaController;
 public class AreaSelectionController extends FormBasicController {
 
 	private MultipleSelectionElement entrySelector;
-	protected String[] entries;
 	private FormLinkImpl createNew;
-	private CourseGroupManager courseGrpMngr;
+	private final CourseGroupManager courseGrpMngr;
 	private NewAreaController areaCreateCntrllr;
 	private CloseableModalController cmc;
+	
+
+	private String[] areaNames;
+	private String[] areaKeys;
 
 	public AreaSelectionController(UserRequest ureq, WindowControl wControl, String title,
-			CourseGroupManager courseGrpMngr, String selectionAsCsvStr) {
+			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
-		/*
-		 * before initialising the element, prepare data
-		 */
 		this.courseGrpMngr = courseGrpMngr;
-		// group or area mode
 
 		// unique names from list to arry
-		List<String> uniqueNames = courseGrpMngr.getUniqueAreaNamesFromAllContexts();
-		entries = new String[uniqueNames.size()];
-		uniqueNames.toArray(entries);
+		List<BGArea> areas = courseGrpMngr.getAllAreasFromAllContexts();
+		areaNames = new String[areas.size()];
+		areaKeys = new String[areas.size()];
+		for(int i=areas.size(); i-->0; ) {
+			areaNames[i] = areas.get(i).getName();
+			areaKeys[i] = areas.get(i).getKey().toString();
+		}
 		
 		initForm(ureq);
 		
-		String[] activeSelection = selectionAsCsvStr != null ? selectionAsCsvStr.split(",") : new String[] {};
-		for (int i = 0; i < activeSelection.length; i++) {
-			entrySelector.select(activeSelection[i].trim(), true);
+		for (Long selectionKey: selectionKeys) {
+			entrySelector.select(selectionKey.toString(), true);
 		}
 	}
 
@@ -105,15 +109,17 @@ public class AreaSelectionController extends FormBasicController {
 		if(source == areaCreateCntrllr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				List<String> uniqueNames = null;
-				uniqueNames = courseGrpMngr.getUniqueAreaNamesFromAllContexts();
-				// update entries
-				entries = new String[uniqueNames.size()];
-				uniqueNames.toArray(entries);
-				entrySelector.setKeysAndValues(entries, entries, null);
-				//
+				List<BGArea> areas = courseGrpMngr.getAllAreasFromAllContexts();
+				areaNames = new String[areas.size()];
+				areaKeys = new String[areas.size()];
+				for(int i=areas.size(); i-->0; ) {
+					areaNames[i] = areas.get(i).getName();
+					areaKeys[i] = areas.get(i).getKey().toString();
+				}
+				
 				// select new value
-				entrySelector.select(areaCreateCntrllr.getCreatedAreaName(), true);
+				entrySelector.setKeysAndValues(areaKeys, areaNames, null);
+				entrySelector.select(areaCreateCntrllr.getCreatedArea().getKey().toString(), true);
 				
 				//inform condition config easy about new groups -> which informs further
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -136,7 +142,7 @@ public class AreaSelectionController extends FormBasicController {
 		// create new group/area on the right side
 		boundTo.add(createNew);
 
-		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, entries, entries, null, 1);
+		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, areaKeys, areaNames, null, 1);
 		// submitCancel after checkboxes
 		//
 		Submit subm = new FormSubmit("subm", "apply");
@@ -157,6 +163,15 @@ public class AreaSelectionController extends FormBasicController {
 
 	public Set<String> getSelectedEntries() {
 		return entrySelector.getSelectedKeys();
+	}
+	
+	public List<Long> getSelectedKeys() {
+		Set<String> selectedKeys = entrySelector.getSelectedKeys();
+		List<Long> groupKeys = new ArrayList<Long>();
+		for(String selectedKey:selectedKeys) {
+			groupKeys.add(new Long(selectedKey));
+		}
+		return groupKeys;
 	}
 
 }

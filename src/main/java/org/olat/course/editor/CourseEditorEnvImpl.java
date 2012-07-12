@@ -53,7 +53,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 
 /**
@@ -82,11 +81,11 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 * {conditionexpression,conditionexpression,...}) TODO: do we really need the
 	 * information splitted up by category and condition expression?
 	 */
-	Map softRefs = new HashMap();
+	Map<String,List<ConditionExpression>> softRefs = new HashMap<String,List<ConditionExpression>>();
 	/**
 	 * book keeping of (courseNodeId, StatusDescription)
 	 */
-	Map statusDescs = new HashMap();
+	Map<String,List<StatusDescription>> statusDescs = new HashMap<String,List<StatusDescription>>();
 	/**
 	 * current active condition expression, it is activated by a call to
 	 * <code>validateConditionExpression(..)</code> the condition interpreter is
@@ -165,26 +164,15 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	/**
 	 * @see org.olat.course.editor.CourseEditorEnv#existsGroup(java.lang.String)
 	 */
-	public boolean existsGroup(String groupname) {
-		// FIXME:fg:b improve performance by adding a special query for the existence
-		// check!
-		List<BusinessGroup> cnt = cgm.getLearningGroupsFromAllContexts(groupname);
-		return (cnt != null && cnt.size() > 0);
+	public boolean existsGroup(String groupNameOrKey) {
+		return cgm.existGroup(groupNameOrKey);
 	}
 
 	/**
 	 * @see org.olat.course.editor.CourseEditorEnv#existsArea(java.lang.String)
 	 */
-	public boolean existsArea(String areaname) {
-		// FIXME:fg:b improve performance by adding a special query for the existence
-		// check!
-		List<BGArea> cnt = cgm.getAllAreasFromAllContexts();
-		for (BGArea element : cnt) {
-			if (element.getName().equals(areaname)) { 
-				return true;
-			}
-		}
-		return false;
+	public boolean existsArea(String areaNameOrKey) {
+		return cgm.existArea(areaNameOrKey);
 	}
 
 	@Override
@@ -239,9 +227,9 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		// evaluate expression
 		ConditionErrorMessage[] cems = ci.syntaxTestExpression(condExpr);
 		if (softRefs.containsKey(this.currentCourseNodeId)) {
-			List condExprs = (ArrayList) softRefs.get(this.currentCourseNodeId);
-			for (Iterator iter = condExprs.iterator(); iter.hasNext();) {
-				ConditionExpression element = (ConditionExpression) iter.next();
+			List<ConditionExpression> condExprs = softRefs.get(this.currentCourseNodeId);
+			for (Iterator<ConditionExpression> iter = condExprs.iterator(); iter.hasNext();) {
+				ConditionExpression element = iter.next();
 				if (element.getId().equals(currentConditionExpression.getId())) {
 					condExprs.remove(element);
 					break;
@@ -249,12 +237,10 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 			}
 			condExprs.add(currentConditionExpression);
 		} else {
-			List condExprs = new ArrayList();
+			List<ConditionExpression> condExprs = new ArrayList<ConditionExpression>();
 			condExprs.add(currentConditionExpression);
 			softRefs.put(currentCourseNodeId, condExprs);
 		}
-
-		//
 		return cems;
 	}
 
@@ -284,15 +270,15 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		 */
 		String currentNodeWas = currentCourseNodeId;
 		// reset all
-		softRefs = new HashMap();
+		softRefs = new HashMap<String,List<ConditionExpression>>();
 		nodeRefs = new HashMap<String, Set<String>>();
 		Visitor v = new CollectConditionExpressionsVisitor();
 		(new TreeVisitor(v, cetm.getRootNode(), true)).visitAll();
-		for (Iterator iter = softRefs.keySet().iterator(); iter.hasNext();) {
-			String nodeId = (String) iter.next();
-			List conditionExprs = (List) softRefs.get(nodeId);
+		for (Iterator<String> iter = softRefs.keySet().iterator(); iter.hasNext();) {
+			String nodeId = iter.next();
+			List<ConditionExpression> conditionExprs = softRefs.get(nodeId);
 			for (int i = 0; i < conditionExprs.size(); i++) {
-				ConditionExpression ce = (ConditionExpression) conditionExprs.get(i);
+				ConditionExpression ce = conditionExprs.get(i);
 				// DO NOT validateConditionExpression(ce) as this is already done in the
 				// CollectConditionExpressionsVisitor
 				Set<String> refs = new HashSet<String>(ce.getSoftReferencesOf("courseNodeId"));
@@ -307,7 +293,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 
 		}
 		// refresh,create status descriptions of the course
-		statusDescs = new HashMap();
+		statusDescs = new HashMap<String,List<StatusDescription>>();
 		v = new CollectStatusDescriptionVisitor(this);
 		(new TreeVisitor(v, cetm.getRootNode(), true)).visitAll();
 		//
@@ -318,25 +304,24 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 * @see org.olat.course.editor.CourseEditorEnv#getCourseStatus()
 	 */
 	public StatusDescription[] getCourseStatus() {
-		String[] a = new String[statusDescs.keySet().size()];
-		a = (String[]) statusDescs.keySet().toArray(a);
+		String[] a = statusDescs.keySet().toArray(new String[statusDescs.keySet().size()]);
 		Arrays.sort(a);
-		List all2gether = new ArrayList();
+		List<StatusDescription> all2gether = new ArrayList<StatusDescription>();
 		for (int i = a.length - 1; i >= 0; i--) {
-			all2gether.addAll((List) statusDescs.get(a[i]));
+			all2gether.addAll(statusDescs.get(a[i]));
 		}
 		StatusDescription[] retVal = new StatusDescription[all2gether.size()];
-		retVal = (StatusDescription[]) all2gether.toArray(retVal);
+		retVal = all2gether.toArray(retVal);
 		return retVal;
 	}
 
-	public List getReferencingNodeIdsFor(String ident) {
-		List refNodes = new ArrayList();
-		for (Iterator iter = nodeRefs.keySet().iterator(); iter.hasNext();) {
-			String nodeId = (String) iter.next();
+	public List<String> getReferencingNodeIdsFor(String ident) {
+		List<String> refNodes = new ArrayList<String>();
+		for (Iterator<String> iter = nodeRefs.keySet().iterator(); iter.hasNext();) {
+			String nodeId = iter.next();
 			if (!nodeId.equals(ident)) {
 				// self references are catched during form entering
-				Set refs = (Set) nodeRefs.get(nodeId);
+				Set<String> refs = nodeRefs.get(nodeId);
 				if (refs.contains(ident)) {
 					// nodeId references ident
 					refNodes.add(nodeId);
@@ -349,13 +334,13 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	
 	public String toString() {
 		String retVal = "";
-		Set keys = softRefs.keySet();
-		for (Iterator iter = keys.iterator(); iter.hasNext();) {
-			String nodId = (String) iter.next();
+		Set<String> keys = softRefs.keySet();
+		for (Iterator<String> iter = keys.iterator(); iter.hasNext();) {
+			String nodId = iter.next();
 			retVal += "nodeId:" + nodId + "\n";
-			List conditionExprs = (List) softRefs.get(nodId);
-			for (Iterator iterator = conditionExprs.iterator(); iterator.hasNext();) {
-				ConditionExpression ce = (ConditionExpression) iterator.next();
+			List<ConditionExpression> conditionExprs = softRefs.get(nodId);
+			for (Iterator<ConditionExpression> iterator = conditionExprs.iterator(); iterator.hasNext();) {
+				ConditionExpression ce = iterator.next();
 				retVal += "\t" + ce.toString() + "\n";
 			}
 			retVal += "\n";
@@ -387,9 +372,9 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 						StatusDescription sd = allSds[i];
 						if (sd != StatusDescription.NOERROR) {
 							if (!statusDescs.containsKey(key)) {
-								statusDescs.put(key, new ArrayList());
+								statusDescs.put(key, new ArrayList<StatusDescription>());
 							}
-							List sds = (List) statusDescs.get(key);
+							List<StatusDescription> sds = statusDescs.get(key);
 							sds.add(sd);
 						}
 					}
@@ -410,11 +395,11 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 			CourseEditorTreeNode tmp = (CourseEditorTreeNode) node;
 			CourseNode cn = tmp.getCourseNode();
 			String key = cn.getIdent();
-			List condExprs = cn.getConditionExpressions();
+			List<ConditionExpression> condExprs = cn.getConditionExpressions();
 			if (condExprs.size() > 0 && !tmp.isDeleted()) {
 				// evaluate each expression
-				for (Iterator iter = condExprs.iterator(); iter.hasNext();) {
-					ConditionExpression ce = (ConditionExpression) iter.next();
+				for (Iterator<ConditionExpression> iter = condExprs.iterator(); iter.hasNext();) {
+					ConditionExpression ce = iter.next();
 					currentCourseNodeId = key;
 					currentConditionExpression = ce;
 					ci.syntaxTestExpression(ce);

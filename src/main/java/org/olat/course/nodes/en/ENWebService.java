@@ -50,6 +50,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupShort;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
@@ -238,8 +239,8 @@ public class ENWebService extends AbstractCourseNodeWebService {
 					Long groupKey = new Long(groupId);
 					keys.add(groupKey);
 				}
-				List<BusinessGroup> groups = bgm.loadBusinessGroups(keys);
-				for(BusinessGroup bg:groups) {
+				List<BusinessGroupShort> groups = bgm.loadShortBusinessGroups(keys);
+				for(BusinessGroupShort bg:groups) {
 					groupNames.add(bg.getName());
 				}
 			}

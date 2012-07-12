@@ -329,6 +329,17 @@ public class StringHelper {
 		s = s.replace(' ', '_');
 		return s;
 	}
+	
+	public static boolean isLong(String string) {
+		char[] charArr = string.toCharArray();
+		for(int i=charArr.length; i-->0; ) {
+			char ch = charArr[i];
+			if(ch < 47 || ch > 58) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * @param extractedCharset

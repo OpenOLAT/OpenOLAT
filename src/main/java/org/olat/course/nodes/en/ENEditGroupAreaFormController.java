@@ -384,7 +384,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			
 			removeAsListenerAndDispose(groupChooseC);
 			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group",
-					cev.getCourseGroupManager(), easyGroupTE.getValue());
+					cev.getCourseGroupManager(), null /* easyGroupTE.getValue() */);//TODO gm
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
@@ -425,7 +425,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			// already areas -> choose areas
 			removeAsListenerAndDispose(areaChooseC);
 			areaChooseC = new AreaSelectionController (ureq, getWindowControl() , "area",
-					cev.getCourseGroupManager(), easyAreaTE.getValue());
+					cev.getCourseGroupManager(), null /* easyAreaTE.getValue() */);//TODO gm
 			listenTo(areaChooseC);
 			
 			

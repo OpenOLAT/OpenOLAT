@@ -207,6 +207,17 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		return businessGroupService.findBusinessGroups(params, courseResource, 0, -1);
 	}
 
+	@Override
+	public boolean existGroup(String nameOrKey) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		if(StringHelper.isLong(nameOrKey)) {
+			params.setKey(new Long(nameOrKey));
+		}else {
+			params.setExactName(nameOrKey);
+		}
+		return businessGroupService.countBusinessGroups(params, courseResource) > 0;
+	}
+
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getAllAreasFromAllContexts()
 	 */
@@ -223,6 +234,8 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		}
 		return Collections.singletonList(area);
 	}
+	
+	
 
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#getLearningGroupsInAreaFromAllContexts(java.lang.String)
@@ -240,6 +253,11 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		List<BusinessGroup> learningGroups = getLearningGroupsFromAllContexts(groupName);
 		List<BGArea> areas = areaManager.findBGAreasOfBusinessGroups(learningGroups);
 		return areas;
+	}
+
+	@Override
+	public boolean existArea(String nameOrKey) {
+		return areaManager.existArea(nameOrKey, courseResource);
 	}
 
 	/**
@@ -286,16 +304,13 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
 	 */
 	public boolean isIdentityCourseCoach(Identity identity) {
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		
-	//fxdiff VCRP-1: access control of learn resource
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-		if(re != null && re.getTutorGroup() != null) {
-			boolean isCoach = secManager.isIdentityInSecurityGroup(identity, re.getTutorGroup());
-			if (isCoach) // don't check any further
-				return true;
+		//fxdiff VCRP-1: access control of learn resource
+		boolean isCoach = RepositoryManager.getInstance().isIdentityInTutorSecurityGroup(identity, courseResource);
+		if (isCoach) { // don't check any further
+			return true;
 		}
 
+		BaseSecurity secManager = BaseSecurityManager.getInstance();
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_COACH, courseResource)
 				|| businessGroupService.isIdentityInBusinessGroup(identity, (String)null, true, false, courseResource);
 		return isParticipant;
@@ -305,16 +320,13 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#isIdentityCourseCoach(org.olat.core.id.Identity)
 	 */
 	public boolean isIdentityCourseParticipant(Identity identity) {
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		
 		//fxdiff VCRP-1: access control of learn resource
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-		if(re != null && re.getParticipantGroup() != null) {
-			boolean isParticipant = secManager.isIdentityInSecurityGroup(identity, re.getParticipantGroup());
-			if (isParticipant) // don't check any further
-				return true;
+		boolean participant = RepositoryManager.getInstance().isIdentityInParticipantSecurityGroup(identity, courseResource);
+		if (participant) {// don't check any further
+			return true;
 		}
-
+		
+		BaseSecurity secManager = BaseSecurityManager.getInstance();
 		boolean isParticipant = secManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_PARTI, courseResource)
 				|| businessGroupService.isIdentityInBusinessGroup(identity, (String)null, false, true, courseResource);
 		return isParticipant;

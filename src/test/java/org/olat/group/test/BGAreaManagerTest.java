@@ -104,7 +104,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testCreateBGArea() {
+	public void testCreateLoadBGArea() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		String areaName = UUID.randomUUID().toString();
 		String description = "description:" + areaName;
@@ -120,6 +120,59 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertEquals(areaName, reloadedArea.getName());
 		Assert.assertEquals(description, reloadedArea.getDescription());
 		Assert.assertEquals(resource, reloadedArea.getResource());
+	}
+	
+	@Test
+	public void testLoadByKeys() {
+		//create a resource with areas
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		String areaName = UUID.randomUUID().toString();
+		BGArea area1 = areaManager.createAndPersistBGAreaIfNotExists("load-1-" + areaName, "description:" + areaName, resource);
+		BGArea area2 = areaManager.createAndPersistBGAreaIfNotExists("load-2-" + areaName, "description:" + areaName, resource);
+		dbInstance.commitAndCloseSession();
+		
+		//check if it's robust agains empty argument
+		List<BGArea> emptyList = areaManager.loadAreas(Collections.<Long>emptyList());
+		Assert.assertNotNull(emptyList);
+		Assert.assertTrue(emptyList.isEmpty());
+
+		//check by loading 1 area
+		List<BGArea> single = areaManager.loadAreas(Collections.singletonList(area2.getKey()));
+		Assert.assertNotNull(single);
+		Assert.assertEquals(1, single.size());
+		Assert.assertEquals(area2, single.get(0));
+		
+		//check by loading 2 areas
+		List<Long> areaKeys = new ArrayList<Long>();
+		areaKeys.add(area1.getKey());
+		areaKeys.add(area2.getKey());
+		List<BGArea> areaList = areaManager.loadAreas(areaKeys);
+		Assert.assertNotNull(areaList);
+		Assert.assertEquals(2, areaList.size());
+		Assert.assertTrue(areaList.contains(area1));
+		Assert.assertTrue(areaList.contains(area2));
+	}
+	
+	@Test
+	public void testExistArea() {
+		//create a resource with areas
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		String areaName = UUID.randomUUID().toString();
+		BGArea area = areaManager.createAndPersistBGAreaIfNotExists("exists-" + areaName, "description:" + areaName, resource);
+		dbInstance.commitAndCloseSession();
+		
+		//check exist by key
+		boolean exist1 = areaManager.existArea(area.getKey().toString(), resource);
+		Assert.assertTrue(exist1);
+		//check by name
+		boolean exist2 = areaManager.existArea(area.getName(), resource);
+		Assert.assertTrue(exist2);
+		//check negative by key
+		boolean exist3 = areaManager.existArea("120", resource);
+		Assert.assertFalse(exist3);
+		//check negative by key
+		boolean exist4 = areaManager.existArea("dummy", resource);
+		Assert.assertFalse(exist4);
 	}
 	
 	@Test

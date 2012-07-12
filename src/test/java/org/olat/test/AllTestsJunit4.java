@@ -85,7 +85,8 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.SecurityManagerTest.class,//ok
 	org.olat.basesecurity.BaseSecurityTest.class,//ok
 	org.olat.repository.RepositoryManagerTest.class,//ok
-	org.olat.repository.RepositoryManagerQueryTest.class,
+	org.olat.repository.RepositoryManagerConcurrentTest.class,//ok
+	org.olat.repository.RepositoryManagerQueryTest.class,//ok
 	org.olat.instantMessaging.IMUnitTest.class,//ok
 	org.olat.instantMessaging.IMPrefsUnitTest.class,//ok
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
