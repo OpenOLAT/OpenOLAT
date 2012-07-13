@@ -23,11 +23,11 @@ alter table o_gp_bgarea add constraint idx_area_to_resource foreign key (fk_reso
 
 -- view
 create or replace view o_gp_business_to_repository_v as (
-	select 
-		grp.group_id as grp_id,
-		repoentry.repositoryentry_id as re_id,
-		repoentry.displayname as re_displayname
-	from o_gp_business as grp
-	inner join o_gp_business_to_resource as relation on (relation.fk_group = grp.group_id)
-	inner join o_repositoryentry as repoentry on (repoentry.fk_olatresource = relation.fk_resource)
+   select 
+      grp.group_id as grp_id,
+      repoentry.repositoryentry_id as re_id,
+      repoentry.displayname as re_displayname
+   from o_gp_business as grp
+   inner join o_gp_business_to_resource as relation on (relation.fk_group = grp.group_id)
+   inner join o_repositoryentry as repoentry on (repoentry.fk_olatresource = relation.fk_resource)
 );
