@@ -638,14 +638,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					String csvMissAreas = toString(missingAreas);
 					String[] params = new String[] { "-", csvMissAreas };
 
-					/*
-					 * create error with link to fix it
-					 */
+					// create error with link to fix it
 					String vc_errorPage = velocity_root + "/erroritem.html";
 					FormLayoutContainer errorAreaItemLayout = FormLayoutContainer.createCustomFormLayout(
-							"errorareaitem", getTranslator(), vc_errorPage
-					);
-					
+							"errorareaitem", getTranslator(), vc_errorPage);
 
 					areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
 					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
@@ -674,8 +670,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				}
 			}
 
-			boolean easyGroupOK = (!isEmpty(easyGroupList) && !activeGroupSelection.isEmpty());
-			boolean easyAreaOK = (!isEmpty(easyAreaList) && !activeAreaSelection.isEmpty());
+			boolean easyGroupOK = (!isEmpty(easyGroupList) && activeGroupSelection != null && !activeGroupSelection.isEmpty());
+			boolean easyAreaOK = (!isEmpty(easyAreaList) && activeAreaSelection != null && !activeAreaSelection.isEmpty());
 			if (easyGroupOK || easyAreaOK) {
 				// clear general error
 				groupSubContainer.clearError();

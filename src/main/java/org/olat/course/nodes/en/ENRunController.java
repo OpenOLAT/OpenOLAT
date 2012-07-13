@@ -26,7 +26,6 @@
 package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -46,6 +45,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
@@ -55,6 +55,7 @@ import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
 import org.olat.group.ui.BusinessGroupTableModelWithMaxSize;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -79,7 +80,8 @@ public class ENRunController extends BasicController implements GenericEventList
 	
 	
 	private ModuleConfiguration moduleConfig;
-	private List enrollableGroupNames, enrollableAreaNames;
+	private List<Long> enrollableGroupKeys;
+	private List<Long> enrollableAreaKeys;
 	private VelocityContainer enrollVC;
 	private ENCourseNode enNode;
 
@@ -87,9 +89,9 @@ public class ENRunController extends BasicController implements GenericEventList
 	private TableController tableCtr;
 
 	// Managers
-	private EnrollmentManager enrollmentManager;
-	private CourseGroupManager courseGroupManager;
-	private CoursePropertyManager coursePropertyManager;
+	private final EnrollmentManager enrollmentManager;
+	private final CourseGroupManager courseGroupManager;
+	private final CoursePropertyManager coursePropertyManager;
 
 	// workflow variables
 	private BusinessGroup enrolledGroup;
@@ -115,23 +117,39 @@ public class ENRunController extends BasicController implements GenericEventList
 		//this.trans = new PackageTranslator(PACKAGE, ureq.getLocale());
 		// init managers
 		enrollmentManager = CoreSpringFactory.getImpl(EnrollmentManager.class);
-		this.courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		this.coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 
 		// Get groupnames from configuration
-		String groupNamesConfig = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
-		String areaNamesConfig = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
-		this.enrollableGroupNames = splitNames(groupNamesConfig);
-		this.enrollableAreaNames = splitNames(areaNamesConfig);
+		enrollableGroupKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_GROUP_IDS);
+		if(enrollableGroupKeys == null) {
+			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+			if(StringHelper.containsNonWhitespace(groupNamesConfig)) {
+				enrollableGroupKeys = getGroupKeys(groupNamesConfig);
+			} else {
+				enrollableGroupKeys = new ArrayList<Long>();
+			}
+		}
+
+		enrollableAreaKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_AREA_IDS);
+		if(enrollableAreaKeys != null) {
+			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
+			if(StringHelper.containsNonWhitespace(areaInitVal)) {
+				enrollableAreaKeys = getAreaKeys(areaInitVal);
+			} else {
+				enrollableAreaKeys = new ArrayList<Long>();
+			}
+		}
+
 		cancelEnrollEnabled = ((Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
 
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, this.enrollableGroupNames, this.enrollableAreaNames, courseGroupManager);
-		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, this.enrollableGroupNames, this.enrollableAreaNames, courseGroupManager);
-		registerGroupChangedEvents(enrollableGroupNames,enrollableAreaNames, courseGroupManager, ureq.getIdentity());
+		enrolledGroup = enrollmentManager.getBusinessGroupWhereEnrolled(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		waitingListGroup = enrollmentManager.getBusinessGroupWhereInWaitingList(identity, enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		registerGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys, ureq.getIdentity());
 		// Set correct view
 		enrollVC = createVelocityContainer("enrollmultiple");
-		List groups = enrollmentManager.loadGroupsFromNames(this.enrollableGroupNames, this.enrollableAreaNames, courseGroupManager);
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 		
 		tableCtr = createTableController(ureq, enrollmentManager.hasAnyWaitingList(groups));
 		
@@ -175,7 +193,7 @@ public class ENRunController extends BasicController implements GenericEventList
 				if (actionid.equals(CMD_ENROLL_IN_GROUP)) {
 					log.debug("CMD_ENROLL_IN_GROUP ureq.getComponentID()=" + ureq.getComponentID() + "  ureq.getComponentTimestamp()=" + ureq.getComponentTimestamp());
 					EnrollStatus enrollStatus = enrollmentManager.doEnroll(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator(),
-							                                                   enrollableGroupNames, enrollableAreaNames, courseGroupManager);
+							                                                   enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
 					if (enrollStatus.isEnrolled() ) {
 						enrolledGroup = choosenGroup;
 					} else if (enrollStatus.isInWaitingList() ) {
@@ -209,7 +227,6 @@ public class ENRunController extends BasicController implements GenericEventList
 
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
-			OLATResourceableJustBeforeDeletedEvent delEvent = (OLATResourceableJustBeforeDeletedEvent) event;
 			dispose();
 		}	
 	}	
@@ -237,8 +254,8 @@ public class ENRunController extends BasicController implements GenericEventList
 
 	private void doEnrollMultipleView(UserRequest ureq) {
 		// 1. Fetch groups from database
-		List groups = enrollmentManager.loadGroupsFromNames(this.enrollableGroupNames, this.enrollableAreaNames, courseGroupManager);
-		List members = this.courseGroupManager.getNumberOfMembersFromGroups(groups);
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+		List<Integer> members = courseGroupManager.getNumberOfMembersFromGroups(groups);
 		// 2. Build group list
 		groupListModel = new BusinessGroupTableModelWithMaxSize(groups, members, getTranslator(), ureq.getIdentity(), cancelEnrollEnabled);
 	  tableCtr.setTableDataModel(groupListModel);
@@ -274,23 +291,23 @@ public class ENRunController extends BasicController implements GenericEventList
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		deregisterGroupChangedEvents(enrollableGroupNames,enrollableAreaNames, courseGroupManager);
+		deregisterGroupChangedEvents(enrollableGroupKeys, enrollableAreaKeys);
 	}
 
 	/*
 	 * Add as listener to BusinessGroups so we are being notified about changes.
 	 */
-	private void registerGroupChangedEvents(List enrollableGroupNames, List enrollableAreaNames, CourseGroupManager courseGroupManager, Identity identity) {
-		List groups = enrollmentManager.loadGroupsFromNames(enrollableGroupNames, enrollableAreaNames, courseGroupManager);
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, (BusinessGroup) iter.next());
+	private void registerGroupChangedEvents(List<Long> enrollableGroupNames, List<Long> enrollableAreaNames, Identity identity) {
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupNames, enrollableAreaNames, courseGroupManager);
+		for (BusinessGroup group: groups) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, identity, group);
 		}
 	}
 	
-	private void deregisterGroupChangedEvents(List enrollableGroupNames, List enrollableAreaNames, CourseGroupManager courseGroupManager) {
-		List groups = enrollmentManager.loadGroupsFromNames(enrollableGroupNames, enrollableAreaNames, courseGroupManager);
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, (BusinessGroup) iter.next());
+	private void deregisterGroupChangedEvents(List<Long> enrollableGroupNames, List<Long> enrollableAreaNames) {
+		List<BusinessGroup> groups = enrollmentManager.loadGroupsFromNames(enrollableGroupNames, enrollableAreaNames, courseGroupManager);
+		for (BusinessGroup group:groups) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, group);
 		}
 	}
 	
@@ -298,15 +315,44 @@ public class ENRunController extends BasicController implements GenericEventList
 	//////////////////
 	// Helper Methods
 	//////////////////
-	private List splitNames(String namesList) {
-		List names = new ArrayList();
-		if (namesList != null) {
-			String[] name = namesList.split(",");
-			for (int i = 0; i < name.length; i++) {
-				names.add(name[i].trim());
+	private List<Long> getGroupKeys(String groupNames) {
+		List<Long> groupKeys = new ArrayList<Long>();
+		if(StringHelper.containsNonWhitespace(groupNames)) {
+			String[] groupNameArr = groupNames.split(",");
+			List<BusinessGroup> groups = courseGroupManager.getAllLearningGroupsFromAllContexts();
+			for(String groupName:groupNameArr) {
+				groupName = groupName.trim();
+				for(BusinessGroup group:groups) {
+					if(groupName.equalsIgnoreCase(group.getName())) {
+						groupKeys.add(group.getKey());
+						break;
+					}
+				}
 			}
 		}
-		return names;
+		return groupKeys;
+	}
+	
+	private List<Long> getAreaKeys(String areaNames) {
+		List<Long> areaKeys = new ArrayList<Long>();
+		if(StringHelper.containsNonWhitespace(areaNames)) {
+			List<BGArea> areas = courseGroupManager.getAllAreasFromAllContexts();
+			String[] areaNameArr = areaNames.split(",");
+			StringBuilder sb = new StringBuilder();
+			for(String areaName:areaNameArr) {
+				areaName = areaName.trim();
+				for(BGArea area:areas) {
+					if(areaName.equalsIgnoreCase(area.getName())) {
+						if(sb.length() > 0) {
+							sb.append(',');
+						}
+						sb.append(area.getKey());
+						break;
+					}
+				}
+			}
+		}
+		return areaKeys;
 	}
 
 }

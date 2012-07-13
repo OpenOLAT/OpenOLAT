@@ -38,7 +38,7 @@ public class SearchBusinessGroupParams {
 	private List<String> types;
 	private List<String> tools;
 	private String nameOrDesc;
-	private Long key;
+	private List<Long> keys;
 	private String name;
 	private String exactName;
 	private String description;
@@ -95,12 +95,12 @@ public class SearchBusinessGroupParams {
 		}
 	}
 
-	public Long getKey() {
-		return key;
+	public List<Long> getKeys() {
+		return keys;
 	}
 
-	public void setKey(Long key) {
-		this.key = key;
+	public void setKeys(List<Long> keys) {
+		this.keys = keys;
 	}
 
 	public String getName() {

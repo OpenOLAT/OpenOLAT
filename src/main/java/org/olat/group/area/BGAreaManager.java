@@ -145,6 +145,7 @@ public interface BGAreaManager {
 	 * @return A list of business groups
 	 */
 	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas);
+	public List<BusinessGroup> findBusinessGroupsOfAreaKeys(List<Long> areaKeys);
 
 	/**
 	 * Searches for all business groups that are associated with the given

@@ -237,16 +237,21 @@ public class BGAreaManagerImpl extends BasicManager implements BGAreaManager {
 	@Override
 	public List<BusinessGroup> findBusinessGroupsOfAreas(List<BGArea> areas) {
 		if(areas == null || areas.isEmpty()) return Collections.emptyList();
+		List<Long> areaKeys = new ArrayList<Long>();
+		for(BGArea area:areas) {
+			areaKeys.add(area.getKey());
+		}
+		return findBusinessGroupsOfAreaKeys(areaKeys);
+	}
+	
+	@Override
+	public List<BusinessGroup> findBusinessGroupsOfAreaKeys(List<Long> areaKeys) {
+		if(areaKeys == null || areaKeys.isEmpty()) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct bgarel.businessGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as bgarel ")
 		  .append(" where  bgarel.groupArea.key in (:areaKeys)");
 
-		List<Long> areaKeys = new ArrayList<Long>();
-		for(BGArea area:areas) {
-			areaKeys.add(area.getKey());
-		}
-		
 		List<BusinessGroup> result = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("areaKeys", areaKeys)

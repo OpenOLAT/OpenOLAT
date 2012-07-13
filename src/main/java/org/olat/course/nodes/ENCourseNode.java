@@ -89,9 +89,15 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 
 	/** CONFIG_GROUPNAME configuration parameter key. */
 	public static final String CONFIG_GROUPNAME = "groupname";
+	/** CONFIG_GROUPNAME configuration parameter key. */
+	public static final String CONFIG_GROUP_IDS = "groupkeys";
 	
 	/** CONFIG_AREANAME configuration parameter key. */
 	public static final String CONFIG_AREANAME = "areaname";
+	/** CONFIG_AREANAME configuration parameter key. */
+	public static final String CONFIG_AREA_IDS = "areakeys";
+	
+	
 	
 	/** CONF_CANCEL_ENROLL_ENABLED configuration parameter key. */
 	public static final String CONF_CANCEL_ENROLL_ENABLED = "cancel_enroll_enabled";

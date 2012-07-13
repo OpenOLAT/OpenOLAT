@@ -310,8 +310,8 @@ public class COConfigForm extends FormBasicController {
 			}	
 		}
 
-		boolean easyGroupOK = !activeGroupSelection.isEmpty();
-		boolean easyAreaOK = !activeAreaSelection.isEmpty();
+		boolean easyGroupOK = activeGroupSelection != null && !activeGroupSelection.isEmpty();
+		boolean easyAreaOK = activeAreaSelection != null && !activeAreaSelection.isEmpty();
 		if (easyGroupOK || easyAreaOK) {
 			// clear general error
 			flc.clearError();

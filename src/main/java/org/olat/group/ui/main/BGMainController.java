@@ -724,7 +724,9 @@ public class BGMainController extends MainLayoutBasicController implements Activ
 			String owner = searchController.getOwner();
 			
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			params.setKey(id);
+			if(id != null) {
+				params.setKeys(Collections.singletonList(id));
+			}
 			params.setName(name);
 			params.setDescription(description);
 			params.setOwnerName(owner);

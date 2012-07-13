@@ -277,7 +277,9 @@ public class BusinessGroupListController extends BasicController {
 		String ownerName = event.getOwnerName();
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setKey(id);
+		if(id != null) {
+			params.setKeys(Collections.singletonList(id));
+		}
 		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
 		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
 		params.setOwnerName(StringHelper.containsNonWhitespace(ownerName) ? ownerName : null);
